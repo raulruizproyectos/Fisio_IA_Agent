@@ -512,3 +512,29 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 
 ### Nota operativa
 - A partir de ahora, todo workflow nuevo de Fisio debe crearse y mantenerse dentro de `Fisio_IA_Agent` (regla prioritaria).
+
+---
+
+## 2026-02-27 - Sesion 13: Publicacion y hardening del repositorio GitHub
+
+### Cambios implementados
+- Repositorio publicado en GitHub:
+  - `https://github.com/raulruizproyectos/Fisio_IA_Agent`
+- Inicializacion y push de historial local en rama `main`.
+- Resolucion de conflicto inicial con README remoto y mejora de descripcion breve del proyecto.
+- Configuracion de gobernanza del repositorio:
+  - `.github/workflows/ci.yml`
+  - `.github/PULL_REQUEST_TEMPLATE.md`
+  - `.github/ISSUE_TEMPLATE/bug_report.md`
+  - `.github/ISSUE_TEMPLATE/feature_request.md`
+  - `CONTRIBUTING.md`
+  - `SECURITY.md`
+  - `LICENSE` (MIT)
+
+### Estado actual
+- Repositorio sincronizado con `origin/main` y operativo.
+- Pipeline CI base activa para backend/frontend en GitHub Actions.
+
+### Pendiente recomendado
+1. Activar branch protection en `main` (require PR + checks obligatorios).
+2. Revisar y rotar credenciales expuestas durante sesiones tecnicas previas.

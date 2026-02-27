@@ -61,3 +61,9 @@ Tablas necesarias confirmadas:
 2. Probar agente web y confirmar respuesta no vacia desde Nucleo Agente.
 3. Ejecutar prueba real Telegram y revisar escritura en `mensajes_ingesta_paciente`.
 4. Mantener prueba de regresion de video (`crear` + `review`).
+
+## Repositorio GitHub (2026-02-27)
+- URL: `https://github.com/raulruizproyectos/Fisio_IA_Agent`
+- Rama principal: `main`
+- CI base: configurada en `.github/workflows/ci.yml`
+- Plantillas y gobernanza: ISSUE/PR templates, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`
