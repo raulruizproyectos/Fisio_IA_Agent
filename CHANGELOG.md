@@ -1,4 +1,10 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
+## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
+
+- Repositorio oficial del proyecto (URL exacta): `https://github.com/raulruizproyectos/Fisio_IA_Agent`
+- Todo avance de sesion debe quedar reflejado en este repositorio para continuidad diaria.
+- Mantener sincronizada la rama `main` al cierre de cada sesion (codigo + `CHANGELOG.md` + `configuracion_pendiente.md`).
+- Esta regla es inicial y permanente para retomar trabajo futuro sin perdida de contexto.
 ## PRIORIDAD OBLIGATORIA n8n (orden y estructura)
 
 - Todos los workflows de este proyecto deben estar dentro de la carpeta `Fisio_IA_Agent`.
@@ -538,3 +544,36 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Pendiente recomendado
 1. Activar branch protection en `main` (require PR + checks obligatorios).
 2. Revisar y rotar credenciales expuestas durante sesiones tecnicas previas.
+
+---
+
+## 2026-02-27 - Sesion 14: Ajuste de terminologia + cierre de continuidad
+
+### Cambios implementados
+- Reemplazada expresion de README:
+  - De: `expresion anterior (deprecated)`
+  - A: `centraliza la introduccion de sintomas`
+- Verificacion en repo local y workflows Fisio n8n: no quedan ocurrencias de la expresion antigua.
+- Estado de n8n validado para continuidad:
+  - 6 workflows activos de Fisio y alineados por IDs:
+    - `FU0XfCbeehpnoW85` (Nucleo Agente)
+    - `rp6Ya8LllWgrn8aS` (Orquestador Intake-Video)
+    - `a9pejz5CI7zau52i` (Subflujo Pendientes)
+    - `IlBtqoCYDZYUcple` (Subflujo Crear y Render Video)
+    - `8ovmsUXTxhz6Fulc` (Subflujo Revision Video)
+    - `TN1x0kDu03lGBo2a` (Puente Error Backend)
+
+### Estado actual de integracion
+- GitHub actualizado: `main` sincronizada en `raulruizproyectos/Fisio_IA_Agent`.
+- EasyPanel:
+  - `fisio-backend` habilitado
+  - `n8n` habilitado
+- Enlaces orquestador -> subflujos verificados por `workflowId` y consistentes.
+
+### Punto exacto para continuar en la proxima sesion
+1. Ejecutar E2E Telegram real (`/start CODIGO`, `/plan`, `/dolor`) y validar registros en `mensajes_ingesta_paciente`.
+2. Afinar `Fisio_IA_Agent / Nucleo Agente` para respuesta de negocio mas rica en `/api/agent/message`.
+3. Activar branch protection en GitHub (`main`) con checks obligatorios de CI.
+4. Rotar credenciales expuestas en sesiones tecnicas.
+
+

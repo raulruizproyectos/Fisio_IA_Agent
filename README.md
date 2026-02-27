@@ -1,6 +1,6 @@
 ﻿# Fisio_IA_Agent
 
-Asistente IA para fisioterapia: centraliza la ingesta de sintomas por Telegram/web, permite al profesional revisar casos y automatiza la generacion, revision y envio de videos de ejercicios.
+Asistente IA para fisioterapia: centraliza la introduccion de sintomas por Telegram/web, permite al profesional revisar casos y automatiza la generacion, revision y envio de videos de ejercicios.
 
 ## Estado actual (2026-02-27)
 - Backend y esquema de datos migrados a nomenclatura en espanol.
@@ -70,3 +70,4 @@ npm run dev
 ## Continuidad
 - Estado detallado por sesion: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
+

@@ -67,3 +67,17 @@ Tablas necesarias confirmadas:
 - Rama principal: `main`
 - CI base: configurada en `.github/workflows/ci.yml`
 - Plantillas y gobernanza: ISSUE/PR templates, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`
+
+## Punto de continuidad para proxima sesion (prioridad)
+1. E2E Telegram completo con paciente real:
+- `/start CODIGO`
+- `/plan`
+- `/dolor <0-10> [nota]`
+2. Confirmar que cada mensaje crea/actualiza registros en `mensajes_ingesta_paciente`.
+3. Mejorar respuesta funcional de `Nucleo Agente` para `/api/agent/message`.
+4. Activar branch protection en GitHub para `main`.
+5. Rotar secretos expuestos en sesiones tecnicas.
+
+## Nota de terminologia
+- Se reemplazo la expresion `expresion anterior (deprecated)` por `centraliza la introduccion de sintomas` en la descripcion principal del proyecto.
+
