@@ -24,8 +24,7 @@ Aplicar en todas las sesiones:
 4. Usar skills cuando aplique y dejar constancia breve.
 
 ---
-## Proyecto
-- **Nombre:** Fisio_IA_Agent
+## Proyecto`r`n- **Nombre:** Fisio_IA_Agent`r`n- **Repositorio GitHub:** `https://github.com/raulruizproyectos/Fisio_IA_Agent`
 - **Supabase project:** Agente IA (`uewhbaejcouenoufuwlq`)
 - **Organizacion Supabase:** Bases Datos Supabase (`mzbmcdbapvxrqxwkqrmr`)
 - **Region:** eu-central-1
@@ -645,3 +644,4 @@ Para cada sesion nueva anadir bloque con esta plantilla:
    - `npm install --no-audit --no-fund`
    - `npm run build`
 3. Registrar resultado en nueva sesion del changelog.
+
