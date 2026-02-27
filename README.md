@@ -1,6 +1,6 @@
 ﻿# Fisio_IA_Agent
 
-Plataforma para fisioterapia con backend Node/Express, Supabase y automatizaciones n8n.
+Asistente IA para fisioterapia: centraliza la ingesta de sintomas por Telegram/web, permite al profesional revisar casos y automatiza la generacion, revision y envio de videos de ejercicios.
 
 ## Estado actual (2026-02-27)
 - Backend y esquema de datos migrados a nomenclatura en espanol.
