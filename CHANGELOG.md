@@ -577,3 +577,71 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 4. Rotar credenciales expuestas en sesiones tecnicas.
 
 
+
+---
+
+## 2026-02-27 - Sesion 15: Verificacion global final (plataformas + conexiones + codigo)
+
+### Verificaciones ejecutadas
+- Repositorio GitHub:
+  - `main` sincronizada con remoto (`HEAD == origin/main`).
+  - Estado local limpio (sin cambios pendientes tras push).
+- Backend (codigo):
+  - Validacion de sintaxis Node OK:
+    - `src/index.js`
+    - `src/routes/agent.js`
+    - `src/routes/patients.js`
+    - `src/routes/professional.js`
+    - `src/routes/telegram.js`
+- Frontend (build local):
+  - No ejecutable en este host por falta de binario `astro` en entorno local (`"astro" no se reconoce`).
+- n8n (proyecto Fisio):
+  - 6 workflows activos confirmados y etiquetados con `Fisio_IA_Agent`.
+  - Conexiones del orquestador verificadas:
+    - `Ejecutar Sub Pendientes -> a9pejz5CI7zau52i`
+    - `Ejecutar Sub Crear Video -> IlBtqoCYDZYUcple`
+    - `Ejecutar Sub Revision -> 8ovmsUXTxhz6Fulc`
+- EasyPanel:
+  - Servicios `n8n` y `fisio-backend` habilitados.
+- Backend productivo (runtime):
+  - `GET /api/health` -> OK
+  - `GET /api/profesional/intakes/pending?profesional_id=...` -> OK con datos
+  - `POST /api/agent/message` -> OK (`source: n8n_agent`)
+  - `POST /api/telegram/incoming` con payload vacio -> 400 (validacion esperada)
+- Telegram:
+  - Webhook correcto en produccion:
+    - `https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming`
+  - `pending_update_count = 0`
+
+### Estado de cierre
+- Proyecto estable y sincronizado en GitHub para continuidad.
+- Terminologia actualizada (uso de `introduccion` en descripcion principal).
+
+### Proxima continuidad recomendada
+1. Ejecutar E2E Telegram funcional completo con comandos reales.
+2. Mejorar salida funcional de `Nucleo Agente` para respuestas mas utiles en `/api/agent/message`.
+3. Activar branch protection de `main` con checks CI obligatorios.
+4. Rotar secretos expuestos en sesiones tecnicas.
+
+---
+
+## 2026-02-27 - Sesion 16: Cierre operativo con bloqueo local de npm (frontend)
+
+### Resultado final de plataformas
+- n8n: OK (workflows Fisio activos y conectados)
+- EasyPanel: OK (`n8n` y `fisio-backend` habilitados)
+- Backend productivo: OK (health, profesional, agent y webhook Telegram verificados)
+- GitHub: OK (repositorio sincronizado en `main`)
+
+### Bloqueo identificado
+- Frontend local en este host: `npm install` queda colgado y deja `astro` en estado `invalid`.
+- Se detecto proceso persistente de instalacion npm (`node ... npm-cli.js install --no-audit --no-fund --prefer-online --foreground-scripts`) que no se libera correctamente desde esta sesion.
+
+### Accion recomendada al retomar
+1. Cerrar proceso npm colgado desde administrador o reiniciar equipo.
+2. En `frontend/` ejecutar:
+   - `npm cache clean --force`
+   - `rm -r node_modules package-lock.json` (equivalente Windows)
+   - `npm install --no-audit --no-fund`
+   - `npm run build`
+3. Registrar resultado en nueva sesion del changelog.

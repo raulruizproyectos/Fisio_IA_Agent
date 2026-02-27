@@ -81,3 +81,22 @@ Tablas necesarias confirmadas:
 ## Nota de terminologia
 - Se reemplazo la expresion `expresion anterior (deprecated)` por `centraliza la introduccion de sintomas` en la descripcion principal del proyecto.
 
+
+## Cierre de verificacion global (2026-02-27)
+- GitHub sincronizado y operativo: `main` al dia.
+- n8n/EasyPanel/backend verificados y en estado funcional.
+- Webhook Telegram en produccion confirmado.
+- Nota tecnica: build frontend pendiente de validar en entorno con `astro` disponible.
+
+## Arranque recomendado para la proxima sesion
+1. Ejecutar E2E Telegram de extremo a extremo y revisar resultado clinico en ingestas.
+2. Ajustar contenido de respuesta del agente n8n en `/api/agent/message`.
+3. Activar branch protection en GitHub.
+4. Rotar credenciales sensibles.
+
+## Bloqueo local detectado (frontend)
+- `npm install` en `frontend/` queda colgado en este host y rompe instalacion de `astro` (`invalid`).
+- El resto de plataformas productivas (n8n, EasyPanel, backend, Telegram, GitHub) queda operativo.
+
+### Paso 1 al retomar
+- Liberar proceso npm colgado (o reiniciar equipo) y repetir instalacion limpia de frontend.
