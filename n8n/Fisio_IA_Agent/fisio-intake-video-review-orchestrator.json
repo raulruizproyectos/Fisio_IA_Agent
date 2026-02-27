@@ -1,0 +1,139 @@
+{
+  "name": "Fisio Intake + Video Review Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "fisio/intakes/pending",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "GET"
+      },
+      "id": "WebhookPendientes",
+      "name": "Webhook Pendientes",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [220, 140],
+      "webhookId": "fisio-intakes-pending"
+    },
+    {
+      "parameters": {
+        "workflowId": "__PENDING_INTAKES_WORKFLOW_ID__",
+        "mode": "passThrough",
+        "options": {}
+      },
+      "id": "EjecutarSubPendientes",
+      "name": "Ejecutar Sub Pendientes",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [500, 140]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "ResponderPendientes",
+      "name": "Responder Pendientes",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 140]
+    },
+    {
+      "parameters": {
+        "path": "fisio/video/crear",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "id": "WebhookCrearVideo",
+      "name": "Webhook Crear Video",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [220, 360],
+      "webhookId": "fisio-video-crear"
+    },
+    {
+      "parameters": {
+        "workflowId": "__VIDEO_CREATE_WORKFLOW_ID__",
+        "mode": "passThrough",
+        "options": {}
+      },
+      "id": "EjecutarSubCrearVideo",
+      "name": "Ejecutar Sub Crear Video",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [500, 360]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "ResponderCrearVideo",
+      "name": "Responder Crear Video",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 360]
+    },
+    {
+      "parameters": {
+        "path": "fisio/video/review",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "id": "WebhookRevision",
+      "name": "Webhook Revision",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [220, 580],
+      "webhookId": "fisio-video-review"
+    },
+    {
+      "parameters": {
+        "workflowId": "__VIDEO_REVIEW_WORKFLOW_ID__",
+        "mode": "passThrough",
+        "options": {}
+      },
+      "id": "EjecutarSubRevision",
+      "name": "Ejecutar Sub Revision",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [500, 580]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "ResponderRevision",
+      "name": "Responder Revision",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 580]
+    }
+  ],
+  "connections": {
+    "Webhook Pendientes": {
+      "main": [[{ "node": "Ejecutar Sub Pendientes", "type": "main", "index": 0 }]]
+    },
+    "Ejecutar Sub Pendientes": {
+      "main": [[{ "node": "Responder Pendientes", "type": "main", "index": 0 }]]
+    },
+    "Webhook Crear Video": {
+      "main": [[{ "node": "Ejecutar Sub Crear Video", "type": "main", "index": 0 }]]
+    },
+    "Ejecutar Sub Crear Video": {
+      "main": [[{ "node": "Responder Crear Video", "type": "main", "index": 0 }]]
+    },
+    "Webhook Revision": {
+      "main": [[{ "node": "Ejecutar Sub Revision", "type": "main", "index": 0 }]]
+    },
+    "Ejecutar Sub Revision": {
+      "main": [[{ "node": "Responder Revision", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

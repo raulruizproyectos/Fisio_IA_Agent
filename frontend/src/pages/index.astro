@@ -1,0 +1,296 @@
+﻿---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Fisio IA Agent - Plataforma Clínica">
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Fisio IA Agent</p>
+        <h1>Teleconsulta operativa + revisión clínica de video en un solo flujo</h1>
+        <p>
+          El fisioterapeuta recibe síntomas por Telegram o web, revisa historial ordenado y aprueba
+          versiones de video antes de enviar al paciente.
+        </p>
+        <div class="chips">
+          <span>Intake en tiempo real</span>
+          <span>Historial trazable</span>
+          <span>Ciclo de revisión</span>
+        </div>
+      </div>
+      <aside class="agent-card">
+        <header>
+          <h2>Agente Clínico</h2>
+          <small>Modo profesional</small>
+        </header>
+        <div id="chatLog" class="chat-log">
+          <article class="msg agent">
+            Listo para intake clínico. Escribe síntomas de paciente o una pauta para generar video.
+          </article>
+        </div>
+        <form id="agentForm" class="chat-form">
+          <textarea id="agentInput" rows="3" placeholder="Ej: Paciente con dolor lumbar, fase subaguda, dolor 6/10..."></textarea>
+          <button type="submit">Consultar Agente</button>
+        </form>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>1) Entrada de síntomas</h3>
+        <p>Telegram o web detecta paciente nuevo, lo crea y guarda intake para revisión del fisio.</p>
+      </article>
+      <article class="panel">
+        <h3>2) Historial clínico</h3>
+        <p>Vídeos vistos en orden + anotaciones de seguimiento disponibles antes de prescribir.</p>
+      </article>
+      <article class="panel">
+        <h3>3) Video bajo revisión</h3>
+        <p>El fisio aprueba o rechaza. Si rechaza, se genera nueva versión hasta validación final.</p>
+      </article>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  const form = document.getElementById('agentForm');
+  const input = document.getElementById('agentInput');
+  const log = document.getElementById('chatLog');
+  const backendBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:3001'
+    : '';
+
+  const addMessage = (text, type) => {
+    const item = document.createElement('article');
+    item.className = `msg ${type}`;
+    item.textContent = text;
+    log.appendChild(item);
+    log.scrollTop = log.scrollHeight;
+  };
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, 'user');
+    input.value = '';
+
+    try {
+      const response = await fetch(`${backendBase}/api/agent/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'professional',
+          channel: 'web',
+          text
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        addMessage(`Error: ${payload.error || 'No se pudo consultar el agente'}`, 'agent');
+        return;
+      }
+      const answer = payload?.data?.reply_text || payload?.data?.message || JSON.stringify(payload.data);
+      addMessage(answer, 'agent');
+    } catch (error) {
+      addMessage('Error de conexión con backend/agente.', 'agent');
+    }
+  });
+</script>
+
+<style>
+  :root {
+    --bg: #f7f5ef;
+    --ink: #1f2a2a;
+    --muted: #5f6e6a;
+    --accent: #0f766e;
+    --accent-soft: #d9f0ed;
+    --card: #fffdf7;
+    --line: #d7d2c2;
+  }
+
+  .page {
+    min-height: 100vh;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 12% 15%, #dff4ef 0, transparent 35%),
+      radial-gradient(circle at 88% 12%, #ffe6d7 0, transparent 30%),
+      var(--bg);
+    padding: 2rem;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .hero-copy {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 18px 45px rgba(16, 39, 36, 0.08);
+  }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    line-height: 1.1;
+    font-size: clamp(1.9rem, 4vw, 3.1rem);
+    margin-bottom: 0.9rem;
+  }
+
+  .hero-copy p {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.1rem;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .chips span {
+    background: var(--accent-soft);
+    color: #0a4f49;
+    border-radius: 999px;
+    padding: 0.38rem 0.78rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .agent-card {
+    background: #102827;
+    color: #e4f3f1;
+    border-radius: 20px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 510px;
+    box-shadow: 0 18px 45px rgba(10, 26, 24, 0.35);
+  }
+
+  .agent-card header {
+    padding: 0.3rem 0.2rem 0.8rem;
+    border-bottom: 1px solid rgba(228, 243, 241, 0.15);
+    margin-bottom: 0.8rem;
+  }
+
+  .agent-card h2 {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .agent-card small {
+    color: #a9c8c4;
+    font-size: 0.78rem;
+  }
+
+  .chat-log {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.2rem 0.1rem;
+  }
+
+  .msg {
+    max-width: 94%;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    border-radius: 14px;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .msg.user {
+    align-self: flex-end;
+    background: #e66a4e;
+    color: #fff8f4;
+  }
+
+  .msg.agent {
+    align-self: flex-start;
+    background: #1c3a39;
+    color: #d7eeeb;
+  }
+
+  .chat-form {
+    margin-top: 0.9rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 70px;
+    border-radius: 10px;
+    border: 1px solid rgba(228, 243, 241, 0.24);
+    background: #0f1f1f;
+    color: #d7eeeb;
+    padding: 0.62rem 0.72rem;
+    font: inherit;
+  }
+
+  button {
+    border: none;
+    border-radius: 10px;
+    background: #f0d3b3;
+    color: #2b2820;
+    font-weight: 700;
+    padding: 0.62rem 0.9rem;
+    cursor: pointer;
+  }
+
+  .grid {
+    max-width: 1200px;
+    margin: 1.3rem auto 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.9rem;
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1rem;
+  }
+
+  .panel h3 {
+    margin-bottom: 0.35rem;
+    color: #153b37;
+    font-size: 1rem;
+  }
+
+  .panel p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 1000px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

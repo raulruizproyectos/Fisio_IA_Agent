@@ -1,0 +1,460 @@
+﻿import { Router } from 'express';
+import crypto from 'node:crypto';
+import { supabase } from '../index.js';
+
+const router = Router();
+
+function pickValue(obj, ...keys) {
+  for (const key of keys) {
+    if (obj?.[key] !== undefined && obj?.[key] !== null && obj?.[key] !== '') {
+      return obj[key];
+    }
+  }
+  return null;
+}
+
+function normalizeCommand(text = '') {
+  return text.trim();
+}
+
+function formatDuration(durationSecs) {
+  if (!durationSecs) return '';
+  return ` - ${durationSecs}s`;
+}
+
+function parsePainCommand(text) {
+  const match = text.match(/^\/dolor\s+(\d{1,2})(?:\s+(.+))?$/i);
+  if (!match) return null;
+  return { painLevel: Number(match[1]), notes: match[2]?.trim() || null };
+}
+
+function parseIncomingPayload(body = {}) {
+  if (body.chat_id && (body.texto_mensaje || body.message_text)) {
+    return {
+      chat_id: body.chat_id,
+      username: body.username || null,
+      texto_mensaje: body.texto_mensaje || body.message_text,
+      first_name: body.first_name || null,
+      last_name: body.last_name || null,
+    };
+  }
+
+  const message = body.message || body.edited_message || body.channel_post;
+  const chatId = message?.chat?.id;
+  const username = message?.from?.username || message?.chat?.username || null;
+  const text = message?.text || message?.caption || null;
+
+  if (!chatId || !text) return null;
+
+  return {
+    chat_id: chatId,
+    username,
+    texto_mensaje: text,
+    first_name: message?.from?.first_name || null,
+    last_name: message?.from?.last_name || null,
+  };
+}
+
+function isNativeTelegramPayload(body = {}) {
+  return Boolean(body.message || body.edited_message || body.channel_post);
+}
+
+const RED_FLAG_RULES = [
+  { key: 'perdida_fuerza', pattern: /(p[eé]rdida|pierdo).*(fuerza)/i },
+  { key: 'esfinteres', pattern: /(esf[ií]nter|orina|incontinencia)/i },
+  { key: 'dolor_toracico', pattern: /(dolor).*(pecho|tor[aá]c)/i },
+  { key: 'dificultad_respiratoria', pattern: /(falta de aire|dificultad.*respir|ahogo)/i },
+  { key: 'deficit_neurologico', pattern: /(hormigueo.*progres|adormecimiento.*progres|par[aá]lisis)/i },
+  { key: 'fiebre_alta', pattern: /(fiebre).*(alta|39|40)/i },
+  { key: 'dolor_nocturno_severo', pattern: /(dolor).*(noche|nocturno).*(fuerte|severo|intenso)/i },
+  { key: 'trauma_reciente', pattern: /(ca[ií]da|golpe|accidente|trauma).*(reciente|hoy|ayer)/i },
+];
+
+function detectRedFlags(messageText = '') {
+  const redFlags = RED_FLAG_RULES
+    .filter((rule) => rule.pattern.test(messageText))
+    .map((rule) => rule.key);
+  return {
+    tiene_alertas_rojas: redFlags.length > 0,
+    alertas_rojas: redFlags,
+  };
+}
+
+async function sendTelegramMessage(chatId, text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) throw new Error('TELEGRAM_BOT_TOKEN no configurado');
+
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  });
+
+  const payload = await response.json();
+  if (!response.ok || !payload?.ok) {
+    throw new Error(`Telegram sendMessage fallo: ${JSON.stringify(payload)}`);
+  }
+}
+
+function isMissingTableError(error) {
+  return String(error?.message || '').includes("Could not find the table 'public.vinculos_telegram_pacientes'");
+}
+
+async function getDefaultProfessionalId() {
+  const configuredId = process.env.DEFAULT_PROFESSIONAL_ID?.trim();
+  if (configuredId) return configuredId;
+
+  const { data, error } = await supabase
+    .from('profesionales')
+    .select('id')
+    .order('creado_en', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data?.id) {
+    throw new Error('No hay profesionales en Supabase. Crea uno o define DEFAULT_PROFESSIONAL_ID en .env');
+  }
+
+  return data.id;
+}
+
+function getPatientDisplayName(payload) {
+  const fullName = [payload.first_name, payload.last_name].filter(Boolean).join(' ').trim();
+  if (fullName) return fullName;
+  if (payload.username) return `@${payload.username}`;
+  return `Paciente Telegram ${payload.chat_id}`;
+}
+
+async function autoLinkFirstContact(payload) {
+  const professionalId = await getDefaultProfessionalId();
+  const fullName = getPatientDisplayName(payload);
+
+  const { data: patient, error: patientError } = await supabase
+    .from('pacientes')
+    .insert({
+      profesional_id: professionalId,
+      nombre_completo: fullName,
+      phone: null,
+      email: null,
+      notas_medicas: {
+        fuente: 'telegram_auto_onboarding',
+        username: payload.username || null,
+      },
+    })
+    .select('id')
+    .single();
+
+  if (patientError) throw patientError;
+
+  const linkCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+  const { error: linkError } = await supabase
+    .from('vinculos_telegram_pacientes')
+    .insert({
+      paciente_id: patient.id,
+      profesional_id: professionalId,
+      telegram_chat_id: String(payload.chat_id),
+      telegram_username: payload.username || null,
+      codigo_vinculacion: linkCode,
+      vinculado_en: new Date().toISOString(),
+    });
+
+  if (linkError) throw linkError;
+
+  return { patientId: patient.id, fullName };
+}
+
+async function getPatientHistorySnapshot(patientId) {
+  const [videosResp, notesResp] = await Promise.all([
+    supabase
+      .from('eventos_visualizacion_video')
+      .select('id, tipo_evento, segundos_vistos, secuencia, evento_en, trabajo_video_id')
+      .eq('paciente_id', patientId)
+      .order('evento_en', { ascending: true })
+      .limit(20),
+    supabase
+      .from('notas_seguimiento_paciente')
+      .select('id, texto_nota, fuente, ingesta_vinculada_id, creado_en')
+      .eq('paciente_id', patientId)
+      .order('creado_en', { ascending: true })
+      .limit(20),
+  ]);
+
+  if (videosResp.error && !String(videosResp.error.message || '').includes('eventos_visualizacion_video')) {
+    throw videosResp.error;
+  }
+  if (notesResp.error && !String(notesResp.error.message || '').includes('notas_seguimiento_paciente')) {
+    throw notesResp.error;
+  }
+
+  return {
+    videos_vistos: videosResp.data || [],
+    notas_seguimiento: notesResp.data || [],
+  };
+}
+
+async function createIntakeMessage({
+  patientId,
+  professionalId,
+  messageText,
+  historySnapshot,
+  redFlagResult,
+}) {
+  const { error } = await supabase.from('mensajes_ingesta_paciente').insert({
+    paciente_id: patientId,
+    profesional_id: professionalId,
+    fuente: 'telegram',
+    texto_mensaje: messageText,
+    tiene_alertas_rojas: redFlagResult.tiene_alertas_rojas,
+    alertas_rojas: redFlagResult.alertas_rojas,
+    resumen_historial: historySnapshot,
+    estado: 'pendiente_revision',
+  });
+
+  if (error && !String(error.message || '').includes('mensajes_ingesta_paciente')) {
+    throw error;
+  }
+}
+
+function getHelpMessage() {
+  return [
+    'Comandos disponibles:',
+    '/plan - Ver plan activo',
+    '/dolor <0-10> [nota] - Registrar dolor de hoy',
+    '/ayuda - Ver esta ayuda',
+  ].join('\n');
+}
+
+router.post('/link-code/:patientId', async (req, res, next) => {
+  try {
+    const { patientId } = req.params;
+
+    const { data: patient, error: patientError } = await supabase
+      .from('pacientes')
+      .select('id, profesional_id, nombre_completo')
+      .eq('id', patientId)
+      .single();
+
+    if (patientError) throw patientError;
+    if (!patient) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    const linkCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+
+    const { data, error } = await supabase
+      .from('vinculos_telegram_pacientes')
+      .upsert(
+        {
+          paciente_id: patient.id,
+          profesional_id: patient.profesional_id,
+          codigo_vinculacion: linkCode,
+          telegram_chat_id: null,
+          telegram_username: null,
+          vinculado_en: null,
+        },
+        { onConflict: 'paciente_id' }
+      )
+      .select('paciente_id, codigo_vinculacion')
+      .single();
+
+    if (error) throw error;
+
+    res.json({
+      data,
+      instructions: `Comparte este mensaje con el paciente: /start ${linkCode}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/incoming', async (req, res, next) => {
+  try {
+    const fromTelegramWebhook = isNativeTelegramPayload(req.body);
+    const parsedPayload = parseIncomingPayload(req.body);
+    if (!parsedPayload) {
+      return res.status(400).json({
+        error: 'Payload invalido. Envia chat_id + texto_mensaje (o message_text) o el webhook nativo de Telegram',
+      });
+    }
+
+    const { chat_id, username, texto_mensaje } = parsedPayload;
+    const text = normalizeCommand(texto_mensaje);
+    const isCommand = text.startsWith('/');
+
+    const reply = async (replyText) => {
+      if (fromTelegramWebhook) {
+        await sendTelegramMessage(chat_id, replyText);
+        return res.status(200).json({ ok: true });
+      }
+      return res.json({ reply_text: replyText });
+    };
+
+    if (text.toLowerCase().startsWith('/start')) {
+      const [, rawCode] = text.split(/\s+/);
+      const code = rawCode?.trim()?.toUpperCase();
+
+      if (!code) {
+        return await reply('Falta el codigo de vinculacion. Usa: /start CODIGO');
+      }
+
+      const { data: link, error: linkError } = await supabase
+        .from('vinculos_telegram_pacientes')
+        .select('id, paciente_id, pacientes(nombre_completo)')
+        .eq('codigo_vinculacion', code)
+        .single();
+
+      if (linkError || !link) {
+        return await reply('Codigo invalido o expirado. Pide uno nuevo a tu fisio.');
+      }
+
+      const { error: updateError } = await supabase
+        .from('vinculos_telegram_pacientes')
+        .update({
+          telegram_chat_id: String(chat_id),
+          telegram_username: username || null,
+          vinculado_en: new Date().toISOString(),
+        })
+        .eq('id', link.id);
+
+      if (updateError) throw updateError;
+
+      const patientName = link.pacientes?.nombre_completo || 'paciente';
+      return await reply(`Vinculacion completada para ${patientName}.\n\n${getHelpMessage()}`);
+    }
+
+    const { data: link, error: linkError } = await supabase
+      .from('vinculos_telegram_pacientes')
+      .select('paciente_id')
+      .eq('telegram_chat_id', String(chat_id))
+      .maybeSingle();
+
+    if (isMissingTableError(linkError)) {
+      return await reply(
+        'Falta configurar la base de datos: tabla vinculos_telegram_pacientes no existe. Ejecuta la migracion SQL y vuelve a intentarlo.'
+      );
+    }
+
+    if (linkError) throw linkError;
+
+    if (!link) {
+      const onboarding = await autoLinkFirstContact(parsedPayload);
+      const professionalId = await getDefaultProfessionalId();
+      const historySnapshot = await getPatientHistorySnapshot(onboarding.patientId);
+      const redFlagResult = detectRedFlags(text);
+
+      await createIntakeMessage({
+        patientId: onboarding.patientId,
+        professionalId,
+        messageText: text,
+        historySnapshot,
+        redFlagResult,
+      });
+
+      if (redFlagResult.tiene_alertas_rojas) {
+        return await reply('He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+      }
+
+      return await reply(
+        `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha y enviado tus síntomas al fisioterapeuta para revisión.\n\n${getHelpMessage()}`
+      );
+    }
+
+    if (!isCommand) {
+      const professionalId = await getDefaultProfessionalId();
+      const historySnapshot = await getPatientHistorySnapshot(link.paciente_id);
+      const redFlagResult = detectRedFlags(text);
+
+      await createIntakeMessage({
+        patientId: link.paciente_id,
+        professionalId,
+        messageText: text,
+        historySnapshot,
+        redFlagResult,
+      });
+
+      if (redFlagResult.tiene_alertas_rojas) {
+        return await reply('He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+      }
+
+      return await reply('Mensaje recibido. Tu fisioterapeuta revisará tus síntomas y te pautará el siguiente ejercicio.');
+    }
+
+    if (text.toLowerCase() === '/ayuda') {
+      return await reply(getHelpMessage());
+    }
+
+    if (text.toLowerCase() === '/plan') {
+      const { data: planActivo, error: planActivoError } = await supabase
+        .from('planes')
+        .select('id, titulo, fecha_inicio, fecha_fin')
+        .eq('paciente_id', link.paciente_id)
+        .eq('estado', 'activo')
+        .order('fecha_inicio', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (planActivoError) throw planActivoError;
+      if (!planActivo) return await reply('No tienes un plan activo ahora mismo.');
+
+      const { data: items, error: itemsError } = await supabase
+        .from('items_plan')
+        .select('indice_orden, series, repeticiones, duracion_segundos, ejercicios(nombre)')
+        .eq('plan_id', planActivo.id)
+        .order('indice_orden', { ascending: true });
+
+      if (itemsError) throw itemsError;
+
+      const lines = (items || []).map((item, idx) => {
+        const exerciseName = item.ejercicios?.nombre || 'Ejercicio';
+        return `${idx + 1}. ${exerciseName} - ${item.series}x${item.repeticiones}${formatDuration(item.duracion_segundos)}`;
+      });
+
+      const planSummary = [
+        `Plan activo: ${planActivo.titulo}`,
+        `Periodo: ${planActivo.fecha_inicio || '-'} a ${planActivo.fecha_fin || '-'}`,
+        '',
+        ...(lines.length ? lines : ['No hay ejercicios cargados en este plan.']),
+      ].join('\n');
+
+      return await reply(planSummary);
+    }
+
+    const painCommand = parsePainCommand(text);
+    if (painCommand) {
+      if (painCommand.painLevel < 0 || painCommand.painLevel > 10) {
+        return await reply('El dolor debe estar entre 0 y 10.');
+      }
+
+      const { data: planActivo, error: planActivoError } = await supabase
+        .from('planes')
+        .select('id')
+        .eq('paciente_id', link.paciente_id)
+        .eq('estado', 'activo')
+        .order('fecha_inicio', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (planActivoError) throw planActivoError;
+      if (!planActivo) return await reply('No tienes plan activo para registrar dolor.');
+
+      const { error: sesionError } = await supabase.from('sesiones').insert({
+        paciente_id: link.paciente_id,
+        plan_id: planActivo.id,
+        fecha_sesion: new Date().toISOString().slice(0, 10),
+        nivel_dolor: painCommand.painLevel,
+        notas: painCommand.notes,
+        estado_completado: 'parcial',
+      });
+
+      if (sesionError) throw sesionError;
+
+      return await reply(`Dolor registrado: ${painCommand.painLevel}/10. Gracias, se lo notificaremos a tu fisioterapeuta.`);
+    }
+
+    return await reply(`No reconozco ese comando.\n\n${getHelpMessage()}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;

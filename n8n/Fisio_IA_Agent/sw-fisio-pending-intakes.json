@@ -1,0 +1,114 @@
+﻿{
+  "name": "SW Fisio - Pending Intakes",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ExecuteWorkflowTrigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "professional-id-required",
+              "leftValue": "={{ $json.query.profesional_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "HasProfessionalId",
+      "name": "Tiene Profesional Id",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        460,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://fisio-backend.b5xbaf.easypanel.host' + '/api/profesional/intakes/pending?profesional_id=' + $json.query.profesional_id }}",
+        "options": {}
+      },
+      "id": "FetchPendingIntakes",
+      "name": "Obtener Ingestas Pendientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error('profesional_id es obligatorio para consultar intakes pendientes');"
+      },
+      "id": "ThrowMissingProfessionalId",
+      "name": "Error Falta Profesional Id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        340
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Tiene Profesional Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene Profesional Id": {
+      "main": [
+        [
+          {
+            "node": "Obtener Ingestas Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Falta Profesional Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+
+
+
