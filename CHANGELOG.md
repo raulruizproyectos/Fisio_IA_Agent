@@ -645,3 +645,86 @@ Para cada sesion nueva anadir bloque con esta plantilla:
    - `npm run build`
 3. Registrar resultado en nueva sesion del changelog.
 
+---
+
+## 2026-03-02 - Sesion 17: Retoma y hardening de respuesta del agente
+
+### Objetivo
+- Retomar proyecto con validacion runtime y eliminar respuesta vacia en `/api/agent/message`.
+
+### Verificaciones ejecutadas
+- Backend productivo:
+  - `GET /api/health` -> OK (200).
+  - `POST /api/agent/message` -> OK, pero `data` vacio (`{}`) con `source: n8n_agent`.
+- n8n endpoint:
+  - `POST /webhook/agent/core` accesible.
+  - Respuesta observada desde cliente: cuerpo vacio o serializacion vacia, consistente con el vacio en backend.
+
+### Cambios implementados
+- Backend (`backend/src/routes/agent.js`):
+  - Parser de respuesta n8n robusto (tolera body vacio y JSON invalido).
+  - Deteccion de respuesta funcional vacia (`{}`, `''`, `null`, `[]`, `raw` vacio).
+  - Fallback de negocio local cuando n8n responde vacio:
+    - `reply_text`
+    - `intent_hint`
+    - `received`
+  - Nueva bandera de salida: `fallback_used` para trazabilidad.
+- Workflow repo (`n8n/Fisio_IA_Agent/fisio-agent-core.json`):
+  - Normalizado encoding del nodo Code para evitar texto corrupto.
+  - Logica robusta para entrada dual (`$json.body` o `$json` raiz).
+  - Mapeo de `paciente_id/patient_id` y `profesional_id/professional_id`.
+
+### Decisiones tecnicas
+- No bloquear el canal web por drift temporal del workflow activo en n8n.
+- Mantener `source: n8n_agent` y agregar fallback controlado en API para continuidad operativa.
+
+### Pendientes inmediatos
+1. Alinear workflow activo `Fisio_IA_Agent / Nucleo Agente` con `n8n/Fisio_IA_Agent/fisio-agent-core.json` para que responda JSON util sin fallback.
+2. Ejecutar E2E Telegram real (`/start`, `/plan`, `/dolor`) y validar escritura en `mensajes_ingesta_paciente`.
+3. Rotar credenciales tecnicas (n8n API key, token EasyPanel y secretos de entorno).
+
+### Como retomar rapido
+1. Desplegar backend con este parche.
+2. Probar `POST /api/agent/message` y confirmar `data.reply_text` no vacio.
+3. Revisar `fallback_used`:
+   - `true`: n8n sigue devolviendo vacio.
+   - `false`: n8n ya responde payload funcional.
+
+---
+
+## 2026-03-02 - Sesion 18: Resiliencia ante caida del webhook n8n
+
+### Objetivo
+- Evitar error crudo (`fetch failed`) en `/api/agent/message` cuando n8n no responde.
+
+### Verificaciones ejecutadas
+- Produccion:
+  - `GET /api/health` -> OK.
+  - `POST /api/agent/message` -> detectado `{"error":"fetch failed"}`.
+  - `POST https://n8n-n8n.b5xbaf.easypanel.host/webhook/agent/core` -> body vacio (`""`) en respuesta.
+
+### Cambios implementados
+- Backend (`backend/src/routes/agent.js`):
+  - Timeout de 10s para llamada a `N8N_AGENT_WEBHOOK_URL` con `AbortController`.
+  - Fallback funcional si n8n es inalcanzable o timeout (sin devolver 500 al cliente).
+  - Fallback funcional tambien cuando n8n responde HTTP no exitoso (`4xx/5xx`).
+  - Nuevas banderas de observabilidad:
+    - `fallback_used`
+    - `n8n_unreachable`
+    - `fallback_reason` (`timeout`, `fetch_failed` o `n8n_http_error`)
+    - `n8n_status` (cuando aplica error HTTP de n8n)
+  - Se mantiene parseo robusto de respuestas vacias/no JSON.
+
+### Skills usadas (constancia breve)
+- `n8n-node-configuration`: criterio de respuesta por nodo webhook/respond.
+- `n8n-validation-expert`: enfoque iterativo de validacion y cierre de errores.
+- `n8n-workflow-patterns`: patron de resiliencia para webhook processing.
+
+### Pendiente inmediato
+1. Desplegar backend con este parche en EasyPanel (`fisio-backend`).
+2. Reprobar `POST /api/agent/message` y verificar:
+   - sin error `fetch failed`
+   - `data.reply_text` no vacio
+   - `n8n_unreachable` y `fallback_reason` coherentes.
+3. Alinear workflow activo `Fisio_IA_Agent / Nucleo Agente` para dejar `fallback_used = false`.
+

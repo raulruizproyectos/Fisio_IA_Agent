@@ -19,7 +19,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $json.body || {};\nconst text = String(body.text || '').trim();\nconst role = body.role || 'professional';\n\nlet reply = 'Mensaje recibido. Queda pendiente de revisiÃƒÂ³n clÃƒÂ­nica.';\nif (/dolor|sÃƒÂ­ntoma|sintoma|molestia|lesiÃƒÂ³n|lesion/i.test(text)) {\n  reply = 'SÃƒÂ­ntomas registrados. He dejado el caso en cola para revisiÃƒÂ³n del fisioterapeuta con historial asociado.';\n} else if (/video|ejercicio|plan/i.test(text)) {\n  reply = 'Solicitud de vÃƒÂ­deo recibida. Indica paciente, fase y parÃƒÂ¡metros para lanzar render y revisiÃƒÂ³n.';\n} else if (text.length > 0) {\n  reply = 'Contexto recibido. Si quieres, te preparo directamente el payload de revisiÃƒÂ³n y generaciÃƒÂ³n de vÃƒÂ­deo.';\n}\n\nreturn [{\n  json: {\n    ok: true,\n    role,\n    reply_text: reply,\n    intent_hint: /video|ejercicio|plan/i.test(text) ? 'create_video_draft' : 'register_intake',\n    received: {\n      channel: body.channel || 'web',\n      paciente_id: body.paciente_id || null,\n      profesional_id: body.profesional_id || null,\n      text\n    }\n  }\n}];"
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.text || '').trim();\nconst role = input.role || 'professional';\n\nlet reply = 'Mensaje recibido. Queda pendiente de revision clinica.';\nlet intentHint = 'register_intake';\n\nif (/dolor|s[ií]ntoma|sintoma|molestia|lesi[oó]n|lesion/i.test(text)) {\n  reply = 'Sintomas registrados. Caso en cola para revision del fisioterapeuta.';\n} else if (/video|ejercicio|plan/i.test(text)) {\n  reply = 'Solicitud de video recibida. Indica paciente, fase y parametros para generar borrador.';\n  intentHint = 'create_video_draft';\n} else if (text.length > 0) {\n  reply = 'Contexto recibido. Puedo preparar el payload para revision y generacion de video.';\n}\n\nreturn [{\n  json: {\n    ok: true,\n    role,\n    reply_text: reply,\n    intent_hint: intentHint,\n    received: {\n      channel: input.channel || 'web',\n      paciente_id: input.paciente_id || input.patient_id || null,\n      profesional_id: input.profesional_id || input.professional_id || null,\n      text\n    }\n  }\n}];"
       },
       "id": "BuildAgentReply",
       "name": "Build Agent Reply",
@@ -73,4 +73,3 @@
     "executionOrder": "v1"
   }
 }
-
