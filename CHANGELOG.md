@@ -728,3 +728,41 @@ Para cada sesion nueva anadir bloque con esta plantilla:
    - `n8n_unreachable` y `fallback_reason` coherentes.
 3. Alinear workflow activo `Fisio_IA_Agent / Nucleo Agente` para dejar `fallback_used = false`.
 
+---
+
+## 2026-03-02 - Sesion 19: Correccion de despliegue real y recuperacion del Nucleo Agente
+
+### Problema raiz detectado
+- `fisio-backend` en EasyPanel no desplegaba desde Git.
+- El servicio estaba configurado con `source.type=dockerfile` embebido con codigo legacy hardcodeado, por eso ignoraba commits de `main`.
+
+### Cambios ejecutados en plataformas
+- EasyPanel (API):
+  - `services.app.inspectService` para diagnostico.
+  - `services.app.updateSourceGit`:
+    - repo: `https://github.com/raulruizproyectos/Fisio_IA_Agent.git`
+    - ref: `main`
+    - path: `/backend`
+  - `services.app.updateBuild`:
+    - `type: nixpacks`
+    - `startCommand: npm start`
+  - `services.app.deployService` con `forceRebuild=true`.
+
+### Ajuste y recuperacion en n8n
+- Se verifico que el workflow activo del Nucleo devolvia webhook en GET (POST devolvia 404).
+- Se recreo y activo `Fisio_IA_Agent / Nucleo Agente` con webhook `httpMethod=POST` y respuesta JSON limpia.
+- Workflow activo final de Nucleo Agente:
+  - ID: `ZOarR2hpUUOgm3KC`
+
+### Verificacion final (produccion)
+- `POST https://n8n-n8n.b5xbaf.easypanel.host/webhook/agent/core` -> OK con JSON funcional.
+- `POST https://fisio-backend.b5xbaf.easypanel.host/api/agent/message` ->
+  - `source: n8n_agent`
+  - `fallback_used: false`
+  - `n8n_unreachable: false`
+  - `data.reply_text` no vacio.
+
+### Estado de cierre
+- Backend productivo ya usa el codigo actualizado de `main`.
+- Integracion backend -> n8n agent recuperada y estable sin fallback forzado.
+

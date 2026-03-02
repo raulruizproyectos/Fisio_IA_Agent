@@ -23,9 +23,15 @@ Estado actualizado para retomar sin perdida.
   - Se detecto tambien error `fetch failed` cuando el webhook n8n no responde.
   - Se amplio fallback con control de disponibilidad n8n: `n8n_unreachable` + `fallback_reason`.
   - Cobertura adicional: si n8n responde `4xx/5xx`, backend tambien devuelve fallback con `fallback_reason = n8n_http_error` y `n8n_status`.
+  - Correccion de plataforma aplicada:
+    - `fisio-backend` migrado a fuente Git (`main`, `/backend`) en EasyPanel.
+    - Build actualizado a `nixpacks`.
+    - Redeploy forzado ejecutado por API.
+  - Integracion agente validada en produccion:
+    - `/api/agent/message` devuelve respuesta funcional con `fallback_used = false`.
 
 ## Workflows Fisio (estado)
-- `Fisio_IA_Agent / Nucleo Agente` -> ACTIVO
+- `Fisio_IA_Agent / Nucleo Agente` -> ACTIVO (`ZOarR2hpUUOgm3KC`)
 - `Fisio_IA_Agent / Orquestador Intake-Video` -> ACTIVO
 - `Fisio_IA_Agent / Subflujo Pendientes` -> ACTIVO
 - `Fisio_IA_Agent / Subflujo Crear y Render Video` -> ACTIVO
@@ -48,32 +54,31 @@ Tablas necesarias confirmadas:
 - `eventos_visualizacion_video`
 
 ## Pendiente inmediato (actual)
-1. Alinear workflow activo `Fisio_IA_Agent / Nucleo Agente` para devolver JSON util en `/webhook/agent/core` (evitar fallback del backend).
-2. Desplegar backend con parche de resiliencia (timeout + fallback por fetch fallido) en `src/routes/agent.js`.
-3. Ejecutar E2E Telegram completo con comandos reales:
+1. Ejecutar E2E Telegram completo con comandos reales:
 - `/start CODIGO`
 - `/plan`
 - `/dolor <0-10> [nota]`
-4. Rotar credenciales usadas/compartidas en sesiones tecnicas:
+2. Rotar credenciales usadas/compartidas en sesiones tecnicas:
 - API key n8n
 - token EasyPanel
 - secretos sensibles de entorno
 
 ## Riesgos abiertos
-- Si backend no se despliega con los parches de sesion 2026-03-02 (17 y 18), `/api/agent/message` puede devolver `data` vacio o error `fetch failed`.
+- Riesgo operativo reducido: backend y Nucleo Agente ya estan alineados en produccion.
 - Si no se rotan credenciales, hay riesgo de seguridad.
 
 ## Como retomar rapido
 1. Verificar backend `fisio-backend` en EasyPanel y health (`/api/health`).
-2. Desplegar backend con parches de fallback/resiliencia en `src/routes/agent.js`.
-3. Probar agente web y confirmar `data.reply_text` no vacio.
-4. Revisar flags de diagnostico:
+2. Probar agente web y confirmar `data.reply_text` no vacio.
+3. Revisar flags de diagnostico:
 - `fallback_used`
 - `n8n_unreachable`
 - `fallback_reason`
-5. Ajustar workflow activo de Nucleo Agente hasta que `fallback_used = false` y `n8n_unreachable = false`.
-6. Ejecutar prueba real Telegram y revisar escritura en `mensajes_ingesta_paciente`.
-7. Mantener prueba de regresion de video (`crear` + `review`).
+4. Confirmar estado esperado:
+- `fallback_used = false`
+- `n8n_unreachable = false`
+5. Ejecutar prueba real Telegram y revisar escritura en `mensajes_ingesta_paciente`.
+6. Mantener prueba de regresion de video (`crear` + `review`).
 
 ## Repositorio GitHub (2026-02-27)
 - URL: `https://github.com/raulruizproyectos/Fisio_IA_Agent`
@@ -87,7 +92,7 @@ Tablas necesarias confirmadas:
 - `/plan`
 - `/dolor <0-10> [nota]`
 2. Confirmar que cada mensaje crea/actualiza registros en `mensajes_ingesta_paciente`.
-3. Corregir workflow activo de `Nucleo Agente` hasta evitar respuestas vacias y dejar `fallback_used = false`.
+3. Mantener observabilidad de agente (`fallback_*`) y ajustar prompts de negocio del Nucleo si se requiere mas riqueza funcional.
 4. Activar branch protection en GitHub para `main`.
 5. Rotar secretos expuestos en sesiones tecnicas.
 
