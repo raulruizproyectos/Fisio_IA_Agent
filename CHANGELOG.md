@@ -945,3 +945,53 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 1. Ejecutar `.\scripts\frontend-local-build.ps1` y previsualizar con `npx serve C:\temp\Fisio_IA_Agent_frontend_local\dist -l 4173`.
 2. Acometer los 4 puntos "Pendientes inmediatos" descritos arriba para cerrar la integración continua y el E2E.
 
+---
+
+## 2026-03-03 - Sesion 25: Hardening Docker frontend + verificacion de plataformas
+
+### Objetivo
+- Preparar el frontend para despliegue en EasyPanel y verificar el estado de todas las plataformas.
+
+### Cambios implementados
+- Frontend (`frontend/Dockerfile`):
+  - Añadido `HEALTHCHECK` con `wget` contra `/health` cada 30s.
+  - EasyPanel y Docker detectan automaticamente si Nginx esta vivo.
+- Frontend (`frontend/nginx.conf`):
+  - Nuevo bloque `location /health` que devuelve 200 con `access_log off`.
+  - Se mantienen headers de seguridad, gzip, cache de assets y SPA fallback.
+
+### Verificaciones de plataforma ejecutadas
+- Backend productivo (`/api/health`): OK (200).
+- Supabase: 15 tablas confirmadas con RLS activo:
+  - `profesionales` (1), `pacientes` (11), `dolencias` (8), `ejercicios` (16),
+  - `vinculos_telegram_pacientes` (5), `mensajes_ingesta_paciente` (10),
+  - `trabajos_video_ejercicio` (2), entre otras.
+- Frontend build local: OK (0 errores, 0 warnings) via `frontend-local-build.ps1`.
+- Git: solo 2 archivos modificados (`Dockerfile`, `nginx.conf`), estado limpio.
+
+### Decisiones tecnicas
+- HEALTHCHECK basado en `wget` (disponible en `nginx:alpine`) en lugar de `curl`.
+- `/health` sin logs para no generar ruido en produccion.
+- No se requieren variables de entorno en el contenedor frontend (backend URL hardcodeada en JS con auto-deteccion de localhost).
+
+### Guia de despliegue manual (EasyPanel)
+1. EasyPanel → Proyecto `n8n` → **+ Create Service** → **App**.
+2. Nombre: `fisio-frontend`.
+3. Source: GitHub → `https://github.com/raulruizproyectos/Fisio_IA_Agent.git` → `main` → Root: `/frontend`.
+4. Build: Dockerfile.
+5. Domains: asignar dominio generado (ej. `fisio-frontend.b5xbaf.easypanel.host`).
+6. Puerto: `80`.
+7. Deploy.
+
+### Pendientes inmediatos
+1. **[Manual EasyPanel]**: Ejecutar los 7 pasos de la guia para crear `fisio-frontend`.
+2. **[Manual GitHub]**: Configurar branch protection en `main`.
+3. **[Manual E2E]**: Telegram real (`/start`, `/plan`, `/dolor`) y verificar `mensajes_ingesta_paciente`.
+4. **[Seguridad]**: Rotar credenciales sensibles.
+
+### Como retomar rapido
+1. Hacer push a GitHub con los cambios de Dockerfile y nginx.
+2. Crear App en EasyPanel siguiendo la guia de 7 pasos.
+3. Verificar `https://fisio-frontend.b5xbaf.easypanel.host/health` devuelve 200.
+4. Abrir dashboard y probar chat del agente IA.
+

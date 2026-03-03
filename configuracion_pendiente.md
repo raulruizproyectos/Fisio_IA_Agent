@@ -2,7 +2,7 @@
 
 Estado actualizado para retomar sin perdida.
 
-## Estado actual (2026-03-02)
+## Estado actual (2026-03-03, Sesion 25)
 - Migracion SQL productiva aplicada y validada en Supabase.
 - Workflows Fisio activos y alineados en n8n.
 - Backend productivo desplegado en EasyPanel:
@@ -185,3 +185,24 @@ Tablas necesarias confirmadas:
 - Paleta: #0f1419 / #1a2332 / #0d9488 (teal).
 - Tipografia: Inter + Material Symbols Rounded.
 
+## Docker frontend hardening (2026-03-03, Sesion 25)
+- `Dockerfile`: HEALTHCHECK con `wget` contra `/health` cada 30s.
+- `nginx.conf`: bloque `location /health` retorna 200 sin access_log.
+- Build local validado: 0 errores, 0 warnings.
+
+## Guia despliegue frontend (EasyPanel)
+1. EasyPanel → Proyecto `n8n` → **+ Create Service** → **App**.
+2. Nombre: `fisio-frontend`.
+3. Source: GitHub → `https://github.com/raulruizproyectos/Fisio_IA_Agent.git` → `main` → Root: `/frontend`.
+4. Build: Dockerfile.
+5. Domains: asignar dominio (ej. `fisio-frontend.b5xbaf.easypanel.host`).
+6. Puerto: `80`.
+7. Deploy.
+
+## Arranque minimo (siguiente paso)
+1. Push a GitHub y crear App en EasyPanel (7 pasos arriba).
+2. Verificar `https://fisio-frontend.b5xbaf.easypanel.host/health` → 200.
+3. Probar dashboard y chat agente IA desde el frontend desplegado.
+4. Ejecutar E2E Telegram (`/start`, `/plan`, `/dolor`).
+5. Configurar branch protection en `main`.
+6. Rotar credenciales sensibles.
