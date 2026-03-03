@@ -172,11 +172,11 @@ Tablas necesarias confirmadas:
   - usar skills disponibles en `.agents` cuando aplique, con constancia breve en seguimiento.
 
 ## Arranque minimo recomendado (siguiente sesion)
-1. Ejecutar script `frontend-local-build.ps1`.
-2. Desplegar frontend actualizado en produccion.
-3. Retomar validaciones funcionales pendientes:
-   - E2E Telegram (`/start`, `/plan`, `/dolor`)
-   - pipeline de video y validacion de tablas/estados en Supabase.
+1. **[Infra Manual]**: Crear App `fisio-frontend` en EasyPanel desde GitHub repo, usando `Dockerfile` y path `/frontend`.
+2. **[Infra Manual]**: Asegurar branch protection de `main` en configuración web de GitHub.
+3. Ejecutar testing funcional manual en Telegram (`/start`, `/plan`, `/dolor`) desde un móvil real.
+4. Validar llegada a base de datos en Supabase.
+5. Continuar desarrollo de lógicas del Agente IA y vídeos de seguimiento.
 
 ## Decision UX/UI registrada (2026-03-03)
 - Frontend rediseñado completamente en sesion 24.

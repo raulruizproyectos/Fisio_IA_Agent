@@ -935,13 +935,13 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 - Se mantiene arquitectura Astro SSG sin cambios de dependencias.
 - Material Symbols via CDN para iconografia consistente sin dependencia de paquetes.
 
-### Pendientes inmediatos
-1. Desplegar frontend actualizado en produccion (EasyPanel o similar).
-2. Ejecutar E2E Telegram completo (`/start`, `/plan`, `/dolor`).
-3. Activar branch protection en GitHub `main`.
-4. Rotar credenciales sensibles.
+### Pendientes inmediatos (Siguiente arranque)
+1. **[Manual EasyPanel]**: Crear App desde GitHub (rama `main`), root directory `/frontend`, build vía `Dockerfile`.
+2. **[Manual GitHub]**: Configurar branch protection en `main` desde la consola web.
+3. **[Manual E2E]**: Ejecutar interactuación real Telegram (`/start`, `/plan`, `/dolor`) desde móvil y revisar `mensajes_ingesta_paciente` en Supabase.
+4. **[Pendiente Seguridad]**: Rotar credenciales sensibles.
 
 ### Como retomar rapido
-1. Ejecutar `.\scripts\frontend-local-build.ps1`.
-2. Confirmar visualmente con `npx serve C:\temp\Fisio_IA_Agent_frontend_local\dist -l 4173`.
-3. Desplegar frontend y probar contra backend productivo.
+1. Ejecutar `.\scripts\frontend-local-build.ps1` y previsualizar con `npx serve C:\temp\Fisio_IA_Agent_frontend_local\dist -l 4173`.
+2. Acometer los 4 puntos "Pendientes inmediatos" descritos arriba para cerrar la integración continua y el E2E.
+
