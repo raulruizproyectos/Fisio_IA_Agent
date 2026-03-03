@@ -73,9 +73,7 @@ router.get('/video-jobs', async (req, res, next) => {
         notas_revision,
         url_salida,
         creado_en,
-        actualizado_en,
-        pacientes!trabajos_video_ejercicio_paciente_id_fkey(nombre_completo),
-        ejercicios!trabajos_video_ejercicio_ejercicio_id_fkey(nombre)
+        actualizado_en
       `)
       .eq('profesional_id', professionalId)
       .order('creado_en', { ascending: false })
@@ -94,10 +92,35 @@ router.get('/video-jobs', async (req, res, next) => {
       throw error;
     }
 
-    const normalized = (data || []).map((job) => ({
+    const jobs = data || [];
+    const patientIds = [...new Set(jobs.map((job) => job.paciente_id).filter(Boolean))];
+    const exerciseIds = [...new Set(jobs.map((job) => job.ejercicio_id).filter(Boolean))];
+
+    const [patientsResp, exercisesResp] = await Promise.all([
+      patientIds.length
+        ? supabase
+            .from('pacientes')
+            .select('id, nombre_completo')
+            .in('id', patientIds)
+        : Promise.resolve({ data: [], error: null }),
+      exerciseIds.length
+        ? supabase
+            .from('ejercicios')
+            .select('id, nombre')
+            .in('id', exerciseIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (patientsResp.error) throw patientsResp.error;
+    if (exercisesResp.error) throw exercisesResp.error;
+
+    const patientNameById = new Map((patientsResp.data || []).map((p) => [p.id, p.nombre_completo]));
+    const exerciseNameById = new Map((exercisesResp.data || []).map((e) => [e.id, e.nombre]));
+
+    const normalized = jobs.map((job) => ({
       ...job,
-      nombre_paciente: job?.pacientes?.nombre_completo || null,
-      nombre_ejercicio: job?.ejercicios?.nombre || null,
+      nombre_paciente: patientNameById.get(job.paciente_id) || null,
+      nombre_ejercicio: exerciseNameById.get(job.ejercicio_id) || null,
     }));
 
     res.json({ data: normalized });
