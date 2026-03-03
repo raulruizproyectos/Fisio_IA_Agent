@@ -1141,3 +1141,43 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 4. Confirmar objetivo:
    - `https://fisio-frontend.b5xbaf.easypanel.host/` -> 200
    - `monitor.getDockerTaskStats` frontend -> `actual: 1`, `desired: 1`.
+
+---
+
+## [Sesión 29] - 2026-03-03 (Punto de situación previo a nueva arquitectura)
+### Estado de infraestructura (EasyPanel)
+- Proyecto activo objetivo: `fisio-ia-agent`.
+- Servicios en proyecto `fisio-ia-agent`:
+  - `fisio-backend` (OK)
+  - `fisio-frontend` (KO parcial)
+- Proyecto eliminado previamente: `openclaw`.
+
+### Estado de servicios
+- Backend:
+  - URL: `https://fisio-backend.b5xbaf.easypanel.host`
+  - Health: 200 (`/api/health`)
+  - Runtime: estable.
+- Frontend:
+  - URL: `https://fisio-frontend.b5xbaf.easypanel.host`
+  - Estado HTTP actual: 502.
+  - Dominio: corregido y apuntando a `fisio-ia-agent/fisio-frontend`.
+  - Build configurado: `dockerfile` (`file: Dockerfile`).
+  - Deploy toma commit actualizado, pero no levanta task en runtime.
+
+### Estado de código y ramas
+- Rama: `main` actualizada en remoto.
+- Últimos commits relevantes:
+  - `cd47cba` docs: migración a `fisio-ia-agent` + estado frontend 502.
+  - `c3a8aae` fix frontend Dockerfile para no exigir lockfile.
+  - `e6d3a6c` backend `video-jobs` robusto sin join sensible al schema cache.
+
+### Riesgo/bloqueo vigente
+- Bloqueo principal: frontend no consigue iniciar contenedor en EasyPanel (resultado externo 502) pese a build/deploy aplicados.
+- Siguiente paso técnico recomendado para desbloqueo:
+  - inspección de logs de task/container fallido en UI EasyPanel (o Swarm host) para causa exacta.
+
+### Preparado para siguiente fase
+- Se deja el sistema en estado apto para redefinir arquitectura de `Fisio_IA_Agent` sin perder trazabilidad:
+  - backend operativo,
+  - frontend en bloqueo acotado,
+  - documentación de continuidad al día.

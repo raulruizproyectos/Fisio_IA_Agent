@@ -258,3 +258,24 @@ Tablas necesarias confirmadas:
    - E2E Telegram real.
    - branch protection en `main`.
    - rotación de credenciales.
+
+## Corte tecnico actualizado (2026-03-03, antes de nueva arquitectura)
+- Infra:
+  - Proyecto de trabajo consolidado: `fisio-ia-agent`.
+  - `openclaw` eliminado.
+  - `fisio-backend` y `fisio-frontend` ya migrados al nuevo proyecto.
+- Estado operativo:
+  - Backend: OK (200 en `/api/health`).
+  - Frontend: KO (502 en dominio principal).
+- Repositorio:
+  - `main` sincronizada con commits de fix y documentación.
+  - Últimos commits clave:
+    - `cd47cba` (documentación de migración y estado actual)
+    - `c3a8aae` (fix Dockerfile frontend sin lockfile obligatorio)
+- Bloqueo activo para retomar:
+  - frontend no llega a levantar task/contendor en runtime de EasyPanel.
+
+## Prioridad de arranque tras nuevo prompt
+1. Revisar y decidir nueva arquitectura objetivo (componentes, contratos y despliegue).
+2. Definir plan de migración por fases sin romper backend actual operativo.
+3. Replantear frontend dentro de la nueva arquitectura y resolver bloqueo 502 durante la transición.
