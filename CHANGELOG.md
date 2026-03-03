@@ -1,4 +1,52 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
+## Pivot de Alcance (Objetivo Actual) — 2026-03-03
+
+### 1) Que es ahora el sistema
+- CRM Web para centros de fisioterapia (gestion de pacientes, sesiones, citas y recomendaciones).
+- Agente de Citas (Telegram + n8n + Google Calendar + Supabase).
+- Agente IA de Ejercicios (Telegram + boton en CRM + n8n OpenAI + Supabase + Storage).
+
+### 2) Que queda en pausa
+- Pipeline de video: **PAUSADO** (fuera del alcance actual).
+- Se preserva todo el trabajo historico previo para futura reactivacion.
+- Aprovechamiento acordado: los subflujos de video se conservan como plantilla reusable de pipeline de media (revision/aprobacion/envio) para el nuevo contexto de ejercicios.
+
+### 3) Decisiones tecnicas clave
+- Una sola BD: Supabase del proyecto `Fisio_IA_Agent` como source of truth.
+- Bucket de Storage: `ejercicios` (privado).
+- URLs firmadas: generacion JIT (just-in-time), sin persistir signed URLs en BD.
+- Firmado de URLs desde n8n usando service role key de Supabase.
+- Todo evento debe quedar registrado en ficha del paciente (trazabilidad completa).
+
+### 4) Arquitectura (Objetivo Actual)
+- Web CRM (frontend) -> backend -> webhook/trigger n8n (boton "recomendar ejercicios").
+- Telegram -> n8n -> Supabase.
+- n8n -> Google Calendar (agenda de citas).
+- n8n -> OpenAI (seleccion de ejercicios).
+- Supabase DB (source of truth) + Supabase Storage privado (`ejercicios`).
+
+### 5) Flujos principales
+- Flujo A: Telegram cita -> n8n -> Google Calendar -> Supabase -> confirmacion Telegram -> visible en CRM.
+- Flujo B: Telegram sintomas -> OpenAI -> catalogo en Supabase -> signed URLs de Storage -> envio Telegram -> log en Supabase -> visible en CRM.
+- Flujo C: Boton CRM -> backend/webhook -> n8n -> reutiliza Flujo B.
+
+### Ultima sesion / Proximos pasos
+- Crear bucket privado `ejercicios` en Supabase Storage.
+- Definir mapping ejercicio -> `object_key` (TBD si no existe tabla final acordada).
+- Implementar/normalizar workflows n8n:
+  - Router Telegram (cita vs ejercicios vs nota de sesion).
+  - Citas (Calendar + logging Supabase + confirmacion).
+  - Ejercicios (OpenAI + consulta catalogo + signed URLs + envio + logging).
+  - Trigger Web (boton CRM).
+- CRM debe mostrar: citas + sesiones/notas + recomendaciones (imagenes bajo demanda con URL firmada).
+- Seguridad (plan): RLS + modelo de roles `admin`/`fisioterapeuta`.
+
+### TBD / Informacion pendiente
+- [ ] Decision final sobre transcripcion de audio Telegram (si aplica).
+- [ ] Nombres exactos de tablas para citas, mapping media y comunicaciones/log.
+- [ ] Modelo final de auth/roles (`admin` y `fisioterapeuta`).
+- [ ] TTL recomendado signed URLs (propuesta inicial: 20 minutos).
+
 ## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
 
 - Repositorio oficial del proyecto (URL exacta): `https://github.com/raulruizproyectos/Fisio_IA_Agent`
@@ -1181,3 +1229,30 @@ Para cada sesion nueva anadir bloque con esta plantilla:
   - backend operativo,
   - frontend en bloqueo acotado,
   - documentación de continuidad al día.
+
+---
+
+## [Sesion 30] - 2026-03-03 (Limpieza para nueva arquitectura)
+### Objetivo
+- Dejar el repositorio enfocado al nuevo alcance CRM + Citas + Ejercicios.
+
+### Cambios de limpieza aplicados
+- Eliminados workflows legacy de video en `n8n/Fisio_IA_Agent`:
+  - `sw-fisio-crear-render-video.json`
+  - `sw-fisio-video-review.json`
+  - `fisio-intake-video-review.json`
+  - `fisio-intake-video-review-orchestrator.json`
+- Eliminado archivo temporal local no versionado: `create.lazy.tmp.js`.
+- Eliminada carpeta residual local: `frontend/node_modules_stuck_20260302_202222`.
+
+### Estandarizacion para continuar
+- README principal alineado al pivot activo.
+- `n8n/README.md` actualizado al enfoque W0/W1/W2/W3.
+- Añadido `ARCHITECTURE.md` con blueprint completo.
+- Añadidas reglas y skills en `.agents/`.
+- Añadido `database/schema_vnext.sql` (propuesta aditiva para CRM + Agents).
+
+### Estado para siguiente sesion
+- Repo limpio de workflows de video legacy.
+- Video queda fuera de alcance activo.
+- Prioridad siguiente: implementar workflows n8n del nuevo modelo y cablear boton CRM -> trigger web.

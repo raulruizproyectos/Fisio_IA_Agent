@@ -1,23 +1,25 @@
 ﻿# Fisio_IA_Agent
 
-Asistente IA para fisioterapia: centraliza la introduccion de sintomas por Telegram/web, permite al profesional revisar casos y automatiza la generacion, revision y envio de videos de ejercicios.
+CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomendaciones de ejercicios desde Telegram y CRM Web, orquestado con n8n y Supabase.
 
-## Estado actual (2026-02-27)
-- Backend y esquema de datos migrados a nomenclatura en espanol.
-- Flujo n8n operativo con subworkflows:
-  - Pendientes de ingesta
-  - Crear y render de video
-  - Revision y envio de video
-- Orquestador activo con webhooks:
-  - `GET /webhook/fisio/intakes/pending`
-  - `POST /webhook/fisio/video/crear`
-  - `POST /webhook/fisio/video/review`
+## Alcance activo (pivot)
+- CRM Web para operacion clinica.
+- Agente de Citas (Telegram + n8n + Google Calendar + Supabase).
+- Agente IA de Ejercicios (Telegram + boton CRM + n8n OpenAI + Supabase + Storage).
+- Source of truth unico: Supabase del proyecto Fisio_IA_Agent.
 
-## Arquitectura
-- Frontend: Astro
-- Backend: Node.js + Express
+## En pausa
+- Pipeline de video fuera del alcance actual.
+- Se mantiene trazabilidad historica en CHANGELOG, pero el repo se limpia de workflows de video legacy.
+
+## Arquitectura actual
+- Frontend CRM: Astro
+- Backend API: Node.js + Express
 - Base de datos: Supabase (PostgreSQL)
+- Storage: Supabase Storage bucket `ejercicios` (private)
 - Automatizacion: n8n
+- IA de seleccion: OpenAI node en n8n
+- Agenda: Google Calendar (via n8n)
 
 ## Endpoints backend principales
 - `POST /api/telegram/incoming`
@@ -26,12 +28,8 @@ Asistente IA para fisioterapia: centraliza la introduccion de sintomas por Teleg
 - `GET /api/profesional/intakes/pending`
 - `GET /api/profesional/patients/:patientId/history`
 - `POST /api/profesional/notes`
-- `POST /api/profesional/video-jobs`
-- `POST /api/profesional/video-jobs/:jobId/render`
-- `POST /api/profesional/video-jobs/:jobId/review`
-- `POST /api/profesional/video-jobs/:jobId/send`
 
-## Tablas necesarias (espanol)
+## Tablas base existentes
 - `profesionales`
 - `pacientes`
 - `dolencias`
@@ -42,16 +40,19 @@ Asistente IA para fisioterapia: centraliza la introduccion de sintomas por Teleg
 - `vinculos_telegram_pacientes`
 - `mensajes_ingesta_paciente`
 - `notas_seguimiento_paciente`
-- `trabajos_video_ejercicio`
-- `eventos_visualizacion_video`
 
-## Workflows n8n activos (Fisio)
+## Propuesta vNext
+- `database/schema_vnext.sql` contiene una propuesta aditiva para CRM + Agents.
+
+## Workflows n8n versionados en repo
 - `Fisio_IA_Agent / Nucleo Agente`
 - `Fisio_IA_Agent / Subflujo Pendientes`
-- `Fisio_IA_Agent / Subflujo Crear y Render Video`
-- `Fisio_IA_Agent / Subflujo Revision Video`
-- `Fisio_IA_Agent / Orquestador Intake-Video`
-- `Fisio_IA_Agent / Puente Error Backend`
+- `Fisio_IA_Agent / Telegram Chat`
+
+## Storage de imagenes de movimientos
+- Bucket: `ejercicios` (private).
+- En DB se persiste `object_key` (no signed URL).
+- Signed URL JIT generado en n8n con service role key.
 
 ## Inicio rapido
 ```bash
@@ -70,4 +71,4 @@ npm run dev
 ## Continuidad
 - Estado detallado por sesion: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
-
+- Arquitectura objetivo: `ARCHITECTURE.md`

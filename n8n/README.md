@@ -1,63 +1,42 @@
-# Automatizacion con n8n - Fisio IA Agent
+﻿# Automatizacion con n8n - Fisio IA Agent
 
-## Workflows activos en esta fase
+## Objetivo operativo
+n8n es el orquestador principal para:
+- Clasificar intencion de mensajes (citas, ejercicios, notas)
+- Ejecutar Agente de Citas (Google Calendar + logging)
+- Ejecutar Agente IA de Ejercicios (OpenAI + catalogo + signed URLs)
+- Procesar trigger web desde CRM
 
-### 1. Telegram Chat (implementado)
+## Workflows versionados actualmente
+- `n8n/Fisio_IA_Agent/fisio-agent-core.json`
+- `n8n/Fisio_IA_Agent/sw-fisio-pending-intakes.json`
+- `n8n/Fisio_IA_Agent/telegram-chat.json`
 
-**Archivo:** `n8n/workflows/telegram-chat.json`
+## Convencion recomendada (vNext)
+- W0 Router Telegram
+- W1 Agente Citas
+- W2 Agente IA Ejercicios
+- W3 Trigger Web CRM
 
-**Patron:** Webhook Processing + Database Operations
+## Contrato minimo de trazabilidad
+Cada ejecucion debe registrar:
+- `request_id`
+- `patient_id` (si aplica)
+- `channel`
+- `workflow_name`
+- `status`
+- `created_at`
 
-**Flujo:**
-
-```
-Telegram Trigger -> Prepare Input -> HTTP Request (backend) -> Telegram Reply
-```
-
-El backend resuelve comandos y consulta Supabase para devolver respuesta.
-
----
-
-## Workflows previstos (siguientes iteraciones)
-
-### 2. Recordatorio de sesion
-**Trigger:** Cron diario (09:00)
-
-### 3. Alerta por baja adherencia
-**Trigger:** Webhook POST desde API al registrar workout
-
-### 4. Reporte semanal de evolucion
-**Trigger:** Cron semanal (lunes 08:00)
-
-### 5. Notificacion de render completado
-**Trigger:** Webhook POST cuando `trabajos_render` pasa a `completed`
-
----
-
-## Integracion con backend
-
-La API backend expone endpoints para Telegram:
-
-- `POST /api/telegram/link-code/:patientId`
+## Integracion backend
+Endpoints principales consumidos por workflows:
 - `POST /api/telegram/incoming`
+- `POST /api/agent/message`
+- `GET /api/profesional/intakes/pending`
 
-n8n consume `/api/telegram/incoming` para responder mensajes.
+## Integracion Supabase Storage
+- Bucket `ejercicios` (private)
+- object_key persistido en DB
+- signed URLs generadas JIT desde n8n con service role
 
----
-
-## Credenciales en n8n
-
-1. **Telegram API:** token del bot
-2. **(Opcional) Supabase API:** para flujos que consulten DB sin backend
-
----
-
-## Estado
-
-| Workflow | Estado |
-|---|---|
-| Telegram Chat | Implementado |
-| Recordatorio de sesion | Por implementar |
-| Alerta baja adherencia | Por implementar |
-| Reporte semanal | Por implementar |
-| Notificacion render | Por implementar |
+## Nota de alcance
+El pipeline de video legacy no forma parte del alcance activo actual.

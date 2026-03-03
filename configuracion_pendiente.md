@@ -279,3 +279,23 @@ Tablas necesarias confirmadas:
 1. Revisar y decidir nueva arquitectura objetivo (componentes, contratos y despliegue).
 2. Definir plan de migración por fases sin romper backend actual operativo.
 3. Replantear frontend dentro de la nueva arquitectura y resolver bloqueo 502 durante la transición.
+
+## Actualizacion (2026-03-03, Sesion 30)
+- Limpieza aplicada para nueva arquitectura:
+  - removidos workflows legacy de video del repo.
+  - removido archivo temporal `create.lazy.tmp.js`.
+  - removida carpeta residual `frontend/node_modules_stuck_20260302_202222`.
+- Estado operativo:
+  - backend sigue estable.
+  - foco de desarrollo pasa a CRM + citas + ejercicios.
+- Artefactos clave nuevos:
+  - `ARCHITECTURE.md`
+  - `.agents/AGENT_RULES.md`
+  - `.agents/skills/*`
+  - `database/schema_vnext.sql`
+
+## Proximo paso recomendado inmediato
+1. Definir contratos JSON finales W0/W1/W2/W3 en n8n.
+2. Crear bucket privado `ejercicios` (si no existe) y validar object_keys.
+3. Cablear trigger web CRM para recomendaciones de ejercicios.
+4. Implementar logging completo por `request_id` en DB.
