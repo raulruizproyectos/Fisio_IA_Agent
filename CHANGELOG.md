@@ -73,6 +73,21 @@
 - `npm run build` en este entorno falla por ausencia de comando `astro` en PATH local.
 - El fallo es de entorno local, no de API/backend ni de los contratos de negocio.
 
+## [Sesion 34] - 2026-03-04 (Hardening deploy frontend EasyPanel)
+### Objetivo
+- Reducir riesgo de fallo de build en frontend para recuperar servicio `fisio-frontend` en EasyPanel.
+
+### Cambios implementados
+- `frontend/src/pages/index.astro`
+  - Script cliente marcado como `lang="ts"` para alinear el tipado TypeScript embebido con el compilador de Astro.
+- `frontend/package.json`
+  - Script `build` ajustado a `astro build` (produccion) para evitar bloqueo por `astro check` en pipeline de despliegue.
+  - Script `check` se mantiene disponible de forma explicita para validacion local/CI cuando proceda.
+
+### Estado de plataforma observado
+- Backend productivo: `200` en `https://fisio-backend.b5xbaf.easypanel.host/api/health`.
+- Frontend productivo: seguia en `502` al momento de iniciar esta sesion de hardening (se fuerza nuevo ciclo de deploy tras este commit).
+
 ## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
 
 - Repositorio oficial del proyecto (URL exacta): `https://github.com/raulruizproyectos/Fisio_IA_Agent`

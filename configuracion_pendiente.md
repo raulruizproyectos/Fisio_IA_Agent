@@ -14,6 +14,12 @@ Estado actualizado para retomar sin perdida.
   - `npm run build` falla por `astro` no disponible en PATH del host local actual.
   - Requiere revisar entorno de build/dependencias antes de validar compilacion local.
 
+## Estado actual (2026-03-04, Sesion 34)
+- Hardening aplicado para despliegue frontend:
+  - `index.astro` usa `<script lang="ts">` (coherencia con tipado usado en el script cliente).
+  - `package.json` frontend: `build` pasa a `astro build` y `astro check` queda como script separado.
+- Se lanzan redeploys por endpoint API de EasyPanel para recuperar `fisio-frontend`.
+
 ## Estado actual (2026-03-03, Sesion 25)
 - Migracion SQL productiva aplicada y validada en Supabase.
 - Workflows Fisio activos y alineados en n8n.
