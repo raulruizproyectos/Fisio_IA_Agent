@@ -995,3 +995,20 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 3. Verificar `https://fisio-frontend.b5xbaf.easypanel.host/health` devuelve 200.
 4. Abrir dashboard y probar chat del agente IA.
 
+### Verificacion E2E adicional (produccion)
+- `POST /api/agent/message` → OK:
+  - `source: n8n_agent`, `fallback_used: false`, `n8n_unreachable: false`
+  - `reply_text` con contenido de negocio funcional.
+- `GET /api/profesional/intakes/pending?profesional_id=...` → OK con datos.
+- `POST /api/telegram/incoming` (payload nativo Telegram):
+  - Backend procesa correctamente y crea ingesta en `mensajes_ingesta_paciente`.
+  - Registro confirmado en Supabase: `579ed3a3` con texto `/ayuda`, estado `pendiente_revision`.
+  - Error esperado al responder a chat_id de test (no existe en Telegram real).
+- Skills instaladas en `.agents/skills/`:
+  - `accessibility`, `best-practices`, `core-web-vitals`, `performance`, `seo`, `web-quality-audit`.
+
+### Pendientes que requieren intervencion manual
+1. **EasyPanel**: crear App `fisio-frontend` (sin API key disponible).
+2. **GitHub**: branch protection en `main` (sin `gh` CLI ni token API directo).
+3. **Seguridad**: rotar credenciales sensibles.
+
