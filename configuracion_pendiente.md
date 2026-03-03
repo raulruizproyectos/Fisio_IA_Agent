@@ -31,6 +31,14 @@ Estado actualizado para retomar sin perdida.
 - Necesidad para cierre definitivo:
   - acceso a logs/error de servicio en EasyPanel (UI o API autenticada) para aplicar fix exacto y dejar `200`.
 
+## Estado actual (2026-03-04, Sesion 36)
+- API token de EasyPanel validado y operativo para TRPC.
+- `inspectProject` confirma:
+  - backend OK
+  - frontend en despliegue correcto pero sin tarea viva (`actual=0`, `desired=1`).
+- Mitigacion aplicada en codigo:
+  - eliminado `HEALTHCHECK` del contenedor frontend para evitar posibles reinicios por chequeo runtime.
+
 ## Estado actual (2026-03-03, Sesion 25)
 - Migracion SQL productiva aplicada y validada en Supabase.
 - Workflows Fisio activos y alineados en n8n.

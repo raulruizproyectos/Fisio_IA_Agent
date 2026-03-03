@@ -103,6 +103,16 @@
 - El bloqueo ya no apunta al codigo del frontend; apunta a configuracion/runtime del servicio en EasyPanel (task/container no llega a healthy).
 - Siguiente accion critica: inspeccionar error real de servicio en EasyPanel (`services.common.getServiceError` o logs de deployment) con credenciales/API token de EasyPanel.
 
+## [Sesion 36] - 2026-03-04 (Mitigacion runtime frontend en contenedor)
+### Hipotesis aplicada
+- Build de imagen correcto pero tarea Swarm no permanece activa (`actual=0 / desired=1`).
+- Se elimina `HEALTHCHECK` custom del Dockerfile frontend para evitar reinicios por chequeo no fiable en runtime.
+
+### Cambio
+- Archivo: `frontend/Dockerfile`
+  - Eliminado bloque `HEALTHCHECK`.
+  - Se mantiene `CMD nginx -g 'daemon off;'` como proceso principal.
+
 ## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
 
 - Repositorio oficial del proyecto (URL exacta): `https://github.com/raulruizproyectos/Fisio_IA_Agent`
