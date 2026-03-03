@@ -2,295 +2,870 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Fisio IA Agent - Plataforma Clínica">
-  <main class="page">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Fisio IA Agent</p>
-        <h1>Teleconsulta operativa + revisión clínica de video en un solo flujo</h1>
-        <p>
-          El fisioterapeuta recibe síntomas por Telegram o web, revisa historial ordenado y aprueba
-          versiones de video antes de enviar al paciente.
-        </p>
-        <div class="chips">
-          <span>Intake en tiempo real</span>
-          <span>Historial trazable</span>
-          <span>Ciclo de revisión</span>
-        </div>
+<Layout title="Fisio IA Agent — Dashboard Profesional">
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon material-symbols-rounded">healing</span>
+        <span class="brand-text">Fisio IA</span>
       </div>
-      <aside class="agent-card">
-        <header>
-          <h2>Agente Clínico</h2>
-          <small>Modo profesional</small>
-        </header>
-        <div id="chatLog" class="chat-log">
-          <article class="msg agent">
-            Listo para intake clínico. Escribe síntomas de paciente o una pauta para generar video.
-          </article>
-        </div>
-        <form id="agentForm" class="chat-form">
-          <textarea id="agentInput" rows="3" placeholder="Ej: Paciente con dolor lumbar, fase subaguda, dolor 6/10..."></textarea>
-          <button type="submit">Consultar Agente</button>
-        </form>
-      </aside>
-    </section>
 
-    <section class="grid">
-      <article class="panel">
-        <h3>1) Entrada de síntomas</h3>
-        <p>Telegram o web detecta paciente nuevo, lo crea y guarda intake para revisión del fisio.</p>
-      </article>
-      <article class="panel">
-        <h3>2) Historial clínico</h3>
-        <p>Vídeos vistos en orden + anotaciones de seguimiento disponibles antes de prescribir.</p>
-      </article>
-      <article class="panel">
-        <h3>3) Video bajo revisión</h3>
-        <p>El fisio aprueba o rechaza. Si rechaza, se genera nueva versión hasta validación final.</p>
-      </article>
-    </section>
-  </main>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="dashboard">
+          <span class="material-symbols-rounded">dashboard</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-section="pacientes">
+          <span class="material-symbols-rounded">group</span>
+          <span class="nav-label">Pacientes</span>
+        </a>
+        <a href="#" class="nav-item has-badge" data-section="intakes">
+          <span class="material-symbols-rounded">assignment</span>
+          <span class="nav-label">Intake Pendientes</span>
+          <span class="badge" id="intakeBadge">3</span>
+        </a>
+        <a href="#" class="nav-item" data-section="videos">
+          <span class="material-symbols-rounded">smart_display</span>
+          <span class="nav-label">Videos</span>
+        </a>
+        <a href="#" class="nav-item" data-section="historial">
+          <span class="material-symbols-rounded">history</span>
+          <span class="nav-label">Historial</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <a href="#" class="nav-item" data-section="config">
+          <span class="material-symbols-rounded">settings</span>
+          <span class="nav-label">Configuración</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-area">
+      <!-- HEADER -->
+      <header class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menú">
+          <span class="material-symbols-rounded">menu</span>
+        </button>
+        <div class="search-box">
+          <span class="material-symbols-rounded search-icon">search</span>
+          <input type="text" id="searchInput" placeholder="Buscar paciente, dolencia, ejercicio..." autocomplete="off" />
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn" aria-label="Notificaciones" id="notifBtn">
+            <span class="material-symbols-rounded">notifications</span>
+            <span class="dot-indicator"></span>
+          </button>
+          <div class="user-pill">
+            <div class="avatar">RR</div>
+            <span class="user-name">Dr. Raúl Ruiz</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <main class="content">
+        <div class="content-grid">
+          <!-- COLUMNA IZQUIERDA -->
+          <div class="col-main">
+            <!-- MÉTRICAS -->
+            <section class="metrics-row">
+              <div class="metric-card">
+                <div class="metric-icon" style="background: var(--accent-soft); color: var(--accent);">
+                  <span class="material-symbols-rounded">assignment</span>
+                </div>
+                <div class="metric-data">
+                  <span class="metric-value" id="metricIntakes">—</span>
+                  <span class="metric-label">Intakes pendientes</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(59,130,246,0.12); color: var(--info);">
+                  <span class="material-symbols-rounded">group</span>
+                </div>
+                <div class="metric-data">
+                  <span class="metric-value" id="metricPacientes">—</span>
+                  <span class="metric-label">Pacientes activos</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(245,158,11,0.12); color: var(--warning);">
+                  <span class="material-symbols-rounded">smart_display</span>
+                </div>
+                <div class="metric-data">
+                  <span class="metric-value" id="metricVideos">—</span>
+                  <span class="metric-label">Videos en revisión</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(16,185,129,0.12); color: var(--success);">
+                  <span class="material-symbols-rounded">event_available</span>
+                </div>
+                <div class="metric-data">
+                  <span class="metric-value" id="metricSesiones">—</span>
+                  <span class="metric-label">Sesiones hoy</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- TABLA INTAKES -->
+            <section class="card table-card">
+              <header class="card-header">
+                <h2>Últimos Intakes</h2>
+                <button class="btn-ghost" id="refreshIntakes">
+                  <span class="material-symbols-rounded">refresh</span>
+                  Actualizar
+                </button>
+              </header>
+              <div class="table-wrap">
+                <table id="intakeTable">
+                  <thead>
+                    <tr>
+                      <th>Paciente</th>
+                      <th>Canal</th>
+                      <th>Fecha</th>
+                      <th>Estado</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="intakeBody">
+                    <tr class="empty-row">
+                      <td colspan="5">
+                        <div class="empty-state">
+                          <span class="material-symbols-rounded">inbox</span>
+                          <p>Cargando intakes...</p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- COLUMNA DERECHA: CHAT AGENTE -->
+          <div class="col-aside">
+            <section class="card agent-panel">
+              <header class="card-header agent-header">
+                <div class="agent-title">
+                  <span class="material-symbols-rounded agent-icon">psychology</span>
+                  <div>
+                    <h2>Agente Clínico IA</h2>
+                    <div class="agent-status">
+                      <span class="status-dot connected" id="agentDot"></span>
+                      <span class="status-text" id="agentStatusText">Conectado</span>
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+              <div class="chat-log" id="chatLog">
+                <article class="msg agent">
+                  <div class="msg-avatar">
+                    <span class="material-symbols-rounded">psychology</span>
+                  </div>
+                  <div class="msg-body">
+                    <span class="msg-sender">Agente IA</span>
+                    <p>Listo para intake clínico. Describe los síntomas del paciente o indica una pauta para generar video de ejercicios.</p>
+                  </div>
+                </article>
+              </div>
+
+              <form id="agentForm" class="chat-form">
+                <div class="input-row">
+                  <textarea id="agentInput" rows="2" placeholder="Ej: Paciente con dolor lumbar, fase subaguda, dolor 6/10..."></textarea>
+                  <button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar">
+                    <span class="material-symbols-rounded">send</span>
+                  </button>
+                </div>
+                <div class="input-hints">
+                  <span class="material-symbols-rounded" style="font-size: 14px;">info</span>
+                  Ctrl+Enter para enviar · El agente consulta n8n en tiempo real
+                </div>
+              </form>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
 </Layout>
 
 <script>
-  const form = document.getElementById('agentForm');
-  const input = document.getElementById('agentInput');
-  const log = document.getElementById('chatLog');
-  const backendBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  // === CONFIG ===
+  const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3001'
-    : '';
+    : 'https://fisio-backend.b5xbaf.easypanel.host';
 
-  const addMessage = (text, type) => {
-    const item = document.createElement('article');
-    item.className = `msg ${type}`;
-    item.textContent = text;
-    log.appendChild(item);
+  // === DOM REFS ===
+  const form = document.getElementById('agentForm') as HTMLFormElement | null;
+  const input = document.getElementById('agentInput') as HTMLTextAreaElement | null;
+  const log = document.getElementById('chatLog') as HTMLElement | null;
+  const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement | null;
+  const agentDot = document.getElementById('agentDot') as HTMLElement | null;
+  const agentStatusText = document.getElementById('agentStatusText') as HTMLElement | null;
+  const sidebarToggle = document.getElementById('sidebarToggle') as HTMLElement | null;
+  const sidebar = document.getElementById('sidebar') as HTMLElement | null;
+  const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
+  const refreshBtn = document.getElementById('refreshIntakes') as HTMLElement | null;
+
+  // === SIDEBAR TOGGLE ===
+  sidebarToggle?.addEventListener('click', () => {
+    sidebar?.classList.toggle('collapsed');
+  });
+
+  // === CHAT ===
+  const addMessage = (text: string, type: 'user' | 'agent') => {
+    if (!log) return;
+    const article = document.createElement('article');
+    article.className = `msg ${type}`;
+
+    if (type === 'agent') {
+      article.innerHTML = `
+        <div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div>
+        <div class="msg-body">
+          <span class="msg-sender">Agente IA</span>
+          <p>${escapeHtml(text)}</p>
+        </div>`;
+    } else {
+      article.innerHTML = `
+        <div class="msg-body user-msg">
+          <p>${escapeHtml(text)}</p>
+        </div>`;
+    }
+    log.appendChild(article);
     log.scrollTop = log.scrollHeight;
   };
 
-  form?.addEventListener('submit', async (event) => {
+  const escapeHtml = (str: string) =>
+    str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const setAgentStatus = (connected: boolean) => {
+    agentDot?.classList.toggle('connected', connected);
+    agentDot?.classList.toggle('disconnected', !connected);
+    if (agentStatusText) agentStatusText.textContent = connected ? 'Conectado' : 'Sin conexión';
+  };
+
+  const setSending = (busy: boolean) => {
+    if (sendBtn) sendBtn.disabled = busy;
+    if (input) input.disabled = busy;
+  };
+
+  // Ctrl+Enter to send
+  input?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      form?.requestSubmit();
+    }
+  });
+
+  form?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
+    if (!input) return;
     const text = input.value.trim();
     if (!text) return;
     addMessage(text, 'user');
     input.value = '';
+    setSending(true);
 
     try {
-      const response = await fetch(`${backendBase}/api/agent/message`, {
+      const response = await fetch(`${BACKEND_BASE}/api/agent/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          role: 'professional',
-          channel: 'web',
-          text
-        })
+        body: JSON.stringify({ role: 'professional', channel: 'web', text })
       });
       const payload = await response.json();
       if (!response.ok) {
         addMessage(`Error: ${payload.error || 'No se pudo consultar el agente'}`, 'agent');
         return;
       }
-      const answer = payload?.data?.reply_text || payload?.data?.message || JSON.stringify(payload.data);
+      const answer = payload?.data?.reply_text
+        || payload?.data?.message
+        || (typeof payload.data === 'string' ? payload.data : JSON.stringify(payload.data));
       addMessage(answer, 'agent');
-    } catch (error) {
-      addMessage('Error de conexión con backend/agente.', 'agent');
+      setAgentStatus(!payload.n8n_unreachable);
+    } catch {
+      addMessage('Error de conexión con el agente. Reintenta en unos segundos.', 'agent');
+      setAgentStatus(false);
+    } finally {
+      setSending(false);
     }
   });
+
+  // === HEALTH CHECK (agent status) ===
+  const checkHealth = async () => {
+    try {
+      const r = await fetch(`${BACKEND_BASE}/api/health`, { signal: AbortSignal.timeout(5000) });
+      setAgentStatus(r.ok);
+    } catch {
+      setAgentStatus(false);
+    }
+  };
+  checkHealth();
+
+  // === LOAD INTAKES ===
+  const loadIntakes = async () => {
+    if (!intakeBody) return;
+    try {
+      const r = await fetch(`${BACKEND_BASE}/api/profesional/intakes/pending`, { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const payload = await r.json();
+      const intakes = payload.data || payload || [];
+
+      // Update badge
+      const badge = document.getElementById('intakeBadge');
+      if (badge) badge.textContent = String(intakes.length);
+
+      // Update metric
+      const metricEl = document.getElementById('metricIntakes');
+      if (metricEl) metricEl.textContent = String(intakes.length);
+
+      if (!intakes.length) {
+        intakeBody.innerHTML = `<tr class="empty-row"><td colspan="5">
+          <div class="empty-state">
+            <span class="material-symbols-rounded">check_circle</span>
+            <p>Sin intakes pendientes</p>
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      intakeBody.innerHTML = intakes.slice(0, 10).map((i: any) => {
+        const channelIcon = (i.canal || i.channel || '').toLowerCase().includes('telegram')
+          ? '📱 Telegram' : '🌐 Web';
+        const fecha = i.creado_en || i.created_at || '—';
+        const fechaFmt = fecha !== '—' ? new Date(fecha).toLocaleDateString('es-ES', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+        const estado = i.estado || i.status || 'pendiente';
+        return `<tr>
+          <td class="td-patient">${escapeHtml(i.nombre_paciente || i.patient_name || 'Paciente #' + (i.paciente_id || i.patient_id || '?'))}</td>
+          <td>${channelIcon}</td>
+          <td>${fechaFmt}</td>
+          <td><span class="status-chip ${estado}">${estado}</span></td>
+          <td><button class="btn-sm" onclick="alert('Revisar intake #${i.id || ''}')">Revisar</button></td>
+        </tr>`;
+      }).join('');
+    } catch {
+      intakeBody.innerHTML = `<tr class="empty-row"><td colspan="5">
+        <div class="empty-state">
+          <span class="material-symbols-rounded">cloud_off</span>
+          <p>No se pudieron cargar los intakes</p>
+        </div>
+      </td></tr>`;
+    }
+  };
+  loadIntakes();
+  refreshBtn?.addEventListener('click', loadIntakes);
 </script>
 
 <style>
-  :root {
-    --bg: #f7f5ef;
-    --ink: #1f2a2a;
-    --muted: #5f6e6a;
-    --accent: #0f766e;
-    --accent-soft: #d9f0ed;
-    --card: #fffdf7;
-    --line: #d7d2c2;
-  }
-
-  .page {
+  /* === APP SHELL === */
+  .app-shell {
+    display: flex;
     min-height: 100vh;
-    color: var(--ink);
-    background:
-      radial-gradient(circle at 12% 15%, #dff4ef 0, transparent 35%),
-      radial-gradient(circle at 88% 12%, #ffe6d7 0, transparent 30%),
-      var(--bg);
-    padding: 2rem;
   }
 
-  .hero {
+  /* === SIDEBAR === */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0.75rem;
+    transition: width var(--transition), min-width var(--transition);
+    overflow: hidden;
+    z-index: 10;
+  }
+  .sidebar.collapsed {
+    width: 64px;
+    min-width: 64px;
+  }
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .brand-text,
+  .sidebar.collapsed .badge { display: none; }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.65rem 1.25rem;
+  }
+  .brand-icon {
+    font-size: 28px;
+    color: var(--accent);
+  }
+  .brand-text {
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+  .sidebar-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all var(--transition);
+    position: relative;
+    white-space: nowrap;
+  }
+  .nav-item:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+  .nav-item.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .nav-item .material-symbols-rounded { font-size: 22px; flex-shrink: 0; }
+
+  .badge {
+    background: var(--danger);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 99px;
+    margin-left: auto;
+    line-height: 1.4;
+  }
+
+  /* === MAIN AREA === */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* === TOPBAR === */
+  .topbar {
+    height: 60px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 1.25rem;
+    gap: 1rem;
+  }
+  .sidebar-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    transition: all var(--transition);
+  }
+  .sidebar-toggle:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+  .search-box {
+    flex: 1;
+    max-width: 420px;
+    position: relative;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 20px;
+  }
+  .search-box input {
+    width: 100%;
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.52rem 0.75rem 0.52rem 2.5rem;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.88rem;
+    transition: border-color var(--transition);
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+  .search-box input:focus { outline: none; border-color: var(--accent); }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+  .icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    position: relative;
+    display: flex;
+    transition: all var(--transition);
+  }
+  .icon-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+  .dot-indicator {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background: var(--danger);
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+  }
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 4px 10px 4px 4px;
+    border-radius: 99px;
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+  }
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .user-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* === CONTENT === */
+  .content {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+  }
+  .content-grid {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 1.5rem;
-    align-items: stretch;
-    max-width: 1200px;
+    grid-template-columns: 1fr 380px;
+    gap: 1.25rem;
+    max-width: 1400px;
     margin: 0 auto;
   }
 
-  .hero-copy {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 18px 45px rgba(16, 39, 36, 0.08);
+  /* === METRICS === */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
   }
-
-  .eyebrow {
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-  }
-
-  h1 {
-    font-family: 'Fraunces', Georgia, serif;
-    line-height: 1.1;
-    font-size: clamp(1.9rem, 4vw, 3.1rem);
-    margin-bottom: 0.9rem;
-  }
-
-  .hero-copy p {
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 1.1rem;
-  }
-
-  .chips {
+  .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.1rem;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
+    align-items: center;
+    gap: 0.85rem;
+    transition: all var(--transition);
+  }
+  .metric-card:hover { border-color: var(--border-light); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .metric-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .metric-icon .material-symbols-rounded { font-size: 22px; }
+  .metric-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
   }
 
-  .chips span {
-    background: var(--accent-soft);
-    color: #0a4f49;
-    border-radius: 999px;
-    padding: 0.38rem 0.78rem;
-    font-size: 0.85rem;
+  /* === CARD === */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.15rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header h2 {
+    font-size: 0.95rem;
     font-weight: 600;
   }
+  .btn-ghost {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition);
+  }
+  .btn-ghost:hover { color: var(--accent); background: var(--accent-soft); }
+  .btn-ghost .material-symbols-rounded { font-size: 18px; }
 
-  .agent-card {
-    background: #102827;
-    color: #e4f3f1;
-    border-radius: 20px;
-    padding: 1rem;
+  /* === TABLE === */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 0.7rem 1.15rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.7rem 1.15rem;
+    font-size: 0.88rem;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-card-hover); }
+  .td-patient { font-weight: 500; }
+
+  .status-chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 99px;
+    text-transform: capitalize;
+  }
+  .status-chip.pendiente,
+  .status-chip.pendiente_revision { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .status-chip.aprobado,
+  .status-chip.enviado { background: rgba(16,185,129,0.15); color: var(--success); }
+  .status-chip.rechazado { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+  .btn-sm {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-sm:hover { filter: brightness(1.15); }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+  }
+  .empty-state .material-symbols-rounded { font-size: 36px; margin-bottom: 0.5rem; display: block; }
+
+  /* === AGENT PANEL === */
+  .agent-panel {
     display: flex;
     flex-direction: column;
-    min-height: 510px;
-    box-shadow: 0 18px 45px rgba(10, 26, 24, 0.35);
+    height: calc(100vh - 60px - 2.5rem);
+    position: sticky;
+    top: 0;
+  }
+  .agent-header .agent-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .agent-icon {
+    font-size: 26px;
+    color: var(--accent);
+  }
+  .agent-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-dot.connected {
+    background: var(--success);
+    box-shadow: 0 0 6px var(--success);
+    animation: pulse-dot 2s infinite;
+  }
+  .status-dot.disconnected { background: var(--danger); }
+  .status-text { font-size: 0.72rem; color: var(--text-muted); }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
   }
 
-  .agent-card header {
-    padding: 0.3rem 0.2rem 0.8rem;
-    border-bottom: 1px solid rgba(228, 243, 241, 0.15);
-    margin-bottom: 0.8rem;
-  }
-
-  .agent-card h2 {
-    font-size: 1rem;
-    margin: 0;
-  }
-
-  .agent-card small {
-    color: #a9c8c4;
-    font-size: 0.78rem;
-  }
-
+  /* === CHAT LOG === */
   .chat-log {
     flex: 1;
-    overflow: auto;
+    overflow-y: auto;
+    padding: 0.85rem;
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
-    padding: 0.2rem 0.1rem;
+    gap: 0.75rem;
   }
-
   .msg {
-    max-width: 94%;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    border-radius: 14px;
-    padding: 0.7rem 0.8rem;
-  }
-
-  .msg.user {
-    align-self: flex-end;
-    background: #e66a4e;
-    color: #fff8f4;
-  }
-
-  .msg.agent {
-    align-self: flex-start;
-    background: #1c3a39;
-    color: #d7eeeb;
-  }
-
-  .chat-form {
-    margin-top: 0.9rem;
-    display: grid;
+    display: flex;
     gap: 0.55rem;
+    max-width: 95%;
+    animation: msg-in 0.25s ease-out;
+  }
+  .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg.agent { align-self: flex-start; }
+
+  @keyframes msg-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  textarea {
-    width: 100%;
-    resize: vertical;
-    min-height: 70px;
-    border-radius: 10px;
-    border: 1px solid rgba(228, 243, 241, 0.24);
-    background: #0f1f1f;
-    color: #d7eeeb;
-    padding: 0.62rem 0.72rem;
-    font: inherit;
+  .msg-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
+  .msg-avatar .material-symbols-rounded { font-size: 18px; color: var(--accent); }
 
-  button {
-    border: none;
-    border-radius: 10px;
-    background: #f0d3b3;
-    color: #2b2820;
-    font-weight: 700;
-    padding: 0.62rem 0.9rem;
-    cursor: pointer;
-  }
-
-  .grid {
-    max-width: 1200px;
-    margin: 1.3rem auto 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.9rem;
-  }
-
-  .panel {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 1rem;
-  }
-
-  .panel h3 {
-    margin-bottom: 0.35rem;
-    color: #153b37;
-    font-size: 1rem;
-  }
-
-  .panel p {
-    color: var(--muted);
-    font-size: 0.9rem;
+  .msg-body {
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.85rem;
+    font-size: 0.88rem;
     line-height: 1.5;
   }
+  .msg.agent .msg-body { background: var(--bg-elevated); color: var(--text-primary); }
+  .msg.user .msg-body { background: var(--accent); color: #fff; }
+  .msg-sender {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 2px;
+  }
 
-  @media (max-width: 1000px) {
-    .hero {
-      grid-template-columns: 1fr;
-    }
+  /* === CHAT FORM === */
+  .chat-form {
+    padding: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .input-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .chat-form textarea {
+    flex: 1;
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.75rem;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.88rem;
+    resize: none;
+    transition: border-color var(--transition);
+  }
+  .chat-form textarea::placeholder { color: var(--text-muted); }
+  .chat-form textarea:focus { outline: none; border-color: var(--accent); }
+  .chat-form textarea:disabled { opacity: 0.5; }
 
-    .grid {
-      grid-template-columns: 1fr;
-    }
+  .send-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition);
+  }
+  .send-btn:hover { filter: brightness(1.15); transform: scale(1.04); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .send-btn .material-symbols-rounded { font-size: 20px; }
+
+  .input-hints {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 1100px) {
+    .content-grid { grid-template-columns: 1fr; }
+    .agent-panel { height: 500px; position: static; }
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .sidebar { position: fixed; left: -240px; top: 0; bottom: 0; z-index: 100; transition: left var(--transition); }
+    .sidebar:not(.collapsed) { left: 0; box-shadow: var(--shadow-lg); }
+    .sidebar.collapsed { left: -240px; }
+    .metrics-row { grid-template-columns: 1fr; }
+    .user-name { display: none; }
+    .content-grid { grid-template-columns: 1fr; }
   }
 </style>

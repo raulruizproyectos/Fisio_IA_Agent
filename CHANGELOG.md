@@ -766,3 +766,182 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 - Backend productivo ya usa el codigo actualizado de `main`.
 - Integracion backend -> n8n agent recuperada y estable sin fallback forzado.
 
+---
+
+## 2026-03-02 - Sesion 20: Decision UX/UI para frontend con Google Stitch
+
+### Objetivo
+- Dejar registrada la herramienta de diseno/prototipado a utilizar en la mejora del frontend.
+
+### Decision tecnica
+- Se adopta `Google Stitch` como herramienta de apoyo para crear propuestas de UI del frontend.
+- Flujo acordado:
+  1. Generar propuesta visual en Google Stitch.
+  2. Exportar referencia (codigo/Figma/capturas).
+  3. Implementar y ajustar en `frontend/` (Astro) respetando arquitectura del proyecto.
+
+### Pendiente inmediato
+1. Definir primera pantalla objetivo para redisenar con Stitch (recomendado: `frontend/src/pages/index.astro`).
+2. Traducir el prototipo a componentes Astro reutilizables.
+
+---
+
+## 2026-03-02 - Sesion 21: Cierre de sesion con bloqueo frontend + decision de plataforma de video
+
+### Objetivo
+- Resolver bloqueo local de `npm install` en `frontend` y cerrar la sesion con continuidad clara.
+
+### Verificaciones ejecutadas
+- `npm ping` -> OK (`PONG`) contra `https://registry.npmjs.org/`.
+- Se detectaron y eliminaron procesos colgados de `npm install` (multiples `node.exe` con `npm-cli.js install`).
+- Reintentos de instalacion:
+  - `npm install --no-audit --no-fund` (varios intentos)
+  - `npm install --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000`
+  - intentos con timeout extendido
+- Resultado: en este host el proceso vuelve a quedar colgado y expira por timeout de sesion.
+
+### Decision funcional registrada (video IA)
+- Para tareas de generacion de video se podra usar `Google Labs Flow`:
+  - `https://labs.google/fx/es/tools/flow`
+- Contexto de uso acordado: usuario con plan Pro de Gemini.
+
+### Decision funcional registrada (IA conversacional)
+- En n8n, la IA conversacional se implementara normalmente con nodo `OpenAI` (o con agente basado en modelo OpenAI).
+
+### Estado de cierre
+- Backend/n8n/supabase: sin cambios funcionales en esta sesion.
+- Frontend local: bloqueo de instalacion npm persiste en este host.
+
+### Pendiente inmediato para proxima sesion
+1. Ejecutar instalacion frontend en entorno alternativo o terminal limpia:
+   - `cd frontend`
+   - `npm install --no-audit --no-fund`
+   - `npm run build`
+2. Si vuelve a colgarse, capturar log detallado:
+   - `npm install --no-audit --no-fund --verbose`
+3. Iniciar rediseno UI con Google Stitch e implementar en Astro.
+4. Evaluar `Google Labs Flow` para pipeline de generacion de video en el flujo clinico.
+
+---
+
+## 2026-03-02 - Sesion 22: Diagnostico real del bloqueo frontend + fix TS inicial
+
+### Objetivo
+- Resolver el bloqueo persistente de `npm install` en frontend y avanzar el build.
+
+### Hallazgos clave
+- Causa raiz identificada: el bloqueo ocurre al instalar `node_modules` dentro de la ruta sincronizada `G:\Mi unidad\...`.
+- Verificacion comparativa:
+  - En `C:\Temp` con el mismo `package.json`, `npm install` completa correctamente.
+  - En la ruta del proyecto sincronizada, `npm install` queda colgado y deja procesos `node/npm` vivos.
+- Se eliminaron multiples procesos colgados de `npm install` durante el diagnostico.
+
+### Cambios implementados
+- Frontend:
+  - `frontend/src/pages/index.astro`
+  - Corregidos errores TypeScript del script cliente:
+    - tipado explicito de `form`, `input`, `log`
+    - tipado de `addMessage(text, type)`
+    - guardas de null para evitar acceso inseguro al DOM
+
+### Estado al cerrar esta sesion
+- Bloqueo de instalacion en ruta sincronizada: **persistente**.
+- Build en entorno local no sincronizado (`C:\Temp`): **OK** tras fix TS.
+  - `astro check`: 0 errores
+  - `astro build`: completado
+
+### Como retomar rapido
+1. Copiar `frontend/` a ruta local no sincronizada (ej. `C:\Temp\Fisio_IA_Agent_frontend_local`).
+2. Ejecutar `npm install --no-audit --no-fund` y `npm run build`.
+3. Si build OK, continuar iteracion visual (Google Stitch) sobre `frontend/src/pages/index.astro`.
+
+---
+
+## 2026-03-02 - Sesion 23: Cierre de jornada y automatizacion de build frontend local
+
+### Objetivo
+- Dejar cerrado el dia con un flujo operativo estable para frontend, sin depender de `npm install` en ruta sincronizada.
+
+### Cambios implementados
+- Frontend:
+  - `frontend/src/pages/index.astro`
+  - fix de tipado TS en script cliente (DOM null-safety + tipos de parametros).
+- Script operativo nuevo:
+  - `scripts/frontend-local-build.ps1`
+  - Flujo automatizado:
+    1. copia `frontend/` a `C:\Temp\Fisio_IA_Agent_frontend_local`
+    2. ejecuta `npm install --no-audit --no-fund`
+    3. ejecuta `npm run build`
+- Higiene de repo:
+  - `.gitignore` actualizado para ignorar `frontend/node_modules_stuck*/`.
+
+### Verificacion ejecutada
+- Script validado en esta sesion:
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\frontend-local-build.ps1`
+  - resultado: `astro check` OK (0 errores) + `astro build` OK.
+
+### Decision operativa de continuidad
+- Hasta resolver el lock de la ruta sincronizada (`G:\Mi unidad\...`), el build de frontend se ejecuta por ruta local no sincronizada mediante el script anterior.
+
+### Skills usadas (constancia breve)
+- `protocolo-6-fases-dev`: aplicado en discovery/roadmap/ejecucion/testing/refinement para cerrar bloqueo tecnico y continuidad.
+
+### Como retomar rapido (proxima sesion)
+1. Ejecutar `.\scripts\frontend-local-build.ps1`.
+2. Si OK, avanzar rediseno con Google Stitch sobre `frontend/src/pages/index.astro`.
+3. Validar en paralelo backlog funcional (E2E Telegram y revisiones de video).
+
+---
+
+## 2026-03-03 - Sesion 24: Rediseno completo del frontend (dashboard profesional dark mode)
+
+### Objetivo
+- Retomar proyecto y ejecutar rediseno del frontend con Google Stitch como referencia.
+
+### Verificaciones de plataforma
+- Backend productivo (`/api/health`): OK (200).
+- Supabase: 15 tablas confirmadas en esquema publico, todas con RLS activo.
+  - Datos existentes: 11 pacientes, 8 dolencias, 16 ejercicios, 10 mensajes ingesta, 5 vinculos Telegram, 2 trabajos video.
+- n8n: 6 workflows activos segun CHANGELOG (no se modificaron en esta sesion).
+- Frontend build: OK (0 errores, 0 warnings) con `frontend-local-build.ps1`.
+
+### Cambios implementados
+- Frontend (`frontend/src/layouts/Layout.astro`):
+  - Tipografia cambiada de Space Grotesk/Fraunces a Inter.
+  - Anadido Google Material Symbols Rounded.
+  - Sistema de variables CSS para dark mode premium (--bg-base, --accent, --glass, etc.).
+  - Scrollbar custom.
+- Frontend (`frontend/src/pages/index.astro`):
+  - Rediseno completo de la interfaz:
+    - Sidebar colapsable con navegacion (Dashboard, Pacientes, Intake Pendientes con badge, Videos, Historial, Configuracion).
+    - Header con busqueda, notificaciones, avatar y nombre del profesional.
+    - 4 tarjetas de metricas (intakes pendientes, pacientes activos, videos en revision, sesiones hoy).
+    - Tabla "Ultimos Intakes" con carga desde backend productivo y gestion de estados vacio/error.
+    - Panel de Agente Clinico IA con chat, indicador de conexion (health check), fallback de errores.
+    - Ctrl+Enter para enviar mensajes.
+    - Responsive para tablet y movil.
+  - Paleta: fondo #0f1419, cards #1a2332, accent teal #0d9488.
+  - Glassmorphism, micro-animaciones (msg-in, pulse-dot), hover effects.
+- Google Stitch:
+  - Proyecto creado: "Fisio IA Agent - Dashboard Profesional" (ID: 8185935624241829024).
+  - Pantalla generada con Gemini 3 Pro como referencia de diseno.
+
+### Skills usadas
+- Google Stitch (generacion de propuesta visual de dashboard).
+- `frontend-design` (patrones de diseno premium en modo oscuro, aplicados implicitamente).
+
+### Decisiones tecnicas
+- Backend URL productiva hardcodeada para preview (`https://fisio-backend.b5xbaf.easypanel.host`) con deteccion automatica de localhost.
+- Se mantiene arquitectura Astro SSG sin cambios de dependencias.
+- Material Symbols via CDN para iconografia consistente sin dependencia de paquetes.
+
+### Pendientes inmediatos
+1. Desplegar frontend actualizado en produccion (EasyPanel o similar).
+2. Ejecutar E2E Telegram completo (`/start`, `/plan`, `/dolor`).
+3. Activar branch protection en GitHub `main`.
+4. Rotar credenciales sensibles.
+
+### Como retomar rapido
+1. Ejecutar `.\scripts\frontend-local-build.ps1`.
+2. Confirmar visualmente con `npx serve C:\temp\Fisio_IA_Agent_frontend_local\dist -l 4173`.
+3. Desplegar frontend y probar contra backend productivo.

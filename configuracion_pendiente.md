@@ -111,6 +111,7 @@ Tablas necesarias confirmadas:
 2. Ajustar contenido de respuesta del agente n8n en `/api/agent/message`.
 3. Activar branch protection en GitHub.
 4. Rotar credenciales sensibles.
+5. Iniciar rediseno frontend con `Google Stitch` y trasladar propuesta a Astro.
 
 ## Bloqueo local detectado (frontend)
 - `npm install` en `frontend/` queda colgado en este host y rompe instalacion de `astro` (`invalid`).
@@ -118,3 +119,69 @@ Tablas necesarias confirmadas:
 
 ### Paso 1 al retomar
 - Liberar proceso npm colgado (o reiniciar equipo) y repetir instalacion limpia de frontend.
+
+## Actualizacion de cierre (2026-03-02)
+- Se reintento la recuperacion local de frontend y el bloqueo persiste:
+  - `npm ping` OK
+  - procesos `npm install` colgados detectados y finalizados
+  - nuevas instalaciones vuelven a colgarse en este host
+- Decision UX/UI ya registrada:
+  - usar `Google Stitch` para ideacion/prototipo frontend
+- Decision adicional para video IA:
+  - plataforma candidata `Google Labs Flow` (usuario Pro Gemini)
+  - URL: `https://labs.google/fx/es/tools/flow`
+- Decision de IA conversacional en n8n:
+  - implementar normalmente con nodo `OpenAI` (o agente con modelo OpenAI)
+
+## Punto de situacion para continuar rapido
+1. Ejecutar `frontend/npm install` en entorno alternativo y validar `npm run build`.
+2. Si falla otra vez, capturar log con `--verbose` y revisar ultimo paquete antes del cuelgue.
+3. Empezar rediseno de `frontend/src/pages/index.astro` con base Stitch.
+4. Preparar evaluacion de integracion de Flow para generacion de video en pipeline n8n/backend.
+
+## Punto de situacion actualizado (2026-03-02, cierre rapido)
+- Diagnostico confirmado:
+  - `npm install` se bloquea en la ruta sincronizada del proyecto (`G:\Mi unidad\...`).
+  - El mismo install en `C:\Temp` completa correctamente.
+- Frontend:
+  - aplicado fix TypeScript en `frontend/src/pages/index.astro` para errores de null/typing en script cliente.
+- Validacion tecnica:
+  - en `C:\Temp\Fisio_IA_Agent_frontend_local`, `npm run build` -> OK
+  - `astro check` sin errores (0)
+- Decision operativa temporal:
+  - ejecutar install/build del frontend en ruta local no sincronizada hasta cerrar bloqueo del host actual.
+
+## Siguiente sesion (pasos exactos)
+1. Copiar `frontend/` a `C:\Temp\Fisio_IA_Agent_frontend_local`.
+2. Ejecutar:
+   - `npm install --no-audit --no-fund`
+   - `npm run build`
+3. Si build OK, continuar el rediseno con Google Stitch y aplicar cambios en repo principal.
+
+## Cierre de hoy (2026-03-02)
+- Estado frontend:
+  - bloqueo de `npm install` persiste solo en ruta sincronizada (`G:\Mi unidad\...`).
+  - solucion operativa validada en esta sesion: build por ruta local no sincronizada.
+- Script disponible y probado:
+  - `scripts/frontend-local-build.ps1`
+  - comando: `powershell -ExecutionPolicy Bypass -File .\scripts\frontend-local-build.ps1`
+  - resultado validado: `astro check` OK + `astro build` OK.
+- Ajuste de limpieza:
+  - `.gitignore` incluye `frontend/node_modules_stuck*/`.
+- Regla aplicada a partir de ahora:
+  - usar skills disponibles en `.agents` cuando aplique, con constancia breve en seguimiento.
+
+## Arranque minimo recomendado (siguiente sesion)
+1. Ejecutar script `frontend-local-build.ps1`.
+2. Desplegar frontend actualizado en produccion.
+3. Retomar validaciones funcionales pendientes:
+   - E2E Telegram (`/start`, `/plan`, `/dolor`)
+   - pipeline de video y validacion de tablas/estados en Supabase.
+
+## Decision UX/UI registrada (2026-03-03)
+- Frontend rediseñado completamente en sesion 24.
+- Dashboard profesional dark mode con sidebar, metricas, tabla de intakes, chat del agente IA.
+- Proyecto Stitch de referencia: ID 8185935624241829024.
+- Paleta: #0f1419 / #1a2332 / #0d9488 (teal).
+- Tipografia: Inter + Material Symbols Rounded.
+
