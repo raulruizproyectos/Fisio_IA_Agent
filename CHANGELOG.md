@@ -113,6 +113,23 @@
   - Eliminado bloque `HEALTHCHECK`.
   - Se mantiene `CMD nginx -g 'daemon off;'` como proceso principal.
 
+## [Sesion 37] - 2026-03-04 (Frontend recuperado en EasyPanel)
+### Acciones ejecutadas
+- Commit y push del ajuste de `Dockerfile` frontend.
+- Deploy forzado por API TRPC de EasyPanel (`services.app.deployService` con `forceRebuild=true`).
+- Verificacion de estado por API:
+  - `monitor.getDockerTaskStats` -> `fisio-ia-agent_fisio-frontend: actual=1, desired=1`.
+  - `projects.getDockerContainers` -> contenedor frontend en `running`.
+
+### Validacion externa final
+- `https://fisio-frontend.b5xbaf.easypanel.host/health` -> `200 (ok)`.
+- `https://fisio-frontend.b5xbaf.easypanel.host/` -> `200`.
+- Backend se mantiene estable:
+  - `https://fisio-backend.b5xbaf.easypanel.host/api/health` -> `200`.
+
+### Estado de cierre
+- Bloqueo critico de frontend `502` resuelto.
+
 ## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
 
 - Repositorio oficial del proyecto (URL exacta): `https://github.com/raulruizproyectos/Fisio_IA_Agent`
