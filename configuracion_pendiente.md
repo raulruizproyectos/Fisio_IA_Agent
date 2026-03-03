@@ -321,3 +321,8 @@ Tablas necesarias confirmadas:
 
 ### Regla de continuidad
 - Cualquier avance de manana debe registrarse primero en `CHANGELOG.md` y luego en este archivo.
+
+## Ajuste ultimo minuto (Sesion 32)
+- Prompt del Agente IA de Ejercicios ya adaptado a canal Telegram (igual que agente de citas en n8n).
+- Mantiene estrategia de imagenes desde Supabase Storage por `object_key` + signed URL JIT en n8n.
+- Modo actual: 1 ejercicio maximo por respuesta.

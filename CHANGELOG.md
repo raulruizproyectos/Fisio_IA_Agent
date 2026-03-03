@@ -1293,3 +1293,21 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 - Frontend en 200.
 - W0/W1/W2/W3 definidos con contratos JSON y logs en Supabase.
 - Recomendaciones de ejercicios con imagenes via signed URL JIT (sin persistir URL firmada).
+
+---
+
+## [Sesion 32] - 2026-03-03 (Ajuste prompt Agente Ejercicios para Telegram)
+### Objetivo
+- Ajustar el prompt maestro para comportamiento conversacional por Telegram, alineado con el agente de citas en n8n.
+
+### Cambios aplicados
+- Archivo actualizado: `.agents/skills/exercise-agent-prompt.md`.
+- Se fija explicitamente:
+  - Canal principal paciente: `telegram`.
+  - Paridad operativa con agente de citas (misma capa n8n).
+  - Triage inicial cuando el mensaje es saludo o ambiguo.
+  - Recomendacion de 1 solo ejercicio maximo por respuesta.
+  - Envio por imagen de movimiento via `object_key` (sin YouTube, sin URL firmada persistida).
+
+### Estado
+- Prompt listo para implementacion directa en nodo OpenAI Agent de n8n.
