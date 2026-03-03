@@ -88,6 +88,21 @@
 - Backend productivo: `200` en `https://fisio-backend.b5xbaf.easypanel.host/api/health`.
 - Frontend productivo: seguia en `502` al momento de iniciar esta sesion de hardening (se fuerza nuevo ciclo de deploy tras este commit).
 
+## [Sesion 35] - 2026-03-04 (Verificacion build OK + bloqueo infra frontend)
+### Verificaciones ejecutadas
+- Script local de validacion: `powershell -ExecutionPolicy Bypass -File .\\scripts\\frontend-local-build.ps1`
+  - `npm install`: OK
+  - `npm run build` (`astro build`): OK
+  - Resultado: frontend compila correctamente en entorno limpio local.
+- Deploy remoto disparado por API (tokens existentes): respuesta `Deploying...` en ambos endpoints conocidos.
+- Estado posterior:
+  - Backend: `200` estable.
+  - Frontend (`fisio-frontend`): sigue `502` ("Service is not reachable").
+
+### Conclusion operativa
+- El bloqueo ya no apunta al codigo del frontend; apunta a configuracion/runtime del servicio en EasyPanel (task/container no llega a healthy).
+- Siguiente accion critica: inspeccionar error real de servicio en EasyPanel (`services.common.getServiceError` o logs de deployment) con credenciales/API token de EasyPanel.
+
 ## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
 
 - Repositorio oficial del proyecto (URL exacta): `https://github.com/raulruizproyectos/Fisio_IA_Agent`

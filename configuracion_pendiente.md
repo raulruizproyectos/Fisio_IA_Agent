@@ -20,6 +20,17 @@ Estado actualizado para retomar sin perdida.
   - `package.json` frontend: `build` pasa a `astro build` y `astro check` queda como script separado.
 - Se lanzan redeploys por endpoint API de EasyPanel para recuperar `fisio-frontend`.
 
+## Estado actual (2026-03-04, Sesion 35)
+- Validacion local fuerte del frontend completada:
+  - `scripts/frontend-local-build.ps1` -> build correcto en copia limpia (`astro build` OK).
+- Infraestructura remota:
+  - `fisio-backend` sigue en `200`.
+  - `fisio-frontend` sigue en `502` despues de redeploys por API.
+- Diagnostico:
+  - El bloqueo actual es de servicio EasyPanel (runtime/config/task), no de compilacion frontend.
+- Necesidad para cierre definitivo:
+  - acceso a logs/error de servicio en EasyPanel (UI o API autenticada) para aplicar fix exacto y dejar `200`.
+
 ## Estado actual (2026-03-03, Sesion 25)
 - Migracion SQL productiva aplicada y validada en Supabase.
 - Workflows Fisio activos y alineados en n8n.
