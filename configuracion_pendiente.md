@@ -206,3 +206,24 @@ Tablas necesarias confirmadas:
 4. Ejecutar E2E Telegram (`/start`, `/plan`, `/dolor`).
 5. Configurar branch protection en `main`.
 6. Rotar credenciales sensibles.
+
+## Actualizacion (2026-03-03, Sesion 27)
+- Pendiente de sesion 26 "Frontend Backend Hooks" completado en codigo:
+  - Backend:
+    - Nuevo endpoint `GET /api/profesional/video-jobs` en `backend/src/routes/professional.js`.
+  - Frontend:
+    - `frontend/src/pages/index.astro` ya no usa `alert()` para acciones principales.
+    - Botones activos:
+      - Dashboard/Intakes: `Revisar` -> abre Historial del paciente.
+      - Pacientes: `Ver` -> abre Historial del paciente.
+      - Videos: `Historial` -> abre Historial del paciente.
+    - Sección Videos conectada a datos reales de backend.
+    - Sección Historial conectada a:
+      - `GET /api/pacientes/:id`
+      - `GET /api/profesional/patients/:patientId/history`
+
+## Pendiente inmediato actualizado
+1. **[Manual EasyPanel]** crear/desplegar `fisio-frontend` desde `/frontend` y validar `/health`.
+2. **[Manual E2E Telegram]** ejecutar flujo real `/start`, `/plan`, `/dolor`.
+3. **[Manual GitHub]** activar branch protection en `main`.
+4. **[Seguridad]** rotar credenciales sensibles (n8n, EasyPanel, secretos entorno).

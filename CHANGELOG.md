@@ -1028,3 +1028,64 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Siguientes Pasos (Punto de pausa)
 1. **Frontend Backend Hooks**: Enlazar los botones "Revisar/Ver" de las nuevas tablas para que disparen *modals* dinámicos o detalles.
 2. **Despliegues Pendientes**: Ejecutar paso-a-paso manual en EasyPanel y probar todo integrado en producción.
+
+---
+
+## [Sesión 27] - 2026-03-03
+### Objetivo
+- Cerrar el pendiente de integración frontend-backend dejado en la sesión 26 para acciones reales de revisión.
+
+### Cambios implementados
+1. **Backend profesional ampliado**
+   - Archivo: `backend/src/routes/professional.js`
+   - Nuevo endpoint: `GET /api/profesional/video-jobs`
+   - Soporta:
+     - `profesional_id` (obligatorio)
+     - filtros opcionales `estado`, `paciente_id`
+     - `limit` (1..100)
+   - Incluye datos asociados para UI:
+     - `nombre_paciente` (join con `pacientes`)
+     - `nombre_ejercicio` (join con `ejercicios`)
+
+2. **Frontend SPA conectado sin alerts inline**
+   - Archivo: `frontend/src/pages/index.astro`
+   - Tabla dashboard/intakes:
+     - botón `Revisar` ahora abre historial real del paciente (sin `alert()`).
+   - Tabla pacientes:
+     - botón `Ver` ahora abre historial del paciente seleccionado.
+   - Tabla intakes completa:
+     - se añade columna `Acciones` con botón `Historial`.
+   - Tabla videos:
+     - deja de ser placeholder y carga datos reales con:
+       - `GET /api/profesional/video-jobs?profesional_id=...`
+     - métrica `Videos en revisión` calculada por estado.
+   - Sección historial:
+     - carga datos reales de:
+       - `GET /api/pacientes/:id`
+       - `GET /api/profesional/patients/:patientId/history`
+     - render de notas de seguimiento + eventos de video.
+
+### Validaciones
+- Sintaxis backend verificada con `node --check backend/src/routes/professional.js` -> OK.
+- Comprobación estática del frontend:
+  - sin `onclick="..."` inline para acciones de revisar/ver.
+  - referencias nuevas a `/api/profesional/video-jobs` y `loadHistorial` presentes.
+
+### Decisiones tecnicas
+- Mantener interacción en SPA mediante `data-action` + delegación de eventos para evitar handlers inline.
+- Reutilizar endpoint de historial ya existente para no duplicar lógica en frontend.
+
+### Pendientes inmediatos
+1. **[Manual EasyPanel]** desplegar `fisio-frontend` con root `/frontend` y verificar `/health`.
+2. **[Manual E2E Telegram]** ejecutar `/start`, `/plan`, `/dolor` con paciente real y validar DB.
+3. **[Manual GitHub]** activar branch protection en `main`.
+4. **[Seguridad]** rotar credenciales expuestas en sesiones técnicas.
+
+### Como retomar rapido
+1. Push de `main` con cambios de sesión 27.
+2. Deploy manual del frontend en EasyPanel.
+3. Probar flujo UI:
+   - Dashboard -> `Revisar`
+   - Pacientes -> `Ver`
+   - Videos -> `Historial`
+4. Confirmar que la sección historial muestra notas/eventos del paciente seleccionado.

@@ -46,6 +46,66 @@ router.get('/intakes/pending', async (req, res, next) => {
   }
 });
 
+router.get('/video-jobs', async (req, res, next) => {
+  try {
+    const professionalId = pickValue(req.query, 'profesional_id', 'professional_id');
+    if (!professionalId) {
+      return res.status(400).json({ error: 'profesional_id es obligatorio (o professional_id)' });
+    }
+
+    const statusFilter = pickValue(req.query, 'estado', 'status');
+    const patientIdFilter = pickValue(req.query, 'paciente_id', 'patient_id');
+    const limitRaw = Number.parseInt(String(req.query?.limit || '30'), 10);
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 100) : 30;
+
+    let query = supabase
+      .from('trabajos_video_ejercicio')
+      .select(`
+        id,
+        paciente_id,
+        profesional_id,
+        ejercicio_id,
+        trabajo_padre_id,
+        numero_revision,
+        estado,
+        prescripcion,
+        prompt_generacion,
+        notas_revision,
+        url_salida,
+        creado_en,
+        actualizado_en,
+        pacientes!trabajos_video_ejercicio_paciente_id_fkey(nombre_completo),
+        ejercicios!trabajos_video_ejercicio_ejercicio_id_fkey(nombre)
+      `)
+      .eq('profesional_id', professionalId)
+      .order('creado_en', { ascending: false })
+      .limit(limit);
+
+    if (statusFilter) query = query.eq('estado', statusFilter);
+    if (patientIdFilter) query = query.eq('paciente_id', patientIdFilter);
+
+    const { data, error } = await query;
+    if (error) {
+      if (isMissingTableError(error, 'trabajos_video_ejercicio')) {
+        return res.status(400).json({
+          error: 'Falta tabla trabajos_video_ejercicio. Ejecuta la migracion SQL de seguimiento.',
+        });
+      }
+      throw error;
+    }
+
+    const normalized = (data || []).map((job) => ({
+      ...job,
+      nombre_paciente: job?.pacientes?.nombre_completo || null,
+      nombre_ejercicio: job?.ejercicios?.nombre || null,
+    }));
+
+    res.json({ data: normalized });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/patients/:patientId/history', async (req, res, next) => {
   try {
     const { patientId } = req.params;
