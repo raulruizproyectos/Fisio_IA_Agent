@@ -299,3 +299,25 @@ Tablas necesarias confirmadas:
 2. Crear bucket privado `ejercicios` (si no existe) y validar object_keys.
 3. Cablear trigger web CRM para recomendaciones de ejercicios.
 4. Implementar logging completo por `request_id` en DB.
+
+## Cierre diario definitivo (2026-03-03)
+### Estado operativo real al cierre
+- Backend: OK (`200`).
+- Frontend: KO (`502`) en dominio productivo.
+- Arquitectura objetivo ya fijada y documentada (CRM + Citas + Ejercicios).
+
+### Lo que SI esta listo
+- Repositorio limpio para nueva etapa.
+- Reglas y skills de agente creadas en `.agents/`.
+- Prompt maestro de ejercicios listo para nodo OpenAI n8n.
+- Propuesta SQL aditiva disponible en `database/schema_vnext.sql`.
+
+### Lo que queda para primera hora de manana
+1. EasyPanel: extraer causa exacta de `fisio-frontend` (task fail) y dejarlo en 200.
+2. Supabase Storage: validar bucket `ejercicios` en privado.
+3. n8n: definir contratos y montar W0/W1/W2/W3.
+4. CRM trigger: conectar boton de ejercicios a W3.
+5. Logging: asegurar trazabilidad por `request_id` y `patient_id`.
+
+### Regla de continuidad
+- Cualquier avance de manana debe registrarse primero en `CHANGELOG.md` y luego en este archivo.

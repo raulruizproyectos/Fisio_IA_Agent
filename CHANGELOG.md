@@ -1256,3 +1256,40 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 - Repo limpio de workflows de video legacy.
 - Video queda fuera de alcance activo.
 - Prioridad siguiente: implementar workflows n8n del nuevo modelo y cablear boton CRM -> trigger web.
+
+---
+
+## [Sesion 31] - 2026-03-03 (Cierre diario listo para continuar manana)
+### Objetivo
+- Dejar el proyecto en estado de continuidad total para retomar sin perdida de contexto.
+
+### Estado confirmado al cierre
+- Rama `main` sincronizada con GitHub.
+- Backend productivo: `200` en `https://fisio-backend.b5xbaf.easypanel.host/api/health`.
+- Frontend productivo: `502` en `https://fisio-frontend.b5xbaf.easypanel.host/` (bloqueo pendiente).
+- Enfoque vigente: CRM + Agente de Citas + Agente IA de Ejercicios.
+- Pipeline de video: fuera de alcance activo (legacy limpio en workflows repo).
+
+### Archivos clave de continuidad (fuente de verdad)
+- `CHANGELOG.md`
+- `configuracion_pendiente.md`
+- `ARCHITECTURE.md`
+- `.agents/AGENT_RULES.md`
+- `.agents/skills/*`
+- `database/schema_vnext.sql`
+
+### Arranque recomendado para manana (orden estricto)
+1. Revisar `ARCHITECTURE.md` y fijar contratos finales W0/W1/W2/W3.
+2. Resolver bloqueo frontend 502 en EasyPanel (logs de task/container) hasta 200.
+3. Crear/validar bucket privado `ejercicios` y convención de `object_key`.
+4. Implementar en n8n:
+   - W0 Router Telegram
+   - W1 Citas (Calendar + logging)
+   - W2 Ejercicios (OpenAI + catalogo + signed URLs JIT)
+   - W3 Trigger Web CRM
+5. Cablear botón CRM -> backend -> n8n (W3) y registrar `request_id` end-to-end.
+
+### Criterio de done inmediato (manana)
+- Frontend en 200.
+- W0/W1/W2/W3 definidos con contratos JSON y logs en Supabase.
+- Recomendaciones de ejercicios con imagenes via signed URL JIT (sin persistir URL firmada).
