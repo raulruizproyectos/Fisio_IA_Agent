@@ -1089,3 +1089,55 @@ Para cada sesion nueva anadir bloque con esta plantilla:
    - Pacientes -> `Ver`
    - Videos -> `Historial`
 4. Confirmar que la sección historial muestra notas/eventos del paciente seleccionado.
+
+---
+
+## [Sesión 28] - 2026-03-03
+### Objetivo
+- Reorganizar infraestructura EasyPanel en proyecto dedicado `fisio-ia-agent` y dejar backend/frontend operativos.
+
+### Cambios de infraestructura ejecutados (EasyPanel API)
+1. Proyecto:
+   - Eliminado: `openclaw`.
+   - Creado: `fisio-ia-agent`.
+2. Migración de servicios:
+   - `fisio-backend` movido de `n8n` -> `fisio-ia-agent`.
+   - `fisio-frontend` movido de `n8n` -> `fisio-ia-agent`.
+   - Proceso aplicado con `services.common.rename` (previo `stopService`, posterior `startService`).
+3. Backend:
+   - Estado final: operativo.
+   - Verificación: `GET https://fisio-backend.b5xbaf.easypanel.host/api/health` -> 200.
+4. Frontend (configuración aplicada):
+   - Source Git: `main`, path `/frontend`.
+   - Build probado:
+     - `nixpacks` (no estable en runtime).
+     - `dockerfile` (`build.file = Dockerfile`).
+   - Dominio corregido tras movimiento:
+     - de `n8n-fisio-frontend.b5xbaf.easypanel.host`
+     - a `fisio-frontend.b5xbaf.easypanel.host`.
+
+### Cambio de código para desbloqueo de build frontend
+- Archivo: `frontend/Dockerfile`
+- Commit: `c3a8aae`
+- Cambio:
+  - `COPY package.json package-lock.json* ./`
+  - -> `COPY package*.json ./`
+- Motivo: evitar fallo cuando no existe `package-lock.json`.
+
+### Estado final de la sesión
+- Backend: OK en producción.
+- Frontend:
+  - Deploy toma commit `c3a8aae` correctamente.
+  - Sigue devolviendo `502` en `https://fisio-frontend.b5xbaf.easypanel.host/`.
+  - Diagnóstico técnico observado:
+    - `monitor.getDockerTaskStats`: `fisio-ia-agent_fisio-frontend` -> `actual: 0`, `desired: 1`.
+    - `projects.getDockerContainers` para frontend -> `[]` (sin contenedor en ejecución).
+    - `services.common.getServiceError` -> `null` (sin detalle de error expuesto por API).
+
+### Punto exacto para retomar
+1. Inspeccionar en EasyPanel UI el historial/log de deploy del servicio `fisio-frontend` (falla de task sin contenedor vivo).
+2. Revisar task failure reason en Docker Swarm del host (si se dispone de consola).
+3. Aplicar fix según log real (build/runtime) y redeploy.
+4. Confirmar objetivo:
+   - `https://fisio-frontend.b5xbaf.easypanel.host/` -> 200
+   - `monitor.getDockerTaskStats` frontend -> `actual: 1`, `desired: 1`.

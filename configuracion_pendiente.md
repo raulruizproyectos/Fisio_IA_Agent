@@ -227,3 +227,34 @@ Tablas necesarias confirmadas:
 2. **[Manual E2E Telegram]** ejecutar flujo real `/start`, `/plan`, `/dolor`.
 3. **[Manual GitHub]** activar branch protection en `main`.
 4. **[Seguridad]** rotar credenciales sensibles (n8n, EasyPanel, secretos entorno).
+
+## Actualizacion (2026-03-03, Sesion 28)
+- Infraestructura reorganizada en EasyPanel:
+  - Proyecto `openclaw` eliminado.
+  - Proyecto nuevo `fisio-ia-agent` creado.
+  - Servicios movidos de `n8n` -> `fisio-ia-agent`:
+    - `fisio-backend`
+    - `fisio-frontend`
+- Backend confirmado operativo:
+  - `https://fisio-backend.b5xbaf.easypanel.host/api/health` -> 200.
+- Frontend:
+  - Dominio corregido a `fisio-frontend.b5xbaf.easypanel.host`.
+  - Build configurado en EasyPanel como `dockerfile` (`file: Dockerfile`).
+  - Deploy actualizado al commit `c3a8aae`.
+  - Estado actual: sigue en `502`.
+  - Señales técnicas:
+    - `monitor.getDockerTaskStats`: `fisio-ia-agent_fisio-frontend` -> `actual=0`, `desired=1`.
+    - `projects.getDockerContainers`: sin contenedor corriendo para frontend.
+    - `services.common.getServiceError`: `null` (sin detalle).
+
+## Pendiente inmediato (nuevo)
+1. **[Manual EasyPanel UI]** abrir logs/historial de deploy de `fisio-frontend` para capturar causa exacta del task fail.
+2. **[Manual Host/Docker Swarm]** revisar reason del servicio `fisio-ia-agent_fisio-frontend` (si hay acceso a consola del nodo).
+3. **Aplicar fix de runtime/build** según log y redeploy.
+4. Confirmar estado final:
+   - `https://fisio-frontend.b5xbaf.easypanel.host/` -> 200
+   - `monitor.getDockerTaskStats` frontend -> `actual=1`, `desired=1`.
+5. Mantener pendientes ya abiertos:
+   - E2E Telegram real.
+   - branch protection en `main`.
+   - rotación de credenciales.
