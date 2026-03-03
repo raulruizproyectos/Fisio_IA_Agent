@@ -1012,3 +1012,19 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 2. **GitHub**: branch protection en `main` (sin `gh` CLI ni token API directo).
 3. **Seguridad**: rotar credenciales sensibles.
 
+---
+
+## [Sesión 26] - 2026-03-03
+### Tareas Realizadas
+1. **Frontend SPA Completa**: Reestructuración masiva de `index.astro` (colapsados los módulos en una auténtica *Single Page Application* navegable vía menú lateral sin recargar página).
+2. **Nuevas secciones implementadas**:
+   - `Pacientes`: Fetch a `/api/pacientes` y renderizado de tabla (incluyendo métrica "Pacientes activos").
+   - `Intakes Pendientes`: Fetch a `/api/profesional/intakes/pending` con visualización completa (incluye estado de alertas rojas).
+   - `Videos`: Placeholder estructurado para la revisión manual (flujo basado en DB de Supabase/n8n).
+   - `Historial`: Placeholder preparado para cargar notas de evolución del paciente.
+   - `Configuración`: Panel avanzado que realiza un "Health Check" dinámico consultando tanto `/api/health` como `/api/agent/message` (test con role=test) para verificar si la caída es del backend o de n8n exclusivamente.
+3. **Validación build local**: Refactor CSS y JS SPA completado sin problemas (`astro build` y `astro check` en `C:\temp\Fisio_IA_Agent_frontend_local` con 0 errores).
+
+### Siguientes Pasos (Punto de pausa)
+1. **Frontend Backend Hooks**: Enlazar los botones "Revisar/Ver" de las nuevas tablas para que disparen *modals* dinámicos o detalles.
+2. **Despliegues Pendientes**: Ejecutar paso-a-paso manual en EasyPanel y probar todo integrado en producción.
