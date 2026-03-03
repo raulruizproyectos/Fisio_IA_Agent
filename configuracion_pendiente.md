@@ -2,6 +2,18 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-03, Sesion 33)
+- Frontend redisenado con look&feel mas profesional/moderno (tipografia, paleta, jerarquia visual, microinteracciones).
+- Inspiracion funcional tomada de referencia publica `fisiomap-ia`:
+  - prevencion
+  - continuidad asistencial
+  - interoperabilidad
+  - gobernanza de datos
+- Prompt de Agente IA de Ejercicios ajustado con triage de 4 preguntas para Telegram.
+- Nota tecnica local:
+  - `npm run build` falla por `astro` no disponible en PATH del host local actual.
+  - Requiere revisar entorno de build/dependencias antes de validar compilacion local.
+
 ## Estado actual (2026-03-03, Sesion 25)
 - Migracion SQL productiva aplicada y validada en Supabase.
 - Workflows Fisio activos y alineados en n8n.

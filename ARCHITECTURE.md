@@ -12,6 +12,13 @@ Estado de alcance:
 - En foco: CRM + Telegram + n8n + Supabase + Google Calendar + OpenAI.
 - En pausa: pipeline de video (se conserva historial, no se elimina, pero queda fuera del alcance actual).
 
+Principios de producto reforzados (benchmark funcional del mercado):
+
+- Prevencion activa y deteccion temprana de deterioro funcional.
+- Continuidad asistencial entre canales (Telegram <-> CRM).
+- Interoperabilidad basada en datos estructurados y trazabilidad.
+- IA confiable: recomendaciones prudentes, auditables y con gobernanza de datos.
+
 ## 2) Component Map
 
 | Componente | Rol | Entradas | Salidas |
@@ -313,6 +320,11 @@ Telegram (intents base):
 - Citas: "quiero cita", "cambiar cita", "cancelar cita".
 - Ejercicios: "me duele lumbar", "necesito ejercicios para hombro".
 - Nota de sesion: resumen breve post-tratamiento.
+- Triage inicial recomendado en agente de ejercicios:
+  - localizacion del dolor
+  - inicio/tiempo de evolucion
+  - factor que empeora/mejora
+  - antecedentes o tratamiento previo
 
 ## 9) Migration Path (Non-breaking)
 

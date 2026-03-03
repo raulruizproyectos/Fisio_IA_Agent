@@ -4,7 +4,7 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Plataforma inteligente de prescripción y seguimiento para fisioterapeutas' } = Astro.props;
+const { title, description = 'Plataforma inteligente de prescripcion y seguimiento para fisioterapeutas' } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,7 +16,7 @@ const { title, description = 'Plataforma inteligente de prescripción y seguimie
     <meta name="generator" content={Astro.generator} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
@@ -35,36 +35,36 @@ const { title, description = 'Plataforma inteligente de prescripción y seguimie
   }
 
   :root {
-    --bg-base: #0f1419;
-    --bg-card: #1a2332;
-    --bg-card-hover: #1f2b3d;
-    --bg-elevated: #243044;
-    --accent: #0d9488;
-    --accent-soft: #0d948822;
-    --accent-glow: #0d948844;
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --border: #1e293b;
-    --border-light: #334155;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --success: #10b981;
-    --info: #3b82f6;
+    --bg-base: #f3f6fb;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f6f9ff;
+    --bg-elevated: #eef3fb;
+    --accent: #0a7f78;
+    --accent-soft: #0a7f7818;
+    --accent-glow: #0a7f7840;
+    --text-primary: #132238;
+    --text-secondary: #3a4d66;
+    --text-muted: #6b7f98;
+    --border: #d9e3f0;
+    --border-light: #c5d4e8;
+    --danger: #d9414e;
+    --warning: #c9871c;
+    --success: #0b8f6a;
+    --info: #1f6fd6;
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 20px;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-    --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
-    --glass: rgba(26,35,50,0.7);
-    --glass-border: rgba(255,255,255,0.06);
+    --shadow-sm: 0 1px 3px rgba(8, 25, 44, 0.05);
+    --shadow-md: 0 8px 20px rgba(13, 40, 66, 0.08);
+    --shadow-lg: 0 20px 45px rgba(13, 40, 66, 0.14);
+    --glass: rgba(255, 255, 255, 0.78);
+    --glass-border: rgba(10, 37, 63, 0.08);
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   html {
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Manrope', 'Segoe UI', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 15px;
@@ -72,8 +72,16 @@ const { title, description = 'Plataforma inteligente de prescripción y seguimie
 
   body {
     min-height: 100vh;
-    background: var(--bg-base);
+    background:
+      radial-gradient(circle at 10% 0%, #d9f2ee 0%, transparent 40%),
+      radial-gradient(circle at 85% 12%, #dbe8ff 0%, transparent 42%),
+      linear-gradient(180deg, #f9fcff 0%, var(--bg-base) 42%, #eef3fa 100%);
     color: var(--text-primary);
+  }
+
+  h1, h2, h3, .brand-text, .page-title {
+    font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+    letter-spacing: -0.02em;
   }
 
   a {

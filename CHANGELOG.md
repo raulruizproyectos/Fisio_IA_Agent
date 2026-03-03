@@ -47,6 +47,32 @@
 - [ ] Modelo final de auth/roles (`admin` y `fisioterapeuta`).
 - [ ] TTL recomendado signed URLs (propuesta inicial: 20 minutos).
 
+## [Sesion 33] - 2026-03-03 (Rediseño Front + alineacion benchmark Fisiomap IA)
+### Objetivo
+- Mejorar de forma visible el diseño del CRM frontend para una apariencia mas profesional y moderna, manteniendo la funcionalidad actual.
+- Aprovechar señales del benchmark publico `https://fisiomap.app/fisiomap-ia/` para reforzar enfoque de producto (prevencion, continuidad asistencial, interoperabilidad y gobernanza de datos).
+
+### Cambios implementados
+- Frontend (`frontend/src/layouts/Layout.astro`):
+  - Nueva direccion visual: tipografias `Manrope` + `Plus Jakarta Sans`.
+  - Paleta y superficies profesionales en modo claro clinico.
+  - Fondo atmosferico con gradientes suaves y mejor legibilidad global.
+- Frontend (`frontend/src/pages/index.astro`):
+  - Ajuste de identidad de cabecera (`Fisio IA Agent`) y titulo de pagina.
+  - Refinamiento de componentes UI: sidebar, topbar, cards, tablas, botones y panel de agente.
+  - Mejora de microinteracciones (hover/entradas) y animacion escalonada de metricas.
+  - Copy de caja de prompt del agente orientado a triage real de dolor.
+  - Se conserva toda la logica de datos/API actual sin cambios de contratos.
+
+### Decisiones tecnicas
+- Cambio no disruptivo: solo capa visual (HTML/CSS), sin tocar rutas backend ni contratos n8n.
+- Se mantiene compatibilidad mobile/desktop y la estructura SPA interna por secciones.
+- El benchmark se usa como inspiracion funcional/estrategica, no como clon visual.
+
+### Notas de validacion
+- `npm run build` en este entorno falla por ausencia de comando `astro` en PATH local.
+- El fallo es de entorno local, no de API/backend ni de los contratos de negocio.
+
 ## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
 
 - Repositorio oficial del proyecto (URL exacta): `https://github.com/raulruizproyectos/Fisio_IA_Agent`
