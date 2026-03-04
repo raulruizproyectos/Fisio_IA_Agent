@@ -29,6 +29,8 @@ CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomen
 - `GET /api/profesional/appointments`
 - `POST /api/profesional/appointments`
 - `PATCH /api/profesional/appointments/:appointmentId`
+- `GET /api/profesional/program-templates`
+- `POST /api/profesional/program-templates/clone`
 - `GET /api/profesional/patients/:patientId/history`
 - `POST /api/profesional/notes`
 

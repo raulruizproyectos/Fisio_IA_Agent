@@ -20,6 +20,10 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">group</span>
           <span class="nav-label">Pacientes</span>
         </a>
+        <a href="#" class="nav-item" data-section="plantillas">
+          <span class="material-symbols-rounded">library_books</span>
+          <span class="nav-label">Plantillas</span>
+        </a>
         <a href="#" class="nav-item has-badge" data-section="intakes">
           <span class="material-symbols-rounded">assignment</span>
           <span class="nav-label">Intake Pendientes</span>
@@ -107,6 +111,49 @@ import Layout from '../layouts/Layout.astro';
           <section class="card table-card">
             <header class="card-header"><h2>Lista de pacientes</h2><button class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
             <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Email</th><th>Fecha nac.</th><th>Registro</th><th>Acciones</th></tr></thead><tbody id="pacientesBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pacientes...</p></div></td></tr></tbody></table></div>
+          </section>
+        </div>
+
+        <!-- === PAGE: PLANTILLAS === -->
+        <div class="page-section" data-page="plantillas">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terapéuticas</h1>
+            <div class="page-tools">
+              <label class="inline-field">
+                <span>Paciente destino</span>
+                <select id="templateTargetPatient">
+                  <option value="">Selecciona paciente</option>
+                </select>
+              </label>
+              <button class="btn-ghost" id="refreshTemplates"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
+            </div>
+          </div>
+          <section class="card table-card">
+            <header class="card-header"><h2>Plantillas más reutilizadas</h2></header>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Usos</th>
+                    <th>Ejercicios</th>
+                    <th>Último uso</th>
+                    <th>Origen</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="templatesBody">
+                  <tr class="empty-row">
+                    <td colspan="6">
+                      <div class="empty-state">
+                        <span class="material-symbols-rounded">hourglass_empty</span>
+                        <p>Cargando plantillas...</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
 
@@ -201,6 +248,8 @@ import Layout from '../layouts/Layout.astro';
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
   const refreshBtn = document.getElementById('refreshIntakes') as HTMLElement | null;
   const pacientesBody = document.getElementById('pacientesBody') as HTMLElement | null;
+  const templatesBody = document.getElementById('templatesBody') as HTMLElement | null;
+  const templateTargetPatient = document.getElementById('templateTargetPatient') as HTMLSelectElement | null;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
   const videosBody = document.getElementById('videosBody') as HTMLElement | null;
@@ -234,6 +283,8 @@ import Layout from '../layouts/Layout.astro';
     if (!patientId) return;
     selectedPatientId = patientId;
     selectedPatientName = patientName || '';
+    selectedTemplatePatientId = patientId;
+    renderTemplatePatientOptions();
     navigateTo('historial');
     loadHistorial();
   };
@@ -244,6 +295,8 @@ import Layout from '../layouts/Layout.astro';
   const pageLoaders: Record<string, () => void> = {};
   let selectedPatientId: string | null = null;
   let selectedPatientName = '';
+  let patientCatalog: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
+  let selectedTemplatePatientId: string | null = null;
 
   const navigateTo = (section: string) => {
     navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === section));
@@ -301,6 +354,33 @@ import Layout from '../layouts/Layout.astro';
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
   const setSending = (busy: boolean) => { if(sendBtn) sendBtn.disabled=busy; if(input) input.disabled=busy; };
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
+
+  const renderTemplatePatientOptions = () => {
+    if (!templateTargetPatient) return;
+    const current = selectedTemplatePatientId || templateTargetPatient.value || '';
+    const options = ['<option value="">Selecciona paciente</option>']
+      .concat(
+        patientCatalog.map((p) => {
+          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `· ${p.email}` : ''}`.trim();
+          return `<option value="${escapeAttr(p.id)}">${escapeHtml(label)}</option>`;
+        })
+      );
+    templateTargetPatient.innerHTML = options.join('');
+    templateTargetPatient.value = current;
+    selectedTemplatePatientId = templateTargetPatient.value || null;
+  };
+
+  const fetchPatientCatalog = async () => {
+    const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes`);
+    const pts = payload.data || [];
+    patientCatalog = pts.map((p: any) => ({
+      id: p.id,
+      nombre_completo: p.nombre_completo || `Paciente ${p.id}`,
+      email: p.email || null,
+    }));
+    renderTemplatePatientOptions();
+    return pts;
+  };
 
   // W3: Exercise recommendation via CRM
   const handleExerciseRecommend = async (text: string) => {
@@ -420,8 +500,7 @@ import Layout from '../layouts/Layout.astro';
   const loadPacientes = async () => {
     if (!pacientesBody) return;
     try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes`);
-      const pts = payload.data || [];
+      const pts = await fetchPatientCatalog();
       const metricEl = document.getElementById('metricPacientes');
       if (metricEl) metricEl.textContent = String(pts.length);
       if (!pts.length) { pacientesBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">person_off</span><p>Sin pacientes registrados</p></div></td></tr>`; return; }
@@ -437,7 +516,79 @@ import Layout from '../layouts/Layout.astro';
     const target = event.target as HTMLElement | null;
     const btn = target?.closest('button[data-action="view-patient"]') as HTMLButtonElement | null;
     if (!btn) return;
-    openPatientHistory(btn.getAttribute('data-patient-id'), btn.getAttribute('data-patient-name') || '');
+    const patientId = btn.getAttribute('data-patient-id');
+    selectedTemplatePatientId = patientId;
+    renderTemplatePatientOptions();
+    openPatientHistory(patientId, btn.getAttribute('data-patient-name') || '');
+  });
+
+  // === LOAD PLANTILLAS ===
+  const loadTemplates = async () => {
+    if (!templatesBody) return;
+    try {
+      if (!patientCatalog.length) await fetchPatientCatalog();
+      const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
+      const templates = payload.data || [];
+      if (!templates.length) {
+        templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">library_books</span><p>No hay plantillas disponibles todavía.</p></div></td></tr>`;
+        return;
+      }
+      templatesBody.innerHTML = templates.map((tpl: any) => {
+        const canClone = Boolean(selectedTemplatePatientId);
+        const btnAttrs = canClone ? '' : 'disabled';
+        const actionLabel = canClone ? 'Clonar' : 'Selecciona paciente';
+        return `<tr>
+          <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
+          <td>${tpl.usage_count || 0}</td>
+          <td>${tpl.exercises_count || 0}</td>
+          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : '—'}</td>
+          <td>${escapeHtml(tpl.source_patient_name || '—')}</td>
+          <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
+        </tr>`;
+      }).join('');
+    } catch {
+      templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar plantillas.</p></div></td></tr>`;
+    }
+  };
+  pageLoaders['plantillas'] = loadTemplates;
+  document.getElementById('refreshTemplates')?.addEventListener('click', loadTemplates);
+  templateTargetPatient?.addEventListener('change', () => {
+    selectedTemplatePatientId = templateTargetPatient.value || null;
+    loadTemplates();
+  });
+  templatesBody?.addEventListener('click', async (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest('button[data-action="clone-template"]') as HTMLButtonElement | null;
+    if (!btn) return;
+    if (!selectedTemplatePatientId) {
+      addMessage('Selecciona un paciente destino antes de clonar la plantilla.', 'agent');
+      return;
+    }
+
+    const sourcePlanId = btn.getAttribute('data-source-plan-id');
+    if (!sourcePlanId) return;
+
+    btn.disabled = true;
+    const oldText = btn.textContent || 'Clonar';
+    btn.textContent = 'Clonando...';
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates/clone`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_plan_id: sourcePlanId,
+          paciente_id: selectedTemplatePatientId,
+          profesional_id: PROF_ID,
+        }),
+      });
+      const cloned = payload.data || {};
+      addMessage(`Plantilla clonada correctamente (${escapeHtml(cloned.titulo || 'nuevo plan')}).`, 'agent');
+      await loadTemplates();
+    } catch {
+      btn.disabled = false;
+      btn.textContent = oldText;
+      addMessage('No se pudo clonar la plantilla seleccionada.', 'agent');
+    }
   });
 
   // === LOAD INTAKES FULL ===
@@ -990,6 +1141,12 @@ import Layout from '../layouts/Layout.astro';
     transition: all var(--transition);
   }
   .btn-sm:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .btn-sm:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+  }
 
   .empty-state {
     text-align: center;
@@ -1181,6 +1338,37 @@ import Layout from '../layouts/Layout.astro';
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
+  }
+
+  .page-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .inline-field {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .inline-field select {
+    min-width: 240px;
+    max-width: 320px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.36rem 0.5rem;
+    color: var(--text-primary);
+    font: inherit;
+  }
+  .inline-field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
   }
   
   .page-title {
@@ -1424,6 +1612,19 @@ import Layout from '../layouts/Layout.astro';
       flex-wrap: wrap;
       gap: 0.75rem;
       margin-bottom: 1.25rem;
+    }
+    .page-tools {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    .inline-field {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .inline-field select {
+      flex: 1;
+      min-width: 0;
+      max-width: none;
     }
     .page-title {
       font-size: 1.25rem;

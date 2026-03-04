@@ -2,6 +2,31 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 44) - Plantillas + clonado implementado
+
+### Completado esta sesion
+- ✅ Backend:
+  - `GET /api/profesional/program-templates` (agregacion de plantillas desde `planes/items_plan`)
+  - `POST /api/profesional/program-templates/clone` (clonado real de plan + items al paciente destino)
+- ✅ Frontend:
+  - nueva sección SPA `Plantillas`
+  - selector de paciente destino
+  - acción `Clonar` conectada a backend
+  - estilos responsive para controles de plantillas
+- ✅ Documentacion:
+  - `README.md` con endpoints nuevos
+  - `CHANGELOG.md` y este archivo actualizados
+
+### Estado de validacion
+- `node --check backend/src/routes/professional.js` OK
+- `npm run build` frontend pendiente en este entorno:
+  - error local: `astro` no disponible en PATH/dependencias
+
+### Pendiente para proxima sesion
+1. Ejecutar build frontend en entorno con dependencias instaladas y validar UI de Plantillas.
+2. Redeploy backend en EasyPanel para publicar cambios (incluye W1 appointments y nuevas rutas de plantillas).
+3. Validar E2E de clonado: plantilla -> paciente destino -> visibilidad en historial/plan.
+
 ## Estado actual (2026-03-04, Sesion 43) - Analisis completo PROET (frontend + backend)
 
 ### Completado esta sesion

@@ -63,6 +63,13 @@ function splitFullName(fullName = '') {
   };
 }
 
+function toIsoDateOnly(value) {
+  if (!value) return null;
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 10);
+}
+
 async function resolveCrmPatientId(rawPatientId) {
   if (!rawPatientId) return null;
 
@@ -478,6 +485,278 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
 
     res.json({ data: normalizeAppointmentRow(data) });
   } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/program-templates', async (req, res, next) => {
+  try {
+    const professionalId = pickValue(req.query, 'profesional_id', 'professional_id');
+    if (!professionalId) {
+      return res.status(400).json({ error: 'profesional_id es obligatorio (o professional_id)' });
+    }
+
+    const limitRaw = Number.parseInt(String(req.query?.limit || '30'), 10);
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 100) : 30;
+
+    const { data: plans, error: plansError } = await supabase
+      .from('planes')
+      .select('id, profesional_id, paciente_id, titulo, estado, fecha_inicio, fecha_fin, notas, creado_en, actualizado_en')
+      .eq('profesional_id', professionalId)
+      .order('creado_en', { ascending: false })
+      .limit(400);
+
+    if (plansError) {
+      if (isMissingTableError(plansError, 'planes')) {
+        return res.status(400).json({
+          error: 'Falta tabla planes. Ejecuta schema.sql / migraciones legacy.',
+        });
+      }
+      throw plansError;
+    }
+
+    const safePlans = plans || [];
+    if (!safePlans.length) {
+      return res.json({ data: [] });
+    }
+
+    const planIds = safePlans.map((plan) => plan.id);
+    const patientIds = [...new Set(safePlans.map((plan) => plan.paciente_id).filter(Boolean))];
+
+    const [itemsResp, patientsResp] = await Promise.all([
+      supabase
+        .from('items_plan')
+        .select('plan_id, id')
+        .in('plan_id', planIds),
+      patientIds.length
+        ? supabase
+            .from('pacientes')
+            .select('id, nombre_completo')
+            .in('id', patientIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (itemsResp.error) {
+      if (isMissingTableError(itemsResp.error, 'items_plan')) {
+        return res.status(400).json({
+          error: 'Falta tabla items_plan. Ejecuta schema.sql / migraciones legacy.',
+        });
+      }
+      throw itemsResp.error;
+    }
+
+    if (patientsResp.error) {
+      if (isMissingTableError(patientsResp.error, 'pacientes')) {
+        return res.status(400).json({
+          error: 'Falta tabla pacientes. Ejecuta schema.sql / migraciones legacy.',
+        });
+      }
+      throw patientsResp.error;
+    }
+
+    const itemCountByPlan = new Map();
+    for (const row of itemsResp.data || []) {
+      const current = itemCountByPlan.get(row.plan_id) || 0;
+      itemCountByPlan.set(row.plan_id, current + 1);
+    }
+
+    const patientNameById = new Map((patientsResp.data || []).map((p) => [p.id, p.nombre_completo]));
+    const templateByKey = new Map();
+
+    for (const plan of safePlans) {
+      const title = String(plan.titulo || '').trim();
+      if (!title) continue;
+
+      const key = title.toLowerCase();
+      const itemCount = itemCountByPlan.get(plan.id) || 0;
+      const createdAt = plan.actualizado_en || plan.creado_en || null;
+      const currentTemplate = templateByKey.get(key);
+
+      if (!currentTemplate) {
+        templateByKey.set(key, {
+          template_key: key,
+          template_title: title,
+          source_plan_id: plan.id,
+          usage_count: 1,
+          exercises_count: itemCount,
+          source_patient_id: plan.paciente_id || null,
+          source_patient_name: patientNameById.get(plan.paciente_id) || null,
+          source_status: plan.estado || null,
+          source_notes: plan.notas || null,
+          source_period_start: plan.fecha_inicio || null,
+          source_period_end: plan.fecha_fin || null,
+          last_used_at: createdAt,
+        });
+        continue;
+      }
+
+      currentTemplate.usage_count += 1;
+
+      const currentTs = new Date(currentTemplate.last_used_at || 0).getTime();
+      const nextTs = new Date(createdAt || 0).getTime();
+      if (nextTs > currentTs) {
+        currentTemplate.source_plan_id = plan.id;
+        currentTemplate.exercises_count = itemCount;
+        currentTemplate.source_patient_id = plan.paciente_id || null;
+        currentTemplate.source_patient_name = patientNameById.get(plan.paciente_id) || null;
+        currentTemplate.source_status = plan.estado || null;
+        currentTemplate.source_notes = plan.notas || null;
+        currentTemplate.source_period_start = plan.fecha_inicio || null;
+        currentTemplate.source_period_end = plan.fecha_fin || null;
+        currentTemplate.last_used_at = createdAt;
+      }
+    }
+
+    const templates = [...templateByKey.values()]
+      .sort((a, b) => {
+        const byUsage = (b.usage_count || 0) - (a.usage_count || 0);
+        if (byUsage !== 0) return byUsage;
+        return new Date(b.last_used_at || 0).getTime() - new Date(a.last_used_at || 0).getTime();
+      })
+      .slice(0, limit);
+
+    res.json({ data: templates });
+  } catch (err) {
+    if (
+      isMissingTableError(err, 'planes') ||
+      isMissingTableError(err, 'items_plan') ||
+      isMissingTableError(err, 'pacientes')
+    ) {
+      return res.status(400).json({ error: 'Faltan tablas legacy para plantillas (planes/items_plan/pacientes).' });
+    }
+    next(err);
+  }
+});
+
+router.post('/program-templates/clone', async (req, res, next) => {
+  try {
+    const sourcePlanId = pickValue(req.body, 'source_plan_id', 'plan_id');
+    const targetPatientId = pickValue(req.body, 'paciente_id', 'patient_id');
+    const professionalId = pickValue(req.body, 'profesional_id', 'professional_id');
+    const titleOverride = pickValue(req.body, 'titulo', 'title');
+    const notesOverride = pickValue(req.body, 'notas', 'notes');
+
+    if (!sourcePlanId || !targetPatientId) {
+      return res.status(400).json({
+        error: 'source_plan_id y paciente_id/patient_id son obligatorios',
+      });
+    }
+
+    const { data: sourcePlan, error: sourcePlanError } = await supabase
+      .from('planes')
+      .select('id, profesional_id, paciente_id, titulo, estado, fecha_inicio, fecha_fin, notas')
+      .eq('id', sourcePlanId)
+      .maybeSingle();
+
+    if (sourcePlanError) {
+      if (isMissingTableError(sourcePlanError, 'planes')) {
+        return res.status(400).json({
+          error: 'Falta tabla planes. Ejecuta schema.sql / migraciones legacy.',
+        });
+      }
+      throw sourcePlanError;
+    }
+
+    if (!sourcePlan) {
+      return res.status(404).json({ error: 'Plan origen no encontrado' });
+    }
+
+    const effectiveProfessionalId = professionalId || sourcePlan.profesional_id;
+    if (!effectiveProfessionalId) {
+      return res.status(400).json({ error: 'No se pudo determinar profesional_id para clonar el plan' });
+    }
+
+    const { data: patient, error: patientError } = await supabase
+      .from('pacientes')
+      .select('id, profesional_id, nombre_completo')
+      .eq('id', targetPatientId)
+      .maybeSingle();
+
+    if (patientError) {
+      if (isMissingTableError(patientError, 'pacientes')) {
+        return res.status(400).json({
+          error: 'Falta tabla pacientes. Ejecuta schema.sql / migraciones legacy.',
+        });
+      }
+      throw patientError;
+    }
+
+    if (!patient) {
+      return res.status(404).json({ error: 'Paciente destino no encontrado' });
+    }
+
+    if (patient.profesional_id !== effectiveProfessionalId) {
+      return res.status(409).json({
+        error: 'El paciente destino no pertenece al profesional indicado',
+      });
+    }
+
+    const { data: sourceItems, error: sourceItemsError } = await supabase
+      .from('items_plan')
+      .select('ejercicio_id, indice_orden, series, repeticiones, duracion_segundos, instrucciones_personalizadas, url_video')
+      .eq('plan_id', sourcePlan.id)
+      .order('indice_orden', { ascending: true });
+
+    if (sourceItemsError) {
+      if (isMissingTableError(sourceItemsError, 'items_plan')) {
+        return res.status(400).json({
+          error: 'Falta tabla items_plan. Ejecuta schema.sql / migraciones legacy.',
+        });
+      }
+      throw sourceItemsError;
+    }
+
+    const clonedTitle = String(titleOverride || sourcePlan.titulo || 'Plan de ejercicios').trim();
+    const clonedNotes = notesOverride !== null ? (notesOverride || null) : (sourcePlan.notas || null);
+
+    const { data: newPlan, error: newPlanError } = await supabase
+      .from('planes')
+      .insert({
+        profesional_id: effectiveProfessionalId,
+        paciente_id: targetPatientId,
+        titulo: clonedTitle,
+        estado: 'borrador',
+        fecha_inicio: toIsoDateOnly(sourcePlan.fecha_inicio),
+        fecha_fin: toIsoDateOnly(sourcePlan.fecha_fin),
+        notas: clonedNotes,
+      })
+      .select('id, profesional_id, paciente_id, titulo, estado, fecha_inicio, fecha_fin, notas, creado_en')
+      .single();
+
+    if (newPlanError) throw newPlanError;
+
+    const clonedItems = (sourceItems || []).map((item) => ({
+      plan_id: newPlan.id,
+      ejercicio_id: item.ejercicio_id,
+      indice_orden: item.indice_orden ?? 0,
+      series: item.series ?? 3,
+      repeticiones: item.repeticiones ?? 10,
+      duracion_segundos: item.duracion_segundos ?? null,
+      instrucciones_personalizadas: item.instrucciones_personalizadas || null,
+      url_video: item.url_video || null,
+    }));
+
+    if (clonedItems.length) {
+      const { error: insertItemsError } = await supabase.from('items_plan').insert(clonedItems);
+      if (insertItemsError) throw insertItemsError;
+    }
+
+    res.status(201).json({
+      data: {
+        ...newPlan,
+        cloned_from_plan_id: sourcePlan.id,
+        cloned_items_count: clonedItems.length,
+        target_patient_name: patient.nombre_completo || null,
+      },
+    });
+  } catch (err) {
+    if (
+      isMissingTableError(err, 'planes') ||
+      isMissingTableError(err, 'items_plan') ||
+      isMissingTableError(err, 'pacientes')
+    ) {
+      return res.status(400).json({ error: 'Faltan tablas legacy para clonar plantillas (planes/items_plan/pacientes).' });
+    }
     next(err);
   }
 });

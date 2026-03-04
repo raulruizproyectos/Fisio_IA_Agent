@@ -1,5 +1,44 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 44 — 2026-03-04
+
+### Objetivo
+- Implementar en producto el bloque de mayor ROI detectado en PROET: **Plantillas + clonado de programas**.
+
+### Cambios implementados
+- ✅ `backend/src/routes/professional.js`
+  - Nuevo endpoint `GET /api/profesional/program-templates`
+    - agrega planes legacy (`planes`) por titulo para generar plantillas reutilizables
+    - calcula `usage_count`, `exercises_count`, `last_used_at`, `source_plan_id`, `source_patient_name`
+    - control de errores si faltan tablas (`planes`, `items_plan`, `pacientes`)
+  - Nuevo endpoint `POST /api/profesional/program-templates/clone`
+    - clona plan origen a paciente destino
+    - crea nuevo registro en `planes` (estado `borrador`)
+    - copia todos los `items_plan` del plan origen
+    - valida coherencia profesional↔paciente
+- ✅ `frontend/src/pages/index.astro`
+  - Nueva sección SPA **Plantillas Terapéuticas** en sidebar.
+  - Tabla de plantillas más reutilizadas con:
+    - título
+    - usos
+    - nº ejercicios
+    - último uso
+    - paciente origen
+  - Selector de **paciente destino** para clonado.
+  - Acción “Clonar” conectada a backend (`POST /program-templates/clone`).
+  - Ajustes de estilos responsive para controles de la nueva sección.
+- ✅ `README.md`
+  - Añadidos endpoints de plantillas/clonado en listado principal.
+
+### Verificacion tecnica
+- `node --check backend/src/routes/professional.js` -> OK.
+- Build frontend no ejecutable en este entorno por falta de dependencia local:
+  - `npm run build` falla con `"astro" no se reconoce...`.
+
+### Pendiente inmediato
+- [ ] Instalar dependencias frontend en entorno local de build y validar `astro build` tras el cambio de Plantillas.
+- [ ] Redeploy backend EasyPanel para publicar rutas W1 (`/api/profesional/appointments` sigue `404` en producción).
+
 ## Sesion 43 — 2026-03-04
 
 ### Objetivo
