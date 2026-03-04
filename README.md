@@ -98,3 +98,4 @@ npm run dev
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
 - Analisis PROET (frontend + backend): `docs/proet/platform_analysis_20260304.md`
+- Norma n8n obligatoria (carpeta/tag): `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`

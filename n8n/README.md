@@ -70,3 +70,9 @@ Endpoints principales consumidos por workflows:
 - El set `vnext/` contiene la version canónica objetivo (W0/W1/W2/W3) para migracion progresiva.
 - Limitacion actual de API n8n:
   - `PUT /api/v1/workflows/{id}/tags` sigue devolviendo `500`, por lo que el etiquetado en carpeta/tag `Fisio_IA_Agent` puede requerir accion manual en UI.
+
+## Norma obligatoria de carpeta/tag
+- Referencia oficial: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
+- Regla estricta:
+  - Todo workflow del proyecto debe quedar dentro de carpeta/tag `Fisio_IA_Agent`.
+  - Si un workflow queda fuera, el trabajo no se considera cerrado.

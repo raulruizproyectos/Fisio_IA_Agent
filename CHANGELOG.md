@@ -1,5 +1,20 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 48 - 2026-03-04
+
+### Objetivo
+- Fijar norma escrita y obligatoria para evitar workflows fuera de carpeta/tag `Fisio_IA_Agent` en n8n.
+
+### Cambios implementados
+- ✅ Nuevo documento normativo:
+  - `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
+- ✅ Referencia añadida en:
+  - `n8n/README.md`
+  - `README.md`
+
+### Regla formalizada
+- Ningun workflow de proyecto se considera `DONE` si no esta dentro de carpeta/tag `Fisio_IA_Agent`.
+- Si API no permite etiquetar/mover, se exige accion manual en UI antes de cerrar la sesion.
 ## Sesion 47 - 2026-03-04
 
 ### Objetivo
@@ -1872,5 +1887,6 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Ambos workflows quedan endurecidos y validados como JSON.
 - Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
+
 
 

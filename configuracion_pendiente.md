@@ -2,6 +2,21 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 48) - Norma obligatoria n8n carpeta/tag
+
+### Completado esta sesion
+- ✅ Norma formal y obligatoria creada:
+  - `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
+- ✅ Enlaces añadidos en documentación principal:
+  - `README.md`
+  - `n8n/README.md`
+- ✅ Regla operativa fijada:
+  - cualquier workflow creado/modificado debe quedar dentro de carpeta/tag `Fisio_IA_Agent` antes de cerrar sesión.
+
+### Pendiente para proxima sesion
+1. Mover manualmente en UI los workflows que aparezcan fuera de carpeta cuando falle API de tags.
+2. Revalidar inventario visual en n8n tras cada alta/edicion de workflow.
+
 ## Estado actual (2026-03-04, Sesion 47) - UI modo oscuro aplicada
 
 ### Completado esta sesion
