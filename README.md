@@ -58,6 +58,21 @@ CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomen
 - En DB se persiste `object_key` (no signed URL).
 - Signed URL JIT generado en n8n con service role key.
 
+## Importar catalogo PROET (programas + ejercicios)
+Se puede extraer un snapshot reutilizable desde `app.exerciciterapeutic.cat` para alimentar W2:
+
+```bash
+node scripts/proet-export.mjs --email=<tu_email> --locale=val
+```
+
+- Salida por defecto: `docs/data/proet_snapshot_YYYYMMDD.json`
+- Incluye:
+  - perfil origen
+  - templates mas usados
+  - programas del profesional
+  - ejercicios unicos (descripcion, imagen y video)
+- No guarda credenciales en el repo.
+
 ## Inicio rapido
 ```bash
 # backend
@@ -76,3 +91,4 @@ npm run dev
 - Estado detallado por sesion: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
+- Analisis PROET (frontend + backend): `docs/proet/platform_analysis_20260304.md`

@@ -1,5 +1,81 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 43 — 2026-03-04
+
+### Objetivo
+- Analizar frontend + backend de PROET por secciones para extraer mejoras concretas aplicables a Fisio_IA_Agent.
+
+### Cambios implementados
+- ✅ Escaneo completo de bundles de `app.exerciciterapeutic.cat`:
+  - `131` chunks JS analizados.
+  - `148` endpoints API unicos detectados.
+- ✅ Inventario de secciones del sidebar profesional (frontend):
+  - `Inici`, `Crear programa`, `Meus programes`, `Plantilles`, `Meus exercicis`, `Pacients`, `Contacte`, `Meu calendari`, `Meu perfil`.
+  - Mapeo ruta + endpoints por seccion.
+- ✅ Artefactos de analisis versionados:
+  - `docs/proet/platform_analysis_20260304.md`
+  - `docs/proet/sections_endpoints_20260304.json`
+  - `docs/proet/api_groups_20260304.json`
+- ✅ Hallazgos priorizados para roadmap del proyecto:
+  - modulo de plantillas reutilizables con ranking de uso.
+  - onboarding/invitacion de pacientes.
+  - calendario terapeutico con estado de cumplimiento.
+  - exportacion/envio PDF de prescripcion.
+  - taxonomia de ejercicios ampliada (zona/material/objetivo/tipo).
+
+### Backend PROET (inferencia estructural)
+- Modulos API con mayor peso:
+  - `programs: 29 endpoints`
+  - `exercises: 23 endpoints`
+  - `authentication: 11 endpoints`
+  - `users: 11 endpoints`
+  - `clients: 10 endpoints`
+
+### Pendiente inmediato
+- [ ] Ejecutar integracion tecnica en Fisio_IA_Agent de los 2 bloques con mayor ROI:
+  1. plantillas + clonacion de programas
+  2. flujo de invitacion y seguimiento de pacientes
+- [ ] Mantener pendiente de produccion:
+  - redeploy de `fisio-backend` (W1 appointments sigue `404` en endpoint publico).
+
+## Sesion 42 — 2026-03-04
+
+### Objetivo
+- Aprovechar contenido real de PROET (diagnosticos/programas/ejercicios/imagenes) y dejar un flujo reproducible para alimentar W2.
+
+### Cambios implementados
+- ✅ `scripts/proet-export.mjs`
+  - Nuevo exportador reutilizable de catalogo PROET.
+  - Extrae por API:
+    - `/api/authentication/auth`
+    - `/api/programs/users/list`
+    - `/api/programs/users/details`
+    - `/api/exercises/program-list`
+    - `/api/programs/admin/most-used-physio`
+  - Normaliza salida en JSON con:
+    - perfil fuente
+    - templates top
+    - programas del profesional
+    - ejercicios unicos (texto, imagen, video)
+  - Incluye limpieza de texto HTML y reparacion de codificacion.
+- ✅ Snapshot generado y versionado:
+  - `docs/data/proet_snapshot_20260304.json`
+  - Estadisticas del snapshot:
+    - `user_programs_total: 20`
+    - `templates_total: 59`
+    - `program_exercises_total: 309`
+    - `unique_exercises_total: 179`
+- ✅ `README.md`
+  - Documentada la operativa de exportacion PROET (`node scripts/proet-export.mjs --email=<tu_email> --locale=val`).
+
+### Verificacion de produccion (backend)
+- `GET /api/health` en `fisio-backend` -> `200`.
+- `GET /api/profesional/appointments` en `fisio-backend` -> `404`.
+
+### Pendiente inmediato
+- [ ] Redeploy de `fisio-backend` en EasyPanel para aplicar codigo de W1 (rutas `appointments`) ya presente en `main`.
+- [ ] Conectar snapshot PROET a ingesta de `crm_ejercicios_catalogo` / `crm_ejercicio_media` (paso siguiente para robustecer W2 con catalogo real ampliado).
+
 ## Sesion 41 — 2026-03-04
 
 ### Objetivo

@@ -2,6 +2,64 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 43) - Analisis completo PROET (frontend + backend)
+
+### Completado esta sesion
+- ✅ Analisis de secciones del frontend profesional (sidebar):
+  - Inici
+  - Crear programa
+  - Meus programes
+  - Plantilles
+  - Meus exercicis
+  - Pacients
+  - Contacte
+  - Meu calendari
+  - Meu perfil
+- ✅ Inventario API backend PROET por escaneo de bundles:
+  - `148` endpoints unicos detectados.
+  - mayor volumen en: `programs (29)`, `exercises (23)`, `authentication (11)`, `users (11)`, `clients (10)`.
+- ✅ Documentacion de analisis versionada:
+  - `docs/proet/platform_analysis_20260304.md`
+  - `docs/proet/sections_endpoints_20260304.json`
+  - `docs/proet/api_groups_20260304.json`
+
+### Oportunidades priorizadas para Fisio_IA_Agent (derivadas de PROET)
+1. **Plantillas + clonacion** de programas terapeuticos con metrica de uso.
+2. **Onboarding pacientes** por invitacion y trazabilidad de estado.
+3. **Calendario terapeutico** con estados de cumplimiento.
+4. **Prescripcion exportable** (PDF y envio por canal).
+5. **Taxonomia avanzada de ejercicios** (zona/material/objetivo/tipo) para mejorar W2.
+
+### Pendiente para proxima sesion
+1. Implementar en Fisio_IA_Agent el bloque de mayor ROI: `Plantillas + clonacion`.
+2. Diseñar el flujo `Invitacion paciente` en CRM (UI + backend + eventos).
+3. Mantener pendiente infra: redeploy backend EasyPanel para publicar rutas W1 (`/api/profesional/appointments` en prod sigue `404`).
+
+## Estado actual (2026-03-04, Sesion 42) - Ingesta PROET para W2
+
+### Completado esta sesion
+- ✅ Nuevo script `scripts/proet-export.mjs` para extraer catalogo desde PROET.
+  - Endpoints usados: auth + programas usuario + detalle programas + ejercicios por programa + templates mas usados.
+  - Salida normalizada: perfil origen, templates, programas y ejercicios unicos.
+- ✅ Snapshot real generado y versionado:
+  - `docs/data/proet_snapshot_20260304.json`
+  - Volumen actual:
+    - `20` programas de usuario
+    - `59` templates top
+    - `309` registros programa-ejercicio
+    - `179` ejercicios unicos
+- ✅ `README.md` actualizado con comando de exportacion:
+  - `node scripts/proet-export.mjs --email=<tu_email> --locale=val`
+
+### Estado de produccion verificado
+- Backend health: `200` (`/api/health`)
+- Backend citas W1 en produccion: `404` (`/api/profesional/appointments`)
+
+### Pendiente para proxima sesion
+1. **EasyPanel backend**: redeploy forzado de `fisio-backend` para publicar rutas W1 de citas.
+2. **W2 catalogo real**: conectar snapshot PROET con carga a `crm_ejercicios_catalogo` y `crm_ejercicio_media`.
+3. **E2E**: repetir prueba Telegram + CRM tras redeploy backend y confirmar flujo cita/recomendacion.
+
 ## Estado actual (2026-03-04, Sesion 41) - W1 Telegram en progreso
 
 ### Completado esta sesion

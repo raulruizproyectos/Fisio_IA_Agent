@@ -1,0 +1,101 @@
+{
+  "Inici": {
+    "route": "/dashboard",
+    "chunks_count": 6,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/authentication/switch-language",
+      "/api/programs/admin/most-used-physio",
+      "/api/programs/admin/most-used-trainer",
+      "/api/programs/users/add",
+      "/api/programs/users/count",
+      "/api/programs/users/new",
+      "/api/users/update"
+    ]
+  },
+  "Crear programa": {
+    "route": "/programs/user/new",
+    "chunks_count": 2,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/programs/users/count",
+      "/api/programs/users/new"
+    ]
+  },
+  "Meus programes": {
+    "route": "/programs/user",
+    "chunks_count": 14,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/exercises/program-list",
+      "/api/pdf/download",
+      "/api/pdf/send/",
+      "/api/programs/users/add",
+      "/api/programs/users/count",
+      "/api/programs/users/details",
+      "/api/programs/users/duplicate",
+      "/api/programs/users/list"
+    ]
+  },
+  "Plantilles": {
+    "route": "/programs",
+    "chunks_count": 4,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/programs/admin/most-used-physio",
+      "/api/programs/admin/most-used-trainer"
+    ]
+  },
+  "Meus exercicis": {
+    "route": "/exercises",
+    "chunks_count": 8,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/exercises/user/add-exercise",
+      "/api/exercises/user/full-list"
+    ]
+  },
+  "Pacients": {
+    "route": "/clients",
+    "chunks_count": 7,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/clients/add-client-invite",
+      "/api/clients/user-clients"
+    ]
+  },
+  "Contacte": {
+    "route": "/contact",
+    "chunks_count": 6,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/contact/email-support"
+    ]
+  },
+  "Meu calendari": {
+    "route": "/my-calendar",
+    "chunks_count": 9,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/clients/add-training-calendar",
+      "/api/clients/delete",
+      "/api/clients/details",
+      "/api/exercises/program-list",
+      "/api/programs/users/calendar-list",
+      "/api/programs/users/delete",
+      "/api/programs/users/details",
+      "/api/programs/users/list",
+      "/api/programs/users/update-status"
+    ]
+  },
+  "Meu perfil": {
+    "route": "/user/profile",
+    "chunks_count": 8,
+    "endpoints": [
+      "/api/authentication/auth",
+      "/api/users/change-password",
+      "/api/users/delete-logo-file",
+      "/api/users/update"
+    ]
+  }
+}

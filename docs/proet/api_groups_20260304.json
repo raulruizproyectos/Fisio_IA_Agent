@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-04T16:44:02.055Z",
+  "total_unique_endpoints": 148,
+  "groups": [
+    {
+      "group": "programs",
+      "count": 29
+    },
+    {
+      "group": "exercises",
+      "count": 23
+    },
+    {
+      "group": "authentication",
+      "count": 11
+    },
+    {
+      "group": "users",
+      "count": 11
+    },
+    {
+      "group": "clients",
+      "count": 10
+    },
+    {
+      "group": "muscle-zones",
+      "count": 7
+    },
+    {
+      "group": "organizations",
+      "count": 7
+    },
+    {
+      "group": "body-parts",
+      "count": 6
+    },
+    {
+      "group": "materials",
+      "count": 6
+    },
+    {
+      "group": "targets",
+      "count": 6
+    },
+    {
+      "group": "exercise-groups",
+      "count": 5
+    },
+    {
+      "group": "exercise-types",
+      "count": 5
+    },
+    {
+      "group": "muscles",
+      "count": 5
+    },
+    {
+      "group": "features",
+      "count": 4
+    },
+    {
+      "group": "paypal",
+      "count": 4
+    },
+    {
+      "group": "stripe",
+      "count": 4
+    },
+    {
+      "group": "contact",
+      "count": 3
+    },
+    {
+      "group": "pdf",
+      "count": 2
+    }
+  ]
+}
