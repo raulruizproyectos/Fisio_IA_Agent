@@ -590,3 +590,16 @@ Tablas necesarias confirmadas:
    - payload incompleto -> `status=needs_slot_data`.
    - error backend simulado -> `status=error`.
 3. Avanzar hardening equivalente en W0/W2/W3 con mismo patron de observabilidad y manejo de fallos.
+
+## Actualizacion (2026-03-04, Sesion 37)
+- Hardening aplicado en repo:
+  - `n8n/Fisio_IA_Agent/telegram-chat.json` (W0 entrada Telegram robusta).
+  - `n8n/Fisio_IA_Agent/fisio-agent-core.json` (router core con rutas estructuradas y `request_id`).
+- Nota de operacion n8n:
+  - En UI de carpeta/tag `Fisio_IA_Agent` siguen visibles 5 porque `Nucleo Agente` esta activo pero sin tag.
+  - La API `PUT /workflows/{id}/tags` devuelve `500`, por eso el ajuste de tag debe hacerse manual en UI.
+
+## Pendiente inmediato (operativo)
+1. En UI n8n: anadir tag `Fisio_IA_Agent` a `Fisio_IA_Agent / Nucleo Agente` para que aparezcan 6/6 en carpeta.
+2. Importar/publicar desde repo los workflows endurecidos (`telegram-chat` y `fisio-agent-core`).
+3. Validar E2E W0->backend->reply y en paralelo preparar hardening W2/W3.

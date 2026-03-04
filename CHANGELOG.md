@@ -1785,3 +1785,27 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Workflow W1 robustecido en repo y validado como JSON valido.
 - Pendiente siguiente: publicar en n8n remoto como workflow canonico W1 y validar E2E.
+
+---
+
+## [Sesion 37] - 2026-03-04 (Hardening W0 Telegram + Agent Core)
+### Objetivo
+- Endurecer el flujo de entrada Telegram y el router core para mejorar resiliencia y trazabilidad.
+
+### Cambios aplicados
+- `n8n/Fisio_IA_Agent/telegram-chat.json`
+  - `BACKEND_URL` configurable por entorno (`$env.BACKEND_URL`) con fallback seguro.
+  - `request_id` generado en entrada.
+  - HTTP request con `ignoreResponseCode` + `timeout` (15000ms).
+  - nodo nuevo `Build Safe Telegram Reply` para fallback de respuesta cuando backend falla o devuelve payload incompleto.
+- `n8n/Fisio_IA_Agent/fisio-agent-core.json`
+  - router de intencion estructurado con salidas:
+    - `appointment`
+    - `exercise`
+    - `session_note`
+    - `unknown`
+  - salida enriquecida con `request_id`, `confidence`, `normalized_payload`.
+
+### Estado
+- Ambos workflows quedan endurecidos y validados como JSON.
+- Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
