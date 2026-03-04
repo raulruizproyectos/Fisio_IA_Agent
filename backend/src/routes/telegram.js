@@ -364,6 +364,24 @@ router.post('/incoming', async (req, res, next) => {
       const historySnapshot = await getPatientHistorySnapshot(link.paciente_id);
       const redFlagResult = detectRedFlags(text);
 
+      // W0: Intent classification via Edge Function
+      let intent = { route: 'unknown', confidence: 0 };
+      try {
+        const routerUrl = `${process.env.SUPABASE_URL}/functions/v1/intent-router`;
+        const routerResp = await fetch(routerUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message_text: text, request_id: crypto.randomUUID() }),
+          signal: AbortSignal.timeout(8000),
+        });
+        if (routerResp.ok) {
+          intent = await routerResp.json();
+        }
+      } catch (routerErr) {
+        console.warn('[telegram] W0 intent-router error:', routerErr.message);
+      }
+
+      // Always create intake for tracking
       await createIntakeMessage({
         patientId: link.paciente_id,
         professionalId,
@@ -373,9 +391,86 @@ router.post('/incoming', async (req, res, next) => {
       });
 
       if (redFlagResult.tiene_alertas_rojas) {
-        return await reply('He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+        return await reply('⚠️ He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
+      // W2: If intent is exercise with decent confidence, auto-recommend
+      if (intent.route === 'exercise' && intent.confidence >= 0.6) {
+        try {
+          const exerciseUrl = `${process.env.SUPABASE_URL}/functions/v1/exercise-recommend`;
+          const { data: catalog } = await supabase
+            .from('crm_ejercicios_catalogo')
+            .select('id, nombre, descripcion, zona_corporal, nivel, contraindicaciones, metadata')
+            .eq('activo', true);
+
+          const recoResp = await fetch(exerciseUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              request_id: crypto.randomUUID(),
+              patient_id: link.paciente_id,
+              symptoms: text,
+              catalog: (catalog || []).map(e => ({
+                id: e.id, nombre: e.nombre, descripcion: e.descripcion,
+                zona_corporal: e.zona_corporal, nivel: e.nivel,
+                contraindicaciones: e.contraindicaciones,
+                fase: e.metadata?.fase_original || null,
+                series: e.metadata?.series_defecto || 3,
+                repeticiones: e.metadata?.repeticiones_defecto || 10,
+              })),
+            }),
+            signal: AbortSignal.timeout(25000),
+          });
+
+          if (recoResp.ok) {
+            const recoData = await recoResp.json();
+            const reco = recoData.recommendation || recoData;
+            const patientMsg = reco.message_to_patient_es;
+
+            if (patientMsg) {
+              // Store recommendation in CRM
+              const { data: recoRow } = await supabase.from('crm_recomendaciones').insert({
+                paciente_id: link.paciente_id,
+                fisioterapeuta_id: null,
+                origen: 'telegram',
+                symptom_summary: reco.symptom_summary || text,
+                red_flags_present: reco.red_flags_present || false,
+                red_flags_items: reco.red_flags_items || [],
+                selection_rationale: reco.selection_rationale || '',
+                message_to_patient_es: patientMsg,
+                message_to_therapist_es: reco.message_to_therapist_es || '',
+                escalation_recommend_medical_attention: reco.escalation_recommend_medical_attention || false,
+                escalation_reason: reco.escalation_reason || '',
+                estado: reco.escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
+              }).select('id').single();
+
+              if (recoRow && reco.selected_exercises?.length) {
+                await supabase.from('crm_recomendacion_items').insert(
+                  reco.selected_exercises.map((ex, idx) => ({
+                    recomendacion_id: recoRow.id,
+                    ejercicio_id: ex.exercise_id || ex.id,
+                    confidence: ex.confidence || 0.8,
+                    why: ex.why || '',
+                    cautions: ex.cautions || [],
+                    orden: idx + 1,
+                  }))
+                );
+              }
+
+              return await reply(patientMsg);
+            }
+          }
+        } catch (exErr) {
+          console.warn('[telegram] W2 exercise auto-recommend error:', exErr.message);
+        }
+      }
+
+      // W1 placeholder: appointment intent detected
+      if (intent.route === 'appointment' && intent.confidence >= 0.6) {
+        return await reply('📅 He entendido que quieres gestionar una cita. Esta función estará disponible pronto. Tu fisioterapeuta ha recibido tu mensaje.');
+      }
+
+      // Default: intake created, generic reply
       return await reply('Mensaje recibido. Tu fisioterapeuta revisará tus síntomas y te pautará el siguiente ejercicio.');
     }
 

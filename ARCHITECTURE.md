@@ -302,6 +302,28 @@ Service role:
 
 ## 8) UX Touchpoints
 
+### Regla obligatoria: Responsive Design (PC + Móvil)
+
+Todo el frontend CRM debe ser completamente funcional y visualmente accesible tanto en **escritorio** como en **dispositivos móviles** (smartphones y tablets).
+
+Principios responsive:
+
+- **Mobile-first CSS**: diseñar primero para móvil, ampliar para desktop con `@media (min-width: ...)`.
+- **Sidebar**: colapsable en móvil (hamburger menu o drawer), visible en desktop.
+- **Tablas de datos**: scroll horizontal en pantallas pequeñas o layout de tarjetas en mobile.
+- **Topbar/Header**: compacto en móvil, con menú hamburguesa si aplica.
+- **Panel de Agente IA / Chat**: a ancho completo en móvil (100vw), panel lateral en desktop.
+- **Botones y targets táctiles**: mínimo 44x44px en móvil (estándar WCAG).
+- **Tipografía**: escalado fluido (`clamp()` o media queries) para legibilidad en todas las pantallas.
+- **Métricas/Cards del dashboard**: layout de 1 columna en móvil, grid multi-columna en desktop.
+- **Formularios e inputs**: ancho completo en móvil, no overflow horizontal.
+- **Viewport meta tag**: obligatorio `<meta name="viewport" content="width=device-width, initial-scale=1">`.
+
+Todo cambio de frontend debe verificarse visualmente en al menos:
+
+- Desktop (~1280px+)
+- Móvil (~375px)
+
 CRM Web (objetivo UX minimo):
 
 - Lista de pacientes con filtros (estado, fisioterapeuta, ultima actividad).

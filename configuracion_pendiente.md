@@ -2,6 +2,34 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 39) - PIVOTE CRM + AGENTES IA
+
+### Completado esta sesion
+- ✅ 12 tablas CRM creadas en Supabase (27 total) con RLS + triggers + policies service_role
+- ✅ 16 ejercicios migrados a `crm_ejercicios_catalogo` con metadata
+- ✅ Bucket privado `ejercicios` en Storage (10MB, JPEG/PNG/GIF/WebP/MP4)
+- ✅ W2: `exercises.js` (4 endpoints) + Edge Function `exercise-recommend` (gpt-4o-mini)
+- ✅ W0: Edge Function `intent-router` + integracion Telegram auto-routing
+- ✅ W3: Boton CRM 🏋️ en frontend → `/api/exercises/recommend`
+- ✅ `OPENAI_API_KEY` almacenada en Supabase Vault + función `vault_read_secret`
+- ✅ Fix security advisory: search_path en `crm_set_updated_at`
+
+### Pendiente para proxima sesion
+1. **W1**: Citas + Google Calendar (requiere OAuth config manual)
+2. **E2E**: Prueba completa multicanal Telegram + CRM + Supabase
+3. **Deploy backend**: Push codigo actualizado a EasyPanel (nuevas rutas: exercises.js, telegram.js W0)
+4. **Deploy frontend**: Push index.astro con boton ejercicios (W3)
+5. **Seguridad**: Rotar `OPENAI_API_KEY` (expuesta en chat) → actualizar Vault
+6. **RLS policies**: Granulares para auth de usuarios (actual: solo service_role)
+
+### URLs produccion
+- Backend: `https://fisio-backend.b5xbaf.easypanel.host/api/health`
+- Frontend: `https://fisio-frontend.b5xbaf.easypanel.host/`
+- Supabase: `https://uewhbaejcouenoufuwlq.supabase.co`
+- Edge Functions:
+  - `intent-router` v2 (ACTIVE)
+  - `exercise-recommend` v2 (ACTIVE)
+
 ## Estado actual (2026-03-03, Sesion 33)
 - Frontend redisenado con look&feel mas profesional/moderno (tipografia, paleta, jerarquia visual, microinteracciones).
 - Inspiracion funcional tomada de referencia publica `fisiomap-ia`:

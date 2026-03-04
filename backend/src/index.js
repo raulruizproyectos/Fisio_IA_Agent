@@ -6,6 +6,7 @@ import patientsRouter from './routes/patients.js';
 import telegramRouter from './routes/telegram.js';
 import professionalRouter from './routes/professional.js';
 import agentRouter from './routes/agent.js';
+import exercisesRouter from './routes/exercises.js';
 
 // Configuracion
 const app = express();
@@ -42,14 +43,8 @@ app.use('/api/professional', professionalRouter);
 app.use('/api/profesional', professionalRouter);
 app.use('/api/agent', agentRouter);
 app.use('/api/agente', agentRouter);
-
-// Rutas futuras:
-// app.use('/api/professionals', professionalsRouter);
-// app.use('/api/conditions', conditionsRouter);
-// app.use('/api/exercises', exercisesRouter);
-// app.use('/api/plans', plansRouter);
-// app.use('/api/workouts', workoutsRouter);
-// app.use('/api/render-jobs', renderJobsRouter);
+app.use('/api/exercises', exercisesRouter);
+app.use('/api/ejercicios', exercisesRouter);
 
 // Error handler
 app.use((err, req, res, next) => {

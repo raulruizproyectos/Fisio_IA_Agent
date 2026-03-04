@@ -35,3 +35,17 @@ Cada sesion debe actualizar:
 - n8n es el orquestador principal de automatizaciones.
 - OpenAI se usa dentro de n8n para clasificacion/seleccion.
 - Todo flujo relevante debe emitir `request_id` y registrar estado final.
+
+## 6) Frontend responsive obligatorio (PC + Movil)
+
+- Todo cambio de frontend debe ser compatible con escritorio (1280px+) y movil (375px+).
+- Usar enfoque mobile-first: diseñar para movil, ampliar para desktop con media queries.
+- Sidebar colapsable en movil, tablas con scroll horizontal o layout tarjetas, targets tactiles minimo 44x44px.
+- Verificar visualmente en ambos breakpoints antes de dar por terminado cualquier cambio de UI.
+
+## 7) Reutilizacion obligatoria de workflows n8n
+
+- Antes de crear cualquier workflow o nodo nuevo en n8n, revisar TODOS los workflows existentes en la instancia.
+- Priorizar copiar/adaptar nodos ya funcionales (credenciales, Gmail, errores, webhooks, subworkflows).
+- Si un workflow existente cubre parcial o totalmente la necesidad, mejorarlo en lugar de crear uno nuevo.
+- Registrar en cada sesion del changelog que se reviso y que se reutilizo.

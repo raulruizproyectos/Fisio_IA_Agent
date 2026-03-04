@@ -42,6 +42,7 @@ import Layout from '../layouts/Layout.astro';
         </a>
       </div>
     </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <!-- MAIN -->
     <div class="main-area">
@@ -87,7 +88,7 @@ import Layout from '../layouts/Layout.astro';
               <section class="card agent-panel">
                 <header class="card-header agent-header"><div class="agent-title"><span class="material-symbols-rounded agent-icon">psychology</span><div><h2>Agente Clínico IA</h2><div class="agent-status"><span class="status-dot connected" id="agentDot"></span><span class="status-text" id="agentStatusText">Conectado</span></div></div></div></header>
                 <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clínico. Describe los síntomas del paciente o indica una pauta para generar video de ejercicios.</p></div></article></div>
-                <form id="agentForm" class="chat-form"><div class="input-row"><textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 dias, empeora al elevar brazo, sin traumatismo..."></textarea><button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button></div><div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter para enviar · Telegram + n8n + OpenAI</div></form>
+                <form id="agentForm" class="chat-form"><div class="input-row"><textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 dias, empeora al elevar brazo, sin traumatismo..."></textarea><button type="button" class="exercise-btn" id="exerciseRecoBtn" aria-label="Recomendar ejercicios" title="Recomendar ejercicios"><span class="material-symbols-rounded">fitness_center</span></button><button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button></div><div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter = Agente IA · <span class="material-symbols-rounded" style="font-size: 14px;">fitness_center</span> = Ejercicios AI</div></form>
               </section>
             </div>
           </div>
@@ -229,8 +230,35 @@ import Layout from '../layouts/Layout.astro';
   };
   navItems.forEach(n => n.addEventListener('click', (e: Event) => { e.preventDefault(); navigateTo(n.getAttribute('data-section') || 'dashboard'); }));
 
-  // === SIDEBAR TOGGLE ===
-  sidebarToggle?.addEventListener('click', () => sidebar?.classList.toggle('collapsed'));
+  // === SIDEBAR TOGGLE (responsive) ===
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop') as HTMLElement | null;
+  const isMobile = () => window.innerWidth <= 768;
+
+  const openSidebar = () => {
+    sidebar?.classList.add('open');
+    sidebarBackdrop?.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  };
+  const closeSidebar = () => {
+    sidebar?.classList.remove('open');
+    sidebarBackdrop?.classList.remove('visible');
+    document.body.style.overflow = '';
+  };
+
+  sidebarToggle?.addEventListener('click', () => {
+    if (isMobile()) {
+      sidebar?.classList.contains('open') ? closeSidebar() : openSidebar();
+    } else {
+      sidebar?.classList.toggle('collapsed');
+    }
+  });
+  sidebarBackdrop?.addEventListener('click', closeSidebar);
+
+  // Close sidebar on nav click (mobile)
+  navItems.forEach(n => n.addEventListener('click', () => { if (isMobile()) closeSidebar(); }));
+
+  // Clean up on resize
+  window.addEventListener('resize', () => { if (!isMobile()) closeSidebar(); });
 
   // === CHAT ===
   const addMessage = (text: string, type: 'user' | 'agent') => {
@@ -248,6 +276,68 @@ import Layout from '../layouts/Layout.astro';
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
   const setSending = (busy: boolean) => { if(sendBtn) sendBtn.disabled=busy; if(input) input.disabled=busy; };
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
+
+  // W3: Exercise recommendation via CRM
+  const handleExerciseRecommend = async (text: string) => {
+    addMessage(`🏋️ Solicitar recomendación para: ${text}`, 'user');
+    setSending(true);
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/exercises/recommend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: selectedPatientId || null,
+          symptoms: text,
+          channel: 'crm_web',
+          fisioterapeuta_id: PROF_ID,
+        }),
+      });
+
+      if (!payload.ok) {
+        addMessage(`Error: ${payload.error || 'No se pudo generar recomendación'}`, 'agent');
+        return;
+      }
+
+      // Format exercise recommendation as rich message
+      let msg = '';
+      if (payload.red_flags?.present) {
+        msg += '⚠️ ALERTAS DETECTADAS: Se recomienda atención médica.\n\n';
+      }
+      if (payload.message_to_therapist) {
+        msg += `📋 Nota clínica: ${payload.message_to_therapist}\n\n`;
+      }
+      if (payload.exercises?.length) {
+        msg += `✅ ${payload.exercises.length} ejercicios recomendados:\n`;
+        payload.exercises.forEach((ex: any) => {
+          msg += `\n${ex.orden}. ${ex.nombre} (${ex.zona_corporal || '—'})`;
+          msg += `\n   Confianza: ${Math.round((ex.confidence || 0) * 100)}%`;
+          if (ex.why) msg += `\n   → ${ex.why}`;
+        });
+      }
+      if (payload.message_to_patient) {
+        msg += `\n\n💬 Mensaje para paciente:\n${payload.message_to_patient}`;
+      }
+      msg += `\n\n🔗 ID recomendación: ${payload.recommendation_id || '—'}`;
+
+      addMessage(msg, 'agent');
+      setAgentStatus(true);
+    } catch {
+      addMessage('Error de conexión con el agente de ejercicios.', 'agent');
+      setAgentStatus(false);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // Exercise recommend button handler
+  const exerciseBtn = document.getElementById('exerciseRecoBtn');
+  exerciseBtn?.addEventListener('click', () => {
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    handleExerciseRecommend(text);
+  });
 
   form?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
@@ -967,6 +1057,24 @@ import Layout from '../layouts/Layout.astro';
   .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   .send-btn .material-symbols-rounded { font-size: 20px; }
 
+  .exercise-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #c9871c, #e6a840);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition);
+  }
+  .exercise-btn:hover { filter: brightness(1.08); transform: scale(1.03); }
+  .exercise-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .exercise-btn .material-symbols-rounded { font-size: 20px; }
+
   .input-hints {
     font-size: 0.7rem;
     color: var(--text-muted);
@@ -1101,18 +1209,200 @@ import Layout from '../layouts/Layout.astro';
     font-size: 0.85rem;
   }
 
-  /* === RESPONSIVE === */
-  @media (max-width: 1100px) {
-    .content-grid { grid-template-columns: 1fr; }
-    .agent-panel { height: 500px; position: static; }
-    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  /* === SIDEBAR BACKDROP (mobile overlay) === */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity var(--transition);
   }
+  .sidebar-backdrop.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  /* === SECTION BODY === */
+  .section-body {
+    padding: 1rem 1.15rem;
+  }
+  .btn-sm.btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn-sm.btn-outline:hover {
+    background: var(--accent-soft);
+  }
+
+  /* === RESPONSIVE: TABLET (≤ 1100px) === */
+  @media (max-width: 1100px) {
+    .content-grid {
+      grid-template-columns: 1fr;
+    }
+    .agent-panel {
+      height: 500px;
+      position: static;
+    }
+    .metrics-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* === RESPONSIVE: MOBILE (≤ 768px) === */
   @media (max-width: 768px) {
-    .sidebar { position: fixed; left: -240px; top: 0; bottom: 0; z-index: 100; transition: left var(--transition); }
-    .sidebar:not(.collapsed) { left: 0; box-shadow: var(--shadow-lg); }
-    .sidebar.collapsed { left: -240px; }
-    .metrics-row { grid-template-columns: 1fr; }
-    .user-name { display: none; }
-    .content-grid { grid-template-columns: 1fr; }
+    /* Sidebar: off-screen, opens as overlay */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transform: translateX(-100%);
+      transition: transform var(--transition);
+      box-shadow: none;
+      width: 260px;
+      min-width: 260px;
+    }
+    .sidebar.open {
+      transform: translateX(0);
+      box-shadow: var(--shadow-lg);
+    }
+    /* Override collapsed behavior on mobile */
+    .sidebar.collapsed {
+      width: 260px;
+      min-width: 260px;
+    }
+    .sidebar.collapsed .nav-label,
+    .sidebar.collapsed .brand-text,
+    .sidebar.collapsed .badge {
+      display: inline;
+    }
+
+    /* Topbar */
+    .topbar {
+      padding: 0 0.75rem;
+      gap: 0.5rem;
+    }
+    .search-box {
+      max-width: none;
+    }
+    .user-name {
+      display: none;
+    }
+    .user-pill {
+      padding: 4px;
+    }
+
+    /* Content */
+    .content {
+      padding: 1rem 0.75rem;
+    }
+    .content-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    /* Metrics: 2 columns on mobile */
+    .metrics-row {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+    .metric-card {
+      padding: 0.75rem;
+      gap: 0.6rem;
+    }
+    .metric-value {
+      font-size: 1.3rem;
+    }
+    .metric-label {
+      font-size: 0.72rem;
+    }
+
+    /* Agent panel */
+    .agent-panel {
+      height: auto;
+      max-height: 60vh;
+      position: static;
+    }
+    .chat-log {
+      max-height: 35vh;
+      min-height: 120px;
+    }
+
+    /* Tables */
+    table {
+      min-width: 560px;
+    }
+    th, td {
+      padding: 0.55rem 0.75rem;
+      font-size: 0.82rem;
+    }
+
+    /* Page headers */
+    .page-header-row {
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .page-title {
+      font-size: 1.25rem;
+    }
+
+    /* Config grid */
+    .config-grid {
+      grid-template-columns: 1fr;
+    }
+    .config-item {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .config-value {
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+
+    /* Touch targets */
+    .btn-sm {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+    }
+    .send-btn,
+    .exercise-btn {
+      width: 44px;
+      height: 44px;
+    }
+    .icon-btn {
+      padding: 10px;
+    }
+    .sidebar-toggle {
+      padding: 10px;
+    }
+
+    /* Chat form */
+    .chat-form textarea {
+      min-height: 44px;
+      font-size: 16px; /* prevents iOS zoom on focus */
+    }
+    .input-hints {
+      display: none;
+    }
+  }
+
+  /* === RESPONSIVE: SMALL MOBILE (≤ 480px) === */
+  @media (max-width: 480px) {
+    .metrics-row {
+      grid-template-columns: 1fr;
+    }
+    .search-box input {
+      font-size: 16px;
+    }
+    .topbar {
+      height: 52px;
+    }
   }
 </style>

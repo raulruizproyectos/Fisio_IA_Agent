@@ -1,4 +1,79 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
+
+## Sesion 40 — 2026-03-04
+
+### Requisito añadido: Responsive Design obligatorio (PC + Móvil)
+- ✅ `ARCHITECTURE.md` sección 8 (UX Touchpoints): añadida regla obligatoria de responsive design con guías técnicas (mobile-first CSS, sidebar colapsable, tablas adaptativas, targets 44x44px, viewport meta tag, breakpoints de verificación 375px / 1280px)
+- ✅ `AGENT_RULES.md` nueva regla 6: todo cambio de frontend debe ser compatible con escritorio y móvil
+- Motivación: el frontend se visualizaba correctamente en PC pero no en móvil
+
+### Requisito añadido: Reutilización obligatoria de workflows n8n
+- ✅ `AGENT_RULES.md` nueva regla 7: antes de crear cualquier workflow/nodo en n8n, revisar TODOS los existentes y priorizar reutilización
+- ✅ Reforzada la regla operativa existente en CHANGELOG (Sesión 4+) sobre copiar/adaptar nodos funcionales
+
+### Pendiente para próxima sesión
+- Mismo que Sesión 39 (W1 Citas, E2E, deploys, seguridad)
+
+## Sesion 39 — 2026-03-04
+
+### Prerequisitos completados
+- ✅ Migración `schema_vnext.sql`: 12 tablas CRM nuevas creadas en Supabase (27 tablas totales)
+  - `crm_perfiles`, `crm_pacientes`, `crm_asignaciones_fisio_paciente`, `crm_sesiones`, `crm_notas_seguimiento`
+  - `crm_citas`, `crm_ejercicios_catalogo`, `crm_ejercicio_media`
+  - `crm_recomendaciones`, `crm_recomendacion_items`, `crm_comunicaciones`, `crm_audit_log`
+- ✅ RLS habilitado + políticas service_role en todas las tablas CRM
+- ✅ Triggers `updated_at` en 9 tablas CRM
+- ✅ 16 ejercicios migrados de `ejercicios` → `crm_ejercicios_catalogo` con metadata completa
+- ✅ Bucket privado `ejercicios` creado en Supabase Storage (10MB, JPEG/PNG/GIF/WebP/MP4)
+- ✅ Fix search_path en función `crm_set_updated_at` (advisory de seguridad)
+
+### W2 — Agente IA de Ejercicios
+- ✅ `backend/src/routes/exercises.js` — 4 endpoints:
+  - `GET /catalog` — catálogo filtrable por zona, nivel, búsqueda
+  - `GET /:id/media` — signed URLs de Storage (1h expiry)
+  - `POST /recommend` — core W2: síntomas → OpenAI → ejercicios → `crm_recomendaciones`
+  - `GET /recommendations/:patientId` — historial de recomendaciones con items + ejercicio details
+- ✅ Edge Function `exercise-recommend` desplegada en Supabase (gpt-4o-mini, ACTIVE)
+  - System prompt con reglas de seguridad (red flags, contraindicaciones)
+  - Respuesta JSON estructurada obligatoria
+  - Fallback automático: si `N8N_EXERCISE_WEBHOOK_URL` no configurada → Edge Function directo
+- ✅ Ruta registrada en `index.js` como `/api/exercises` y `/api/ejercicios`
+- ✅ `.env.example` actualizado con `N8N_EXERCISE_WEBHOOK_URL` y `OPENAI_API_KEY`
+
+### Flujo W2 completo
+```
+Frontend/Telegram → POST /api/exercises/recommend
+  → Backend carga catálogo de crm_ejercicios_catalogo
+  → Llama Edge Function exercise-recommend (o n8n webhook)
+  → OpenAI gpt-4o-mini selecciona 3-5 ejercicios
+  → Guarda en crm_recomendaciones + crm_recomendacion_items
+  → Genera signed URLs de media
+  → Devuelve respuesta con ejercicios + mensajes para paciente y fisio
+  → Log en crm_comunicaciones
+```
+
+### Pendiente para próxima sesión
+- [ ] Configurar `OPENAI_API_KEY` como secreto en Edge Functions (Dashboard → Edge Functions → Secrets)
+- [ ] W1: Citas + Google Calendar (requiere OAuth config manual)
+- [ ] E2E: Prueba completa multicanal Telegram + CRM + Supabase
+- [ ] RLS policies granulares para autenticación de usuarios
+
+### W0 — Router de Intención
+- ✅ Edge Function `intent-router` desplegada (gpt-4o-mini, temperature 0.1, max 100 tokens)
+  - Clasifica mensajes en: `exercise`, `appointment`, `session_note`, `unknown`
+  - JSON output con `route`, `confidence`, `reasoning`
+- ✅ `telegram.js` actualizado: mensajes free-text pasan por W0 antes de procesarse
+  - Si `exercise` + confidence ≥ 0.6 → auto-recomendación W2 + respuesta en Telegram
+  - Si `appointment` + confidence ≥ 0.6 → placeholder (W1 pendiente)
+  - Fallback graceful: si W0 falla → comportamiento original (crear intake)
+
+### W3 — Trigger Web CRM
+- ✅ Botón 🏋️ "Recomendar ejercicios" añadido al panel Agente Clínico IA (botón amber)
+  - Envía síntomas directamente a `POST /api/exercises/recommend`
+  - Muestra respuesta estructurada: alertas, ejercicios, confianza, razones, mensaje para paciente
+  - Usa `selectedPatientId` del SPA para vincular al paciente seleccionado
+- ✅ CSS: gradiente amber (#c9871c → #e6a840) diferenciado del send-btn azul
+- ✅ Hints actualizados: "Ctrl+Enter = Agente IA · 🏋️ = Ejercicios AI"
 ## Pivot de Alcance (Objetivo Actual) — 2026-03-03
 
 ### 1) Que es ahora el sistema
@@ -129,6 +204,17 @@
 
 ### Estado de cierre
 - Bloqueo critico de frontend `502` resuelto.
+
+## [Sesion 38] - 2026-03-04 (Plan exacto de continuidad para manana)
+### Orden de arranque acordado
+1. W0 + contratos JSON
+2. W2 con catalogo + imagen signed URL
+3. W3 desde CRM
+4. W1 citas + Google Calendar
+5. Prueba E2E Telegram + CRM + Supabase logs
+
+### Despues del bloque principal
+- Completar pendientes restantes hasta dejar el sistema listo para los primeros tests completos de experiencia de usuario.
 
 ## PRIORIDAD OBLIGATORIA GitHub (fuente de verdad)
 
