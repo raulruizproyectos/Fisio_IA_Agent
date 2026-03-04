@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Fisio IA Agent — CRM Clinico Inteligente">
+<Layout title="Fisio IA Agent â€” CRM Clinico Inteligente">
   <div class="app-shell">
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
@@ -42,7 +42,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="sidebar-bottom">
         <a href="#" class="nav-item" data-section="config">
           <span class="material-symbols-rounded">settings</span>
-          <span class="nav-label">Configuración</span>
+          <span class="nav-label">ConfiguraciÃ³n</span>
         </a>
       </div>
     </aside>
@@ -52,7 +52,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="main-area">
       <!-- HEADER -->
       <header class="topbar">
-        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menú">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="MenÃº">
           <span class="material-symbols-rounded">menu</span>
         </button>
         <div class="search-box">
@@ -66,7 +66,7 @@ import Layout from '../layouts/Layout.astro';
           </button>
           <div class="user-pill">
             <div class="avatar">RR</div>
-            <span class="user-name">Dr. Raúl Ruiz</span>
+            <span class="user-name">Dr. RaÃºl Ruiz</span>
           </div>
         </div>
       </header>
@@ -78,21 +78,21 @@ import Layout from '../layouts/Layout.astro';
           <div class="content-grid">
             <div class="col-main">
               <section class="metrics-row">
-                <div class="metric-card"><div class="metric-icon" style="background: var(--accent-soft); color: var(--accent);"><span class="material-symbols-rounded">assignment</span></div><div class="metric-data"><span class="metric-value" id="metricIntakes">—</span><span class="metric-label">Intakes pendientes</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(59,130,246,0.12); color: var(--info);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">—</span><span class="metric-label">Pacientes activos</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: var(--accent-soft); color: var(--accent);"><span class="material-symbols-rounded">assignment</span></div><div class="metric-data"><span class="metric-value" id="metricIntakes">â€”</span><span class="metric-label">Intakes pendientes</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: rgba(59,130,246,0.12); color: var(--info);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">â€”</span><span class="metric-label">Pacientes activos</span></div></div>
                 <div class="metric-card"><div class="metric-icon" style="background: rgba(245,158,11,0.12); color: var(--warning);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Informes ejercicio</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(16,185,129,0.12); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">—</span><span class="metric-label">Sesiones hoy</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: rgba(16,185,129,0.12); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">â€”</span><span class="metric-label">Sesiones hoy</span></div></div>
               </section>
               <section class="card table-card">
-                <header class="card-header"><h2>Últimos Intakes</h2><button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
-                <div class="table-wrap"><table id="intakeTable"><thead><tr><th>Paciente</th><th>Canal</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="intakeBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">inbox</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
+                <header class="card-header"><h2>Ãšltimos Intakes</h2><button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+                <div class="table-wrap"><table id="intakeTable"><thead><tr><th>Paciente</th><th>Canal</th><th>Fecha</th><th>Estado</th><th>AcciÃ³n</th></tr></thead><tbody id="intakeBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">inbox</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
               </section>
             </div>
             <div class="col-aside">
               <section class="card agent-panel">
-                <header class="card-header agent-header"><div class="agent-title"><span class="material-symbols-rounded agent-icon">psychology</span><div><h2>Agente Clínico IA</h2><div class="agent-status"><span class="status-dot connected" id="agentDot"></span><span class="status-text" id="agentStatusText">Conectado</span></div></div></div></header>
-                <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clínico. Describe síntomas y generaré un informe de ejercicios con imágenes y procedimiento.</p></div></article></div>
-                <form id="agentForm" class="chat-form"><div class="input-row"><textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 dias, empeora al elevar brazo, sin traumatismo..."></textarea><button type="button" class="exercise-btn" id="exerciseRecoBtn" aria-label="Recomendar ejercicios" title="Recomendar ejercicios"><span class="material-symbols-rounded">fitness_center</span></button><button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button></div><div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter = Agente IA · <span class="material-symbols-rounded" style="font-size: 14px;">fitness_center</span> = Ejercicios AI</div></form>
+                <header class="card-header agent-header"><div class="agent-title"><span class="material-symbols-rounded agent-icon">psychology</span><div><h2>Agente ClÃ­nico IA</h2><div class="agent-status"><span class="status-dot connected" id="agentDot"></span><span class="status-text" id="agentStatusText">Conectado</span></div></div></div></header>
+                <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clÃ­nico. Describe sÃ­ntomas y generarÃ© un informe de ejercicios con imÃ¡genes y procedimiento.</p></div></article></div>
+                <form id="agentForm" class="chat-form"><div class="input-row"><textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 dias, empeora al elevar brazo, sin traumatismo..."></textarea><button type="button" class="exercise-btn" id="exerciseRecoBtn" aria-label="Recomendar ejercicios" title="Recomendar ejercicios"><span class="material-symbols-rounded">fitness_center</span></button><button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button></div><div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter = Agente IA Â· <span class="material-symbols-rounded" style="font-size: 14px;">fitness_center</span> = Ejercicios AI</div></form>
               </section>
             </div>
           </div>
@@ -113,7 +113,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PLANTILLAS === -->
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terapéuticas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas TerapÃ©uticas</h1>
             <div class="page-tools">
               <label class="inline-field">
                 <span>Paciente destino</span>
@@ -125,17 +125,17 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Plantillas más reutilizadas</h2></header>
+            <header class="card-header"><h2>Plantillas mÃ¡s reutilizadas</h2></header>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Título</th>
+                    <th>TÃ­tulo</th>
                     <th>Usos</th>
                     <th>Ejercicios</th>
-                    <th>Último uso</th>
+                    <th>Ãšltimo uso</th>
                     <th>Origen</th>
-                    <th>Acción</th>
+                    <th>AcciÃ³n</th>
                   </tr>
                 </thead>
                 <tbody id="templatesBody">
@@ -189,22 +189,22 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: CONFIG === -->
         <div class="page-section" data-page="config">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Configuración</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> ConfiguraciÃ³n</h1>
           </div>
           <div class="config-grid">
             <section class="card">
               <header class="card-header"><h2>Conexiones</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">—</span><span class="status-chip" id="cfgBackendStatus">—</span></div>
-                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">—</span><span class="status-chip" id="cfgAgentStatus">—</span></div>
+                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">â€”</span><span class="status-chip" id="cfgBackendStatus">â€”</span></div>
+                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">â€”</span><span class="status-chip" id="cfgAgentStatus">â€”</span></div>
               </div>
             </section>
             <section class="card">
               <header class="card-header"><h2>Proyecto</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Versión</span><span class="config-value">0.0.1</span></div>
+                <div class="config-item"><span class="config-label">VersiÃ³n</span><span class="config-value">0.0.1</span></div>
                 <div class="config-item"><span class="config-label">Stack</span><span class="config-value">Astro + Express + Supabase + n8n</span></div>
-                <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub ↗</a></div>
+                <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub â†—</a></div>
               </div>
             </section>
           </div>
@@ -242,7 +242,7 @@ import Layout from '../layouts/Layout.astro';
   // === HELPERS ===
   const escapeHtml = (str: string) => str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: string) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '—'; } };
+  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'â€”'; } };
   const isTodayDate = (d: string) => {
     try {
       const target = new Date(d);
@@ -252,7 +252,23 @@ import Layout from '../layouts/Layout.astro';
       return false;
     }
   };
-  const fetchJson = async (url: string, opts?: RequestInit) => { const r = await fetch(url, { signal: AbortSignal.timeout(8000), ...opts }); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); };
+  const fetchJson = async (url: string, opts?: RequestInit, timeoutMs = 8000) => {
+    const r = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), ...opts });
+    if (!r.ok) {
+      let detail = '';
+      try {
+        detail = await r.text();
+      } catch {
+        detail = '';
+      }
+      throw new Error(detail ? `HTTP ${r.status}: ${detail.slice(0, 220)}` : `HTTP ${r.status}`);
+    }
+    return r.json();
+  };
+  const isTimeoutError = (err: any) => {
+    const msg = String(err?.message || '').toLowerCase();
+    return err?.name === 'TimeoutError' || msg.includes('timed out') || msg.includes('abort');
+  };
   const resolvePatientName = (row: any) =>
     row?.nombre_paciente ||
     row?.pacientes?.nombre_completo ||
@@ -335,7 +351,7 @@ import Layout from '../layouts/Layout.astro';
     log.appendChild(article);
     log.scrollTop = log.scrollHeight;
   };
-  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
+  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexiÃ³n'; };
   const setSending = (busy: boolean) => { if(sendBtn) sendBtn.disabled=busy; if(input) input.disabled=busy; };
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
 
@@ -345,7 +361,7 @@ import Layout from '../layouts/Layout.astro';
     const options = ['<option value="">Selecciona paciente</option>']
       .concat(
         patientCatalog.map((p) => {
-          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `· ${p.email}` : ''}`.trim();
+          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `Â· ${p.email}` : ''}`.trim();
           return `<option value="${escapeAttr(p.id)}">${escapeHtml(label)}</option>`;
         })
       );
@@ -371,16 +387,16 @@ import Layout from '../layouts/Layout.astro';
     const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
 
     if (payload?.red_flags?.present) {
-      lines.push('⚠️ ALERTAS DETECTADAS: Se recomienda valoración médica antes de continuar.');
+      lines.push('âš ï¸ ALERTAS DETECTADAS: Se recomienda valoraciÃ³n mÃ©dica antes de continuar.');
       lines.push('');
     }
 
     if (payload?.message_to_therapist) {
-      lines.push(`📋 Nota clínica: ${payload.message_to_therapist}`);
+      lines.push(`ðŸ“‹ Nota clÃ­nica: ${payload.message_to_therapist}`);
       lines.push('');
     }
 
-    lines.push(`✅ Informe de ejercicios (${exercises.length})`);
+    lines.push(`âœ… Informe de ejercicios (${exercises.length})`);
     lines.push('');
 
     exercises.forEach((ex: any, idx: number) => {
@@ -390,9 +406,9 @@ import Layout from '../layouts/Layout.astro';
       const pauta = [
         ex.series ? `Series: ${ex.series}` : null,
         ex.repeticiones ? `Repeticiones: ${ex.repeticiones}` : null,
-        ex.duracion_segundos ? `Duración: ${ex.duracion_segundos}s` : null,
+        ex.duracion_segundos ? `DuraciÃ³n: ${ex.duracion_segundos}s` : null,
       ].filter(Boolean);
-      if (pauta.length) lines.push(`   Pauta: ${pauta.join(' · ')}`);
+      if (pauta.length) lines.push(`   Pauta: ${pauta.join(' Â· ')}`);
 
       if (ex.procedimiento) {
         lines.push(`   Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`);
@@ -407,33 +423,37 @@ import Layout from '../layouts/Layout.astro';
     });
 
     if (payload?.message_to_patient) {
-      lines.push('💬 Mensaje para paciente:');
+      lines.push('ðŸ’¬ Mensaje para paciente:');
       lines.push(payload.message_to_patient);
       lines.push('');
     }
 
-    lines.push(`🔗 ID recomendación: ${payload?.recommendation_id || '—'}`);
+    lines.push(`ðŸ”— ID recomendaciÃ³n: ${payload?.recommendation_id || 'â€”'}`);
     return lines.join('\n').trim();
   };
 
   // W3: Exercise recommendation via CRM
   const handleExerciseRecommend = async (text: string) => {
-    addMessage(`🏋️ Solicitar recomendación para: ${text}`, 'user');
+    addMessage(`Solicitar recomendacion para: ${text}`, 'user');
     setSending(true);
     try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/exercises/recommend`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patient_id: selectedPatientId || null,
-          symptoms: text,
-          channel: 'crm_web',
-          fisioterapeuta_id: PROF_ID,
-        }),
-      });
+      const payload = await fetchJson(
+        `${BACKEND_BASE}/api/exercises/recommend`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patient_id: selectedPatientId || null,
+            symptoms: text,
+            channel: 'crm_web',
+            fisioterapeuta_id: PROF_ID,
+          }),
+        },
+        45000
+      );
 
       if (!payload.ok) {
-        addMessage(`Error: ${payload.error || 'No se pudo generar recomendación'}`, 'agent');
+        addMessage(`Error: ${payload.error || 'No se pudo generar recomendacion'}`, 'agent');
         return;
       }
 
@@ -446,9 +466,12 @@ import Layout from '../layouts/Layout.astro';
         metricEl.textContent = Number.isFinite(current) ? String(current + 1) : '1';
       }
       setAgentStatus(true);
-    } catch {
-      addMessage('Error de conexión con el agente de ejercicios.', 'agent');
-      setAgentStatus(false);
+    } catch (err: any) {
+      if (isTimeoutError(err)) {
+        addMessage('El agente de ejercicios tarda mas de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
+      } else {
+        addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
+      }
     } finally {
       setSending(false);
     }
@@ -477,7 +500,7 @@ import Layout from '../layouts/Layout.astro';
       const answer = payload?.data?.reply_text || payload?.data?.message || (typeof payload.data==='string'?payload.data:JSON.stringify(payload.data));
       addMessage(answer, 'agent');
       setAgentStatus(!payload.n8n_unreachable);
-    } catch { addMessage('Error de conexión con el agente.', 'agent'); setAgentStatus(false); }
+    } catch { addMessage('Error de conexiÃ³n con el agente.', 'agent'); setAgentStatus(false); }
     finally { setSending(false); }
   });
 
@@ -497,7 +520,7 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(intakes.length);
       if (!intakes.length) { intakeBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">check_circle</span><p>Sin intakes pendientes</p></div></td></tr>`; return; }
       intakeBody.innerHTML = intakes.slice(0,10).map((i: any) => {
-        const ch = (i.fuente||i.canal||'').toLowerCase().includes('telegram')?'📱 Telegram':'🌐 Web';
+        const ch = (i.fuente||i.canal||'').toLowerCase().includes('telegram')?'ðŸ“± Telegram':'ðŸŒ Web';
         const f = fmtDate(i.creado_en||i.created_at||'');
         const st = i.estado||'pendiente';
         const patientName = resolvePatientName(i);
@@ -525,8 +548,8 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(pts.length);
       if (!pts.length) { pacientesBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">person_off</span><p>Sin pacientes registrados</p></div></td></tr>`; return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
-        const patientName = p.nombre_completo || '—';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'—')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'—'}</td><td>${fmtDate(p.creado_en||'')}</td><td><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button></td></tr>`;
+        const patientName = p.nombre_completo || 'â€”';
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'â€”')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'â€”'}</td><td>${fmtDate(p.creado_en||'')}</td><td><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button></td></tr>`;
       }).join('');
     } catch { pacientesBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar pacientes</p></div></td></tr>`; }
   };
@@ -550,7 +573,7 @@ import Layout from '../layouts/Layout.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
       const templates = payload.data || [];
       if (!templates.length) {
-        templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">library_books</span><p>No hay plantillas disponibles todavía.</p></div></td></tr>`;
+        templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">library_books</span><p>No hay plantillas disponibles todavÃ­a.</p></div></td></tr>`;
         return;
       }
       templatesBody.innerHTML = templates.map((tpl: any) => {
@@ -561,8 +584,8 @@ import Layout from '../layouts/Layout.astro';
           <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
           <td>${tpl.usage_count || 0}</td>
           <td>${tpl.exercises_count || 0}</td>
-          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : '—'}</td>
-          <td>${escapeHtml(tpl.source_patient_name || '—')}</td>
+          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : 'â€”'}</td>
+          <td>${escapeHtml(tpl.source_patient_name || 'â€”')}</td>
           <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
         </tr>`;
       }).join('');
@@ -619,9 +642,9 @@ import Layout from '../layouts/Layout.astro';
       const intakes = payload.data || [];
       if (!intakes.length) { intakesFullBody.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">check_circle</span><p>Sin intakes pendientes</p></div></td></tr>`; return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
-        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">⚠ Sí</span>` : '<span class="status-chip aprobado">No</span>';
+        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">âš  SÃ­</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'—')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'â€”')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
     } catch { intakesFullBody.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar intakes</p></div></td></tr>`; }
   };
@@ -651,7 +674,7 @@ import Layout from '../layouts/Layout.astro';
 
       citasBody.innerHTML = citas.map((cita: any) => {
         const canCancel = ['pendiente', 'confirmada', 'reprogramada'].includes(cita.estado);
-        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || '—')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : '—'}</td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || 'â€”')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : 'â€”'}</td></tr>`;
       }).join('');
     } catch {
       citasBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar citas</p></div></td></tr>`;
@@ -707,7 +730,7 @@ import Layout from '../layouts/Layout.astro';
       historialContent.innerHTML = `
         <div class="detail-block">
           <h3>${escapeHtml(displayName)}</h3>
-          <p><strong>Email:</strong> ${escapeHtml(patient.email || '—')} · <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '—'}</p>
+          <p><strong>Email:</strong> ${escapeHtml(patient.email || 'â€”')} Â· <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : 'â€”'}</p>
         </div>
         <div class="detail-block">
           <h3>Notas de seguimiento (${notes.length})</h3>
@@ -1481,7 +1504,7 @@ import Layout from '../layouts/Layout.astro';
     background: var(--accent-soft);
   }
 
-  /* === RESPONSIVE: TABLET (≤ 1100px) === */
+  /* === RESPONSIVE: TABLET (â‰¤ 1100px) === */
   @media (max-width: 1100px) {
     .content-grid {
       grid-template-columns: 1fr;
@@ -1495,7 +1518,7 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* === RESPONSIVE: MOBILE (≤ 768px) === */
+  /* === RESPONSIVE: MOBILE (â‰¤ 768px) === */
   @media (max-width: 768px) {
     /* Sidebar: off-screen, opens as overlay */
     .sidebar {
@@ -1650,7 +1673,7 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* === RESPONSIVE: SMALL MOBILE (≤ 480px) === */
+  /* === RESPONSIVE: SMALL MOBILE (â‰¤ 480px) === */
   @media (max-width: 480px) {
     .metrics-row {
       grid-template-columns: 1fr;

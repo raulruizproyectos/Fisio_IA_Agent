@@ -1,5 +1,25 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 52 - 2026-03-04
+
+### Objetivo
+- Resolver fallo del agente de ejercicios en frontend y dejar cierre de sesion listo para continuar manana.
+
+### Cambios implementados
+- ✅ Diagnostico raiz:
+  - backend tardaba ~12s en `/api/exercises/recommend`.
+  - frontend tenia timeout fijo de 8s y mostraba falso "Error de conexion con el agente de ejercicios".
+- ✅ Fix frontend:
+  - `fetchJson` ahora admite `timeoutMs` configurable y devuelve detalle HTTP.
+  - `handleExerciseRecommend` usa timeout de `45000ms`.
+  - manejo de errores mejorado (timeout vs error real) sin marcar desconexion por falso negativo.
+- ✅ Build validado:
+  - `scripts/frontend-local-build.ps1` completado OK.
+
+### Estado
+- ✅ Agente de ejercicios estabilizado en frontend para respuestas IA lentas.
+- ✅ Session log actualizado para retomar desde este punto.
+
 ## Sesion 51 - 2026-03-04
 
 ### Objetivo

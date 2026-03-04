@@ -2,6 +2,22 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 52) - Agente ejercicios estabilizado
+
+### Completado esta sesion
+- ✅ Root cause identificado del fallo reportado en chat:
+  - timeout frontend (8s) menor que latencia real del motor IA (~12s).
+- ✅ Fix aplicado en `frontend/src/pages/index.astro`:
+  - `fetchJson(url, opts, timeoutMs)` configurable.
+  - flujo de ejercicios con timeout `45000ms`.
+  - mensajes de error diferenciados (timeout vs error HTTP).
+  - eliminado falso "sin conexion" por timeout puntual del flujo de ejercicios.
+- ✅ Build local validado (`scripts/frontend-local-build.ps1` OK).
+
+### Pendiente inmediato para manana
+1. Subir cobertura de imagenes en recomendaciones (priorizar `metadata.proet_image_url` y media principal).
+2. Añadir metrica operacional para timeout/reintentos del agente en frontend y backend.
+
 ## Estado actual (2026-03-04, Sesion 51) - Build valido sin video, produccion aun legacy
 
 ### Completado esta sesion
