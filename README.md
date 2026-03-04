@@ -50,10 +50,14 @@ CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomen
 - `database/schema_vnext.sql` contiene una propuesta aditiva para CRM + Agents.
 
 ## Workflows n8n versionados en repo
-- `Fisio_IA_Agent / Nucleo Agente`
-- `Fisio_IA_Agent / Subflujo Pendientes`
-- `Fisio_IA_Agent / Telegram Chat`
-- `Fisio_IA_Agent / W1 Appointment Agent`
+- Produccion actual: `n8n/Fisio_IA_Agent/production/` (6 workflows activos exportados de n8n).
+- Canonicos vNext: `n8n/Fisio_IA_Agent/vnext/`
+  - `telegram-chat.json` (W0 trigger Telegram nativo)
+  - `fisio-agent-core.json` (W0 router core)
+  - `w1-appointment-agent.json`
+  - `w2-exercise-agent.json`
+  - `w3-crm-trigger.json`
+  - `sw-fisio-pending-intakes.json`
 
 ## Storage de imagenes de movimientos
 - Bucket: `ejercicios` (private).

@@ -1,0 +1,241 @@
+{
+    "name":  "Fisio_IA_Agent / W2 Exercise Agent",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "path":  "fisio/w2/exercise-recommend",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "WebhookW2Exercise",
+                      "name":  "Webhook W2 Exercise",
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       220,
+                                       260
+                                   ],
+                      "webhookId":  "fisio-w2-exercise"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\n\nconst requestId = input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`;\nconst patientId = input.patient_id || input.paciente_id || null;\nconst therapistId = input.therapist_id || input.fisioterapeuta_id || input.professional_id || null;\nconst symptomsText = String(input.symptoms_text || input.symptoms || input.message_text || input.text || '').trim();\n\nconst rawCandidates = Array.isArray(input.candidate_exercises)\n  ? input.candidate_exercises\n  : Array.isArray(input.catalog)\n    ? input.catalog\n    : [];\n\nconst candidateExercises = rawCandidates\n  .map((item) => ({\n    exercise_id: item.exercise_id || item.id || null,\n    name: item.name || item.nombre || '',\n    description: item.description || item.descripcion || '',\n    contraindicaciones: Array.isArray(item.contraindications)\n      ? item.contraindications\n      : Array.isArray(item.contraindicaciones)\n        ? item.contraindicaciones\n        : [],\n    zona_corporal: item.zona_corporal || item.body_area || null,\n    nivel: item.nivel || item.level || null,\n    object_key: item.object_key || null\n  }))\n  .filter((item) => item.exercise_id);\n\nconst redFlagContext = Array.isArray(input.red_flag_context) ? input.red_flag_context : [];\n\nreturn [{\n  json: {\n    request_id: requestId,\n    patient_id: patientId,\n    therapist_id: therapistId,\n    symptoms_text: symptomsText,\n    red_flag_context: redFlagContext,\n    candidate_exercises: candidateExercises,\n    candidate_count: candidateExercises.length,\n    channel: input.channel || input.source || 'n8n_webhook'\n  }\n}];"
+                                     },
+                      "id":  "NormalizeRequest",
+                      "name":  "Normalize Request",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       460,
+                                       260
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  2
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "has-patient-id",
+                                                                                   "leftValue":  "={{ $json.patient_id }}",
+                                                                                   "rightValue":  "",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEmpty"
+                                                                                                }
+                                                                               },
+                                                                               {
+                                                                                   "id":  "has-symptoms",
+                                                                                   "leftValue":  "={{ $json.symptoms_text }}",
+                                                                                   "rightValue":  "",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEmpty"
+                                                                                                }
+                                                                               },
+                                                                               {
+                                                                                   "id":  "has-candidates",
+                                                                                   "leftValue":  "={{ $json.candidate_count }}",
+                                                                                   "rightValue":  0,
+                                                                                   "operator":  {
+                                                                                                    "type":  "number",
+                                                                                                    "operation":  "larger"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "HasMinimumData",
+                      "name":  "Tiene Datos Minimos",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       700,
+                                       260
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "={{ ($env.SUPABASE_URL || 'https://uewhbaejcouenoufuwlq.supabase.co') + '/functions/v1/exercise-recommend' }}",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "x-client-info",
+                                                                                         "value":  "fisio_ia_agent_n8n_w2"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={\n  \"request_id\": $json.request_id,\n  \"patient_id\": $json.patient_id,\n  \"symptoms\": $json.symptoms_text,\n  \"red_flag_context\": $json.red_flag_context,\n  \"catalog\": $json.candidate_exercises\n}",
+                                         "options":  {
+                                                         "ignoreResponseCode":  true,
+                                                         "timeout":  30000
+                                                     }
+                                     },
+                      "id":  "CallExerciseEngine",
+                      "name":  "Call Exercise Engine",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       940,
+                                       180
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const input = $json || {};\nconst statusCode = Number(input.statusCode || input.code || 0);\nconst raw = input.recommendation || input;\n\nconst selected = Array.isArray(raw.selected_exercises) ? raw.selected_exercises : [];\nconst normalizedSelected = selected\n  .map((item, idx) => ({\n    exercise_id: item.exercise_id || item.id || null,\n    name: item.name || item.nombre || null,\n    why: item.why || item.reason || '',\n    cautions: Array.isArray(item.cautions) ? item.cautions : [],\n    object_key: item.object_key || null,\n    signed_url_ttl_seconds: 1200,\n    rank: idx + 1\n  }))\n  .filter((item) => item.exercise_id);\n\nconst hasEngineError = statusCode >= 400;\nlet status = 'generated';\nif (hasEngineError) {\n  status = 'error';\n} else if (!normalizedSelected.length) {\n  status = 'needs_review';\n}\n\nconst fallbackPatientMessage = normalizedSelected.length\n  ? 'He generado una propuesta inicial de ejercicios para revision clinica.'\n  : 'Necesito mas informacion para recomendar ejercicios de forma segura.';\n\nreturn [{\n  json: {\n    request_id: raw.request_id || input.request_id || null,\n    status,\n    recommendation_id: raw.recommendation_id || null,\n    selected_exercises: normalizedSelected,\n    message_to_patient_es: raw.message_to_patient_es || fallbackPatientMessage,\n    message_to_therapist_es: raw.message_to_therapist_es || (hasEngineError ? 'Error del motor de recomendacion' : ''),\n    red_flags_present: !!raw.red_flags_present,\n    red_flags_items: Array.isArray(raw.red_flags_items) ? raw.red_flags_items : [],\n    selection_rationale: raw.selection_rationale || '',\n    escalation_recommend_medical_attention: !!raw.escalation_recommend_medical_attention,\n    escalation_reason: raw.escalation_reason || '',\n    engine_status_code: statusCode || null\n  }\n}];"
+                                     },
+                      "id":  "BuildW2Response",
+                      "name":  "Build W2 Response",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1180,
+                                       180
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'error',\n    recommendation_id: null,\n    selected_exercises: [],\n    message_to_patient_es: 'No pude generar la recomendacion porque faltan datos minimos (patient_id, symptoms_text o candidate_exercises).',\n    message_to_therapist_es: 'Entrada invalida para W2.',\n    red_flags_present: false,\n    red_flags_items: [],\n    selection_rationale: '',\n    escalation_recommend_medical_attention: false,\n    escalation_reason: 'missing_required_input'\n  }\n}];"
+                                     },
+                      "id":  "BuildValidationError",
+                      "name":  "Build Validation Error",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       940,
+                                       360
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ $json }}"
+                                     },
+                      "id":  "RespondW2",
+                      "name":  "Respond W2",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       1420,
+                                       260
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Webhook W2 Exercise":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Normalize Request",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Normalize Request":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Tiene Datos Minimos",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Tiene Datos Minimos":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Call Exercise Engine",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ],
+                                                                 [
+                                                                     {
+                                                                         "node":  "Build Validation Error",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Call Exercise Engine":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Build W2 Response",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Build W2 Response":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Respond W2",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Build Validation Error":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Respond W2",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1"
+                 }
+}

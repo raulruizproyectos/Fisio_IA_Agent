@@ -2,6 +2,44 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 47) - UI modo oscuro aplicada
+
+### Completado esta sesion
+- ✅ Rediseño a modo oscuro en CRM frontend:
+  - `frontend/src/layouts/Layout.astro`: variables globales dark theme.
+  - `frontend/src/pages/index.astro`: sidebar, topbar, cards, tablas, inputs y selectores ajustados al nuevo esquema.
+- ✅ Se mantiene compatibilidad responsive (desktop y movil) sin cambiar la estructura funcional.
+- ✅ n8n remoto:
+  - creados `Fisio_IA_Agent / W2 Exercise Agent` y `Fisio_IA_Agent / W3 CRM Trigger` (inactivos).
+  - eliminados duplicados temporales de W3 de pruebas API.
+
+### Pendiente para proxima sesion
+1. Redeploy de `fisio-frontend` para publicar el tema oscuro en produccion.
+2. Validacion visual final en navegador (contraste, legibilidad, hover/focus states).
+
+## Estado actual (2026-03-04, Sesion 46) - Fix frontend prod + CORS + W2/W3
+
+### Completado esta sesion
+- ✅ Diagnostico de produccion:
+  - frontend entregaba TypeScript sin transpilar en HTML (`<script lang="ts">` con tipos `as HTML...`).
+  - backend devolvia CORS restringido a `http://localhost:4321`.
+- ✅ Correcciones aplicadas:
+  - `frontend/src/pages/index.astro`: `<script>` procesable por Astro.
+  - `backend/src/index.js`: CORS con allowlist robusta (localhost + dominio frontend prod + env `FRONTEND_URLS/FRONTEND_URL`).
+- ✅ vNext n8n completado en repo con nuevos workflows:
+  - `n8n/Fisio_IA_Agent/vnext/w2-exercise-agent.json`
+  - `n8n/Fisio_IA_Agent/vnext/w3-crm-trigger.json`
+- ✅ Documentacion sincronizada:
+  - `README.md`
+  - `n8n/README.md`
+  - `CHANGELOG.md`
+  - este archivo
+
+### Pendiente para proxima sesion
+1. Redeploy de `fisio-frontend` y `fisio-backend` en EasyPanel para publicar fixes de script y CORS.
+2. Importar/activar en n8n remoto los workflows vNext W2/W3.
+3. Ejecutar test E2E real desde CRM (boton ejercicios) y Telegram.
+
 ## Estado actual (2026-03-04, Sesion 45) - Orden n8n por entorno (production/vnext)
 
 ### Completado esta sesion

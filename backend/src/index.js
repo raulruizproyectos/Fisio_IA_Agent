@@ -12,6 +12,22 @@ import exercisesRouter from './routes/exercises.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 const ERROR_WEBHOOK_URL = process.env.N8N_ERROR_WEBHOOK_URL || null;
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:4321',
+  'http://127.0.0.1:4321',
+  'https://fisio-frontend.b5xbaf.easypanel.host',
+];
+
+const allowedOrigins = Array.from(
+  new Set([
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...(process.env.FRONTEND_URLS || '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL.trim()] : []),
+  ])
+);
 
 // Supabase client
 export const supabase = createClient(
@@ -21,7 +37,18 @@ export const supabase = createClient(
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:4321',
+  origin: (origin, callback) => {
+    // Allow same-origin/server-to-server requests without Origin header.
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origin no permitido por CORS: ${origin}`));
+  },
   credentials: true,
 }));
 app.use(express.json());
@@ -75,4 +102,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`\nFisio IA Agent API\n------------------\nServidor activo en http://localhost:${PORT}\nHealth check:     http://localhost:${PORT}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
 });
-

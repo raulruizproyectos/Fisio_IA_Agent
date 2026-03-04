@@ -1,5 +1,46 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 47 - 2026-03-04
+
+### Objetivo
+- Cambiar la UI del CRM a modo oscuro completo manteniendo legibilidad y consistencia visual.
+
+### Cambios implementados
+- ✅ `frontend/src/layouts/Layout.astro`
+  - Nueva paleta dark global (`--bg-*`, `--text-*`, `--border-*`, sombras y fondo general).
+- ✅ `frontend/src/pages/index.astro`
+  - Ajuste de colores hardcodeados a tokens dark:
+    - sidebar, nav hover/active
+    - topbar, search input, user pill
+    - cards y metric cards
+    - selector de plantillas y superficies elevadas
+  - Mantiene responsive y jerarquia visual (desktop/movil).
+
+### Resultado
+- La interfaz deja de verse blanca y pasa a un modo oscuro consistente en todo el dashboard.
+
+## Sesion 46 - 2026-03-04
+
+### Objetivo
+- Desbloquear frontend de produccion y completar workflows vNext faltantes (W2/W3).
+
+### Cambios implementados
+- ✅ Fix frontend runtime:
+  - `frontend/src/pages/index.astro`: cambiado `<script lang="ts">` a `<script>` para evitar entregar TypeScript sin transpilar en produccion.
+- ✅ Fix backend CORS en produccion:
+  - `backend/src/index.js`: CORS pasa a lista de origenes permitidos (`FRONTEND_URLS`, `FRONTEND_URL`, localhost y dominio frontend productivo).
+  - evita bloqueo de peticiones desde `https://fisio-frontend.b5xbaf.easypanel.host`.
+- ✅ Workflows n8n vNext añadidos:
+  - `n8n/Fisio_IA_Agent/vnext/w2-exercise-agent.json`
+  - `n8n/Fisio_IA_Agent/vnext/w3-crm-trigger.json`
+- ✅ Documentacion de workflows actualizada:
+  - `README.md`
+  - `n8n/README.md`
+
+### Diagnostico confirmado de incidencia
+- El frontend desplegado mostraba HTML con script TypeScript embebido (sintaxis `as HTML...`), lo que rompe ejecucion JS en navegador.
+- El backend respondia `Access-Control-Allow-Origin: http://localhost:4321`, bloqueando llamadas cross-origin desde el frontend productivo.
+
 ## Sesion 45 - 2026-03-04
 
 ### Objetivo
@@ -1831,3 +1872,5 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Ambos workflows quedan endurecidos y validados como JSON.
 - Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
+
+

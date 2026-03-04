@@ -83,3 +83,12 @@
    - retries con backoff
    - payloads estructurados
    - logging por `request_id` y `patient_id`.
+
+## Actualizacion posterior (2026-03-04, noche)
+- API n8n `POST /api/v1/workflows` vuelve a responder correctamente (`200`).
+- Workflows vNext creados en remoto (inactivos):
+  - `Fisio_IA_Agent / W2 Exercise Agent`
+  - `Fisio_IA_Agent / W3 CRM Trigger`
+- Se eliminaron duplicados de prueba de W3 creados durante verificaciones de API.
+- Limitacion vigente:
+  - `PUT /api/v1/workflows/{id}/tags` sigue en `500` (etiquetado manual recomendado en UI).

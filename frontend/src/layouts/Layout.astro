@@ -35,31 +35,31 @@ const { title, description = 'Plataforma inteligente de prescripcion y seguimien
   }
 
   :root {
-    --bg-base: #f3f6fb;
-    --bg-card: #ffffff;
-    --bg-card-hover: #f6f9ff;
-    --bg-elevated: #eef3fb;
-    --accent: #0a7f78;
-    --accent-soft: #0a7f7818;
-    --accent-glow: #0a7f7840;
-    --text-primary: #132238;
-    --text-secondary: #3a4d66;
-    --text-muted: #6b7f98;
-    --border: #d9e3f0;
-    --border-light: #c5d4e8;
-    --danger: #d9414e;
-    --warning: #c9871c;
-    --success: #0b8f6a;
-    --info: #1f6fd6;
+    --bg-base: #0b1322;
+    --bg-card: #111b2d;
+    --bg-card-hover: #16253a;
+    --bg-elevated: #1a2740;
+    --accent: #2cc4b8;
+    --accent-soft: rgba(44, 196, 184, 0.2);
+    --accent-glow: rgba(44, 196, 184, 0.35);
+    --text-primary: #e7eefc;
+    --text-secondary: #b8c7df;
+    --text-muted: #8ea1c2;
+    --border: #243652;
+    --border-light: #32507a;
+    --danger: #ff5f6d;
+    --warning: #e4a949;
+    --success: #3ad39a;
+    --info: #66a3ff;
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 20px;
-    --shadow-sm: 0 1px 3px rgba(8, 25, 44, 0.05);
-    --shadow-md: 0 8px 20px rgba(13, 40, 66, 0.08);
-    --shadow-lg: 0 20px 45px rgba(13, 40, 66, 0.14);
-    --glass: rgba(255, 255, 255, 0.78);
-    --glass-border: rgba(10, 37, 63, 0.08);
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.22);
+    --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 24px 50px rgba(0, 0, 0, 0.45);
+    --glass: rgba(17, 27, 45, 0.76);
+    --glass-border: rgba(102, 163, 255, 0.18);
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -73,9 +73,9 @@ const { title, description = 'Plataforma inteligente de prescripcion y seguimien
   body {
     min-height: 100vh;
     background:
-      radial-gradient(circle at 10% 0%, #d9f2ee 0%, transparent 40%),
-      radial-gradient(circle at 85% 12%, #dbe8ff 0%, transparent 42%),
-      linear-gradient(180deg, #f9fcff 0%, var(--bg-base) 42%, #eef3fa 100%);
+      radial-gradient(circle at 12% 0%, rgba(31, 111, 214, 0.25) 0%, transparent 42%),
+      radial-gradient(circle at 88% 10%, rgba(44, 196, 184, 0.18) 0%, transparent 40%),
+      linear-gradient(180deg, #070d19 0%, var(--bg-base) 48%, #0f182b 100%);
     color: var(--text-primary);
   }
 

@@ -20,13 +20,16 @@ n8n es el orquestador principal para:
   - `sw-fisio-pending-intakes.json`
   - `telegram-chat.json` (usa `Telegram Trigger` nativo)
   - `w1-appointment-agent.json`
+  - `w2-exercise-agent.json`
+  - `w3-crm-trigger.json`
 
 ## Estado remoto (2026-03-04)
 - Instancia auditada de extremo a extremo.
 - Estado consolidado:
-  - workflows totales: `52`
+  - workflows totales: `54`
   - workflows activos: `6`
   - activos dentro de `Fisio_IA_Agent / ...`: `6`
+  - vNext creados en remoto (inactivos): `W2 Exercise Agent`, `W3 CRM Trigger`
 - Backups de seguridad pre-limpieza:
   - `docs/data/n8n/backup_before_deactivate_20260304/` (local, no versionado)
 - Artefactos de auditoria:
@@ -65,3 +68,5 @@ Endpoints principales consumidos por workflows:
 ## Nota de alcance
 - El set `production/` refleja exactamente el estado activo actual en n8n (incluye pipeline video).
 - El set `vnext/` contiene la version canónica objetivo (W0/W1/W2/W3) para migracion progresiva.
+- Limitacion actual de API n8n:
+  - `PUT /api/v1/workflows/{id}/tags` sigue devolviendo `500`, por lo que el etiquetado en carpeta/tag `Fisio_IA_Agent` puede requerir accion manual en UI.

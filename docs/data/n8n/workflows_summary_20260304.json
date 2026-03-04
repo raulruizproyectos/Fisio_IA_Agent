@@ -154,6 +154,17 @@
         "node_types":  ""
     },
     {
+        "id":  "L7RxfVYNGj3Ixnf4",
+        "name":  "Fisio_IA_Agent / W2 Exercise Agent",
+        "active":  false,
+        "isArchived":  false,
+        "updatedAt":  "2026-03-04T18:52:13.280Z",
+        "createdAt":  "2026-03-04T18:52:13.280Z",
+        "tags":  "",
+        "node_count":  null,
+        "node_types":  ""
+    },
+    {
         "id":  "MdibYgA639CyxmPh",
         "name":  "Módulo Valentín - Ejercicio 1 Gmail_Sheets Clasificador mail copy",
         "active":  false,
@@ -292,6 +303,17 @@
         "isArchived":  false,
         "updatedAt":  "2026-03-04T18:14:34.000Z",
         "createdAt":  "2026-03-02T17:49:49.131Z",
+        "tags":  "",
+        "node_count":  null,
+        "node_types":  ""
+    },
+    {
+        "id":  "ZOpRgcOE0qioDUdK",
+        "name":  "Fisio_IA_Agent / W3 CRM Trigger",
+        "active":  false,
+        "isArchived":  false,
+        "updatedAt":  "2026-03-04T18:52:13.503Z",
+        "createdAt":  "2026-03-04T18:52:13.503Z",
         "tags":  "",
         "node_count":  null,
         "node_types":  ""
