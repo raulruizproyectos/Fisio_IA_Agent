@@ -301,7 +301,7 @@ router.post('/recommend', async (req, res) => {
     });
 
     const informeClinico = composeClinicalReport({
-      symptomSummary,
+      symptomSummary: symptom_summary,
       messageToTherapist: message_to_therapist_es,
       messageToPatient: message_to_patient_es,
       escalation: escalation_recommend_medical_attention,

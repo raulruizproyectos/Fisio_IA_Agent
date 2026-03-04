@@ -12,10 +12,14 @@
 - ✅ Robustez API ejercicios:
   - `POST /api/exercises/recommend` ya no exige `patient_id` para generar informe.
   - persiste en DB solo cuando hay `patient_id`; si no, responde informe igualmente (`persistence_skipped=true`).
-- ✅ Verificacion de produccion: sigue sirviendo version legacy en frontend y backend.
+- ✅ Redeploy forzado por API en EasyPanel:
+  - `fisio-frontend` y `fisio-backend` desplegados con commit actual.
+  - frontend productivo confirmado sin modulo `Videos`.
+- ✅ Fix backend post-deploy:
+  - corregida variable no definida en `composeClinicalReport` (`symptomSummary: symptom_summary`) que provocaba `500`.
 
 ### Estado
-- ⚠️ Pendiente de publicacion efectiva en EasyPanel para alinear produccion con el codigo actual.
+- ⚠️ Pendiente: verificacion E2E final de recomendacion en backend tras fix de variable y redeploy.
 - ✅ Regla operativa reforzada: actualizar `CHANGELOG.md` y `configuracion_pendiente.md` en cada bloque que afecte al sistema.
 
 ## Sesion 50 - 2026-03-04

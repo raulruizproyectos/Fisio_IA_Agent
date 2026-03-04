@@ -13,13 +13,15 @@ Estado actualizado para retomar sin perdida.
 - ✅ Endpoint robustecido:
   - `POST /api/exercises/recommend` genera informe aun sin `patient_id`.
   - persistencia en DB condicionada a `patient_id` disponible.
-- ✅ Confirmado estado real de produccion:
-  - `fisio-frontend` sigue sirviendo HTML legacy con modulo `Videos`.
-  - `fisio-backend` sigue exponiendo contratos antiguos en endpoints clave.
+- ✅ Redeploy ejecutado por API EasyPanel:
+  - `fisio-frontend` y `fisio-backend` en commit actualizado.
+  - frontend productivo validado sin modulo `Videos`.
+- ✅ Corregido bug backend detectado tras deploy:
+  - `exercises.js` usaba variable no definida en `composeClinicalReport` y devolvia `500`.
+  - fix aplicado para usar `symptom_summary`.
 
 ### Pendiente inmediato para cerrar funcionamiento real
-1. Publicar/redeploy backend y frontend en EasyPanel para alinear con el codigo local actual.
-2. Revalidar E2E tras deploy:
+1. Revalidar E2E tras fix de backend:
    - dashboard sin modulo video,
    - chat CRM/Telegram devolviendo informe de ejercicios con imagenes.
 
