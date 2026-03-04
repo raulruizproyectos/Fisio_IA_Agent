@@ -8,10 +8,18 @@ n8n es el orquestador principal para:
 - Procesar trigger web desde CRM
 
 ## Workflows versionados actualmente
-- `n8n/Fisio_IA_Agent/fisio-agent-core.json`
-- `n8n/Fisio_IA_Agent/sw-fisio-pending-intakes.json`
-- `n8n/Fisio_IA_Agent/telegram-chat.json`
-- `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
+- Produccion remota activa (`n8n/Fisio_IA_Agent/production/`)
+  - `nucleo-agente.json`
+  - `orquestador-intake-video.json`
+  - `puente-error-backend.json`
+  - `subflujo-crear-render-video.json`
+  - `subflujo-pendientes.json`
+  - `subflujo-revision-video.json`
+- Canonicos vNext (`n8n/Fisio_IA_Agent/vnext/`)
+  - `fisio-agent-core.json`
+  - `sw-fisio-pending-intakes.json`
+  - `telegram-chat.json` (usa `Telegram Trigger` nativo)
+  - `w1-appointment-agent.json`
 
 ## Estado remoto (2026-03-04)
 - Instancia auditada de extremo a extremo.
@@ -55,4 +63,5 @@ Endpoints principales consumidos por workflows:
 - signed URLs generadas JIT desde n8n con service role
 
 ## Nota de alcance
-El pipeline de video legacy no forma parte del alcance activo actual.
+- El set `production/` refleja exactamente el estado activo actual en n8n (incluye pipeline video).
+- El set `vnext/` contiene la version canónica objetivo (W0/W1/W2/W3) para migracion progresiva.

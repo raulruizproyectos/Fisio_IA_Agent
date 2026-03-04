@@ -1,5 +1,27 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 45 - 2026-03-04
+
+### Objetivo
+- Dejar inventario de workflows de n8n ordenado y sincronizado con produccion, sin duplicados confusos.
+
+### Cambios implementados
+- ✅ Sincronizacion desde n8n remoto de los `6` workflows activos de `Fisio_IA_Agent / ...` a:
+  - `n8n/Fisio_IA_Agent/production/`
+  - archivos exportados: `nucleo-agente`, `orquestador-intake-video`, `puente-error-backend`, `subflujo-crear-render-video`, `subflujo-pendientes`, `subflujo-revision-video`.
+- ✅ Reordenacion de workflows canonicos en desarrollo a:
+  - `n8n/Fisio_IA_Agent/vnext/`
+  - incluye `telegram-chat.json` con `Telegram Trigger` nativo.
+- ✅ CI actualizada para validar JSON de workflows de forma recursiva en toda la carpeta `n8n/Fisio_IA_Agent`.
+- ✅ Artefacto de auditoria refrescado:
+  - `docs/data/n8n/workflows_summary_20260304.json`
+
+### Estado resultante
+- El repositorio ya contiene todos los workflows activos del proyecto dentro de `Fisio_IA_Agent`.
+- Separacion clara entre:
+  - `production/` (estado real desplegado)
+  - `vnext/` (estado objetivo en migracion)
+
 ## Sesion 44 — 2026-03-04
 
 ### Objetivo

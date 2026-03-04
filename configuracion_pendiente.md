@@ -2,6 +2,27 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 45) - Orden n8n por entorno (production/vnext)
+
+### Completado esta sesion
+- ✅ Sincronizacion remota de workflows activos n8n a repo:
+  - `n8n/Fisio_IA_Agent/production/` con los `6` flujos activos actuales.
+- ✅ Reordenacion de flujos canonicos en desarrollo:
+  - `n8n/Fisio_IA_Agent/vnext/` con `telegram-chat`, `fisio-agent-core`, `w1-appointment-agent`, `sw-fisio-pending-intakes`.
+- ✅ Verificacion tecnica:
+  - `telegram-chat.json` en `vnext` mantiene `Telegram Trigger` nativo.
+  - CI ajustada para validar JSON recursivo en `n8n/Fisio_IA_Agent/**`.
+- ✅ Documentacion sincronizada:
+  - `CHANGELOG.md`
+  - `n8n/README.md`
+  - `docs/n8n/workflow_audit_20260304.md`
+  - `docs/data/n8n/workflows_summary_20260304.json`
+
+### Pendiente para proxima sesion
+1. Migrar gradualmente de `production/` (video legacy) a `vnext/` (W0/W1/W2/W3) en n8n remoto.
+2. Resolver error servidor n8n en `POST/PUT /api/v1/workflows*` para habilitar despliegue por API.
+3. Ejecutar E2E Telegram con trigger nativo + backend y validar logs de trazabilidad (`request_id`, `channel`, `status`).
+
 ## Estado actual (2026-03-04, Sesion 44) - Plantillas + clonado implementado
 
 ### Completado esta sesion

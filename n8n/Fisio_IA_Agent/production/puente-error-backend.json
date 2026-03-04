@@ -1,0 +1,134 @@
+﻿{
+    "name":  "Fisio_IA_Agent / Puente Error Backend",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "path":  "fisio/error/notify",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "WebhookErrorNotify",
+                      "name":  "Webhook Error Notify",
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       220,
+                                       260
+                                   ],
+                      "webhookId":  "fisio-error-notify"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "subject",
+                                                                                     "name":  "subject",
+                                                                                     "value":  "=[FisioIA][CRITICAL] {{$json.body.service || \u0027backend\u0027}} {{$json.body.route || \u0027\u0027}}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "message",
+                                                                                     "name":  "message",
+                                                                                     "value":  "=Severidad: {{$json.body.severity || \u0027CRITICAL\u0027}}\\nServicio: {{$json.body.service || \u0027fisio-ia-agent-api\u0027}}\\nRuta: {{$json.body.route || \u0027-\u0027}}\\nMetodo: {{$json.body.method || \u0027-\u0027}}\\nMensaje: {{$json.body.message || \u0027-\u0027}}\\nTimestamp: {{$json.body.timestamp || $now}}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "BuildEmailPayload",
+                      "name":  "Build Email Payload",
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       500,
+                                       260
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "sendTo":  "raul.ruiz.diaz.bcn@gmail.com",
+                                         "subject":  "={{ $json.subject }}",
+                                         "message":  "={{ $json.message }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "SendEmail",
+                      "name":  "Enviar Gmail",
+                      "type":  "n8n-nodes-base.gmail",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       760,
+                                       260
+                                   ],
+                      "credentials":  {
+                                          "gmailOAuth2":  {
+                                                              "id":  "7CfeWv5vaRffjNyl",
+                                                              "name":  "Gmail account"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={\"ok\": true, \"notified\": true}"
+                                     },
+                      "id":  "RespondErrorNotify",
+                      "name":  "Respond Error Notify",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       1020,
+                                       260
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Webhook Error Notify":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Build Email Payload",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Build Email Payload":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Enviar Gmail",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Enviar Gmail":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Respond Error Notify",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "callerPolicy":  "workflowsFromSameOwner",
+                     "availableInMCP":  false
+                 },
+    "pinData":  null,
+    "meta":  null
+}

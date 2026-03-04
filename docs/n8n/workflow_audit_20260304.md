@@ -1,4 +1,4 @@
-# Auditoria n8n - 2026-03-04
+﻿# Auditoria n8n - 2026-03-04
 
 ## Alcance
 - Auditoria completa de workflows en instancia n8n remota.
@@ -20,8 +20,8 @@
 
 ## Cambios aplicados
 1. Desactivados workflows activos fuera de `Fisio_IA_Agent / ...` (con backup previo):
-   - `24º Escenario / Agentes IA Conversacional Agendar visitas Nodos Propios`
-   - `2º Escenario / Trigger Formulario + Respuesta Gmail`
+   - `24Âº Escenario / Agentes IA Conversacional Agendar visitas Nodos Propios`
+   - `2Âº Escenario / Trigger Formulario + Respuesta Gmail`
    - `Sub_Agente_Citas`
    - `Agente_IA_Carla_Final_V2`
    - `Sub_Agente_Calificador`
@@ -64,6 +64,13 @@
   - lectura (`GET`) de workflows
   - `activate/deactivate`
   - `DELETE`
+
+
+## Sincronizacion de repositorio (2026-03-04)
+- Estructura local ordenada para evitar mezcla de estados:
+  - `n8n/Fisio_IA_Agent/production/`: export exacto de los `6` workflows activos en n8n.
+  - `n8n/Fisio_IA_Agent/vnext/`: flujos canonicos de migracion (`W0/W1/...`) no activos aun en remoto.
+- Resultado: todos los flujos del proyecto quedan dentro de la carpeta `Fisio_IA_Agent`, sin duplicados de archivo a nivel raiz.
 
 ## Recomendacion siguiente fase
 1. Corregir en servidor n8n la causa de `500` para `create/update/tags`.

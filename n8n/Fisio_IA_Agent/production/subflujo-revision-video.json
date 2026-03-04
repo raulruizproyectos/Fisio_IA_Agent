@@ -1,0 +1,201 @@
+﻿{
+    "name":  "Fisio_IA_Agent / Subflujo Revision Video",
+    "nodes":  [
+                  {
+                      "parameters":  {
+
+                                     },
+                      "id":  "InicioSubflujo",
+                      "name":  "Inicio Subflujo",
+                      "type":  "n8n-nodes-base.executeWorkflowTrigger",
+                      "typeVersion":  1,
+                      "position":  [
+                                       220,
+                                       260
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  2
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "trabajo-requerido",
+                                                                                   "leftValue":  "={{ $json.body.job_id }}",
+                                                                                   "rightValue":  "",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEmpty"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ValidarTrabajoId",
+                      "name":  "Validar Trabajo Id",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       460,
+                                       260
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "={{ \u0027https://fisio-backend.b5xbaf.easypanel.host\u0027 + \u0027/api/profesional/video-jobs/\u0027 + $json.body.job_id + \u0027/review\u0027 }}",
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ { \"aprobado\": $json.body.aprobado, \"notas_revision\": $json.body.notas_revision, \"prompt_revisado\": $json.body.prompt_revisado } }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "EnviarRevision",
+                      "name":  "Enviar Revision",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       720,
+                                       180
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  2
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "listo-enviar",
+                                                                                   "leftValue":  "={{ $json.next }}",
+                                                                                   "rightValue":  "ready_to_send",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ValidarEnvio",
+                      "name":  "Validar Envio",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       980,
+                                       180
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "={{ \u0027https://fisio-backend.b5xbaf.easypanel.host\u0027 + \u0027/api/profesional/video-jobs/\u0027 + $json.data.id + \u0027/send\u0027 }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "MarcarEnviado",
+                      "name":  "Marcar Enviado",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       1220,
+                                       120
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "throw new Error(\u0027job_id es obligatorio para revision de video\u0027);"
+                                     },
+                      "id":  "ErrorTrabajoId",
+                      "name":  "Error Trabajo Id",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       720,
+                                       340
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Inicio Subflujo":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Validar Trabajo Id",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Validar Trabajo Id":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Enviar Revision",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ],
+                                                                [
+                                                                    {
+                                                                        "node":  "Error Trabajo Id",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Enviar Revision":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Validar Envio",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Validar Envio":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Marcar Enviado",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ],
+                                                           [
+
+                                                           ]
+                                                       ]
+                                          }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "callerPolicy":  "workflowsFromSameOwner",
+                     "availableInMCP":  false
+                 },
+    "pinData":  null,
+    "meta":  null
+}

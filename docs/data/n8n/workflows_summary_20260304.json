@@ -7,8 +7,8 @@
         "updatedAt":  "2026-01-21T10:38:43.614Z",
         "createdAt":  "2026-01-20T11:57:54.113Z",
         "tags":  "",
-        "node_count":  4,
-        "node_types":  "@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;n8n-nodes-base.airtableTool:1;@n8n/n8n-nodes-langchain.chatTrigger:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "0XpopHCFMdPYua36",
@@ -18,8 +18,8 @@
         "updatedAt":  "2026-01-21T10:36:55.000Z",
         "createdAt":  "2025-12-02T21:12:47.039Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.memoryBufferWindow:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.toolSerpApi:1;@n8n/n8n-nodes-langchain.agent:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "3h-af4Jua5IcfB_AuNeQu",
@@ -29,8 +29,8 @@
         "updatedAt":  "2026-01-14T20:01:39.097Z",
         "createdAt":  "2026-01-13T16:45:49.293Z",
         "tags":  "",
-        "node_count":  12,
-        "node_types":  "@n8n/n8n-nodes-langchain.agent:2;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.outputParserStructured:1;n8n-nodes-base.splitOut:1;n8n-nodes-base.code:1;n8n-nodes-base.gmail:3;n8n-nodes-base.if:1;n8n-nodes-base.formTrigger:1;n8n-nodes-base.googleSheets:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "5M4qRJoUsA5JmUkq",
@@ -40,19 +40,19 @@
         "updatedAt":  "2025-12-18T13:05:06.007Z",
         "createdAt":  "2025-12-18T11:56:35.558Z",
         "tags":  "Webpositer",
-        "node_count":  6,
-        "node_types":  "n8n-nodes-base.manualTrigger:1;n8n-nodes-base.scheduleTrigger:1;n8n-nodes-base.webhook:1;n8n-nodes-base.formTrigger:1;n8n-nodes-base.executeWorkflowTrigger:1;@n8n/n8n-nodes-langchain.chatTrigger:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "6AAVzjOodJaMVD5f",
         "name":  "Agente_IA_Carla_Citas",
         "active":  false,
         "isArchived":  false,
-        "updatedAt":  "2026-02-25T19:50:15.624Z",
+        "updatedAt":  "2026-03-04T17:47:59.965Z",
         "createdAt":  "2026-02-24T22:01:00.750Z",
         "tags":  "",
-        "node_count":  7,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.memoryBufferWindow:1;n8n-nodes-base.googleCalendarTool:2;n8n-nodes-base.telegram:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "8ovmsUXTxhz6Fulc",
@@ -62,19 +62,19 @@
         "updatedAt":  "2026-02-27T08:46:05.699Z",
         "createdAt":  "2026-02-26T23:21:19.066Z",
         "tags":  "Fisio_IA_Agent",
-        "node_count":  6,
-        "node_types":  "n8n-nodes-base.executeWorkflowTrigger:1;n8n-nodes-base.if:2;n8n-nodes-base.httpRequest:2;n8n-nodes-base.code:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "9eT0IESEEjoA1FHA",
         "name":  "24º Escenario / Agentes IA Conversacional Agendar visitas Nodos Propios",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
         "updatedAt":  "2026-01-28T09:07:58.856Z",
         "createdAt":  "2026-01-26T16:01:57.622Z",
         "tags":  "",
-        "node_count":  7,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.memoryPostgresChat:1;@n8n/n8n-nodes-langchain.toolWorkflow:2;n8n-nodes-base.stickyNote:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "9emRxHqN_Af-uuoJXLFld",
@@ -84,8 +84,8 @@
         "updatedAt":  "2026-01-21T10:37:16.621Z",
         "createdAt":  "2026-01-19T15:32:04.184Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.manualTrigger:1;n8n-nodes-base.httpRequest:1;n8n-nodes-base.gmail:1;n8n-nodes-base.set:1;n8n-nodes-base.merge:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "DHDvaLgscEXQyihQoQ0Sj",
@@ -95,8 +95,8 @@
         "updatedAt":  "2026-01-21T10:38:32.061Z",
         "createdAt":  "2026-01-21T08:55:15.032Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;n8n-nodes-base.googleSheetsTool:2"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "DN4YPgllz-PXtMGFGXEbT",
@@ -106,19 +106,19 @@
         "updatedAt":  "2026-02-25T19:50:38.000Z",
         "createdAt":  "2026-02-04T16:46:28.829Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.openAi:1;n8n-nodes-base.googleCalendar:2;n8n-nodes-base.telegram:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "FY6lOhqUwLqNRpCq",
         "name":  "2º Escenario / Trigger Formulario + Respuesta Gmail",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
         "updatedAt":  "2025-12-22T11:39:05.701Z",
         "createdAt":  "2025-12-18T13:05:57.945Z",
         "tags":  "",
-        "node_count":  6,
-        "node_types":  "n8n-nodes-base.formTrigger:1;n8n-nodes-base.googleSheets:1;@n8n/n8n-nodes-langchain.chainLlm:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.lmChatGoogleGemini:1;n8n-nodes-base.gmail:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "HHmOQIvbjYZAqx9gRNOZq",
@@ -128,8 +128,8 @@
         "updatedAt":  "2026-01-19T09:57:08.777Z",
         "createdAt":  "2026-01-16T12:20:30.229Z",
         "tags":  "",
-        "node_count":  7,
-        "node_types":  "n8n-nodes-base.calTrigger:1;n8n-nodes-base.gmail:1;n8n-nodes-base.googleSheets:2;n8n-nodes-base.scheduleTrigger:1;n8n-nodes-base.filter:1;n8n-nodes-base.if:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "I_vE-S06rbKsHVlzV8rWV",
@@ -139,8 +139,8 @@
         "updatedAt":  "2026-01-21T10:38:38.232Z",
         "createdAt":  "2026-01-20T12:36:08.167Z",
         "tags":  "",
-        "node_count":  4,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.toolCalculator:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "IlBtqoCYDZYUcple",
@@ -150,8 +150,8 @@
         "updatedAt":  "2026-02-27T09:48:12.396Z",
         "createdAt":  "2026-02-27T00:18:31.885Z",
         "tags":  "Fisio_IA_Agent",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.executeWorkflowTrigger:1;n8n-nodes-base.if:1;n8n-nodes-base.httpRequest:2;n8n-nodes-base.code:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "MdibYgA639CyxmPh",
@@ -161,30 +161,19 @@
         "updatedAt":  "2025-12-18T11:57:07.426Z",
         "createdAt":  "2025-12-02T21:12:29.858Z",
         "tags":  "Webpositer",
-        "node_count":  6,
-        "node_types":  "n8n-nodes-base.gmailTrigger:1;@n8n/n8n-nodes-langchain.sentimentAnalysis:1;@n8n/n8n-nodes-langchain.lmChatGoogleGemini:1;n8n-nodes-base.set:1;n8n-nodes-base.gmail:1;n8n-nodes-base.googleSheets:1"
-    },
-    {
-        "id":  "Mo9tinzZI6TpOxxx",
-        "name":  "Fisio_IA_Agent / Nucleo Agente",
-        "active":  false,
-        "isArchived":  false,
-        "updatedAt":  "2026-03-02T17:49:06.642Z",
-        "createdAt":  "2026-03-02T17:49:06.642Z",
-        "tags":  "",
-        "node_count":  3,
-        "node_types":  "n8n-nodes-base.webhook:1;n8n-nodes-base.code:1;n8n-nodes-base.respondToWebhook:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "Nily2NvFEUAfX14s",
         "name":  "Sub_Agente_Citas",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
-        "updatedAt":  "2026-02-25T21:10:53.628Z",
+        "updatedAt":  "2026-03-04T17:47:42.944Z",
         "createdAt":  "2026-02-25T20:12:14.614Z",
         "tags":  "AGENTE IA GLOBAL",
-        "node_count":  8,
-        "node_types":  "@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.memoryPostgresChat:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;n8n-nodes-base.googleCalendarTool:2;n8n-nodes-base.telegram:1;n8n-nodes-base.executeWorkflowTrigger:1;n8n-nodes-base.set:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "P6iciqdBBM6jNsd_oSWWC",
@@ -194,8 +183,8 @@
         "updatedAt":  "2026-02-25T18:14:03.820Z",
         "createdAt":  "2026-01-28T11:05:23.587Z",
         "tags":  "",
-        "node_count":  34,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.supabase:6;n8n-nodes-base.if:5;n8n-nodes-base.telegram:3;@n8n/n8n-nodes-langchain.openAi:1;n8n-nodes-base.set:2;@n8n/n8n-nodes-langchain.memoryPostgresChat:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:3;@n8n/n8n-nodes-langchain.agent:3;n8n-nodes-base.supabaseTool:1;@n8n/n8n-nodes-langchain.outputParserStructured:2;n8n-nodes-base.code:2;n8n-nodes-base.wait:1;n8n-nodes-base.splitInBatches:1;n8n-nodes-base.noOp:1;n8n-nodes-base.stickyNote:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "PflaObzwZtxkoMsydvT2X",
@@ -205,8 +194,8 @@
         "updatedAt":  "2026-02-25T19:50:53.000Z",
         "createdAt":  "2026-02-04T16:50:53.834Z",
         "tags":  "",
-        "node_count":  9,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenai:1;n8n-nodes-base.googleCalendarTool:2;@n8n/n8n-nodes-langchain.memoryBufferWindow:1;n8n-nodes-base.scheduleTrigger:1;n8n-nodes-base.code:1;n8n-nodes-base.telegram:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "QAiQyMciocDeKfk8",
@@ -216,8 +205,8 @@
         "updatedAt":  "2026-01-13T16:09:51.421Z",
         "createdAt":  "2025-12-23T10:56:00.597Z",
         "tags":  "",
-        "node_count":  9,
-        "node_types":  "n8n-nodes-base.switch:1;n8n-nodes-base.gmailTrigger:1;n8n-nodes-base.gmail:3;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.outputParserStructured:1;@n8n/n8n-nodes-langchain.agent:1;n8n-nodes-base.set:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "TN1x0kDu03lGBo2a",
@@ -227,8 +216,8 @@
         "updatedAt":  "2026-02-27T00:24:54.354Z",
         "createdAt":  "2026-02-26T23:23:43.155Z",
         "tags":  "Fisio_IA_Agent",
-        "node_count":  4,
-        "node_types":  "n8n-nodes-base.webhook:1;n8n-nodes-base.set:1;n8n-nodes-base.gmail:1;n8n-nodes-base.respondToWebhook:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "VBPNVxqhYrK3Dr8g",
@@ -238,8 +227,8 @@
         "updatedAt":  "2025-12-18T11:56:59.845Z",
         "createdAt":  "2025-12-03T16:49:46.362Z",
         "tags":  "Webpositer",
-        "node_count":  2,
-        "node_types":  "n8n-nodes-base.formTrigger:1;@n8n/n8n-nodes-langchain.openAi:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "Wf8bGw7LI00cf_txEd4a-",
@@ -249,8 +238,8 @@
         "updatedAt":  "2026-01-12T18:51:26.753Z",
         "createdAt":  "2026-01-12T18:42:53.312Z",
         "tags":  "",
-        "node_count":  16,
-        "node_types":  "n8n-nodes-base.set:5;n8n-nodes-base.stickyNote:5;n8n-nodes-base.splitOut:1;n8n-nodes-base.code:4;n8n-nodes-base.manualTrigger:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "X--e1d_RrRW2h3156Ro8-",
@@ -260,8 +249,8 @@
         "updatedAt":  "2026-01-28T19:42:07.043Z",
         "createdAt":  "2026-01-28T17:17:29.616Z",
         "tags":  "",
-        "node_count":  7,
-        "node_types":  "n8n-nodes-base.formTrigger:1;n8n-nodes-base.dateTime:1;n8n-nodes-base.supabase:3;n8n-nodes-base.scheduleTrigger:1;n8n-nodes-base.gmail:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "Xbjv_lEqMo8slrsl5iD6K",
@@ -271,8 +260,8 @@
         "updatedAt":  "2026-02-05T21:17:38.000Z",
         "createdAt":  "2026-02-05T21:16:50.934Z",
         "tags":  "",
-        "node_count":  17,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.switch:1;n8n-nodes-base.stickyNote:4;n8n-nodes-base.set:2;n8n-nodes-base.openAi:3;n8n-nodes-base.telegram:4;n8n-nodes-base.merge:1;n8n-nodes-base.stopAndError:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "XrsoezZnbz71dBiIEudgp",
@@ -282,30 +271,30 @@
         "updatedAt":  "2026-01-21T10:38:48.137Z",
         "createdAt":  "2026-01-20T11:38:16.481Z",
         "tags":  "",
-        "node_count":  4,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.toolWikipedia:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "YO3FmbupEqrYia8G",
         "name":  "Agente_IA_Carla_Final_V2",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
-        "updatedAt":  "2026-02-25T21:06:17.117Z",
+        "updatedAt":  "2026-03-04T17:47:48.802Z",
         "createdAt":  "2026-02-25T18:15:16.330Z",
         "tags":  "Webpositer,AGENTE IA GLOBAL",
-        "node_count":  16,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.supabase:3;n8n-nodes-base.if:3;n8n-nodes-base.telegram:2;@n8n/n8n-nodes-langchain.openAi:1;n8n-nodes-base.set:4;n8n-nodes-base.executeWorkflow:2"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "ZOarR2hpUUOgm3KC",
         "name":  "Fisio_IA_Agent / Nucleo Agente",
         "active":  true,
         "isArchived":  false,
-        "updatedAt":  "2026-03-02T17:49:49.131Z",
+        "updatedAt":  "2026-03-04T18:14:34.000Z",
         "createdAt":  "2026-03-02T17:49:49.131Z",
         "tags":  "",
-        "node_count":  3,
-        "node_types":  "n8n-nodes-base.webhook:1;n8n-nodes-base.code:1;n8n-nodes-base.respondToWebhook:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "_S7ZVWuYLi6h8E6npaFUc",
@@ -315,8 +304,8 @@
         "updatedAt":  "2026-01-19T09:56:48.601Z",
         "createdAt":  "2026-01-15T17:06:16.080Z",
         "tags":  "",
-        "node_count":  7,
-        "node_types":  "n8n-nodes-base.manualTrigger:1;n8n-nodes-base.httpRequest:1;n8n-nodes-base.googleSheets:1;n8n-nodes-base.set:1;n8n-nodes-base.code:3"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "a9pejz5CI7zau52i",
@@ -326,19 +315,8 @@
         "updatedAt":  "2026-02-27T08:43:57.602Z",
         "createdAt":  "2026-02-26T23:21:18.958Z",
         "tags":  "Fisio_IA_Agent",
-        "node_count":  4,
-        "node_types":  "n8n-nodes-base.executeWorkflowTrigger:1;n8n-nodes-base.if:1;n8n-nodes-base.httpRequest:1;n8n-nodes-base.code:1"
-    },
-    {
-        "id":  "bmpDsTXnMyWytjrW",
-        "name":  "Fisio_IA_Agent / Nucleo Agente",
-        "active":  false,
-        "isArchived":  false,
-        "updatedAt":  "2026-03-02T17:46:48.677Z",
-        "createdAt":  "2026-03-02T17:46:48.677Z",
-        "tags":  "",
-        "node_count":  3,
-        "node_types":  "n8n-nodes-base.webhook:1;n8n-nodes-base.code:1;n8n-nodes-base.respondToWebhook:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "dZ4fUla3odSqnESdhEAxm",
@@ -348,8 +326,8 @@
         "updatedAt":  "2026-01-21T15:47:12.997Z",
         "createdAt":  "2026-01-21T10:39:21.924Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.memoryBufferWindow:1;n8n-nodes-base.stickyNote:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "dhXfFrK96zB3BiWe",
@@ -359,8 +337,8 @@
         "updatedAt":  "2025-12-18T11:57:13.120Z",
         "createdAt":  "2025-12-02T21:12:15.612Z",
         "tags":  "Webpositer",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.manualTrigger:1;n8n-nodes-base.scheduleTrigger:1;@n8n/n8n-nodes-langchain.chatTrigger:1;n8n-nodes-base.gmailTrigger:1;n8n-nodes-base.googleCalendarTrigger:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "fGDHhejg566yuwLo",
@@ -370,8 +348,8 @@
         "updatedAt":  "2026-02-25T19:50:30.000Z",
         "createdAt":  "2026-02-24T19:13:21.218Z",
         "tags":  "",
-        "node_count":  26,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.if:4;n8n-nodes-base.telegram:7;n8n-nodes-base.openAi:1;n8n-nodes-base.code:7;n8n-nodes-base.switch:1;n8n-nodes-base.googleCalendar:5"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "fRBTNA8niEttdDA1",
@@ -381,8 +359,8 @@
         "updatedAt":  "2026-01-13T11:48:46.000Z",
         "createdAt":  "2026-01-13T11:43:26.871Z",
         "tags":  "Webpositer",
-        "node_count":  8,
-        "node_types":  "@n8n/n8n-nodes-langchain.chainLlm:1;n8n-nodes-base.switch:1;n8n-nodes-base.gmailTrigger:1;n8n-nodes-base.gmail:3;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.outputParserStructured:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "gc49d5Fyo7YgSvfOhbpra",
@@ -392,8 +370,8 @@
         "updatedAt":  "2026-01-15T17:05:55.545Z",
         "createdAt":  "2026-01-15T11:00:24.003Z",
         "tags":  "",
-        "node_count":  13,
-        "node_types":  "n8n-nodes-base.rssFeedReadTrigger:1;@apify/n8n-nodes-apify.apify:2;n8n-nodes-base.if:1;n8n-nodes-base.wait:1;n8n-nodes-base.httpRequest:3;@n8n/n8n-nodes-langchain.chainLlm:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;n8n-nodes-base.code:1;n8n-nodes-base.stickyNote:2"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "hJJakH6CelzIUWR8",
@@ -403,8 +381,8 @@
         "updatedAt":  "2026-01-12T10:53:25.542Z",
         "createdAt":  "2025-12-22T11:55:06.656Z",
         "tags":  "",
-        "node_count":  53,
-        "node_types":  "n8n-nodes-base.manualTrigger:1;n8n-nodes-base.googleSheets:1;n8n-nodes-base.set:15;n8n-nodes-base.filter:1;n8n-nodes-base.limit:1;n8n-nodes-base.removeDuplicates:1;n8n-nodes-base.aggregate:1;n8n-nodes-base.splitOut:1;n8n-nodes-base.noOp:1;n8n-nodes-base.switch:2;n8n-nodes-base.merge:6;n8n-nodes-base.if:2;n8n-nodes-base.stickyNote:10;n8n-nodes-base.dataTable:5;@n8n/n8n-nodes-langchain.chainLlm:2;@n8n/n8n-nodes-langchain.lmChatOpenAi:2;n8n-nodes-base.summarize:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "hS7ymjZGe5rZgviim08Gh",
@@ -414,19 +392,19 @@
         "updatedAt":  "2026-01-21T10:37:04.052Z",
         "createdAt":  "2026-01-19T10:47:40.765Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.webhook:1;@n8n/n8n-nodes-langchain.openAi:1;n8n-nodes-base.respondToWebhook:1;n8n-nodes-base.stickyNote:1;n8n-nodes-base.stopAndError:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "j3zyfpJkPIDeR24F",
         "name":  "Sub_Agente_Calificador",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
-        "updatedAt":  "2026-02-26T16:38:34.950Z",
+        "updatedAt":  "2026-03-04T17:47:35.697Z",
         "createdAt":  "2026-02-25T20:12:14.468Z",
         "tags":  "AGENTE IA GLOBAL",
-        "node_count":  10,
-        "node_types":  "@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.memoryPostgresChat:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;n8n-nodes-base.supabaseTool:1;n8n-nodes-base.supabase:2;n8n-nodes-base.code:1;@n8n/n8n-nodes-langchain.outputParserStructured:1;n8n-nodes-base.executeWorkflowTrigger:1;n8n-nodes-base.set:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "jZh8D8EBHIfAK82_sftxm",
@@ -436,8 +414,8 @@
         "updatedAt":  "2026-01-26T11:30:16.705Z",
         "createdAt":  "2026-01-22T11:49:11.590Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatGroq:1;@n8n/n8n-nodes-langchain.outputParserStructured:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "k50F1O9pQEh0ULWC",
@@ -447,19 +425,19 @@
         "updatedAt":  "2026-01-13T10:17:36.759Z",
         "createdAt":  "2025-12-23T15:41:30.997Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.manualTrigger:1;n8n-nodes-base.set:2;n8n-nodes-base.googleCalendar:1;n8n-nodes-base.code:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "m7xBRXIcvqOdasM8",
         "name":  "Manejador_Errores_Global",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
-        "updatedAt":  "2026-02-25T20:32:52.230Z",
+        "updatedAt":  "2026-03-04T17:47:54.189Z",
         "createdAt":  "2026-02-25T20:12:13.951Z",
         "tags":  "AGENTE IA GLOBAL",
-        "node_count":  2,
-        "node_types":  "n8n-nodes-base.errorTrigger:1;n8n-nodes-base.gmail:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "n7M9gePBZxF37PHB",
@@ -469,8 +447,8 @@
         "updatedAt":  "2026-01-12T18:27:36.912Z",
         "createdAt":  "2025-12-23T15:54:56.020Z",
         "tags":  "",
-        "node_count":  73,
-        "node_types":  "n8n-nodes-base.html:1;n8n-nodes-base.stickyNote:27;n8n-nodes-base.set:24;n8n-nodes-base.if:5;n8n-nodes-base.noOp:10;n8n-nodes-base.stopAndError:5;n8n-nodes-base.manualTrigger:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "nIiwaROcs0gdu4qYxNLpE",
@@ -480,8 +458,8 @@
         "updatedAt":  "2026-01-26T09:58:52.695Z",
         "createdAt":  "2026-01-21T10:07:47.276Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;n8n-nodes-base.openWeatherMapTool:1;@n8n/n8n-nodes-langchain.toolCalculator:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "okv_ssFI3i1QqOUlLq-Oh",
@@ -491,8 +469,8 @@
         "updatedAt":  "2026-01-26T15:31:56.704Z",
         "createdAt":  "2026-01-26T14:42:57.724Z",
         "tags":  "",
-        "node_count":  6,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.memoryPostgresChat:1;n8n-nodes-base.googleCalendarTool:2"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "q7bdYZsviCh7Ox2L",
@@ -502,8 +480,8 @@
         "updatedAt":  "2026-02-25T18:14:57.000Z",
         "createdAt":  "2026-02-25T18:14:18.900Z",
         "tags":  "Webpositer",
-        "node_count":  34,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.supabase:6;n8n-nodes-base.if:5;n8n-nodes-base.telegram:3;@n8n/n8n-nodes-langchain.openAi:1;n8n-nodes-base.set:2;@n8n/n8n-nodes-langchain.memoryPostgresChat:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:3;@n8n/n8n-nodes-langchain.agent:3;n8n-nodes-base.supabaseTool:1;@n8n/n8n-nodes-langchain.outputParserStructured:2;n8n-nodes-base.code:2;n8n-nodes-base.wait:1;n8n-nodes-base.splitInBatches:1;n8n-nodes-base.noOp:1;n8n-nodes-base.stickyNote:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "qP26JAQzFkI69HqCBOKry",
@@ -513,8 +491,8 @@
         "updatedAt":  "2026-02-25T20:16:00.204Z",
         "createdAt":  "2026-02-04T16:32:04.646Z",
         "tags":  "",
-        "node_count":  14,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.if:3;n8n-nodes-base.telegram:4;@n8n/n8n-nodes-langchain.openAi:1;n8n-nodes-base.code:2;n8n-nodes-base.switch:1;n8n-nodes-base.googleCalendar:2"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "rp6Ya8LllWgrn8aS",
@@ -524,30 +502,30 @@
         "updatedAt":  "2026-02-27T00:20:13.579Z",
         "createdAt":  "2026-02-26T23:21:19.166Z",
         "tags":  "Fisio_IA_Agent",
-        "node_count":  9,
-        "node_types":  "n8n-nodes-base.webhook:3;n8n-nodes-base.executeWorkflow:3;n8n-nodes-base.respondToWebhook:3"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "tnhbC9g5jxbqVSxX4XyMM",
         "name":  "create_booking",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
         "updatedAt":  "2026-01-27T19:44:48.387Z",
         "createdAt":  "2026-01-27T11:08:49.491Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.executeWorkflowTrigger:1;n8n-nodes-base.googleCalendar:1;n8n-nodes-base.code:2;n8n-nodes-base.set:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "vATPVL9qpvt4Db3oyCW36",
         "name":  "search_booking",
-        "active":  true,
+        "active":  false,
         "isArchived":  false,
         "updatedAt":  "2026-01-27T19:52:10.548Z",
         "createdAt":  "2026-01-26T15:52:15.078Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.executeWorkflowTrigger:1;n8n-nodes-base.googleCalendar:1;n8n-nodes-base.set:1;n8n-nodes-base.code:2"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "vppBAROv_meU94mBa42ji",
@@ -557,8 +535,8 @@
         "updatedAt":  "2026-01-21T16:20:49.757Z",
         "createdAt":  "2026-01-21T15:47:40.376Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "@n8n/n8n-nodes-langchain.chatTrigger:1;@n8n/n8n-nodes-langchain.agent:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.memoryPostgresChat:1;n8n-nodes-base.stickyNote:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "xSmDwlRmJpk0GQDy",
@@ -568,8 +546,8 @@
         "updatedAt":  "2026-01-12T11:22:19.746Z",
         "createdAt":  "2025-12-23T14:48:16.306Z",
         "tags":  "",
-        "node_count":  12,
-        "node_types":  "n8n-nodes-base.set:1;n8n-nodes-base.convertToFile:1;n8n-nodes-base.googleSheets:2;n8n-nodes-base.splitInBatches:1;n8n-nodes-base.wait:1;n8n-nodes-base.stickyNote:2;n8n-nodes-base.googleDriveTrigger:1;n8n-nodes-base.googleDrive:1;n8n-nodes-base.extractFromFile:1;n8n-nodes-base.manualTrigger:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "x_wMAjT1c7y2q0R27AW3e",
@@ -579,8 +557,8 @@
         "updatedAt":  "2026-02-04T17:46:09.000Z",
         "createdAt":  "2026-02-04T17:46:09.263Z",
         "tags":  "",
-        "node_count":  5,
-        "node_types":  "n8n-nodes-base.telegramTrigger:1;n8n-nodes-base.set:1;@n8n/n8n-nodes-langchain.lmChatOpenAi:1;@n8n/n8n-nodes-langchain.agent:1;n8n-nodes-base.telegram:1"
+        "node_count":  null,
+        "node_types":  ""
     },
     {
         "id":  "zTGKAXPuS1DU0U1Hv8UHT",
@@ -590,7 +568,7 @@
         "updatedAt":  "2026-01-21T10:37:10.363Z",
         "createdAt":  "2026-01-19T11:37:44.022Z",
         "tags":  "",
-        "node_count":  2,
-        "node_types":  "n8n-nodes-base.errorTrigger:1;n8n-nodes-base.gmail:1"
+        "node_count":  null,
+        "node_types":  ""
     }
 ]
