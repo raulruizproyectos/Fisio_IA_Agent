@@ -573,3 +573,20 @@ Tablas necesarias confirmadas:
 1. Implementar version canonica robusta de W1 (citas) reutilizando patrones de `Sub_Agente_Citas` + `create_booking` + `search_booking`.
 2. Implementar control de errores transversal (retry/backoff + notificacion) en W0/W1/W2/W3.
 3. Conectar y validar trazabilidad de `request_id` end-to-end (Telegram -> n8n -> backend -> DB).
+
+## Actualizacion (2026-03-04, Sesion 36)
+- Hardening aplicado a workflow versionado W1:
+  - `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
+- Mejoras principales:
+  - parseo/validacion robusta de slots (`slot_start`, `slot_end`, ventana valida).
+  - request backend con `channel` dinamico + `timeout` 15000ms.
+  - control de errores backend con salida estructurada (`status`, `backend_error`).
+  - mensajes de respuesta normalizados sin caracteres corruptos.
+
+## Pendiente inmediato actualizado
+1. Publicar en instancia n8n la version endurecida de `W1` (siempre desde JSON canonico del repo).
+2. Ejecutar prueba E2E de cita:
+   - payload valido -> `status=confirmed`.
+   - payload incompleto -> `status=needs_slot_data`.
+   - error backend simulado -> `status=error`.
+3. Avanzar hardening equivalente en W0/W2/W3 con mismo patron de observabilidad y manejo de fallos.

@@ -1757,3 +1757,31 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado final
 - Instancia consistente tras la ordenacion.
 - Todos los workflows activos permanecen dentro de `Fisio_IA_Agent / ...`.
+
+---
+
+## [Sesion 36] - 2026-03-04 (Hardening W1 Appointment Agent)
+### Objetivo
+- Reforzar `W1` de citas para mejorar robustez operativa y control de errores.
+
+### Cambios aplicados
+- Archivo actualizado:
+  - `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
+- Mejoras en normalizacion de entrada (`Normalize Request`):
+  - parseo ISO defensivo para `slot_start` y `slot_end`.
+  - validacion de ventana temporal (`slot_start < slot_end`).
+  - salida normalizada con `has_slot_window`.
+- Mejoras en llamada backend (`Crear Cita en Backend`):
+  - `channel` ahora usa valor de entrada (`$json.channel`) con fallback a `telegram`.
+  - timeout explicito en request (`15000ms`).
+  - se mantiene `ignoreResponseCode` para controlar respuestas en nodo posterior.
+- Mejoras en respuesta y control de errores (`Build Created Response`):
+  - deteccion de exito por `appointment_id`.
+  - deteccion de error por `statusCode >= 400` o mensaje de backend.
+  - payload de salida estructurado con `status` y `backend_error` cuando aplica.
+- Mejora de mensaje de faltan datos (`Build Need Slot Response`):
+  - texto limpio y consistente (sin caracteres corruptos).
+
+### Estado
+- Workflow W1 robustecido en repo y validado como JSON valido.
+- Pendiente siguiente: publicar en n8n remoto como workflow canonico W1 y validar E2E.
