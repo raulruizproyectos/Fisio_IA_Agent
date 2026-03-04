@@ -526,3 +526,18 @@ Tablas necesarias confirmadas:
 - Prompt del Agente IA de Ejercicios ya adaptado a canal Telegram (igual que agente de citas en n8n).
 - Mantiene estrategia de imagenes desde Supabase Storage por `object_key` + signed URL JIT en n8n.
 - Modo actual: 1 ejercicio maximo por respuesta.
+
+## Actualizacion (2026-03-04, Sesion 33)
+- Limpieza local aplicada para evitar duplicados/basura:
+  - eliminada carpeta vacia `n8n/workflows/`.
+  - eliminado duplicado legacy `docs/architecture.md`.
+- Canonico del proyecto:
+  - Arquitectura: `ARCHITECTURE.md`.
+  - Workflows versionados: `n8n/Fisio_IA_Agent/*.json`.
+
+## Pendiente inmediato (orden en instancia n8n)
+1. Listar workflows en n8n remoto y detectar duplicados por nombre + contenido.
+2. Renombrar con convención W0/W1/W2/W3 donde aplique.
+3. Mover/etiquetar todos los workflows del proyecto bajo carpeta/tag `Fisio_IA_Agent`.
+4. Desactivar/eliminar duplicados remotos no canonicos tras backup JSON.
+5. Exportar snapshot final de n8n y versionarlo en `n8n/Fisio_IA_Agent/`.

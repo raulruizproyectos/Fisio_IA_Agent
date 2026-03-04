@@ -1672,3 +1672,24 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 
 ### Estado
 - Prompt listo para implementacion directa en nodo OpenAI Agent de n8n.
+
+---
+
+## [Sesion 33] - 2026-03-04 (Limpieza de duplicados y estructura n8n)
+### Objetivo
+- Dejar un unico punto de verdad para arquitectura y workflows del proyecto.
+
+### Cambios aplicados
+- Eliminada carpeta vacia sin uso: `n8n/workflows/`.
+- Eliminado documento legacy duplicado: `docs/architecture.md`.
+- Documento canonico de arquitectura: `ARCHITECTURE.md`.
+- Carpeta canonica de workflows: `n8n/Fisio_IA_Agent/`.
+- Workflows activos confirmados:
+  - `n8n/Fisio_IA_Agent/fisio-agent-core.json`
+  - `n8n/Fisio_IA_Agent/sw-fisio-pending-intakes.json`
+  - `n8n/Fisio_IA_Agent/telegram-chat.json`
+  - `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
+
+### Estado
+- Estructura local de workflows sin carpetas duplicadas ni archivos basura detectados.
+- Pendiente siguiente: ordenar y deduplicar workflows directamente en instancia n8n remota.
