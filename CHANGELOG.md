@@ -11,8 +11,24 @@
 - ✅ `AGENT_RULES.md` nueva regla 7: antes de crear cualquier workflow/nodo en n8n, revisar TODOS los existentes y priorizar reutilización
 - ✅ Reforzada la regla operativa existente en CHANGELOG (Sesión 4+) sobre copiar/adaptar nodos funcionales
 
+### Frontend Responsive implementado
+- ✅ Sidebar: oculto por defecto en móvil (`transform: translateX(-100%)`), se abre como overlay con backdrop semitransparente
+- ✅ JS sidebar toggle: detecta `isMobile()` para abrir overlay vs colapsar en desktop, cierra al clicar nav item o backdrop
+- ✅ Metrics cards: grid 4col desktop → 2col tablet → 1col small mobile
+- ✅ Agent panel: `max-height: 60vh` en móvil, fluye debajo del contenido principal
+- ✅ Tables: `min-width: 560px` fuerza scroll horizontal en `.table-wrap` en móvil
+- ✅ Touch targets: mínimo 44×44px en botones, send, exercise, toggle
+- ✅ Chat textarea: `font-size: 16px` para prevenir zoom en iOS
+- ✅ Config grid: `1fr` en móvil, `minmax` adaptativo
+- ✅ Breakpoints: 1100px (tablet), 768px (mobile), 480px (small mobile)
+- ✅ Build validado: `astro build` OK, 0 errores
+- ✅ Push a GitHub: commit `ce630f3` en `main`
+
 ### Pendiente para próxima sesión
-- Mismo que Sesión 39 (W1 Citas, E2E, deploys, seguridad)
+- [ ] **[Manual EasyPanel]** Redeploy `fisio-frontend` y `fisio-backend` para aplicar cambios en producción
+- [ ] W1: Citas + Google Calendar (requiere OAuth config manual)
+- [ ] E2E: Prueba completa multicanal Telegram + CRM + Supabase
+- [ ] Seguridad: Rotar OPENAI_API_KEY + RLS granulares
 
 ## Sesion 39 — 2026-03-04
 
