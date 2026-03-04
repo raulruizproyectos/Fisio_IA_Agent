@@ -86,13 +86,14 @@ router.post('/recommend', async (req, res) => {
       fisioterapeuta_id,
     } = req.body;
 
-    const patId = patient_id || paciente_id;
-    if (!patId || !symptoms) {
+    const patId = patient_id || paciente_id || null;
+    if (!symptoms || !String(symptoms).trim()) {
       return res.status(400).json({
         ok: false,
-        error: 'Se requiere patient_id y symptoms',
+        error: 'Se requiere symptoms',
       });
     }
+    const persistRecommendation = Boolean(patId);
 
     // 1. Fetch full catalog for OpenAI context
     const { data: catalog, error: catErr } = await supabase
@@ -147,15 +148,17 @@ router.post('/recommend', async (req, res) => {
     } catch (n8nErr) {
       fallbackReason = n8nErr.message || 'engine_unreachable';
       console.warn('[exercises/recommend] fallback activated:', fallbackReason);
-      await logComm(supabase, {
-        paciente_id: patId,
-        channel: n8nUrl ? 'n8n' : 'edge_function',
-        direction: 'outbound',
-        message_type: 'system',
-        message_text: `Engine fallback: ${fallbackReason}`,
-        request_id: requestId,
-        status: 'error',
-      });
+      if (persistRecommendation) {
+        await logComm(supabase, {
+          paciente_id: patId,
+          channel: n8nUrl ? 'n8n' : 'edge_function',
+          direction: 'outbound',
+          message_type: 'system',
+          message_text: `Engine fallback: ${fallbackReason}`,
+          request_id: requestId,
+          status: 'error',
+        });
+      }
     }
 
     // 3. Parse response and fallback to rules when model engine is unavailable
@@ -181,61 +184,63 @@ router.post('/recommend', async (req, res) => {
       escalation_reason = '',
     } = recommendation;
 
-    // 3a. Insert crm_recomendaciones
-    const { data: recoRow, error: recoErr } = await supabase
-      .from('crm_recomendaciones')
-      .insert({
+    // 3a/3b/3c. Persist only when patient_id exists
+    let recommendationId = null;
+    if (persistRecommendation) {
+      const { data: recoRow, error: recoErr } = await supabase
+        .from('crm_recomendaciones')
+        .insert({
+          paciente_id: patId,
+          fisioterapeuta_id: fisioterapeuta_id || null,
+          origen: channel,
+          symptom_summary,
+          red_flags_present,
+          red_flags_items,
+          selection_rationale,
+          message_to_patient_es,
+          message_to_therapist_es,
+          escalation_recommend_medical_attention,
+          escalation_reason,
+          request_id: requestId,
+          estado: escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
+        })
+        .select('id')
+        .single();
+
+      if (recoErr) throw recoErr;
+      recommendationId = recoRow.id;
+
+      if (selected_exercises.length > 0) {
+        const items = selected_exercises.map((ex, idx) => ({
+          recomendacion_id: recommendationId,
+          ejercicio_id: ex.exercise_id || ex.id,
+          confidence: ex.confidence || 0.8,
+          why: ex.why || ex.reason || '',
+          cautions: ex.cautions || [],
+          orden: idx + 1,
+        }));
+
+        const { error: itemsErr } = await supabase
+          .from('crm_recomendacion_items')
+          .insert(items);
+
+        if (itemsErr) {
+          console.warn('[exercises/recommend] Error inserting items:', itemsErr.message);
+        }
+      }
+
+      await logComm(supabase, {
         paciente_id: patId,
         fisioterapeuta_id: fisioterapeuta_id || null,
-        origen: channel,
-        symptom_summary,
-        red_flags_present,
-        red_flags_items,
-        selection_rationale,
-        message_to_patient_es,
-        message_to_therapist_es,
-        escalation_recommend_medical_attention,
-        escalation_reason,
+        recomendacion_id: recommendationId,
+        channel,
+        direction: 'internal',
+        message_type: 'system',
+        message_text: `Recomendacion generada: ${selected_exercises.length} ejercicios`,
         request_id: requestId,
-        estado: escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
-      })
-      .select('id')
-      .single();
-
-    if (recoErr) throw recoErr;
-
-    // 3b. Insert crm_recomendacion_items
-    if (selected_exercises.length > 0) {
-      const items = selected_exercises.map((ex, idx) => ({
-        recomendacion_id: recoRow.id,
-        ejercicio_id: ex.exercise_id || ex.id,
-        confidence: ex.confidence || 0.8,
-        why: ex.why || ex.reason || '',
-        cautions: ex.cautions || [],
-        orden: idx + 1,
-      }));
-
-      const { error: itemsErr } = await supabase
-        .from('crm_recomendacion_items')
-        .insert(items);
-
-      if (itemsErr) {
-        console.warn('[exercises/recommend] Error inserting items:', itemsErr.message);
-      }
+        status: 'processed',
+      });
     }
-
-    // 3c. Log communication
-    await logComm(supabase, {
-      paciente_id: patId,
-      fisioterapeuta_id: fisioterapeuta_id || null,
-      recomendacion_id: recoRow.id,
-      channel,
-      direction: 'internal',
-      message_type: 'system',
-      message_text: `Recomendacion generada: ${selected_exercises.length} ejercicios`,
-      request_id: requestId,
-      status: 'processed',
-    });
 
     // 4. Fetch media signed URLs for recommended exercises
     const exerciseIds = selected_exercises.map((e) => e.exercise_id || e.id).filter(Boolean);
@@ -301,13 +306,13 @@ router.post('/recommend', async (req, res) => {
       messageToPatient: message_to_patient_es,
       escalation: escalation_recommend_medical_attention,
       exercises,
-      recommendationId: recoRow.id,
+      recommendationId,
     });
 
     const response = {
       ok: true,
       request_id: requestId,
-      recommendation_id: recoRow.id,
+      recommendation_id: recommendationId,
       symptom_summary,
       red_flags: { present: red_flags_present, items: red_flags_items },
       escalation: {
@@ -319,6 +324,7 @@ router.post('/recommend', async (req, res) => {
       message_to_therapist: message_to_therapist_es,
       selection_rationale,
       informe_clinico: informeClinico,
+      persistence_skipped: !persistRecommendation,
     };
 
     res.json(response);

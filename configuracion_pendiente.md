@@ -10,6 +10,9 @@ Estado actualizado para retomar sin perdida.
 - ✅ Verificado `dist/index.html` local:
   - no contiene seccion `Videos`.
   - no contiene textos `generar video`.
+- ✅ Endpoint robustecido:
+  - `POST /api/exercises/recommend` genera informe aun sin `patient_id`.
+  - persistencia en DB condicionada a `patient_id` disponible.
 - ✅ Confirmado estado real de produccion:
   - `fisio-frontend` sigue sirviendo HTML legacy con modulo `Videos`.
   - `fisio-backend` sigue exponiendo contratos antiguos en endpoints clave.

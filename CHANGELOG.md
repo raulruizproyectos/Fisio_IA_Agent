@@ -9,6 +9,9 @@
 - ✅ Normalizacion a `UTF-8 sin BOM` en archivos criticos para evitar errores de parseo.
 - ✅ Build local del frontend validado con `scripts/frontend-local-build.ps1` (`astro build` OK).
 - ✅ Verificacion del artefacto local: sin referencias a `Videos` ni `generar video`.
+- ✅ Robustez API ejercicios:
+  - `POST /api/exercises/recommend` ya no exige `patient_id` para generar informe.
+  - persiste en DB solo cuando hay `patient_id`; si no, responde informe igualmente (`persistence_skipped=true`).
 - ✅ Verificacion de produccion: sigue sirviendo version legacy en frontend y backend.
 
 ### Estado
