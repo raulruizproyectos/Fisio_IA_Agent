@@ -40,3 +40,8 @@ renders/
 
 # Supabase
 .supabase/
+
+# n8n remote exports (can contain sensitive data)
+docs/data/n8n/workflows_snapshot_*_raw.json
+docs/data/n8n/backup_before_deactivate_*/
+docs/data/n8n/tmp_*.json

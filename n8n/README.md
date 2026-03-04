@@ -13,6 +13,18 @@ n8n es el orquestador principal para:
 - `n8n/Fisio_IA_Agent/telegram-chat.json`
 - `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
 
+## Estado remoto (2026-03-04)
+- Instancia auditada de extremo a extremo.
+- Estado consolidado:
+  - workflows totales: `52`
+  - workflows activos: `6`
+  - activos dentro de `Fisio_IA_Agent / ...`: `6`
+- Backups de seguridad pre-limpieza:
+  - `docs/data/n8n/backup_before_deactivate_20260304/` (local, no versionado)
+- Artefactos de auditoria:
+  - `docs/data/n8n/workflows_snapshot_20260304_raw.json` (local, no versionado)
+  - `docs/data/n8n/workflows_summary_20260304.json`
+
 ## Convencion recomendada (vNext)
 - W0 Router Telegram
 - W1 Agente Citas

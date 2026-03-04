@@ -1693,3 +1693,67 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Estructura local de workflows sin carpetas duplicadas ni archivos basura detectados.
 - Pendiente siguiente: ordenar y deduplicar workflows directamente en instancia n8n remota.
+
+---
+
+## [Sesion 34] - 2026-03-04 (Auditoria total n8n + consolidacion operativa)
+### Objetivo
+- Auditar todos los workflows de la instancia n8n y dejar activos solo los del proyecto dentro de `Fisio_IA_Agent`.
+
+### Auditoria completa ejecutada
+- Snapshot completo de la instancia:
+  - `docs/data/n8n/workflows_snapshot_20260304_raw.json` (local, no versionado)
+  - `docs/data/n8n/workflows_summary_20260304.json`
+- Totales iniciales detectados:
+  - `54` workflows totales.
+  - duplicados por nombre: `Fisio_IA_Agent / Nucleo Agente` (3x).
+  - duplicados exactos por contenido: 2x en `Nucleo Agente`.
+
+### Cambios aplicados en n8n remoto
+- Se desactivaron `8` workflows activos fuera de la carpeta/prefijo `Fisio_IA_Agent / ...`.
+- Se elimino `1` duplicado exacto de `Fisio_IA_Agent / Nucleo Agente`.
+- Estado final remoto:
+  - `52` workflows totales.
+  - `6` workflows activos.
+  - los `6` activos quedan en `Fisio_IA_Agent / ...`:
+    - `Fisio_IA_Agent / Nucleo Agente`
+    - `Fisio_IA_Agent / Orquestador Intake-Video`
+    - `Fisio_IA_Agent / Puente Error Backend`
+    - `Fisio_IA_Agent / Subflujo Crear y Render Video`
+    - `Fisio_IA_Agent / Subflujo Pendientes`
+    - `Fisio_IA_Agent / Subflujo Revision Video`
+
+### Backups de seguridad antes de desactivar
+- Se guardaron en:
+  - `docs/data/n8n/backup_before_deactivate_20260304/` (local, no versionado)
+- Incluyen JSON de los flujos desactivados fuera de `Fisio_IA_Agent` para restauracion o reaprovechamiento.
+
+### Hallazgo tecnico relevante
+- En esta instancia/API:
+  - `POST /api/v1/workflows` -> `500`
+  - `PUT /api/v1/workflows/{id}` -> `500`
+  - `PUT /api/v1/workflows/{id}/tags` -> `500`
+- Operaciones que si funcionan:
+  - `GET /api/v1/workflows*`
+  - `POST /api/v1/workflows/{id}/activate|deactivate`
+  - `DELETE /api/v1/workflows/{id}`
+
+---
+
+## [Sesion 35] - 2026-03-04 (Verificacion post-orden manual en n8n)
+### Objetivo
+- Validar que la reorganizacion manual en n8n quedo correcta y reparar cualquier desalineacion.
+
+### Verificaciones ejecutadas
+- Recuento remoto:
+  - `total=52`
+  - `active=6`
+  - `active_outside_fisio=0`
+- Chequeo de colision de webhooks activos:
+  - sin duplicados de `path` en workflows activos.
+- Test funcional de endpoint critico:
+  - `POST /webhook/agent/core` con payload JSON valido -> `200` y respuesta estructurada esperada.
+
+### Estado final
+- Instancia consistente tras la ordenacion.
+- Todos los workflows activos permanecen dentro de `Fisio_IA_Agent / ...`.

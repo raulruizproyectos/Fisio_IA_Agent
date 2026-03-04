@@ -541,3 +541,35 @@ Tablas necesarias confirmadas:
 3. Mover/etiquetar todos los workflows del proyecto bajo carpeta/tag `Fisio_IA_Agent`.
 4. Desactivar/eliminar duplicados remotos no canonicos tras backup JSON.
 5. Exportar snapshot final de n8n y versionarlo en `n8n/Fisio_IA_Agent/`.
+
+## Actualizacion (2026-03-04, Sesion 34)
+- Auditoria remota ejecutada sobre todos los workflows de n8n.
+- Snapshot y resumen guardados en:
+  - `docs/data/n8n/workflows_snapshot_20260304_raw.json` (local, no versionado)
+  - `docs/data/n8n/workflows_summary_20260304.json`
+- Limpieza aplicada en instancia:
+  - desactivados 8 workflows activos fuera de `Fisio_IA_Agent / ...`.
+  - eliminado 1 duplicado exacto de `Fisio_IA_Agent / Nucleo Agente`.
+- Estado remoto tras consolidacion:
+  - total workflows: 52
+  - activos: 6
+  - activos dentro de `Fisio_IA_Agent / ...`: 6 (100%)
+- Backups de seguridad de flujos desactivados:
+  - `docs/data/n8n/backup_before_deactivate_20260304/` (local, no versionado)
+
+## Pendiente inmediato actualizado
+1. Revisar manualmente en UI n8n los 8 flujos desactivados y decidir si alguno debe migrarse a version canonica W0/W1/W2/W3.
+2. Resolver con logs de servidor n8n el error `500` en API para `create/update/tags` (ahora solo operan activate/deactivate/delete).
+3. Versionar workflows canonicos vNext (W0/W1/W2/W3) dentro de `n8n/Fisio_IA_Agent/` con control de errores estandar.
+4. Re-activar solo workflows vNext despues de validacion E2E Telegram + backend.
+
+## Verificacion final (2026-03-04, Sesion 35)
+- Comprobacion post-orden manual en n8n completada:
+  - `total=52`, `active=6`, `active_outside_fisio=0`.
+  - sin colisiones de `webhook path` entre activos.
+  - `POST /webhook/agent/core` probado en vivo con `200`.
+
+## Siguiente bloque de desarrollo (inmediato)
+1. Implementar version canonica robusta de W1 (citas) reutilizando patrones de `Sub_Agente_Citas` + `create_booking` + `search_booking`.
+2. Implementar control de errores transversal (retry/backoff + notificacion) en W0/W1/W2/W3.
+3. Conectar y validar trazabilidad de `request_id` end-to-end (Telegram -> n8n -> backend -> DB).
