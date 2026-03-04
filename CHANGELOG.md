@@ -1,5 +1,60 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 41 — 2026-03-04
+
+### Objetivo
+- Avanzar W1 (citas) en Telegram con integración real no bloqueante y corregir bug runtime en W2.
+
+### Cambios implementados
+- ✅ `backend/src/routes/exercises.js`
+  - Añadido `import crypto from 'node:crypto'` para evitar `ReferenceError` en `POST /api/exercises/recommend` (`crypto.randomUUID`).
+- ✅ `backend/src/routes/telegram.js`
+  - W1 deja de estar en placeholder: cuando `intent.route === "appointment"` y confianza >= 0.6:
+    - dispara webhook configurable `N8N_APPOINTMENT_WEBHOOK_URL`
+    - envía payload estructurado con `request_id`, `patient_id`, `professional_id`, `chat_id`, `message_text`, `timestamp`
+    - responde al paciente con mensaje de éxito del workflow o fallback seguro.
+  - Nuevo comando Telegram `/cita <inicio_iso> <fin_iso> [nota]` para solicitar cita sin depender del clasificador.
+  - Añadido logging técnico en `crm_comunicaciones` (si existe tabla) para trazabilidad de intentos W1.
+  - Umbral de confianza unificado en constante (`INTENT_CONFIDENCE_THRESHOLD`).
+- ✅ `backend/.env.example`
+  - Añadida variable `N8N_APPOINTMENT_WEBHOOK_URL`.
+  - Incluida URL de ejemplo local para W1: `http://localhost:5678/webhook/fisio/w1/appointment`.
+- ✅ `.github/workflows/ci.yml`
+  - CI backend ahora incluye `node --check src/routes/exercises.js`.
+  - Nuevo job `n8n_json_validate` para validar parseo JSON de workflows versionados.
+  - Fix adicional: parser JSON en CI limpia BOM UTF-8 (`\uFEFF`) para evitar falsos fallos.
+- ✅ `backend/src/routes/professional.js`
+  - Nuevos endpoints W1 para citas en `crm_citas`:
+    - `GET /api/profesional/appointments`
+    - `POST /api/profesional/appointments`
+    - `PATCH /api/profesional/appointments/:appointmentId`
+  - Incluye validación de fechas/estado/canal y control de solapes por fisioterapeuta.
+  - Incluye resolución automática de IDs legacy (`pacientes`/`profesionales`) hacia modelo CRM (`crm_pacientes`/`crm_perfiles`) para compatibilidad con Telegram actual.
+- ✅ `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
+  - Workflow W1 versionado en repo:
+    - recibe webhook de solicitud de cita
+    - normaliza payload
+    - crea cita en backend si hay slot completo
+    - devuelve respuesta JSON para Telegram (confirmación o solicitud de más datos).
+- ✅ Documentación alineada:
+  - `README.md`: endpoints de citas y workflow W1 añadidos.
+  - `n8n/README.md`: workflow W1 y endpoint de citas añadidos.
+  - `n8n/telegram-bot.md`: nuevo comando `/cita` documentado.
+- ✅ `frontend/src/pages/index.astro`
+  - Nueva sección SPA **Citas** (tabla agenda + refresh).
+  - Carga desde `GET /api/profesional/appointments`.
+  - Cancelación desde UI con `PATCH /api/profesional/appointments/:appointmentId`.
+  - Métrica `Sesiones hoy` conectada a citas del día.
+
+### Reutilización n8n (regla obligatoria)
+- ✅ Revisados workflows existentes en `n8n/Fisio_IA_Agent/*` antes de ampliar W1.
+- ✅ Reutilizado patrón webhook + respuesta segura ya presente en flujos y rutas actuales (sin crear flujo paralelo en repo).
+
+### Pendiente inmediato
+- [ ] Configurar `N8N_APPOINTMENT_WEBHOOK_URL` en backend productivo para activar W1 de extremo a extremo.
+- [ ] Configurar credenciales/flow de Google Calendar en W1 para confirmación automática.
+- [ ] Ejecutar E2E Telegram para ruta `appointment` y validar logs en `crm_comunicaciones`.
+
 ## Sesion 40 — 2026-03-04
 
 ### Requisito añadido: Responsive Design obligatorio (PC + Móvil)

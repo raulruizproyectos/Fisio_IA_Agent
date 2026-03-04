@@ -27,6 +27,7 @@ jobs:
         run: |
           node --check src/index.js
           node --check src/routes/agent.js
+          node --check src/routes/exercises.js
           node --check src/routes/patients.js
           node --check src/routes/professional.js
           node --check src/routes/telegram.js
@@ -49,3 +50,13 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+  n8n_json_validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate n8n workflow JSON files
+        run: |
+          node -e "const fs=require('fs'); const path='n8n/Fisio_IA_Agent'; const files=fs.readdirSync(path).filter(f=>f.endsWith('.json')); if(!files.length){throw new Error('No se encontraron workflows JSON');} for(const f of files){const p=path+'/'+f; const txt=fs.readFileSync(p,'utf8').replace(/^\\uFEFF/, ''); JSON.parse(txt); console.log('OK', p);}"

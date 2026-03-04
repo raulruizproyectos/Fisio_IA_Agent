@@ -2,6 +2,35 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 41) - W1 Telegram en progreso
+
+### Completado esta sesion
+- ✅ `backend/src/routes/telegram.js`: W1 de citas ya no queda en mensaje placeholder.
+  - Si W0 clasifica `appointment` con confianza >= 0.6, backend dispara `N8N_APPOINTMENT_WEBHOOK_URL`.
+  - Se envía payload con `request_id`, `patient_id`, `professional_id`, `chat_id`, `message_text`, `timestamp`.
+  - Se mantiene fallback seguro para paciente si n8n no responde.
+- ✅ Trazabilidad W1: log técnico en `crm_comunicaciones` (si tabla disponible).
+- ✅ `backend/src/routes/exercises.js`: fix de runtime (`crypto` import).
+- ✅ `.github/workflows/ci.yml`: añadida validación sintáctica para `src/routes/exercises.js`.
+- ✅ `.github/workflows/ci.yml`: añadido job `n8n_json_validate` para validar workflows JSON de `n8n/Fisio_IA_Agent/`.
+  - incluye limpieza de BOM UTF-8 para evitar fallos de parseo en archivos heredados.
+- ✅ `.env.example`: añadida variable `N8N_APPOINTMENT_WEBHOOK_URL`.
+  - con ejemplo local preconfigurado: `http://localhost:5678/webhook/fisio/w1/appointment`.
+- ✅ `backend/src/routes/professional.js`: API de citas W1 implementada.
+  - `GET /api/profesional/appointments`
+  - `POST /api/profesional/appointments`
+  - `PATCH /api/profesional/appointments/:appointmentId`
+  - con validaciones de estado/canal/fechas, control de conflictos y mapeo de IDs legacy -> CRM.
+- ✅ `n8n/Fisio_IA_Agent/w1-appointment-agent.json`: workflow W1 versionado para intake de citas desde Telegram.
+- ✅ `backend/src/routes/telegram.js`: comando `/cita <inicio_iso> <fin_iso> [nota]` añadido para solicitud directa de cita.
+- ✅ `frontend/src/pages/index.astro`: nueva sección SPA `Citas` conectada a API W1 (`GET/PATCH /api/profesional/appointments`).
+- ✅ Docs actualizadas (`README.md`, `n8n/README.md`, `n8n/telegram-bot.md`) con rutas/workflow W1 y comando `/cita`.
+
+### Pendiente para próxima sesión
+1. **Config producción**: definir `N8N_APPOINTMENT_WEBHOOK_URL` en EasyPanel/backend.
+2. **W1 n8n**: conectar credenciales Google Calendar y completar confirmación automática.
+3. **E2E**: test Telegram de intención cita y validación en `crm_comunicaciones`.
+
 ## Estado actual (2026-03-04, Sesion 39) - PIVOTE CRM + AGENTES IA
 
 ### Completado esta sesion

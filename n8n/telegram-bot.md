@@ -5,7 +5,8 @@
 - Endpoint backend para resolver comandos de Telegram: `POST /api/telegram/incoming`
 - Endpoint backend para generar codigo de vinculacion paciente-chat: `POST /api/telegram/link-code/:patientId`
 - Tabla `vinculos_telegram_pacientes` para vincular paciente <-> chat_id
-- Workflow n8n importable: `n8n/workflows/telegram-chat.json`
+- Workflow n8n importable: `n8n/Fisio_IA_Agent/telegram-chat.json`
+- Workflow W1 de citas: `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
 
 ## Flujo end-to-end (n8n + backend + Supabase)
 
@@ -20,6 +21,7 @@
 
 - `/start CODIGO` - vincula chat con paciente
 - `/plan` - devuelve plan activo + ejercicios
+- `/cita <inicio_iso> <fin_iso> [nota]` - solicita cita (ej: `/cita 2026-03-10T18:00 2026-03-10T18:45`)
 - `/dolor <0-10> [nota]` - registra dolor diario en `sesiones`
 - `/ayuda` - listado de comandos
 
@@ -38,10 +40,11 @@
 
 ### 3. Configurar n8n
 
-1. Importar `n8n/workflows/telegram-chat.json`
-2. Crear credencial **Telegram API** con token de BotFather
-3. Definir variable de entorno en n8n: `BACKEND_URL=http://localhost:3001`
-4. Activar workflow
+1. Importar `n8n/Fisio_IA_Agent/telegram-chat.json`
+2. (Opcional W1) Importar `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
+3. Crear credencial **Telegram API** con token de BotFather
+4. Definir variable de entorno en n8n: `BACKEND_URL=http://localhost:3001`
+5. Activar workflow(s)
 
 ## Notas
 

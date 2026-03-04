@@ -25,6 +25,10 @@ import Layout from '../layouts/Layout.astro';
           <span class="nav-label">Intake Pendientes</span>
           <span class="badge" id="intakeBadge">3</span>
         </a>
+        <a href="#" class="nav-item" data-section="citas">
+          <span class="material-symbols-rounded">calendar_month</span>
+          <span class="nav-label">Citas</span>
+        </a>
         <a href="#" class="nav-item" data-section="videos">
           <span class="material-symbols-rounded">smart_display</span>
           <span class="nav-label">Videos</span>
@@ -117,6 +121,17 @@ import Layout from '../layouts/Layout.astro';
           </section>
         </div>
 
+        <!-- === PAGE: CITAS === -->
+        <div class="page-section" data-page="citas">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">calendar_month</span> Citas</h1>
+          </div>
+          <section class="card table-card">
+            <header class="card-header"><h2>Agenda del fisioterapeuta</h2><button class="btn-ghost" id="refreshCitas"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Motivo</th><th>Acciones</th></tr></thead><tbody id="citasBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando citas...</p></div></td></tr></tbody></table></div>
+          </section>
+        </div>
+
         <!-- === PAGE: VIDEOS === -->
         <div class="page-section" data-page="videos">
           <div class="page-header-row">
@@ -187,6 +202,7 @@ import Layout from '../layouts/Layout.astro';
   const refreshBtn = document.getElementById('refreshIntakes') as HTMLElement | null;
   const pacientesBody = document.getElementById('pacientesBody') as HTMLElement | null;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
+  const citasBody = document.getElementById('citasBody') as HTMLElement | null;
   const videosBody = document.getElementById('videosBody') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
 
@@ -194,6 +210,15 @@ import Layout from '../layouts/Layout.astro';
   const escapeHtml = (str: string) => str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: string) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '—'; } };
+  const isTodayDate = (d: string) => {
+    try {
+      const target = new Date(d);
+      const now = new Date();
+      return target.getFullYear() === now.getFullYear() && target.getMonth() === now.getMonth() && target.getDate() === now.getDate();
+    } catch {
+      return false;
+    }
+  };
   const fetchJson = async (url: string, opts?: RequestInit) => { const r = await fetch(url, { signal: AbortSignal.timeout(8000), ...opts }); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); };
   const resolvePatientName = (row: any) =>
     row?.nombre_paciente ||
@@ -437,6 +462,54 @@ import Layout from '../layouts/Layout.astro';
     if (!btn) return;
     openPatientHistory(btn.getAttribute('data-patient-id'), btn.getAttribute('data-patient-name') || '');
   });
+
+  // === LOAD CITAS ===
+  const loadCitas = async () => {
+    if (!citasBody) return;
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments?fisioterapeuta_id=${PROF_ID}&limit=50`);
+      const citas = payload.data || [];
+      const todayCount = citas.filter((c: any) => isTodayDate(c.inicio_en || '')).length;
+      const metricEl = document.getElementById('metricSesiones');
+      if (metricEl) metricEl.textContent = String(todayCount);
+
+      if (!citas.length) {
+        citasBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>No hay citas registradas.</p></div></td></tr>`;
+        return;
+      }
+
+      citasBody.innerHTML = citas.map((cita: any) => {
+        const canCancel = ['pendiente', 'confirmada', 'reprogramada'].includes(cita.estado);
+        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || '—')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : '—'}</td></tr>`;
+      }).join('');
+    } catch {
+      citasBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar citas</p></div></td></tr>`;
+    }
+  };
+  pageLoaders['citas'] = loadCitas;
+  document.getElementById('refreshCitas')?.addEventListener('click', loadCitas);
+  citasBody?.addEventListener('click', async (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest('button[data-action="cancel-appointment"]') as HTMLButtonElement | null;
+    if (!btn) return;
+
+    const appointmentId = btn.getAttribute('data-appointment-id');
+    if (!appointmentId) return;
+
+    btn.disabled = true;
+    try {
+      await fetchJson(`${BACKEND_BASE}/api/profesional/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelada' }),
+      });
+      await loadCitas();
+    } catch {
+      btn.disabled = false;
+      addMessage('No se pudo cancelar la cita seleccionada.', 'agent');
+    }
+  });
+  loadCitas();
 
   // === LOAD VIDEOS ===
   const loadVideos = async () => {
@@ -895,9 +968,14 @@ import Layout from '../layouts/Layout.astro';
   }
   .status-chip.pendiente,
   .status-chip.pendiente_revision { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .status-chip.confirmada,
+  .status-chip.reprogramada { background: rgba(37,99,235,0.15); color: var(--info); }
   .status-chip.aprobado,
-  .status-chip.enviado { background: rgba(16,185,129,0.15); color: var(--success); }
-  .status-chip.rechazado { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .status-chip.enviado,
+  .status-chip.completada { background: rgba(16,185,129,0.15); color: var(--success); }
+  .status-chip.rechazado,
+  .status-chip.cancelada,
+  .status-chip.no_show { background: rgba(239,68,68,0.15); color: var(--danger); }
 
   .btn-sm {
     background: linear-gradient(135deg, #0a7f78, #0c8e86);

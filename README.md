@@ -26,6 +26,9 @@ CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomen
 - `POST /api/telegram/link-code/:patientId`
 - `POST /api/agent/message`
 - `GET /api/profesional/intakes/pending`
+- `GET /api/profesional/appointments`
+- `POST /api/profesional/appointments`
+- `PATCH /api/profesional/appointments/:appointmentId`
 - `GET /api/profesional/patients/:patientId/history`
 - `POST /api/profesional/notes`
 
@@ -48,6 +51,7 @@ CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomen
 - `Fisio_IA_Agent / Nucleo Agente`
 - `Fisio_IA_Agent / Subflujo Pendientes`
 - `Fisio_IA_Agent / Telegram Chat`
+- `Fisio_IA_Agent / W1 Appointment Agent`
 
 ## Storage de imagenes de movimientos
 - Bucket: `ejercicios` (private).

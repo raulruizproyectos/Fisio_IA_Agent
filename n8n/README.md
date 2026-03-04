@@ -11,6 +11,7 @@ n8n es el orquestador principal para:
 - `n8n/Fisio_IA_Agent/fisio-agent-core.json`
 - `n8n/Fisio_IA_Agent/sw-fisio-pending-intakes.json`
 - `n8n/Fisio_IA_Agent/telegram-chat.json`
+- `n8n/Fisio_IA_Agent/w1-appointment-agent.json`
 
 ## Convencion recomendada (vNext)
 - W0 Router Telegram
@@ -32,6 +33,9 @@ Endpoints principales consumidos por workflows:
 - `POST /api/telegram/incoming`
 - `POST /api/agent/message`
 - `GET /api/profesional/intakes/pending`
+- `GET /api/profesional/appointments`
+- `POST /api/profesional/appointments`
+- `PATCH /api/profesional/appointments/:appointmentId`
 
 ## Integracion Supabase Storage
 - Bucket `ejercicios` (private)

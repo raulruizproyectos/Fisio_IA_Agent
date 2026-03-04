@@ -3,6 +3,8 @@ import crypto from 'node:crypto';
 import { supabase } from '../index.js';
 
 const router = Router();
+const INTENT_CONFIDENCE_THRESHOLD = 0.6;
+const APPOINTMENT_WEBHOOK_URL = process.env.N8N_APPOINTMENT_WEBHOOK_URL?.trim() || null;
 
 function pickValue(obj, ...keys) {
   for (const key of keys) {
@@ -26,6 +28,24 @@ function parsePainCommand(text) {
   const match = text.match(/^\/dolor\s+(\d{1,2})(?:\s+(.+))?$/i);
   if (!match) return null;
   return { painLevel: Number(match[1]), notes: match[2]?.trim() || null };
+}
+
+function parseAppointmentCommand(text) {
+  const match = text.match(/^\/cita\s+(\S+)\s+(\S+)(?:\s+(.+))?$/i);
+  if (!match) return null;
+  return {
+    startAt: match[1]?.trim() || null,
+    endAt: match[2]?.trim() || null,
+    notes: match[3]?.trim() || null,
+  };
+}
+
+function extractIsoSlots(messageText = '') {
+  const matches = messageText.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?/g) || [];
+  return {
+    slotStart: matches[0] || null,
+    slotEnd: matches[1] || null,
+  };
 }
 
 function parseIncomingPayload(body = {}) {
@@ -216,10 +236,106 @@ async function createIntakeMessage({
   }
 }
 
+async function logCrmCommunication(payload) {
+  try {
+    const { error } = await supabase
+      .from('crm_comunicaciones')
+      .insert(payload);
+
+    if (error) throw error;
+  } catch (error) {
+    if (!String(error?.message || '').includes("Could not find the table 'public.crm_comunicaciones'")) {
+      console.warn('[telegram] crm_comunicaciones log error:', error.message);
+    }
+  }
+}
+
+async function triggerAppointmentWorkflow({
+  patientId,
+  professionalId,
+  chatId,
+  username,
+  messageText,
+  slotStart = null,
+  slotEnd = null,
+}) {
+  const requestId = crypto.randomUUID();
+
+  if (!APPOINTMENT_WEBHOOK_URL) {
+    return {
+      ok: false,
+      requestId,
+      reason: 'missing_webhook',
+    };
+  }
+
+  const payload = {
+    request_id: requestId,
+    source: 'telegram',
+    channel: 'telegram',
+    patient_id: patientId,
+    professional_id: professionalId,
+    chat_id: String(chatId),
+    username: username || null,
+    message_text: messageText,
+    slot_start: slotStart,
+    slot_end: slotEnd,
+    timezone: 'Europe/Madrid',
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const response = await fetch(APPOINTMENT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(12000),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        requestId,
+        reason: 'http_error',
+        statusCode: response.status,
+        response: data,
+      };
+    }
+
+    return {
+      ok: true,
+      requestId,
+      status: data?.status || 'accepted',
+      messageToPatient:
+        data?.message_to_patient_es ||
+        data?.message_to_patient ||
+        data?.reply_text ||
+        data?.message ||
+        '📅 He recibido tu solicitud de cita. En breve te confirmaremos hueco disponible.',
+      response: data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      requestId,
+      reason: error?.name === 'AbortError' ? 'timeout' : 'fetch_failed',
+      errorMessage: error.message,
+    };
+  }
+}
+
 function getHelpMessage() {
   return [
     'Comandos disponibles:',
     '/plan - Ver plan activo',
+    '/cita <inicio_iso> <fin_iso> [nota] - Solicitar cita (ej: /cita 2026-03-10T18:00 2026-03-10T18:45)',
     '/dolor <0-10> [nota] - Registrar dolor de hoy',
     '/ayuda - Ver esta ayuda',
   ].join('\n');
@@ -395,7 +511,7 @@ router.post('/incoming', async (req, res, next) => {
       }
 
       // W2: If intent is exercise with decent confidence, auto-recommend
-      if (intent.route === 'exercise' && intent.confidence >= 0.6) {
+      if (intent.route === 'exercise' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
         try {
           const exerciseUrl = `${process.env.SUPABASE_URL}/functions/v1/exercise-recommend`;
           const { data: catalog } = await supabase
@@ -465,9 +581,45 @@ router.post('/incoming', async (req, res, next) => {
         }
       }
 
-      // W1 placeholder: appointment intent detected
-      if (intent.route === 'appointment' && intent.confidence >= 0.6) {
-        return await reply('📅 He entendido que quieres gestionar una cita. Esta función estará disponible pronto. Tu fisioterapeuta ha recibido tu mensaje.');
+      // W1: appointment intent detected, trigger dedicated n8n workflow if configured.
+      if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
+        const { slotStart, slotEnd } = extractIsoSlots(text);
+        const appointment = await triggerAppointmentWorkflow({
+          patientId: link.paciente_id,
+          professionalId,
+          chatId: chat_id,
+          username,
+          messageText: text,
+          slotStart,
+          slotEnd,
+        });
+
+        await logCrmCommunication({
+          channel: 'telegram',
+          direction: 'internal',
+          message_type: 'event',
+          message_text: appointment.ok
+            ? 'Solicitud de cita enviada a workflow W1'
+            : 'Error al enviar solicitud de cita a workflow W1',
+          payload: {
+            legacy_patient_id: link.paciente_id,
+            legacy_profesional_id: professionalId,
+            chat_id: String(chat_id),
+            route: intent.route,
+            confidence: intent.confidence,
+            detail: appointment,
+          },
+          request_id: appointment.requestId,
+          status: appointment.ok ? 'processed' : 'error',
+        });
+
+        if (appointment.ok) {
+          return await reply(appointment.messageToPatient);
+        }
+
+        return await reply(
+          '📅 He recibido tu solicitud de cita. Nuestro equipo la revisará y te confirmará disponibilidad lo antes posible.'
+        );
       }
 
       // Default: intake created, generic reply
@@ -544,6 +696,56 @@ router.post('/incoming', async (req, res, next) => {
       if (sesionError) throw sesionError;
 
       return await reply(`Dolor registrado: ${painCommand.painLevel}/10. Gracias, se lo notificaremos a tu fisioterapeuta.`);
+    }
+
+    const appointmentCommand = parseAppointmentCommand(text);
+    if (appointmentCommand) {
+      const professionalId = await getDefaultProfessionalId();
+      const startDate = new Date(appointmentCommand.startAt || '');
+      const endDate = new Date(appointmentCommand.endAt || '');
+
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        return await reply('Formato de cita invalido. Usa: /cita 2026-03-10T18:00 2026-03-10T18:45 [nota opcional]');
+      }
+
+      if (endDate.getTime() <= startDate.getTime()) {
+        return await reply('La hora de fin debe ser posterior a la de inicio.');
+      }
+
+      const appointment = await triggerAppointmentWorkflow({
+        patientId: link.paciente_id,
+        professionalId,
+        chatId: chat_id,
+        username,
+        messageText: appointmentCommand.notes || text,
+        slotStart: startDate.toISOString(),
+        slotEnd: endDate.toISOString(),
+      });
+
+      await logCrmCommunication({
+        channel: 'telegram',
+        direction: 'internal',
+        message_type: 'event',
+        message_text: appointment.ok
+          ? 'Solicitud de cita enviada por comando /cita'
+          : 'Error al enviar solicitud /cita',
+        payload: {
+          legacy_patient_id: link.paciente_id,
+          legacy_profesional_id: professionalId,
+          chat_id: String(chat_id),
+          slot_start: startDate.toISOString(),
+          slot_end: endDate.toISOString(),
+          detail: appointment,
+        },
+        request_id: appointment.requestId,
+        status: appointment.ok ? 'processed' : 'error',
+      });
+
+      if (appointment.ok) {
+        return await reply(appointment.messageToPatient);
+      }
+
+      return await reply('📅 He recibido tu solicitud de cita. Nuestro equipo la revisará y te confirmará disponibilidad lo antes posible.');
     }
 
     return await reply(`No reconozco ese comando.\n\n${getHelpMessage()}`);

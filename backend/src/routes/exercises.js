@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const router = Router();
