@@ -1,6 +1,55 @@
-﻿# Configuracion Pendiente - Fisio_IA_Agent
+# Configuracion Pendiente - Fisio_IA_Agent
 
 Estado actualizado para retomar sin perdida.
+
+## Estado actual (2026-03-04, Sesion 51) - Build valido sin video, produccion aun legacy
+
+### Completado esta sesion
+- ✅ Normalizados archivos criticos a `UTF-8 sin BOM` para evitar roturas de parseo en scripts/JSON.
+- ✅ Build frontend validado en entorno local no sincronizado (`scripts/frontend-local-build.ps1`).
+- ✅ Verificado `dist/index.html` local:
+  - no contiene seccion `Videos`.
+  - no contiene textos `generar video`.
+- ✅ Confirmado estado real de produccion:
+  - `fisio-frontend` sigue sirviendo HTML legacy con modulo `Videos`.
+  - `fisio-backend` sigue exponiendo contratos antiguos en endpoints clave.
+
+### Pendiente inmediato para cerrar funcionamiento real
+1. Publicar/redeploy backend y frontend en EasyPanel para alinear con el codigo local actual.
+2. Revalidar E2E tras deploy:
+   - dashboard sin modulo video,
+   - chat CRM/Telegram devolviendo informe de ejercicios con imagenes.
+
+## Estado actual (2026-03-04, Sesion 50) - Video eliminado y flujo centrado en informe de ejercicios
+
+### Completado esta sesion
+- ✅ Frontend sin módulo de video:
+  - eliminadas sección/página de videos.
+  - agente CRM orientado a informe clínico con procedimiento + imagen.
+- ✅ Backend adaptado:
+  - `agent.js` sin copy/intents de video.
+  - `exercises.js` devuelve `informe_clinico` + campos de pauta (`series/repeticiones/duracion`) + `imagen_url`.
+  - `telegram.js` genera respuesta desde `/api/exercises/recommend` (sin pipeline de video).
+  - endpoints `video-jobs*` bloqueados por defecto (`410`) salvo `ENABLE_VIDEO_WORKFLOWS=true`.
+- ✅ n8n limpio de video:
+  - repo: eliminados `orquestador-intake-video` + `subflujo-crear-render-video` + `subflujo-revision-video`.
+  - remoto: workflows de video borrados por API.
+  - verificación remota: `0` workflows con “video” en nombre.
+- ✅ Validación:
+  - `node --check` backend OK.
+  - JSON de workflows (`production` + `vnext`) OK.
+- ✅ Base de datos nutrida desde PROET:
+  - script nuevo `scripts/proet-sync-supabase.mjs`.
+  - ejecución real completada: `72` dolencias insertadas y `179` ejercicios `PROET-*` upsertados en `crm_ejercicios_catalogo`.
+  - imágenes PROET registradas en `metadata.proet_image_url` para consumo del agente.
+- ✅ Robustez obligatoria formalizada:
+  - `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`.
+  - fallback operativo en `POST /api/exercises/recommend` cuando falla el motor IA externo.
+
+### Pendiente inmediato para cerrar funcionamiento real
+1. Validar build frontend en entorno con red estable (`npm install` en esta sesión expira por timeout).
+2. Configurar secreto `OPENAI_API_KEY` en Supabase Edge Function `exercise-recommend`.
+3. Redeploy backend/frontend y validar E2E que Telegram + chat CRM devuelven informe con imágenes usando el catálogo PROET nutrido.
 
 ## Estado actual (2026-03-04, Sesion 49) - W2/W3 activos con bloqueos de produccion detectados
 

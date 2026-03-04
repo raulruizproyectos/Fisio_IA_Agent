@@ -1,4 +1,4 @@
-﻿# Automatizacion con n8n - Fisio IA Agent
+# Automatizacion con n8n - Fisio IA Agent
 
 ## Objetivo operativo
 n8n es el orquestador principal para:
@@ -10,11 +10,8 @@ n8n es el orquestador principal para:
 ## Workflows versionados actualmente
 - Produccion remota activa (`n8n/Fisio_IA_Agent/production/`)
   - `nucleo-agente.json`
-  - `orquestador-intake-video.json`
   - `puente-error-backend.json`
-  - `subflujo-crear-render-video.json`
   - `subflujo-pendientes.json`
-  - `subflujo-revision-video.json`
 - Canonicos vNext (`n8n/Fisio_IA_Agent/vnext/`)
   - `fisio-agent-core.json`
   - `sw-fisio-pending-intakes.json`
@@ -27,9 +24,9 @@ n8n es el orquestador principal para:
 - Instancia auditada de extremo a extremo.
 - Estado consolidado:
   - workflows totales: `54`
-  - workflows activos: `6`
-  - activos dentro de `Fisio_IA_Agent / ...`: `6`
-  - vNext creados en remoto (inactivos): `W2 Exercise Agent`, `W3 CRM Trigger`
+  - workflows activos: `5`
+  - activos dentro de `Fisio_IA_Agent / ...`: `5`
+  - workflows de video en nombre: `0`
 - Backups de seguridad pre-limpieza:
   - `docs/data/n8n/backup_before_deactivate_20260304/` (local, no versionado)
 - Artefactos de auditoria:
@@ -66,7 +63,7 @@ Endpoints principales consumidos por workflows:
 - signed URLs generadas JIT desde n8n con service role
 
 ## Nota de alcance
-- El set `production/` refleja exactamente el estado activo actual en n8n (incluye pipeline video).
+- El set `production/` del repo queda sin flujos de video.
 - El set `vnext/` contiene la version canónica objetivo (W0/W1/W2/W3) para migracion progresiva.
 - Limitacion actual de API n8n:
   - `PUT /api/v1/workflows/{id}/tags` sigue devolviendo `500`, por lo que el etiquetado en carpeta/tag `Fisio_IA_Agent` puede requerir accion manual en UI.

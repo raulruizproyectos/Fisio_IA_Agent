@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { supabase } from '../index.js';
 
 const router = Router();
@@ -36,6 +36,17 @@ const APPOINTMENT_SELECT = `
 const APPOINTMENT_ALLOWED_STATUSES = ['pendiente', 'confirmada', 'cancelada', 'completada', 'no_show', 'reprogramada'];
 const APPOINTMENT_ACTIVE_STATUSES = ['pendiente', 'confirmada', 'reprogramada'];
 const APPOINTMENT_ALLOWED_CHANNELS = ['telegram', 'crm_web', 'manual', 'n8n'];
+const VIDEO_WORKFLOWS_ENABLED = process.env.ENABLE_VIDEO_WORKFLOWS === 'true';
+
+function rejectVideoFeatureIfDisabled(res) {
+  if (VIDEO_WORKFLOWS_ENABLED) return false;
+  res.status(410).json({
+    error: 'La funcionalidad de video está desactivada en este entorno.',
+    feature: 'video_workflows',
+    status: 'disabled',
+  });
+  return true;
+}
 
 function parseIsoTimestamp(rawValue) {
   if (!rawValue) return null;
@@ -763,6 +774,7 @@ router.post('/program-templates/clone', async (req, res, next) => {
 
 router.get('/video-jobs', async (req, res, next) => {
   try {
+    if (rejectVideoFeatureIfDisabled(res)) return;
     const professionalId = pickValue(req.query, 'profesional_id', 'professional_id');
     if (!professionalId) {
       return res.status(400).json({ error: 'profesional_id es obligatorio (o professional_id)' });
@@ -848,25 +860,16 @@ router.get('/patients/:patientId/history', async (req, res, next) => {
   try {
     const { patientId } = req.params;
 
-    const [videosResp, notesResp] = await Promise.all([
-      supabase
-        .from('eventos_visualizacion_video')
-        .select('id, tipo_evento, segundos_vistos, secuencia, evento_en, trabajo_video_id')
-        .eq('paciente_id', patientId)
-        .order('evento_en', { ascending: true }),
-      supabase
-        .from('notas_seguimiento_paciente')
-        .select('id, texto_nota, fuente, ingesta_vinculada_id, creado_en, profesional_id')
-        .eq('paciente_id', patientId)
-        .order('creado_en', { ascending: true }),
-    ]);
+    const notesResp = await supabase
+      .from('notas_seguimiento_paciente')
+      .select('id, texto_nota, fuente, ingesta_vinculada_id, creado_en, profesional_id')
+      .eq('paciente_id', patientId)
+      .order('creado_en', { ascending: true });
 
-    if (videosResp.error && !isMissingTableError(videosResp.error, 'eventos_visualizacion_video')) throw videosResp.error;
     if (notesResp.error && !isMissingTableError(notesResp.error, 'notas_seguimiento_paciente')) throw notesResp.error;
 
     res.json({
       data: {
-        videos_vistos: videosResp.data || [],
         notas_seguimiento: notesResp.data || [],
       },
     });
@@ -918,6 +921,7 @@ router.post('/notes', async (req, res, next) => {
 
 router.post('/video-jobs', async (req, res, next) => {
   try {
+    if (rejectVideoFeatureIfDisabled(res)) return;
     const patientId = pickValue(req.body, 'paciente_id', 'patient_id');
     const professionalId = pickValue(req.body, 'profesional_id', 'professional_id');
     const exerciseId = pickValue(req.body, 'ejercicio_id', 'exercise_id');
@@ -961,6 +965,7 @@ router.post('/video-jobs', async (req, res, next) => {
 
 router.post('/video-jobs/:jobId/review', async (req, res, next) => {
   try {
+    if (rejectVideoFeatureIfDisabled(res)) return;
     const { jobId } = req.params;
     const aprobado = pickValue(req.body, 'aprobado', 'approved');
     const reviewNotes = pickValue(req.body, 'notas_revision', 'review_notes') || '';
@@ -1037,6 +1042,7 @@ router.post('/video-jobs/:jobId/review', async (req, res, next) => {
 
 router.post('/video-jobs/:jobId/render', async (req, res, next) => {
   try {
+    if (rejectVideoFeatureIfDisabled(res)) return;
     const { jobId } = req.params;
     const outputUrl = pickValue(req.body, 'url_salida', 'output_url');
     const provider = pickValue(req.body, 'proveedor', 'provider') || 'simulado';
@@ -1093,6 +1099,7 @@ router.post('/video-jobs/:jobId/render', async (req, res, next) => {
 
 router.post('/video-jobs/:jobId/send', async (req, res, next) => {
   try {
+    if (rejectVideoFeatureIfDisabled(res)) return;
     const { jobId } = req.params;
 
     const { data, error } = await supabase

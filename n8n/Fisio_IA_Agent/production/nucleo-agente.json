@@ -1,4 +1,4 @@
-﻿{
+{
     "name":  "Fisio_IA_Agent / Nucleo Agente",
     "nodes":  [
                   {
@@ -22,7 +22,7 @@
                   },
                   {
                       "parameters":  {
-                                         "jsCode":  "const input = ($json.body \u0026\u0026 typeof $json.body === \u0027object\u0027) ? $json.body : $json;\nconst text = String(input.text || \u0027\u0027).trim();\nconst role = input.role || \u0027professional\u0027;\n\nlet reply = \u0027Mensaje recibido. Queda pendiente de revision clinica.\u0027;\nlet intentHint = \u0027register_intake\u0027;\n\nif (/dolor|s[ií]ntoma|sintoma|molestia|lesi[oó]n|lesion/i.test(text)) {\n  reply = \u0027Sintomas registrados. Caso en cola para revision del fisioterapeuta.\u0027;\n} else if (/video|ejercicio|plan/i.test(text)) {\n  reply = \u0027Solicitud de video recibida. Indica paciente, fase y parametros para generar borrador.\u0027;\n  intentHint = \u0027create_video_draft\u0027;\n} else if (text.length \u003e 0) {\n  reply = \u0027Contexto recibido. Puedo preparar el payload para revision y generacion de video.\u0027;\n}\n\nreturn [{\n  json: {\n    ok: true,\n    role,\n    reply_text: reply,\n    intent_hint: intentHint,\n    received: {\n      channel: input.channel || \u0027web\u0027,\n      paciente_id: input.paciente_id || input.patient_id || null,\n      profesional_id: input.profesional_id || input.professional_id || null,\n      text\n    }\n  }\n}];"
+                                         "jsCode":  "const input = ($json.body \u0026\u0026 typeof $json.body === \u0027object\u0027) ? $json.body : $json;\nconst text = String(input.text || \u0027\u0027).trim();\nconst role = input.role || \u0027professional\u0027;\n\nlet reply = \u0027Mensaje recibido. Queda pendiente de revision clinica.\u0027;\nlet intentHint = \u0027register_intake\u0027;\n\nif (/dolor|s[ií]ntoma|sintoma|molestia|lesi[oó]n|lesion/i.test(text)) {\n  reply = \u0027Sintomas registrados. Caso en cola para revision del fisioterapeuta.\u0027;\n} else if (/ejercicio|plan|movilidad|fortalecimiento|rehabilitaci[oó]n/i.test(text)) {\n  reply = \u0027Solicitud de informe de ejercicios recibida. Preparando pautas con imagenes y procedimiento.\u0027;\n  intentHint = \u0027generate_exercise_report\u0027;\n} else if (text.length \u003e 0) {\n  reply = \u0027Contexto recibido. Puedo preparar un informe de ejercicios basado en sintomas.\u0027;\n}\n\nreturn [{\n  json: {\n    ok: true,\n    role,\n    reply_text: reply,\n    intent_hint: intentHint,\n    received: {\n      channel: input.channel || \u0027web\u0027,\n      paciente_id: input.paciente_id || input.patient_id || null,\n      profesional_id: input.profesional_id || input.professional_id || null,\n      text\n    }\n  }\n}];"
                                      },
                       "id":  "BuildAgentReply",
                       "name":  "Build Agent Reply",

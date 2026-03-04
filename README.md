@@ -1,4 +1,4 @@
-﻿# Fisio_IA_Agent
+# Fisio_IA_Agent
 
 CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomendaciones de ejercicios desde Telegram y CRM Web, orquestado con n8n y Supabase.
 
@@ -9,8 +9,7 @@ CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomen
 - Source of truth unico: Supabase del proyecto Fisio_IA_Agent.
 
 ## En pausa
-- Pipeline de video fuera del alcance actual.
-- Se mantiene trazabilidad historica en CHANGELOG, pero el repo se limpia de workflows de video legacy.
+- Generación de video (desactivada en backend y eliminada del frontend/n8n activo).
 
 ## Arquitectura actual
 - Frontend CRM: Astro
@@ -50,7 +49,7 @@ CRM + Agents para centros de fisioterapia: gestion de pacientes, citas y recomen
 - `database/schema_vnext.sql` contiene una propuesta aditiva para CRM + Agents.
 
 ## Workflows n8n versionados en repo
-- Produccion actual: `n8n/Fisio_IA_Agent/production/` (6 workflows activos exportados de n8n).
+- Produccion actual: `n8n/Fisio_IA_Agent/production/` (sin workflows de video).
 - Canonicos vNext: `n8n/Fisio_IA_Agent/vnext/`
   - `telegram-chat.json` (W0 trigger Telegram nativo)
   - `fisio-agent-core.json` (W0 router core)
@@ -76,8 +75,21 @@ node scripts/proet-export.mjs --email=<tu_email> --locale=val
   - perfil origen
   - templates mas usados
   - programas del profesional
-  - ejercicios unicos (descripcion, imagen y video)
+  - ejercicios unicos (descripcion e imagen)
 - No guarda credenciales en el repo.
+
+## Sincronizar snapshot PROET a Supabase
+Para poblar `crm_ejercicios_catalogo` (y `dolencias`) desde el snapshot:
+
+```bash
+node scripts/proet-sync-supabase.mjs
+```
+
+- Usa por defecto:
+  - snapshot mas reciente en `docs/data/proet_snapshot_YYYYMMDD.json`
+  - credenciales de `backend/.env` (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
+- Modo simulacion:
+  - `node scripts/proet-sync-supabase.mjs --dry-run=true`
 
 ## Inicio rapido
 ```bash
@@ -99,3 +111,4 @@ npm run dev
 - Arquitectura objetivo: `ARCHITECTURE.md`
 - Analisis PROET (frontend + backend): `docs/proet/platform_analysis_20260304.md`
 - Norma n8n obligatoria (carpeta/tag): `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
+- Norma obligatoria de robustez y control de errores: `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`

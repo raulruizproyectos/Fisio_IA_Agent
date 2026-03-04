@@ -1,4 +1,41 @@
-﻿# Fisio_IA_Agent - Changelog / Context Log
+# Fisio_IA_Agent - Changelog / Context Log
+
+## Sesion 51 - 2026-03-04
+
+### Objetivo
+- Corregir desalineacion entre codigo local y version publicada (frontend/backend legacy con rastros de video).
+
+### Cambios implementados
+- ✅ Normalizacion a `UTF-8 sin BOM` en archivos criticos para evitar errores de parseo.
+- ✅ Build local del frontend validado con `scripts/frontend-local-build.ps1` (`astro build` OK).
+- ✅ Verificacion del artefacto local: sin referencias a `Videos` ni `generar video`.
+- ✅ Verificacion de produccion: sigue sirviendo version legacy en frontend y backend.
+
+### Estado
+- ⚠️ Pendiente de publicacion efectiva en EasyPanel para alinear produccion con el codigo actual.
+- ✅ Regla operativa reforzada: actualizar `CHANGELOG.md` y `configuracion_pendiente.md` en cada bloque que afecte al sistema.
+
+## Sesion 50 - 2026-03-04
+
+### Objetivo
+- Eliminar parte de video y consolidar flujo de informe de ejercicios con imágenes en CRM/Telegram.
+
+### Cambios implementados
+- ✅ Frontend sin páginas ni copy de video.
+- ✅ Backend orientado a `informe_clinico` de ejercicios (procedimiento, pauta e imagen).
+- ✅ Workflows de video eliminados de n8n repo y de n8n remoto.
+- ✅ Snapshot PROET sincronizado en Supabase:
+  - `72` dolencias insertadas.
+  - `179` ejercicios `PROET-*` upsertados en `crm_ejercicios_catalogo`.
+  - nuevo script `scripts/proet-sync-supabase.mjs`.
+- ✅ Robustez reforzada:
+  - `exercises.js` con fallback heuristico cuando falla motor IA/Edge (incluye caso `OPENAI_API_KEY not configured`).
+  - `agent.js` fuerza fallback si n8n devuelve copy legacy de video.
+  - norma formal agregada: `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`.
+
+### Verificación técnica
+- ✅ Sintaxis backend y JSON n8n correctos.
+- ⚠️ Build frontend pendiente en este entorno por timeout en `npm install`.
 
 ## Sesion 49 - 2026-03-04
 

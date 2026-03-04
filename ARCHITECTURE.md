@@ -10,7 +10,7 @@ El sistema evoluciona a una plataforma de operacion para centros de fisioterapia
 Estado de alcance:
 
 - En foco: CRM + Telegram + n8n + Supabase + Google Calendar + OpenAI.
-- En pausa: pipeline de video (se conserva historial, no se elimina, pero queda fuera del alcance actual).
+- Fuera de alcance: generación de video (eliminada de frontend y flujos n8n activos).
 
 Principios de producto reforzados (benchmark funcional del mercado):
 
@@ -368,4 +368,4 @@ Telegram (intents base):
 
 Condicion de continuidad:
 
-- Mantener pipeline de video en estado PAUSADO, sin borrar historial ni artefactos previos.
+- Mantener el flujo centrado en informe clínico de ejercicios (síntomas -> selección -> imágenes/pautas -> entrega CRM/Telegram).

@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import crypto from 'node:crypto';
 import { supabase } from '../index.js';
 
@@ -46,6 +46,41 @@ function extractIsoSlots(messageText = '') {
     slotStart: matches[0] || null,
     slotEnd: matches[1] || null,
   };
+}
+
+function truncateTelegramMessage(text = '', maxLen = 3900) {
+  const clean = String(text || '').trim();
+  if (!clean) return '';
+  if (clean.length <= maxLen) return clean;
+  return `${clean.slice(0, maxLen - 3)}...`;
+}
+
+function buildTelegramExerciseFallback(payload = {}) {
+  const exercises = Array.isArray(payload.exercises) ? payload.exercises : [];
+  const lines = [];
+
+  if (payload.red_flags?.present) {
+    lines.push('⚠️ Se detectaron alertas. Valora consulta médica antes de continuar.');
+    lines.push('');
+  }
+
+  lines.push(`✅ Informe de ejercicios (${exercises.length})`);
+  lines.push('');
+
+  exercises.forEach((ex, idx) => {
+    const order = ex.orden || idx + 1;
+    lines.push(`${order}. ${ex.nombre || 'Ejercicio'} (${ex.zona_corporal || 'general'})`);
+    if (ex.procedimiento) lines.push(`   Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`);
+    if (ex.imagen_url) lines.push(`   Imagen: ${ex.imagen_url}`);
+    if (ex.why) lines.push(`   Motivo: ${ex.why}`);
+  });
+
+  if (payload.message_to_patient) {
+    lines.push('');
+    lines.push(payload.message_to_patient);
+  }
+
+  return lines.join('\n').trim();
 }
 
 function parseIncomingPayload(body = {}) {
@@ -185,30 +220,18 @@ async function autoLinkFirstContact(payload) {
 }
 
 async function getPatientHistorySnapshot(patientId) {
-  const [videosResp, notesResp] = await Promise.all([
-    supabase
-      .from('eventos_visualizacion_video')
-      .select('id, tipo_evento, segundos_vistos, secuencia, evento_en, trabajo_video_id')
-      .eq('paciente_id', patientId)
-      .order('evento_en', { ascending: true })
-      .limit(20),
-    supabase
-      .from('notas_seguimiento_paciente')
-      .select('id, texto_nota, fuente, ingesta_vinculada_id, creado_en')
-      .eq('paciente_id', patientId)
-      .order('creado_en', { ascending: true })
-      .limit(20),
-  ]);
+  const notesResp = await supabase
+    .from('notas_seguimiento_paciente')
+    .select('id, texto_nota, fuente, ingesta_vinculada_id, creado_en')
+    .eq('paciente_id', patientId)
+    .order('creado_en', { ascending: true })
+    .limit(20);
 
-  if (videosResp.error && !String(videosResp.error.message || '').includes('eventos_visualizacion_video')) {
-    throw videosResp.error;
-  }
   if (notesResp.error && !String(notesResp.error.message || '').includes('notas_seguimiento_paciente')) {
     throw notesResp.error;
   }
 
   return {
-    videos_vistos: videosResp.data || [],
     notas_seguimiento: notesResp.data || [],
   };
 }
@@ -513,67 +536,28 @@ router.post('/incoming', async (req, res, next) => {
       // W2: If intent is exercise with decent confidence, auto-recommend
       if (intent.route === 'exercise' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
         try {
-          const exerciseUrl = `${process.env.SUPABASE_URL}/functions/v1/exercise-recommend`;
-          const { data: catalog } = await supabase
-            .from('crm_ejercicios_catalogo')
-            .select('id, nombre, descripcion, zona_corporal, nivel, contraindicaciones, metadata')
-            .eq('activo', true);
-
-          const recoResp = await fetch(exerciseUrl, {
+          const internalUrl = `${req.protocol}://${req.get('host')}/api/exercises/recommend`;
+          const recoResp = await fetch(internalUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              request_id: crypto.randomUUID(),
               patient_id: link.paciente_id,
               symptoms: text,
-              catalog: (catalog || []).map(e => ({
-                id: e.id, nombre: e.nombre, descripcion: e.descripcion,
-                zona_corporal: e.zona_corporal, nivel: e.nivel,
-                contraindicaciones: e.contraindicaciones,
-                fase: e.metadata?.fase_original || null,
-                series: e.metadata?.series_defecto || 3,
-                repeticiones: e.metadata?.repeticiones_defecto || 10,
-              })),
+              channel: 'telegram',
+              fisioterapeuta_id: professionalId,
             }),
-            signal: AbortSignal.timeout(25000),
+            signal: AbortSignal.timeout(35000),
           });
 
           if (recoResp.ok) {
-            const recoData = await recoResp.json();
-            const reco = recoData.recommendation || recoData;
-            const patientMsg = reco.message_to_patient_es;
-
-            if (patientMsg) {
-              // Store recommendation in CRM
-              const { data: recoRow } = await supabase.from('crm_recomendaciones').insert({
-                paciente_id: link.paciente_id,
-                fisioterapeuta_id: null,
-                origen: 'telegram',
-                symptom_summary: reco.symptom_summary || text,
-                red_flags_present: reco.red_flags_present || false,
-                red_flags_items: reco.red_flags_items || [],
-                selection_rationale: reco.selection_rationale || '',
-                message_to_patient_es: patientMsg,
-                message_to_therapist_es: reco.message_to_therapist_es || '',
-                escalation_recommend_medical_attention: reco.escalation_recommend_medical_attention || false,
-                escalation_reason: reco.escalation_reason || '',
-                estado: reco.escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
-              }).select('id').single();
-
-              if (recoRow && reco.selected_exercises?.length) {
-                await supabase.from('crm_recomendacion_items').insert(
-                  reco.selected_exercises.map((ex, idx) => ({
-                    recomendacion_id: recoRow.id,
-                    ejercicio_id: ex.exercise_id || ex.id,
-                    confidence: ex.confidence || 0.8,
-                    why: ex.why || '',
-                    cautions: ex.cautions || [],
-                    orden: idx + 1,
-                  }))
-                );
-              }
-
-              return await reply(patientMsg);
+            const recoPayload = await recoResp.json();
+            if (recoPayload?.ok) {
+              const report =
+                recoPayload.informe_clinico ||
+                buildTelegramExerciseFallback(recoPayload) ||
+                recoPayload.message_to_patient ||
+                'He generado tu informe de ejercicios y lo he enviado al fisioterapeuta.';
+              return await reply(truncateTelegramMessage(report));
             }
           }
         } catch (exErr) {

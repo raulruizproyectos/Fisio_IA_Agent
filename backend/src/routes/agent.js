@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 
 const router = Router();
 
@@ -22,11 +22,11 @@ function buildFallbackReply(payload) {
 
   if (/dolor|s[ií]ntoma|sintoma|molestia|lesi[oó]n|lesion/i.test(text)) {
     reply = 'Sintomas registrados. Caso en cola para revision del fisioterapeuta.';
-  } else if (/video|ejercicio|plan/i.test(text)) {
-    reply = 'Solicitud de video recibida. Indica paciente, fase y parametros para generar borrador.';
-    intentHint = 'create_video_draft';
+  } else if (/ejercicio|plan|movilidad|fortalecimiento|rehabilitaci[oó]n/i.test(text)) {
+    reply = 'Solicitud de informe de ejercicios recibida. Preparando pautas con imagenes y procedimiento.';
+    intentHint = 'generate_exercise_report';
   } else if (text.length > 0) {
-    reply = 'Contexto recibido. Puedo preparar el payload para revision y generacion de video.';
+    reply = 'Contexto recibido. Puedo preparar un informe de ejercicios basado en sintomas.';
   }
 
   return {
@@ -57,6 +57,12 @@ function isEmptyAgentResponse(responseData) {
   }
 
   return false;
+}
+
+function hasDeprecatedVideoCopy(responseData) {
+  if (!responseData || typeof responseData !== 'object') return false;
+  const text = String(responseData.reply_text || responseData.message || responseData.raw || '').toLowerCase();
+  return /video|generacion de video|crear video/.test(text);
 }
 
 router.post('/message', async (req, res, next) => {
@@ -138,12 +144,15 @@ router.post('/message', async (req, res, next) => {
     }
 
     const fallbackUsed = isEmptyAgentResponse(responseData);
-    const finalData = fallbackUsed ? buildFallbackReply(payload) : responseData;
+    const shouldOverrideVideoCopy = hasDeprecatedVideoCopy(responseData);
+    const finalData = (fallbackUsed || shouldOverrideVideoCopy)
+      ? buildFallbackReply(payload)
+      : responseData;
 
     res.json({
       data: finalData,
       source: 'n8n_agent',
-      fallback_used: fallbackUsed,
+      fallback_used: fallbackUsed || shouldOverrideVideoCopy,
       n8n_unreachable: false,
     });
   } catch (err) {

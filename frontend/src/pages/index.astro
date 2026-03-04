@@ -1,4 +1,4 @@
-﻿---
+---
 import Layout from '../layouts/Layout.astro';
 ---
 
@@ -32,10 +32,6 @@ import Layout from '../layouts/Layout.astro';
         <a href="#" class="nav-item" data-section="citas">
           <span class="material-symbols-rounded">calendar_month</span>
           <span class="nav-label">Citas</span>
-        </a>
-        <a href="#" class="nav-item" data-section="videos">
-          <span class="material-symbols-rounded">smart_display</span>
-          <span class="nav-label">Videos</span>
         </a>
         <a href="#" class="nav-item" data-section="historial">
           <span class="material-symbols-rounded">history</span>
@@ -84,7 +80,7 @@ import Layout from '../layouts/Layout.astro';
               <section class="metrics-row">
                 <div class="metric-card"><div class="metric-icon" style="background: var(--accent-soft); color: var(--accent);"><span class="material-symbols-rounded">assignment</span></div><div class="metric-data"><span class="metric-value" id="metricIntakes">—</span><span class="metric-label">Intakes pendientes</span></div></div>
                 <div class="metric-card"><div class="metric-icon" style="background: rgba(59,130,246,0.12); color: var(--info);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">—</span><span class="metric-label">Pacientes activos</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(245,158,11,0.12); color: var(--warning);"><span class="material-symbols-rounded">smart_display</span></div><div class="metric-data"><span class="metric-value" id="metricVideos">—</span><span class="metric-label">Videos en revisión</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: rgba(245,158,11,0.12); color: var(--warning);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Informes ejercicio</span></div></div>
                 <div class="metric-card"><div class="metric-icon" style="background: rgba(16,185,129,0.12); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">—</span><span class="metric-label">Sesiones hoy</span></div></div>
               </section>
               <section class="card table-card">
@@ -95,7 +91,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="col-aside">
               <section class="card agent-panel">
                 <header class="card-header agent-header"><div class="agent-title"><span class="material-symbols-rounded agent-icon">psychology</span><div><h2>Agente Clínico IA</h2><div class="agent-status"><span class="status-dot connected" id="agentDot"></span><span class="status-text" id="agentStatusText">Conectado</span></div></div></div></header>
-                <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clínico. Describe los síntomas del paciente o indica una pauta para generar video de ejercicios.</p></div></article></div>
+                <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clínico. Describe síntomas y generaré un informe de ejercicios con imágenes y procedimiento.</p></div></article></div>
                 <form id="agentForm" class="chat-form"><div class="input-row"><textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 dias, empeora al elevar brazo, sin traumatismo..."></textarea><button type="button" class="exercise-btn" id="exerciseRecoBtn" aria-label="Recomendar ejercicios" title="Recomendar ejercicios"><span class="material-symbols-rounded">fitness_center</span></button><button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button></div><div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter = Agente IA · <span class="material-symbols-rounded" style="font-size: 14px;">fitness_center</span> = Ejercicios AI</div></form>
               </section>
             </div>
@@ -179,17 +175,6 @@ import Layout from '../layouts/Layout.astro';
           </section>
         </div>
 
-        <!-- === PAGE: VIDEOS === -->
-        <div class="page-section" data-page="videos">
-          <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">smart_display</span> Videos de Ejercicios</h1>
-          </div>
-          <section class="card table-card">
-            <header class="card-header"><h2>Trabajos de video</h2><button class="btn-ghost" id="refreshVideos"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
-            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Ejercicio</th><th>Estado</th><th>URL</th><th>Creado</th><th>Acciones</th></tr></thead><tbody id="videosBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando videos...</p></div></td></tr></tbody></table></div>
-          </section>
-        </div>
-
         <!-- === PAGE: HISTORIAL === -->
         <div class="page-section" data-page="historial">
           <div class="page-header-row">
@@ -252,7 +237,6 @@ import Layout from '../layouts/Layout.astro';
   const templateTargetPatient = document.getElementById('templateTargetPatient') as HTMLSelectElement | null;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
-  const videosBody = document.getElementById('videosBody') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
 
   // === HELPERS ===
@@ -382,6 +366,56 @@ import Layout from '../layouts/Layout.astro';
     return pts;
   };
 
+  const buildExerciseReportMessage = (payload: any) => {
+    const lines: string[] = [];
+    const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
+
+    if (payload?.red_flags?.present) {
+      lines.push('⚠️ ALERTAS DETECTADAS: Se recomienda valoración médica antes de continuar.');
+      lines.push('');
+    }
+
+    if (payload?.message_to_therapist) {
+      lines.push(`📋 Nota clínica: ${payload.message_to_therapist}`);
+      lines.push('');
+    }
+
+    lines.push(`✅ Informe de ejercicios (${exercises.length})`);
+    lines.push('');
+
+    exercises.forEach((ex: any, idx: number) => {
+      const order = ex.orden || idx + 1;
+      lines.push(`${order}. ${ex.nombre || 'Ejercicio'} (${ex.zona_corporal || 'general'})`);
+
+      const pauta = [
+        ex.series ? `Series: ${ex.series}` : null,
+        ex.repeticiones ? `Repeticiones: ${ex.repeticiones}` : null,
+        ex.duracion_segundos ? `Duración: ${ex.duracion_segundos}s` : null,
+      ].filter(Boolean);
+      if (pauta.length) lines.push(`   Pauta: ${pauta.join(' · ')}`);
+
+      if (ex.procedimiento) {
+        lines.push(`   Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`);
+      } else if (ex.descripcion) {
+        lines.push(`   Procedimiento: ${ex.descripcion}`);
+      }
+
+      if (ex.why) lines.push(`   Motivo: ${ex.why}`);
+      if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Cautelas: ${ex.cautions.join('; ')}`);
+      if (ex.imagen_url) lines.push(`   Imagen: ${ex.imagen_url}`);
+      lines.push('');
+    });
+
+    if (payload?.message_to_patient) {
+      lines.push('💬 Mensaje para paciente:');
+      lines.push(payload.message_to_patient);
+      lines.push('');
+    }
+
+    lines.push(`🔗 ID recomendación: ${payload?.recommendation_id || '—'}`);
+    return lines.join('\n').trim();
+  };
+
   // W3: Exercise recommendation via CRM
   const handleExerciseRecommend = async (text: string) => {
     addMessage(`🏋️ Solicitar recomendación para: ${text}`, 'user');
@@ -403,28 +437,14 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
 
-      // Format exercise recommendation as rich message
-      let msg = '';
-      if (payload.red_flags?.present) {
-        msg += '⚠️ ALERTAS DETECTADAS: Se recomienda atención médica.\n\n';
-      }
-      if (payload.message_to_therapist) {
-        msg += `📋 Nota clínica: ${payload.message_to_therapist}\n\n`;
-      }
-      if (payload.exercises?.length) {
-        msg += `✅ ${payload.exercises.length} ejercicios recomendados:\n`;
-        payload.exercises.forEach((ex: any) => {
-          msg += `\n${ex.orden}. ${ex.nombre} (${ex.zona_corporal || '—'})`;
-          msg += `\n   Confianza: ${Math.round((ex.confidence || 0) * 100)}%`;
-          if (ex.why) msg += `\n   → ${ex.why}`;
-        });
-      }
-      if (payload.message_to_patient) {
-        msg += `\n\n💬 Mensaje para paciente:\n${payload.message_to_patient}`;
-      }
-      msg += `\n\n🔗 ID recomendación: ${payload.recommendation_id || '—'}`;
+      const msg = payload.informe_clinico || buildExerciseReportMessage(payload);
 
       addMessage(msg, 'agent');
+      const metricEl = document.getElementById('metricInformes');
+      if (metricEl) {
+        const current = parseInt(metricEl.textContent || '0', 10);
+        metricEl.textContent = Number.isFinite(current) ? String(current + 1) : '1';
+      }
       setAgentStatus(true);
     } catch {
       addMessage('Error de conexión con el agente de ejercicios.', 'agent');
@@ -662,41 +682,6 @@ import Layout from '../layouts/Layout.astro';
   });
   loadCitas();
 
-  // === LOAD VIDEOS ===
-  const loadVideos = async () => {
-    if (!videosBody) return;
-    try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/video-jobs?profesional_id=${PROF_ID}&limit=30`);
-      const jobs = payload.data || [];
-      const metricEl = document.getElementById('metricVideos');
-      if (metricEl) {
-        const inReview = jobs.filter((job: any) => ['pendiente_revision', 'rechazado', 'renderizando'].includes(job.estado)).length;
-        metricEl.textContent = String(inReview);
-      }
-      if (!jobs.length) {
-        videosBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">smart_display</span><p>No hay trabajos de vídeo todavía.</p></div></td></tr>`;
-        return;
-      }
-      videosBody.innerHTML = jobs.map((job: any) => {
-        const patientName = resolvePatientName(job);
-        const exerciseName = resolveExerciseName(job);
-        const urlCell = job.url_salida
-          ? `<a href="${escapeAttr(job.url_salida)}" target="_blank" rel="noopener noreferrer" class="config-link">Ver enlace ↗</a>`
-          : '—';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(exerciseName)}</td><td><span class="status-chip ${job.estado||'pendiente_revision'}">${job.estado||'pendiente_revision'}</span></td><td>${urlCell}</td><td>${fmtDate(job.creado_en||'')}</td><td><button class="btn-sm btn-outline" data-action="video-history" data-patient-id="${job.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
-      }).join('');
-    } catch { videosBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar videos</p></div></td></tr>`; }
-  };
-  pageLoaders['videos'] = loadVideos;
-  document.getElementById('refreshVideos')?.addEventListener('click', loadVideos);
-  loadVideos();
-  videosBody?.addEventListener('click', (event: Event) => {
-    const target = event.target as HTMLElement | null;
-    const btn = target?.closest('button[data-action="video-history"]') as HTMLButtonElement | null;
-    if (!btn) return;
-    openPatientHistory(btn.getAttribute('data-patient-id'), btn.getAttribute('data-patient-name') || '');
-  });
-
   // === LOAD HISTORIAL ===
   const loadHistorial = async () => {
     if (!historialContent) return;
@@ -713,15 +698,11 @@ import Layout from '../layouts/Layout.astro';
 
       const patient = patientResp?.data || {};
       const notes = historyResp?.data?.notas_seguimiento || [];
-      const views = historyResp?.data?.videos_vistos || [];
       const displayName = patient?.nombre_completo || selectedPatientName || `Paciente #${selectedPatientId}`;
 
       const notesHtml = notes.length
         ? `<ul class="detail-list">${notes.map((note: any) => `<li><strong>${fmtDate(note.creado_en||'')}</strong><br>${escapeHtml(note.texto_nota || 'Sin texto')}</li>`).join('')}</ul>`
         : `<p class="detail-empty">Sin notas de seguimiento registradas.</p>`;
-      const viewsHtml = views.length
-        ? `<ul class="detail-list">${views.map((view: any) => `<li><strong>${escapeHtml(view.tipo_evento || 'evento')}</strong> · ${fmtDate(view.evento_en || '')} · ${view.segundos_vistos || 0}s</li>`).join('')}</ul>`
-        : `<p class="detail-empty">Sin eventos de visualización registrados.</p>`;
 
       historialContent.innerHTML = `
         <div class="detail-block">
@@ -731,10 +712,6 @@ import Layout from '../layouts/Layout.astro';
         <div class="detail-block">
           <h3>Notas de seguimiento (${notes.length})</h3>
           ${notesHtml}
-        </div>
-        <div class="detail-block">
-          <h3>Eventos de video (${views.length})</h3>
-          ${viewsHtml}
         </div>
       `;
     } catch {
@@ -1241,6 +1218,7 @@ import Layout from '../layouts/Layout.astro';
   }
   .msg.agent .msg-body { background: var(--bg-elevated); color: var(--text-primary); }
   .msg.user .msg-body { background: var(--accent); color: #fff; }
+  .msg-body p { margin: 0; white-space: pre-line; }
   .msg-sender {
     display: block;
     font-size: 0.72rem;
