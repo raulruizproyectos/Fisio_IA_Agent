@@ -5,6 +5,7 @@
                       "parameters":  {
                                          "path":  "fisio/w2/exercise-recommend",
                                          "responseMode":  "responseNode",
+                                         "httpMethod":  "POST",
                                          "options":  {
 
                                                      }
@@ -62,11 +63,11 @@
                                                                                },
                                                                                {
                                                                                    "id":  "has-candidates",
-                                                                                   "leftValue":  "={{ $json.candidate_count }}",
-                                                                                   "rightValue":  0,
+                                                                                   "leftValue":  "={{ ($json.candidate_exercises && $json.candidate_exercises.length > 0) ? 'ok' : '' }}",
+                                                                                   "rightValue":  "",
                                                                                    "operator":  {
-                                                                                                    "type":  "number",
-                                                                                                    "operation":  "larger"
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEmpty"
                                                                                                 }
                                                                                }
                                                                            ],
@@ -88,7 +89,7 @@
                   {
                       "parameters":  {
                                          "method":  "POST",
-                                         "url":  "={{ ($env.SUPABASE_URL || 'https://uewhbaejcouenoufuwlq.supabase.co') + '/functions/v1/exercise-recommend' }}",
+                                         "url":  "https://uewhbaejcouenoufuwlq.supabase.co/functions/v1/exercise-recommend",
                                          "sendHeaders":  true,
                                          "headerParameters":  {
                                                                   "parameters":  [
@@ -104,7 +105,7 @@
                                                               },
                                          "sendBody":  true,
                                          "specifyBody":  "json",
-                                         "jsonBody":  "={\n  \"request_id\": $json.request_id,\n  \"patient_id\": $json.patient_id,\n  \"symptoms\": $json.symptoms_text,\n  \"red_flag_context\": $json.red_flag_context,\n  \"catalog\": $json.candidate_exercises\n}",
+                                         "jsonBody":  "{\n  \"request_id\": \"={{ $json.request_id }}\",\n  \"patient_id\": \"={{ $json.patient_id }}\",\n  \"symptoms\": \"={{ $json.symptoms_text }}\",\n  \"red_flag_context\": \"={{ $json.red_flag_context }}\",\n  \"catalog\": \"={{ $json.candidate_exercises }}\"\n}",
                                          "options":  {
                                                          "ignoreResponseCode":  true,
                                                          "timeout":  30000

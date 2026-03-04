@@ -65,7 +65,7 @@
                   {
                       "parameters":  {
                                          "method":  "POST",
-                                         "url":  "={{ ($env.BACKEND_URL || \u0027https://fisio-backend.b5xbaf.easypanel.host\u0027) + \u0027/api/telegram/incoming\u0027 }}",
+                                         "url":  "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
                                          "sendBody":  true,
                                          "specifyBody":  "json",
                                          "jsonBody":  "={\n  \"request_id\": $json.request_id,\n  \"chat_id\": $json.chat_id,\n  \"username\": $json.username,\n  \"texto_mensaje\": $json.texto_mensaje\n}",

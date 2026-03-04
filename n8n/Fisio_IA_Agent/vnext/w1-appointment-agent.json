@@ -97,7 +97,7 @@
                   {
                       "parameters":  {
                                          "method":  "POST",
-                                         "url":  "={{ ($env.BACKEND_URL || \u0027http://localhost:3001\u0027) + \u0027/api/profesional/appointments\u0027 }}",
+                                         "url":  "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
                                          "sendBody":  true,
                                          "specifyBody":  "json",
                                          "jsonBody":  "={\n  \"patient_id\": $json.patient_id,\n  \"professional_id\": $json.professional_id,\n  \"start_at\": $json.slot_start,\n  \"end_at\": $json.slot_end,\n  \"channel\": $json.channel || \"telegram\",\n  \"reason\": $json.message_text,\n  \"request_id\": $json.request_id\n}",

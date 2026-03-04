@@ -1,5 +1,28 @@
 ﻿# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 49 - 2026-03-04
+
+### Objetivo
+- Dejar W2/W3 operativos en n8n y verificar bloqueos reales de produccion para cerrar despliegue.
+
+### Cambios implementados
+- ✅ W2/W3 recreados en n8n con webhook `POST` y activados.
+- ✅ Corregidos workflows vNext para evitar `$env` en expresiones (instancia bloquea env access en nodos).
+- ✅ Correccion de contratos HTTP JSON en W2/W3 para evitar error de parseo del nodo HTTP Request.
+
+### Verificacion tecnica
+- Frontend produccion sigue en version antigua:
+  - HTML remoto aun contiene `<script lang="ts">` y no incluye seccion `plantillas`.
+- Backend produccion sigue en version antigua:
+  - `Access-Control-Allow-Origin: http://localhost:4321`
+  - `POST /api/exercises/recommend` responde `404`.
+- W2/W3 en n8n:
+  - workflows creados/activos, pero dependen de backend y Edge Function al dia.
+
+### Bloqueos actuales para funcionamiento completo
+1. Falta redeploy de `fisio-frontend` (para modo oscuro y script corregido).
+2. Falta redeploy de `fisio-backend` (para rutas nuevas y CORS actualizado).
+3. Supabase Edge Function `exercise-recommend` devuelve `OPENAI_API_KEY not configured`.
 ## Sesion 48 - 2026-03-04
 
 ### Objetivo
@@ -1887,6 +1910,7 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Ambos workflows quedan endurecidos y validados como JSON.
 - Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
+
 
 
 

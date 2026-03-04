@@ -2,6 +2,27 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-04, Sesion 49) - W2/W3 activos con bloqueos de produccion detectados
+
+### Completado esta sesion
+- ✅ W2/W3 recreados en n8n con `POST` y activos.
+- ✅ Ajustados workflows para evitar `$env` en expresiones (bloqueadas por la instancia n8n).
+- ✅ Corregido body JSON de nodos HTTP en W2/W3 (error previo de parseo).
+
+### Bloqueos confirmados
+1. Frontend productivo sin redeploy:
+   - sigue sirviendo build antiguo (aun aparece `<script lang="ts">` en HTML remoto).
+2. Backend productivo sin redeploy:
+   - `POST /api/exercises/recommend` devuelve `404`.
+   - CORS sigue en `Access-Control-Allow-Origin: http://localhost:4321`.
+3. Supabase Edge Function `exercise-recommend`:
+   - error `OPENAI_API_KEY not configured`.
+
+### Pendiente inmediato para cerrar funcionamiento real
+1. Redeploy manual o por API de `fisio-frontend` y `fisio-backend` en EasyPanel.
+2. Configurar secreto `OPENAI_API_KEY` en Supabase para la función `exercise-recommend`.
+3. Mover en UI de n8n W2/W3 a carpeta/tag `Fisio_IA_Agent` y revalidar inventario.
+
 ## Estado actual (2026-03-04, Sesion 48) - Norma obligatoria n8n carpeta/tag
 
 ### Completado esta sesion

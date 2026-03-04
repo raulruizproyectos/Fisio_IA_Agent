@@ -5,6 +5,7 @@
                       "parameters":  {
                                          "path":  "fisio/w3/crm-trigger",
                                          "responseMode":  "responseNode",
+                                         "httpMethod":  "POST",
                                          "options":  {
 
                                                      }
@@ -79,7 +80,7 @@
                   {
                       "parameters":  {
                                          "method":  "POST",
-                                         "url":  "={{ ($env.BACKEND_URL || 'https://fisio-backend.b5xbaf.easypanel.host') + '/api/exercises/recommend' }}",
+                                         "url":  "https://fisio-backend.b5xbaf.easypanel.host/api/exercises/recommend",
                                          "sendHeaders":  true,
                                          "headerParameters":  {
                                                                   "parameters":  [
@@ -91,7 +92,7 @@
                                                               },
                                          "sendBody":  true,
                                          "specifyBody":  "json",
-                                         "jsonBody":  "={\n  \"request_id\": $json.request_id,\n  \"patient_id\": $json.patient_id,\n  \"fisioterapeuta_id\": $json.therapist_id,\n  \"symptoms\": $json.symptoms_text,\n  \"channel\": \"crm_web\",\n  \"source\": $json.source\n}",
+                                         "jsonBody":  "{\n  \"request_id\": \"={{ $json.request_id }}\",\n  \"patient_id\": \"={{ $json.patient_id }}\",\n  \"fisioterapeuta_id\": \"={{ $json.therapist_id }}\",\n  \"symptoms\": \"={{ $json.symptoms_text }}\",\n  \"channel\": \"crm_web\",\n  \"source\": \"={{ $json.source }}\"\n}",
                                          "options":  {
                                                          "ignoreResponseCode":  true,
                                                          "timeout":  45000
