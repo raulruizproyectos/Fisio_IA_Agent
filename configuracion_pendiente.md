@@ -21,9 +21,10 @@ Estado actualizado para retomar sin perdida.
   - fix aplicado para usar `symptom_summary`.
 
 ### Pendiente inmediato para cerrar funcionamiento real
-1. Revalidar E2E tras fix de backend:
-   - dashboard sin modulo video,
-   - chat CRM/Telegram devolviendo informe de ejercicios con imagenes.
+1. Endurecer calidad de recomendacion:
+   - aumentar cobertura de `imagen_url` en ejercicios recomendados (faltan URLs en algunos items).
+2. Mejorar observabilidad:
+   - añadir metrica/alerta cuando `persistence_skipped=true` para distinguir uso sin paciente seleccionado.
 
 ## Estado actual (2026-03-04, Sesion 50) - Video eliminado y flujo centrado en informe de ejercicios
 

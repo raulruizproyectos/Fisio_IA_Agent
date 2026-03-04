@@ -19,7 +19,10 @@
   - corregida variable no definida en `composeClinicalReport` (`symptomSummary: symptom_summary`) que provocaba `500`.
 
 ### Estado
-- ⚠️ Pendiente: verificacion E2E final de recomendacion en backend tras fix de variable y redeploy.
+- ✅ Verificacion E2E en produccion completada:
+  - frontend sin seccion `Videos`.
+  - `POST /api/exercises/recommend` devuelve `200` y `informe_clinico`.
+  - `POST /api/agent/message` operativo sin copy de video.
 - ✅ Regla operativa reforzada: actualizar `CHANGELOG.md` y `configuracion_pendiente.md` en cada bloque que afecte al sistema.
 
 ## Sesion 50 - 2026-03-04
