@@ -162,15 +162,27 @@ Tablas necesarias confirmadas:
 - CI base: configurada en `.github/workflows/ci.yml`
 - Plantillas y gobernanza: ISSUE/PR templates, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`
 
-## Punto de continuidad para proxima sesion (prioridad)
-1. E2E Telegram completo con paciente real:
-- `/start CODIGO`
-- `/plan`
-- `/dolor <0-10> [nota]`
-2. Confirmar que cada mensaje crea/actualiza registros en `mensajes_ingesta_paciente`.
-3. Mantener observabilidad de agente (`fallback_*`) y ajustar prompts de negocio del Nucleo si se requiere mas riqueza funcional.
-4. Activar branch protection en GitHub para `main`.
-5. Rotar secretos expuestos en sesiones tecnicas.
+## Punto de Situación (Checkpoint - Fin Sesión 40)
+
+### ✅ Lo que ya está funcionando / Terminado
+1. **Frontend Responsive**: Interfaz adaptada a móvil/tablet/desktop con sidebar colapsable, métricas en grid fluido y diseño mobile-first.
+2. **Seguridad (RLS)**: Bases de datos protegidas. Las 27 tablas en Supabase tienen políticas RLS granulares habilitadas. Service Role backend intacto. Advisor de seguridad en 0 alertas.
+3. **Backend APIs y Subflujos n8n**: Backend en EasyPanel (`fisio-backend`) respondiendo a n8n. Flujo de video E2E probado vía API interna.
+4. **Reglas de Agente**: Añadidas reglas estrictas sobre el Frontend Responsive obligatorio y la Reutilización de Workflows en n8n.
+
+### ⏳ Lo que falta hacer (Siguiente sesión)
+
+#### Bloque 1: Despliegues y Validaciones Inmediatas
+- [ ] **[MANUAL] Redeploy en EasyPanel**: Entrar al panel y hacer deploy de `fisio-frontend` y `fisio-backend` para que los cambios responsive y de código subido a GitHub se reflejen en la URL pública.
+- [ ] **Test E2E Completo Multicanal**: Probar flujo desde mensaje de Telegram -> webhook backend -> n8n -> Supabase -> Respuesta en CRM Frontend.
+
+#### Bloque 2: Nuevas Funcionalidades (Roadmap original)
+- [ ] **W1: Citas y Calendario (Google Calendar)**: Configuración manual OAuth requerida para conectar el agente con la creación de citas reales.
+- [ ] **W3: Botón Trigger CRM**: Añadir en el frontend el botón para disparar recomendaciones de ejercicios manualmente desde la interfaz web.
+
+#### Bloque 3: Auditoría Final y Seguridad
+- [ ] Rotar `OPENAI_API_KEY` (actualmente en código/clear text en algunos puntos históricos).
+- [ ] Pruebas exhaustivas de concurrencia.
 
 ## Nota de terminologia
 - Se reemplazo la expresion `expresion anterior (deprecated)` por `centraliza la introduccion de sintomas` en la descripcion principal del proyecto.

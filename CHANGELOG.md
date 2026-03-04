@@ -24,11 +24,17 @@
 - ✅ Build validado: `astro build` OK, 0 errores
 - ✅ Push a GitHub: commit `ce630f3` en `main`
 
-### Pendiente para próxima sesión
-- [ ] **[Manual EasyPanel]** Redeploy `fisio-frontend` y `fisio-backend` para aplicar cambios en producción
-- [ ] W1: Citas + Google Calendar (requiere OAuth config manual)
-- [ ] E2E: Prueba completa multicanal Telegram + CRM + Supabase
-- [ ] Seguridad: Rotar OPENAI_API_KEY + RLS granulares
+### Security Hardening (RLS Policies) implementado
+- ✅ Verificada habilitación de RLS en las 27 tablas de la base de datos Supabase.
+- ✅ Aplicada migración para políticas granulares RLS (38 nuevas políticas `auth.uid()` para tablas del CRM y legacy).
+- ✅ Funciones helper (`get_my_profile_id`, `get_my_profesional_id`) creadas.
+- ✅ Resueltas advertencias de Supabase Security Advisor (asignado explícitamente `search_path = public` a funciones y políticas genéricas a `citas`/`usuarios`).
+
+### Pendiente para próxima sesión (Punto de Retorno)
+- [ ] **[Manual EasyPanel]** Redeploy `fisio-frontend` y `fisio-backend` para aplicar cambios en producción.
+- [ ] E2E: Prueba completa multicanal Telegram + CRM + Supabase.
+- [ ] W1: Citas + Google Calendar (requiere OAuth config manual).
+- [ ] W3: CRM Trigger Button.
 
 ## Sesion 39 — 2026-03-04
 
