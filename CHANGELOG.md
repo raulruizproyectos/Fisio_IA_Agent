@@ -1,5 +1,144 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 57 - 2026-03-05
+
+### Objetivo
+- Cerrar fallo reportado en CRM (`patient_required`) y estabilizar UI de chat para desktop/movil.
+- Dejar base operativa de 2 bots Telegram (pacientes/citas y fisio/informes PDF) con fallback robusto.
+
+### Cambios implementados
+- ✅ Frontend `frontend/src/pages/index.astro`:
+  - Selector obligatorio de paciente en el panel del agente (`chatPatientSelect`).
+  - Sincronizacion de paciente entre:
+    - selector del chat,
+    - acciones de tabla (revisar/ver historial),
+    - estado interno (`selectedPatientId`, `selectedPatientName`).
+  - Bloqueo preventivo antes de pedir ejercicios si no hay paciente seleccionado (evita `HTTP 400 patient_required`).
+  - Carga temprana del catalogo de pacientes al iniciar dashboard para permitir prueba inmediata.
+  - Ajustes UX de envio:
+    - deshabilitado coordinado de botones/chat mientras hay request en curso.
+  - Ajustes responsive del panel:
+    - breakpoint de small desktop (`max-width: 1360px`) para evitar desestructuracion/corte del chat.
+    - estilos del bloque de selector de paciente en chat.
+- ✅ Backend `backend/src/routes/telegram.js` (consolidado en esta rama):
+  - Doble modo de agente Telegram:
+    - `patient_appointments` (bot pacientes/citas),
+    - `physio_reports` (bot fisio/informes).
+  - Flujo `/informe <paciente_id> | <sintomas>` para bot fisio:
+    - genera recomendacion,
+    - construye PDF,
+    - envia PDF por Telegram.
+  - Fallback directo de cita cuando falla/no existe webhook W1:
+    - crea cita por API interna `/api/profesional/appointments`.
+- ✅ n8n/documentacion:
+  - Workflow nuevo versionado: `n8n/Fisio_IA_Agent/vnext/telegram-fisio-reports.json`.
+  - `telegram-chat.json` enriquecido con `agent_mode` y `bot_username`.
+  - README/n8n README/.env example alineados para 2 bots y migracion de credenciales.
+
+### Verificacion
+- ✅ `node --check backend/src/routes/telegram.js`
+- ⚠️ `node --check frontend/src/pages/index.astro` no aplica (archivo `.astro`).
+- ⚠️ `npm run build` frontend no ejecutable en este entorno porque falta `astro` en `node_modules` local.
+
+### Punto de partida (siguiente sesion)
+1. Deploy backend + frontend en EasyPanel (ultimo commit en `main`).
+2. Prueba funcional CRM:
+   - abrir dashboard,
+   - seleccionar paciente en chat,
+   - generar recomendacion,
+   - exportar PDF,
+   - validar guardado en historial.
+3. Prueba bot pacientes (`fisioterapia_CarlaJL`):
+   - `/start <codigo>`,
+   - `/cita <inicio_iso> <fin_iso>`,
+   - validar en CRM Citas + Google Calendar.
+4. Prueba bot fisio (`FisioIA_Agent_bot`):
+   - `/informe <paciente_id> | <sintomas>`,
+   - validar PDF recibido en Telegram y consistencia del informe.
+5. Si hay drift visual post-deploy:
+   - revisar cache/CDN,
+   - comprobar que el frontend desplegado corresponde al hash del commit.
+
+## Sesion 56 - 2026-03-05
+
+### Objetivo
+- Permitir exportar el informe del agente de ejercicios en PDF estructurado desde el CRM.
+
+### Cambios implementados
+- ✅ Frontend `frontend/src/pages/index.astro`:
+  - Nuevo boton `PDF` en el panel del agente (`exercisePdfBtn`).
+  - Se guarda el ultimo payload de recomendacion (`lastExerciseReportPayload`).
+  - Nueva exportacion PDF con jsPDF cargado dinamicamente desde CDN:
+    - portada con fecha, `request_id`, `recommendation_id`,
+    - resumen clinico,
+    - ejercicios con pauta/procedimiento/motivo/cautelas/imagen URL,
+    - mensajes para paciente y fisioterapeuta.
+  - Mensajes UX en chat: confirmacion de exportacion o error.
+  - Estilos nuevos del boton PDF (`.pdf-btn`) y soporte responsive.
+- ✅ Documentacion:
+  - `README.md` actualizado con seccion `Informe PDF (CRM)`.
+
+### Estado
+- ✅ El CRM ya tiene flujo funcional para descargar informe PDF estructurado tras generar recomendacion.
+- Pendiente: redeploy frontend para verlo en produccion.
+
+## Sesion 55 - 2026-03-05
+
+### Objetivo
+- Endurecer la observabilidad W2 y cerrar documentacion operativa para despliegue.
+
+### Cambios implementados
+- ✅ Backend `backend/src/routes/exercises.js`:
+  - Guard clause robusta cuando no hay target IA configurado (`engine_target_not_configured`).
+  - Se evita llamada remota invalida si faltan `N8N_EXERCISE_WEBHOOK_URL` y `SUPABASE_URL`.
+- ✅ Frontend `frontend/src/pages/index.astro`:
+  - Sincronizacion de metricas backend→UI (`engine_observability`) usando `request_id` para evitar doble conteo.
+  - La card `Timeouts/Reintentos IA` ahora suma:
+    - timeouts/reintentos del cliente (frontend)
+    - timeouts/reintentos del motor IA (backend).
+- ✅ Configuracion/documentacion:
+  - `backend/.env.example`: nuevas vars `EXERCISE_ENGINE_TIMEOUT_MS` y `EXERCISE_ENGINE_MAX_ATTEMPTS`.
+  - `README.md`: nueva seccion `Observabilidad W2 (timeouts/reintentos)`.
+  - nuevo script de prueba: `scripts/w2-smoke-observability.mjs`.
+
+### Estado
+- ✅ Flujo W2 queda listo para validacion E2E de observabilidad en produccion.
+- ✅ Smoke test remoto ejecutado con `scripts/w2-smoke-observability.mjs` contra `fisio-backend`:
+  - HTTP `200` en ~29s.
+  - sin campos de observabilidad nuevos (`attempts/retries_used/total_duration_ms` vacios), indicando backend productivo aun sin redeploy de este cambio.
+- Pendiente: redeploy y smoke test real con latencia alta.
+
+## Sesion 54 - 2026-03-05
+
+### Objetivo
+- Añadir observabilidad operativa de timeout/reintentos en el flujo de recomendaciones de ejercicios (backend + frontend).
+
+### Cambios implementados
+- ✅ Backend `backend/src/routes/exercises.js`:
+  - Nuevo wrapper robusto `callEngineWithRetry(...)` para llamadas al motor IA (n8n/Edge).
+  - Retries con backoff para timeout, errores de red y HTTP transitorios (`429/5xx`).
+  - Nuevas variables de control:
+    - `EXERCISE_ENGINE_TIMEOUT_MS` (default `30000`)
+    - `EXERCISE_ENGINE_MAX_ATTEMPTS` (default `2`)
+  - Se añade `engine_observability` en la respuesta de `POST /api/exercises/recommend`:
+    - `target`, `timeout_ms`, `max_attempts`, `attempts`, `retries_used`, `fallback_used`, `fallback_reason`, `total_duration_ms`, `attempts_detail`.
+  - Logging de fallback enriquecido con `attempts` y `retries`.
+- ✅ Frontend `frontend/src/pages/index.astro`:
+  - Nueva métrica visual en dashboard: `Timeouts/Reintentos IA` (`metricEngineOps`).
+  - Nuevo helper `requestExerciseRecommendation(...)` con reintento automático en timeout.
+  - Contadores locales de operación (`timeouts`, `retries`) y actualización en tiempo real del dashboard.
+  - El reporte de ejercicios muestra métricas del backend (`Motor IA: intentos/reintentos`) y aviso explícito cuando hay fallback.
+
+### Verificacion
+- ✅ `node --check backend/src/routes/exercises.js`
+- ✅ `node --check backend/src/index.js`
+- ✅ `node --check backend/src/routes/telegram.js`
+- ✅ `node --check backend/src/routes/professional.js`
+
+### Estado
+- ✅ Observabilidad E2E de latencia/fallback/reintentos disponible en respuesta backend y UI CRM.
+- Pendiente: redeploy en EasyPanel para validacion en produccion y prueba E2E real con latencia alta.
+
 ## Sesion 53 - 2026-03-05
 
 ### Objetivo
@@ -2008,7 +2147,3 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Ambos workflows quedan endurecidos y validados como JSON.
 - Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
-
-
-
-

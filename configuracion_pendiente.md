@@ -2,6 +2,95 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-05, Sesion 57) - Cierre para continuar manana
+
+### Completado esta sesion
+- ✅ CRM chat con selector de paciente obligatorio para informe de ejercicios.
+- ✅ Eliminado bloqueo funcional `patient_required` en UX (validacion previa en frontend).
+- ✅ Panel/chat ajustado para small desktop + movil (evita cortes y desestructuracion).
+- ✅ Doble bot Telegram consolidado en codigo/documentacion:
+  - `fisioterapia_CarlaJL` para citas.
+  - `FisioIA_Agent_bot` para informes PDF de ejercicios.
+- ✅ `CHANGELOG.md` actualizado con resumen completo y arranque de siguiente sesion.
+
+### Punto de partida exacto (siguiente sesion)
+1. Deploy backend y frontend en EasyPanel con el ultimo commit de `main`.
+2. Test CRM:
+   - seleccionar paciente en chat,
+   - generar ejercicios,
+   - exportar PDF,
+   - verificar historial.
+3. Test bot citas (`fisioterapia_CarlaJL`):
+   - `/start CODIGO`,
+   - `/cita <inicio_iso> <fin_iso>`,
+   - validar CRM + Google Calendar.
+4. Test bot fisio (`FisioIA_Agent_bot`):
+   - `/informe <paciente_id> | <sintomas>`,
+   - validar PDF recibido.
+5. Si algo no cuadra visualmente: limpiar cache y verificar hash de build desplegado.
+
+## Estado actual (2026-03-05, Sesion 56) - Exportacion PDF de informe implementada
+
+### Completado esta sesion
+- ✅ Dashboard CRM con nuevo boton `PDF` en el panel del agente.
+- ✅ Exportacion de informe de ejercicios a PDF estructurado (jsPDF en frontend):
+  - resumen clinico,
+  - ejercicios con pauta y motivos,
+  - mensajes de paciente/fisio,
+  - IDs de trazabilidad (`request_id`, `recommendation_id`).
+- ✅ Estilos y comportamiento responsive del boton PDF añadidos.
+
+### Pendiente inmediato para cierre operativo
+1. Redeploy de `fisio-frontend` para publicar boton PDF en produccion.
+2. Prueba manual en navegador:
+   - generar recomendacion,
+   - pulsar PDF,
+   - validar archivo descargado y legibilidad.
+3. Si se desea incluir imagen embebida (no solo URL), evaluar mejora v2 con render de imagen en PDF.
+
+## Estado actual (2026-03-05, Sesion 55) - Observabilidad W2 endurecida y documentada
+
+### Completado esta sesion
+- ✅ `backend/src/routes/exercises.js`:
+  - fallback explicito `engine_target_not_configured` cuando no hay target IA valido.
+- ✅ `frontend/src/pages/index.astro`:
+  - metrica `Timeouts/Reintentos IA` ahora incorpora observabilidad backend por `request_id` (sin doble conteo).
+- ✅ Configuracion/documentacion alineada:
+  - `backend/.env.example` incluye `EXERCISE_ENGINE_TIMEOUT_MS` y `EXERCISE_ENGINE_MAX_ATTEMPTS`.
+  - `README.md` documenta observabilidad de `POST /api/exercises/recommend`.
+  - script `scripts/w2-smoke-observability.mjs` para smoke test rapido de observabilidad.
+
+### Pendiente inmediato para cierre operativo
+1. Redeploy backend/frontend en EasyPanel.
+2. Repetir smoke test E2E desde CRM con caso de timeout controlado.
+   - verificacion previa (sin redeploy): `fisio-backend` responde `200` pero sin `engine_observability.attempts/retries_used`.
+3. Ajustar en produccion (si aplica):
+   - `EXERCISE_ENGINE_TIMEOUT_MS`
+   - `EXERCISE_ENGINE_MAX_ATTEMPTS`
+
+## Estado actual (2026-03-05, Sesion 54) - Observabilidad timeout/reintentos implementada
+
+### Completado esta sesion
+- ✅ Backend robustecido en `backend/src/routes/exercises.js`:
+  - llamada al motor IA con retries y backoff (`callEngineWithRetry`).
+  - retry en timeout/red y HTTP transitorios (`429/5xx`).
+  - metrica `engine_observability` en respuesta de `/api/exercises/recommend`.
+- ✅ Frontend actualizado en `frontend/src/pages/index.astro`:
+  - metrica nueva `Timeouts/Reintentos IA` visible en dashboard.
+  - reintento automatico en timeout para recomendaciones de ejercicios.
+  - reporte visual incluye intentos/reintentos y aviso de fallback activo.
+- ✅ Verificacion tecnica local:
+  - `node --check` OK en rutas backend principales.
+
+### Pendiente inmediato para cierre operativo
+1. Redeploy backend/frontend en EasyPanel para publicar cambios de observabilidad.
+2. Ejecutar E2E real con latencia alta del motor IA (forzar timeout controlado) y validar:
+   - incremento de `Timeouts/Reintentos IA` en CRM.
+   - `engine_observability` en respuesta backend.
+3. Revisar si conviene ajustar entorno productivo:
+   - `EXERCISE_ENGINE_TIMEOUT_MS`
+   - `EXERCISE_ENGINE_MAX_ATTEMPTS`
+
 ## Estado actual (2026-03-04, Sesion 52) - Agente ejercicios estabilizado
 
 ### Completado esta sesion

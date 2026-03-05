@@ -1,0 +1,176 @@
+{
+  "name": "Fisio Telegram - Fisio Reports",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "TelegramTrigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "chat_id",
+              "name": "chat_id",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            },
+            {
+              "id": "username",
+              "name": "username",
+              "value": "={{ $json.message.from.username || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "texto_mensaje",
+              "name": "texto_mensaje",
+              "value": "={{ $json.message.text || $json.message.caption || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "request_id",
+              "name": "request_id",
+              "value": "={{ \"req_\" + Date.now() + \"_\" + Math.floor(Math.random() * 100000) }}",
+              "type": "string"
+            },
+            {
+              "id": "agent_mode",
+              "name": "agent_mode",
+              "value": "physio_reports",
+              "type": "string"
+            },
+            {
+              "id": "bot_username",
+              "name": "bot_username",
+              "value": "FisioIA_Agent_bot",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "PrepareInput",
+      "name": "Prepare Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"request_id\": $json.request_id,\n  \"chat_id\": $json.chat_id,\n  \"username\": $json.username,\n  \"texto_mensaje\": $json.texto_mensaje,\n  \"agent_mode\": $json.agent_mode,\n  \"bot_username\": $json.bot_username\n}",
+        "options": {
+          "ignoreResponseCode": true,
+          "timeout": 45000
+        }
+      },
+      "id": "BackendCommandResolver",
+      "name": "Backend Command Resolver",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json || {};\nconst statusCode = Number(input.statusCode || input.code || 0);\n\nlet reply = '';\nif (typeof input.reply_text === 'string' && input.reply_text.trim()) {\n  reply = input.reply_text.trim();\n} else if (typeof input.message_to_patient_es === 'string' && input.message_to_patient_es.trim()) {\n  reply = input.message_to_patient_es.trim();\n} else if (typeof input.message === 'string' && input.message.trim()) {\n  reply = input.message.trim();\n}\n\nif (!reply && statusCode >= 400) {\n  reply = 'He recibido tu mensaje. Ahora mismo hay una incidencia tecnica y te respondere en breve.';\n}\n\nif (!reply) {\n  reply = 'He recibido tu mensaje. Enseguida te doy respuesta.';\n}\n\nreturn [{\n  json: {\n    reply_text: reply.slice(0, 3500),\n    response_status: statusCode || null,\n    backend_ok: statusCode ? statusCode < 400 : true\n  }\n}];"
+      },
+      "id": "BuildSafeTelegramReply",
+      "name": "Build Safe Telegram Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Prepare Input').item.json.chat_id }}",
+        "text": "={{ $json.reply_text }}",
+        "additionalFields": {}
+      },
+      "id": "TelegramReply",
+      "name": "Telegram Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        940,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Input": {
+      "main": [
+        [
+          {
+            "node": "Backend Command Resolver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Backend Command Resolver": {
+      "main": [
+        [
+          {
+            "node": "Build Safe Telegram Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Safe Telegram Reply": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

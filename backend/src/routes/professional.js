@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { google } from 'googleapis';
 import { supabase } from '../index.js';
 
 const router = Router();
@@ -37,6 +38,11 @@ const APPOINTMENT_ALLOWED_STATUSES = ['pendiente', 'confirmada', 'cancelada', 'c
 const APPOINTMENT_ACTIVE_STATUSES = ['pendiente', 'confirmada', 'reprogramada'];
 const APPOINTMENT_ALLOWED_CHANNELS = ['telegram', 'crm_web', 'manual', 'n8n'];
 const VIDEO_WORKFLOWS_ENABLED = process.env.ENABLE_VIDEO_WORKFLOWS === 'true';
+const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID?.trim() || '';
+const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL?.trim() || '';
+const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '';
+const GOOGLE_CALENDAR_TIMEZONE = process.env.GOOGLE_CALENDAR_TIMEZONE?.trim() || 'Europe/Madrid';
+const GOOGLE_CALENDAR_REQUIRED = String(process.env.GOOGLE_CALENDAR_REQUIRED || 'false').toLowerCase() === 'true';
 
 function rejectVideoFeatureIfDisabled(res) {
   if (VIDEO_WORKFLOWS_ENABLED) return false;
@@ -79,6 +85,174 @@ function toIsoDateOnly(value) {
   const date = new Date(String(value));
   if (Number.isNaN(date.getTime())) return null;
   return date.toISOString().slice(0, 10);
+}
+
+function calendarIntegrationEnabled() {
+  return Boolean(GOOGLE_CALENDAR_ID && GOOGLE_CLIENT_EMAIL && GOOGLE_PRIVATE_KEY);
+}
+
+function buildCalendarSyncResult(partial = {}) {
+  return {
+    enabled: calendarIntegrationEnabled(),
+    required: GOOGLE_CALENDAR_REQUIRED,
+    status: partial.status || 'skipped',
+    event_id: partial.event_id || null,
+    action: partial.action || null,
+    error: partial.error || null,
+  };
+}
+
+function getGoogleCalendarClient() {
+  if (!calendarIntegrationEnabled()) return null;
+  const auth = new google.auth.JWT({
+    email: GOOGLE_CLIENT_EMAIL,
+    key: GOOGLE_PRIVATE_KEY,
+    scopes: ['https://www.googleapis.com/auth/calendar'],
+  });
+  return google.calendar({ version: 'v3', auth });
+}
+
+function formatCalendarNameParts(patientName, professionalName) {
+  const cleanPatient = String(patientName || '').trim() || 'Paciente';
+  const cleanProfessional = String(professionalName || '').trim() || 'Fisioterapeuta';
+  return {
+    summary: `Cita fisioterapia - ${cleanPatient}`,
+    description: `Paciente: ${cleanPatient}\nFisioterapeuta: ${cleanProfessional}`,
+  };
+}
+
+async function fetchCalendarContext({ patientId, professionalId }) {
+  const [patientResp, professionalResp] = await Promise.all([
+    supabase
+      .from('crm_pacientes')
+      .select('nombre, apellidos')
+      .eq('id', patientId)
+      .maybeSingle(),
+    supabase
+      .from('crm_perfiles')
+      .select('nombre_completo')
+      .eq('id', professionalId)
+      .maybeSingle(),
+  ]);
+
+  if (patientResp.error) throw patientResp.error;
+  if (professionalResp.error) throw professionalResp.error;
+
+  const patientName = [patientResp.data?.nombre, patientResp.data?.apellidos].filter(Boolean).join(' ').trim() || null;
+  const professionalName = professionalResp.data?.nombre_completo || null;
+  return { patientName, professionalName };
+}
+
+function buildCalendarEventPayload({
+  patientName,
+  professionalName,
+  startAt,
+  endAt,
+  reason,
+  appointmentId,
+}) {
+  const nameParts = formatCalendarNameParts(patientName, professionalName);
+  const extraReason = String(reason || '').trim();
+  const description = [
+    nameParts.description,
+    extraReason ? `Motivo: ${extraReason}` : null,
+    appointmentId ? `CRM Appointment ID: ${appointmentId}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    summary: nameParts.summary,
+    description,
+    start: {
+      dateTime: new Date(startAt).toISOString(),
+      timeZone: GOOGLE_CALENDAR_TIMEZONE,
+    },
+    end: {
+      dateTime: new Date(endAt).toISOString(),
+      timeZone: GOOGLE_CALENDAR_TIMEZONE,
+    },
+  };
+}
+
+function getCalendarErrorMessage(error) {
+  const status = error?.response?.status;
+  const message =
+    error?.response?.data?.error?.message ||
+    error?.message ||
+    'google_calendar_sync_failed';
+  return status ? `google_calendar_${status}: ${message}` : String(message);
+}
+
+async function syncAppointmentToGoogleCalendar({
+  action,
+  eventId,
+  payload,
+}) {
+  if (!calendarIntegrationEnabled()) {
+    return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
+  }
+
+  const calendarClient = getGoogleCalendarClient();
+  if (!calendarClient) {
+    return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
+  }
+
+  try {
+    if (action === 'create') {
+      const created = await calendarClient.events.insert({
+        calendarId: GOOGLE_CALENDAR_ID,
+        requestBody: payload,
+        sendUpdates: 'none',
+      });
+      return buildCalendarSyncResult({
+        status: 'synced',
+        action,
+        event_id: created.data?.id || null,
+      });
+    }
+
+    if (action === 'update' && eventId) {
+      await calendarClient.events.patch({
+        calendarId: GOOGLE_CALENDAR_ID,
+        eventId,
+        requestBody: payload,
+        sendUpdates: 'none',
+      });
+      return buildCalendarSyncResult({
+        status: 'synced',
+        action,
+        event_id: eventId,
+      });
+    }
+
+    if (action === 'cancel' && eventId) {
+      try {
+        await calendarClient.events.delete({
+          calendarId: GOOGLE_CALENDAR_ID,
+          eventId,
+          sendUpdates: 'none',
+        });
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status !== 404) throw error;
+      }
+      return buildCalendarSyncResult({
+        status: 'synced',
+        action,
+        event_id: eventId,
+      });
+    }
+
+    return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
+  } catch (error) {
+    return buildCalendarSyncResult({
+      status: 'error',
+      action,
+      event_id: eventId || null,
+      error: getCalendarErrorMessage(error),
+    });
+  }
 }
 
 async function resolveCrmPatientId(rawPatientId) {
@@ -371,6 +545,34 @@ router.post('/appointments', async (req, res, next) => {
       });
     }
 
+    let effectiveCalendarEventId = googleCalendarEventId || null;
+    let calendarSync = buildCalendarSyncResult({ status: 'skipped', action: 'create', event_id: effectiveCalendarEventId });
+    if (!effectiveCalendarEventId && calendarIntegrationEnabled()) {
+      const context = await fetchCalendarContext({ patientId, professionalId });
+      const calendarEventPayload = buildCalendarEventPayload({
+        patientName: context.patientName,
+        professionalName: context.professionalName,
+        startAt,
+        endAt,
+        reason,
+        appointmentId: requestId || null,
+      });
+      calendarSync = await syncAppointmentToGoogleCalendar({
+        action: 'create',
+        eventId: null,
+        payload: calendarEventPayload,
+      });
+      if (calendarSync.status === 'synced' && calendarSync.event_id) {
+        effectiveCalendarEventId = calendarSync.event_id;
+      }
+      if (GOOGLE_CALENDAR_REQUIRED && calendarSync.status === 'error') {
+        return res.status(502).json({
+          error: 'No se pudo crear evento en Google Calendar',
+          calendar_sync: calendarSync,
+        });
+      }
+    }
+
     const { data, error } = await supabase
       .from('crm_citas')
       .insert({
@@ -382,7 +584,7 @@ router.post('/appointments', async (req, res, next) => {
         canal_origen: channel,
         motivo: reason || null,
         request_id: requestId || null,
-        google_calendar_event_id: googleCalendarEventId || null,
+        google_calendar_event_id: effectiveCalendarEventId,
       })
       .select(APPOINTMENT_SELECT)
       .single();
@@ -396,7 +598,10 @@ router.post('/appointments', async (req, res, next) => {
       throw error;
     }
 
-    res.status(201).json({ data: normalizeAppointmentRow(data) });
+    res.status(201).json({
+      data: normalizeAppointmentRow(data),
+      calendar_sync: calendarSync,
+    });
   } catch (err) {
     next(err);
   }
@@ -408,7 +613,7 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
 
     const { data: current, error: currentError } = await supabase
       .from('crm_citas')
-      .select('id, paciente_id, fisioterapeuta_id, inicio_en, fin_en, estado')
+      .select('id, paciente_id, fisioterapeuta_id, inicio_en, fin_en, estado, motivo, google_calendar_event_id, request_id')
       .eq('id', appointmentId)
       .maybeSingle();
 
@@ -485,6 +690,72 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
     if (nextReason !== null) updatePayload.motivo = nextReason || null;
     if (nextCalendarEventId !== null) updatePayload.google_calendar_event_id = nextCalendarEventId || null;
 
+    const effectiveReason = nextReason !== null ? (nextReason || null) : current.motivo || null;
+    let effectiveCalendarEventId =
+      nextCalendarEventId !== null
+        ? (nextCalendarEventId || null)
+        : (current.google_calendar_event_id || null);
+    let calendarSync = buildCalendarSyncResult({
+      status: 'skipped',
+      action: 'update',
+      event_id: effectiveCalendarEventId,
+    });
+
+    if (calendarIntegrationEnabled()) {
+      const cancelStates = new Set(['cancelada', 'no_show']);
+      const shouldCancelInCalendar = cancelStates.has(effectiveStatus);
+
+      if (shouldCancelInCalendar && effectiveCalendarEventId) {
+        calendarSync = await syncAppointmentToGoogleCalendar({
+          action: 'cancel',
+          eventId: effectiveCalendarEventId,
+          payload: null,
+        });
+        if (calendarSync.status === 'synced') {
+          effectiveCalendarEventId = null;
+          updatePayload.google_calendar_event_id = null;
+        }
+      } else {
+        const context = await fetchCalendarContext({
+          patientId: current.paciente_id,
+          professionalId: current.fisioterapeuta_id,
+        });
+        const calendarEventPayload = buildCalendarEventPayload({
+          patientName: context.patientName,
+          professionalName: context.professionalName,
+          startAt: nextStartAt,
+          endAt: nextEndAt,
+          reason: effectiveReason,
+          appointmentId: current.request_id || current.id,
+        });
+
+        if (effectiveCalendarEventId) {
+          calendarSync = await syncAppointmentToGoogleCalendar({
+            action: 'update',
+            eventId: effectiveCalendarEventId,
+            payload: calendarEventPayload,
+          });
+        } else {
+          calendarSync = await syncAppointmentToGoogleCalendar({
+            action: 'create',
+            eventId: null,
+            payload: calendarEventPayload,
+          });
+          if (calendarSync.status === 'synced' && calendarSync.event_id) {
+            effectiveCalendarEventId = calendarSync.event_id;
+            updatePayload.google_calendar_event_id = effectiveCalendarEventId;
+          }
+        }
+      }
+
+      if (GOOGLE_CALENDAR_REQUIRED && calendarSync.status === 'error') {
+        return res.status(502).json({
+          error: 'No se pudo sincronizar evento en Google Calendar',
+          calendar_sync: calendarSync,
+        });
+      }
+    }
+
     const { data, error } = await supabase
       .from('crm_citas')
       .update(updatePayload)
@@ -494,7 +765,10 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
 
     if (error) throw error;
 
-    res.json({ data: normalizeAppointmentRow(data) });
+    res.json({
+      data: normalizeAppointmentRow(data),
+      calendar_sync: calendarSync,
+    });
   } catch (err) {
     next(err);
   }

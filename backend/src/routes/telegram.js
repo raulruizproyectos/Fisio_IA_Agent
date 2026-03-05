@@ -1,10 +1,19 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
+import PDFDocument from 'pdfkit';
 import { supabase } from '../index.js';
 
 const router = Router();
 const INTENT_CONFIDENCE_THRESHOLD = 0.6;
 const APPOINTMENT_WEBHOOK_URL = process.env.N8N_APPOINTMENT_WEBHOOK_URL?.trim() || null;
+const TELEGRAM_PATIENT_BOT_USERNAME = String(process.env.TELEGRAM_PATIENT_BOT_USERNAME || 'fisioterapia_CarlaJL')
+  .replace(/^@/, '')
+  .toLowerCase();
+const TELEGRAM_PHYSIO_BOT_USERNAME = String(process.env.TELEGRAM_PHYSIO_BOT_USERNAME || 'FisioIA_Agent_bot')
+  .replace(/^@/, '')
+  .toLowerCase();
+const TELEGRAM_PATIENT_BOT_TOKEN = process.env.TELEGRAM_PATIENT_BOT_TOKEN?.trim() || null;
+const TELEGRAM_PHYSIO_BOT_TOKEN = process.env.TELEGRAM_PHYSIO_BOT_TOKEN?.trim() || null;
 
 function pickValue(obj, ...keys) {
   for (const key of keys) {
@@ -40,6 +49,32 @@ function parseAppointmentCommand(text) {
   };
 }
 
+function parsePhysioReportCommand(text) {
+  const withPipe = text.match(/^\/informe\s+([a-f0-9-]{8,})\s*\|\s*(.+)$/i);
+  if (withPipe) {
+    return {
+      patientId: withPipe[1]?.trim() || null,
+      symptoms: withPipe[2]?.trim() || null,
+    };
+  }
+
+  const withSemicolon = text.match(/^\/informe\s+([a-f0-9-]{8,})\s+(.+)$/i);
+  if (!withSemicolon) return null;
+  return {
+    patientId: withSemicolon[1]?.trim() || null,
+    symptoms: withSemicolon[2]?.trim() || null,
+  };
+}
+
+function getPhysioHelpMessage() {
+  return [
+    'Comandos (bot fisio):',
+    '/informe <paciente_id> | <sintomas> - genera recomendacion y PDF',
+    'Ejemplo:',
+    '/informe 11111111-2222-3333-4444-555555555555 | Dolor cervical al girar cuello desde hace 3 dias',
+  ].join('\n');
+}
+
 function extractIsoSlots(messageText = '') {
   const matches = messageText.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?/g) || [];
   return {
@@ -53,6 +88,33 @@ function truncateTelegramMessage(text = '', maxLen = 3900) {
   if (!clean) return '';
   if (clean.length <= maxLen) return clean;
   return `${clean.slice(0, maxLen - 3)}...`;
+}
+
+function detectTelegramAgentMode(payload = {}) {
+  const explicitMode = String(payload.agent_mode || payload.bot_mode || '').trim().toLowerCase();
+  if (explicitMode === 'patient_appointments' || explicitMode === 'physio_reports') {
+    return explicitMode;
+  }
+
+  const botUsername = String(payload.bot_username || '').replace(/^@/, '').toLowerCase();
+  if (botUsername && botUsername === TELEGRAM_PATIENT_BOT_USERNAME) return 'patient_appointments';
+  if (botUsername && botUsername === TELEGRAM_PHYSIO_BOT_USERNAME) return 'physio_reports';
+  return 'legacy';
+}
+
+function inferIntentFromText(messageText = '') {
+  const text = String(messageText || '').toLowerCase();
+  if (!text) return { route: 'unknown', confidence: 0.2 };
+  if (/\b(cita|agendar|agenda|reservar|reserva|hueco|hora|calendario)\b/.test(text)) {
+    return { route: 'appointment', confidence: 0.85 };
+  }
+  if (/\b(ejercicio|estiramiento|rutina|movilidad|fortalecimiento|rehabilit)\b/.test(text)) {
+    return { route: 'exercise', confidence: 0.8 };
+  }
+  if (/\b(dolor|sintoma|sintomas|molestia|lesion|evolucion|seguimiento)\b/.test(text)) {
+    return { route: 'session_note', confidence: 0.72 };
+  }
+  return { route: 'unknown', confidence: 0.4 };
 }
 
 function buildTelegramExerciseFallback(payload = {}) {
@@ -91,6 +153,8 @@ function parseIncomingPayload(body = {}) {
       texto_mensaje: body.texto_mensaje || body.message_text,
       first_name: body.first_name || null,
       last_name: body.last_name || null,
+      bot_username: body.bot_username || null,
+      agent_mode: body.agent_mode || null,
     };
   }
 
@@ -107,6 +171,8 @@ function parseIncomingPayload(body = {}) {
     texto_mensaje: text,
     first_name: message?.from?.first_name || null,
     last_name: message?.from?.last_name || null,
+    bot_username: body.bot_username || null,
+    agent_mode: body.agent_mode || null,
   };
 }
 
@@ -135,9 +201,19 @@ function detectRedFlags(messageText = '') {
   };
 }
 
-async function sendTelegramMessage(chatId, text) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) throw new Error('TELEGRAM_BOT_TOKEN no configurado');
+function resolveTelegramToken(agentMode = 'legacy') {
+  if (agentMode === 'patient_appointments') {
+    return TELEGRAM_PATIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || null;
+  }
+  if (agentMode === 'physio_reports') {
+    return TELEGRAM_PHYSIO_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || null;
+  }
+  return process.env.TELEGRAM_BOT_TOKEN || TELEGRAM_PATIENT_BOT_TOKEN || TELEGRAM_PHYSIO_BOT_TOKEN || null;
+}
+
+async function sendTelegramMessage(chatId, text, agentMode = 'legacy') {
+  const token = resolveTelegramToken(agentMode);
+  if (!token) throw new Error('No hay token Telegram configurado para este agente');
 
   const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
@@ -149,6 +225,120 @@ async function sendTelegramMessage(chatId, text) {
   if (!response.ok || !payload?.ok) {
     throw new Error(`Telegram sendMessage fallo: ${JSON.stringify(payload)}`);
   }
+}
+
+async function sendTelegramDocument({ chatId, filename, buffer, caption = '', agentMode = 'legacy' }) {
+  const token = resolveTelegramToken(agentMode);
+  if (!token) throw new Error('No hay token Telegram configurado para envio de PDF');
+  if (!buffer || !buffer.length) throw new Error('Buffer PDF vacio');
+
+  const form = new FormData();
+  form.append('chat_id', String(chatId));
+  if (caption) form.append('caption', truncateTelegramMessage(caption, 900));
+  form.append('document', new Blob([buffer], { type: 'application/pdf' }), filename || 'informe-ejercicios.pdf');
+
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+    method: 'POST',
+    body: form,
+  });
+
+  const payload = await response.json();
+  if (!response.ok || !payload?.ok) {
+    throw new Error(`Telegram sendDocument fallo: ${JSON.stringify(payload)}`);
+  }
+}
+
+async function fetchImageBuffer(url) {
+  if (!url) return null;
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) return null;
+    const arr = await response.arrayBuffer();
+    return Buffer.from(arr);
+  } catch {
+    return null;
+  }
+}
+
+async function buildExerciseReportPdfBuffer(payload = {}) {
+  return await new Promise(async (resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'A4', margin: 36 });
+      const chunks = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('error', reject);
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+
+      const exercises = Array.isArray(payload.exercises) ? payload.exercises : [];
+      const dateText = new Date().toLocaleString('es-ES');
+
+      doc.fontSize(18).text('Informe de Ejercicios - Fisio IA Agent', { align: 'left' });
+      doc.moveDown(0.5);
+      doc.fontSize(10).text(`Fecha: ${dateText}`);
+      doc.text(`ID recomendacion: ${payload.recommendation_id || '-'}`);
+      doc.text(`Paciente: ${payload.patient_id || '-'}`);
+      doc.moveDown(0.5);
+
+      doc.fontSize(12).text('Resumen clinico', { underline: true });
+      doc.fontSize(10).text(`Sintomas: ${payload.symptom_summary || 'No informado'}`);
+      doc.text(`Razon de seleccion: ${payload.selection_rationale || '-'}`);
+      const redFlags = Array.isArray(payload?.red_flags?.items) ? payload.red_flags.items.join(', ') : '';
+      doc.text(`Alertas: ${payload?.red_flags?.present ? 'Si' : 'No'}${redFlags ? ` (${redFlags})` : ''}`);
+      doc.moveDown(0.5);
+
+      doc.fontSize(12).text(`Rutina (${exercises.length} ejercicios)`, { underline: true });
+      doc.moveDown(0.2);
+
+      for (let idx = 0; idx < exercises.length; idx += 1) {
+        const ex = exercises[idx] || {};
+        doc.fontSize(11).text(`${idx + 1}. ${ex.nombre || 'Ejercicio'} (${ex.zona_corporal || 'general'})`, {
+          continued: false,
+        });
+        doc.fontSize(10);
+        const pauta = [
+          ex.series ? `Series ${ex.series}` : null,
+          ex.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
+          ex.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
+        ].filter(Boolean).join(' | ');
+        if (pauta) doc.text(`Pauta: ${pauta}`);
+        if (ex.procedimiento) {
+          const procedimiento = Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : String(ex.procedimiento);
+          doc.text(`Procedimiento: ${procedimiento}`);
+        }
+        if (ex.why) doc.text(`Motivo: ${ex.why}`);
+        if (Array.isArray(ex.cautions) && ex.cautions.length) doc.text(`Cautelas: ${ex.cautions.join('; ')}`);
+
+        if (ex.imagen_url) {
+          const imageBuffer = await fetchImageBuffer(ex.imagen_url);
+          if (imageBuffer) {
+            const currentY = doc.y;
+            if (currentY > 700) doc.addPage();
+            try {
+              doc.image(imageBuffer, {
+                fit: [180, 110],
+                align: 'left',
+              });
+              doc.moveDown(0.4);
+            } catch {
+              doc.text(`Imagen: ${ex.imagen_url}`);
+            }
+          } else {
+            doc.text(`Imagen: ${ex.imagen_url}`);
+          }
+        }
+
+        doc.moveDown(0.7);
+        if (doc.y > 740 && idx < exercises.length - 1) doc.addPage();
+      }
+
+      doc.fontSize(12).text('Mensajes', { underline: true });
+      doc.fontSize(10).text(`Paciente: ${payload.message_to_patient || '-'}`);
+      doc.text(`Fisioterapeuta: ${payload.message_to_therapist || '-'}`);
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 function isMissingTableError(error) {
@@ -273,7 +463,85 @@ async function logCrmCommunication(payload) {
   }
 }
 
+async function createAppointmentDirectFallback({
+  req,
+  requestId,
+  patientId,
+  professionalId,
+  chatId,
+  messageText,
+  slotStart,
+  slotEnd,
+}) {
+  if (!req || !slotStart || !slotEnd) {
+    return {
+      ok: false,
+      requestId,
+      reason: 'missing_slot_or_context',
+    };
+  }
+
+  try {
+    const internalUrl = `${req.protocol}://${req.get('host')}/api/profesional/appointments`;
+    const response = await fetch(internalUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paciente_id: patientId,
+        fisioterapeuta_id: professionalId,
+        inicio_en: slotStart,
+        fin_en: slotEnd,
+        motivo: messageText || 'Solicitud desde Telegram',
+        status: 'pendiente',
+        canal_origen: 'telegram',
+        source: 'telegram',
+        metadata: {
+          telegram_chat_id: String(chatId || ''),
+          origin: 'telegram_direct_fallback',
+        },
+      }),
+      signal: AbortSignal.timeout(12000),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        requestId,
+        reason: 'direct_create_http_error',
+        statusCode: response.status,
+        response: data,
+      };
+    }
+
+    return {
+      ok: true,
+      requestId,
+      status: 'created_direct',
+      fallbackUsed: true,
+      appointment: data?.data || null,
+      messageToPatient:
+        'Cita registrada correctamente. Te confirmaremos cualquier ajuste y también la verás en el CRM.',
+      response: data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      requestId,
+      reason: error?.name === 'AbortError' ? 'direct_create_timeout' : 'direct_create_failed',
+      errorMessage: error.message,
+    };
+  }
+}
+
 async function triggerAppointmentWorkflow({
+  req,
   patientId,
   professionalId,
   chatId,
@@ -285,10 +553,23 @@ async function triggerAppointmentWorkflow({
   const requestId = crypto.randomUUID();
 
   if (!APPOINTMENT_WEBHOOK_URL) {
+    const directFallback = await createAppointmentDirectFallback({
+      req,
+      requestId,
+      patientId,
+      professionalId,
+      chatId,
+      messageText,
+      slotStart,
+      slotEnd,
+    });
+    if (directFallback.ok) return directFallback;
+
     return {
       ok: false,
       requestId,
-      reason: 'missing_webhook',
+      reason: directFallback.reason || 'missing_webhook',
+      fallback: directFallback,
     };
   }
 
@@ -323,12 +604,25 @@ async function triggerAppointmentWorkflow({
     }
 
     if (!response.ok) {
+      const directFallback = await createAppointmentDirectFallback({
+        req,
+        requestId,
+        patientId,
+        professionalId,
+        chatId,
+        messageText,
+        slotStart,
+        slotEnd,
+      });
+      if (directFallback.ok) return directFallback;
+
       return {
         ok: false,
         requestId,
         reason: 'http_error',
         statusCode: response.status,
         response: data,
+        fallback: directFallback,
       };
     }
 
@@ -345,13 +639,60 @@ async function triggerAppointmentWorkflow({
       response: data,
     };
   } catch (error) {
+    const directFallback = await createAppointmentDirectFallback({
+      req,
+      requestId,
+      patientId,
+      professionalId,
+      chatId,
+      messageText,
+      slotStart,
+      slotEnd,
+    });
+    if (directFallback.ok) return directFallback;
+
     return {
       ok: false,
       requestId,
       reason: error?.name === 'AbortError' ? 'timeout' : 'fetch_failed',
       errorMessage: error.message,
+      fallback: directFallback,
     };
   }
+}
+
+async function triggerExerciseRecommendation({
+  req,
+  patientId,
+  professionalId,
+  messageText,
+  channel = 'telegram',
+}) {
+  const internalUrl = `${req.protocol}://${req.get('host')}/api/exercises/recommend`;
+  const response = await fetch(internalUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      patient_id: patientId,
+      symptoms: messageText,
+      channel,
+      fisioterapeuta_id: professionalId || null,
+    }),
+    signal: AbortSignal.timeout(40000),
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  return {
+    ok: response.ok && Boolean(payload?.ok),
+    statusCode: response.status,
+    payload,
+  };
 }
 
 function getHelpMessage() {
@@ -360,6 +701,15 @@ function getHelpMessage() {
     '/plan - Ver plan activo',
     '/cita <inicio_iso> <fin_iso> [nota] - Solicitar cita (ej: /cita 2026-03-10T18:00 2026-03-10T18:45)',
     '/dolor <0-10> [nota] - Registrar dolor de hoy',
+    '/ayuda - Ver esta ayuda',
+  ].join('\n');
+}
+
+function getPatientAppointmentHelpMessage() {
+  return [
+    'Comandos disponibles (citas):',
+    '/cita <inicio_iso> <fin_iso> [nota] - Solicitar cita',
+    'Ejemplo: /cita 2026-03-10T18:00 2026-03-10T18:45 dolor cervical',
     '/ayuda - Ver esta ayuda',
   ].join('\n');
 }
@@ -417,16 +767,74 @@ router.post('/incoming', async (req, res, next) => {
     }
 
     const { chat_id, username, texto_mensaje } = parsedPayload;
+    const agentMode = detectTelegramAgentMode(parsedPayload);
     const text = normalizeCommand(texto_mensaje);
     const isCommand = text.startsWith('/');
 
     const reply = async (replyText) => {
       if (fromTelegramWebhook) {
-        await sendTelegramMessage(chat_id, replyText);
+        await sendTelegramMessage(chat_id, replyText, agentMode);
         return res.status(200).json({ ok: true });
       }
       return res.json({ reply_text: replyText });
     };
+
+    if (agentMode === 'physio_reports') {
+      if (!isCommand || text.toLowerCase() === '/start' || text.toLowerCase() === '/ayuda') {
+        return await reply(getPhysioHelpMessage());
+      }
+
+      const reportCommand = parsePhysioReportCommand(text);
+      if (!reportCommand?.patientId || !reportCommand?.symptoms) {
+        return await reply(
+          'Formato invalido.\nUsa: /informe <paciente_id> | <sintomas>\nEjemplo: /informe 11111111-2222-3333-4444-555555555555 | Dolor cervical al girar cuello'
+        );
+      }
+
+      const professionalId = await getDefaultProfessionalId();
+      const recoResult = await triggerExerciseRecommendation({
+        req,
+        patientId: reportCommand.patientId,
+        professionalId,
+        messageText: reportCommand.symptoms,
+        channel: 'telegram',
+      });
+
+      if (!recoResult.ok || !recoResult.payload?.ok) {
+        return await reply(
+          `No pude generar el informe para el paciente ${reportCommand.patientId}. Revisa el ID y vuelve a intentarlo.`
+        );
+      }
+
+      const recoPayload = recoResult.payload;
+      const reportText =
+        recoPayload.informe_clinico ||
+        buildTelegramExerciseFallback(recoPayload) ||
+        recoPayload.message_to_therapist ||
+        'Informe generado correctamente.';
+
+      let pdfSent = false;
+      try {
+        const pdfBuffer = await buildExerciseReportPdfBuffer(recoPayload);
+        await sendTelegramDocument({
+          chatId: chat_id,
+          filename: `informe-ejercicios-${String(recoPayload.recommendation_id || Date.now())}.pdf`,
+          buffer: pdfBuffer,
+          caption: `Informe listo para paciente ${reportCommand.patientId}`,
+          agentMode: 'physio_reports',
+        });
+        pdfSent = true;
+      } catch (pdfErr) {
+        console.warn('[telegram] PDF generation/send error:', pdfErr.message);
+      }
+
+      if (pdfSent) {
+        return await reply(
+          `Informe generado para paciente ${reportCommand.patientId}.\nRecomendacion: ${recoPayload.recommendation_id || '-'}\nPDF enviado en este chat.`
+        );
+      }
+      return await reply(truncateTelegramMessage(reportText));
+    }
 
     if (text.toLowerCase().startsWith('/start')) {
       const [, rawCode] = text.split(/\s+/);
@@ -458,7 +866,8 @@ router.post('/incoming', async (req, res, next) => {
       if (updateError) throw updateError;
 
       const patientName = link.pacientes?.nombre_completo || 'paciente';
-      return await reply(`Vinculacion completada para ${patientName}.\n\n${getHelpMessage()}`);
+      const modeHelp = agentMode === 'patient_appointments' ? getPatientAppointmentHelpMessage() : getHelpMessage();
+      return await reply(`Vinculacion completada para ${patientName}.\n\n${modeHelp}`);
     }
 
     const { data: link, error: linkError } = await supabase
@@ -493,8 +902,14 @@ router.post('/incoming', async (req, res, next) => {
         return await reply('He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
+      if (agentMode === 'patient_appointments') {
+        return await reply(
+          `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha.\n\nPara agendar, envia: /cita 2026-03-10T18:00 2026-03-10T18:45\n\n${getPatientAppointmentHelpMessage()}`
+        );
+      }
+
       return await reply(
-        `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha y enviado tus síntomas al fisioterapeuta para revisión.\n\n${getHelpMessage()}`
+        `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha y enviado tus sintomas al fisioterapeuta para revision.\n\n${getHelpMessage()}`
       );
     }
 
@@ -518,6 +933,14 @@ router.post('/incoming', async (req, res, next) => {
         }
       } catch (routerErr) {
         console.warn('[telegram] W0 intent-router error:', routerErr.message);
+      }
+
+      const fallbackIntent = inferIntentFromText(text);
+      if (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD) {
+        intent = fallbackIntent;
+      }
+      if (agentMode === 'patient_appointments') {
+        intent = { route: 'appointment', confidence: Math.max(Number(intent.confidence || 0), 0.95) };
       }
 
       // Always create intake for tracking
@@ -569,6 +992,7 @@ router.post('/incoming', async (req, res, next) => {
       if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
         const { slotStart, slotEnd } = extractIsoSlots(text);
         const appointment = await triggerAppointmentWorkflow({
+          req,
           patientId: link.paciente_id,
           professionalId,
           chatId: chat_id,
@@ -611,6 +1035,9 @@ router.post('/incoming', async (req, res, next) => {
     }
 
     if (text.toLowerCase() === '/ayuda') {
+      if (agentMode === 'patient_appointments') {
+        return await reply(getPatientAppointmentHelpMessage());
+      }
       return await reply(getHelpMessage());
     }
 
@@ -697,6 +1124,7 @@ router.post('/incoming', async (req, res, next) => {
       }
 
       const appointment = await triggerAppointmentWorkflow({
+        req,
         patientId: link.paciente_id,
         professionalId,
         chatId: chat_id,

@@ -15,10 +15,23 @@ n8n es el orquestador principal para:
 - Canonicos vNext (`n8n/Fisio_IA_Agent/vnext/`)
   - `fisio-agent-core.json`
   - `sw-fisio-pending-intakes.json`
-  - `telegram-chat.json` (usa `Telegram Trigger` nativo)
+  - `telegram-chat.json` (bot pacientes/citas - `agent_mode=patient_appointments`)
+  - `telegram-fisio-reports.json` (bot fisio/informes - `agent_mode=physio_reports`)
   - `w1-appointment-agent.json`
   - `w2-exercise-agent.json`
   - `w3-crm-trigger.json`
+
+## Configuracion 2 bots Telegram
+- Bot pacientes (agenda citas): `fisioterapia_CarlaJL`
+  - Workflow: `n8n/Fisio_IA_Agent/vnext/telegram-chat.json`
+  - Debe usar credencial del bot de pacientes.
+- Bot fisio (informes + PDF): `FisioIA_Agent_bot`
+  - Workflow: `n8n/Fisio_IA_Agent/vnext/telegram-fisio-reports.json`
+  - Debe usar credencial del bot del fisioterapeuta.
+
+Comando principal en bot fisio:
+- `/informe <paciente_id> | <sintomas>`
+- Ejemplo: `/informe 11111111-2222-3333-4444-555555555555 | Dolor cervical al girar cuello desde hace 3 dias`
 
 ## Estado remoto (2026-03-04)
 - Instancia auditada de extremo a extremo.

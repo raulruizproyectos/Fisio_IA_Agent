@@ -46,6 +46,18 @@
                                                                                      "name":  "request_id",
                                                                                      "value":  "={{ \"req_\" + Date.now() + \"_\" + Math.floor(Math.random() * 100000) }}",
                                                                                      "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "agent_mode",
+                                                                                     "name":  "agent_mode",
+                                                                                     "value":  "patient_appointments",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "bot_username",
+                                                                                     "name":  "bot_username",
+                                                                                     "value":  "fisioterapia_CarlaJL",
+                                                                                     "type":  "string"
                                                                                  }
                                                                              ]
                                                          },
@@ -68,7 +80,7 @@
                                          "url":  "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
                                          "sendBody":  true,
                                          "specifyBody":  "json",
-                                         "jsonBody":  "={\n  \"request_id\": $json.request_id,\n  \"chat_id\": $json.chat_id,\n  \"username\": $json.username,\n  \"texto_mensaje\": $json.texto_mensaje\n}",
+                                         "jsonBody":  "={\n  \"request_id\": $json.request_id,\n  \"chat_id\": $json.chat_id,\n  \"username\": $json.username,\n  \"texto_mensaje\": $json.texto_mensaje,\n  \"agent_mode\": $json.agent_mode,\n  \"bot_username\": $json.bot_username\n}",
                                          "options":  {
                                                          "ignoreResponseCode":  true,
                                                          "timeout":  15000
