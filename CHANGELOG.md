@@ -1,5 +1,36 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 53 - 2026-03-05
+
+### Objetivo
+- Mejorar cobertura de imagenes en recomendaciones de ejercicios (backend + frontend).
+
+### Cambios implementados
+- ✅ Backend `exercises.js`:
+  - `/catalog` ahora devuelve `imagen_url` resuelta desde `metadata.proet_image_url`.
+  - `/recommend` optimizado: salta query a `crm_ejercicio_media` si tabla vacia (0 registros).
+  - Nueva metrica `image_coverage` en respuesta: `{ with_image, total, percentage }`.
+  - Fallback heuristico `buildRuleBasedRecommendation` ahora incluye `imagen_url` de metadata PROET.
+- ✅ Frontend `index.astro`:
+  - Ejercicios recomendados ahora se renderizan como **tarjetas visuales con imagen**.
+  - Cada tarjeta muestra: imagen PROET, titulo, badge de zona, pauta, procedimiento, motivo.
+  - `onerror` handler oculta imagenes rotas gracefully.
+  - Layout responsivo: horizontal en desktop, apilado en movil (<480px).
+  - CSS nuevo: `.exercise-report`, `.exercise-card`, `.exercise-card-img`, etc.
+- ✅ Datos analizados:
+  - 195 ejercicios activos, 179 con `proet_image_url` (91.8%), 16 legacy sin imagen.
+  - `crm_ejercicio_media` vacia (0 rows) — todas las imagenes vienen de metadata PROET.
+
+### Verificacion
+- ✅ `node --check` OK (4 rutas backend).
+- ✅ `astro build` OK (frontend, 1.48s, 0 errores).
+- ✅ Push a GitHub: `be63070` en `main`.
+
+### Estado
+- ✅ Imagenes de ejercicios visibles en CRM con cobertura del 91.8%.
+- ✅ Commit `be63070` pushed a GitHub.
+- Pendiente: deploy en EasyPanel para ver en produccion.
+
 ## Sesion 52 - 2026-03-04
 
 ### Objetivo
