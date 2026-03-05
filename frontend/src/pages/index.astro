@@ -1560,19 +1560,31 @@ import Layout from '../layouts/Layout.astro';
     flex: 1;
     padding: 1.4rem;
     overflow-y: auto;
+    overflow-x: hidden;
   }
   .content-grid {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
     gap: 1.25rem;
     max-width: 1400px;
     margin: 0 auto;
+    align-items: start;
+  }
+  .col-main,
+  .col-aside,
+  .table-card,
+  .card,
+  .table-wrap {
+    min-width: 0;
+  }
+  .col-aside {
+    width: 100%;
   }
 
   /* === METRICS === */
   .metrics-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 0.85rem;
     margin-bottom: 1.25rem;
   }
@@ -1683,10 +1695,12 @@ import Layout from '../layouts/Layout.astro';
     padding: 0.7rem 1.15rem;
     font-size: 0.88rem;
     border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    overflow-wrap: anywhere;
   }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--bg-card-hover); }
-  .td-patient { font-weight: 500; }
+  .td-patient { font-weight: 500; overflow-wrap: anywhere; }
 
   .status-chip {
     display: inline-block;
@@ -1738,9 +1752,10 @@ import Layout from '../layouts/Layout.astro';
   .agent-panel {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 60px - 2.5rem);
+    height: min(calc(100vh - 60px - 2.8rem), 860px);
+    min-height: 520px;
     position: sticky;
-    top: 0;
+    top: 1.4rem;
     box-shadow: var(--shadow-md);
   }
   .agent-header .agent-title {
@@ -1785,6 +1800,7 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    min-height: 200px;
   }
   .msg {
     display: flex;
@@ -1817,6 +1833,7 @@ import Layout from '../layouts/Layout.astro';
     padding: 0.6rem 0.85rem;
     font-size: 0.88rem;
     line-height: 1.5;
+    overflow-wrap: anywhere;
   }
   .msg.agent .msg-body { background: var(--bg-elevated); color: var(--text-primary); }
   .msg.user .msg-body { background: var(--accent); color: #fff; }
@@ -2162,6 +2179,9 @@ import Layout from '../layouts/Layout.astro';
     .agent-panel {
       height: 500px;
       position: static;
+      top: auto;
+      min-height: 420px;
+      max-height: none;
     }
     .metrics-row {
       grid-template-columns: repeat(2, 1fr);
@@ -2241,12 +2261,14 @@ import Layout from '../layouts/Layout.astro';
     /* Agent panel */
     .agent-panel {
       height: auto;
-      max-height: 60vh;
+      max-height: none;
+      min-height: 0;
       position: static;
+      top: auto;
     }
     .chat-log {
-      max-height: 35vh;
-      min-height: 120px;
+      max-height: 42vh;
+      min-height: 200px;
     }
 
     /* Tables */
@@ -2334,6 +2356,16 @@ import Layout from '../layouts/Layout.astro';
     }
     .topbar {
       height: 52px;
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: repeat(3, 44px);
+      justify-content: end;
+      gap: 0.45rem;
+    }
+    .chat-form textarea {
+      grid-column: 1 / -1;
+      min-height: 82px;
     }
   }
 </style>
