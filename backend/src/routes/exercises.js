@@ -28,10 +28,19 @@ router.get('/catalog', async (req, res) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    res.json({ ok: true, data, total: data.length });
+    // Enrich each exercise with resolved imagen_url from metadata
+    const enriched = (data || []).map((ex) => {
+      const meta = ex.metadata || {};
+      return {
+        ...ex,
+        imagen_url: meta.proet_image_url || meta.image_url || null,
+      };
+    });
+
+    res.json({ ok: true, data: enriched, total: enriched.length });
   } catch (err) {
     console.error('[exercises/catalog] Error:', err.message);
-    res.status(500).json({ ok: false, error: 'Error al obtener catÃ¡logo' });
+    res.status(500).json({ ok: false, error: 'Error al obtener catalogo' });
   }
 });
 
@@ -243,23 +252,30 @@ router.post('/recommend', async (req, res) => {
     }
 
     // 4. Fetch media signed URLs for recommended exercises
+    // Only query crm_ejercicio_media if it has rows (currently empty; PROET images live in metadata)
     const exerciseIds = selected_exercises.map((e) => e.exercise_id || e.id).filter(Boolean);
     let mediaMap = {};
 
     if (exerciseIds.length > 0) {
-      const { data: mediaRows } = await supabase
+      const { count: mediaCount } = await supabase
         .from('crm_ejercicio_media')
-        .select('ejercicio_id, object_key, tipo_media, es_principal')
-        .in('ejercicio_id', exerciseIds)
-        .eq('es_principal', true);
+        .select('id', { count: 'exact', head: true });
 
-      if (mediaRows?.length) {
-        for (const m of mediaRows) {
-          const { data: signed } = await supabase.storage
-            .from('ejercicios')
-            .createSignedUrl(m.object_key, 3600);
-          if (signed?.signedUrl) {
-            mediaMap[m.ejercicio_id] = signed.signedUrl;
+      if (mediaCount && mediaCount > 0) {
+        const { data: mediaRows } = await supabase
+          .from('crm_ejercicio_media')
+          .select('ejercicio_id, object_key, tipo_media, es_principal')
+          .in('ejercicio_id', exerciseIds)
+          .eq('es_principal', true);
+
+        if (mediaRows?.length) {
+          for (const m of mediaRows) {
+            const { data: signed } = await supabase.storage
+              .from('ejercicios')
+              .createSignedUrl(m.object_key, 3600);
+            if (signed?.signedUrl) {
+              mediaMap[m.ejercicio_id] = signed.signedUrl;
+            }
           }
         }
       }
@@ -309,6 +325,14 @@ router.post('/recommend', async (req, res) => {
       recommendationId,
     });
 
+    // Image coverage metric for observability
+    const withImage = exercises.filter((e) => e.imagen_url).length;
+    const imageCoverage = {
+      with_image: withImage,
+      total: exercises.length,
+      percentage: exercises.length > 0 ? Math.round((withImage / exercises.length) * 100) : 0,
+    };
+
     const response = {
       ok: true,
       request_id: requestId,
@@ -320,6 +344,7 @@ router.post('/recommend', async (req, res) => {
         reason: escalation_reason,
       },
       exercises,
+      image_coverage: imageCoverage,
       message_to_patient: message_to_patient_es,
       message_to_therapist: message_to_therapist_es,
       selection_rationale,
@@ -477,6 +502,7 @@ function buildRuleBasedRecommendation({ requestId, symptoms, catalog, fallbackRe
         repeticiones: ex.metadata?.repeticiones_defecto ?? 10,
         duracion_segundos: ex.metadata?.duracion_segundos_defecto ?? null,
         procedimiento: ex.descripcion || '',
+        imagen_url: ex.metadata?.proet_image_url || ex.metadata?.image_url || null,
         orden: idx + 1,
       };
     });

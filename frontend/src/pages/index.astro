@@ -382,54 +382,70 @@ import Layout from '../layouts/Layout.astro';
     return pts;
   };
 
-  const buildExerciseReportMessage = (payload: any) => {
-    const lines: string[] = [];
+  // Render exercise recommendation as rich HTML with image cards
+  const addExerciseReport = (payload: any) => {
+    if (!log) return;
     const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
+    const coverage = payload?.image_coverage || {};
+
+    let html = '<div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div>';
+    html += '<div class="msg-body"><span class="msg-sender">Agente IA</span>';
+    html += '<div class="exercise-report">';
 
     if (payload?.red_flags?.present) {
-      lines.push('âš ï¸ ALERTAS DETECTADAS: Se recomienda valoraciÃ³n mÃ©dica antes de continuar.');
-      lines.push('');
+      html += '<div class="exercise-alert"><span class="material-symbols-rounded">warning</span> ALERTAS: Se recomienda valoracion medica antes de continuar.</div>';
     }
-
     if (payload?.message_to_therapist) {
-      lines.push(`ðŸ“‹ Nota clÃ­nica: ${payload.message_to_therapist}`);
-      lines.push('');
+      html += `<div class="exercise-note"><strong>Nota clinica:</strong> ${escapeHtml(payload.message_to_therapist)}</div>`;
     }
 
-    lines.push(`âœ… Informe de ejercicios (${exercises.length})`);
-    lines.push('');
+    html += `<div class="exercise-summary">Ejercicios recomendados: <strong>${exercises.length}</strong>`;
+    if (coverage.percentage !== undefined) {
+      html += ` · Imagenes: ${coverage.with_image}/${coverage.total}`;
+    }
+    html += '</div>';
 
     exercises.forEach((ex: any, idx: number) => {
       const order = ex.orden || idx + 1;
-      lines.push(`${order}. ${ex.nombre || 'Ejercicio'} (${ex.zona_corporal || 'general'})`);
+      const nombre = escapeHtml(ex.nombre || 'Ejercicio');
+      const zona = escapeHtml(ex.zona_corporal || 'general');
+      const imgUrl = ex.imagen_url || '';
+      const procedimiento = ex.procedimiento
+        ? escapeHtml(Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : String(ex.procedimiento))
+        : (ex.descripcion ? escapeHtml(String(ex.descripcion)) : '');
 
       const pauta = [
         ex.series ? `Series: ${ex.series}` : null,
-        ex.repeticiones ? `Repeticiones: ${ex.repeticiones}` : null,
-        ex.duracion_segundos ? `DuraciÃ³n: ${ex.duracion_segundos}s` : null,
-      ].filter(Boolean);
-      if (pauta.length) lines.push(`   Pauta: ${pauta.join(' Â· ')}`);
+        ex.repeticiones ? `Rep: ${ex.repeticiones}` : null,
+        ex.duracion_segundos ? `${ex.duracion_segundos}s` : null,
+      ].filter(Boolean).join(' · ');
 
-      if (ex.procedimiento) {
-        lines.push(`   Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`);
-      } else if (ex.descripcion) {
-        lines.push(`   Procedimiento: ${ex.descripcion}`);
+      html += '<div class="exercise-card">';
+      if (imgUrl) {
+        html += `<div class="exercise-card-img"><img src="${escapeAttr(imgUrl)}" alt="${escapeAttr(ex.nombre || 'Ejercicio')}" loading="lazy" onerror="this.parentElement.style.display='none'"/></div>`;
       }
-
-      if (ex.why) lines.push(`   Motivo: ${ex.why}`);
-      if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Cautelas: ${ex.cautions.join('; ')}`);
-      if (ex.imagen_url) lines.push(`   Imagen: ${ex.imagen_url}`);
-      lines.push('');
+      html += '<div class="exercise-card-body">';
+      html += `<div class="exercise-card-title">${order}. ${nombre} <span class="exercise-zona">${zona}</span></div>`;
+      if (pauta) html += `<div class="exercise-card-pauta">${escapeHtml(pauta)}</div>`;
+      if (procedimiento) html += `<div class="exercise-card-proc">${procedimiento}</div>`;
+      if (ex.why) html += `<div class="exercise-card-why"><strong>Motivo:</strong> ${escapeHtml(ex.why)}</div>`;
+      if (Array.isArray(ex.cautions) && ex.cautions.length) {
+        html += `<div class="exercise-card-caution"><span class="material-symbols-rounded" style="font-size:14px;">report</span> ${escapeHtml(ex.cautions.join('; '))}</div>`;
+      }
+      html += '</div></div>';
     });
 
     if (payload?.message_to_patient) {
-      lines.push('ðŸ’¬ Mensaje para paciente:');
-      lines.push(payload.message_to_patient);
-      lines.push('');
+      html += `<div class="exercise-patient-msg"><strong>Mensaje para paciente:</strong> ${escapeHtml(payload.message_to_patient)}</div>`;
     }
+    html += `<div class="exercise-id">ID: ${escapeHtml(payload?.recommendation_id || '-')}</div>`;
+    html += '</div></div>';
 
-    lines.push(`ðŸ”— ID recomendaciÃ³n: ${payload?.recommendation_id || 'â€”'}`);
-    return lines.join('\n').trim();
+    const article = document.createElement('article');
+    article.className = 'msg agent';
+    article.innerHTML = html;
+    log.appendChild(article);
+    log.scrollTop = log.scrollHeight;
   };
 
   // W3: Exercise recommendation via CRM
@@ -457,9 +473,9 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
 
-      const msg = payload.informe_clinico || buildExerciseReportMessage(payload);
+      // Render rich HTML with image cards
+      addExerciseReport(payload);
 
-      addMessage(msg, 'agent');
       const metricEl = document.getElementById('metricInformes');
       if (metricEl) {
         const current = parseInt(metricEl.textContent || '0', 10);
@@ -767,6 +783,136 @@ import Layout from '../layouts/Layout.astro';
 </script>
 
 <style>
+  /* === EXERCISE REPORT CARDS === */
+  .exercise-report {
+    margin-top: 0.5rem;
+  }
+  .exercise-alert {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .exercise-note {
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(59, 130, 246, 0.08);
+    border-radius: 6px;
+  }
+  .exercise-summary {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #94a3b8);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border, rgba(119, 153, 204, 0.12));
+  }
+  .exercise-card {
+    display: flex;
+    gap: 0.75rem;
+    background: var(--bg-surface, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--border, rgba(119, 153, 204, 0.12));
+    border-radius: 10px;
+    padding: 0.6rem;
+    margin-bottom: 0.5rem;
+    transition: border-color 0.2s;
+  }
+  .exercise-card:hover {
+    border-color: var(--accent, #0d9488);
+  }
+  .exercise-card-img {
+    flex-shrink: 0;
+    width: 90px;
+    height: 90px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .exercise-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .exercise-card-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .exercise-card-title {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--text-primary, #e2e8f0);
+    margin-bottom: 0.2rem;
+  }
+  .exercise-zona {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--accent, #0d9488);
+    background: rgba(13, 148, 136, 0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 0.3rem;
+  }
+  .exercise-card-pauta {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #94a3b8);
+    margin-bottom: 0.15rem;
+  }
+  .exercise-card-proc {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #94a3b8);
+    line-height: 1.35;
+    margin-bottom: 0.15rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .exercise-card-why {
+    font-size: 0.78rem;
+    color: var(--text-muted, #64748b);
+  }
+  .exercise-card-caution {
+    font-size: 0.78rem;
+    color: #fbbf24;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.15rem;
+  }
+  .exercise-patient-msg {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.65rem;
+    background: rgba(16, 185, 129, 0.08);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #94a3b8);
+  }
+  .exercise-id {
+    font-size: 0.72rem;
+    color: var(--text-muted, #64748b);
+    margin-top: 0.4rem;
+    text-align: right;
+  }
+  @media (max-width: 480px) {
+    .exercise-card {
+      flex-direction: column;
+    }
+    .exercise-card-img {
+      width: 100%;
+      height: 120px;
+    }
+  }
+
   /* === APP SHELL === */
   .app-shell {
     display: flex;
