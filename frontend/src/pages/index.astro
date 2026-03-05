@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Fisio IA Agent â€” CRM Clinico Inteligente">
+<Layout title="Fisio IA Agent — CRM Clínico Inteligente">
   <div class="app-shell">
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
@@ -42,7 +42,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="sidebar-bottom">
         <a href="#" class="nav-item" data-section="config">
           <span class="material-symbols-rounded">settings</span>
-          <span class="nav-label">ConfiguraciÃ³n</span>
+          <span class="nav-label">Configuración</span>
         </a>
       </div>
     </aside>
@@ -52,7 +52,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="main-area">
       <!-- HEADER -->
       <header class="topbar">
-        <button class="sidebar-toggle" id="sidebarToggle" aria-label="MenÃº">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menú">
           <span class="material-symbols-rounded">menu</span>
         </button>
         <div class="search-box">
@@ -66,7 +66,7 @@ import Layout from '../layouts/Layout.astro';
           </button>
           <div class="user-pill">
             <div class="avatar">RR</div>
-            <span class="user-name">Dr. RaÃºl Ruiz</span>
+            <span class="user-name">Dr. Raúl Ruiz</span>
           </div>
         </div>
       </header>
@@ -78,21 +78,22 @@ import Layout from '../layouts/Layout.astro';
           <div class="content-grid">
             <div class="col-main">
               <section class="metrics-row">
-                <div class="metric-card"><div class="metric-icon" style="background: var(--accent-soft); color: var(--accent);"><span class="material-symbols-rounded">assignment</span></div><div class="metric-data"><span class="metric-value" id="metricIntakes">â€”</span><span class="metric-label">Intakes pendientes</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(59,130,246,0.12); color: var(--info);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">â€”</span><span class="metric-label">Pacientes activos</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: var(--accent-soft); color: var(--accent);"><span class="material-symbols-rounded">assignment</span></div><div class="metric-data"><span class="metric-value" id="metricIntakes">—</span><span class="metric-label">Intakes pendientes</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: rgba(59,130,246,0.12); color: var(--info);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">—</span><span class="metric-label">Pacientes activos</span></div></div>
                 <div class="metric-card"><div class="metric-icon" style="background: rgba(245,158,11,0.12); color: var(--warning);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Informes ejercicio</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(16,185,129,0.12); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">â€”</span><span class="metric-label">Sesiones hoy</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: rgba(16,185,129,0.12); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">—</span><span class="metric-label">Sesiones hoy</span></div></div>
+                <div class="metric-card"><div class="metric-icon" style="background: rgba(244,114,182,0.14); color: #f472b6;"><span class="material-symbols-rounded">timer</span></div><div class="metric-data"><span class="metric-value" id="metricEngineOps">0/0</span><span class="metric-label">Timeouts/Reintentos IA</span></div></div>
               </section>
               <section class="card table-card">
-                <header class="card-header"><h2>Ãšltimos Intakes</h2><button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
-                <div class="table-wrap"><table id="intakeTable"><thead><tr><th>Paciente</th><th>Canal</th><th>Fecha</th><th>Estado</th><th>AcciÃ³n</th></tr></thead><tbody id="intakeBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">inbox</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
+                <header class="card-header"><h2>Últimos Intakes</h2><button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+                <div class="table-wrap"><table id="intakeTable"><thead><tr><th>Paciente</th><th>Canal</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="intakeBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">inbox</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
               </section>
             </div>
             <div class="col-aside">
               <section class="card agent-panel">
-                <header class="card-header agent-header"><div class="agent-title"><span class="material-symbols-rounded agent-icon">psychology</span><div><h2>Agente ClÃ­nico IA</h2><div class="agent-status"><span class="status-dot connected" id="agentDot"></span><span class="status-text" id="agentStatusText">Conectado</span></div></div></div></header>
-                <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clÃ­nico. Describe sÃ­ntomas y generarÃ© un informe de ejercicios con imÃ¡genes y procedimiento.</p></div></article></div>
-                <form id="agentForm" class="chat-form"><div class="input-row"><textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 dias, empeora al elevar brazo, sin traumatismo..."></textarea><button type="button" class="exercise-btn" id="exerciseRecoBtn" aria-label="Recomendar ejercicios" title="Recomendar ejercicios"><span class="material-symbols-rounded">fitness_center</span></button><button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button></div><div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter = Agente IA Â· <span class="material-symbols-rounded" style="font-size: 14px;">fitness_center</span> = Ejercicios AI</div></form>
+                <header class="card-header agent-header"><div class="agent-title"><span class="material-symbols-rounded agent-icon">psychology</span><div><h2>Agente Clínico IA</h2><div class="agent-status"><span class="status-dot connected" id="agentDot"></span><span class="status-text" id="agentStatusText">Conectado</span></div></div></div></header>
+                <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clínico. Describe síntomas y generaré un informe de ejercicios con imágenes y procedimiento.</p></div></article></div>
+                <form id="agentForm" class="chat-form"><div class="input-row"><textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 días, empeora al elevar brazo, sin traumatismo..."></textarea><button type="button" class="exercise-btn" id="exerciseRecoBtn" aria-label="Recomendar ejercicios" title="Recomendar ejercicios"><span class="material-symbols-rounded">fitness_center</span></button><button type="button" class="pdf-btn" id="exercisePdfBtn" aria-label="Descargar informe PDF" title="Descargar informe PDF"><span class="material-symbols-rounded">picture_as_pdf</span></button><button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button></div><div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter = Agente IA · <span class="material-symbols-rounded" style="font-size: 14px;">fitness_center</span> = Ejercicios AI</div></form>
               </section>
             </div>
           </div>
@@ -113,7 +114,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PLANTILLAS === -->
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas TerapÃ©uticas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terapéuticas</h1>
             <div class="page-tools">
               <label class="inline-field">
                 <span>Paciente destino</span>
@@ -125,17 +126,17 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Plantillas mÃ¡s reutilizadas</h2></header>
+            <header class="card-header"><h2>Plantillas más reutilizadas</h2></header>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>TÃ­tulo</th>
+                    <th>Título</th>
                     <th>Usos</th>
                     <th>Ejercicios</th>
-                    <th>Ãšltimo uso</th>
+                    <th>Último uso</th>
                     <th>Origen</th>
-                    <th>AcciÃ³n</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
                 <tbody id="templatesBody">
@@ -189,22 +190,22 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: CONFIG === -->
         <div class="page-section" data-page="config">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> ConfiguraciÃ³n</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Configuración</h1>
           </div>
           <div class="config-grid">
             <section class="card">
               <header class="card-header"><h2>Conexiones</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">â€”</span><span class="status-chip" id="cfgBackendStatus">â€”</span></div>
-                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">â€”</span><span class="status-chip" id="cfgAgentStatus">â€”</span></div>
+                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">—</span><span class="status-chip" id="cfgBackendStatus">—</span></div>
+                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">—</span><span class="status-chip" id="cfgAgentStatus">—</span></div>
               </div>
             </section>
             <section class="card">
               <header class="card-header"><h2>Proyecto</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">VersiÃ³n</span><span class="config-value">0.0.1</span></div>
+                <div class="config-item"><span class="config-label">Versión</span><span class="config-value">0.0.1</span></div>
                 <div class="config-item"><span class="config-label">Stack</span><span class="config-value">Astro + Express + Supabase + n8n</span></div>
-                <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub â†—</a></div>
+                <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub ↗</a></div>
               </div>
             </section>
           </div>
@@ -226,8 +227,10 @@ import Layout from '../layouts/Layout.astro';
   const input = document.getElementById('agentInput') as HTMLTextAreaElement | null;
   const log = document.getElementById('chatLog') as HTMLElement | null;
   const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement | null;
+  const exercisePdfBtn = document.getElementById('exercisePdfBtn') as HTMLButtonElement | null;
   const agentDot = document.getElementById('agentDot') as HTMLElement | null;
   const agentStatusText = document.getElementById('agentStatusText') as HTMLElement | null;
+  const metricEngineOps = document.getElementById('metricEngineOps') as HTMLElement | null;
   const sidebarToggle = document.getElementById('sidebarToggle') as HTMLElement | null;
   const sidebar = document.getElementById('sidebar') as HTMLElement | null;
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
@@ -240,9 +243,95 @@ import Layout from '../layouts/Layout.astro';
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
 
   // === HELPERS ===
-  const escapeHtml = (str: string) => str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const escapeAttr = (str: string) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'â€”'; } };
+  const MOJIBAKE_RE = /(?:\u00C3|\u00C2|\u00E2|\u00F0|\u00D0|\u00D1|\uFFFD|\u0153|\u0152|\u0161|\u0178|\u00EF\u00BF\u00BD)/;
+  const CP1252_UNICODE_TO_BYTE: Record<number, number> = {
+    0x20ac: 0x80,
+    0x201a: 0x82,
+    0x0192: 0x83,
+    0x201e: 0x84,
+    0x2026: 0x85,
+    0x2020: 0x86,
+    0x2021: 0x87,
+    0x02c6: 0x88,
+    0x2030: 0x89,
+    0x0160: 0x8a,
+    0x2039: 0x8b,
+    0x0152: 0x8c,
+    0x017d: 0x8e,
+    0x2018: 0x91,
+    0x2019: 0x92,
+    0x201c: 0x93,
+    0x201d: 0x94,
+    0x2022: 0x95,
+    0x2013: 0x96,
+    0x2014: 0x97,
+    0x02dc: 0x98,
+    0x2122: 0x99,
+    0x0161: 0x9a,
+    0x203a: 0x9b,
+    0x0153: 0x9c,
+    0x017e: 0x9e,
+    0x0178: 0x9f,
+  };
+  const toLegacyBytes = (text: string) => {
+    const bytes: number[] = [];
+    for (const ch of text) {
+      const code = ch.codePointAt(0) ?? 0;
+      if (code <= 0xff) {
+        bytes.push(code);
+        continue;
+      }
+      const mapped = CP1252_UNICODE_TO_BYTE[code];
+      if (typeof mapped === 'number') {
+        bytes.push(mapped);
+        continue;
+      }
+      return null;
+    }
+    return new Uint8Array(bytes);
+  };
+  const decodeUtf8Bytes = (bytes: Uint8Array) => {
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch {
+      try {
+        return new TextDecoder('utf-8').decode(bytes);
+      } catch {
+        return '';
+      }
+    }
+  };
+  const maybeDecodeMojibake = (value: unknown) => {
+    let current = String(value ?? '');
+    if (!MOJIBAKE_RE.test(current)) return current;
+
+    for (let pass = 0; pass < 3; pass += 1) {
+      const bytes = toLegacyBytes(current);
+      if (!bytes) break;
+      const decoded = decodeUtf8Bytes(bytes);
+      if (!decoded || decoded === current) break;
+      current = decoded;
+      if (!MOJIBAKE_RE.test(current)) break;
+    }
+
+    return current.normalize('NFC');
+  };
+  const sanitizeText = (value: unknown) => maybeDecodeMojibake(value).replace(/\u0000/g, '');
+  const sanitizePayload = (value: any): any => {
+    if (typeof value === 'string') return sanitizeText(value);
+    if (Array.isArray(value)) return value.map((item) => sanitizePayload(item));
+    if (value && typeof value === 'object') {
+      const output: Record<string, any> = {};
+      Object.entries(value).forEach(([key, item]) => {
+        output[key] = sanitizePayload(item);
+      });
+      return output;
+    }
+    return value;
+  };
+  const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '—'; } };
   const isTodayDate = (d: string) => {
     try {
       const target = new Date(d);
@@ -263,8 +352,45 @@ import Layout from '../layouts/Layout.astro';
       }
       throw new Error(detail ? `HTTP ${r.status}: ${detail.slice(0, 220)}` : `HTTP ${r.status}`);
     }
-    return r.json();
+    const payload = await r.json();
+    return sanitizePayload(payload);
   };
+  const sanitizePageTextNodes = () => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const updates: Array<{ node: Text; value: string }> = [];
+    let current = walker.nextNode();
+    while (current) {
+      const node = current as Text;
+      const original = node.nodeValue || '';
+      if (MOJIBAKE_RE.test(original)) {
+        const fixed = maybeDecodeMojibake(original);
+        if (fixed && fixed !== original) {
+          updates.push({ node, value: fixed });
+        }
+      }
+      current = walker.nextNode();
+    }
+    updates.forEach(({ node, value }) => {
+      node.nodeValue = value;
+    });
+  };
+  const sanitizeCommonAttributes = () => {
+    const attrs = ['title', 'aria-label', 'placeholder'];
+    const selector = '[title],[aria-label],[placeholder]';
+    const nodes = document.querySelectorAll(selector);
+    nodes.forEach((element) => {
+      attrs.forEach((attr) => {
+        const original = element.getAttribute(attr);
+        if (!original || !MOJIBAKE_RE.test(original)) return;
+        const fixed = maybeDecodeMojibake(original);
+        if (fixed && fixed !== original) {
+          element.setAttribute(attr, fixed);
+        }
+      });
+    });
+  };
+  sanitizePageTextNodes();
+  sanitizeCommonAttributes();
   const isTimeoutError = (err: any) => {
     const msg = String(err?.message || '').toLowerCase();
     return err?.name === 'TimeoutError' || msg.includes('timed out') || msg.includes('abort');
@@ -297,6 +423,40 @@ import Layout from '../layouts/Layout.astro';
   let selectedPatientName = '';
   let patientCatalog: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let selectedTemplatePatientId: string | null = null;
+  let lastExerciseReportPayload: any = null;
+  const exerciseOpsStats = {
+    timeouts: 0,
+    retries: 0,
+  };
+  const processedEngineObservability = new Set<string>();
+
+  const renderExerciseOpsMetric = () => {
+    if (!metricEngineOps) return;
+    metricEngineOps.textContent = `${exerciseOpsStats.timeouts}/${exerciseOpsStats.retries}`;
+  };
+  renderExerciseOpsMetric();
+
+  const syncEngineOpsFromPayload = (payload: any) => {
+    const requestId = String(payload?.request_id || '').trim();
+    if (requestId && processedEngineObservability.has(requestId)) return;
+
+    const engineObs = payload?.engine_observability || {};
+    const retriesUsed = Number(engineObs?.retries_used || 0);
+    const attemptsDetail = Array.isArray(engineObs?.attempts_detail) ? engineObs.attempts_detail : [];
+    const timedOutCount = attemptsDetail.filter((entry: any) => Boolean(entry?.timed_out)).length;
+
+    if (retriesUsed > 0) {
+      exerciseOpsStats.retries += retriesUsed;
+    }
+    if (timedOutCount > 0) {
+      exerciseOpsStats.timeouts += timedOutCount;
+    }
+
+    if (requestId) {
+      processedEngineObservability.add(requestId);
+    }
+    renderExerciseOpsMetric();
+  };
 
   const navigateTo = (section: string) => {
     navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === section));
@@ -351,7 +511,7 @@ import Layout from '../layouts/Layout.astro';
     log.appendChild(article);
     log.scrollTop = log.scrollHeight;
   };
-  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexiÃ³n'; };
+  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
   const setSending = (busy: boolean) => { if(sendBtn) sendBtn.disabled=busy; if(input) input.disabled=busy; };
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
 
@@ -361,7 +521,7 @@ import Layout from '../layouts/Layout.astro';
     const options = ['<option value="">Selecciona paciente</option>']
       .concat(
         patientCatalog.map((p) => {
-          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `Â· ${p.email}` : ''}`.trim();
+          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `· ${p.email}` : ''}`.trim();
           return `<option value="${escapeAttr(p.id)}">${escapeHtml(label)}</option>`;
         })
       );
@@ -385,8 +545,10 @@ import Layout from '../layouts/Layout.astro';
   // Render exercise recommendation as rich HTML with image cards
   const addExerciseReport = (payload: any) => {
     if (!log) return;
+    lastExerciseReportPayload = payload;
     const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
     const coverage = payload?.image_coverage || {};
+    const engineObs = payload?.engine_observability || {};
 
     let html = '<div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div>';
     html += '<div class="msg-body"><span class="msg-sender">Agente IA</span>';
@@ -403,7 +565,16 @@ import Layout from '../layouts/Layout.astro';
     if (coverage.percentage !== undefined) {
       html += ` · Imagenes: ${coverage.with_image}/${coverage.total}`;
     }
+    if (typeof engineObs.attempts === 'number') {
+      html += ` · Motor IA: ${engineObs.attempts} intento(s)`;
+      if (typeof engineObs.retries_used === 'number') {
+        html += ` (${engineObs.retries_used} reintentos)`;
+      }
+    }
     html += '</div>';
+    if (engineObs.fallback_used) {
+      html += `<div class="exercise-note"><strong>Fallback activo:</strong> ${escapeHtml(engineObs.fallback_reason || 'motor_ia_no_disponible')}</div>`;
+    }
 
     exercises.forEach((ex: any, idx: number) => {
       const order = ex.orden || idx + 1;
@@ -448,33 +619,199 @@ import Layout from '../layouts/Layout.astro';
     log.scrollTop = log.scrollHeight;
   };
 
+  const loadJsPdf = async () => {
+    const win = window as any;
+    if (win?.jspdf?.jsPDF) return win.jspdf.jsPDF;
+
+    await new Promise<void>((resolve, reject) => {
+      const existing = document.querySelector('script[data-lib="jspdf"]') as HTMLScriptElement | null;
+      if (existing) {
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener('error', () => reject(new Error('No se pudo cargar jsPDF')), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+      script.async = true;
+      script.dataset.lib = 'jspdf';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('No se pudo cargar jsPDF'));
+      document.head.appendChild(script);
+    });
+
+    if (!win?.jspdf?.jsPDF) throw new Error('jsPDF no disponible');
+    return win.jspdf.jsPDF;
+  };
+
+  const exportExerciseReportPdf = async (payload: any) => {
+    const JsPDF = await loadJsPdf();
+    const doc = new JsPDF({ unit: 'mm', format: 'a4' });
+    const marginLeft = 14;
+    const marginRight = 14;
+    const maxWidth = 210 - marginLeft - marginRight;
+    const maxY = 287;
+    let y = 16;
+
+    const ensureSpace = (needed = 8) => {
+      if (y + needed <= maxY) return;
+      doc.addPage();
+      y = 16;
+    };
+
+    const writeWrapped = (text: string, fontSize = 10, indent = 0, lineGap = 5) => {
+      const value = String(text || '').trim();
+      if (!value) return;
+      doc.setFontSize(fontSize);
+      const x = marginLeft + indent;
+      const lines = doc.splitTextToSize(value, maxWidth - indent);
+      lines.forEach((line: string) => {
+        ensureSpace(lineGap);
+        doc.text(line, x, y);
+        y += lineGap;
+      });
+    };
+
+    const writeSectionTitle = (title: string) => {
+      ensureSpace(8);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, marginLeft, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+    };
+
+    const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
+    const reportDate = new Date().toLocaleString('es-ES');
+    const filenameDate = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('Informe de Ejercicios - Fisio IA Agent', marginLeft, y);
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Fecha: ${reportDate}`, marginLeft, y);
+    y += 5;
+    doc.text(`ID recomendacion: ${payload?.recommendation_id || '-'}`, marginLeft, y);
+    y += 5;
+    doc.text(`Request ID: ${payload?.request_id || '-'}`, marginLeft, y);
+    y += 8;
+
+    writeSectionTitle('Resumen clinico');
+    writeWrapped(`Sintomas: ${payload?.symptom_summary || 'No informado'}`);
+    writeWrapped(`Razon de seleccion: ${payload?.selection_rationale || '-'}`);
+
+    const redFlags = payload?.red_flags || {};
+    const redFlagItems = Array.isArray(redFlags?.items) ? redFlags.items.join(', ') : '';
+    writeWrapped(`Alertas rojas: ${redFlags?.present ? 'Si' : 'No'}${redFlagItems ? ` (${redFlagItems})` : ''}`);
+    y += 2;
+
+    writeSectionTitle(`Ejercicios recomendados (${exercises.length})`);
+    if (!exercises.length) {
+      writeWrapped('No hay ejercicios en el informe.');
+    }
+
+    exercises.forEach((ex: any, idx: number) => {
+      ensureSpace(14);
+      const order = ex?.orden || idx + 1;
+      const title = `${order}. ${ex?.nombre || 'Ejercicio'} (${ex?.zona_corporal || 'general'})`;
+      doc.setFont('helvetica', 'bold');
+      writeWrapped(title, 11);
+      doc.setFont('helvetica', 'normal');
+
+      const pauta = [
+        ex?.series ? `Series ${ex.series}` : null,
+        ex?.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
+        ex?.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
+      ].filter(Boolean).join(' · ');
+
+      if (pauta) writeWrapped(`Pauta: ${pauta}`, 10, 2);
+      if (ex?.procedimiento) writeWrapped(`Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`, 10, 2);
+      if (ex?.why) writeWrapped(`Motivo: ${ex.why}`, 10, 2);
+      if (Array.isArray(ex?.cautions) && ex.cautions.length) writeWrapped(`Cautelas: ${ex.cautions.join('; ')}`, 10, 2);
+      if (ex?.imagen_url) writeWrapped(`Imagen URL: ${ex.imagen_url}`, 9, 2, 4.5);
+      y += 2;
+    });
+
+    writeSectionTitle('Mensajes');
+    writeWrapped(`Para paciente: ${payload?.message_to_patient || '-'}`);
+    writeWrapped(`Para fisioterapeuta: ${payload?.message_to_therapist || '-'}`);
+
+    doc.save(`informe-ejercicios-${filenameDate}.pdf`);
+  };
+
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const requestExerciseRecommendation = async (text: string, maxAttempts = 2) => {
+    let lastError: any = null;
+    const safeMaxAttempts = Math.max(1, maxAttempts);
+
+    for (let attempt = 1; attempt <= safeMaxAttempts; attempt += 1) {
+      try {
+        const payload = await fetchJson(
+          `${BACKEND_BASE}/api/exercises/recommend`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              patient_id: selectedPatientId || null,
+              symptoms: text,
+              channel: 'crm_web',
+              fisioterapeuta_id: PROF_ID,
+            }),
+          },
+          45000
+        );
+
+        return {
+          payload,
+          attemptsUsed: attempt,
+          retriesUsed: attempt - 1,
+        };
+      } catch (err: any) {
+        lastError = err;
+        const timeout = isTimeoutError(err);
+        if (timeout) {
+          exerciseOpsStats.timeouts += 1;
+        }
+
+        const canRetry = timeout && attempt < safeMaxAttempts;
+        if (canRetry) {
+          exerciseOpsStats.retries += 1;
+          renderExerciseOpsMetric();
+          await wait(500 * attempt);
+          continue;
+        }
+
+        renderExerciseOpsMetric();
+        throw err;
+      }
+    }
+
+    throw lastError;
+  };
+
   // W3: Exercise recommendation via CRM
   const handleExerciseRecommend = async (text: string) => {
     addMessage(`Solicitar recomendacion para: ${text}`, 'user');
     setSending(true);
     try {
-      const payload = await fetchJson(
-        `${BACKEND_BASE}/api/exercises/recommend`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            patient_id: selectedPatientId || null,
-            symptoms: text,
-            channel: 'crm_web',
-            fisioterapeuta_id: PROF_ID,
-          }),
-        },
-        45000
-      );
+      const { payload, retriesUsed } = await requestExerciseRecommendation(text, 2);
+      renderExerciseOpsMetric();
 
       if (!payload.ok) {
         addMessage(`Error: ${payload.error || 'No se pudo generar recomendacion'}`, 'agent');
         return;
       }
 
+      syncEngineOpsFromPayload(payload);
+
       // Render rich HTML with image cards
       addExerciseReport(payload);
+      if (retriesUsed > 0) {
+        addMessage(`Motor IA respondio tras ${retriesUsed} reintento(s).`, 'agent');
+      }
 
       const metricEl = document.getElementById('metricInformes');
       if (metricEl) {
@@ -503,6 +840,19 @@ import Layout from '../layouts/Layout.astro';
     handleExerciseRecommend(text);
   });
 
+  exercisePdfBtn?.addEventListener('click', async () => {
+    if (!lastExerciseReportPayload) {
+      addMessage('Primero genera un informe de ejercicios para poder exportarlo a PDF.', 'agent');
+      return;
+    }
+    try {
+      await exportExerciseReportPdf(lastExerciseReportPayload);
+      addMessage('PDF generado correctamente. Puedes compartirlo con el paciente.', 'agent');
+    } catch (err: any) {
+      addMessage(`No se pudo generar el PDF: ${err?.message || 'error no identificado'}`, 'agent');
+    }
+  });
+
   form?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
     if (!input) return;
@@ -516,7 +866,7 @@ import Layout from '../layouts/Layout.astro';
       const answer = payload?.data?.reply_text || payload?.data?.message || (typeof payload.data==='string'?payload.data:JSON.stringify(payload.data));
       addMessage(answer, 'agent');
       setAgentStatus(!payload.n8n_unreachable);
-    } catch { addMessage('Error de conexiÃ³n con el agente.', 'agent'); setAgentStatus(false); }
+    } catch { addMessage('Error de conexión con el agente.', 'agent'); setAgentStatus(false); }
     finally { setSending(false); }
   });
 
@@ -536,7 +886,7 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(intakes.length);
       if (!intakes.length) { intakeBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">check_circle</span><p>Sin intakes pendientes</p></div></td></tr>`; return; }
       intakeBody.innerHTML = intakes.slice(0,10).map((i: any) => {
-        const ch = (i.fuente||i.canal||'').toLowerCase().includes('telegram')?'ðŸ“± Telegram':'ðŸŒ Web';
+        const ch = (i.fuente||i.canal||'').toLowerCase().includes('telegram') ? 'Telegram' : 'Web';
         const f = fmtDate(i.creado_en||i.created_at||'');
         const st = i.estado||'pendiente';
         const patientName = resolvePatientName(i);
@@ -564,8 +914,8 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(pts.length);
       if (!pts.length) { pacientesBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">person_off</span><p>Sin pacientes registrados</p></div></td></tr>`; return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
-        const patientName = p.nombre_completo || 'â€”';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'â€”')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'â€”'}</td><td>${fmtDate(p.creado_en||'')}</td><td><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button></td></tr>`;
+        const patientName = p.nombre_completo || '—';
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'—')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'—'}</td><td>${fmtDate(p.creado_en||'')}</td><td><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button></td></tr>`;
       }).join('');
     } catch { pacientesBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar pacientes</p></div></td></tr>`; }
   };
@@ -589,7 +939,7 @@ import Layout from '../layouts/Layout.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
       const templates = payload.data || [];
       if (!templates.length) {
-        templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">library_books</span><p>No hay plantillas disponibles todavÃ­a.</p></div></td></tr>`;
+        templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">library_books</span><p>No hay plantillas disponibles todavía.</p></div></td></tr>`;
         return;
       }
       templatesBody.innerHTML = templates.map((tpl: any) => {
@@ -600,8 +950,8 @@ import Layout from '../layouts/Layout.astro';
           <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
           <td>${tpl.usage_count || 0}</td>
           <td>${tpl.exercises_count || 0}</td>
-          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : 'â€”'}</td>
-          <td>${escapeHtml(tpl.source_patient_name || 'â€”')}</td>
+          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : '—'}</td>
+          <td>${escapeHtml(tpl.source_patient_name || '—')}</td>
           <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
         </tr>`;
       }).join('');
@@ -658,9 +1008,9 @@ import Layout from '../layouts/Layout.astro';
       const intakes = payload.data || [];
       if (!intakes.length) { intakesFullBody.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">check_circle</span><p>Sin intakes pendientes</p></div></td></tr>`; return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
-        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">âš  SÃ­</span>` : '<span class="status-chip aprobado">No</span>';
+        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">⚠ Sí</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'â€”')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'—')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
     } catch { intakesFullBody.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar intakes</p></div></td></tr>`; }
   };
@@ -690,7 +1040,7 @@ import Layout from '../layouts/Layout.astro';
 
       citasBody.innerHTML = citas.map((cita: any) => {
         const canCancel = ['pendiente', 'confirmada', 'reprogramada'].includes(cita.estado);
-        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || 'â€”')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : 'â€”'}</td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || '—')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : '—'}</td></tr>`;
       }).join('');
     } catch {
       citasBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar citas</p></div></td></tr>`;
@@ -746,7 +1096,7 @@ import Layout from '../layouts/Layout.astro';
       historialContent.innerHTML = `
         <div class="detail-block">
           <h3>${escapeHtml(displayName)}</h3>
-          <p><strong>Email:</strong> ${escapeHtml(patient.email || 'â€”')} Â· <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : 'â€”'}</p>
+          <p><strong>Email:</strong> ${escapeHtml(patient.email || '—')} · <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '—'}</p>
         </div>
         <div class="detail-block">
           <h3>Notas de seguimiento (${notes.length})</h3>
@@ -1140,7 +1490,7 @@ import Layout from '../layouts/Layout.astro';
   /* === METRICS === */
   .metrics-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.85rem;
     margin-bottom: 1.25rem;
   }
@@ -1161,6 +1511,7 @@ import Layout from '../layouts/Layout.astro';
   .metric-card:nth-child(2) { animation-delay: 0.1s; }
   .metric-card:nth-child(3) { animation-delay: 0.16s; }
   .metric-card:nth-child(4) { animation-delay: 0.22s; }
+  .metric-card:nth-child(5) { animation-delay: 0.28s; }
 
   @keyframes card-enter {
     to {
@@ -1457,6 +1808,24 @@ import Layout from '../layouts/Layout.astro';
   .exercise-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   .exercise-btn .material-symbols-rounded { font-size: 20px; }
 
+  .pdf-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #be2f45, #e0556d);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition);
+  }
+  .pdf-btn:hover { filter: brightness(1.08); transform: scale(1.03); }
+  .pdf-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .pdf-btn .material-symbols-rounded { font-size: 20px; }
+
   .input-hints {
     font-size: 0.7rem;
     color: var(--text-muted);
@@ -1650,7 +2019,7 @@ import Layout from '../layouts/Layout.astro';
     background: var(--accent-soft);
   }
 
-  /* === RESPONSIVE: TABLET (â‰¤ 1100px) === */
+  /* === RESPONSIVE: TABLET (≤ 1100px) === */
   @media (max-width: 1100px) {
     .content-grid {
       grid-template-columns: 1fr;
@@ -1664,7 +2033,7 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* === RESPONSIVE: MOBILE (â‰¤ 768px) === */
+  /* === RESPONSIVE: MOBILE (≤ 768px) === */
   @media (max-width: 768px) {
     /* Sidebar: off-screen, opens as overlay */
     .sidebar {
@@ -1798,7 +2167,8 @@ import Layout from '../layouts/Layout.astro';
       font-size: 0.82rem;
     }
     .send-btn,
-    .exercise-btn {
+    .exercise-btn,
+    .pdf-btn {
       width: 44px;
       height: 44px;
     }
@@ -1819,7 +2189,7 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* === RESPONSIVE: SMALL MOBILE (â‰¤ 480px) === */
+  /* === RESPONSIVE: SMALL MOBILE (≤ 480px) === */
   @media (max-width: 480px) {
     .metrics-row {
       grid-template-columns: 1fr;
@@ -1832,3 +2202,4 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 </style>
+

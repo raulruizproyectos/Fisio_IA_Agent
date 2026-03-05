@@ -1,10 +1,10 @@
-﻿---
+---
 interface Props {
   title: string;
   description?: string;
 }
 
-const { title, description = 'Plataforma inteligente de prescripcion y seguimiento para fisioterapeutas' } = Astro.props;
+const { title, description = 'Plataforma inteligente de prescripción y seguimiento para fisioterapeutas' } = Astro.props;
 ---
 
 <!doctype html>
@@ -14,6 +14,7 @@ const { title, description = 'Plataforma inteligente de prescripcion y seguimien
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <meta name="fisio-build" content="2026-03-05-encoding-hotfix-2" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -22,6 +23,155 @@ const { title, description = 'Plataforma inteligente de prescripcion y seguimien
   </head>
   <body>
     <slot />
+    <script is:inline>
+      (() => {
+        const MOJIBAKE_RE = /(?:\u00C3|\u00C2|\u00E2|\u00F0|\u00D0|\u00D1|\uFFFD|\u0152|\u0153|\u0161|\u0178|\u00EF\u00BF\u00BD)/;
+        const CP1252_UNICODE_TO_BYTE = {
+          0x20ac: 0x80,
+          0x201a: 0x82,
+          0x0192: 0x83,
+          0x201e: 0x84,
+          0x2026: 0x85,
+          0x2020: 0x86,
+          0x2021: 0x87,
+          0x02c6: 0x88,
+          0x2030: 0x89,
+          0x0160: 0x8a,
+          0x2039: 0x8b,
+          0x0152: 0x8c,
+          0x017d: 0x8e,
+          0x2018: 0x91,
+          0x2019: 0x92,
+          0x201c: 0x93,
+          0x201d: 0x94,
+          0x2022: 0x95,
+          0x2013: 0x96,
+          0x2014: 0x97,
+          0x02dc: 0x98,
+          0x2122: 0x99,
+          0x0161: 0x9a,
+          0x203a: 0x9b,
+          0x0153: 0x9c,
+          0x017e: 0x9e,
+          0x0178: 0x9f,
+        };
+
+        const toLegacyBytes = (text) => {
+          const bytes = [];
+          for (const ch of text) {
+            const code = ch.codePointAt(0);
+            if (typeof code !== 'number') continue;
+            if (code <= 0xff) {
+              bytes.push(code);
+              continue;
+            }
+            const mapped = CP1252_UNICODE_TO_BYTE[code];
+            if (typeof mapped === 'number') {
+              bytes.push(mapped);
+              continue;
+            }
+            return null;
+          }
+          return new Uint8Array(bytes);
+        };
+
+        const decodeUtf8Bytes = (bytes) => {
+          try {
+            return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+          } catch {
+            try {
+              return new TextDecoder('utf-8').decode(bytes);
+            } catch {
+              return '';
+            }
+          }
+        };
+
+        const decodeMojibake = (value) => {
+          let current = String(value ?? '');
+          if (!MOJIBAKE_RE.test(current)) return current;
+
+          for (let pass = 0; pass < 3; pass += 1) {
+            const bytes = toLegacyBytes(current);
+            if (!bytes) break;
+            const decoded = decodeUtf8Bytes(bytes);
+            if (!decoded || decoded === current) break;
+            current = decoded;
+            if (!MOJIBAKE_RE.test(current)) break;
+          }
+
+          return typeof current.normalize === 'function' ? current.normalize('NFC') : current;
+        };
+
+        const sanitizeTextNode = (node) => {
+          const original = node.nodeValue || '';
+          if (!MOJIBAKE_RE.test(original)) return;
+          const fixed = decodeMojibake(original);
+          if (fixed && fixed !== original) node.nodeValue = fixed;
+        };
+
+        const sanitizeAttributes = (element) => {
+          if (!element || typeof element.getAttribute !== 'function') return;
+          const attrs = ['title', 'aria-label', 'placeholder', 'alt'];
+          attrs.forEach((attr) => {
+            const original = element.getAttribute(attr);
+            if (!original || !MOJIBAKE_RE.test(original)) return;
+            const fixed = decodeMojibake(original);
+            if (fixed && fixed !== original) element.setAttribute(attr, fixed);
+          });
+        };
+
+        const sanitizeTree = (root) => {
+          if (!root) return;
+          if (root.nodeType === Node.TEXT_NODE) {
+            sanitizeTextNode(root);
+            return;
+          }
+          if (root.nodeType === Node.ELEMENT_NODE) {
+            sanitizeAttributes(root);
+            const nodeList = root.querySelectorAll
+              ? root.querySelectorAll('[title],[aria-label],[placeholder],[alt]')
+              : [];
+            nodeList.forEach((node) => sanitizeAttributes(node));
+          }
+          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+          let current = walker.nextNode();
+          while (current) {
+            sanitizeTextNode(current);
+            current = walker.nextNode();
+          }
+        };
+
+        const sanitizeDocument = () => {
+          document.title = decodeMojibake(document.title);
+          sanitizeTree(document.body);
+        };
+
+        sanitizeDocument();
+
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'characterData' && mutation.target) {
+              sanitizeTextNode(mutation.target);
+              return;
+            }
+            if (mutation.type === 'attributes' && mutation.target) {
+              sanitizeAttributes(mutation.target);
+              return;
+            }
+            mutation.addedNodes.forEach((node) => sanitizeTree(node));
+          });
+        });
+
+        observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true,
+          attributeFilter: ['title', 'aria-label', 'placeholder', 'alt'],
+        });
+      })();
+    </script>
   </body>
 </html>
 
