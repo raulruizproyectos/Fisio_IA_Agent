@@ -1079,19 +1079,78 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
+
     try {
-      const [patientResp, historyResp] = await Promise.all([
+      const [patientResp, historyResp, recommendationsResp] = await Promise.all([
         fetchJson(`${BACKEND_BASE}/api/pacientes/${selectedPatientId}`),
         fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`),
+        fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${selectedPatientId}?limit=25`),
       ]);
 
       const patient = patientResp?.data || {};
       const notes = historyResp?.data?.notas_seguimiento || [];
+      const recommendations = recommendationsResp?.data || [];
       const displayName = patient?.nombre_completo || selectedPatientName || `Paciente #${selectedPatientId}`;
 
       const notesHtml = notes.length
-        ? `<ul class="detail-list">${notes.map((note: any) => `<li><strong>${fmtDate(note.creado_en||'')}</strong><br>${escapeHtml(note.texto_nota || 'Sin texto')}</li>`).join('')}</ul>`
+        ? `<ul class="detail-list">${notes.map((note: any) => `<li><strong>${fmtDate(note.creado_en || '')}</strong><br>${escapeHtml(note.texto_nota || 'Sin texto')}</li>`).join('')}</ul>`
         : `<p class="detail-empty">Sin notas de seguimiento registradas.</p>`;
+
+      const recommendationsHtml = recommendations.length
+        ? `<div class="recommendation-list">${recommendations.map((rec: any) => {
+          const report = rec?.report_snapshot || {};
+          const followUps = Array.isArray(rec?.follow_ups) ? rec.follow_ups : [];
+          const reportExercises = Array.isArray(report?.exercises) ? report.exercises : [];
+          const itemExercises = Array.isArray(rec?.crm_recomendacion_items)
+            ? rec.crm_recomendacion_items.map((item: any) => ({
+              nombre: item?.crm_ejercicios_catalogo?.nombre || item?.ejercicio_id || 'Ejercicio',
+              why: item?.why || '',
+            }))
+            : [];
+          const exercises = reportExercises.length ? reportExercises : itemExercises;
+          const stateClass = rec?.estado === 'enviada'
+            ? 'aprobado'
+            : rec?.estado === 'requiere_revision'
+              ? 'rechazado'
+              : 'pendiente';
+          const redFlagsHtml = rec?.red_flags_present
+            ? '<span class="status-chip rechazado">⚠ Alertas rojas</span>'
+            : '<span class="status-chip aprobado">Sin alertas</span>';
+          const therapistNote = report?.message_to_therapist || rec?.message_to_therapist_es || '';
+          const patientMsg = report?.message_to_patient || rec?.message_to_patient_es || '';
+          const exercisesHtml = exercises.length
+            ? `<ul class="recommendation-exercises">${exercises.slice(0, 8).map((ex: any, idx: number) => `<li><strong>${idx + 1}. ${escapeHtml(ex?.nombre || ex?.name || 'Ejercicio')}</strong>${ex?.why ? ` · ${escapeHtml(ex.why)}` : ''}</li>`).join('')}</ul>`
+            : '<p class="detail-empty">Sin ejercicios detallados en esta recomendacion.</p>';
+          const followUpsHtml = followUps.length
+            ? `<ul class="detail-list">${followUps.slice(0, 5).map((fu: any) => `<li><strong>${fmtDate(fu?.created_at || '')}</strong><br>${escapeHtml(fu?.note_text || 'Seguimiento sin nota')}${fu?.pain_scale !== null && fu?.pain_scale !== undefined ? ` · Dolor ${escapeHtml(fu.pain_scale)}/10` : ''}</li>`).join('')}</ul>`
+            : '<p class="detail-empty">Sin seguimiento registrado todavia.</p>';
+
+          return `
+            <article class="recommendation-card">
+              <div class="recommendation-head">
+                <div>
+                  <h4>Recomendacion ${escapeHtml(rec?.id || '-')}</h4>
+                  <p>${fmtDate(rec?.created_at || '')}</p>
+                </div>
+                <div class="recommendation-chips">
+                  <span class="status-chip ${stateClass}">${escapeHtml(rec?.estado || 'generada')}</span>
+                  ${redFlagsHtml}
+                </div>
+              </div>
+              ${therapistNote ? `<p class="recommendation-note"><strong>Nota clinica:</strong> ${escapeHtml(therapistNote)}</p>` : ''}
+              ${patientMsg ? `<p class="recommendation-note"><strong>Mensaje paciente:</strong> ${escapeHtml(patientMsg)}</p>` : ''}
+              <div class="recommendation-section">
+                <h5>Ejercicios (${exercises.length})</h5>
+                ${exercisesHtml}
+              </div>
+              <div class="recommendation-section">
+                <h5>Seguimiento (${followUps.length})</h5>
+                ${followUpsHtml}
+              </div>
+            </article>
+          `;
+        }).join('')}</div>`
+        : `<p class="detail-empty">Sin recomendaciones de ejercicios registradas.</p>`;
 
       historialContent.innerHTML = `
         <div class="detail-block">
@@ -1101,6 +1160,10 @@ import Layout from '../layouts/Layout.astro';
         <div class="detail-block">
           <h3>Notas de seguimiento (${notes.length})</h3>
           ${notesHtml}
+        </div>
+        <div class="detail-block">
+          <h3>Informes y recomendaciones (${recommendations.length})</h3>
+          ${recommendationsHtml}
         </div>
       `;
     } catch {
@@ -1989,6 +2052,59 @@ import Layout from '../layouts/Layout.astro';
     margin: 0;
     color: var(--text-muted);
     font-size: 0.85rem;
+  }
+  .recommendation-list {
+    display: grid;
+    gap: 0.7rem;
+  }
+  .recommendation-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    background: rgba(15, 28, 48, 0.48);
+    display: grid;
+    gap: 0.55rem;
+  }
+  .recommendation-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .recommendation-head h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+  .recommendation-head p {
+    margin-top: 0.2rem;
+    margin-bottom: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .recommendation-chips {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .recommendation-note {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .recommendation-section h5 {
+    margin: 0 0 0.25rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .recommendation-exercises {
+    margin: 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.22rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
   }
 
   /* === SIDEBAR BACKDROP (mobile overlay) === */
