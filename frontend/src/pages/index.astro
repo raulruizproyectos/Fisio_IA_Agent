@@ -847,7 +847,26 @@ import Layout from '../layouts/Layout.astro';
     }
     try {
       await exportExerciseReportPdf(lastExerciseReportPayload);
-      addMessage('PDF generado correctamente. Puedes compartirlo con el paciente.', 'agent');
+      const recommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim();
+      if (recommendationId) {
+        try {
+          await fetchJson(`${BACKEND_BASE}/api/exercises/reports/archive`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recommendation_id: recommendationId,
+              patient_id: selectedPatientId || lastExerciseReportPayload?.patient_id || null,
+              fisioterapeuta_id: PROF_ID,
+              format: 'pdf',
+              source: 'crm_web',
+            }),
+          });
+        } catch (archiveErr: any) {
+          addMessage(`PDF generado, pero no se pudo archivar en historial: ${archiveErr?.message || 'error no identificado'}`, 'agent');
+          return;
+        }
+      }
+      addMessage('PDF generado y archivado en historial del paciente.', 'agent');
     } catch (err: any) {
       addMessage(`No se pudo generar el PDF: ${err?.message || 'error no identificado'}`, 'agent');
     }

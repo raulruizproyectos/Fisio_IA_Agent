@@ -8,8 +8,13 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+const EXERCISE_ENGINE_TIMEOUT_MS = Number(process.env.EXERCISE_ENGINE_TIMEOUT_MS || 30000);
+const EXERCISE_ENGINE_MAX_ATTEMPTS = Number(process.env.EXERCISE_ENGINE_MAX_ATTEMPTS || 2);
+const EXERCISE_REQUIRE_PATIENT_ASSOCIATION = String(
+  process.env.EXERCISE_REQUIRE_PATIENT_ASSOCIATION || 'true'
+).toLowerCase() !== 'false';
 
-// â”€â”€â”€ GET /api/exercises/catalog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- GET /api/exercises/catalog ---
 // Returns active exercises from crm_ejercicios_catalogo, optionally filtered
 router.get('/catalog', async (req, res) => {
   try {
@@ -44,7 +49,7 @@ router.get('/catalog', async (req, res) => {
   }
 });
 
-// â”€â”€â”€ GET /api/exercises/:id/media â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- GET /api/exercises/:id/media ---
 // Returns media entries for an exercise with signed URLs
 router.get('/:id/media', async (req, res) => {
   try {
@@ -81,7 +86,7 @@ router.get('/:id/media', async (req, res) => {
   }
 });
 
-// â”€â”€â”€ POST /api/exercises/recommend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- POST /api/exercises/recommend ---
 // Main W2 endpoint: receives symptoms, queries catalog, calls OpenAI via n8n,
 // stores recommendation + items, returns result
 router.post('/recommend', async (req, res) => {
@@ -102,6 +107,13 @@ router.post('/recommend', async (req, res) => {
         error: 'Se requiere symptoms',
       });
     }
+    if (!patId && EXERCISE_REQUIRE_PATIENT_ASSOCIATION) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Selecciona un paciente antes de generar el informe de ejercicios.',
+        code: 'patient_required',
+      });
+    }
     const persistRecommendation = Boolean(patId);
 
     // 1. Fetch full catalog for OpenAI context
@@ -115,8 +127,11 @@ router.post('/recommend', async (req, res) => {
 
     // 2. Call n8n or Edge Function for exercise selection
     const n8nUrl = process.env.N8N_EXERCISE_WEBHOOK_URL;
-    const edgeFnUrl = `${process.env.SUPABASE_URL}/functions/v1/exercise-recommend`;
+    const edgeFnUrl = process.env.SUPABASE_URL
+      ? `${process.env.SUPABASE_URL}/functions/v1/exercise-recommend`
+      : null;
     const targetUrl = n8nUrl || edgeFnUrl;
+    const engineTarget = n8nUrl ? 'n8n' : 'edge_function';
 
     const n8nPayload = {
       request_id: requestId,
@@ -138,32 +153,48 @@ router.post('/recommend', async (req, res) => {
 
     let n8nResult = null;
     let fallbackReason = '';
-    try {
-      const n8nResp = await fetch(targetUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(n8nPayload),
-        signal: AbortSignal.timeout(30000),
-      });
-      const rawText = await n8nResp.text();
-      n8nResult = safeJsonParse(rawText);
-      if (!n8nResp.ok) {
-        const engineMessage =
-          n8nResult?.error ||
-          n8nResult?.message ||
-          `engine_http_${n8nResp.status}`;
-        throw new Error(String(engineMessage));
-      }
-    } catch (n8nErr) {
-      fallbackReason = n8nErr.message || 'engine_unreachable';
+    const engineCall = targetUrl
+      ? await callEngineWithRetry({
+          targetUrl,
+          payload: n8nPayload,
+          timeoutMs: EXERCISE_ENGINE_TIMEOUT_MS,
+          maxAttempts: EXERCISE_ENGINE_MAX_ATTEMPTS,
+        })
+      : {
+          ok: false,
+          error: new Error('engine_target_not_configured'),
+          attempts: [],
+          totalDurationMs: 0,
+        };
+    const engineObservability = {
+      target: engineTarget,
+      timeout_ms: EXERCISE_ENGINE_TIMEOUT_MS,
+      max_attempts: EXERCISE_ENGINE_MAX_ATTEMPTS,
+      attempts: engineCall.attempts.length,
+      retries_used: Math.max(0, engineCall.attempts.length - 1),
+      fallback_used: !engineCall.ok,
+      fallback_reason: null,
+      total_duration_ms: engineCall.totalDurationMs,
+      attempts_detail: engineCall.attempts,
+    };
+
+    if (engineCall.ok) {
+      n8nResult = engineCall.data;
+    } else {
+      fallbackReason = engineCall.error?.message || 'engine_unreachable';
+      engineObservability.fallback_reason = fallbackReason;
       console.warn('[exercises/recommend] fallback activated:', fallbackReason);
       if (persistRecommendation) {
         await logComm(supabase, {
           paciente_id: patId,
-          channel: n8nUrl ? 'n8n' : 'edge_function',
+          channel: resolveCommChannel(channel || 'backend'),
           direction: 'outbound',
           message_type: 'system',
-          message_text: `Engine fallback: ${fallbackReason}`,
+          message_text: `Engine fallback: ${fallbackReason} (attempts=${engineObservability.attempts}, retries=${engineObservability.retries_used})`,
+          payload: {
+            event: 'engine_fallback',
+            engine_observability: engineObservability,
+          },
           request_id: requestId,
           status: 'error',
         });
@@ -174,6 +205,8 @@ router.post('/recommend', async (req, res) => {
     let recommendation = n8nResult?.recommendation || n8nResult;
     if (!hasRecommendationShape(recommendation)) {
       if (!fallbackReason) fallbackReason = 'invalid_engine_response';
+      engineObservability.fallback_used = true;
+      engineObservability.fallback_reason = fallbackReason;
       recommendation = buildRuleBasedRecommendation({
         requestId,
         symptoms,
@@ -242,10 +275,16 @@ router.post('/recommend', async (req, res) => {
         paciente_id: patId,
         fisioterapeuta_id: fisioterapeuta_id || null,
         recomendacion_id: recommendationId,
-        channel,
+        channel: resolveCommChannel(channel),
         direction: 'internal',
         message_type: 'system',
         message_text: `Recomendacion generada: ${selected_exercises.length} ejercicios`,
+        payload: {
+          event: 'recommendation_generated',
+          selected_exercises_count: selected_exercises.length,
+          engine_observability: engineObservability,
+          fallback_reason: engineObservability.fallback_reason || null,
+        },
         request_id: requestId,
         status: 'processed',
       });
@@ -336,6 +375,7 @@ router.post('/recommend', async (req, res) => {
     const response = {
       ok: true,
       request_id: requestId,
+      patient_id: patId,
       recommendation_id: recommendationId,
       symptom_summary,
       red_flags: { present: red_flags_present, items: red_flags_items },
@@ -345,12 +385,47 @@ router.post('/recommend', async (req, res) => {
       },
       exercises,
       image_coverage: imageCoverage,
+      engine_observability: engineObservability,
       message_to_patient: message_to_patient_es,
       message_to_therapist: message_to_therapist_es,
       selection_rationale,
       informe_clinico: informeClinico,
       persistence_skipped: !persistRecommendation,
     };
+
+    if (persistRecommendation && recommendationId) {
+      await logComm(supabase, {
+        paciente_id: patId,
+        fisioterapeuta_id: fisioterapeuta_id || null,
+        recomendacion_id: recommendationId,
+        channel: resolveCommChannel(channel),
+        direction: 'internal',
+        message_type: 'event',
+        message_text: `Informe clinico generado para recomendacion ${recommendationId}`,
+        payload: {
+          event: 'exercise_report_snapshot',
+          report: {
+            request_id: requestId,
+            recommendation_id: recommendationId,
+            symptom_summary,
+            selection_rationale,
+            red_flags: { present: red_flags_present, items: red_flags_items },
+            escalation: {
+              recommend_medical_attention: escalation_recommend_medical_attention,
+              reason: escalation_reason,
+            },
+            message_to_patient: message_to_patient_es,
+            message_to_therapist: message_to_therapist_es,
+            exercises,
+            image_coverage: imageCoverage,
+            informe_clinico: informeClinico,
+          },
+          engine_observability: engineObservability,
+        },
+        request_id: requestId,
+        status: 'processed',
+      });
+    }
 
     res.json(response);
   } catch (err) {
@@ -363,12 +438,14 @@ router.post('/recommend', async (req, res) => {
   }
 });
 
-// â”€â”€â”€ GET /api/exercises/recommendations/:patientId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- GET /api/exercises/recommendations/:patientId ---
 // Returns past recommendations for a patient
 router.get('/recommendations/:patientId', async (req, res) => {
   try {
     const { patientId } = req.params;
     const { limit = 10 } = req.query;
+    const parsedLimit = Number.parseInt(String(limit), 10);
+    const safeLimit = Number.isFinite(parsedLimit) ? Math.max(1, Math.min(parsedLimit, 100)) : 10;
 
     const { data, error } = await supabase
       .from('crm_recomendaciones')
@@ -384,24 +461,291 @@ router.get('/recommendations/:patientId', async (req, res) => {
       `)
       .eq('paciente_id', patientId)
       .order('created_at', { ascending: false })
-      .limit(parseInt(limit));
+      .limit(safeLimit);
 
     if (error) throw error;
 
-    res.json({ ok: true, data, total: data.length });
+    const recommendationIds = (data || []).map((row) => row.id).filter(Boolean);
+    const followUpsByRecommendation = new Map();
+    const reportSnapshotByRecommendation = new Map();
+
+    if (recommendationIds.length > 0) {
+      const { data: commRows, error: commErr } = await supabase
+        .from('crm_comunicaciones')
+        .select('id, recomendacion_id, message_text, payload, status, occurred_at, created_at')
+        .in('recomendacion_id', recommendationIds)
+        .order('occurred_at', { ascending: false })
+        .limit(500);
+
+      if (commErr) throw commErr;
+
+      for (const row of commRows || []) {
+        const recommendationId = row?.recomendacion_id;
+        if (!recommendationId) continue;
+
+        const eventName = String(row?.payload?.event || '').trim();
+        if (eventName === 'recommendation_follow_up') {
+          const current = followUpsByRecommendation.get(recommendationId) || [];
+          current.push(normalizeRecommendationFollowUp(row));
+          followUpsByRecommendation.set(recommendationId, current);
+          continue;
+        }
+
+        if (eventName === 'exercise_report_snapshot' && !reportSnapshotByRecommendation.has(recommendationId)) {
+          reportSnapshotByRecommendation.set(recommendationId, row?.payload?.report || null);
+        }
+      }
+    }
+
+    const enriched = (data || []).map((row) => ({
+      ...row,
+      follow_ups: followUpsByRecommendation.get(row.id) || [],
+      report_snapshot: reportSnapshotByRecommendation.get(row.id) || null,
+    }));
+
+    res.json({ ok: true, data: enriched, total: enriched.length });
   } catch (err) {
     console.error('[exercises/recommendations] Error:', err.message);
     res.status(500).json({ ok: false, error: 'Error al obtener recomendaciones' });
   }
 });
 
-// â”€â”€â”€ Helper: log communication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+router.post('/recommendations/:recommendationId/follow-up', async (req, res) => {
+  try {
+    const { recommendationId } = req.params;
+    const noteText = String(req.body?.note_text || req.body?.texto_nota || '').trim();
+    const adherenceStatus = String(req.body?.adherence_status || '').trim() || null;
+    const painScale = parsePainScale(req.body?.pain_scale ?? req.body?.escala_dolor);
+    const requestedState = sanitizeRecommendationState(
+      req.body?.estado || req.body?.recommendation_state || null
+    );
+    const fisioterapeutaId = req.body?.fisioterapeuta_id || null;
+
+    if (!noteText && adherenceStatus === null && painScale === null && !requestedState) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Debes enviar al menos uno: note_text, adherence_status, pain_scale o estado',
+      });
+    }
+
+    const { data: recommendationRow, error: recommendationErr } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, paciente_id, fisioterapeuta_id, estado, request_id')
+      .eq('id', recommendationId)
+      .single();
+
+    if (recommendationErr) throw recommendationErr;
+    if (!recommendationRow) {
+      return res.status(404).json({ ok: false, error: 'Recomendacion no encontrada' });
+    }
+
+    let currentState = recommendationRow.estado;
+    if (requestedState && requestedState !== currentState) {
+      const { data: updatedRow, error: updateErr } = await supabase
+        .from('crm_recomendaciones')
+        .update({
+          estado: requestedState,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', recommendationId)
+        .select('estado')
+        .single();
+      if (updateErr) throw updateErr;
+      currentState = updatedRow?.estado || requestedState;
+    }
+
+    const followUpPayload = {
+      event: 'recommendation_follow_up',
+      note_text: noteText || null,
+      adherence_status: adherenceStatus,
+      pain_scale: painScale,
+      estado_objetivo: requestedState || null,
+      estado_actual: currentState,
+    };
+
+    const occurredAt = new Date().toISOString();
+    await logComm(supabase, {
+      paciente_id: recommendationRow.paciente_id,
+      fisioterapeuta_id: fisioterapeutaId || recommendationRow.fisioterapeuta_id || null,
+      recomendacion_id: recommendationId,
+      channel: 'crm_web',
+      direction: 'internal',
+      message_type: 'event',
+      message_text: noteText || 'Seguimiento de recomendacion registrado',
+      payload: followUpPayload,
+      request_id: recommendationRow.request_id || null,
+      status: 'processed',
+      occurred_at: occurredAt,
+    });
+
+    res.status(201).json({
+      ok: true,
+      data: {
+        recommendation_id: recommendationId,
+        estado: currentState,
+        follow_up: {
+          note_text: noteText || null,
+          adherence_status: adherenceStatus,
+          pain_scale: painScale,
+          created_at: occurredAt,
+        },
+      },
+    });
+  } catch (err) {
+    console.error('[exercises/recommendations/follow-up] Error:', err.message);
+    res.status(500).json({ ok: false, error: 'Error guardando seguimiento de recomendacion' });
+  }
+});
+
+// --- Helper: log communication ---
+router.post('/reports/archive', async (req, res) => {
+  try {
+    const recommendationId = String(
+      req.body?.recommendation_id || req.body?.recomendacion_id || ''
+    ).trim();
+    const format = String(req.body?.format || 'pdf').trim().toLowerCase();
+    const source = resolveCommChannel(req.body?.source || req.body?.channel || 'crm_web');
+    const fisioterapeutaId = req.body?.fisioterapeuta_id || null;
+    const customNote = String(req.body?.note_text || req.body?.texto_nota || '').trim();
+
+    if (!recommendationId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'recommendation_id es obligatorio',
+      });
+    }
+
+    const { data: recommendationRow, error: recommendationErr } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, paciente_id, fisioterapeuta_id, request_id')
+      .eq('id', recommendationId)
+      .single();
+
+    if (recommendationErr) throw recommendationErr;
+    if (!recommendationRow) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Recomendacion no encontrada',
+      });
+    }
+
+    const archivedAt = new Date().toISOString();
+    const noteText =
+      customNote ||
+      `Informe ${format.toUpperCase()} generado y archivado para recomendacion ${recommendationId}`;
+
+    await logComm(supabase, {
+      paciente_id: recommendationRow.paciente_id,
+      fisioterapeuta_id: fisioterapeutaId || recommendationRow.fisioterapeuta_id || null,
+      recomendacion_id: recommendationId,
+      channel: source,
+      direction: 'internal',
+      message_type: 'event',
+      message_text: noteText,
+      payload: {
+        event: 'exercise_report_archived',
+        recommendation_id: recommendationId,
+        format,
+        source,
+        archived_at: archivedAt,
+      },
+      request_id: recommendationRow.request_id || null,
+      status: 'processed',
+      occurred_at: archivedAt,
+    });
+
+    try {
+      await supabase.from('notas_seguimiento_paciente').insert({
+        paciente_id: recommendationRow.paciente_id,
+        profesional_id: fisioterapeutaId || recommendationRow.fisioterapeuta_id || null,
+        fuente: 'texto',
+        texto_nota: noteText,
+      });
+    } catch (noteErr) {
+      if (!isMissingTableError(noteErr, 'notas_seguimiento_paciente')) throw noteErr;
+    }
+
+    res.status(201).json({
+      ok: true,
+      data: {
+        recommendation_id: recommendationId,
+        patient_id: recommendationRow.paciente_id,
+        format,
+        archived_at: archivedAt,
+      },
+    });
+  } catch (err) {
+    console.error('[exercises/reports/archive] Error:', err.message);
+    res.status(500).json({
+      ok: false,
+      error: 'Error archivando informe',
+    });
+  }
+});
+
 async function logComm(sb, payload) {
   try {
     await sb.from('crm_comunicaciones').insert(payload);
   } catch (err) {
+    if (isMissingColumnError(err, 'payload') && payload && typeof payload === 'object') {
+      const fallbackPayload = { ...payload };
+      delete fallbackPayload.payload;
+      try {
+        await sb.from('crm_comunicaciones').insert(fallbackPayload);
+        return;
+      } catch (fallbackErr) {
+        console.warn('[logComm] Error fallback insert:', fallbackErr.message);
+        return;
+      }
+    }
     console.warn('[logComm] Error:', err.message);
   }
+}
+
+function resolveCommChannel(rawChannel) {
+  const allowed = new Set(['telegram', 'crm_web', 'backend', 'n8n', 'google_calendar']);
+  const channel = String(rawChannel || '').trim().toLowerCase();
+  return allowed.has(channel) ? channel : 'backend';
+}
+
+function parsePainScale(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number.parseInt(String(value), 10);
+  if (!Number.isFinite(parsed)) return null;
+  if (parsed < 0 || parsed > 10) return null;
+  return parsed;
+}
+
+function sanitizeRecommendationState(value) {
+  const allowed = new Set(['generada', 'enviada', 'error', 'requiere_revision']);
+  const state = String(value || '').trim().toLowerCase();
+  if (!state) return null;
+  return allowed.has(state) ? state : null;
+}
+
+function normalizeRecommendationFollowUp(row) {
+  const payload = row && typeof row.payload === 'object' ? row.payload : {};
+  return {
+    id: row?.id || null,
+    note_text: payload.note_text || row?.message_text || null,
+    adherence_status: payload.adherence_status || null,
+    pain_scale: parsePainScale(payload.pain_scale),
+    estado_objetivo: sanitizeRecommendationState(payload.estado_objetivo),
+    estado_actual: sanitizeRecommendationState(payload.estado_actual),
+    status: row?.status || null,
+    created_at: row?.occurred_at || row?.created_at || null,
+  };
+}
+
+function isMissingColumnError(error, columnName) {
+  const msg = String(error?.message || '').toLowerCase();
+  return msg.includes(`column "${String(columnName || '').toLowerCase()}"`) && msg.includes('does not exist');
+}
+
+function isMissingTableError(error, tableName) {
+  const msg = String(error?.message || '').toLowerCase();
+  const table = String(tableName || '').toLowerCase();
+  return msg.includes(`relation "${table}"`) && msg.includes('does not exist');
 }
 
 function composeClinicalReport({
@@ -468,6 +812,116 @@ function safeJsonParse(text) {
   } catch {
     return { raw };
   }
+}
+
+function isTimeoutLikeError(error) {
+  const name = String(error?.name || '').toLowerCase();
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    name.includes('abort') ||
+    name.includes('timeout') ||
+    message.includes('timed out') ||
+    message.includes('timeout') ||
+    message.includes('abort')
+  );
+}
+
+function shouldRetryAttempt({ attemptIndex, maxAttempts, timedOut, statusCode, fetchFailed }) {
+  if (attemptIndex >= maxAttempts) return false;
+  if (timedOut || fetchFailed) return true;
+  if (typeof statusCode === 'number' && (statusCode === 429 || statusCode >= 500)) return true;
+  return false;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function callEngineWithRetry({
+  targetUrl,
+  payload,
+  timeoutMs = EXERCISE_ENGINE_TIMEOUT_MS,
+  maxAttempts = EXERCISE_ENGINE_MAX_ATTEMPTS,
+}) {
+  const attempts = [];
+  const safeMaxAttempts = Math.max(1, Number(maxAttempts) || 1);
+  const startedAt = Date.now();
+  let lastError = null;
+
+  for (let attemptIndex = 1; attemptIndex <= safeMaxAttempts; attemptIndex += 1) {
+    const startedAttemptAt = Date.now();
+    let statusCode = null;
+    let timedOut = false;
+    let fetchFailed = false;
+
+    try {
+      const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+
+      statusCode = response.status;
+      const rawText = await response.text();
+      const parsed = safeJsonParse(rawText);
+
+      if (response.ok) {
+        attempts.push({
+          attempt: attemptIndex,
+          ok: true,
+          status_code: statusCode,
+          timed_out: false,
+          duration_ms: Date.now() - startedAttemptAt,
+        });
+
+        return {
+          ok: true,
+          data: parsed,
+          attempts,
+          totalDurationMs: Date.now() - startedAt,
+        };
+      }
+
+      const engineMessage =
+        parsed?.error ||
+        parsed?.message ||
+        `engine_http_${response.status}`;
+      lastError = new Error(String(engineMessage));
+    } catch (error) {
+      timedOut = isTimeoutLikeError(error);
+      fetchFailed = !timedOut;
+      lastError = error instanceof Error ? error : new Error(String(error || 'engine_unreachable'));
+    }
+
+    attempts.push({
+      attempt: attemptIndex,
+      ok: false,
+      status_code: statusCode,
+      timed_out: timedOut,
+      duration_ms: Date.now() - startedAttemptAt,
+      error: String(lastError?.message || 'engine_error'),
+    });
+
+    const retry = shouldRetryAttempt({
+      attemptIndex,
+      maxAttempts: safeMaxAttempts,
+      timedOut,
+      statusCode,
+      fetchFailed,
+    });
+    if (!retry) break;
+
+    const backoffMs = 350 * attemptIndex;
+    await delay(backoffMs);
+  }
+
+  return {
+    ok: false,
+    error: lastError || new Error('engine_unreachable'),
+    attempts,
+    totalDurationMs: Date.now() - startedAt,
+  };
 }
 
 function hasRecommendationShape(recommendation) {
@@ -577,4 +1031,3 @@ function scoreExerciseForSymptoms(exercise, symptomText, inferredZone) {
 }
 
 export default router;
-
