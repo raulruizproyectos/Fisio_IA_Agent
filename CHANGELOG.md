@@ -1,5 +1,33 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 59 - 2026-03-07
+
+### Objetivo
+- Cerrar un checkpoint seguro tras el crash de VS Code, validar el frontend y alinear las metricas del dashboard con la logica real.
+
+### Cambios implementados
+- ✅ Frontend `frontend/src/pages/index.astro`:
+  - `Timeouts/Reintentos IA` ya no duplica conteo cuando la respuesta exitosa trae `engine_observability`.
+  - `Informes IA archivados` solo incrementa tras archivado real de PDF y evita doble conteo por `recommendation_id` dentro de la misma sesion.
+  - eliminado helper sin uso `resolveExerciseName` para dejar `astro check` limpio.
+- ✅ Validacion tecnica:
+  - `node --check` OK en backend principal (`src/index.js`, `src/routes/*.js`).
+  - JSON de workflows n8n validado OK.
+  - `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`.
+  - `npm run check` OK en la copia local no sincronizada (`0 errors`, `0 warnings`, `0 hints`).
+- ✅ Documentacion sincronizada:
+  - `README.md`
+  - `configuracion_pendiente.md`
+
+### Decisiones tecnicas
+- Se mantiene la validacion del frontend fuera de `G:\Mi unidad\...` cuando `npm install` se bloquea en la ruta sincronizada.
+- El KPI de archivado queda ligado al exito de `/api/exercises/reports/archive`, no a la mera generacion de la recomendacion.
+
+### Punto de control seguro
+1. El frontend queda validado en build/check desde ruta local no sincronizada.
+2. Backend y workflows n8n quedan sintacticamente validados.
+3. El siguiente bloque funcional debe arrancar solo tras confirmar si se continua hoy con pulido UI o se deja el checkpoint cerrado para manana.
+
 ## Sesion 58 - 2026-03-07
 
 ### Objetivo

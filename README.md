@@ -1,4 +1,4 @@
-﻿# Fisio_IA_Agent
+# Fisio_IA_Agent
 
 CRM + Agents para centros de fisioterapia: gestión de pacientes, citas y recomendaciones de ejercicios desde Telegram y CRM Web, orquestado con n8n y Supabase.
 
@@ -41,12 +41,13 @@ CRM + Agents para centros de fisioterapia: gestión de pacientes, citas y recome
   - `EXERCISE_ENGINE_MAX_ATTEMPTS` (default `2`)
   - `EXERCISE_REQUIRE_PATIENT_ASSOCIATION` (default `true`)
 - Frontend CRM muestra métrica operativa:
-  - `Timeouts/Reintentos IA` (contador en dashboard).
+  - `Timeouts/Reintentos IA` (contador en dashboard, sin doble conteo cuando el backend devuelve `engine_observability`).
 
 ## Informe PDF (CRM y Telegram)
 - En CRM (`Agente Clínico IA`):
   - Genera recomendación con botón de ejercicios.
   - Usa botón `PDF` para descargar informe estructurado.
+  - El KPI `Informes IA archivados` solo incrementa cuando `/api/exercises/reports/archive` responde OK.
 - En Telegram fisio (`FisioIA_Agent_bot`):
   - Comando: `/informe <paciente_id> | <síntomas>`
   - El backend genera recomendación y envía PDF en el chat.
@@ -93,6 +94,15 @@ npm run dev
 cd frontend
 npm install
 npm run dev
+```
+
+## Validacion local segura del frontend
+Si `npm install` del frontend se bloquea en la ruta sincronizada (`G:\Mi unidad\...`), usa el flujo seguro ya validado en una ruta local no sincronizada:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\frontend-local-build.ps1
+cd C:\Temp\Fisio_IA_Agent_frontend_local
+npm run check
 ```
 
 ## Continuidad

@@ -87,11 +87,11 @@ import Layout from '../layouts/Layout.astro';
             <!-- Hero Section -->
             <section class="hero-section">
               <div class="hero-content">
-                <h1 class="hero-title">Hola, Dr. Ruiz</h1>
-                <p class="hero-subtitle">Gestiona pacientes, agenda citas y genera pautas de ejercicios con IA de forma rápida y estructurada.</p>
+                <h1 class="hero-title">Panel clínico de hoy</h1>
+                <p class="hero-subtitle">Supervisa pacientes, agenda y recomendaciones IA con trazabilidad clínica en tiempo real.</p>
               </div>
               <div class="hero-actions">
-                <button class="btn-primary" onclick="document.getElementById('agentInput').focus()"><span class="material-symbols-rounded">psychology</span> Nueva Prescripción</button>
+                <button class="btn-primary" onclick="document.getElementById('agentInput').focus()"><span class="material-symbols-rounded">psychology</span> Nueva recomendación</button>
               </div>
             </section>
 
@@ -99,7 +99,8 @@ import Layout from '../layouts/Layout.astro';
             <section class="metrics-row clinical-metrics">
               <div class="metric-card"><div class="metric-icon" style="background: rgba(15, 118, 110, 0.1); color: var(--accent);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">—</span><span class="metric-label">Pacientes Activos</span></div></div>
               <div class="metric-card"><div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">—</span><span class="metric-label">Citas Hoy</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Planes IA Generados</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Informes IA archivados</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">monitoring</span></div><div class="metric-data"><span class="metric-value" id="metricEngineOps">0/0</span><span class="metric-label">Timeouts / Reintentos IA</span></div></div>
             </section>
 
             <!-- IA Module (Central) -->
@@ -107,11 +108,11 @@ import Layout from '../layouts/Layout.astro';
               <header class="module-header">
                 <div class="module-title">
                   <span class="material-symbols-rounded accent-icon">psychology</span>
-                  <h2>Asistente de Prescripción IA</h2>
+                  <h2>Asistente clínico IA</h2>
                 </div>
                 <div class="agent-status-pill">
                   <span class="status-dot connected" id="agentDot"></span>
-                  <span class="status-text" id="agentStatusText">Online</span>
+                  <span class="status-text" id="agentStatusText">Conectado</span>
                 </div>
               </header>
               
@@ -121,7 +122,7 @@ import Layout from '../layouts/Layout.astro';
                     <div class="msg-avatar"><span class="material-symbols-rounded">medical_information</span></div>
                     <div class="msg-body">
                       <span class="msg-sender">Asistente Clínico</span>
-                      <p>Estoy listo. Selecciona un paciente y describe el caso clínico o la dolencia para generar un plan de ejercicios estructurado.</p>
+                      <p>Listo para ayudarte. Selecciona un paciente, describe síntomas y obtendrás un plan terapéutico estructurado.</p>
                     </div>
                   </article>
                 </div>
@@ -131,12 +132,12 @@ import Layout from '../layouts/Layout.astro';
                     <div class="patient-selector">
                       <span class="material-symbols-rounded">person</span>
                       <select id="chatPatientSelect" aria-label="Paciente del informe">
-                        <option value="">Vincular a paciente...</option>
+                        <option value="">Selecciona paciente para informe...</option>
                       </select>
                     </div>
                   </div>
                   <div class="ai-textarea-wrapper">
-                    <textarea id="agentInput" rows="3" placeholder="Ej: Dolor lumbar crónico de 2 meses evolución. Buscar ejercicios de core y estiramiento isquiotibiales..."></textarea>
+                    <textarea id="agentInput" rows="3" placeholder="Ejemplo: Dolor lumbar crónico de 2 meses, sin red flags, empeora al final del día."></textarea>
                     <div class="ai-actions">
                       <div class="action-buttons">
                         <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">picture_as_pdf</span> Guardar PDF</button>
@@ -153,26 +154,26 @@ import Layout from '../layouts/Layout.astro';
             <div class="dashboard-bottom-row">
               <section class="card widget-card">
                 <header class="card-header">
-                  <h2>Próximas Citas</h2>
+                  <h2>Agenda inmediata</h2>
                   <button class="btn-ghost" onclick="document.querySelector('[data-section=\'citas\']').click()"><span class="material-symbols-rounded">arrow_forward</span> Ver todas</button>
                 </header>
                 <div class="widget-body list-clean" id="dashCitasBody">
-                  <div class="empty-state-sm">
-                    <span class="material-symbols-rounded">event_busy</span>
-                    <p>Cargando citas...</p>
+                  <div class="empty-state-sm state-loading">
+                    <span class="material-symbols-rounded">sync</span>
+                    <p>Actualizando agenda...</p>
                   </div>
                 </div>
               </section>
               
               <section class="card widget-card">
                 <header class="card-header">
-                  <h2>Intakes Recientes</h2>
+                  <h2>Mensajes de pacientes</h2>
                   <button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span></button>
                 </header>
                 <div class="widget-body list-clean" id="intakeBody">
-                  <div class="empty-state-sm">
-                    <span class="material-symbols-rounded">inbox</span>
-                    <p>Bandeja al día</p>
+                  <div class="empty-state-sm state-loading">
+                    <span class="material-symbols-rounded">sync</span>
+                    <p>Actualizando bandeja...</p>
                   </div>
                 </div>
               </section>
@@ -316,6 +317,8 @@ import Layout from '../layouts/Layout.astro';
   const metricEngineOps = document.getElementById('metricEngineOps') as HTMLElement | null;
   const sidebarToggle = document.getElementById('sidebarToggle') as HTMLElement | null;
   const sidebar = document.getElementById('sidebar') as HTMLElement | null;
+  const inputArea = document.querySelector('.ai-input-area') as HTMLElement | null;
+  const dashCitasBody = document.getElementById('dashCitasBody') as HTMLElement | null;
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
   const refreshBtn = document.getElementById('refreshIntakes') as HTMLElement | null;
   const pacientesBody = document.getElementById('pacientesBody') as HTMLElement | null;
@@ -484,11 +487,6 @@ import Layout from '../layouts/Layout.astro';
     row?.pacientes?.nombre_completo ||
     row?.paciente?.nombre_completo ||
     (row?.paciente_id ? `Paciente #${row.paciente_id}` : 'Paciente sin identificar');
-  const resolveExerciseName = (row: any) =>
-    row?.nombre_ejercicio ||
-    row?.ejercicios?.nombre ||
-    row?.ejercicio?.nombre ||
-    'Ejercicio sin definir';
   const openPatientHistory = (patientId: string | null, patientName = '') => {
     if (!patientId) return;
     selectedPatientId = patientId;
@@ -514,6 +512,7 @@ import Layout from '../layouts/Layout.astro';
     retries: 0,
   };
   const processedEngineObservability = new Set<string>();
+  const archivedReportIds = new Set<string>();
 
   function syncChatPatientSelection(patientId: string | null, fallbackName = '') {
     if (!chatPatientSelect) return;
@@ -535,6 +534,19 @@ import Layout from '../layouts/Layout.astro';
     metricEngineOps.textContent = `${exerciseOpsStats.timeouts}/${exerciseOpsStats.retries}`;
   };
   renderExerciseOpsMetric();
+
+  const incrementArchivedReportsMetric = (recommendationId: string | null) => {
+    const metricEl = document.getElementById('metricInformes');
+    if (!metricEl) return;
+    if (recommendationId && archivedReportIds.has(recommendationId)) return;
+
+    const current = parseInt(metricEl.textContent || '0', 10);
+    metricEl.textContent = Number.isFinite(current) ? String(current + 1) : '1';
+
+    if (recommendationId) {
+      archivedReportIds.add(recommendationId);
+    }
+  };
 
   const syncEngineOpsFromPayload = (payload: any) => {
     const requestId = String(payload?.request_id || '').trim();
@@ -612,12 +624,66 @@ import Layout from '../layouts/Layout.astro';
     log.scrollTop = log.scrollHeight;
   };
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
-  const setSending = (busy: boolean) => {
+  const exerciseBtnDefaultHtml = exerciseBtn?.innerHTML || '';
+  const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
+  const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
     if (sendBtn) sendBtn.disabled = busy;
     if (exerciseBtn) exerciseBtn.disabled = busy;
     if (exercisePdfBtn) exercisePdfBtn.disabled = busy;
     if (input) input.disabled = busy;
     if (chatPatientSelect) chatPatientSelect.disabled = busy;
+    inputArea?.classList.toggle('is-busy', busy);
+
+    if (exerciseBtn) {
+      if (busy && context === 'exercise') {
+        exerciseBtn.classList.add('is-loading');
+        exerciseBtn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span> Generando...';
+      } else {
+        exerciseBtn.classList.remove('is-loading');
+        exerciseBtn.innerHTML = exerciseBtnDefaultHtml;
+      }
+    }
+
+    if (sendBtn) {
+      if (busy && context === 'chat') {
+        sendBtn.classList.add('is-loading');
+        sendBtn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>';
+      } else {
+        sendBtn.classList.remove('is-loading');
+        sendBtn.innerHTML = sendBtnDefaultHtml;
+      }
+    }
+  };
+  const renderState = (icon: string, text: string, compact = false, loading = false) => {
+    const cls = compact ? 'empty-state-sm' : 'empty-state';
+    const loadingCls = loading ? ' state-loading' : '';
+    return `<div class="${cls}${loadingCls}"><span class="material-symbols-rounded">${icon}</span><p>${escapeHtml(text)}</p></div>`;
+  };
+  const setTableState = (tbody: HTMLElement | null, colspan: number, icon: string, text: string, loading = false) => {
+    if (!tbody) return;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="${colspan}">${renderState(icon, text, false, loading)}</td></tr>`;
+  };
+  const setListState = (container: HTMLElement | null, icon: string, text: string, loading = false) => {
+    if (!container) return;
+    container.innerHTML = renderState(icon, text, true, loading);
+  };
+  const upsertAgentProgress = (text: string) => {
+    if (!log) return;
+    let progress = log.querySelector('#agentProgressMsg') as HTMLElement | null;
+    if (!progress) {
+      progress = document.createElement('article');
+      progress.id = 'agentProgressMsg';
+      progress.className = 'msg agent msg-progress';
+      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clínico</span><p></p></div>';
+      log.appendChild(progress);
+    }
+    const p = progress.querySelector('p');
+    if (p) p.textContent = text;
+    log.scrollTop = log.scrollHeight;
+  };
+  const clearAgentProgress = () => {
+    const progress = log?.querySelector('#agentProgressMsg') as HTMLElement | null;
+    progress?.remove();
   };
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
 
@@ -868,6 +934,8 @@ import Layout from '../layouts/Layout.astro';
   const requestExerciseRecommendation = async (text: string, maxAttempts = 2) => {
     let lastError: any = null;
     const safeMaxAttempts = Math.max(1, maxAttempts);
+    let localTimeoutCount = 0;
+    let localRetries = 0;
 
     for (let attempt = 1; attempt <= safeMaxAttempts; attempt += 1) {
       try {
@@ -895,17 +963,22 @@ import Layout from '../layouts/Layout.astro';
         lastError = err;
         const timeout = isTimeoutError(err);
         if (timeout) {
-          exerciseOpsStats.timeouts += 1;
+          localTimeoutCount += 1;
         }
 
         const canRetry = timeout && attempt < safeMaxAttempts;
         if (canRetry) {
-          exerciseOpsStats.retries += 1;
-          renderExerciseOpsMetric();
+          localRetries += 1;
           await wait(500 * attempt);
           continue;
         }
 
+        if (localRetries > 0) {
+          exerciseOpsStats.retries += localRetries;
+        }
+        if (localTimeoutCount > 0) {
+          exerciseOpsStats.timeouts += localTimeoutCount;
+        }
         renderExerciseOpsMetric();
         throw err;
       }
@@ -924,7 +997,8 @@ import Layout from '../layouts/Layout.astro';
     syncChatPatientSelection(activePatientId);
 
     addMessage(`Solicitar recomendacion para: ${text}`, 'user');
-    setSending(true);
+    upsertAgentProgress('Analizando el caso clinico y preparando recomendacion...');
+    setSending(true, 'exercise');
     try {
       const { payload, retriesUsed } = await requestExerciseRecommendation(text, 2);
       renderExerciseOpsMetric();
@@ -937,24 +1011,21 @@ import Layout from '../layouts/Layout.astro';
       syncEngineOpsFromPayload(payload);
 
       // Render rich HTML with image cards
+      clearAgentProgress();
       addExerciseReport(payload);
       if (retriesUsed > 0) {
         addMessage(`Motor IA respondio tras ${retriesUsed} reintento(s).`, 'agent');
       }
-
-      const metricEl = document.getElementById('metricInformes');
-      if (metricEl) {
-        const current = parseInt(metricEl.textContent || '0', 10);
-        metricEl.textContent = Number.isFinite(current) ? String(current + 1) : '1';
-      }
       setAgentStatus(true);
     } catch (err: any) {
+      clearAgentProgress();
       if (isTimeoutError(err)) {
         addMessage('El agente de ejercicios tarda mas de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
       } else {
         addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
       }
     } finally {
+      clearAgentProgress();
       setSending(false);
     }
   };
@@ -985,6 +1056,7 @@ import Layout from '../layouts/Layout.astro';
     try {
       await exportExerciseReportPdf(lastExerciseReportPayload);
       const recommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim();
+      let archived = false;
       if (recommendationId) {
         try {
           await fetchJson(`${BACKEND_BASE}/api/exercises/reports/archive`, {
@@ -998,12 +1070,19 @@ import Layout from '../layouts/Layout.astro';
               source: 'crm_web',
             }),
           });
+          archived = true;
+          incrementArchivedReportsMetric(recommendationId);
         } catch (archiveErr: any) {
           addMessage(`PDF generado, pero no se pudo archivar en historial: ${archiveErr?.message || 'error no identificado'}`, 'agent');
           return;
         }
       }
-      addMessage('PDF generado y archivado en historial del paciente.', 'agent');
+      addMessage(
+        archived
+          ? 'PDF generado y archivado en historial del paciente.'
+          : 'PDF generado correctamente. No se archivo en historial porque falta recommendation_id.',
+        'agent'
+      );
     } catch (err: any) {
       addMessage(`No se pudo generar el PDF: ${err?.message || 'error no identificado'}`, 'agent');
     }
@@ -1016,14 +1095,16 @@ import Layout from '../layouts/Layout.astro';
     if (!text) return;
     addMessage(text, 'user');
     input.value = '';
-    setSending(true);
+    upsertAgentProgress('Consultando al asistente clinico...');
+    setSending(true, 'chat');
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/agent/message`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({role:'professional',channel:'web',text}) });
       const answer = payload?.data?.reply_text || payload?.data?.message || (typeof payload.data==='string'?payload.data:JSON.stringify(payload.data));
+      clearAgentProgress();
       addMessage(answer, 'agent');
       setAgentStatus(!payload.n8n_unreachable);
-    } catch { addMessage('Error de conexión con el agente.', 'agent'); setAgentStatus(false); }
-    finally { setSending(false); }
+    } catch { clearAgentProgress(); addMessage('Error de conexión con el agente.', 'agent'); setAgentStatus(false); }
+    finally { clearAgentProgress(); setSending(false); }
   });
 
   // === HEALTH CHECK ===
@@ -1033,22 +1114,35 @@ import Layout from '../layouts/Layout.astro';
   // === LOAD INTAKES (dashboard) ===
   const loadIntakes = async () => {
     if (!intakeBody) return;
+    setListState(intakeBody, 'sync', 'Actualizando bandeja de intakes...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
       const intakes = payload.data || payload || [];
       const badge = document.getElementById('intakeBadge');
       if (badge) badge.textContent = String(intakes.length);
-      const metricEl = document.getElementById('metricIntakes');
-      if (metricEl) metricEl.textContent = String(intakes.length);
-      if (!intakes.length) { intakeBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">check_circle</span><p>Sin intakes pendientes</p></div></td></tr>`; return; }
-      intakeBody.innerHTML = intakes.slice(0,10).map((i: any) => {
+      if (!intakes.length) {
+        setListState(intakeBody, 'check_circle', 'Sin intakes pendientes');
+        return;
+      }
+      intakeBody.innerHTML = intakes.slice(0, 8).map((i: any) => {
         const ch = (i.fuente||i.canal||'').toLowerCase().includes('telegram') ? 'Telegram' : 'Web';
         const f = fmtDate(i.creado_en||i.created_at||'');
         const st = i.estado||'pendiente';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${ch}</td><td>${f}</td><td><span class="status-chip ${st}">${st}</span></td><td><button class="btn-sm" data-action="review-intake" data-intake-id="${i.id||''}" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Revisar</button></td></tr>`;
+        return `<article class="clean-list-item">
+          <div class="clean-list-main">
+            <p class="clean-list-title">${escapeHtml(patientName)}</p>
+            <p class="clean-list-meta">${escapeHtml(ch)} · ${escapeHtml(f)}</p>
+          </div>
+          <div class="clean-list-action">
+            <span class="status-chip ${st}">${escapeHtml(st)}</span>
+            <button class="btn-sm" data-action="review-intake" data-intake-id="${i.id||''}" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Revisar</button>
+          </div>
+        </article>`;
       }).join('');
-    } catch { intakeBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>No se pudieron cargar los intakes</p></div></td></tr>`; }
+    } catch {
+      setListState(intakeBody, 'cloud_off', 'No se pudieron cargar los intakes');
+    }
   };
   loadIntakes();
   refreshBtn?.addEventListener('click', loadIntakes);
@@ -1064,16 +1158,19 @@ import Layout from '../layouts/Layout.astro';
   // === LOAD PACIENTES ===
   const loadPacientes = async () => {
     if (!pacientesBody) return;
+    setTableState(pacientesBody, 5, 'sync', 'Cargando pacientes...', true);
     try {
       const pts = await fetchPatientCatalog();
       const metricEl = document.getElementById('metricPacientes');
       if (metricEl) metricEl.textContent = String(pts.length);
-      if (!pts.length) { pacientesBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">person_off</span><p>Sin pacientes registrados</p></div></td></tr>`; return; }
+      if (!pts.length) { setTableState(pacientesBody, 5, 'person_off', 'Sin pacientes registrados'); return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
         const patientName = p.nombre_completo || '—';
         return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'—')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'—'}</td><td>${fmtDate(p.creado_en||'')}</td><td><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button></td></tr>`;
       }).join('');
-    } catch { pacientesBody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar pacientes</p></div></td></tr>`; }
+    } catch {
+      setTableState(pacientesBody, 5, 'cloud_off', 'Error al cargar pacientes');
+    }
   };
   pageLoaders['pacientes'] = loadPacientes;
   document.getElementById('refreshPacientes')?.addEventListener('click', loadPacientes);
@@ -1090,12 +1187,13 @@ import Layout from '../layouts/Layout.astro';
   // === LOAD PLANTILLAS ===
   const loadTemplates = async () => {
     if (!templatesBody) return;
+    setTableState(templatesBody, 6, 'sync', 'Cargando plantillas...', true);
     try {
       if (!patientCatalog.length) await fetchPatientCatalog();
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
       const templates = payload.data || [];
       if (!templates.length) {
-        templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">library_books</span><p>No hay plantillas disponibles todavía.</p></div></td></tr>`;
+        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todavía.');
         return;
       }
       templatesBody.innerHTML = templates.map((tpl: any) => {
@@ -1112,7 +1210,7 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
     } catch {
-      templatesBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar plantillas.</p></div></td></tr>`;
+      setTableState(templatesBody, 6, 'cloud_off', 'Error al cargar plantillas.');
     }
   };
   pageLoaders['plantillas'] = loadTemplates;
@@ -1159,16 +1257,19 @@ import Layout from '../layouts/Layout.astro';
   // === LOAD INTAKES FULL ===
   const loadIntakesFull = async () => {
     if (!intakesFullBody) return;
+    setTableState(intakesFullBody, 7, 'sync', 'Cargando intakes...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
       const intakes = payload.data || [];
-      if (!intakes.length) { intakesFullBody.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">check_circle</span><p>Sin intakes pendientes</p></div></td></tr>`; return; }
+      if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin intakes pendientes'); return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
         const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">⚠ Sí</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
         return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'—')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
-    } catch { intakesFullBody.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar intakes</p></div></td></tr>`; }
+    } catch {
+      setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar intakes');
+    }
   };
   pageLoaders['intakes'] = loadIntakesFull;
   document.getElementById('refreshIntakesFull')?.addEventListener('click', loadIntakesFull);
@@ -1179,18 +1280,49 @@ import Layout from '../layouts/Layout.astro';
     openPatientHistory(btn.getAttribute('data-patient-id'), btn.getAttribute('data-patient-name') || '');
   });
 
+  const renderDashboardCitas = (citas: any[], mode: 'ready' | 'error' = 'ready') => {
+    if (!dashCitasBody) return;
+    if (mode === 'error') {
+      setListState(dashCitasBody, 'cloud_off', 'No se pudo cargar la agenda.');
+      return;
+    }
+    if (!citas.length) {
+      setListState(dashCitasBody, 'event_available', 'Sin citas agendadas por ahora.');
+      return;
+    }
+    dashCitasBody.innerHTML = citas.slice(0, 6).map((cita: any) => {
+      const stateClass = String(cita.estado || 'pendiente')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9_ -]/g, '')
+        .trim()
+        .replace(/\s+/g, '_') || 'pendiente';
+      return `<article class="clean-list-item">
+        <div class="clean-list-main">
+          <p class="clean-list-title">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</p>
+          <p class="clean-list-meta">${escapeHtml(fmtDate(cita.inicio_en || ''))} · ${escapeHtml(cita.motivo || 'Sin motivo')}</p>
+        </div>
+        <span class="status-chip ${stateClass}">${escapeHtml(cita.estado || 'pendiente')}</span>
+      </article>`;
+    }).join('');
+  };
+
   // === LOAD CITAS ===
   const loadCitas = async () => {
     if (!citasBody) return;
+    setTableState(citasBody, 6, 'sync', 'Cargando agenda...', true);
+    setListState(dashCitasBody, 'sync', 'Actualizando agenda...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments?fisioterapeuta_id=${PROF_ID}&limit=50`);
       const citas = payload.data || [];
+      renderDashboardCitas(citas);
       const todayCount = citas.filter((c: any) => isTodayDate(c.inicio_en || '')).length;
       const metricEl = document.getElementById('metricSesiones');
       if (metricEl) metricEl.textContent = String(todayCount);
 
       if (!citas.length) {
-        citasBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>No hay citas registradas.</p></div></td></tr>`;
+        setTableState(citasBody, 6, 'event_busy', 'No hay citas registradas.');
         return;
       }
 
@@ -1199,7 +1331,8 @@ import Layout from '../layouts/Layout.astro';
         return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || '—')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : '—'}</td></tr>`;
       }).join('');
     } catch {
-      citasBody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar citas</p></div></td></tr>`;
+      setTableState(citasBody, 6, 'cloud_off', 'Error al cargar citas');
+      renderDashboardCitas([], 'error');
     }
   };
   pageLoaders['citas'] = loadCitas;
@@ -1234,7 +1367,7 @@ import Layout from '../layouts/Layout.astro';
       historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">history</span><p>Selecciona un paciente para ver su historial</p></div>`;
       return;
     }
-    historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
+    historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
 
     try {
       const [patientResp, historyResp, recommendationsResp] = await Promise.all([
@@ -1977,6 +2110,13 @@ import Layout from '../layouts/Layout.astro';
   }
   .msg.agent .msg-body { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); border-top-left-radius: 4px; }
   .msg.user .msg-body { background: var(--info); color: white; border-top-right-radius: 4px; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2); }
+  .msg-progress .msg-avatar .material-symbols-rounded {
+    animation: spin 1.1s linear infinite;
+  }
+  .msg-progress .msg-body {
+    border-style: dashed;
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
+  }
   .msg-body p { margin: 0; white-space: pre-line; }
   .msg-sender {
     display: block;
@@ -1996,6 +2136,9 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+  .ai-input-area.is-busy {
+    opacity: 0.92;
   }
   .ai-controls {
     display: flex;
@@ -2083,6 +2226,9 @@ import Layout from '../layouts/Layout.astro';
     border: none;
     transition: all 0.2s;
   }
+  .btn-action.is-loading {
+    cursor: wait;
+  }
   .btn-generate {
     background: var(--accent);
     color: white;
@@ -2153,6 +2299,32 @@ import Layout from '../layouts/Layout.astro';
   }
   .clean-list-item:hover {
     background: var(--bg-card-hover);
+  }
+  .clean-list-main {
+    min-width: 0;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .clean-list-title {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .clean-list-meta {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .clean-list-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-left: 0.75rem;
+    flex-shrink: 0;
   }
 
   .empty-state-sm {
@@ -2255,6 +2427,14 @@ import Layout from '../layouts/Layout.astro';
     font-size: 1.05rem;
     font-weight: 500;
     margin: 0;
+  }
+  .state-loading .material-symbols-rounded {
+    animation: spin 1.1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   /* === SPA SECTION STYLES === */
@@ -2420,7 +2600,7 @@ import Layout from '../layouts/Layout.astro';
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 0.75rem;
-    background: rgba(15, 28, 48, 0.48);
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
     display: grid;
     gap: 0.55rem;
   }
@@ -2496,38 +2676,59 @@ import Layout from '../layouts/Layout.astro';
 
   /* === RESPONSIVE: SMALL DESKTOP (≤ 1360px) === */
   @media (max-width: 1360px) {
-    .content-grid {
-      grid-template-columns: minmax(0, 1fr);
+    .content {
+      padding: 1.2rem 1.35rem;
     }
-    .agent-panel {
-      height: 560px;
-      position: static;
-      top: auto;
-      min-height: 460px;
-      max-height: none;
+    .dashboard-layout {
+      max-width: none;
+    }
+    .dashboard-bottom-row {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     }
   }
 
   /* === RESPONSIVE: TABLET (≤ 1100px) === */
   @media (max-width: 1100px) {
-    .content-grid {
-      grid-template-columns: 1fr;
+    .topbar {
+      padding: 0 1rem;
     }
-    .agent-panel {
-      height: 500px;
-      position: static;
-      top: auto;
-      min-height: 420px;
-      max-height: none;
+    .search-box {
+      max-width: 320px;
+    }
+    .hero-section {
+      flex-direction: column;
+      align-items: flex-start;
     }
     .metrics-row {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.9rem;
+    }
+    .dashboard-bottom-row {
+      grid-template-columns: 1fr;
+    }
+    .module-header {
+      padding: 1rem 1.1rem;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+    .ai-input-area {
+      padding: 1rem;
+    }
+    .action-buttons {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .btn-action {
+      flex: 1 1 180px;
+      justify-content: center;
+    }
+    .config-grid {
+      grid-template-columns: 1fr;
     }
   }
 
   /* === RESPONSIVE: MOBILE (≤ 768px) === */
   @media (max-width: 768px) {
-    /* Sidebar: off-screen, opens as overlay */
     .sidebar {
       position: fixed;
       top: 0;
@@ -2544,7 +2745,6 @@ import Layout from '../layouts/Layout.astro';
       transform: translateX(0);
       box-shadow: var(--shadow-lg);
     }
-    /* Override collapsed behavior on mobile */
     .sidebar.collapsed {
       width: 260px;
       min-width: 260px;
@@ -2555,10 +2755,9 @@ import Layout from '../layouts/Layout.astro';
       display: inline;
     }
 
-    /* Topbar */
     .topbar {
       padding: 0 0.75rem;
-      gap: 0.5rem;
+      gap: 0.55rem;
     }
     .search-box {
       max-width: none;
@@ -2570,58 +2769,90 @@ import Layout from '../layouts/Layout.astro';
       padding: 4px;
     }
 
-    /* Content */
     .content {
-      padding: 1rem 0.75rem;
+      padding: 0.9rem 0.75rem;
     }
-    .content-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
+    .dashboard-layout {
+      gap: 1.1rem;
     }
-
-    /* Metrics: 2 columns on mobile */
+    .hero-title {
+      font-size: 1.45rem;
+    }
+    .hero-subtitle {
+      font-size: 0.88rem;
+    }
     .metrics-row {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.6rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem;
     }
     .metric-card {
-      padding: 0.75rem;
-      gap: 0.6rem;
+      padding: 0.85rem;
+      gap: 0.75rem;
     }
     .metric-value {
-      font-size: 1.3rem;
+      font-size: 1.35rem;
     }
     .metric-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
     }
 
-    /* Agent panel */
-    .agent-panel {
-      height: auto;
-      max-height: none;
-      min-height: 0;
-      position: static;
-      top: auto;
-    }
     .chat-log {
-      max-height: 42vh;
-      min-height: 200px;
+      padding: 1rem;
+      min-height: 220px;
+      max-height: 50vh;
+    }
+    .msg {
+      max-width: 100%;
     }
 
-    /* Tables */
+    .ai-controls {
+      width: 100%;
+    }
+    .patient-selector {
+      width: 100%;
+    }
+    .patient-selector select {
+      width: 100%;
+      min-width: 0;
+    }
+    .ai-textarea-wrapper textarea {
+      min-height: 110px;
+    }
+    .ai-actions {
+      padding: 0.65rem 0.85rem 0.9rem;
+    }
+    .action-buttons {
+      flex-direction: column;
+      width: 100%;
+      gap: 0.55rem;
+    }
+    .btn-action {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .clean-list-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+    .clean-list-action {
+      margin-left: 0;
+      width: 100%;
+      justify-content: space-between;
+    }
     table {
-      min-width: 560px;
+      min-width: 620px;
     }
     th, td {
       padding: 0.55rem 0.75rem;
       font-size: 0.82rem;
     }
 
-    /* Page headers */
     .page-header-row {
       flex-wrap: wrap;
       gap: 0.75rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.15rem;
     }
     .page-tools {
       width: 100%;
@@ -2639,11 +2870,6 @@ import Layout from '../layouts/Layout.astro';
     .page-title {
       font-size: 1.25rem;
     }
-
-    /* Config grid */
-    .config-grid {
-      grid-template-columns: 1fr;
-    }
     .config-item {
       flex-wrap: wrap;
       gap: 0.5rem;
@@ -2653,33 +2879,15 @@ import Layout from '../layouts/Layout.astro';
       word-break: break-all;
     }
 
-    /* Touch targets */
     .btn-sm {
       min-height: 44px;
       min-width: 44px;
-      padding: 8px 16px;
+      padding: 8px 14px;
       font-size: 0.82rem;
     }
-    .send-btn,
-    .exercise-btn,
-    .pdf-btn {
-      width: 44px;
-      height: 44px;
-    }
-    .icon-btn {
-      padding: 10px;
-    }
+    .icon-btn,
     .sidebar-toggle {
       padding: 10px;
-    }
-
-    /* Chat form */
-    .chat-form textarea {
-      min-height: 44px;
-      font-size: 16px; /* prevents iOS zoom on focus */
-    }
-    .input-hints {
-      display: none;
     }
   }
 
@@ -2688,22 +2896,23 @@ import Layout from '../layouts/Layout.astro';
     .metrics-row {
       grid-template-columns: 1fr;
     }
+    .topbar {
+      height: 54px;
+    }
     .search-box input {
       font-size: 16px;
     }
-    .topbar {
-      height: 52px;
+    .card-header {
+      padding: 0.85rem 1rem;
     }
-    .input-row {
-      display: grid;
-      grid-template-columns: repeat(3, 44px);
-      justify-content: end;
-      gap: 0.45rem;
+    .module-title h2 {
+      font-size: 1rem;
     }
-    .chat-form textarea {
-      grid-column: 1 / -1;
-      min-height: 82px;
+    .widget-card {
+      min-height: 250px;
+    }
+    .chat-log {
+      min-height: 190px;
     }
   }
 </style>
-

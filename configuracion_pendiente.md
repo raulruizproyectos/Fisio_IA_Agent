@@ -2,6 +2,35 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-07, Sesion 59) - Checkpoint seguro tras crash y validacion limpia
+
+### Completado esta sesion
+- ✅ Revision repo/Git/GitHub completada para reconstruir el estado tras el crash.
+- ✅ Corregida incoherencia en `frontend/src/pages/index.astro`:
+  - `Timeouts/Reintentos IA` sin doble conteo entre reintentos locales y `engine_observability`.
+  - `Informes IA archivados` solo sube cuando el PDF se archiva con exito.
+  - eliminado helper TS sin uso para dejar `astro check` limpio.
+- ✅ Validacion segura completada:
+  - `node --check` backend OK.
+  - JSON n8n OK.
+  - `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`.
+  - `npm run check` OK (`0 errors`, `0 warnings`, `0 hints`).
+
+### Punto de partida exacto (siguiente decision)
+1. Decidir si continuar hoy con pulido UI de la Sesion 58:
+   - hover/focus states finos,
+   - pequenos ajustes responsive,
+   - revision visual manual con backend/API levantados.
+2. O cerrar por hoy desde este checkpoint documentado y retomarlo manana.
+3. Si se retoma manana:
+   - abrir este repo tal como queda tras el commit/push de este checkpoint,
+   - validar frontend con `scripts/frontend-local-build.ps1`,
+   - continuar en `frontend/src/pages/index.astro` sin tocar de nuevo las metricas ya estabilizadas.
+
+### Riesgos o bloqueos conocidos
+- En la ruta sincronizada `G:\Mi unidad\...` `npm install` del frontend puede bloquearse; usar validacion temporal en `C:\Temp`.
+- Falta aun validacion funcional manual con backend/API vivos tras el rediseño de UI.
+
 ## Estado actual (2026-03-07, Sesion 58) - Cierre para continuar manana
 
 ### Completado esta sesion
