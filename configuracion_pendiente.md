@@ -2,7 +2,21 @@
 
 Estado actualizado para retomar sin perdida.
 
-## Estado actual (2026-03-05, Sesion 57) - Cierre para continuar manana
+## Estado actual (2026-03-07, Sesion 58) - Cierre para continuar manana
+
+### Completado esta sesion
+- ✅ Cambio global de Theme a Light Clinical Theme (`Layout.astro`).
+- ✅ Reesctructuración del Dashboard (`index.astro`) a formato vertical.
+- ✅ Módulo central de IA posicionado full-width desplazando el sidebar antíguo.
+- ✅ Menú de navegación reordenado para flujo clínico.
+
+### Punto de partida exacto (siguiente sesion)
+1. Terminar ajustes visuales CSS en `index.astro` (responsive breakpoints finos, hover states).
+2. Aplicar "Empty states" y "Loading states" limpios y profesionales.
+3. Refinar Copywriting (textos más clínicos y directos).
+4. Levantar servidor entorno dev para comprobar que los layouts, modales y APIs heredadas funcionan en el nuevo DOM sin romper funcionalidad.
+
+## Estado actual (2026-03-05, Sesion 57) - Punto de control previo
 
 ### Completado esta sesion
 - ✅ CRM chat con selector de paciente obligatorio para informe de ejercicios.

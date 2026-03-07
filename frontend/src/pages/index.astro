@@ -7,42 +7,49 @@ import Layout from '../layouts/Layout.astro';
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <span class="brand-icon material-symbols-rounded">healing</span>
-        <span class="brand-text">Fisio IA Agent</span>
+        <div class="brand-icon-wrapper">
+          <span class="brand-icon material-symbols-rounded">medical_services</span>
+        </div>
+        <span class="brand-text">FisioPlatform</span>
       </div>
 
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-section="dashboard">
-          <span class="material-symbols-rounded">dashboard</span>
-          <span class="nav-label">Dashboard</span>
+          <span class="material-symbols-rounded">home</span>
+          <span class="nav-label">Inicio</span>
         </a>
         <a href="#" class="nav-item" data-section="pacientes">
           <span class="material-symbols-rounded">group</span>
           <span class="nav-label">Pacientes</span>
         </a>
-        <a href="#" class="nav-item" data-section="plantillas">
-          <span class="material-symbols-rounded">library_books</span>
-          <span class="nav-label">Plantillas</span>
-        </a>
-        <a href="#" class="nav-item has-badge" data-section="intakes">
-          <span class="material-symbols-rounded">assignment</span>
-          <span class="nav-label">Intake Pendientes</span>
-          <span class="badge" id="intakeBadge">3</span>
-        </a>
         <a href="#" class="nav-item" data-section="citas">
-          <span class="material-symbols-rounded">calendar_month</span>
-          <span class="nav-label">Citas</span>
+          <span class="material-symbols-rounded">calendar_today</span>
+          <span class="nav-label">Agenda</span>
         </a>
-        <a href="#" class="nav-item" data-section="historial">
-          <span class="material-symbols-rounded">history</span>
-          <span class="nav-label">Historial</span>
+        <a href="#" class="nav-item" data-section="dashboard" onclick="document.getElementById('agentForm').scrollIntoView({behavior: 'smooth'})" style="color: var(--accent);">
+          <span class="material-symbols-rounded">psychology</span>
+          <span class="nav-label">IA Clínica</span>
+        </a>
+        <a href="#" class="nav-item" data-section="plantillas">
+          <span class="material-symbols-rounded">prescriptions</span>
+          <span class="nav-label">Plantillas</span>
         </a>
       </nav>
 
       <div class="sidebar-bottom">
+        <div class="divider"></div>
+        <a href="#" class="nav-item has-badge" data-section="intakes">
+          <span class="material-symbols-rounded">forward_to_inbox</span>
+          <span class="nav-label">Mensajes Intake</span>
+          <span class="badge" id="intakeBadge">0</span>
+        </a>
+        <a href="#" class="nav-item" data-section="historial">
+          <span class="material-symbols-rounded">folder_open</span>
+          <span class="nav-label">Historial</span>
+        </a>
         <a href="#" class="nav-item" data-section="config">
           <span class="material-symbols-rounded">settings</span>
-          <span class="nav-label">Configuración</span>
+          <span class="nav-label">Ajustes</span>
         </a>
       </div>
     </aside>
@@ -75,41 +82,102 @@ import Layout from '../layouts/Layout.astro';
       <main class="content">
         <!-- === PAGE: DASHBOARD === -->
         <div class="page-section active" data-page="dashboard">
-          <div class="content-grid">
-            <div class="col-main">
-              <section class="metrics-row">
-                <div class="metric-card"><div class="metric-icon" style="background: var(--accent-soft); color: var(--accent);"><span class="material-symbols-rounded">assignment</span></div><div class="metric-data"><span class="metric-value" id="metricIntakes">—</span><span class="metric-label">Intakes pendientes</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(59,130,246,0.12); color: var(--info);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">—</span><span class="metric-label">Pacientes activos</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(245,158,11,0.12); color: var(--warning);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Informes ejercicio</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(16,185,129,0.12); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">—</span><span class="metric-label">Sesiones hoy</span></div></div>
-                <div class="metric-card"><div class="metric-icon" style="background: rgba(244,114,182,0.14); color: #f472b6;"><span class="material-symbols-rounded">timer</span></div><div class="metric-data"><span class="metric-value" id="metricEngineOps">0/0</span><span class="metric-label">Timeouts/Reintentos IA</span></div></div>
+          <div class="dashboard-layout">
+            
+            <!-- Hero Section -->
+            <section class="hero-section">
+              <div class="hero-content">
+                <h1 class="hero-title">Hola, Dr. Ruiz</h1>
+                <p class="hero-subtitle">Gestiona pacientes, agenda citas y genera pautas de ejercicios con IA de forma rápida y estructurada.</p>
+              </div>
+              <div class="hero-actions">
+                <button class="btn-primary" onclick="document.getElementById('agentInput').focus()"><span class="material-symbols-rounded">psychology</span> Nueva Prescripción</button>
+              </div>
+            </section>
+
+            <!-- Metrics -->
+            <section class="metrics-row clinical-metrics">
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(15, 118, 110, 0.1); color: var(--accent);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">—</span><span class="metric-label">Pacientes Activos</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">—</span><span class="metric-label">Citas Hoy</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Planes IA Generados</span></div></div>
+            </section>
+
+            <!-- IA Module (Central) -->
+            <section class="ai-clinical-module card">
+              <header class="module-header">
+                <div class="module-title">
+                  <span class="material-symbols-rounded accent-icon">psychology</span>
+                  <h2>Asistente de Prescripción IA</h2>
+                </div>
+                <div class="agent-status-pill">
+                  <span class="status-dot connected" id="agentDot"></span>
+                  <span class="status-text" id="agentStatusText">Online</span>
+                </div>
+              </header>
+              
+              <div class="ai-workspace">
+                <div class="chat-log" id="chatLog">
+                  <article class="msg agent">
+                    <div class="msg-avatar"><span class="material-symbols-rounded">medical_information</span></div>
+                    <div class="msg-body">
+                      <span class="msg-sender">Asistente Clínico</span>
+                      <p>Estoy listo. Selecciona un paciente y describe el caso clínico o la dolencia para generar un plan de ejercicios estructurado.</p>
+                    </div>
+                  </article>
+                </div>
+                
+                <form id="agentForm" class="ai-input-area">
+                  <div class="ai-controls">
+                    <div class="patient-selector">
+                      <span class="material-symbols-rounded">person</span>
+                      <select id="chatPatientSelect" aria-label="Paciente del informe">
+                        <option value="">Vincular a paciente...</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="ai-textarea-wrapper">
+                    <textarea id="agentInput" rows="3" placeholder="Ej: Dolor lumbar crónico de 2 meses evolución. Buscar ejercicios de core y estiramiento isquiotibiales..."></textarea>
+                    <div class="ai-actions">
+                      <div class="action-buttons">
+                        <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">picture_as_pdf</span> Guardar PDF</button>
+                        <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
+                        <button type="submit" class="btn-action btn-chat" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)"><span class="material-symbols-rounded">chat</span></button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </section>
+
+            <!-- Bottom Row: Citas y Actividad -->
+            <div class="dashboard-bottom-row">
+              <section class="card widget-card">
+                <header class="card-header">
+                  <h2>Próximas Citas</h2>
+                  <button class="btn-ghost" onclick="document.querySelector('[data-section=\'citas\']').click()"><span class="material-symbols-rounded">arrow_forward</span> Ver todas</button>
+                </header>
+                <div class="widget-body list-clean" id="dashCitasBody">
+                  <div class="empty-state-sm">
+                    <span class="material-symbols-rounded">event_busy</span>
+                    <p>Cargando citas...</p>
+                  </div>
+                </div>
               </section>
-              <section class="card table-card">
-                <header class="card-header"><h2>Últimos Intakes</h2><button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
-                <div class="table-wrap"><table id="intakeTable"><thead><tr><th>Paciente</th><th>Canal</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="intakeBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">inbox</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
+              
+              <section class="card widget-card">
+                <header class="card-header">
+                  <h2>Intakes Recientes</h2>
+                  <button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span></button>
+                </header>
+                <div class="widget-body list-clean" id="intakeBody">
+                  <div class="empty-state-sm">
+                    <span class="material-symbols-rounded">inbox</span>
+                    <p>Bandeja al día</p>
+                  </div>
+                </div>
               </section>
             </div>
-            <div class="col-aside">
-              <section class="card agent-panel">
-                <header class="card-header agent-header"><div class="agent-title"><span class="material-symbols-rounded agent-icon">psychology</span><div><h2>Agente Clínico IA</h2><div class="agent-status"><span class="status-dot connected" id="agentDot"></span><span class="status-text" id="agentStatusText">Conectado</span></div></div></div></header>
-                <div class="chat-log" id="chatLog"><article class="msg agent"><div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>Listo para intake clínico. Describe síntomas y generaré un informe de ejercicios con imágenes y procedimiento.</p></div></article></div>
-                <form id="agentForm" class="chat-form">
-  <div class="chat-patient-row">
-    <label for="chatPatientSelect">Paciente del informe</label>
-    <select id="chatPatientSelect" aria-label="Paciente del informe">
-      <option value="">Selecciona paciente...</option>
-    </select>
-  </div>
-  <div class="input-row">
-    <textarea id="agentInput" rows="2" placeholder="Ej: Dolor de hombro de 5 días, empeora al elevar brazo, sin traumatismo..."></textarea>
-    <button type="button" class="exercise-btn" id="exerciseRecoBtn" aria-label="Recomendar ejercicios" title="Recomendar ejercicios"><span class="material-symbols-rounded">fitness_center</span></button>
-    <button type="button" class="pdf-btn" id="exercisePdfBtn" aria-label="Descargar informe PDF" title="Descargar informe PDF"><span class="material-symbols-rounded">picture_as_pdf</span></button>
-    <button type="submit" class="send-btn" id="sendBtn" aria-label="Enviar"><span class="material-symbols-rounded">send</span></button>
-  </div>
-  <div class="input-hints"><span class="material-symbols-rounded" style="font-size: 14px;">info</span> Ctrl+Enter = Agente IA · <span class="material-symbols-rounded" style="font-size: 14px;">fitness_center</span> = Ejercicios AI</div>
-</form>
-              </section>
-            </div>
+
           </div>
         </div>
 
@@ -1638,54 +1706,77 @@ import Layout from '../layouts/Layout.astro';
   /* === CONTENT === */
   .content {
     flex: 1;
-    padding: 1.4rem;
+    padding: 1.4rem 2rem;
     overflow-y: auto;
     overflow-x: hidden;
+    background: var(--bg-base);
   }
-  .content-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-    gap: 1.25rem;
+  
+  /* === NEW DASHBOARD LAYOUT === */
+  .dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
     max-width: 1400px;
     margin: 0 auto;
-    align-items: start;
   }
-  .col-main,
-  .col-aside,
-  .table-card,
-  .card,
-  .table-wrap {
-    min-width: 0;
+
+  /* === HERO SECTION === */
+  .hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    animation: fadeIn 0.4s ease-out;
   }
-  .col-aside {
-    width: 100%;
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .hero-title {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 600px;
+  }
+  .hero-actions .btn-primary {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    border-radius: var(--radius-md);
   }
 
   /* === METRICS === */
   .metrics-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 0.85rem;
-    margin-bottom: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
   }
   .metric-card {
-    background: linear-gradient(180deg, rgba(25, 36, 56, 0.98) 0%, rgba(20, 31, 49, 0.98) 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 1rem 1.1rem;
+    padding: 1.4rem;
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 1.2rem;
     transition: all var(--transition);
+    box-shadow: var(--shadow-sm);
+    animation: card-enter 0.45s ease-out forwards;
     opacity: 0;
     transform: translateY(8px);
-    animation: card-enter 0.45s ease-out forwards;
   }
   .metric-card:nth-child(1) { animation-delay: 0.04s; }
   .metric-card:nth-child(2) { animation-delay: 0.1s; }
   .metric-card:nth-child(3) { animation-delay: 0.16s; }
-  .metric-card:nth-child(4) { animation-delay: 0.22s; }
-  .metric-card:nth-child(5) { animation-delay: 0.28s; }
 
   @keyframes card-enter {
     to {
@@ -1693,37 +1784,42 @@ import Layout from '../layouts/Layout.astro';
       transform: translateY(0);
     }
   }
+
   .metric-card:hover {
     border-color: var(--border-light);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
   }
   .metric-icon {
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
   }
-  .metric-icon .material-symbols-rounded { font-size: 22px; }
+  .metric-icon .material-symbols-rounded { font-size: 26px; }
+  .metric-data {
+    display: flex;
+    flex-direction: column;
+  }
   .metric-value {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     font-weight: 700;
     line-height: 1;
+    color: var(--text-primary);
   }
   .metric-label {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    display: block;
-    margin-top: 2px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 6px;
   }
 
-  /* === CARD === */
+  /* === CARD BASE === */
   .card {
-    background: rgba(18, 28, 44, 0.9);
-    backdrop-filter: blur(6px);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -1734,125 +1830,76 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.85rem 1.15rem;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
   }
   .card-header h2 {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
   }
   .btn-ghost {
     background: none;
     border: none;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: var(--radius-sm);
     transition: all var(--transition);
   }
   .btn-ghost:hover { color: var(--accent); background: var(--accent-soft); }
   .btn-ghost .material-symbols-rounded { font-size: 18px; }
 
-  /* === TABLE === */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  th {
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    padding: 0.7rem 1.15rem;
-    border-bottom: 1px solid var(--border);
-  }
-  td {
-    padding: 0.7rem 1.15rem;
-    font-size: 0.88rem;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-    overflow-wrap: anywhere;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--bg-card-hover); }
-  .td-patient { font-weight: 500; overflow-wrap: anywhere; }
-
-  .status-chip {
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 2px 10px;
-    border-radius: 99px;
-    text-transform: capitalize;
-  }
-  .status-chip.pendiente,
-  .status-chip.pendiente_revision { background: rgba(245,158,11,0.15); color: var(--warning); }
-  .status-chip.confirmada,
-  .status-chip.reprogramada { background: rgba(37,99,235,0.15); color: var(--info); }
-  .status-chip.aprobado,
-  .status-chip.enviado,
-  .status-chip.completada { background: rgba(16,185,129,0.15); color: var(--success); }
-  .status-chip.rechazado,
-  .status-chip.cancelada,
-  .status-chip.no_show { background: rgba(239,68,68,0.15); color: var(--danger); }
-
-  .btn-sm {
-    background: linear-gradient(135deg, #0a7f78, #0c8e86);
-    color: #fff;
-    border: none;
-    font: inherit;
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all var(--transition);
-  }
-  .btn-sm:hover { filter: brightness(1.06); transform: translateY(-1px); }
-  .btn-sm:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    transform: none;
-    filter: none;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-muted);
-  }
-  .empty-state .material-symbols-rounded { font-size: 36px; margin-bottom: 0.5rem; display: block; }
-
-  /* === AGENT PANEL === */
-  .agent-panel {
+  /* === CENTRAL AI MODULE === */
+  .ai-clinical-module {
     display: flex;
     flex-direction: column;
-    height: min(calc(100vh - 60px - 2.8rem), 860px);
-    min-height: 520px;
-    position: sticky;
-    top: 1.4rem;
-    box-shadow: var(--shadow-md);
+    min-height: 480px;
   }
-  .agent-header .agent-title {
+  .module-header {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
   }
-  .agent-icon {
-    font-size: 26px;
+  .module-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .module-title h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+  }
+  .accent-icon {
     color: var(--accent);
+    font-size: 26px;
+    background: var(--accent-soft);
+    padding: 8px;
+    border-radius: var(--radius-md);
   }
-  .agent-status {
+  .agent-status-pill {
     display: flex;
     align-items: center;
-    gap: 5px;
-    margin-top: 2px;
+    gap: 6px;
+    background: var(--bg-surface);
+    padding: 4px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
   }
+
   .status-dot {
     width: 8px;
     height: 8px;
@@ -1861,187 +1908,353 @@ import Layout from '../layouts/Layout.astro';
   }
   .status-dot.connected {
     background: var(--success);
-    box-shadow: 0 0 6px var(--success);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
     animation: pulse-dot 2s infinite;
   }
   .status-dot.disconnected { background: var(--danger); }
-  .status-text { font-size: 0.72rem; color: var(--text-muted); }
+  .status-text { font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); }
 
   @keyframes pulse-dot {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
   }
 
-  /* === CHAT LOG === */
+  .ai-workspace {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: var(--bg-surface);
+  }
+  
+  /* CHAT LOG */
   .chat-log {
     flex: 1;
     overflow-y: auto;
-    padding: 0.85rem;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    min-height: 200px;
+    gap: 1.2rem;
+    min-height: 250px;
+    background: var(--bg-base);
   }
   .msg {
     display: flex;
-    gap: 0.55rem;
-    max-width: 95%;
+    gap: 0.75rem;
+    max-width: 85%;
     animation: msg-in 0.25s ease-out;
   }
   .msg.user { flex-direction: row-reverse; align-self: flex-end; }
   .msg.agent { align-self: flex-start; }
 
   @keyframes msg-in {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   .msg-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--accent-soft);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
   }
-  .msg-avatar .material-symbols-rounded { font-size: 18px; color: var(--accent); }
+  .msg.agent .msg-avatar { background: var(--accent-soft); border-color: transparent; }
+  .msg.agent .msg-avatar .material-symbols-rounded { font-size: 20px; color: var(--accent); }
+  .msg.user .msg-avatar .material-symbols-rounded { font-size: 20px; color: var(--text-secondary); }
 
   .msg-body {
-    border-radius: var(--radius-md);
-    padding: 0.6rem 0.85rem;
-    font-size: 0.88rem;
+    border-radius: var(--radius-lg);
+    padding: 0.85rem 1.15rem;
+    font-size: 0.92rem;
     line-height: 1.5;
     overflow-wrap: anywhere;
+    box-shadow: var(--shadow-sm);
   }
-  .msg.agent .msg-body { background: var(--bg-elevated); color: var(--text-primary); }
-  .msg.user .msg-body { background: var(--accent); color: #fff; }
+  .msg.agent .msg-body { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); border-top-left-radius: 4px; }
+  .msg.user .msg-body { background: var(--info); color: white; border-top-right-radius: 4px; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2); }
   .msg-body p { margin: 0; white-space: pre-line; }
   .msg-sender {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 2px;
-  }
-
-  /* === CHAT FORM === */
-  .chat-form {
-    padding: 0.75rem;
-    border-top: 1px solid var(--border);
-  }
-  .chat-patient-row {
-    display: grid;
-    gap: 0.35rem;
-    margin-bottom: 0.55rem;
-  }
-  .chat-patient-row label {
-    font-size: 0.74rem;
     color: var(--text-muted);
-    font-weight: 600;
-    letter-spacing: 0.01em;
+    margin-bottom: 4px;
   }
-  .chat-patient-row select {
-    width: 100%;
-    min-width: 0;
-    background: var(--bg-base);
+  .msg.agent .msg-sender { color: var(--accent); }
+  .msg.user .msg-sender { color: rgba(255,255,255,0.8); }
+
+  /* AI INPUT AREA */
+  .ai-input-area {
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .ai-controls {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .patient-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 0.5rem 0.6rem;
-    color: var(--text-primary);
-    font: inherit;
-    font-size: 0.84rem;
+    padding: 0.45rem 0.85rem;
+    transition: border-color var(--transition);
   }
-  .chat-patient-row select:focus {
-    outline: none;
+  .patient-selector:focus-within {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
-  .chat-patient-row select:disabled {
-    opacity: 0.5;
-  }
-  .input-row {
-    display: flex;
-    gap: 0.5rem;
-  }
-  .chat-form textarea {
-    flex: 1;
-    background: var(--bg-base);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 0.6rem 0.75rem;
-    color: var(--text-primary);
+  .patient-selector select {
+    border: none;
+    background: transparent;
     font: inherit;
-    font-size: 0.88rem;
-    resize: none;
-    transition: border-color var(--transition);
-  }
-  .chat-form textarea::placeholder { color: var(--text-muted); }
-  .chat-form textarea:focus { outline: none; border-color: var(--accent); }
-  .chat-form textarea:disabled { opacity: 0.5; }
-
-  .send-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, #0a7f78, #1f6fd6);
-    color: #fff;
-    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    outline: none;
+    width: 240px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all var(--transition);
   }
-  .send-btn:hover { filter: brightness(1.05); transform: scale(1.03); }
-  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .send-btn .material-symbols-rounded { font-size: 20px; }
-
-  .exercise-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, #c9871c, #e6a840);
-    color: #fff;
+  .patient-selector .material-symbols-rounded {
+    font-size: 20px;
+    color: var(--accent);
+  }
+  
+  .ai-textarea-wrapper {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    transition: all 0.2s;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  }
+  .ai-textarea-wrapper:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+    background: var(--bg-card);
+  }
+  .ai-textarea-wrapper textarea {
+    width: 100%;
     border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all var(--transition);
+    background: transparent;
+    padding: 1rem 1.15rem;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    line-height: 1.5;
   }
-  .exercise-btn:hover { filter: brightness(1.08); transform: scale(1.03); }
-  .exercise-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .exercise-btn .material-symbols-rounded { font-size: 20px; }
-
-  .pdf-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, #be2f45, #e0556d);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all var(--transition);
-  }
-  .pdf-btn:hover { filter: brightness(1.08); transform: scale(1.03); }
-  .pdf-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .pdf-btn .material-symbols-rounded { font-size: 20px; }
-
-  .input-hints {
-    font-size: 0.7rem;
+  .ai-textarea-wrapper textarea::placeholder {
     color: var(--text-muted);
-    margin-top: 0.4rem;
+  }
+  .ai-actions {
     display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 1.15rem 1rem;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 0.75rem;
+  }
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.65rem 1.15rem;
+    border-radius: var(--radius-md);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-generate {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 6px -1px var(--accent-soft);
+  }
+  .btn-generate:hover {
+    background: #0d655f;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px var(--accent-soft);
+  }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  
+  .btn-pdf {
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-pdf:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+  }
+  .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-chat {
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 0.65rem 0.85rem;
+  }
+  .btn-chat:hover {
+    background: var(--info);
+    color: white;
+    border-color: var(--info);
+  }
+  .btn-chat:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* === DASHBOARD BOTTOM ROW === */
+  .dashboard-bottom-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+  }
+  .widget-card {
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+  }
+  .widget-body {
+    flex: 1;
+    overflow-y: auto;
+  }
+  .list-clean {
+    padding: 0;
+  }
+  
+  /* Modern Clean Lists */
+  .clean-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background var(--transition);
+  }
+  .clean-list-item:last-child {
+    border-bottom: none;
+  }
+  .clean-list-item:hover {
+    background: var(--bg-card-hover);
+  }
+
+  .empty-state-sm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-muted);
+    text-align: center;
+    height: 100%;
+  }
+  .empty-state-sm .material-symbols-rounded {
+    font-size: 36px;
+    margin-bottom: 0.75rem;
+    color: var(--border-light);
+  }
+  .empty-state-sm p {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  /* === TABLE OVERRIDES === */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+  }
+  td {
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    color: var(--text-primary);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-card-hover); }
+  .td-patient { font-weight: 600; color: var(--text-primary); }
+
+  .status-chip {
+    display: inline-flex;
     align-items: center;
     gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 99px;
+    text-transform: capitalize;
+  }
+  .status-chip.pendiente,
+  .status-chip.pendiente_revision { background: rgba(245,158,11,0.15); color: #d97706; }
+  .status-chip.confirmada,
+  .status-chip.reprogramada { background: rgba(59,130,246,0.15); color: var(--info); }
+  .status-chip.aprobado,
+  .status-chip.enviado,
+  .status-chip.completada { background: rgba(16,185,129,0.15); color: var(--success); }
+  .status-chip.rechazado,
+  .status-chip.cancelada,
+  .status-chip.no_show { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+  .btn-sm {
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-sm:hover { color: var(--text-primary); background: var(--border); }
+  .btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .empty-state .material-symbols-rounded { 
+    font-size: 48px; 
+    margin-bottom: 1rem; 
+    color: var(--border-light); 
+  }
+  .empty-state p {
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin: 0;
   }
 
   /* === SPA SECTION STYLES === */

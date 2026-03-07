@@ -1,5 +1,28 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 58 - 2026-03-07
+
+### Objetivo
+- Iniciar el rediseño del frontend hacia un "Light Clinical Theme" profesional (SaaS clínico).
+
+### Cambios implementados
+- ✅ Frontend `frontend/src/layouts/Layout.astro`:
+  - Nuevo esquema de colores Light Clinical (grises/azules muy claros, acentos teal).
+  - Tipografía y estructura base actualizada.
+- ✅ Frontend `frontend/src/pages/index.astro`:
+  - Componente Sidebar reordenado para flujo clínico (Inicio, Pacientes, Agenda, IA clínica, Plantillas).
+  - Componente Topbar actualizado.
+  - Estructura Dashboard (grid) reemplazada por flujo vertical funcional (Hero, KPIs, Módulo IA ancho completo).
+  - Estilos del Agent Panel (Asistente IA) llevados a bloque full-width limpio.
+- ⚠️ Frontend dependencies:
+  - Ejecutado `npm install` en frontend para solventar bloqueos locales.
+
+### Punto de partida (siguiente sesión)
+1. Completar la implementación de UX/UI states (Loading, Empty states, Errores).
+2. Refinar Responsive (breakpoints intermedios) y transiciones.
+3. Revisión profunda de Copywriting para tono clínico en toda la vista.
+4. Validar funcionalidad (API endpoints de IA y Base de Datos) con el nuevo DOM.
+
 ## Sesion 57 - 2026-03-05
 
 ### Objetivo
