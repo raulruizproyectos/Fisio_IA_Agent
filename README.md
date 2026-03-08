@@ -9,7 +9,17 @@ CRM + Agents para centros de fisioterapia: gestión de pacientes, citas y recome
 - Source of truth único: Supabase del proyecto Fisio_IA_Agent.
 
 ## En pausa
-- Generación de video (desactivada en backend y eliminada del frontend/n8n activo).
+- Generacion de video (desactivada en backend y eliminada del frontend/n8n activo).
+
+## Checkpoint actual (Sesion 60 - 2026-03-08)
+- CRM local ampliado con:
+  - alta de pacientes,
+  - buscador superior por paciente/email,
+  - notas de seguimiento,
+  - creacion de citas,
+  - copilot lateral fijo para todas las paginas.
+- El asistente ya no vacia el prompt al lanzar la accion y queda operativo como rail lateral persistente.
+- Punto exacto de continuidad: `docs/checkpoint_20260308_copilot_rail.md`.
 
 ## Arquitectura actual
 - Frontend CRM: Astro

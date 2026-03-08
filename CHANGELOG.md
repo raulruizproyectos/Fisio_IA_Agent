@@ -1,5 +1,39 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 60 - 2026-03-08
+
+### Objetivo
+- Dejar un checkpoint exacto del estado actual, convertir el asistente en un copilot lateral fijo y documentar el punto de continuidad para retomar desde aqui.
+
+### Cambios implementados
+- [x] Frontend `frontend/src/pages/index.astro`:
+  - alta de pacientes desde modal CRM,
+  - buscador superior operativo por paciente/email,
+  - notas de seguimiento desde historial,
+  - alta de citas desde CRM,
+  - asistente IA movido a `copilot rail` lateral persistente para todas las paginas,
+  - acceso rapido desde sidebar, topbar y dashboard,
+  - contexto del paciente activo dentro del rail,
+  - shortcuts de prompt,
+  - textarea mas grande, mas legible y con autoajuste,
+  - el prompt ya no se vacia al pulsar `Generar Plan` o enviar chat.
+- [x] Validacion tecnica:
+  - `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local` tras el rediseño del rail.
+- [x] Documentacion sincronizada:
+  - `CHANGELOG.md`
+  - `README.md`
+  - `configuracion_pendiente.md`
+  - `docs/checkpoint_20260308_copilot_rail.md`
+
+### Decisiones tecnicas
+- El patron adoptado para el asistente pasa de modulo central en dashboard a rail lateral persistente, mas cercano a un copilot operativo de CRM.
+- Se prioriza ergonomia y continuidad de trabajo: el usuario mantiene visible el prompt mientras espera la respuesta del agente.
+- El siguiente salto de valor ya no es visual sino de flujo: si el motor tarda demasiado, conviene pasar a un modelo asincrono/polling para ejercicios.
+
+### Punto de control seguro
+1. El frontend ha quedado validado tras la migracion del asistente a rail lateral.
+2. El estado funcional local incluye CRM mas completo y asistente mucho mas usable.
+3. El siguiente bloque exacto recomendado es despliegue/preview y, despues, resolver timeout asincrono del motor de ejercicios si sigue siendo un cuello de botella.
 ## Sesion 59 - 2026-03-07
 
 ### Objetivo

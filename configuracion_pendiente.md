@@ -2,6 +2,34 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-08, Sesion 60) - Checkpoint exacto con copilot rail y CRM ampliado
+
+### Completado esta sesion
+- [x] El asistente deja de vivir en el dashboard y pasa a rail lateral persistente para todas las paginas.
+- [x] El prompt del agente ya no desaparece al lanzar la accion.
+- [x] Se deja el CRM con mas piezas funcionales listas para uso:
+  - alta de pacientes,
+  - buscador superior,
+  - notas de seguimiento,
+  - creacion de citas,
+  - copilot lateral fijo.
+- [x] `CHANGELOG.md`, `README.md` y checkpoint de continuidad actualizados.
+- [x] Frontend validado de nuevo con `scripts/frontend-local-build.ps1`.
+
+### Punto de partida exacto (siguiente sesion)
+1. Retomar desde este commit/checkpoint exacto.
+2. Probar manualmente en navegador:
+   - generar plan con paciente seleccionado,
+   - exportar PDF,
+   - preguntar en chat,
+   - abrir/usar copilot desde varias paginas.
+3. Si el agente de ejercicios sigue tardando demasiado:
+   - implementar flujo asincrono/polling para `POST /api/exercises/recommend`.
+4. Solo despues valorar despliegue final o nuevos pulidos visuales.
+
+### Riesgos o bloqueos conocidos
+- La ergonomia del frontend queda resuelta, pero el cuello de botella del motor IA puede seguir existiendo si el webhook tarda demasiado.
+- En la ruta sincronizada `G:\Mi unidad\...` puede seguir siendo preferible validar frontend en `C:\Temp`.
 ## Estado actual (2026-03-07, Sesion 59) - Checkpoint seguro tras crash y validacion limpia
 
 ### Completado esta sesion
