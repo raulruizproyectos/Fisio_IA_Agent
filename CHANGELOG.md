@@ -1,5 +1,24 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 69 - 2026-03-09
+
+### Objetivo
+- Habilitar una validacion segura del canal Telegram sin crear datos productivos ni enviar mensajes reales al bot.
+
+### Cambios implementados
+- [x] backend/src/routes/telegram.js admite dry_run=true en POST /api/telegram/incoming para payload custom.
+- [x] El dry run calcula agent_mode, red flags, clasificacion, reply_text y next_action sin crear pacientes, intakes, citas ni recomendaciones.
+- [x] El dry run soporta mensajes libres y comandos clave: /start, /ayuda, /plan, /dolor, /cita y /informe del bot fisio.
+
+### Validacion realizada
+- [x] node --check src/routes/telegram.js OK en copia aislada C:\Temp\Fisio_IA_Agent_backend_local.
+- [x] La ruta queda preparada para validacion remota via API tras deploy.
+- [!] La simulacion local por import directo del router no es fiable por el acoplamiento actual telegram.js -> index.js -> telegramRouter.
+
+### Siguiente paso exacto
+1. Redeploy de fisio-backend en EasyPanel.
+2. Validar por API POST /api/telegram/incoming con dry_run=true.
+3. Si el dry run devuelve route, reply_text y next_action correctos, pasar a prueba manual del bot real.
 ## Sesion 68 - 2026-03-09
 
 ### Objetivo

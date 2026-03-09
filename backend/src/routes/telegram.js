@@ -80,7 +80,62 @@ function truncateTelegramMessage(text = '', maxLen = 3900) {
   const clean = String(text || '').trim();
   if (!clean) return '';
   if (clean.length <= maxLen) return clean;
-  return `${clean.slice(0, maxLen - 3)}...`;
+  return clean.slice(0, maxLen - 3) + '...';
+}
+
+function pickBodyValue(obj = {}, ...keys) {
+  for (const key of keys) {
+    if (obj?.[key] !== undefined && obj?.[key] !== null && obj?.[key] !== '') {
+      return obj[key];
+    }
+  }
+  return null;
+}
+
+function parseBooleanFlag(value = null) {
+  return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+}
+
+function buildTelegramDryRunResponse({
+  replyText,
+  parsedPayload,
+  agentMode,
+  isCommand,
+  intent,
+  redFlagResult,
+  nextAction,
+  agentConversation = null,
+  linkedPatientId = null,
+  professionalId = null,
+  notes = [],
+  details = null,
+}) {
+  return {
+    ok: true,
+    dry_run: true,
+    reply_text: truncateTelegramMessage(replyText),
+    next_action: nextAction,
+    agent_mode: agentMode,
+    parsed_payload: {
+      chat_id: String(parsedPayload?.chat_id || ''),
+      username: parsedPayload?.username || null,
+      text: parsedPayload?.texto_mensaje || '',
+      is_command: Boolean(isCommand),
+    },
+    linked_patient_id: linkedPatientId || null,
+    professional_id: professionalId || null,
+    classification: {
+      route: String(intent?.route || 'unknown'),
+      confidence: Number(intent?.confidence || 0),
+      source: agentConversation?.source || 'local_fallback',
+      fallback_used: Boolean(agentConversation?.fallback_used),
+      fallback_reason: agentConversation?.fallback_reason || null,
+      n8n_unreachable: Boolean(agentConversation?.n8n_unreachable),
+    },
+    red_flags: redFlagResult || { tiene_alertas_rojas: false, alertas_rojas: [] },
+    details: details || null,
+    notes,
+  };
 }
 
 function detectTelegramAgentMode(payload = {}) {
@@ -763,6 +818,251 @@ router.post('/incoming', async (req, res, next) => {
     const agentMode = detectTelegramAgentMode(parsedPayload);
     const text = normalizeCommand(texto_mensaje);
     const isCommand = text.startsWith('/');
+    const dryRun = parseBooleanFlag(pickBodyValue(req.body, 'dry_run')) || parseBooleanFlag(req.query?.dry_run);
+    const forcedPatientId = pickBodyValue(req.body, 'paciente_id', 'patient_id');
+    const forcedProfessionalId = pickBodyValue(req.body, 'profesional_id', 'professional_id');
+
+    if (dryRun) {
+      if (fromTelegramWebhook) {
+        return res.status(400).json({
+          error: 'dry_run solo disponible con payload custom, no con webhook nativo de Telegram',
+        });
+      }
+
+      const professionalId = forcedProfessionalId || await getDefaultProfessionalId();
+      const redFlagResult = detectRedFlags(text);
+
+      if (agentMode === 'physio_reports') {
+        if (!isCommand || text.toLowerCase() === '/start' || text.toLowerCase() === '/ayuda') {
+          return res.json(buildTelegramDryRunResponse({
+            replyText: getPhysioHelpMessage(),
+            parsedPayload,
+            agentMode,
+            isCommand,
+            intent: { route: 'exercise', confidence: 1 },
+            redFlagResult,
+            nextAction: 'show_physio_help',
+            professionalId,
+            notes: ['dry_run: no se genera PDF ni se persiste ninguna recomendacion'],
+          }));
+        }
+
+        const reportCommand = parsePhysioReportCommand(text);
+        if (!reportCommand?.patientId || !reportCommand?.symptoms) {
+          return res.json(buildTelegramDryRunResponse({
+            replyText: 'Formato invalido. Usa: /informe <paciente_id> | <sintomas>',
+            parsedPayload,
+            agentMode,
+            isCommand,
+            intent: { route: 'exercise', confidence: 1 },
+            redFlagResult,
+            nextAction: 'await_valid_physio_report_command',
+            professionalId,
+            notes: ['dry_run: corrige el comando para simular la generacion del informe'],
+          }));
+        }
+
+        return res.json(buildTelegramDryRunResponse({
+          replyText: 'Dry run OK. Se dispararia W2 para generar informe y PDF del paciente indicado.',
+          parsedPayload,
+          agentMode,
+          isCommand,
+          intent: { route: 'exercise', confidence: 1 },
+          redFlagResult,
+          nextAction: 'trigger_w2_report',
+          linkedPatientId: reportCommand.patientId,
+          professionalId,
+          details: {
+            symptoms: reportCommand.symptoms,
+          },
+          notes: ['dry_run: no se genera PDF ni se persiste ninguna recomendacion'],
+        }));
+      }
+
+      if (text.toLowerCase().startsWith('/start')) {
+        const [, rawCode] = text.split(/\s+/);
+        const code = rawCode?.trim()?.toUpperCase() || null;
+        return res.json(buildTelegramDryRunResponse({
+          replyText: code ? 'Dry run OK. Se validaria el codigo de vinculacion y se asociaria el chat al paciente.' : 'Falta el codigo de vinculacion. Usa: /start CODIGO',
+          parsedPayload,
+          agentMode,
+          isCommand,
+          intent: { route: 'link', confidence: code ? 1 : 0.2 },
+          redFlagResult,
+          nextAction: code ? 'validate_link_code' : 'await_link_code',
+          professionalId,
+          details: code ? { code } : null,
+          notes: ['dry_run: no se actualiza ninguna vinculacion en base de datos'],
+        }));
+      }
+
+      if (text.toLowerCase() === '/ayuda') {
+        return res.json(buildTelegramDryRunResponse({
+          replyText: agentMode === 'patient_appointments' ? getPatientAppointmentHelpMessage() : getHelpMessage(),
+          parsedPayload,
+          agentMode,
+          isCommand,
+          intent: { route: 'help', confidence: 1 },
+          redFlagResult,
+          nextAction: 'show_help',
+          professionalId,
+          notes: ['dry_run: solo se devuelve la ayuda, sin efectos laterales'],
+        }));
+      }
+
+      if (text.toLowerCase() === '/plan') {
+        return res.json(buildTelegramDryRunResponse({
+          replyText: 'Dry run OK. Se consultaria el plan activo del paciente vinculado.',
+          parsedPayload,
+          agentMode,
+          isCommand,
+          intent: { route: 'plan_status', confidence: 0.95 },
+          redFlagResult,
+          nextAction: 'read_active_plan',
+          linkedPatientId: forcedPatientId,
+          professionalId,
+          notes: ['dry_run: envia paciente_id para simular un chat ya vinculado'],
+        }));
+      }
+
+      if (text.toLowerCase().startsWith('/dolor')) {
+        const painCommand = parsePainCommand(text);
+        return res.json(buildTelegramDryRunResponse({
+          replyText: painCommand ? 'Dry run OK. Se registraria dolor ' + painCommand.painLevel + '/10 para el paciente vinculado.' : 'Formato invalido. Usa: /dolor <0-10> [nota opcional]',
+          parsedPayload,
+          agentMode,
+          isCommand,
+          intent: { route: 'pain_log', confidence: painCommand ? 0.95 : 0.2 },
+          redFlagResult,
+          nextAction: painCommand ? 'log_pain' : 'await_valid_pain_command',
+          linkedPatientId: forcedPatientId,
+          professionalId,
+          details: painCommand,
+          notes: ['dry_run: no se escribe ninguna medicion en base de datos'],
+        }));
+      }
+
+      if (text.toLowerCase().startsWith('/cita')) {
+        const appointmentCommand = parseAppointmentCommand(text);
+        return res.json(buildTelegramDryRunResponse({
+          replyText: appointmentCommand ? 'Solicitud de cita recibida. Voy a tramitarla.' : 'Formato de cita invalido. Usa: /cita 2026-03-10T18:00 2026-03-10T18:45 [nota opcional]',
+          parsedPayload,
+          agentMode,
+          isCommand,
+          intent: { route: 'appointment', confidence: appointmentCommand ? 0.95 : 0.2 },
+          redFlagResult,
+          nextAction: appointmentCommand ? 'trigger_w1' : 'await_valid_appointment_command',
+          linkedPatientId: forcedPatientId,
+          professionalId,
+          details: appointmentCommand,
+          notes: ['dry_run: no se llama a W1 ni se crea la cita'],
+        }));
+      }
+
+      if (!isCommand) {
+        let agentConversation = null;
+        let intent = { route: 'unknown', confidence: 0 };
+        try {
+          agentConversation = await resolveAgentConversation({
+            channel: 'telegram',
+            role: 'patient',
+            chatId: chat_id,
+            patientId: forcedPatientId,
+            professionalId,
+            text,
+            requestId: crypto.randomUUID(),
+            timeoutMs: 12000,
+          });
+          intent = {
+            route: String(agentConversation?.data?.route || agentConversation?.data?.intent_hint || 'unknown'),
+            confidence: Number(agentConversation?.data?.confidence || 0),
+          };
+        } catch (agentErr) {
+          console.warn('[telegram] dry_run n8n agent gateway error:', agentErr.message);
+        }
+
+        if (
+          TELEGRAM_EDGE_ROUTER_ENABLED &&
+          process.env.SUPABASE_URL &&
+          (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD)
+        ) {
+          try {
+            const routerUrl = `${process.env.SUPABASE_URL}/functions/v1/intent-router`;
+            const routerResp = await fetch(routerUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message_text: text, request_id: crypto.randomUUID() }),
+              signal: AbortSignal.timeout(8000),
+            });
+            if (routerResp.ok) {
+              const routerIntent = await routerResp.json();
+              if (routerIntent?.route) {
+                intent = routerIntent;
+              }
+            }
+          } catch (routerErr) {
+            console.warn('[telegram] dry_run W0 intent-router error:', routerErr.message);
+          }
+        }
+
+        const fallbackIntent = inferIntentFromText(text);
+        if (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD) {
+          intent = fallbackIntent;
+        }
+        if (agentMode === 'patient_appointments') {
+          intent = { route: 'appointment', confidence: Math.max(Number(intent.confidence || 0), 0.95) };
+        }
+
+        const sharedAgentReply = String(
+          agentConversation?.data?.reply_text ||
+          agentConversation?.data?.message ||
+          ''
+        ).trim() || 'Mensaje recibido. Tu fisioterapeuta revisara tus sintomas y te pautara el siguiente ejercicio.';
+
+        let nextAction = forcedPatientId ? 'create_intake_and_reply' : 'auto_link_and_create_intake';
+        let replyText = sharedAgentReply;
+        const notes = ['dry_run: no se crean fichas, intakes, citas ni recomendaciones'];
+        if (!forcedPatientId) {
+          notes.push('envia patient_id o paciente_id para simular un chat ya vinculado');
+        }
+
+        if (redFlagResult.tiene_alertas_rojas) {
+          nextAction = 'red_flag_alert';
+          replyText = 'ALERTA: He detectado senales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.';
+        } else if (intent.route === 'exercise' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
+          nextAction = 'trigger_w2';
+        } else if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
+          nextAction = 'trigger_w1';
+          replyText = 'Solicitud de cita recibida. Voy a tramitarla.';
+        }
+
+        return res.json(buildTelegramDryRunResponse({
+          replyText,
+          parsedPayload,
+          agentMode,
+          isCommand,
+          intent,
+          redFlagResult,
+          nextAction,
+          agentConversation,
+          linkedPatientId: forcedPatientId,
+          professionalId,
+          notes,
+        }));
+      }
+
+      return res.json(buildTelegramDryRunResponse({
+        replyText: 'No reconozco ese comando.\n\n' + getHelpMessage(),
+        parsedPayload,
+        agentMode,
+        isCommand,
+        intent: { route: 'unknown', confidence: 0.2 },
+        redFlagResult,
+        nextAction: 'show_help',
+        professionalId,
+        notes: ['dry_run: comando no reconocido'],
+      }));
+    }
 
     const reply = async (replyText) => {
       if (fromTelegramWebhook) {

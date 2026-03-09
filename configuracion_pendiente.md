@@ -2,6 +2,21 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-09, Sesion 69) - Dry run seguro para Telegram pendiente de deploy backend
+
+### Completado esta sesion
+- [x] POST /api/telegram/incoming ya soporta dry_run=true con payload custom para validar clasificacion y respuesta sin efectos laterales.
+- [x] El dry run devuelve reply_text, next_action, red_flags y clasificacion prevista para el mensaje o comando.
+- [x] Validacion tecnica: node --check OK en telegram.js dentro de la copia aislada del backend.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy de fisio-backend.
+2. Ejecutar prueba API de dry run sobre /api/telegram/incoming.
+3. Despues, lanzar prueba manual del bot Telegram real con un chat ya vinculado.
+
+### Riesgos o bloqueos conocidos
+- Hasta el redeploy, produccion no expone aun el dry run nuevo.
+- La simulacion local por import directo del router sigue limitada por el acoplamiento actual con src/index.js; la validacion buena pasa por la API desplegada.
 ## Estado actual (2026-03-09, Sesion 68) - Telegram en modo n8n-first, pendiente de deploy backend
 
 ### Completado esta sesion
