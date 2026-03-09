@@ -1,5 +1,41 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 68 - 2026-03-09
+
+### Objetivo
+- Dejar Telegram alineado con la arquitectura n8n-first y reducir la dependencia del router legacy de Supabase.
+
+### Cambios implementados
+- [x] backend/src/routes/telegram.js desactiva por defecto la llamada al edge-router legacy de Supabase.
+- [x] El edge-router queda disponible solo como fallback opcional mediante TELEGRAM_EDGE_ROUTER_ENABLED=true.
+- [x] backend/.env.example documenta la nueva bandera de compatibilidad.
+
+### Validacion realizada
+- [x] node --check src/routes/telegram.js OK en copia aislada C:\Temp\Fisio_IA_Agent_backend_local.
+- [x] La clasificacion principal sigue dependiendo de n8n compartido mas heuristica local del backend.
+
+### Siguiente paso exacto
+1. Redeploy de fisio-backend en EasyPanel.
+2. Probar el bot Telegram ya existente con un mensaje libre y una solicitud de ejercicios.
+3. Confirmar que Telegram responde de forma coherente incluso sin depender del edge-router legacy.
+## Sesion 67 - 2026-03-09
+
+### Objetivo
+- Cerrar la divergencia final entre CRM y Telegram en el texto de respuesta del agente cuando no entra W1 o W2.
+
+### Cambios implementados
+- [x] backend/src/routes/telegram.js reutiliza ahora el reply_text del gateway compartido del agente como respuesta por defecto.
+- [x] Si W2 no llega a devolver un informe, Telegram mantiene una respuesta coherente del mismo agente compartido en vez del mensaje generico legacy.
+- [x] Se mantiene la logica existente de auto-recomendacion W2 y citas W1, sin tocar frontend ni workflows n8n.
+
+### Validacion realizada
+- [x] node --check src/routes/telegram.js OK en copia aislada C:\Temp\Fisio_IA_Agent_backend_local.
+- [x] Verificacion previa en produccion del gateway CRM: ejercicio, cita y seguimiento ya salen con intencion correcta tras Sesion 66.
+
+### Siguiente paso exacto
+1. Redeploy de fisio-backend en EasyPanel.
+2. Ejecutar prueba real del bot Telegram ya existente con un mensaje libre.
+3. Confirmar paridad funcional del tono e intencion entre CRM y Telegram.
 ## Sesion 66 - 2026-03-09
 
 ### Objetivo

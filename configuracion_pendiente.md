@@ -2,6 +2,36 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-09, Sesion 68) - Telegram en modo n8n-first, pendiente de deploy backend
+
+### Completado esta sesion
+- [x] Telegram ya no consulta el edge-router legacy de Supabase por defecto; n8n compartido y la heuristica local pasan a ser la ruta normal.
+- [x] El edge-router legacy queda solo como escape hatch opcional con TELEGRAM_EDGE_ROUTER_ENABLED=true.
+- [x] backend/.env.example actualizado para dejar documentada esa compatibilidad.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy de fisio-backend.
+2. Ejecutar prueba real del bot Telegram existente.
+3. Verificar que el flujo Telegram sigue resolviendo ejercicio, cita y seguimiento sin depender del edge-router legacy.
+
+### Riesgos o bloqueos conocidos
+- Hasta el redeploy, produccion sigue usando la version anterior del backend para Telegram.
+- Si algun entorno dependia implicitamente del edge-router legacy, ahora solo seguira haciendolo si TELEGRAM_EDGE_ROUTER_ENABLED=true.
+## Estado actual (2026-03-09, Sesion 67) - Telegram alineado con el reply compartido del agente, pendiente de deploy backend
+
+### Completado esta sesion
+- [x] Telegram ya no responde con el mensaje generico legacy cuando el gateway compartido del agente ya ha generado un reply_text util.
+- [x] El flujo mantiene W2 para ejercicios y W1 para citas, pero ahora cae de forma coherente al reply del agente compartido si no entra en esas ramas.
+- [x] Validacion tecnica: node --check OK en telegram.js dentro de la copia aislada del backend.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy de fisio-backend.
+2. Lanzar prueba real al bot Telegram existente.
+3. Verificar que Telegram y CRM devuelven el mismo tipo de respuesta base para ejercicio, cita y seguimiento.
+
+### Riesgos o bloqueos conocidos
+- Hasta el redeploy, Telegram en produccion puede seguir rematando algunos mensajes con la respuesta generica antigua.
+- Queda pendiente la prueba manual real del bot para validar el recorrido completo con un chat ya vinculado.
 ## Estado actual (2026-03-09, Sesion 66) - Normalizacion backend para respuestas genericas de n8n pendiente de deploy
 
 ### Completado esta sesion
