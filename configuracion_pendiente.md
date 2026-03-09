@@ -2,6 +2,28 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-09, Sesion 64) - Mejora de cobertura W2 y limpieza visual pendiente de deploy
+
+### Completado esta sesion
+- [x] El backend ya intenta priorizar y completar ejercicios con imagen cuando existan alternativas equivalentes en catalogo.
+- [x] Nueva variable documentada: `EXERCISE_IMAGE_MIN_RATIO` (default `0.75`).
+- [x] Nueva observabilidad backend: `image_min_ratio` e `image_coverage_adjusted`.
+- [x] El frontend limpia los separadores corruptos visibles del rail y del resumen del agente.
+- [x] Validacion tecnica cerrada:
+  - `node --check backend/src/routes/exercises.js` OK,
+  - `astro build` OK en copia aislada,
+  - `astro check` OK en copia aislada.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy de `fisio-backend`.
+2. Redeploy de `fisio-frontend`.
+3. Validar en produccion un caso real desde el copilot y revisar si la cobertura de imagen mejora sin activar fallback innecesario.
+4. Si la cobertura sigue corta en ciertas zonas, siguiente escalon: enriquecer el catalogo PROET o marcar ejercicios sin imagen para que el motor los evite desde origen.
+
+### Riesgos o bloqueos conocidos
+- Esta mejora todavia no esta en produccion hasta redeploy de backend y frontend.
+- La cobertura final sigue dependiendo de que existan alternativas con imagen en el catalogo para esa zona/sintoma.
+
 ## Estado actual (2026-03-09, Sesion 63) - Optimizacion W2 pendiente de deploy
 
 ### Completado esta sesion

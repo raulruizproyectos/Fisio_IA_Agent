@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
@@ -11,6 +11,10 @@ const supabase = createClient(
 const EXERCISE_ENGINE_TIMEOUT_MS = Number(process.env.EXERCISE_ENGINE_TIMEOUT_MS || 30000);
 const EXERCISE_ENGINE_MAX_ATTEMPTS = Number(process.env.EXERCISE_ENGINE_MAX_ATTEMPTS || 2);
 const EXERCISE_ENGINE_CANDIDATE_LIMIT = Number(process.env.EXERCISE_ENGINE_CANDIDATE_LIMIT || 24);
+const EXERCISE_IMAGE_MIN_RATIO = Math.min(
+  1,
+  Math.max(0.25, Number(process.env.EXERCISE_IMAGE_MIN_RATIO || 0.75))
+);
 const EXERCISE_REQUIRE_PATIENT_ASSOCIATION = String(
   process.env.EXERCISE_REQUIRE_PATIENT_ASSOCIATION || 'true'
 ).toLowerCase() !== 'false';
@@ -305,13 +309,24 @@ router.post('/recommend', async (req, res) => {
       symptom_summary = symptoms,
       red_flags_present = false,
       red_flags_items = [],
-      selected_exercises = [],
+      selected_exercises: rawSelectedExercises = [],
       selection_rationale = '',
       message_to_patient_es = '',
       message_to_therapist_es = '',
       escalation_recommend_medical_attention = false,
       escalation_reason = '',
     } = recommendation;
+    const selectedExercises = improveSelectionImageCoverage({
+      selectedExercises: rawSelectedExercises,
+      catalog,
+      symptoms,
+    });
+    engineObservability.image_min_ratio = EXERCISE_IMAGE_MIN_RATIO;
+    engineObservability.image_coverage_adjusted = selectedExercises.some((item, index) => {
+      const rawId = String(rawSelectedExercises[index]?.exercise_id || rawSelectedExercises[index]?.id || '');
+      const currentId = String(item?.exercise_id || item?.id || '');
+      return rawId !== currentId;
+    });
 
     // 3a/3b/3c. Persist only when patient_id exists
     let recommendationId = null;
@@ -340,8 +355,8 @@ router.post('/recommend', async (req, res) => {
         if (recoErr) throw recoErr;
         recommendationId = recoRow.id;
 
-        if (selected_exercises.length > 0) {
-          const items = selected_exercises.map((ex, idx) => ({
+        if (selectedExercises.length > 0) {
+          const items = selectedExercises.map((ex, idx) => ({
             recomendacion_id: recommendationId,
             ejercicio_id: ex.exercise_id || ex.id,
             confidence: ex.confidence || 0.8,
@@ -366,10 +381,10 @@ router.post('/recommend', async (req, res) => {
           channel: resolveCommChannel(channel),
           direction: 'internal',
           message_type: 'system',
-          message_text: `Recomendacion generada: ${selected_exercises.length} ejercicios`,
+          message_text: `Recomendacion generada: ${selectedExercises.length} ejercicios`,
           payload: {
             event: 'recommendation_generated',
-            selected_exercises_count: selected_exercises.length,
+            selected_exercises_count: selectedExercises.length,
             engine_observability: engineObservability,
             fallback_reason: engineObservability.fallback_reason || null,
           },
@@ -384,7 +399,7 @@ router.post('/recommend', async (req, res) => {
 
     // 4. Fetch media signed URLs for recommended exercises
     // Only query crm_ejercicio_media if it has rows (currently empty; PROET images live in metadata)
-    const exerciseIds = selected_exercises.map((e) => e.exercise_id || e.id).filter(Boolean);
+    const exerciseIds = selectedExercises.map((e) => e.exercise_id || e.id).filter(Boolean);
     let mediaMap = {};
 
     if (exerciseIds.length > 0) {
@@ -413,7 +428,7 @@ router.post('/recommend', async (req, res) => {
     }
 
     // 5. Build response
-    const exercises = selected_exercises.map((ex, idx) => {
+    const exercises = selectedExercises.map((ex, idx) => {
       const exerciseId = ex.exercise_id || ex.id;
       const catalogEntry = catalogById.get(String(exerciseId)) || {};
       const metadata = catalogEntry.metadata || {};
@@ -437,12 +452,7 @@ router.post('/recommend', async (req, res) => {
         series: ex.series ?? metadata.series_defecto ?? null,
         repeticiones: ex.repeticiones ?? metadata.repeticiones_defecto ?? null,
         duracion_segundos: ex.duracion_segundos ?? metadata.duracion_segundos_defecto ?? null,
-        imagen_url:
-          mediaMap[exerciseId] ||
-          ex.imagen_url ||
-          metadata.proet_image_url ||
-          metadata.image_url ||
-          null,
+        imagen_url: getExerciseImageUrl(ex, mediaMap) || getExerciseImageUrl(catalogEntry, mediaMap),
         orden: idx + 1,
       };
     });
@@ -1011,7 +1021,7 @@ function composeClinicalReport({
         ex.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
         ex.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
       ].filter(Boolean);
-      lines.push(`   Pauta: ${pauta.join(' · ')}`);
+      lines.push(`   Pauta: ${pauta.join(' Â· ')}`);
     }
     if (ex.why) lines.push(`   Motivo: ${ex.why}`);
     if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Cautelas: ${ex.cautions.join('; ')}`);
@@ -1164,8 +1174,14 @@ function hasRecommendationShape(recommendation) {
 }
 
 function hasExerciseImage(exercise) {
+  return Boolean(getExerciseImageUrl(exercise));
+}
+
+function getExerciseImageUrl(exercise, mediaMap = null) {
+  const exerciseId = String(exercise?.exercise_id || exercise?.id || '').trim();
   const metadata = exercise?.metadata || {};
-  return Boolean(metadata.proet_image_url || metadata.image_url);
+  if (exerciseId && mediaMap?.[exerciseId]) return mediaMap[exerciseId];
+  return exercise?.imagen_url || metadata.proet_image_url || metadata.image_url || null;
 }
 
 function getExerciseLevelPriority(exercise) {
@@ -1183,8 +1199,8 @@ function buildEngineCandidateCatalog(catalog = [], symptoms) {
   const inferredZone = inferZoneFromSymptoms(symptomText);
   const scored = catalog.map((item, index) => {
     const matchScore = scoreExerciseForSymptoms(item, symptomText, inferredZone);
-    const imageBoost = hasExerciseImage(item) ? 0.35 : 0;
-    const levelBoost = getExerciseLevelPriority(item) * 0.1;
+    const imageBoost = hasExerciseImage(item) ? 1.25 : 0;
+    const levelBoost = getExerciseLevelPriority(item) * 0.15;
     return {
       item,
       index,
@@ -1216,6 +1232,112 @@ function buildEngineCandidateCatalog(catalog = [], symptoms) {
   }
 
   return selected;
+}
+
+function improveSelectionImageCoverage({ selectedExercises = [], catalog = [], symptoms }) {
+  if (!Array.isArray(selectedExercises) || selectedExercises.length < 2) return Array.isArray(selectedExercises) ? selectedExercises : [];
+  if (!Array.isArray(catalog) || !catalog.length) return selectedExercises;
+
+  const symptomText = String(symptoms || '').trim();
+  const inferredZone = inferZoneFromSymptoms(symptomText);
+  const catalogById = new Map(catalog.map((item) => [String(item.id), item]));
+  const targetWithImage = Math.min(
+    selectedExercises.length,
+    Math.max(1, Math.ceil(selectedExercises.length * EXERCISE_IMAGE_MIN_RATIO))
+  );
+
+  const countWithImage = (items) =>
+    items.filter((item) => {
+      const itemId = String(item?.exercise_id || item?.id || '').trim();
+      return Boolean(getExerciseImageUrl(item) || getExerciseImageUrl(catalogById.get(itemId)));
+    }).length;
+
+  let withImageCount = countWithImage(selectedExercises);
+  if (withImageCount >= targetWithImage) return selectedExercises;
+
+  const replacementPool = catalog
+    .map((item, index) => {
+      const zone = String(item?.zona_corporal || '').toLowerCase();
+      const score = scoreExerciseForSymptoms(item, symptomText, inferredZone);
+      const zoneBoost = inferredZone && zone.includes(inferredZone.toLowerCase()) ? 2 : 0;
+      return {
+        item,
+        index,
+        score,
+        priority: score + zoneBoost + getExerciseLevelPriority(item) * 0.15,
+      };
+    })
+    .filter((entry) => hasExerciseImage(entry.item) && entry.score > 0)
+    .sort((a, b) => b.priority - a.priority || a.index - b.index);
+
+  const usedIds = new Set(
+    selectedExercises
+      .map((item) => String(item?.exercise_id || item?.id || '').trim())
+      .filter(Boolean)
+  );
+  const nextSelection = [...selectedExercises];
+
+  for (let idx = 0; idx < nextSelection.length; idx += 1) {
+    if (withImageCount >= targetWithImage) break;
+
+    const current = nextSelection[idx];
+    const currentId = String(current?.exercise_id || current?.id || '').trim();
+    const currentCatalogEntry = catalogById.get(currentId) || current;
+    if (getExerciseImageUrl(current) || getExerciseImageUrl(currentCatalogEntry)) continue;
+
+    const currentZone = String(
+      currentCatalogEntry?.zona_corporal || current?.zona_corporal || ''
+    ).toLowerCase();
+    const currentScore = scoreExerciseForSymptoms(currentCatalogEntry, symptomText, inferredZone);
+
+    const replacementIndex = replacementPool.findIndex((entry) => {
+      const replacementId = String(entry?.item?.id || '').trim();
+      if (!replacementId || usedIds.has(replacementId)) return false;
+
+      const replacementZone = String(entry?.item?.zona_corporal || '').toLowerCase();
+      const sameZone = !currentZone || !replacementZone || replacementZone === currentZone;
+      const closeEnoughScore = entry.score >= Math.max(1, currentScore - 2);
+      return sameZone && closeEnoughScore;
+    });
+
+    if (replacementIndex === -1) continue;
+
+    const [replacementEntry] = replacementPool.splice(replacementIndex, 1);
+    const replacement = replacementEntry.item;
+    const replacementId = String(replacement?.id || '').trim();
+    if (!replacementId) continue;
+
+    if (currentId) usedIds.delete(currentId);
+    usedIds.add(replacementId);
+
+    nextSelection[idx] = {
+      ...replacement,
+      exercise_id: replacement.id,
+      confidence: Math.max(
+        Number(current?.confidence || 0),
+        Math.min(0.92, Math.max(0.6, replacementEntry.score / 10))
+      ),
+      why: current?.why
+        ? `${current.why}. Ajustado para incluir apoyo visual.`
+        : 'Seleccion adaptada para incluir apoyo visual sin perder relevancia clinica.',
+      cautions:
+        Array.isArray(current?.cautions) && current.cautions.length
+          ? current.cautions
+          : replacement.contraindicaciones
+            ? [String(replacement.contraindicaciones)]
+            : [],
+      series: current?.series ?? replacement.metadata?.series_defecto ?? 3,
+      repeticiones: current?.repeticiones ?? replacement.metadata?.repeticiones_defecto ?? 10,
+      duracion_segundos:
+        current?.duracion_segundos ?? replacement.metadata?.duracion_segundos_defecto ?? null,
+      procedimiento: current?.procedimiento || replacement.descripcion || '',
+      imagen_url: getExerciseImageUrl(replacement),
+      orden: current?.orden || idx + 1,
+    };
+    withImageCount += 1;
+  }
+
+  return nextSelection;
 }
 
 function buildRuleBasedRecommendation({ requestId, symptoms, catalog, fallbackReason }) {
@@ -1700,3 +1822,5 @@ function startExerciseRecommendationJob(jobId) {
 }
 
 export default router;
+
+

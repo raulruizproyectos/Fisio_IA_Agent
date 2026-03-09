@@ -1,5 +1,26 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 64 - 2026-03-09
+
+### Objetivo
+- Mejorar la calidad visual del plan W2 y corregir textos corruptos visibles en el rail del agente sin reabrir el error productivo ya resuelto.
+
+### Cambios implementados
+- [x] `backend/src/routes/exercises.js` ahora intenta reequilibrar la seleccion final para alcanzar una cobertura minima de ejercicios con imagen cuando existan alternativas clinicamente equivalentes.
+- [x] Nueva variable documentada: `EXERCISE_IMAGE_MIN_RATIO` (default `0.75`).
+- [x] `engine_observability` expone `image_min_ratio` e `image_coverage_adjusted`.
+- [x] `frontend/src/pages/index.astro` limpia separadores corruptos del rail y del resumen de ejercicios para evitar texto roto en produccion.
+
+### Validacion realizada
+- [x] `node --check backend/src/routes/exercises.js` OK.
+- [x] `astro build` OK en copia aislada `C:\Temp\Fisio_IA_Agent_frontend_local`.
+- [x] `astro check` OK en copia aislada `C:\Temp\Fisio_IA_Agent_frontend_local` (`0 errors`, `0 warnings`, `0 hints`).
+
+### Siguiente paso exacto
+1. Redeploy de `fisio-backend` en EasyPanel para activar la mejora de cobertura de imagenes.
+2. Redeploy de `fisio-frontend` en EasyPanel para publicar la limpieza visual del rail.
+3. Repetir una prueba real desde el copilot con un caso de hombro/lumbar y comparar `image_coverage` y `image_coverage_adjusted`.
+
 ## Sesion 63 - 2026-03-09
 
 ### Objetivo

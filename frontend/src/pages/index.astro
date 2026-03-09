@@ -940,7 +940,7 @@ import Layout from '../layouts/Layout.astro';
     const options = ['<option value="">Selecciona paciente</option>']
       .concat(
         patientCatalog.map((p) => {
-          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `Â· ${p.email}` : ''}`.trim();
+          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? ` - ${p.email}` : ''}`.trim();
           return `<option value="${escapeAttr(p.id)}">${escapeHtml(label)}</option>`;
         })
       );
@@ -955,7 +955,7 @@ import Layout from '../layouts/Layout.astro';
     const options = ['<option value="">Selecciona paciente...</option>']
       .concat(
         patientCatalog.map((p) => {
-          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `Â· ${p.email}` : ''}`.trim();
+          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? ` - ${p.email}` : ''}`.trim();
           return `<option value="${escapeAttr(p.id)}">${escapeHtml(label)}</option>`;
         })
       );
@@ -970,7 +970,7 @@ import Layout from '../layouts/Layout.astro';
     const options = ['<option value="">Selecciona paciente</option>']
       .concat(
         patientCatalog.map((p) => {
-          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? `Â· ${p.email}` : ''}`.trim();
+          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? ` - ${p.email}` : ''}`.trim();
           return `<option value="${escapeAttr(p.id)}">${escapeHtml(label)}</option>`;
         })
       );
@@ -1196,10 +1196,10 @@ import Layout from '../layouts/Layout.astro';
 
     html += `<div class="exercise-summary">Ejercicios recomendados: <strong>${exercises.length}</strong>`;
     if (coverage.percentage !== undefined) {
-      html += ` Â· Imagenes: ${coverage.with_image}/${coverage.total}`;
+      html += ` | Imagenes: ${coverage.with_image}/${coverage.total}`;
     }
     if (typeof engineObs.attempts === 'number') {
-      html += ` Â· Motor IA: ${engineObs.attempts} intento(s)`;
+      html += ` | Motor IA: ${engineObs.attempts} intento(s)`;
       if (typeof engineObs.retries_used === 'number') {
         html += ` (${engineObs.retries_used} reintentos)`;
       }
@@ -1222,7 +1222,7 @@ import Layout from '../layouts/Layout.astro';
         ex.series ? `Series: ${ex.series}` : null,
         ex.repeticiones ? `Rep: ${ex.repeticiones}` : null,
         ex.duracion_segundos ? `${ex.duracion_segundos}s` : null,
-      ].filter(Boolean).join(' Â· ');
+      ].filter(Boolean).join(' | ');
 
       html += '<div class="exercise-card">';
       if (imgUrl) {
@@ -1357,7 +1357,7 @@ import Layout from '../layouts/Layout.astro';
         ex?.series ? `Series ${ex.series}` : null,
         ex?.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
         ex?.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
-      ].filter(Boolean).join(' Â· ');
+      ].filter(Boolean).join(' | ');
 
       if (pauta) writeWrapped(`Pauta: ${pauta}`, 10, 2);
       if (ex?.procedimiento) writeWrapped(`Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`, 10, 2);
@@ -1658,7 +1658,7 @@ import Layout from '../layouts/Layout.astro';
         return `<article class="clean-list-item">
           <div class="clean-list-main">
             <p class="clean-list-title">${escapeHtml(patientName)}</p>
-            <p class="clean-list-meta">${escapeHtml(ch)} Â· ${escapeHtml(f)}</p>
+            <p class="clean-list-meta">${escapeHtml(ch)} | ${escapeHtml(f)}</p>
           </div>
           <div class="clean-list-action">
             <span class="status-chip ${st}">${escapeHtml(st)}</span>
@@ -1959,7 +1959,7 @@ import Layout from '../layouts/Layout.astro';
       return `<article class="clean-list-item">
         <div class="clean-list-main">
           <p class="clean-list-title">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</p>
-          <p class="clean-list-meta">${escapeHtml(fmtDate(cita.inicio_en || ''))} Â· ${escapeHtml(cita.motivo || 'Sin motivo')}</p>
+          <p class="clean-list-meta">${escapeHtml(fmtDate(cita.inicio_en || ''))} | ${escapeHtml(cita.motivo || 'Sin motivo')}</p>
         </div>
         <span class="status-chip ${stateClass}">${escapeHtml(cita.estado || 'pendiente')}</span>
       </article>`;
