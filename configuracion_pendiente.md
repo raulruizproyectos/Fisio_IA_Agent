@@ -2,6 +2,21 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-09, Sesion 66) - Normalizacion backend para respuestas genericas de n8n pendiente de deploy
+
+### Completado esta sesion
+- [x] El gateway compartido CRM y Telegram ya corrige rutas genericas de n8n como register_intake y unknown cuando la heuristica local detecta una intencion mas especifica.
+- [x] La heuristica se ha afinado para distinguir mejor entre solicitud de ejercicios y descripcion de sintomas o limitacion funcional.
+- [x] Validacion aislada completa: ejercicio -> exercise, cita -> appointment, seguimiento -> session_note.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy de fisio-backend.
+2. Reprobar POST /api/agent/message en produccion con ejercicio, cita y seguimiento.
+3. Despues, verificar paridad del mismo comportamiento desde Telegram.
+
+### Riesgos o bloqueos conocidos
+- Hasta el redeploy, produccion puede seguir devolviendo register_intake desde el chat CRM aunque el backend ya tenga la correccion en local.
+- n8n sigue siendo demasiado generico en su salida actual; la correccion backend evita degradacion, pero el workflow de n8n seguira mereciendo afinado posterior.
 ## Estado actual (2026-03-09, Sesion 65) - Paridad CRM chat / Telegram pendiente de deploy backend
 
 ### Completado esta sesion
@@ -1030,6 +1045,4 @@ Tablas necesarias confirmadas:
 1. En UI n8n: anadir tag `Fisio_IA_Agent` a `Fisio_IA_Agent / Nucleo Agente` para que aparezcan 6/6 en carpeta.
 2. Importar/publicar desde repo los workflows endurecidos (`telegram-chat` y `fisio-agent-core`).
 3. Validar E2E W0->backend->reply y en paralelo preparar hardening W2/W3.
-
-
 

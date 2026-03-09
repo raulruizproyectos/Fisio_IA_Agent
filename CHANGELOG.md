@@ -1,5 +1,23 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 66 - 2026-03-09
+
+### Objetivo
+- Corregir la clasificacion generica que devuelve n8n en el gateway compartido para que CRM y Telegram no degraden las intenciones clinicas reales.
+
+### Cambios implementados
+- [x] backend/src/routes/agent.js normaliza respuestas de n8n cuando llegan con rutas genericas como register_intake o unknown.
+- [x] La normalizacion backend conserva n8n como fuente principal, pero sobreescribe la ruta cuando la heuristica local es mas especifica.
+- [x] La heuristica local se ha afinado para priorizar exercise ante solicitudes explicitas de plan o ejercicios y evitar falsos positivos por sintomas como menos movilidad.
+
+### Validacion realizada
+- [x] node --check src/routes/agent.js OK en copia aislada C:\Temp\Fisio_IA_Agent_backend_local.
+- [x] Simulacion controlada con respuesta register_intake desde n8n: ejercicio -> exercise, cita -> appointment, seguimiento -> session_note.
+
+### Siguiente paso exacto
+1. Redeploy de fisio-backend en EasyPanel.
+2. Validar en produccion POST /api/agent/message con 3 casos: ejercicio, cita y seguimiento.
+3. Si la clasificacion ya sale bien en CRM, pasar a verificacion funcional del mismo flujo desde Telegram.
 ## Sesion 65 - 2026-03-09
 
 ### Objetivo
@@ -2379,8 +2397,4 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Ambos workflows quedan endurecidos y validados como JSON.
 - Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
-
-
-
-
 

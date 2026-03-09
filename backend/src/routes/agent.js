@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 const router = Router();
+const GENERIC_AGENT_ROUTES = new Set(['register_intake', 'unknown', 'default']);
 
 export const pickValue = (obj, ...keys) => {
   for (const key of keys) {
@@ -19,18 +20,22 @@ export const buildAgentFallbackReply = (payload = {}) => {
   let route = 'register_intake';
   let confidence = 0.45;
 
-  if (/dolor|sintoma|sintomas|molestia|lesion|seguimiento|evolucion/i.test(text)) {
-    reply = 'Sintomas registrados. Caso en cola para revision del fisioterapeuta.';
-    route = 'session_note';
-    confidence = 0.7;
-  } else if (/ejercicio|plan|movilidad|fortalecimiento|rehabilitacion/i.test(text)) {
-    reply = 'Solicitud de informe de ejercicios recibida. Preparando pautas con imagenes y procedimiento.';
-    route = 'exercise';
-    confidence = 0.8;
-  } else if (/cita|agendar|agenda|reservar|reserva|hueco|hora|calendario/i.test(text)) {
+  const mentionsAppointment = /cita|agendar|agenda|reservar|reserva|hueco|hora|calendario/i.test(text);
+  const mentionsExercise = /ejercicio|ejercicios|plan|tabla|rutina|pauta|fortalecimiento|rehabilitacion|estiramiento/i.test(text);
+  const mentionsSymptoms = /dolor|sintoma|sintomas|molestia|lesion|seguimiento|evolucion/i.test(text);
+
+  if (mentionsAppointment) {
     reply = 'Solicitud de cita recibida. Voy a tramitarla.';
     route = 'appointment';
     confidence = 0.8;
+  } else if (mentionsExercise) {
+    reply = 'Solicitud de informe de ejercicios recibida. Preparando pautas con imagenes y procedimiento.';
+    route = 'exercise';
+    confidence = 0.8;
+  } else if (mentionsSymptoms) {
+    reply = 'Sintomas registrados. Caso en cola para revision del fisioterapeuta.';
+    route = 'session_note';
+    confidence = 0.7;
   } else if (text.length > 0) {
     reply = 'Contexto recibido. Puedo preparar un informe de ejercicios basado en sintomas.';
     route = 'unknown';
@@ -93,6 +98,46 @@ const parseAgentResponse = async (response) => {
   } catch {
     return { raw: rawText };
   }
+};
+
+const normalizeAgentRoute = (route) => String(route || '').trim().toLowerCase();
+
+const shouldOverrideGenericAgentRoute = (responseData, fallbackData) => {
+  const agentRoute = normalizeAgentRoute(responseData?.route || responseData?.intent_hint);
+  const fallbackRoute = normalizeAgentRoute(fallbackData?.route || fallbackData?.intent_hint);
+
+  if (!fallbackRoute || GENERIC_AGENT_ROUTES.has(fallbackRoute)) {
+    return false;
+  }
+
+  return !agentRoute || GENERIC_AGENT_ROUTES.has(agentRoute);
+};
+
+const normalizeAgentResponse = (responseData, payload) => {
+  const fallbackData = buildAgentFallbackReply(payload);
+
+  if (!shouldOverrideGenericAgentRoute(responseData, fallbackData)) {
+    return {
+      data: responseData,
+      normalized: false,
+      reason: null,
+    };
+  }
+
+  return {
+    data: {
+      ...responseData,
+      route: fallbackData.route,
+      intent_hint: fallbackData.route,
+      confidence: Math.max(Number(responseData?.confidence || 0), Number(fallbackData.confidence || 0)),
+      reply_text: fallbackData.reply_text,
+      normalized_by_backend: true,
+      normalization_reason: 'generic_n8n_route_overridden',
+      n8n_original_route: responseData?.route || responseData?.intent_hint || null,
+    },
+    normalized: true,
+    reason: 'generic_n8n_route_overridden',
+  };
 };
 
 export const resolveAgentConversation = async ({
@@ -164,16 +209,24 @@ export const resolveAgentConversation = async ({
 
   const fallbackUsed = isEmptyAgentResponse(responseData);
   const shouldOverrideVideoCopy = hasDeprecatedVideoCopy(responseData);
+  const normalizedResponse = !fallbackUsed && !shouldOverrideVideoCopy
+    ? normalizeAgentResponse(responseData, payload)
+    : null;
   const finalData = fallbackUsed || shouldOverrideVideoCopy
     ? buildAgentFallbackReply(payload)
-    : responseData;
+    : normalizedResponse.data;
+  const fallbackReason = fallbackUsed
+    ? 'empty_n8n_response'
+    : (shouldOverrideVideoCopy
+      ? 'deprecated_video_copy'
+      : normalizedResponse.reason);
 
   return {
     data: finalData,
     source: 'n8n_agent',
-    fallback_used: fallbackUsed || shouldOverrideVideoCopy,
+    fallback_used: fallbackUsed || shouldOverrideVideoCopy || normalizedResponse.normalized,
     n8n_unreachable: false,
-    fallback_reason: fallbackUsed ? 'empty_n8n_response' : (shouldOverrideVideoCopy ? 'deprecated_video_copy' : null),
+    fallback_reason: fallbackReason,
   };
 };
 
@@ -206,3 +259,4 @@ router.post('/message', async (req, res, next) => {
 });
 
 export default router;
+
