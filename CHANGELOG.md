@@ -1,5 +1,26 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 65 - 2026-03-09
+
+### Objetivo
+- Unificar la entrada del chat CRM y el chat libre de Telegram sobre el mismo gateway de agente conectado a n8n.
+
+### Cambios implementados
+- [x] `backend/src/routes/agent.js` pasa a exponer un gateway compartido `resolveAgentConversation(...)` para CRM y Telegram.
+- [x] `POST /api/agent/message` deja de depender de una ruta separada y reutiliza ese gateway compartido.
+- [x] `backend/src/routes/telegram.js` usa primero el gateway n8n del agente para clasificar y responder el chat libre.
+- [x] Telegram mantiene W1/W2 existentes, pero ahora llega a ellos desde la misma capa de enrutado que usa el CRM.
+
+### Validacion realizada
+- [x] `node --check backend/src/routes/agent.js` OK.
+- [x] `node --check backend/src/routes/telegram.js` OK.
+- [x] Verificacion previa en produccion del backend actual: W2 sync/async ya estable con `image_coverage: 100%` en lumbar y hombro.
+
+### Siguiente paso exacto
+1. Redeploy de `fisio-backend` en EasyPanel.
+2. Verificar en produccion `POST /api/agent/message` y un mensaje libre de Telegram contra el mismo core n8n.
+3. Si la paridad queda bien, siguiente bloque: mover tambien la decision W0 legacy de Telegram fuera del edge router para depender solo del core n8n + fallback local.
+
 ## Sesion 64 - 2026-03-09
 
 ### Objetivo

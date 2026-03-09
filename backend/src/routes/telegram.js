@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import PDFDocument from 'pdfkit';
 import { supabase } from '../index.js';
+import { resolveAgentConversation } from './agent.js';
 
 const router = Router();
 const INTENT_CONFIDENCE_THRESHOLD = 0.6;
@@ -909,21 +910,45 @@ router.post('/incoming', async (req, res, next) => {
       const historySnapshot = await getPatientHistorySnapshot(link.paciente_id);
       const redFlagResult = detectRedFlags(text);
 
-      // W0: Intent classification via Edge Function
+      let agentConversation = null;
       let intent = { route: 'unknown', confidence: 0 };
       try {
-        const routerUrl = `${process.env.SUPABASE_URL}/functions/v1/intent-router`;
-        const routerResp = await fetch(routerUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message_text: text, request_id: crypto.randomUUID() }),
-          signal: AbortSignal.timeout(8000),
+        agentConversation = await resolveAgentConversation({
+          channel: 'telegram',
+          role: 'patient',
+          chatId: chat_id,
+          patientId: link.paciente_id,
+          professionalId,
+          text,
+          requestId: crypto.randomUUID(),
+          timeoutMs: 12000,
         });
-        if (routerResp.ok) {
-          intent = await routerResp.json();
+        intent = {
+          route: String(agentConversation?.data?.route || agentConversation?.data?.intent_hint || 'unknown'),
+          confidence: Number(agentConversation?.data?.confidence || 0),
+        };
+      } catch (agentErr) {
+        console.warn('[telegram] n8n agent gateway error:', agentErr.message);
+      }
+
+      if (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD) {
+        try {
+          const routerUrl = `${process.env.SUPABASE_URL}/functions/v1/intent-router`;
+          const routerResp = await fetch(routerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message_text: text, request_id: crypto.randomUUID() }),
+            signal: AbortSignal.timeout(8000),
+          });
+          if (routerResp.ok) {
+            const routerIntent = await routerResp.json();
+            if (routerIntent?.route) {
+              intent = routerIntent;
+            }
+          }
+        } catch (routerErr) {
+          console.warn('[telegram] W0 intent-router error:', routerErr.message);
         }
-      } catch (routerErr) {
-        console.warn('[telegram] W0 intent-router error:', routerErr.message);
       }
 
       const fallbackIntent = inferIntentFromText(text);

@@ -2,48 +2,64 @@ import { Router } from 'express';
 
 const router = Router();
 
-function pickValue(obj, ...keys) {
+export const pickValue = (obj, ...keys) => {
   for (const key of keys) {
     if (obj?.[key] !== undefined && obj?.[key] !== null) {
       return obj[key];
     }
   }
   return null;
-}
+};
 
-function isMissingWebhookConfig() {
-  return !process.env.N8N_AGENT_WEBHOOK_URL;
-}
+export const isMissingAgentWebhookConfig = () => !process.env.N8N_AGENT_WEBHOOK_URL;
 
-function buildFallbackReply(payload) {
-  const text = String(payload.text || '').trim();
+export const buildAgentFallbackReply = (payload = {}) => {
+  const text = String(payload.text || payload.message_text || payload.texto_mensaje || '').trim();
   let reply = 'Mensaje recibido. Queda pendiente de revision clinica.';
-  let intentHint = 'register_intake';
+  let route = 'register_intake';
+  let confidence = 0.45;
 
-  if (/dolor|s[ií]ntoma|sintoma|molestia|lesi[oó]n|lesion/i.test(text)) {
+  if (/dolor|sintoma|sintomas|molestia|lesion|seguimiento|evolucion/i.test(text)) {
     reply = 'Sintomas registrados. Caso en cola para revision del fisioterapeuta.';
-  } else if (/ejercicio|plan|movilidad|fortalecimiento|rehabilitaci[oó]n/i.test(text)) {
+    route = 'session_note';
+    confidence = 0.7;
+  } else if (/ejercicio|plan|movilidad|fortalecimiento|rehabilitacion/i.test(text)) {
     reply = 'Solicitud de informe de ejercicios recibida. Preparando pautas con imagenes y procedimiento.';
-    intentHint = 'generate_exercise_report';
+    route = 'exercise';
+    confidence = 0.8;
+  } else if (/cita|agendar|agenda|reservar|reserva|hueco|hora|calendario/i.test(text)) {
+    reply = 'Solicitud de cita recibida. Voy a tramitarla.';
+    route = 'appointment';
+    confidence = 0.8;
   } else if (text.length > 0) {
     reply = 'Contexto recibido. Puedo preparar un informe de ejercicios basado en sintomas.';
+    route = 'unknown';
+    confidence = 0.35;
   }
 
   return {
     ok: true,
     role: payload.role || 'professional',
+    route,
+    confidence,
     reply_text: reply,
-    intent_hint: intentHint,
+    intent_hint: route,
+    normalized_payload: {
+      text,
+      channel: payload.channel || 'web',
+      patient_id: payload.paciente_id || payload.patient_id || null,
+      professional_id: payload.profesional_id || payload.professional_id || null,
+    },
     received: {
       channel: payload.channel || 'web',
-      paciente_id: payload.paciente_id || null,
-      profesional_id: payload.profesional_id || null,
+      paciente_id: payload.paciente_id || payload.patient_id || null,
+      profesional_id: payload.profesional_id || payload.professional_id || null,
       text,
     },
   };
-}
+};
 
-function isEmptyAgentResponse(responseData) {
+const isEmptyAgentResponse = (responseData) => {
   if (responseData === null || responseData === undefined) return true;
   if (typeof responseData === 'string') return responseData.trim().length === 0;
   if (Array.isArray(responseData)) return responseData.length === 0;
@@ -57,13 +73,109 @@ function isEmptyAgentResponse(responseData) {
   }
 
   return false;
-}
+};
 
-function hasDeprecatedVideoCopy(responseData) {
+const hasDeprecatedVideoCopy = (responseData) => {
   if (!responseData || typeof responseData !== 'object') return false;
   const text = String(responseData.reply_text || responseData.message || responseData.raw || '').toLowerCase();
   return /video|generacion de video|crear video/.test(text);
-}
+};
+
+const parseAgentResponse = async (response) => {
+  const contentType = response.headers.get('content-type') || '';
+  const rawText = await response.text();
+
+  if (!rawText.trim()) return {};
+  if (!contentType.includes('application/json')) return { raw: rawText };
+
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    return { raw: rawText };
+  }
+};
+
+export const resolveAgentConversation = async ({
+  channel = 'web',
+  role = 'professional',
+  chatId = null,
+  patientId = null,
+  professionalId = null,
+  text,
+  requestId = null,
+  timeoutMs = 10000,
+}) => {
+  const payload = {
+    channel,
+    role,
+    chat_id: chatId,
+    paciente_id: patientId,
+    profesional_id: professionalId,
+    text: String(text || '').trim(),
+    request_id: requestId || null,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (isMissingAgentWebhookConfig()) {
+    return {
+      data: buildAgentFallbackReply(payload),
+      source: 'n8n_agent',
+      fallback_used: true,
+      n8n_unreachable: true,
+      fallback_reason: 'missing_webhook_config',
+    };
+  }
+
+  let response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      response = await fetch(process.env.N8N_AGENT_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (fetchError) {
+    return {
+      data: buildAgentFallbackReply(payload),
+      source: 'n8n_agent',
+      fallback_used: true,
+      n8n_unreachable: true,
+      fallback_reason: fetchError?.name === 'AbortError' ? 'timeout' : 'fetch_failed',
+    };
+  }
+
+  const responseData = await parseAgentResponse(response);
+  if (!response.ok) {
+    return {
+      data: buildAgentFallbackReply(payload),
+      source: 'n8n_agent',
+      fallback_used: true,
+      n8n_unreachable: false,
+      fallback_reason: 'n8n_http_error',
+      n8n_status: response.status,
+    };
+  }
+
+  const fallbackUsed = isEmptyAgentResponse(responseData);
+  const shouldOverrideVideoCopy = hasDeprecatedVideoCopy(responseData);
+  const finalData = fallbackUsed || shouldOverrideVideoCopy
+    ? buildAgentFallbackReply(payload)
+    : responseData;
+
+  return {
+    data: finalData,
+    source: 'n8n_agent',
+    fallback_used: fallbackUsed || shouldOverrideVideoCopy,
+    n8n_unreachable: false,
+    fallback_reason: fallbackUsed ? 'empty_n8n_response' : (shouldOverrideVideoCopy ? 'deprecated_video_copy' : null),
+  };
+};
 
 router.post('/message', async (req, res, next) => {
   try {
@@ -72,89 +184,22 @@ router.post('/message', async (req, res, next) => {
     const chatId = pickValue(req.body, 'chat_id');
     const patientId = pickValue(req.body, 'paciente_id', 'patient_id');
     const professionalId = pickValue(req.body, 'profesional_id', 'professional_id');
-    const text = pickValue(req.body, 'text');
+    const text = pickValue(req.body, 'text', 'texto_mensaje', 'message_text');
 
     if (!text || !String(text).trim()) {
       return res.status(400).json({ error: 'text es obligatorio' });
     }
 
-    if (isMissingWebhookConfig()) {
-      return res.status(400).json({
-        error: 'N8N_AGENT_WEBHOOK_URL no configurado',
-        integration_status: 'Pendiente de integracion tecnica',
-      });
-    }
-
-    const payload = {
+    const result = await resolveAgentConversation({
       channel,
       role,
-      chat_id: chatId,
-      paciente_id: patientId,
-      profesional_id: professionalId,
-      text: String(text).trim(),
-      timestamp: new Date().toISOString(),
-    };
-
-    let n8nResponse;
-    let timeout;
-    try {
-      const controller = new AbortController();
-      timeout = setTimeout(() => controller.abort(), 10000);
-      n8nResponse = await fetch(process.env.N8N_AGENT_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } catch (fetchError) {
-      return res.json({
-        data: buildFallbackReply(payload),
-        source: 'n8n_agent',
-        fallback_used: true,
-        n8n_unreachable: true,
-        fallback_reason: fetchError?.name === 'AbortError' ? 'timeout' : 'fetch_failed',
-      });
-    } finally {
-      if (timeout) clearTimeout(timeout);
-    }
-
-    const contentType = n8nResponse.headers.get('content-type') || '';
-    const rawText = await n8nResponse.text();
-
-    let responseData = {};
-    if (rawText.trim().length > 0 && contentType.includes('application/json')) {
-      try {
-        responseData = JSON.parse(rawText);
-      } catch {
-        responseData = { raw: rawText };
-      }
-    } else if (rawText.trim().length > 0) {
-      responseData = { raw: rawText };
-    }
-
-    if (!n8nResponse.ok) {
-      return res.json({
-        data: buildFallbackReply(payload),
-        source: 'n8n_agent',
-        fallback_used: true,
-        n8n_unreachable: false,
-        fallback_reason: 'n8n_http_error',
-        n8n_status: n8nResponse.status,
-      });
-    }
-
-    const fallbackUsed = isEmptyAgentResponse(responseData);
-    const shouldOverrideVideoCopy = hasDeprecatedVideoCopy(responseData);
-    const finalData = (fallbackUsed || shouldOverrideVideoCopy)
-      ? buildFallbackReply(payload)
-      : responseData;
-
-    res.json({
-      data: finalData,
-      source: 'n8n_agent',
-      fallback_used: fallbackUsed || shouldOverrideVideoCopy,
-      n8n_unreachable: false,
+      chatId,
+      patientId,
+      professionalId,
+      text,
     });
+
+    res.json(result);
   } catch (err) {
     next(err);
   }

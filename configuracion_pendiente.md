@@ -2,6 +2,22 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-09, Sesion 65) - Paridad CRM chat / Telegram pendiente de deploy backend
+
+### Completado esta sesion
+- [x] El chat CRM y Telegram ya comparten gateway de agente hacia `n8n` en backend.
+- [x] Telegram sigue conservando W1 citas y W2 ejercicios, pero el chat libre ya no arranca desde un criterio totalmente distinto al CRM.
+- [x] Validacion tecnica: `node --check` OK en `backend/src/routes/agent.js` y `backend/src/routes/telegram.js`.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy de `fisio-backend`.
+2. Validar en produccion un `POST /api/agent/message` y un mensaje libre de Telegram.
+3. Confirmar que ambos devuelven el mismo tono/intencion base para ejercicio, cita y seguimiento.
+
+### Riesgos o bloqueos conocidos
+- Hasta el redeploy, produccion sigue con la divergencia anterior entre CRM y Telegram para chat libre.
+- Telegram todavia conserva fallback W0 via edge router si n8n no devuelve ruta suficiente; eso es intencional para no perder robustez.
+
 ## Estado actual (2026-03-09, Sesion 64) - Mejora de cobertura W2 y limpieza visual pendiente de deploy
 
 ### Completado esta sesion
