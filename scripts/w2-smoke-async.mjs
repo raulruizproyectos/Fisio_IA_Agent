@@ -120,14 +120,22 @@ async function main() {
   }
 
   const result = finalPayload?.result || {};
-  const selected = Array.isArray(result?.selected_exercises) ? result.selected_exercises.length : 0;
+  const exercises = Array.isArray(result?.exercises)
+    ? result.exercises.length
+    : Array.isArray(result?.selected_exercises)
+      ? result.selected_exercises.length
+      : 0;
+  const imageCoverage = result?.image_coverage || {};
   console.log('Result');
   console.log('------');
   console.log(`Final status: ${finalPayload?.status || lastStatus}`);
   console.log(`Elapsed(ms): ${elapsedMs}`);
   console.log(`request_id: ${result?.request_id || finalPayload?.request_id || '-'}`);
   console.log(`recommendation_id: ${result?.recommendation_id || '-'}`);
-  console.log(`selected_exercises: ${selected}`);
+  console.log(`exercises: ${exercises}`);
+  if (typeof imageCoverage?.with_image === 'number' && typeof imageCoverage?.total === 'number') {
+    console.log(`image_coverage: ${imageCoverage.with_image}/${imageCoverage.total} (${imageCoverage.percentage ?? 0}%)`);
+  }
   console.log(`engine_observability: ${JSON.stringify(result?.engine_observability || {})}`);
 }
 
