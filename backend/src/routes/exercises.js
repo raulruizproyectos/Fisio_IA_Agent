@@ -1021,7 +1021,7 @@ function composeClinicalReport({
         ex.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
         ex.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
       ].filter(Boolean);
-      lines.push(`   Pauta: ${pauta.join(' Â· ')}`);
+      lines.push(`   Pauta: ${pauta.join(' | ')}`);
     }
     if (ex.why) lines.push(`   Motivo: ${ex.why}`);
     if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Cautelas: ${ex.cautions.join('; ')}`);
@@ -1295,7 +1295,8 @@ function improveSelectionImageCoverage({ selectedExercises = [], catalog = [], s
       if (!replacementId || usedIds.has(replacementId)) return false;
 
       const replacementZone = String(entry?.item?.zona_corporal || '').toLowerCase();
-      const sameZone = !currentZone || !replacementZone || replacementZone === currentZone;
+      const zoneMatchesInferred = inferredZone && (currentZone.includes(inferredZone) || replacementZone.includes(inferredZone));
+      const sameZone = !currentZone || !replacementZone || replacementZone === currentZone || currentZone.includes(replacementZone) || replacementZone.includes(currentZone) || zoneMatchesInferred;
       const closeEnoughScore = entry.score >= Math.max(1, currentScore - 2);
       return sameZone && closeEnoughScore;
     });
