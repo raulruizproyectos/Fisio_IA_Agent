@@ -2,6 +2,21 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-09, Sesion 70) - Smoke test remoto de Telegram ya automatizado y validado
+
+### Completado esta sesion
+- [x] scripts/telegram-dry-run.mjs creado como smoke test reproducible del canal Telegram.
+- [x] Validacion remota en produccion completada: 5 de 5 casos OK en dry_run.
+- [x] README actualizado con el comando operativo del smoke test.
+
+### Punto de partida exacto (siguiente bloque)
+1. Ejecutar prueba manual del bot Telegram real con un chat ya vinculado.
+2. Comparar resultado real del bot con la prediccion del dry run.
+3. Despues, mejorar el core n8n para reducir la dependencia de fallback y normalizacion backend.
+
+### Riesgos o bloqueos conocidos
+- El bot real aun requiere prueba manual con un chat vinculado para cerrar la validacion E2E completa.
+- n8n sigue devolviendo respuestas demasiado genericas en algunos casos; backend ya lo compensa, pero el workflow base todavia merece refinado.
 ## Estado actual (2026-03-09, Sesion 69) - Dry run seguro para Telegram pendiente de deploy backend
 
 ### Completado esta sesion

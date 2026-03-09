@@ -129,22 +129,17 @@ cd C:\Temp\Fisio_IA_Agent_frontend_local
 npm run check
 ```
 
-## Validacion local segura del backend
-Si `npm install` o `npm run lint` del backend fallan en la ruta sincronizada, usa el flujo seguro ya preparado:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\backend-local-validate.ps1
-```
+## Smoke test Telegram dry run
+Para validar Telegram sin tocar chats reales ni crear datos productivos:
 
-Si necesitas validar manualmente la copia temporal:
+~~~powershell
+node .\scripts\telegram-dry-run.mjs --baseUrl=https://fisio-backend.b5xbaf.easypanel.host
+~~~
 
-```powershell
-cd C:\Temp\Fisio_IA_Agent_backend_local
-npm install --no-audit --no-fund
-npm run lint
-node --check src\index.js
-node --check src\routes\exercises.js
-```
+- Valida 5 casos: mensaje libre de ejercicios, cita libre, seguimiento, comando /cita y comando /informe del bot fisio.
+- Espera route y next_action correctos sin crear pacientes, intakes, citas ni recomendaciones.
+- Para ejecutar un caso concreto: --only=exercise_free_text.
 
 Smoke test rapido del flujo async W2:
 
@@ -160,7 +155,4 @@ node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<u
 - Norma n8n obligatoria (carpeta/tag): `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
 - Playbook n8n importacion + smoke test: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`
 - Norma de robustez y errores: `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`
-
-
-
 

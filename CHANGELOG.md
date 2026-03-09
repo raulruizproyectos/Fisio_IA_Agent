@@ -1,5 +1,23 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 70 - 2026-03-09
+
+### Objetivo
+- Automatizar la validacion remota del canal Telegram y dejarla como smoke test repetible del proyecto.
+
+### Cambios implementados
+- [x] Nuevo script scripts/telegram-dry-run.mjs para ejecutar 5 casos de validacion sobre POST /api/telegram/incoming?dry_run=true.
+- [x] El script comprueba route y next_action esperados para ejercicio, cita libre, seguimiento, /cita y /informe fisio.
+- [x] README actualizado con el comando de smoke test de Telegram.
+
+### Validacion realizada
+- [x] node --check scripts/telegram-dry-run.mjs OK.
+- [x] Smoke test remoto contra produccion: 5/5 casos OK.
+
+### Siguiente paso exacto
+1. Lanzar prueba manual del bot Telegram real con un chat ya vinculado.
+2. Confirmar que la respuesta real coincide con lo que predice el dry run.
+3. Si queda bien, siguiente foco: afinar el core n8n para depender menos de normalizaciones backend.
 ## Sesion 69 - 2026-03-09
 
 ### Objetivo
