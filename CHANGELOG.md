@@ -1,5 +1,23 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 63 - 2026-03-09
+
+### Objetivo
+- Reducir latencia y probabilidad de timeout del motor W2 sin tocar la UX ni romper el fallback actual.
+
+### Cambios implementados
+- [x] `backend/src/routes/exercises.js` ahora construye una shortlist heuristica de candidatos antes de llamar al motor IA.
+- [x] La shortlist prioriza coincidencia por sintomas/zona, ejercicios con imagen y niveles mas seguros.
+- [x] `engine_observability` expone `catalog_total`, `candidate_count` y `candidate_limit` para medir el recorte real de contexto.
+- [x] `backend/.env.example` documenta `EXERCISE_ENGINE_CANDIDATE_LIMIT`.
+- [x] `README.md` actualizado con la nueva observabilidad/configuracion del motor.
+
+### Siguiente paso exacto
+1. Redeploy de `fisio-backend` en EasyPanel.
+2. Repetir smoke sync y async en produccion.
+3. Comparar `candidate_count`, `total_duration_ms`, `fallback_used` y cobertura de imagen.
+
+
 ## Sesion 62 - 2026-03-09
 
 ### Objetivo

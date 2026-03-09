@@ -10,6 +10,7 @@ const supabase = createClient(
 );
 const EXERCISE_ENGINE_TIMEOUT_MS = Number(process.env.EXERCISE_ENGINE_TIMEOUT_MS || 30000);
 const EXERCISE_ENGINE_MAX_ATTEMPTS = Number(process.env.EXERCISE_ENGINE_MAX_ATTEMPTS || 2);
+const EXERCISE_ENGINE_CANDIDATE_LIMIT = Number(process.env.EXERCISE_ENGINE_CANDIDATE_LIMIT || 24);
 const EXERCISE_REQUIRE_PATIENT_ASSOCIATION = String(
   process.env.EXERCISE_REQUIRE_PATIENT_ASSOCIATION || 'true'
 ).toLowerCase() !== 'false';
@@ -204,6 +205,7 @@ router.post('/recommend', async (req, res) => {
 
     if (catErr) throw catErr;
     const catalogById = new Map((catalog || []).map((entry) => [String(entry.id), entry]));
+    const engineCatalog = buildEngineCandidateCatalog(catalog || [], symptoms);
 
     // 2. Call n8n or Edge Function for exercise selection
     const n8nUrl = process.env.N8N_EXERCISE_WEBHOOK_URL;
@@ -218,7 +220,9 @@ router.post('/recommend', async (req, res) => {
       patient_id: patId,
       symptoms,
       channel,
-      catalog: catalog.map((e) => ({
+      catalog_total: catalog.length,
+      candidate_count: engineCatalog.length,
+      catalog: engineCatalog.map((e) => ({
         id: e.id,
         nombre: e.nombre,
         descripcion: e.descripcion,
@@ -255,6 +259,9 @@ router.post('/recommend', async (req, res) => {
       fallback_used: !engineCall.ok,
       fallback_reason: null,
       total_duration_ms: engineCall.totalDurationMs,
+      catalog_total: catalog.length,
+      candidate_count: engineCatalog.length,
+      candidate_limit: EXERCISE_ENGINE_CANDIDATE_LIMIT,
       attempts_detail: engineCall.attempts,
     };
 
@@ -1154,6 +1161,61 @@ function hasRecommendationShape(recommendation) {
   if (Array.isArray(recommendation.selected_exercises)) return true;
   if (Array.isArray(recommendation.exercises)) return true;
   return false;
+}
+
+function hasExerciseImage(exercise) {
+  const metadata = exercise?.metadata || {};
+  return Boolean(metadata.proet_image_url || metadata.image_url);
+}
+
+function getExerciseLevelPriority(exercise) {
+  const level = String(exercise?.nivel || '').toLowerCase();
+  if (level === 'bajo') return 2;
+  if (level === 'medio') return 1;
+  return 0;
+}
+
+function buildEngineCandidateCatalog(catalog = [], symptoms) {
+  const safeLimit = Math.max(8, Number(EXERCISE_ENGINE_CANDIDATE_LIMIT) || 24);
+  if (!Array.isArray(catalog) || catalog.length <= safeLimit) return Array.isArray(catalog) ? catalog : [];
+
+  const symptomText = String(symptoms || '').trim();
+  const inferredZone = inferZoneFromSymptoms(symptomText);
+  const scored = catalog.map((item, index) => {
+    const matchScore = scoreExerciseForSymptoms(item, symptomText, inferredZone);
+    const imageBoost = hasExerciseImage(item) ? 0.35 : 0;
+    const levelBoost = getExerciseLevelPriority(item) * 0.1;
+    return {
+      item,
+      index,
+      matchScore,
+      imageBoost,
+      levelBoost,
+      priority: matchScore + imageBoost + levelBoost,
+    };
+  });
+
+  const primary = scored
+    .filter((entry) => entry.matchScore > 0)
+    .sort((a, b) => b.priority - a.priority || a.index - b.index);
+
+  const secondary = scored
+    .filter((entry) => entry.matchScore <= 0)
+    .sort((a, b) => b.imageBoost - a.imageBoost || b.levelBoost - a.levelBoost || a.index - b.index);
+
+  const selected = [];
+  const seen = new Set();
+  for (const pool of [primary, secondary]) {
+    for (const entry of pool) {
+      const exerciseId = String(entry?.item?.id || entry?.item?.exercise_id || '').trim();
+      if (!exerciseId || seen.has(exerciseId)) continue;
+      seen.add(exerciseId);
+      selected.push(entry.item);
+      if (selected.length >= safeLimit) return selected;
+    }
+  }
+
+  return selected;
 }
 
 function buildRuleBasedRecommendation({ requestId, symptoms, catalog, fallbackReason }) {

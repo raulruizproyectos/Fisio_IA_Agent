@@ -2,6 +2,22 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-09, Sesion 63) - Optimizacion W2 pendiente de deploy
+
+### Completado esta sesion
+- [x] Se reduce el contexto enviado al motor IA desde `backend/src/routes/exercises.js` mediante shortlist heuristica.
+- [x] Nueva variable documentada: `EXERCISE_ENGINE_CANDIDATE_LIMIT` (default `24`).
+- [x] Nueva observabilidad backend: `catalog_total`, `candidate_count`, `candidate_limit`.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy de `fisio-backend`.
+2. Validar si bajan `fallback_used` y `total_duration_ms` en W2 sync/async.
+3. Si sigue habiendo timeout frecuente, siguiente escalon: revisar o sustituir el motor remoto (`edge_function`/n8n).
+
+### Riesgos o bloqueos conocidos
+- Esta mejora todavia no esta en produccion hasta redeploy del backend.
+- El motor puede seguir entrando en fallback si el proveedor remoto esta lento; ahora al menos tendremos metrica clara del recorte de candidatos.
+
 ## Estado actual (2026-03-09, Sesion 62) - Fix productivo del agente de ejercicios pendiente de deploy
 
 ### Completado esta sesion

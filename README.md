@@ -58,9 +58,11 @@ CRM + Agents para centros de fisioterapia: gestiÃ³n de pacientes, citas y reco
 ## Observabilidad W2 (timeouts/reintentos)
 - `POST /api/exercises/recommend` devuelve `engine_observability` con:
   - `attempts`, `retries_used`, `fallback_used`, `fallback_reason`, `total_duration_ms`.
+  - `catalog_total`, `candidate_count`, `candidate_limit` para medir cuanto contexto se envia al motor.
 - Variables de entorno backend:
   - `EXERCISE_ENGINE_TIMEOUT_MS` (default `30000`)
   - `EXERCISE_ENGINE_MAX_ATTEMPTS` (default `2`)
+  - `EXERCISE_ENGINE_CANDIDATE_LIMIT` (default `24`)
   - `EXERCISE_REQUIRE_PATIENT_ASSOCIATION` (default `true`)
 - Frontend CRM muestra mÃ©trica operativa:
   - `Timeouts/Reintentos IA` (contador en dashboard, sin doble conteo cuando el backend devuelve `engine_observability`).
