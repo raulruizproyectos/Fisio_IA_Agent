@@ -208,6 +208,34 @@ create index if not exists idx_crm_reco_items_recomendacion on public.crm_recome
 create index if not exists idx_crm_reco_items_ejercicio on public.crm_recomendacion_items(ejercicio_id);
 
 -- =========================
+-- Jobs asincronos (polling)
+-- =========================
+create table if not exists public.crm_async_jobs (
+  id uuid primary key default gen_random_uuid(),
+  job_type text not null check (job_type in ('exercise_recommendation')),
+  tracking_request_id uuid not null default gen_random_uuid(),
+  final_request_id uuid,
+  paciente_id uuid references public.crm_pacientes(id),
+  fisioterapeuta_id uuid references public.crm_perfiles(id),
+  channel text not null default 'crm_web' check (channel in ('telegram', 'crm_web', 'backend', 'n8n', 'google_calendar')),
+  status text not null default 'queued' check (status in ('queued', 'running', 'done', 'error')),
+  progress_message text,
+  request_payload jsonb not null default '{}'::jsonb,
+  result_payload jsonb,
+  error_message text,
+  error_code text,
+  started_at timestamptz,
+  finished_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_crm_async_jobs_status on public.crm_async_jobs(status, created_at desc);
+create index if not exists idx_crm_async_jobs_patient on public.crm_async_jobs(paciente_id, created_at desc);
+create index if not exists idx_crm_async_jobs_tracking on public.crm_async_jobs(tracking_request_id);
+create index if not exists idx_crm_async_jobs_final_request on public.crm_async_jobs(final_request_id);
+
+-- =========================
 -- Comunicaciones y auditoria
 -- =========================
 create table if not exists public.crm_comunicaciones (
@@ -274,7 +302,8 @@ declare
     'crm_citas',
     'crm_ejercicios_catalogo',
     'crm_ejercicio_media',
-    'crm_recomendaciones'
+    'crm_recomendaciones',
+    'crm_async_jobs'
   ];
   trigger_name text;
 begin

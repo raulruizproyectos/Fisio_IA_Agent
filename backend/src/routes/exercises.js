@@ -13,6 +13,16 @@ const EXERCISE_ENGINE_MAX_ATTEMPTS = Number(process.env.EXERCISE_ENGINE_MAX_ATTE
 const EXERCISE_REQUIRE_PATIENT_ASSOCIATION = String(
   process.env.EXERCISE_REQUIRE_PATIENT_ASSOCIATION || 'true'
 ).toLowerCase() !== 'false';
+const EXERCISE_ASYNC_JOB_TTL_MS = Number(
+  process.env.EXERCISE_ASYNC_JOB_TTL_MS || 15 * 60 * 1000
+);
+const EXERCISE_ASYNC_JOB_CLEANUP_MS = Number(
+  process.env.EXERCISE_ASYNC_JOB_CLEANUP_MS || 60 * 1000
+);
+const exerciseRecommendationJobs = new Map();
+let lastExerciseJobCleanupAt = 0;
+const EXERCISE_ASYNC_JOB_TABLE = 'crm_async_jobs';
+let exerciseAsyncJobPersistenceEnabled = true;
 
 // --- GET /api/exercises/catalog ---
 // Returns active exercises from crm_ejercicios_catalogo, optionally filtered
@@ -47,6 +57,48 @@ router.get('/catalog', async (req, res) => {
     console.error('[exercises/catalog] Error:', err.message);
     res.status(500).json({ ok: false, error: 'Error al obtener catalogo' });
   }
+});
+
+// --- POST /api/exercises/recommend/async ---
+// Starts W2 in background and lets the frontend poll for status/result.
+router.post('/recommend/async', async (req, res) => {
+  try {
+    const input = normalizeAsyncRecommendationInput(req.body);
+    const job = await createExerciseRecommendationJob(input);
+    startExerciseRecommendationJob(job.job_id);
+
+    res.status(202).json({
+      ok: true,
+      accepted: true,
+      job_id: job.job_id,
+      tracking_request_id: job.tracking_request_id,
+      status: job.status,
+      progress_message: job.progress_message,
+      poll_url: '/api/exercises/recommend/jobs/' + job.job_id,
+      created_at: job.created_at,
+    });
+  } catch (err) {
+    sendRecommendationError(res, err);
+  }
+});
+
+// --- GET /api/exercises/recommend/jobs/:jobId ---
+// Returns queued/running/done/error so the frontend can poll until the report is ready.
+router.get('/recommend/jobs/:jobId', async (req, res) => {
+  const job = await getExerciseRecommendationJob(req.params.jobId);
+  if (!job) {
+    return res.status(404).json({
+      ok: false,
+      error: 'Trabajo asincrono no encontrado o expirado',
+      code: 'async_job_not_found',
+    });
+  }
+
+  const payload = serializeExerciseRecommendationJob(job);
+  res.json({
+    ok: job.status !== 'error',
+    ...payload,
+  });
 });
 
 // --- GET /api/exercises/:id/media ---
@@ -1028,6 +1080,388 @@ function scoreExerciseForSymptoms(exercise, symptomText, inferredZone) {
 
   if (/(movilidad|estiramiento|activacion|fortalecimiento|control motor)/.test(combined)) score += 1;
   return score;
+}
+
+
+function normalizeAsyncRecommendationInput(body = {}) {
+  const symptoms = String(body?.symptoms || '').trim();
+  const patientId = body?.patient_id || body?.paciente_id || null;
+  const channel = String(body?.channel || 'crm_web').trim() || 'crm_web';
+  const fisioterapeutaId = body?.fisioterapeuta_id || null;
+
+  if (!symptoms) {
+    throw createRecommendationHttpError(400, 'Se requiere symptoms');
+  }
+
+  if (!patientId && EXERCISE_REQUIRE_PATIENT_ASSOCIATION) {
+    throw createRecommendationHttpError(
+      400,
+      'Selecciona un paciente antes de generar el informe de ejercicios.',
+      'patient_required'
+    );
+  }
+
+  return {
+    patient_id: patientId,
+    symptoms,
+    channel,
+    fisioterapeuta_id: fisioterapeutaId,
+  };
+}
+
+function createRecommendationHttpError(status, message, code = null) {
+  const error = new Error(message);
+  error.status = status;
+  if (code) error.code = code;
+  return error;
+}
+
+function sendRecommendationError(res, err, requestId = null) {
+  const status = Number(err?.status || 500);
+  const payload = {
+    ok: false,
+    error: err?.message || 'Error generando recomendacion',
+  };
+
+  if (err?.code) payload.code = err.code;
+  if (requestId) payload.request_id = requestId;
+
+  res.status(status).json(payload);
+}
+
+function getInternalExerciseRecommendUrl() {
+  const base = String(process.env.INTERNAL_API_BASE_URL || ('http://127.0.0.1:' + (process.env.PORT || 3001)))
+    .trim()
+    .replace(/\/+$/, '');
+  return base + '/api/exercises/recommend';
+}
+
+function pruneExerciseRecommendationJobs() {
+  const now = Date.now();
+  if (now - lastExerciseJobCleanupAt < EXERCISE_ASYNC_JOB_CLEANUP_MS) return;
+
+  for (const [jobId, job] of exerciseRecommendationJobs.entries()) {
+    const referenceDate = job?.finished_at || job?.updated_at || job?.created_at;
+    const ageMs = referenceDate ? now - new Date(referenceDate).getTime() : 0;
+    if (ageMs >= EXERCISE_ASYNC_JOB_TTL_MS) {
+      exerciseRecommendationJobs.delete(jobId);
+    }
+  }
+
+  lastExerciseJobCleanupAt = now;
+}
+
+function isAsyncJobTableMissingError(error) {
+  const msg = String(error?.message || '').toLowerCase();
+  return (
+    msg.includes("public.crm_async_jobs") ||
+    (msg.includes('crm_async_jobs') && msg.includes('does not exist')) ||
+    (msg.includes('crm_async_jobs') && msg.includes('could not find the table'))
+  );
+}
+
+function mapStoredAsyncJob(row) {
+  if (!row) return null;
+  const requestPayload = row.request_payload && typeof row.request_payload === 'object'
+    ? row.request_payload
+    : {};
+
+  return {
+    job_id: row.id,
+    tracking_request_id: row.tracking_request_id || null,
+    request_id: row.final_request_id || null,
+    patient_id: row.paciente_id || null,
+    symptoms: requestPayload.symptoms || '',
+    channel: row.channel || 'crm_web',
+    fisioterapeuta_id: row.fisioterapeuta_id || null,
+    status: row.status || 'queued',
+    progress_message: row.progress_message || 'En curso',
+    created_at: row.created_at || null,
+    updated_at: row.updated_at || row.created_at || null,
+    started_at: row.started_at || null,
+    finished_at: row.finished_at || null,
+    result: row.result_payload || null,
+    error: row.error_message || null,
+    code: row.error_code || null,
+  };
+}
+
+function toStoredAsyncJob(job) {
+  return {
+    id: job.job_id,
+    job_type: 'exercise_recommendation',
+    tracking_request_id: job.tracking_request_id,
+    final_request_id: job.request_id || null,
+    paciente_id: job.patient_id || null,
+    fisioterapeuta_id: job.fisioterapeuta_id || null,
+    channel: job.channel || 'crm_web',
+    status: job.status,
+    progress_message: job.progress_message || null,
+    request_payload: {
+      patient_id: job.patient_id || null,
+      symptoms: job.symptoms || '',
+      channel: job.channel || 'crm_web',
+      fisioterapeuta_id: job.fisioterapeuta_id || null,
+    },
+    result_payload: job.result || null,
+    error_message: job.error || null,
+    error_code: job.code || null,
+    started_at: job.started_at || null,
+    finished_at: job.finished_at || null,
+  };
+}
+
+async function persistExerciseRecommendationJob(job) {
+  if (exerciseAsyncJobPersistenceEnabled === false) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from(EXERCISE_ASYNC_JOB_TABLE)
+      .upsert(toStoredAsyncJob(job), { onConflict: 'id' })
+      .select('id, job_type, tracking_request_id, final_request_id, paciente_id, fisioterapeuta_id, channel, status, progress_message, request_payload, result_payload, error_message, error_code, started_at, finished_at, created_at, updated_at')
+      .single();
+
+    if (error) throw error;
+    exerciseAsyncJobPersistenceEnabled = true;
+
+    const mapped = mapStoredAsyncJob(data);
+    if (mapped) exerciseRecommendationJobs.set(mapped.job_id, mapped);
+    return mapped;
+  } catch (error) {
+    if (isAsyncJobTableMissingError(error)) {
+      exerciseAsyncJobPersistenceEnabled = false;
+      return null;
+    }
+    console.warn('[exercises/recommend/async] persist warning:', error?.message || error);
+    return null;
+  }
+}
+
+async function fetchPersistedExerciseRecommendationJob(jobId) {
+  if (exerciseAsyncJobPersistenceEnabled === false) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from(EXERCISE_ASYNC_JOB_TABLE)
+      .select('id, job_type, tracking_request_id, final_request_id, paciente_id, fisioterapeuta_id, channel, status, progress_message, request_payload, result_payload, error_message, error_code, started_at, finished_at, created_at, updated_at')
+      .eq('id', String(jobId || '').trim())
+      .maybeSingle();
+
+    if (error) throw error;
+    exerciseAsyncJobPersistenceEnabled = true;
+
+    const mapped = mapStoredAsyncJob(data);
+    if (mapped) exerciseRecommendationJobs.set(mapped.job_id, mapped);
+    return mapped;
+  } catch (error) {
+    if (isAsyncJobTableMissingError(error)) {
+      exerciseAsyncJobPersistenceEnabled = false;
+      return null;
+    }
+    console.warn('[exercises/recommend/async] fetch warning:', error?.message || error);
+    return null;
+  }
+}
+
+async function getExerciseRecommendationJob(jobId) {
+  pruneExerciseRecommendationJobs();
+  const normalizedId = String(jobId || '').trim();
+  if (!normalizedId) return null;
+
+  const inMemory = exerciseRecommendationJobs.get(normalizedId) || null;
+  if (inMemory) return inMemory;
+
+  return await fetchPersistedExerciseRecommendationJob(normalizedId);
+}
+
+async function updateExerciseRecommendationJob(jobId, patch = {}) {
+  const current = await getExerciseRecommendationJob(jobId);
+  if (!current) return null;
+
+  const next = {
+    ...current,
+    ...patch,
+    updated_at: new Date().toISOString(),
+  };
+
+  exerciseRecommendationJobs.set(next.job_id, next);
+  const persisted = await persistExerciseRecommendationJob(next);
+  return persisted || next;
+}
+
+async function logExerciseAsyncJobEvent(job, asyncStatus, messageText, extraPayload = {}) {
+  if (!job?.patient_id) return;
+
+  await logComm(supabase, {
+    paciente_id: job.patient_id,
+    fisioterapeuta_id: job.fisioterapeuta_id || null,
+    channel: resolveCommChannel(job.channel),
+    direction: 'internal',
+    message_type: 'event',
+    message_text: messageText,
+    payload: {
+      event: 'exercise_async_job',
+      async_job_id: job.job_id,
+      async_status: asyncStatus,
+      tracking_request_id: job.tracking_request_id,
+      ...extraPayload,
+    },
+    request_id: job.request_id || job.tracking_request_id || null,
+    status: asyncStatus === 'error' ? 'error' : 'processed',
+  });
+}
+
+async function createExerciseRecommendationJob(input) {
+  pruneExerciseRecommendationJobs();
+  const now = new Date().toISOString();
+  const job = {
+    job_id: crypto.randomUUID(),
+    tracking_request_id: crypto.randomUUID(),
+    request_id: null,
+    patient_id: input.patient_id || null,
+    symptoms: input.symptoms,
+    channel: input.channel || 'crm_web',
+    fisioterapeuta_id: input.fisioterapeuta_id || null,
+    status: 'queued',
+    progress_message: 'Solicitud recibida. En cola.',
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
+    result: null,
+    error: null,
+    code: null,
+  };
+
+  exerciseRecommendationJobs.set(job.job_id, job);
+  const persisted = await persistExerciseRecommendationJob(job);
+  const effectiveJob = persisted || job;
+  await logExerciseAsyncJobEvent(effectiveJob, 'queued', 'Trabajo asincrono de ejercicios en cola');
+  return effectiveJob;
+}
+function serializeExerciseRecommendationJob(job) {
+  const payload = {
+    job_id: job.job_id,
+    tracking_request_id: job.tracking_request_id,
+    request_id: job.request_id || null,
+    status: job.status,
+    progress_message: job.progress_message,
+    created_at: job.created_at,
+    updated_at: job.updated_at,
+    finished_at: job.finished_at || null,
+  };
+
+  if (job.status === 'done' && job.result) {
+    payload.result = job.result;
+  }
+
+  if (job.status === 'error') {
+    payload.error = job.error || 'Error generando recomendacion';
+    payload.code = job.code || null;
+  }
+
+  return payload;
+}
+
+async function runExerciseRecommendationJob(jobId) {
+  let job = await updateExerciseRecommendationJob(jobId, {
+    status: 'running',
+    progress_message: 'Analizando el caso clinico y generando el informe...',
+    started_at: new Date().toISOString(),
+    error: null,
+    code: null,
+  });
+
+  if (!job) return;
+  await logExerciseAsyncJobEvent(job, 'running', 'Trabajo asincrono de ejercicios en ejecucion');
+
+  try {
+    const timeoutMs = Math.max(
+      90000,
+      EXERCISE_ENGINE_TIMEOUT_MS * Math.max(1, EXERCISE_ENGINE_MAX_ATTEMPTS) + 15000
+    );
+    const response = await fetch(getInternalExerciseRecommendUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient_id: job.patient_id,
+        symptoms: job.symptoms,
+        channel: job.channel,
+        fisioterapeuta_id: job.fisioterapeuta_id,
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+
+    const rawText = await response.text();
+    let parsed = {};
+    if (rawText.trim()) {
+      try {
+        parsed = JSON.parse(rawText);
+      } catch {
+        parsed = { raw: rawText };
+      }
+    }
+
+    if (!response.ok || !parsed?.ok) {
+      const errorMessage = parsed?.error || ('HTTP ' + response.status);
+      job = await updateExerciseRecommendationJob(jobId, {
+        status: 'error',
+        progress_message: 'No se pudo generar el informe.',
+        request_id: parsed?.request_id || job.request_id || null,
+        error: errorMessage,
+        code: parsed?.code || null,
+        finished_at: new Date().toISOString(),
+      });
+      if (job) {
+        await logExerciseAsyncJobEvent(job, 'error', 'Trabajo asincrono de ejercicios con error', {
+          error: errorMessage,
+          code: parsed?.code || null,
+        });
+      }
+      return;
+    }
+
+    job = await updateExerciseRecommendationJob(jobId, {
+      status: 'done',
+      progress_message: 'Informe generado. Listo para revisar.',
+      request_id: parsed?.request_id || job.request_id || null,
+      result: parsed,
+      finished_at: new Date().toISOString(),
+      error: null,
+      code: null,
+    });
+    if (job) {
+      await logExerciseAsyncJobEvent(job, 'done', 'Trabajo asincrono de ejercicios completado', {
+        recommendation_id: parsed?.recommendation_id || null,
+      });
+    }
+  } catch (error) {
+    const errorMessage = error?.name === 'AbortError'
+      ? 'exercise_async_timeout'
+      : error?.message || 'exercise_async_failed';
+
+    job = await updateExerciseRecommendationJob(jobId, {
+      status: 'error',
+      progress_message: 'No se pudo generar el informe.',
+      error: errorMessage,
+      code: error?.name === 'AbortError' ? 'async_timeout' : null,
+      finished_at: new Date().toISOString(),
+    });
+    if (job) {
+      await logExerciseAsyncJobEvent(job, 'error', 'Trabajo asincrono de ejercicios interrumpido', {
+        error: errorMessage,
+        code: job.code || null,
+      });
+    }
+  }
+}
+
+function startExerciseRecommendationJob(jobId) {
+  Promise.resolve()
+    .then(() => runExerciseRecommendationJob(jobId))
+    .catch((error) => {
+      console.error('[exercises/recommend/async] job runner error:', error?.message || error);
+    });
 }
 
 export default router;

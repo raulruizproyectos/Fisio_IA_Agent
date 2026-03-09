@@ -1,4 +1,4 @@
-# Automatizacion con n8n - Fisio IA Agent
+﻿# Automatizacion con n8n - Fisio IA Agent
 
 ## Objetivo operativo
 n8n es el orquestador principal para:
@@ -77,7 +77,7 @@ Endpoints principales consumidos por workflows:
 
 ## Nota de alcance
 - El set `production/` del repo queda sin flujos de video.
-- El set `vnext/` contiene la version canónica objetivo (W0/W1/W2/W3) para migracion progresiva.
+- El set `vnext/` contiene la version canÃ³nica objetivo (W0/W1/W2/W3) para migracion progresiva.
 - Limitacion actual de API n8n:
   - `PUT /api/v1/workflows/{id}/tags` sigue devolviendo `500`, por lo que el etiquetado en carpeta/tag `Fisio_IA_Agent` puede requerir accion manual en UI.
 
@@ -86,3 +86,5 @@ Endpoints principales consumidos por workflows:
 - Regla estricta:
   - Todo workflow del proyecto debe quedar dentro de carpeta/tag `Fisio_IA_Agent`.
   - Si un workflow queda fuera, el trabajo no se considera cerrado.
+
+

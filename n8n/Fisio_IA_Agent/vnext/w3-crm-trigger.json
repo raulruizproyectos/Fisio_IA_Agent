@@ -1,229 +1,225 @@
 {
-    "name":  "Fisio_IA_Agent / W3 CRM Trigger",
-    "nodes":  [
-                  {
-                      "parameters":  {
-                                         "path":  "fisio/w3/crm-trigger",
-                                         "responseMode":  "responseNode",
-                                         "httpMethod":  "POST",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "WebhookW3CrmTrigger",
-                      "name":  "Webhook W3 CRM Trigger",
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2.1,
-                      "position":  [
-                                       220,
-                                       260
-                                   ],
-                      "webhookId":  "fisio-w3-crm-trigger"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst requestId = input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`;\nconst patientId = input.patient_id || input.paciente_id || null;\nconst therapistId = input.therapist_id || input.fisioterapeuta_id || input.professional_id || null;\nconst symptomsText = String(input.symptoms_text || input.symptoms || input.text || '').trim();\nconst painLevelRaw = input?.context?.pain_level ?? input.pain_level ?? null;\nconst painLevelNum = Number(painLevelRaw);\n\nreturn [{\n  json: {\n    request_id: requestId,\n    source: input.source || 'crm_web',\n    patient_id: patientId,\n    therapist_id: therapistId,\n    symptoms_text: symptomsText,\n    context: {\n      latest_session_note: input?.context?.latest_session_note || input.latest_session_note || null,\n      pain_level: Number.isFinite(painLevelNum) ? painLevelNum : null\n    }\n  }\n}];"
-                                     },
-                      "id":  "NormalizeRequest",
-                      "name":  "Normalize Request",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       460,
-                                       260
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "conditions":  {
-                                                            "options":  {
-                                                                            "caseSensitive":  true,
-                                                                            "leftValue":  "",
-                                                                            "typeValidation":  "strict",
-                                                                            "version":  2
-                                                                        },
-                                                            "conditions":  [
-                                                                               {
-                                                                                   "id":  "has-patient",
-                                                                                   "leftValue":  "={{ $json.patient_id }}",
-                                                                                   "rightValue":  "",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "notEmpty"
-                                                                                                }
-                                                                               },
-                                                                               {
-                                                                                   "id":  "has-symptoms",
-                                                                                   "leftValue":  "={{ $json.symptoms_text }}",
-                                                                                   "rightValue":  "",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "notEmpty"
-                                                                                                }
-                                                                               }
-                                                                           ],
-                                                            "combinator":  "and"
-                                                        },
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "HasRequiredInput",
-                      "name":  "Tiene Input Requerido",
-                      "type":  "n8n-nodes-base.if",
-                      "typeVersion":  2.2,
-                      "position":  [
-                                       700,
-                                       260
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://fisio-backend.b5xbaf.easypanel.host/api/exercises/recommend",
-                                         "sendHeaders":  true,
-                                         "headerParameters":  {
-                                                                  "parameters":  [
-                                                                                     {
-                                                                                         "name":  "Content-Type",
-                                                                                         "value":  "application/json"
-                                                                                     }
-                                                                                 ]
-                                                              },
-                                         "sendBody":  true,
-                                         "specifyBody":  "json",
-                                         "jsonBody":  "{\n  \"request_id\": \"={{ $json.request_id }}\",\n  \"patient_id\": \"={{ $json.patient_id }}\",\n  \"fisioterapeuta_id\": \"={{ $json.therapist_id }}\",\n  \"symptoms\": \"={{ $json.symptoms_text }}\",\n  \"channel\": \"crm_web\",\n  \"source\": \"={{ $json.source }}\"\n}",
-                                         "options":  {
-                                                         "ignoreResponseCode":  true,
-                                                         "timeout":  45000
-                                                     }
-                                     },
-                      "id":  "TriggerBackendW2",
-                      "name":  "Trigger Backend W2",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       940,
-                                       180
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const input = $json || {};\nconst statusCode = Number(input.statusCode || input.code || 0);\nconst hasHttpError = statusCode >= 400;\nconst accepted = typeof input.ok === 'boolean' ? input.ok : !hasHttpError;\nconst trackingStatus = accepted ? 'done' : 'error';\n\nreturn [{\n  json: {\n    request_id: input.request_id || null,\n    accepted,\n    workflow: 'W2',\n    tracking_status: trackingStatus,\n    recommendation_id: input.recommendation_id || null,\n    error: accepted ? null : (input.error || input.message || 'w3_backend_error')\n  }\n}];"
-                                     },
-                      "id":  "BuildAckResponse",
-                      "name":  "Build Ack Response",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1180,
-                                       180
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "return [{\n  json: {\n    request_id: $json.request_id || null,\n    accepted: false,\n    workflow: 'W2',\n    tracking_status: 'error',\n    recommendation_id: null,\n    error: 'missing_required_input'\n  }\n}];"
-                                     },
-                      "id":  "BuildValidationError",
-                      "name":  "Build Validation Error",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       940,
-                                       360
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ $json }}"
-                                     },
-                      "id":  "RespondW3",
-                      "name":  "Respond W3",
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       1400,
-                                       260
-                                   ]
-                  }
-              ],
-    "connections":  {
-                        "Webhook W3 CRM Trigger":  {
-                                                      "main":  [
-                                                                   [
-                                                                       {
-                                                                           "node":  "Normalize Request",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ]
-                                                               ]
-                                                  },
-                        "Normalize Request":  {
-                                                 "main":  [
-                                                              [
-                                                                  {
-                                                                      "node":  "Tiene Input Requerido",
-                                                                      "type":  "main",
-                                                                      "index":  0
-                                                                  }
-                                                              ]
-                                                          ]
-                                             },
-                        "Tiene Input Requerido":  {
-                                                      "main":  [
-                                                                   [
-                                                                       {
-                                                                           "node":  "Trigger Backend W2",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ],
-                                                                   [
-                                                                       {
-                                                                           "node":  "Build Validation Error",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ]
-                                                               ]
-                                                  },
-                        "Trigger Backend W2":  {
-                                                  "main":  [
-                                                               [
-                                                                   {
-                                                                       "node":  "Build Ack Response",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ]
-                                                           ]
-                                              },
-                        "Build Ack Response":  {
-                                                  "main":  [
-                                                               [
-                                                                   {
-                                                                       "node":  "Respond W3",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ]
-                                                           ]
-                                              },
-                        "Build Validation Error":  {
-                                                        "main":  [
-                                                                     [
-                                                                         {
-                                                                             "node":  "Respond W3",
-                                                                             "type":  "main",
-                                                                             "index":  0
-                                                                         }
-                                                                     ]
-                                                                 ]
-                                                    }
-                    },
-    "settings":  {
-                     "executionOrder":  "v1"
-                 }
+  "name": "Fisio_IA_Agent / W3 CRM Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "fisio/w3/crm-trigger",
+        "responseMode": "responseNode",
+        "httpMethod": "POST",
+        "options": {}
+      },
+      "id": "WebhookW3CrmTrigger",
+      "name": "Webhook W3 CRM Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        260
+      ],
+      "webhookId": "fisio-w3-crm-trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst requestId = input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`;\nconst patientId = input.patient_id || input.paciente_id || null;\nconst therapistId = input.therapist_id || input.fisioterapeuta_id || input.professional_id || null;\nconst symptomsText = String(input.symptoms_text || input.symptoms || input.text || '').trim();\nconst painLevelRaw = input?.context?.pain_level ?? input.pain_level ?? null;\nconst painLevelNum = Number(painLevelRaw);\n\nreturn [{\n  json: {\n    request_id: requestId,\n    source: input.source || 'crm_web',\n    patient_id: patientId,\n    therapist_id: therapistId,\n    symptoms_text: symptomsText,\n    context: {\n      latest_session_note: input?.context?.latest_session_note || input.latest_session_note || null,\n      pain_level: Number.isFinite(painLevelNum) ? painLevelNum : null\n    }\n  }\n}];"
+      },
+      "id": "NormalizeRequest",
+      "name": "Normalize Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-patient",
+              "leftValue": "={{ $json.patient_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-symptoms",
+              "leftValue": "={{ $json.symptoms_text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "HasRequiredInput",
+      "name": "Tiene Input Requerido",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/exercises/recommend/async",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"request_id\": \"={{ $json.request_id }}\",\n  \"patient_id\": \"={{ $json.patient_id }}\",\n  \"fisioterapeuta_id\": \"={{ $json.therapist_id }}\",\n  \"symptoms\": \"={{ $json.symptoms_text }}\",\n  \"channel\": \"crm_web\",\n  \"source\": \"={{ $json.source }}\"\n}",
+        "options": {
+          "ignoreResponseCode": true,
+          "timeout": 12000
+        }
+      },
+      "id": "TriggerBackendW2",
+      "name": "Trigger Backend W2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json || {};\nconst statusCode = Number(input.statusCode || input.code || 0);\nconst accepted = Number.isFinite(statusCode) && statusCode > 0\n  ? statusCode < 400\n  : !!input.accepted || !!input.ok;\nconst status = String(input.status || (accepted ? 'queued' : 'error'));\n\nreturn [{\n  json: {\n    request_id: input.tracking_request_id || input.request_id || null,\n    accepted,\n    workflow: 'W2',\n    tracking_status: accepted ? status : 'error',\n    job_id: input.job_id || null,\n    tracking_request_id: input.tracking_request_id || null,\n    poll_url: input.poll_url || null,\n    progress_message: input.progress_message || null,\n    recommendation_id: input.recommendation_id || null,\n    error: accepted ? null : (input.error || input.message || 'w3_backend_error')\n  }\n}];"
+      },
+      "id": "BuildAckResponse",
+      "name": "Build Ack Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    accepted: false,\n    workflow: 'W2',\n    tracking_status: 'error',\n    job_id: null,\n    tracking_request_id: null,\n    poll_url: null,\n    progress_message: null,\n    recommendation_id: null,\n    error: 'missing_required_input'\n  }\n}];"
+      },
+      "id": "BuildValidationError",
+      "name": "Build Validation Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "RespondW3",
+      "name": "Respond W3",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1400,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook W3 CRM Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Request": {
+      "main": [
+        [
+          {
+            "node": "Tiene Input Requerido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene Input Requerido": {
+      "main": [
+        [
+          {
+            "node": "Trigger Backend W2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Backend W2": {
+      "main": [
+        [
+          {
+            "node": "Build Ack Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Ack Response": {
+      "main": [
+        [
+          {
+            "node": "Respond W3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Validation Error": {
+      "main": [
+        [
+          {
+            "node": "Respond W3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
 }

@@ -74,7 +74,7 @@ app.use('/api/exercises', exercisesRouter);
 app.use('/api/ejercicios', exercisesRouter);
 
 // Error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   if (ERROR_WEBHOOK_URL) {
     fetch(ERROR_WEBHOOK_URL, {
       method: 'POST',
@@ -102,3 +102,4 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`\nFisio IA Agent API\n------------------\nServidor activo en http://localhost:${PORT}\nHealth check:     http://localhost:${PORT}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
 });
+
