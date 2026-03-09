@@ -1,6 +1,33 @@
-﻿# Configuracion Pendiente - Fisio_IA_Agent
+# Configuracion Pendiente - Fisio_IA_Agent
 
 Estado actualizado para retomar sin perdida.
+
+## Estado actual (2026-03-09, Sesion 62) - Fix productivo del agente de ejercicios pendiente de deploy
+
+### Completado esta sesion
+- [x] Root cause confirmado del error `Error generando recomendacion` en el copilot rail.
+- [x] El backend de ejercicios ya resuelve `patient_id` y `fisioterapeuta_id` del modelo legacy al modelo CRM antes de persistir.
+- [x] La ruta async tambien queda corregida para que los jobs no nazcan con IDs legacy incompatibles.
+- [x] Se desacopla generacion vs persistencia: si falla el guardado, el informe aun se devuelve con `persistence_warning`.
+- [x] Validacion de sintaxis: `node --check backend/src/routes/exercises.js` OK.
+
+### Punto de partida exacto (siguiente bloque)
+1. Commit y push del fix a `main`.
+2. Redeploy de `fisio-backend` en EasyPanel.
+3. Validar en produccion desde navegador:
+   - seleccionar paciente,
+   - pedir plan desde el rail,
+   - confirmar que ya no aparece `Error generando recomendacion`,
+   - revisar si llega con imagenes o solo con cobertura parcial.
+4. Repetir smoke test por terminal usando el `PROF_ID` bruto del frontend para confirmar que el backend lo resuelve solo.
+
+### Riesgos o bloqueos conocidos
+- La API TRPC de EasyPanel responde `401 UNAUTHORIZED` desde esta sesion; con solo la URL no basta para redeploy automatico.
+- No hay token EasyPanel cargado en variables de entorno de esta shell ni localizado en `.env.local`/`backend/.env`.
+- `npm run lint` en la copia sincronizada de Google Drive sigue sin ser fiable por dependencias locales incompletas.
+
+
+
 
 ## Estado actual (2026-03-08, Sesion 60) - Checkpoint exacto con copilot rail y CRM ampliado
 

@@ -63,7 +63,15 @@ router.get('/catalog', async (req, res) => {
 // Starts W2 in background and lets the frontend poll for status/result.
 router.post('/recommend/async', async (req, res) => {
   try {
-    const input = normalizeAsyncRecommendationInput(req.body);
+    const rawInput = normalizeAsyncRecommendationInput(req.body);
+    const input = await resolveRecommendationIdentity(rawInput);
+    if (rawInput.patient_id && !input.patient_id) {
+      throw createRecommendationHttpError(
+        400,
+        'No se pudo resolver patient_id al modelo CRM (crm_pacientes)',
+        'patient_not_resolved'
+      );
+    }
     const job = await createExerciseRecommendationJob(input);
     startExerciseRecommendationJob(job.job_id);
 
@@ -152,11 +160,27 @@ router.post('/recommend', async (req, res) => {
       fisioterapeuta_id,
     } = req.body;
 
-    const patId = patient_id || paciente_id || null;
+    const rawPatientId = patient_id || paciente_id || null;
+    const resolvedInput = await resolveRecommendationIdentity({
+      patient_id: rawPatientId,
+      symptoms,
+      channel,
+      fisioterapeuta_id,
+    });
+    const patId = resolvedInput.patient_id;
+    const resolvedFisioterapeutaId = resolvedInput.fisioterapeuta_id;
+
     if (!symptoms || !String(symptoms).trim()) {
       return res.status(400).json({
         ok: false,
         error: 'Se requiere symptoms',
+      });
+    }
+    if (rawPatientId && !patId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'No se pudo resolver patient_id al modelo CRM (crm_pacientes)',
+        code: 'patient_not_resolved',
       });
     }
     if (!patId && EXERCISE_REQUIRE_PATIENT_ASSOCIATION) {
@@ -166,7 +190,11 @@ router.post('/recommend', async (req, res) => {
         code: 'patient_required',
       });
     }
+    if (resolvedInput.raw_fisioterapeuta_id && !resolvedFisioterapeutaId) {
+      console.warn('[exercises/recommend] unresolved fisioterapeuta_id:', resolvedInput.raw_fisioterapeuta_id);
+    }
     const persistRecommendation = Boolean(patId);
+    let persistenceWarning = null;
 
     // 1. Fetch full catalog for OpenAI context
     const { data: catalog, error: catErr } = await supabase
@@ -281,65 +309,70 @@ router.post('/recommend', async (req, res) => {
     // 3a/3b/3c. Persist only when patient_id exists
     let recommendationId = null;
     if (persistRecommendation) {
-      const { data: recoRow, error: recoErr } = await supabase
-        .from('crm_recomendaciones')
-        .insert({
-          paciente_id: patId,
-          fisioterapeuta_id: fisioterapeuta_id || null,
-          origen: channel,
-          symptom_summary,
-          red_flags_present,
-          red_flags_items,
-          selection_rationale,
-          message_to_patient_es,
-          message_to_therapist_es,
-          escalation_recommend_medical_attention,
-          escalation_reason,
-          request_id: requestId,
-          estado: escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
-        })
-        .select('id')
-        .single();
+      try {
+        const { data: recoRow, error: recoErr } = await supabase
+          .from('crm_recomendaciones')
+          .insert({
+            paciente_id: patId,
+            fisioterapeuta_id: resolvedFisioterapeutaId || null,
+            origen: channel,
+            symptom_summary,
+            red_flags_present,
+            red_flags_items,
+            selection_rationale,
+            message_to_patient_es,
+            message_to_therapist_es,
+            escalation_recommend_medical_attention,
+            escalation_reason,
+            request_id: requestId,
+            estado: escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
+          })
+          .select('id')
+          .single();
 
-      if (recoErr) throw recoErr;
-      recommendationId = recoRow.id;
+        if (recoErr) throw recoErr;
+        recommendationId = recoRow.id;
 
-      if (selected_exercises.length > 0) {
-        const items = selected_exercises.map((ex, idx) => ({
-          recomendacion_id: recommendationId,
-          ejercicio_id: ex.exercise_id || ex.id,
-          confidence: ex.confidence || 0.8,
-          why: ex.why || ex.reason || '',
-          cautions: ex.cautions || [],
-          orden: idx + 1,
-        }));
+        if (selected_exercises.length > 0) {
+          const items = selected_exercises.map((ex, idx) => ({
+            recomendacion_id: recommendationId,
+            ejercicio_id: ex.exercise_id || ex.id,
+            confidence: ex.confidence || 0.8,
+            why: ex.why || ex.reason || '',
+            cautions: ex.cautions || [],
+            orden: idx + 1,
+          }));
 
-        const { error: itemsErr } = await supabase
-          .from('crm_recomendacion_items')
-          .insert(items);
+          const { error: itemsErr } = await supabase
+            .from('crm_recomendacion_items')
+            .insert(items);
 
-        if (itemsErr) {
-          console.warn('[exercises/recommend] Error inserting items:', itemsErr.message);
+          if (itemsErr) {
+            console.warn('[exercises/recommend] Error inserting items:', itemsErr.message);
+          }
         }
-      }
 
-      await logComm(supabase, {
-        paciente_id: patId,
-        fisioterapeuta_id: fisioterapeuta_id || null,
-        recomendacion_id: recommendationId,
-        channel: resolveCommChannel(channel),
-        direction: 'internal',
-        message_type: 'system',
-        message_text: `Recomendacion generada: ${selected_exercises.length} ejercicios`,
-        payload: {
-          event: 'recommendation_generated',
-          selected_exercises_count: selected_exercises.length,
-          engine_observability: engineObservability,
-          fallback_reason: engineObservability.fallback_reason || null,
-        },
-        request_id: requestId,
-        status: 'processed',
-      });
+        await logComm(supabase, {
+          paciente_id: patId,
+          fisioterapeuta_id: resolvedFisioterapeutaId || null,
+          recomendacion_id: recommendationId,
+          channel: resolveCommChannel(channel),
+          direction: 'internal',
+          message_type: 'system',
+          message_text: `Recomendacion generada: ${selected_exercises.length} ejercicios`,
+          payload: {
+            event: 'recommendation_generated',
+            selected_exercises_count: selected_exercises.length,
+            engine_observability: engineObservability,
+            fallback_reason: engineObservability.fallback_reason || null,
+          },
+          request_id: requestId,
+          status: 'processed',
+        });
+      } catch (persistenceErr) {
+        persistenceWarning = persistenceErr?.message || 'recommendation_persistence_failed';
+        console.warn('[exercises/recommend] persistence warning:', persistenceWarning);
+      }
     }
 
     // 4. Fetch media signed URLs for recommended exercises
@@ -442,13 +475,14 @@ router.post('/recommend', async (req, res) => {
       message_to_therapist: message_to_therapist_es,
       selection_rationale,
       informe_clinico: informeClinico,
-      persistence_skipped: !persistRecommendation,
+      persistence_skipped: !persistRecommendation || Boolean(persistenceWarning),
+      persistence_warning: persistenceWarning,
     };
 
     if (persistRecommendation && recommendationId) {
       await logComm(supabase, {
         paciente_id: patId,
-        fisioterapeuta_id: fisioterapeuta_id || null,
+        fisioterapeuta_id: resolvedFisioterapeutaId || null,
         recomendacion_id: recommendationId,
         channel: resolveCommChannel(channel),
         direction: 'internal',
@@ -798,6 +832,145 @@ function isMissingTableError(error, tableName) {
   const msg = String(error?.message || '').toLowerCase();
   const table = String(tableName || '').toLowerCase();
   return msg.includes(`relation "${table}"`) && msg.includes('does not exist');
+}
+
+function splitFullName(fullName = '') {
+  const value = String(fullName || '').trim();
+  if (!value) return { nombre: 'Paciente', apellidos: null };
+  const parts = value.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return { nombre: parts[0], apellidos: null };
+  return {
+    nombre: parts[0],
+    apellidos: parts.slice(1).join(' '),
+  };
+}
+
+async function resolveCrmPatientId(rawPatientId) {
+  if (!rawPatientId) return null;
+
+  const crmPatient = await supabase
+    .from('crm_pacientes')
+    .select('id')
+    .eq('id', rawPatientId)
+    .maybeSingle();
+
+  if (crmPatient.error) throw crmPatient.error;
+  if (crmPatient.data?.id) return crmPatient.data.id;
+
+  const legacyPatient = await supabase
+    .from('pacientes')
+    .select('id, nombre_completo, email, phone, fecha_nacimiento')
+    .eq('id', rawPatientId)
+    .maybeSingle();
+
+  if (legacyPatient.error) throw legacyPatient.error;
+  if (!legacyPatient.data) return null;
+
+  if (legacyPatient.data.email) {
+    const existingByEmail = await supabase
+      .from('crm_pacientes')
+      .select('id')
+      .eq('email', legacyPatient.data.email)
+      .maybeSingle();
+
+    if (existingByEmail.error) throw existingByEmail.error;
+    if (existingByEmail.data?.id) return existingByEmail.data.id;
+  }
+
+  const { nombre, apellidos } = splitFullName(legacyPatient.data.nombre_completo);
+  const inserted = await supabase
+    .from('crm_pacientes')
+    .insert({
+      nombre,
+      apellidos,
+      telefono: legacyPatient.data.phone || null,
+      email: legacyPatient.data.email || null,
+      fecha_nacimiento: legacyPatient.data.fecha_nacimiento || null,
+      observaciones: 'auto_migrated_from_legacy_patient',
+      activo: true,
+    })
+    .select('id')
+    .single();
+
+  if (inserted.error) throw inserted.error;
+  return inserted.data?.id || null;
+}
+
+async function resolveCrmProfessionalId(rawProfessionalId) {
+  if (!rawProfessionalId) return null;
+
+  const crmProfile = await supabase
+    .from('crm_perfiles')
+    .select('id')
+    .eq('id', rawProfessionalId)
+    .maybeSingle();
+
+  if (crmProfile.error) throw crmProfile.error;
+  if (crmProfile.data?.id) return crmProfile.data.id;
+
+  const legacyProfessional = await supabase
+    .from('profesionales')
+    .select('id, id_usuario_auth, email, nombre_completo')
+    .eq('id', rawProfessionalId)
+    .maybeSingle();
+
+  if (legacyProfessional.error) throw legacyProfessional.error;
+  if (!legacyProfessional.data) return null;
+
+  if (legacyProfessional.data.id_usuario_auth) {
+    const byAuth = await supabase
+      .from('crm_perfiles')
+      .select('id')
+      .eq('auth_user_id', legacyProfessional.data.id_usuario_auth)
+      .maybeSingle();
+
+    if (byAuth.error) throw byAuth.error;
+    if (byAuth.data?.id) return byAuth.data.id;
+  }
+
+  if (legacyProfessional.data.email) {
+    const byEmail = await supabase
+      .from('crm_perfiles')
+      .select('id')
+      .eq('email', legacyProfessional.data.email)
+      .maybeSingle();
+
+    if (byEmail.error) throw byEmail.error;
+    if (byEmail.data?.id) return byEmail.data.id;
+  }
+
+  if (!legacyProfessional.data.id_usuario_auth) return null;
+
+  const inserted = await supabase
+    .from('crm_perfiles')
+    .insert({
+      auth_user_id: legacyProfessional.data.id_usuario_auth,
+      rol: 'fisioterapeuta',
+      nombre_completo: legacyProfessional.data.nombre_completo || null,
+      email: legacyProfessional.data.email || null,
+      activo: true,
+    })
+    .select('id')
+    .single();
+
+  if (inserted.error) throw inserted.error;
+  return inserted.data?.id || null;
+}
+
+async function resolveRecommendationIdentity(input = {}) {
+  const rawPatientId = input.patient_id || input.paciente_id || null;
+  const rawProfessionalId = input.fisioterapeuta_id || null;
+  const patientId = rawPatientId ? await resolveCrmPatientId(rawPatientId) : null;
+  const fisioterapeutaId = rawProfessionalId ? await resolveCrmProfessionalId(rawProfessionalId) : null;
+
+  return {
+    ...input,
+    patient_id: patientId,
+    paciente_id: patientId,
+    fisioterapeuta_id: fisioterapeutaId,
+    raw_patient_id: rawPatientId,
+    raw_fisioterapeuta_id: rawProfessionalId,
+  };
 }
 
 function composeClinicalReport({

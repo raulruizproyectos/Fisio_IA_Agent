@@ -1,4 +1,35 @@
-﻿# Fisio_IA_Agent - Changelog / Context Log
+# Fisio_IA_Agent - Changelog / Context Log
+
+## Sesion 62 - 2026-03-09
+
+### Objetivo
+- Corregir el error productivo del agente de ejercicios al generar planes desde el copilot rail.
+
+### Problema raiz confirmado
+- El frontend envia un `PROF_ID` valido para el modelo legacy, pero `/api/exercises/recommend` y `/api/exercises/recommend/async` no resolvian ese ID al `crm_perfiles.id` real.
+- Las rutas de agenda si hacian esa resolucion, por eso citas funcionaba pero ejercicios fallaba al persistir `crm_recomendaciones`.
+- Verificacion remota previa al fix:
+  - `GET /api/profesional/appointments?fisioterapeuta_id=4a194ec4-3580-4246-9452-0852b589fd63` devolvio citas con `fisioterapeuta_id=6dae4ef6-b6b3-4cb0-91d9-0320d10db255`.
+  - `POST /api/exercises/recommend` con `fisioterapeuta_id=6dae4ef6-b6b3-4cb0-91d9-0320d10db255` devolvio `ok=true` en produccion.
+
+### Cambios implementados
+- [x] Backend `backend/src/routes/exercises.js`:
+  - resolucion automatica de `patient_id` y `fisioterapeuta_id` al modelo CRM antes del flujo sync y async,
+  - los jobs async ya nacen con IDs CRM resueltos,
+  - el endpoint deja de caer por mismatch legacy->CRM al persistir recomendaciones,
+  - si la persistencia falla por esquema/constraint, el plan se devuelve igualmente con `persistence_warning` en lugar de romper toda la generacion.
+
+### Validacion realizada
+- [x] `node --check backend/src/routes/exercises.js` OK.
+- [x] Diagnostico remoto completado contra backend productivo actual.
+- [!] `npm run lint` no ejecutable en esta copia sincronizada porque falta `eslint` en `node_modules` de Google Drive; no es un error del codigo.
+
+### Pendiente inmediato
+1. Commit + push del fix a `main`.
+2. Redeploy de `fisio-backend` en EasyPanel.
+3. Reprobar desde UI y por terminal `POST /api/exercises/recommend` usando el `PROF_ID` bruto del frontend.
+4. Si se quiere automatizar el deploy desde esta sesion, hace falta token/sesion de EasyPanel: la TRPC responde `401 UNAUTHORIZED` sin autenticacion.
+
 
 ## Sesion 61 - 2026-03-09
 
