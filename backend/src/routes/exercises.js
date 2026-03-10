@@ -1,6 +1,7 @@
 ﻿import { Router } from 'express';
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 
 const router = Router();
 
@@ -700,6 +701,49 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
   }
 });
 
+router.post('/reports/pdf', async (req, res) => {
+  try {
+    const rawPayload = req.body?.payload && typeof req.body.payload === 'object'
+      ? req.body.payload
+      : (req.body || {});
+    const exercises = Array.isArray(rawPayload?.exercises) ? rawPayload.exercises : [];
+
+    if (!exercises.length) {
+      return res.status(400).json({
+        ok: false,
+        error: 'El informe no incluye ejercicios para exportar',
+      });
+    }
+
+    const recommendationId = String(
+      rawPayload?.recommendation_id || rawPayload?.recomendacion_id || ''
+    ).trim();
+
+    const pdfPayload = {
+      ...rawPayload,
+      recommendation_id: recommendationId || null,
+      patient_id: rawPayload?.patient_id || rawPayload?.paciente_id || null,
+      patient_name: rawPayload?.patient_name || rawPayload?.paciente_nombre || null,
+      request_id: rawPayload?.request_id || null,
+      exercises,
+    };
+
+    const buffer = await buildExerciseReportPdfBuffer(pdfPayload);
+    const fallbackSuffix = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
+    const filenameSuffix = recommendationId || fallbackSuffix;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="informe-ejercicios-${filenameSuffix}.pdf"`);
+    res.status(200).send(buffer);
+  } catch (err) {
+    console.error('[exercises/reports/pdf] Error:', err.message);
+    res.status(500).json({
+      ok: false,
+      error: 'Error generando PDF de ejercicios',
+    });
+  }
+});
+
 // --- Helper: log communication ---
 router.post('/reports/archive', async (req, res) => {
   try {
@@ -999,21 +1043,28 @@ function composeClinicalReport({
   recommendationId,
 }) {
   const lines = [];
-  lines.push('INFORME DE EJERCICIOS');
-  lines.push(`Sintomas: ${symptomSummary || 'No informado'}`);
+  lines.push('INFORME CLINICO DE EJERCICIOS');
+  lines.push('');
+  lines.push('RESUMEN CLINICO');
+  lines.push(`- Sintomas: ${symptomSummary || 'No informado'}`);
 
   if (escalation) {
-    lines.push('ALERTA: se recomienda valoracion medica prioritaria.');
+    lines.push('- Revision medica recomendada antes de enviar el plan.');
   }
   if (messageToTherapist) {
-    lines.push(`Nota clinica: ${messageToTherapist}`);
+    lines.push(`- Nota para fisioterapeuta: ${messageToTherapist}`);
   }
 
   lines.push('');
-  lines.push(`Ejercicios recomendados (${exercises.length}):`);
+  lines.push(`PLAN PROPUESTO (${exercises.length} ejercicio(s))`);
+
+  if (!exercises.length) {
+    lines.push('- No se han seleccionado ejercicios para esta recomendacion.');
+  }
 
   exercises.forEach((ex) => {
-    lines.push(`${ex.orden}. ${ex.nombre} (${ex.zona_corporal || 'general'})`);
+    lines.push(`${ex.orden}. ${ex.nombre || 'Ejercicio'}`);
+    if (ex.zona_corporal) lines.push(`   Zona: ${ex.zona_corporal}`);
     if (ex.procedimiento) lines.push(`   Procedimiento: ${normalizeProcedure(ex.procedimiento)}`);
     if (ex.series || ex.repeticiones || ex.duracion_segundos) {
       const pauta = [
@@ -1021,21 +1072,19 @@ function composeClinicalReport({
         ex.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
         ex.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
       ].filter(Boolean);
-      lines.push(`   Pauta: ${pauta.join(' | ')}`);
+      lines.push(`   Dosificacion: ${pauta.join(' | ')}`);
     }
-    if (ex.why) lines.push(`   Motivo: ${ex.why}`);
-    if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Cautelas: ${ex.cautions.join('; ')}`);
-    if (ex.imagen_url) lines.push(`   Imagen: ${ex.imagen_url}`);
+    if (ex.why) lines.push(`   Motivo clinico: ${ex.why}`);
+    if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Precauciones: ${ex.cautions.join('; ')}`);
+    lines.push(`   Imagen de referencia: ${ex.imagen_url ? 'Disponible en PDF/CRM' : 'No disponible'}`);
   });
 
-  if (messageToPatient) {
-    lines.push('');
-    lines.push('Mensaje para paciente:');
-    lines.push(messageToPatient);
-  }
-
   lines.push('');
-  lines.push(`ID recomendacion: ${recommendationId || '-'}`);
+  lines.push('MENSAJE PARA PACIENTE');
+  lines.push(messageToPatient || 'No generado');
+  lines.push('');
+  lines.push('TRAZABILIDAD');
+  lines.push(`- Recomendacion: ${recommendationId || '-'}`);
   return lines.join('\n').trim();
 }
 
@@ -1823,5 +1872,6 @@ function startExerciseRecommendationJob(jobId) {
 }
 
 export default router;
+
 
 

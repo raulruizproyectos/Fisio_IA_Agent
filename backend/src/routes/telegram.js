@@ -1,6 +1,6 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import crypto from 'node:crypto';
-import PDFDocument from 'pdfkit';
+import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 import { supabase } from '../index.js';
 import { resolveAgentConversation } from './agent.js';
 
@@ -169,24 +169,37 @@ function buildTelegramExerciseFallback(payload = {}) {
   const exercises = Array.isArray(payload.exercises) ? payload.exercises : [];
   const lines = [];
 
+  lines.push('Informe profesional de ejercicios');
+  lines.push('');
+
   if (payload.red_flags?.present) {
-    lines.push('⚠️ Se detectaron alertas. Valora consulta médica antes de continuar.');
+    lines.push('Atencion: hay alertas clinicas que conviene revisar antes de compartir el plan.');
     lines.push('');
   }
 
-  lines.push(`✅ Informe de ejercicios (${exercises.length})`);
-  lines.push('');
+  if (payload.symptom_summary) {
+    lines.push(`Resumen clinico: ${payload.symptom_summary}`);
+    lines.push('');
+  }
+
+  lines.push(`Plan propuesto (${exercises.length} ejercicio(s))`);
+
+  if (!exercises.length) {
+    lines.push('- No hay ejercicios disponibles en esta recomendacion.');
+  }
 
   exercises.forEach((ex, idx) => {
     const order = ex.orden || idx + 1;
-    lines.push(`${order}. ${ex.nombre || 'Ejercicio'} (${ex.zona_corporal || 'general'})`);
+    lines.push(`${order}. ${ex.nombre || 'Ejercicio'}`);
+    if (ex.zona_corporal) lines.push(`   Zona: ${ex.zona_corporal}`);
     if (ex.procedimiento) lines.push(`   Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`);
-    if (ex.imagen_url) lines.push(`   Imagen: ${ex.imagen_url}`);
-    if (ex.why) lines.push(`   Motivo: ${ex.why}`);
+    if (ex.why) lines.push(`   Motivo clinico: ${ex.why}`);
+    if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Precauciones: ${ex.cautions.join('; ')}`);
   });
 
   if (payload.message_to_patient) {
     lines.push('');
+    lines.push('Mensaje sugerido para paciente:');
     lines.push(payload.message_to_patient);
   }
 
@@ -229,14 +242,14 @@ function isNativeTelegramPayload(body = {}) {
 }
 
 const RED_FLAG_RULES = [
-  { key: 'perdida_fuerza', pattern: /(p[eé]rdida|pierdo).*(fuerza)/i },
-  { key: 'esfinteres', pattern: /(esf[ií]nter|orina|incontinencia)/i },
-  { key: 'dolor_toracico', pattern: /(dolor).*(pecho|tor[aá]c)/i },
+  { key: 'perdida_fuerza', pattern: /(p[eÃ©]rdida|pierdo).*(fuerza)/i },
+  { key: 'esfinteres', pattern: /(esf[iÃ­]nter|orina|incontinencia)/i },
+  { key: 'dolor_toracico', pattern: /(dolor).*(pecho|tor[aÃ¡]c)/i },
   { key: 'dificultad_respiratoria', pattern: /(falta de aire|dificultad.*respir|ahogo)/i },
-  { key: 'deficit_neurologico', pattern: /(hormigueo.*progres|adormecimiento.*progres|par[aá]lisis)/i },
+  { key: 'deficit_neurologico', pattern: /(hormigueo.*progres|adormecimiento.*progres|par[aÃ¡]lisis)/i },
   { key: 'fiebre_alta', pattern: /(fiebre).*(alta|39|40)/i },
   { key: 'dolor_nocturno_severo', pattern: /(dolor).*(noche|nocturno).*(fuerte|severo|intenso)/i },
-  { key: 'trauma_reciente', pattern: /(ca[ií]da|golpe|accidente|trauma).*(reciente|hoy|ayer)/i },
+  { key: 'trauma_reciente', pattern: /(ca[iÃ­]da|golpe|accidente|trauma).*(reciente|hoy|ayer)/i },
 ];
 
 function detectRedFlags(messageText = '') {
@@ -296,99 +309,6 @@ async function sendTelegramDocument({ chatId, filename, buffer, caption = '', ag
   }
 }
 
-async function fetchImageBuffer(url) {
-  if (!url) return null;
-  try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    if (!response.ok) return null;
-    const arr = await response.arrayBuffer();
-    return Buffer.from(arr);
-  } catch {
-    return null;
-  }
-}
-
-async function buildExerciseReportPdfBuffer(payload = {}) {
-  return await new Promise(async (resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: 'A4', margin: 36 });
-      const chunks = [];
-      doc.on('data', (chunk) => chunks.push(chunk));
-      doc.on('error', reject);
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-
-      const exercises = Array.isArray(payload.exercises) ? payload.exercises : [];
-      const dateText = new Date().toLocaleString('es-ES');
-
-      doc.fontSize(18).text('Informe de Ejercicios - Fisio IA Agent', { align: 'left' });
-      doc.moveDown(0.5);
-      doc.fontSize(10).text(`Fecha: ${dateText}`);
-      doc.text(`ID recomendacion: ${payload.recommendation_id || '-'}`);
-      doc.text(`Paciente: ${payload.patient_id || '-'}`);
-      doc.moveDown(0.5);
-
-      doc.fontSize(12).text('Resumen clinico', { underline: true });
-      doc.fontSize(10).text(`Sintomas: ${payload.symptom_summary || 'No informado'}`);
-      doc.text(`Razon de seleccion: ${payload.selection_rationale || '-'}`);
-      const redFlags = Array.isArray(payload?.red_flags?.items) ? payload.red_flags.items.join(', ') : '';
-      doc.text(`Alertas: ${payload?.red_flags?.present ? 'Si' : 'No'}${redFlags ? ` (${redFlags})` : ''}`);
-      doc.moveDown(0.5);
-
-      doc.fontSize(12).text(`Rutina (${exercises.length} ejercicios)`, { underline: true });
-      doc.moveDown(0.2);
-
-      for (let idx = 0; idx < exercises.length; idx += 1) {
-        const ex = exercises[idx] || {};
-        doc.fontSize(11).text(`${idx + 1}. ${ex.nombre || 'Ejercicio'} (${ex.zona_corporal || 'general'})`, {
-          continued: false,
-        });
-        doc.fontSize(10);
-        const pauta = [
-          ex.series ? `Series ${ex.series}` : null,
-          ex.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
-          ex.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
-        ].filter(Boolean).join(' | ');
-        if (pauta) doc.text(`Pauta: ${pauta}`);
-        if (ex.procedimiento) {
-          const procedimiento = Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : String(ex.procedimiento);
-          doc.text(`Procedimiento: ${procedimiento}`);
-        }
-        if (ex.why) doc.text(`Motivo: ${ex.why}`);
-        if (Array.isArray(ex.cautions) && ex.cautions.length) doc.text(`Cautelas: ${ex.cautions.join('; ')}`);
-
-        if (ex.imagen_url) {
-          const imageBuffer = await fetchImageBuffer(ex.imagen_url);
-          if (imageBuffer) {
-            const currentY = doc.y;
-            if (currentY > 700) doc.addPage();
-            try {
-              doc.image(imageBuffer, {
-                fit: [180, 110],
-                align: 'left',
-              });
-              doc.moveDown(0.4);
-            } catch {
-              doc.text(`Imagen: ${ex.imagen_url}`);
-            }
-          } else {
-            doc.text(`Imagen: ${ex.imagen_url}`);
-          }
-        }
-
-        doc.moveDown(0.7);
-        if (doc.y > 740 && idx < exercises.length - 1) doc.addPage();
-      }
-
-      doc.fontSize(12).text('Mensajes', { underline: true });
-      doc.fontSize(10).text(`Paciente: ${payload.message_to_patient || '-'}`);
-      doc.text(`Fisioterapeuta: ${payload.message_to_therapist || '-'}`);
-      doc.end();
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
 function isMissingTableError(error) {
   return String(error?.message || '').includes("Could not find the table 'public.vinculos_telegram_pacientes'");
 }
@@ -410,6 +330,107 @@ async function getDefaultProfessionalId() {
   }
 
   return data.id;
+}
+
+function isMissingColumnError(error, columnName = '') {
+  const message = String(error?.message || '');
+  return message.includes(columnName) && (message.includes('column') || message.includes('schema cache'));
+}
+
+async function resolveCrmProfessionalProfile(rawProfessionalId) {
+  if (!rawProfessionalId) return null;
+
+  const crmProfile = await supabase
+    .from('crm_perfiles')
+    .select('id, nombre_completo, email, telegram_chat_id, telegram_username, telegram_linked_at, auth_user_id')
+    .eq('id', rawProfessionalId)
+    .maybeSingle();
+
+  if (crmProfile.error && !isMissingColumnError(crmProfile.error, 'telegram_chat_id')) throw crmProfile.error;
+  if (crmProfile.data?.id) return crmProfile.data;
+
+  const legacyProfessional = await supabase
+    .from('profesionales')
+    .select('id, id_usuario_auth, email, nombre_completo')
+    .eq('id', rawProfessionalId)
+    .maybeSingle();
+
+  if (legacyProfessional.error) throw legacyProfessional.error;
+  if (!legacyProfessional.data) return null;
+
+  if (legacyProfessional.data.id_usuario_auth) {
+    const byAuth = await supabase
+      .from('crm_perfiles')
+      .select('id, nombre_completo, email, telegram_chat_id, telegram_username, telegram_linked_at, auth_user_id')
+      .eq('auth_user_id', legacyProfessional.data.id_usuario_auth)
+      .maybeSingle();
+
+    if (byAuth.error && !isMissingColumnError(byAuth.error, 'telegram_chat_id')) throw byAuth.error;
+    if (byAuth.data?.id) return byAuth.data;
+  }
+
+  if (legacyProfessional.data.email) {
+    const byEmail = await supabase
+      .from('crm_perfiles')
+      .select('id, nombre_completo, email, telegram_chat_id, telegram_username, telegram_linked_at, auth_user_id')
+      .eq('email', legacyProfessional.data.email)
+      .maybeSingle();
+
+    if (byEmail.error && !isMissingColumnError(byEmail.error, 'telegram_chat_id')) throw byEmail.error;
+    if (byEmail.data?.id) return byEmail.data;
+  }
+
+  return null;
+}
+
+async function persistPhysioTelegramChatLink({ fisioterapeutaId, chatId, username }) {
+  if (!fisioterapeutaId || !chatId) return null;
+  const profile = await resolveCrmProfessionalProfile(fisioterapeutaId);
+  if (!profile?.id) return null;
+
+  const { data, error } = await supabase
+    .from('crm_perfiles')
+    .update({
+      telegram_chat_id: String(chatId),
+      telegram_username: username || null,
+      telegram_linked_at: new Date().toISOString(),
+    })
+    .eq('id', profile.id)
+    .select('id, telegram_chat_id, telegram_username, telegram_linked_at')
+    .single();
+
+  if (error) {
+    if (
+      isMissingColumnError(error, 'telegram_chat_id') ||
+      isMissingColumnError(error, 'telegram_username') ||
+      isMissingColumnError(error, 'telegram_linked_at')
+    ) {
+      return { skipped: true, reason: 'missing_crm_perfiles_telegram_columns' };
+    }
+    throw error;
+  }
+
+  return data;
+}
+
+async function resolvePhysioTelegramTarget({ fisioterapeutaId, chatId = null }) {
+  const explicitChatId = String(chatId || '').trim();
+  if (explicitChatId) {
+    return { chatId: explicitChatId, source: 'request_body', profile: null };
+  }
+
+  const envChatId = String(process.env.TELEGRAM_PHYSIO_REPORTS_CHAT_ID || '').trim();
+  if (envChatId) {
+    return { chatId: envChatId, source: 'env', profile: null };
+  }
+
+  const profile = await resolveCrmProfessionalProfile(fisioterapeutaId);
+  const linkedChatId = String(profile?.telegram_chat_id || '').trim();
+  if (linkedChatId) {
+    return { chatId: linkedChatId, source: 'crm_perfiles', profile };
+  }
+
+  return { chatId: null, source: 'missing', profile };
 }
 
 function getPatientDisplayName(payload) {
@@ -575,7 +596,7 @@ async function createAppointmentDirectFallback({
       fallbackUsed: true,
       appointment: data?.data || null,
       messageToPatient:
-        'Cita registrada correctamente. Te confirmaremos cualquier ajuste y también la verás en el CRM.',
+        'Cita registrada correctamente. Te confirmaremos cualquier ajuste y tambiÃ©n la verÃ¡s en el CRM.',
       response: data,
     };
   } catch (error) {
@@ -683,7 +704,7 @@ async function triggerAppointmentWorkflow({
         data?.message_to_patient ||
         data?.reply_text ||
         data?.message ||
-        '📅 He recibido tu solicitud de cita. En breve te confirmaremos hueco disponible.',
+        'ðŸ“… He recibido tu solicitud de cita. En breve te confirmaremos hueco disponible.',
       response: data,
     };
   } catch (error) {
@@ -761,6 +782,59 @@ function getPatientAppointmentHelpMessage() {
     '/ayuda - Ver esta ayuda',
   ].join('\n');
 }
+
+router.post('/physio-report/send', async (req, res, next) => {
+  try {
+    const fisioterapeutaId = pickBodyValue(req.body, 'fisioterapeuta_id', 'professional_id');
+    const patientId = pickBodyValue(req.body, 'patient_id', 'paciente_id');
+    const patientName = pickBodyValue(req.body, 'patient_name', 'paciente_nombre');
+    const recommendationId = pickBodyValue(req.body, 'recommendation_id', 'recomendacion_id');
+    const chatId = pickBodyValue(req.body, 'chat_id');
+    const caption = pickBodyValue(req.body, 'caption') || `Informe profesional listo${patientName ? ` para ${patientName}` : ''}`;
+    const exercises = Array.isArray(req.body?.exercises) ? req.body.exercises : [];
+
+    if (!fisioterapeutaId) {
+      return res.status(400).json({ error: 'fisioterapeuta_id es obligatorio' });
+    }
+
+    if (!exercises.length) {
+      return res.status(400).json({ error: 'No hay ejercicios para enviar por Telegram' });
+    }
+
+    const target = await resolvePhysioTelegramTarget({ fisioterapeutaId, chatId });
+    if (!target.chatId) {
+      return res.status(400).json({
+        error: 'No hay chat Telegram configurado para el fisioterapeuta. Vincula el bot profesional o define TELEGRAM_PHYSIO_REPORTS_CHAT_ID.',
+      });
+    }
+
+    const pdfPayload = {
+      ...req.body,
+      patient_id: patientId || null,
+      patient_name: patientName || null,
+      recommendation_id: recommendationId || null,
+      fisioterapeuta_id: fisioterapeutaId,
+    };
+
+    const pdfBuffer = await buildExerciseReportPdfBuffer(pdfPayload);
+    await sendTelegramDocument({
+      chatId: target.chatId,
+      filename: `informe-ejercicios-${String(recommendationId || Date.now())}.pdf`,
+      buffer: pdfBuffer,
+      caption,
+      agentMode: 'physio_reports',
+    });
+
+    return res.json({
+      ok: true,
+      delivered_via: 'telegram',
+      target_source: target.source,
+      recommendation_id: recommendationId || null,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
 
 router.post('/link-code/:patientId', async (req, res, next) => {
   try {
@@ -1085,6 +1159,7 @@ router.post('/incoming', async (req, res, next) => {
       }
 
       const professionalId = await getDefaultProfessionalId();
+      await persistPhysioTelegramChatLink({ fisioterapeutaId: professionalId, chatId: chat_id, username });
       const recoResult = await triggerExerciseRecommendation({
         req,
         patientId: reportCommand.patientId,
@@ -1192,7 +1267,7 @@ router.post('/incoming', async (req, res, next) => {
       });
 
       if (redFlagResult.tiene_alertas_rojas) {
-        return await reply('He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+        return await reply('He detectado seÃ±ales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
       if (agentMode === 'patient_appointments') {
@@ -1280,7 +1355,7 @@ router.post('/incoming', async (req, res, next) => {
       });
 
       if (redFlagResult.tiene_alertas_rojas) {
-        return await reply('⚠️ He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+        return await reply('âš ï¸ He detectado seÃ±ales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
       // W2: If intent is exercise with decent confidence, auto-recommend
@@ -1353,7 +1428,7 @@ router.post('/incoming', async (req, res, next) => {
         }
 
         return await reply(
-          '📅 He recibido tu solicitud de cita. Nuestro equipo la revisará y te confirmará disponibilidad lo antes posible.'
+          'ðŸ“… He recibido tu solicitud de cita. Nuestro equipo la revisarÃ¡ y te confirmarÃ¡ disponibilidad lo antes posible.'
         );
       }
 
@@ -1484,7 +1559,7 @@ router.post('/incoming', async (req, res, next) => {
         return await reply(appointment.messageToPatient);
       }
 
-      return await reply('📅 He recibido tu solicitud de cita. Nuestro equipo la revisará y te confirmará disponibilidad lo antes posible.');
+      return await reply('ðŸ“… He recibido tu solicitud de cita. Nuestro equipo la revisarÃ¡ y te confirmarÃ¡ disponibilidad lo antes posible.');
     }
 
     return await reply(`No reconozco ese comando.\n\n${getHelpMessage()}`);
@@ -1494,4 +1569,6 @@ router.post('/incoming', async (req, res, next) => {
 });
 
 export default router;
+
+
 
