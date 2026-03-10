@@ -2795,8 +2795,12 @@ import Layout from '../layouts/Layout.astro';
     align-self: start;
     min-height: 0;
     height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
     padding: 1rem 1rem 1rem 0.35rem;
     border-left: 1px solid rgba(148, 163, 184, 0.14);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background:
       radial-gradient(circle at top left, rgba(14, 165, 233, 0.08), transparent 32%),
       linear-gradient(180deg, #f7fafc, #eef4f8);
@@ -2805,6 +2809,7 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail-card {
     height: 100%;
     min-height: 0;
+    max-height: 100%;
     display: flex;
     flex-direction: column;
     border-radius: 1.45rem;
@@ -2815,9 +2820,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-module-header {
+    flex-shrink: 0;
     align-items: flex-start;
     gap: 1rem;
-    padding: 1.25rem 1.25rem 1.1rem;
+    padding: 1rem 1.25rem 0.85rem;
     background: linear-gradient(180deg, #ffffff, #f5f9fc);
     border-bottom: 1px solid rgba(203, 213, 225, 0.92);
   }
@@ -2869,11 +2875,14 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-context-strip {
+    flex-shrink: 0;
     display: grid;
-    gap: 0.75rem;
-    padding: 0.95rem 1.25rem 1rem;
+    gap: 0.65rem;
+    padding: 0.75rem 1.25rem;
     background: linear-gradient(180deg, rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.65));
     border-bottom: 1px solid rgba(203, 213, 225, 0.88);
+    max-height: 28vh;
+    overflow-y: auto;
   }
   .assistant-context-card {
     border-radius: 1rem;
