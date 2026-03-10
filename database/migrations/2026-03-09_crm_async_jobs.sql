@@ -1,4 +1,4 @@
-﻿-- Migracion: crear tabla crm_async_jobs para polling persistente de W2
+-- Migracion: crear tabla crm_async_jobs para polling persistente de W2
 -- Fecha: 2026-03-09
 
 BEGIN;

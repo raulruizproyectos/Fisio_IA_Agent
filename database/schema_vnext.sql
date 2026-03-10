@@ -1,4 +1,4 @@
--- schema_vnext.sql
+﻿-- schema_vnext.sql
 -- Propuesta aditiva (no destructiva) para el pivot CRM + Agents.
 -- Regla: no drop, no alter de estructuras legacy desconocidas.
 -- Convencion: tablas prefijadas con crm_ en schema public para minimizar colisiones.
@@ -20,6 +20,9 @@ create table if not exists public.crm_perfiles (
   rol text not null check (rol in ('admin', 'fisioterapeuta')),
   nombre_completo text,
   email text,
+  telegram_chat_id text,
+  telegram_username text,
+  telegram_linked_at timestamptz,
   activo boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -27,6 +30,7 @@ create table if not exists public.crm_perfiles (
 
 create index if not exists idx_crm_perfiles_rol on public.crm_perfiles(rol);
 create index if not exists idx_crm_perfiles_activo on public.crm_perfiles(activo);
+create unique index if not exists idx_crm_perfiles_telegram_chat_id on public.crm_perfiles(telegram_chat_id) where telegram_chat_id is not null;
 
 -- =========================
 -- Pacientes y asignaciones
@@ -283,6 +287,7 @@ create index if not exists idx_crm_audit_created on public.crm_audit_log(created
 create or replace function public.crm_set_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -358,3 +363,4 @@ end $$;
 --       and p.auth_user_id = auth.uid()
 --   )
 -- );
+

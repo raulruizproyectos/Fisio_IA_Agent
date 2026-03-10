@@ -1,4 +1,4 @@
-# Fisio_IA_Agent - Arquitectura Objetivo (Pivot CRM + Agents)
+﻿# Fisio_IA_Agent - Arquitectura Objetivo (Pivot CRM + Agents)
 
 ## 1) Overview
 
@@ -10,7 +10,7 @@ El sistema evoluciona a una plataforma de operacion para centros de fisioterapia
 Estado de alcance:
 
 - En foco: CRM + Telegram + n8n + Supabase + Google Calendar + OpenAI.
-- Fuera de alcance: generación de video (eliminada de frontend y flujos n8n activos).
+- Fuera de alcance: generaciÃ³n de video (eliminada de frontend y flujos n8n activos).
 
 Principios de producto reforzados (benchmark funcional del mercado):
 
@@ -24,13 +24,20 @@ Principios de producto reforzados (benchmark funcional del mercado):
 | Componente | Rol | Entradas | Salidas |
 | --- | --- | --- | --- |
 | Frontend CRM (Astro) | UI de gestion de pacientes, sesiones, citas y recomendaciones | Usuario autenticado | Llamadas a backend y visualizacion de datos |
-| Backend (Node/Express) | Capa de API y trigger web hacia n8n | CRM Web | Webhooks/requests a n8n, lectura/escritura segura |
-| n8n Orchestrator | Motor de flujos y reglas operativas | Telegram, backend web trigger, jobs programados | Calendar events, mensajes Telegram, writes en Supabase |
+| Backend (Node/Express) | Capa de entrega robusta: API, auth, persistencia, polling, PDF y archivado | CRM Web y Telegram | Llamadas seguras a n8n, writes en Supabase, PDF compartido, trazabilidad |
+| n8n Orchestrator | Agente clinico oficial y motor de orquestacion | Telegram, triggers del backend, jobs programados | Decision clinica, routing, mensajes, reglas operativas y eventos de negocio |
 | Supabase DB | Source of truth de negocio | Backend y n8n | Datos para CRM y agentes |
 | Supabase Storage (`ejercicios`) | Almacen de media de ejercicios | Carga de media en procesos internos | object_key persistido, signed URL JIT |
 | Telegram | Canal operacional primario paciente/centro | Mensajes texto/voz | Confirmaciones, recomendaciones y seguimiento |
 | Google Calendar | Agenda de citas | n8n W1 | Eventos de cita sincronizados |
 | OpenAI Node (n8n) | Razonamiento para seleccion de ejercicios | Sintomas + candidatos de catalogo | JSON estructurado para recomendaciones |
+
+## 2.1) Principio de orquestacion hibrida
+
+- El backend es la frontera autoritativa del producto: contratos API, auth, persistencia, jobs async, PDF y trazabilidad.
+- n8n orquesta la logica conversacional, la automatizacion y el razonamiento clinico donde aporta mas velocidad de iteracion.
+- La generacion final del PDF se mantiene en backend para compartir exactamente el mismo documento entre CRM y Telegram.
+- El frontend solo presenta el resultado y dispara acciones, sin decidir logica clinica ni exponer detalles internos como n8n al usuario final.
 
 ## 3) Trust Boundaries & Secrets
 
@@ -302,27 +309,27 @@ Service role:
 
 ## 8) UX Touchpoints
 
-### Regla obligatoria: Responsive Design (PC + Móvil)
+### Regla obligatoria: Responsive Design (PC + MÃ³vil)
 
-Todo el frontend CRM debe ser completamente funcional y visualmente accesible tanto en **escritorio** como en **dispositivos móviles** (smartphones y tablets).
+Todo el frontend CRM debe ser completamente funcional y visualmente accesible tanto en **escritorio** como en **dispositivos mÃ³viles** (smartphones y tablets).
 
 Principios responsive:
 
-- **Mobile-first CSS**: diseñar primero para móvil, ampliar para desktop con `@media (min-width: ...)`.
-- **Sidebar**: colapsable en móvil (hamburger menu o drawer), visible en desktop.
-- **Tablas de datos**: scroll horizontal en pantallas pequeñas o layout de tarjetas en mobile.
-- **Topbar/Header**: compacto en móvil, con menú hamburguesa si aplica.
-- **Panel de Agente IA / Chat**: a ancho completo en móvil (100vw), panel lateral en desktop.
-- **Botones y targets táctiles**: mínimo 44x44px en móvil (estándar WCAG).
-- **Tipografía**: escalado fluido (`clamp()` o media queries) para legibilidad en todas las pantallas.
-- **Métricas/Cards del dashboard**: layout de 1 columna en móvil, grid multi-columna en desktop.
-- **Formularios e inputs**: ancho completo en móvil, no overflow horizontal.
+- **Mobile-first CSS**: diseÃ±ar primero para mÃ³vil, ampliar para desktop con `@media (min-width: ...)`.
+- **Sidebar**: colapsable en mÃ³vil (hamburger menu o drawer), visible en desktop.
+- **Tablas de datos**: scroll horizontal en pantallas pequeÃ±as o layout de tarjetas en mobile.
+- **Topbar/Header**: compacto en mÃ³vil, con menÃº hamburguesa si aplica.
+- **Panel de Agente IA / Chat**: a ancho completo en mÃ³vil (100vw), panel lateral en desktop.
+- **Botones y targets tÃ¡ctiles**: mÃ­nimo 44x44px en mÃ³vil (estÃ¡ndar WCAG).
+- **TipografÃ­a**: escalado fluido (`clamp()` o media queries) para legibilidad en todas las pantallas.
+- **MÃ©tricas/Cards del dashboard**: layout de 1 columna en mÃ³vil, grid multi-columna en desktop.
+- **Formularios e inputs**: ancho completo en mÃ³vil, no overflow horizontal.
 - **Viewport meta tag**: obligatorio `<meta name="viewport" content="width=device-width, initial-scale=1">`.
 
 Todo cambio de frontend debe verificarse visualmente en al menos:
 
 - Desktop (~1280px+)
-- Móvil (~375px)
+- MÃ³vil (~375px)
 
 CRM Web (objetivo UX minimo):
 
@@ -368,4 +375,7 @@ Telegram (intents base):
 
 Condicion de continuidad:
 
-- Mantener el flujo centrado en informe clínico de ejercicios (síntomas -> selección -> imágenes/pautas -> entrega CRM/Telegram).
+- Mantener el flujo centrado en informe clÃ­nico de ejercicios (sÃ­ntomas -> selecciÃ³n -> imÃ¡genes/pautas -> entrega CRM/Telegram).
+
+
+
