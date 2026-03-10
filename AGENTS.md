@@ -25,3 +25,12 @@
 ## Robustez obligatoria
 
 - El sistema debe ser muy robusto y con control de errores.
+
+## Entorno Windows local obligatorio
+
+- No trabajar desde `G:\Mi unidad\...` cuando haya que editar, validar o instalar dependencias.
+- Esa ruta sincronizada provoca bloqueos de sandbox, I/O y `npm` en este proyecto.
+- Antes de una sesion de desarrollo, preparar workspace local completo con:
+  - `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-local-workspace.ps1`
+- A partir de ahi, abrir y continuar la sesion desde `C:\Temp\Fisio_IA_Agent_workspace`.
+- El workspace local conserva `.git`, asi que los commits y pushes deben hacerse desde esa copia local.
