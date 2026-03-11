@@ -353,32 +353,19 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </header>
 
-          <div class="assistant-context-strip">
-            <article class="assistant-context-card">
-              <span class="assistant-context-label">Paciente activo</span>
+          <div class="assistant-rail-body">
+            <div class="assistant-brief">
+              <span class="assistant-brief-label">Paciente activo</span>
               <strong id="assistantPatientLabel">Sin paciente seleccionado</strong>
               <p id="assistantPatientMeta">Selecciona uno para guardar el informe, el PDF y el seguimiento en su historial.</p>
-            </article>
-            <article class="assistant-context-card assistant-context-card-highlight">
-              <span class="assistant-context-label">Mejor resultado</span>
-              <strong>Dolor + tiempo + limitaciÃ³n funcional</strong>
-              <p>Cuanto mÃ¡s concreto seas, mÃ¡s Ãºtil serÃ¡ el plan de ejercicios y el mensaje para el paciente.</p>
-            </article>
-          </div>
-
-          <div class="ai-workspace">
-            <div class="assistant-shortcuts" id="assistantShortcuts">
-              <button type="button" class="assistant-shortcut" data-agent-shortcut="Genera un plan de ejercicios progresivo para dolor lumbar de 2 meses, sin red flags, que empeora al final del dÃ­a y limita flexiÃ³n.">Plan guiado</button>
-              <button type="button" class="assistant-shortcut" data-agent-shortcut="Redacta un mensaje breve para el paciente explicando la causa probable, quÃ© debe evitar y cuÃ¡ndo debe avisarme.">Mensaje paciente</button>
-              <button type="button" class="assistant-shortcut" data-agent-shortcut="Revisa este caso buscando red flags, precauciones y criterios para derivaciÃ³n mÃ©dica.">Red flags</button>
             </div>
 
             <div class="chat-log" id="chatLog">
               <article class="msg agent">
                 <div class="msg-avatar"><span class="material-symbols-rounded">medical_information</span></div>
                 <div class="msg-body">
-                  <span class="msg-sender">Asistente ClÃ­nico</span>
-                  <p>Listo para ayudarte. Selecciona un paciente, describe sÃ­ntomas y obtendrÃ¡s un plan terapÃ©utico estructurado.</p>
+                  <span class="msg-sender">Asistente Clinico</span>
+                  <p>Listo para ayudarte. Selecciona un paciente y escribe tu consulta clinica en un unico espacio de trabajo.</p>
                 </div>
               </article>
             </div>
@@ -391,20 +378,13 @@ import Layout from '../layouts/Layout.astro';
                     <option value="">Selecciona paciente para informe...</option>
                   </select>
                 </div>
-                <span class="assistant-composer-note">El texto se mantiene visible mientras generas el plan.</span>
               </div>
 
-              <label class="assistant-field" for="agentInput">
-                <span class="assistant-field-label">Tu peticiÃ³n clÃ­nica</span>
-                <span class="assistant-field-help">Describe sÃ­ntomas, limitaciones u objetivo terapÃ©utico. TambiÃ©n puedes pedir una respuesta general del agente.</span>
-              </label>
-
               <div class="ai-textarea-wrapper">
-                <textarea id="agentInput" rows="3" placeholder="Ejemplo: dolor punzante en hombro derecho desde hace una semana, sin traumatismo, empeora al elevar el brazo y limita vestirse."></textarea>
+                <textarea id="agentInput" rows="3" placeholder="Describe sintomas, limitaciones u objetivo terapeutico. Ejemplo: dolor punzante en hombro derecho desde hace una semana, sin traumatismo, empeora al elevar el brazo y limita vestirse."></textarea>
               </div>
 
               <div class="ai-actions">
-                <p class="assistant-submit-hint">`Generar plan` crea un informe estructurado. `Chat` sirve para preguntas abiertas. `Ctrl+Enter` envÃ­a la consulta general.</p>
                 <div class="action-buttons">
                   <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">picture_as_pdf</span> Guardar PDF</button>
                   <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
@@ -840,6 +820,10 @@ import Layout from '../layouts/Layout.astro';
   });
 
   // === CHAT ===
+  const scrollAssistantRailToBottom = () => {
+    if (!log) return;
+    log.scrollTop = log.scrollHeight;
+  };
   const addMessage = (text: string, type: 'user' | 'agent') => {
     if (!log) return;
     const article = document.createElement('article');
@@ -850,7 +834,7 @@ import Layout from '../layouts/Layout.astro';
       article.innerHTML = `<div class="msg-body user-msg"><p>${escapeHtml(text)}</p></div>`;
     }
     log.appendChild(article);
-    log.scrollTop = log.scrollHeight;
+    scrollAssistantRailToBottom();
   };
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexiÃ³n'; };
   const exerciseBtnDefaultHtml = exerciseBtn?.innerHTML || '';
@@ -908,7 +892,7 @@ import Layout from '../layouts/Layout.astro';
     }
     const p = progress.querySelector('p');
     if (p) p.textContent = text;
-    log.scrollTop = log.scrollHeight;
+    scrollAssistantRailToBottom();
   };
   const clearAgentProgress = () => {
     const progress = log?.querySelector('#agentProgressMsg') as HTMLElement | null;
@@ -1253,7 +1237,7 @@ import Layout from '../layouts/Layout.astro';
     article.className = 'msg agent';
     article.innerHTML = html;
     log.appendChild(article);
-    log.scrollTop = log.scrollHeight;
+    scrollAssistantRailToBottom();
   };
 
   const loadJsPdf = async () => {
@@ -3036,6 +3020,15 @@ import Layout from '../layouts/Layout.astro';
     cursor: pointer;
   }
 
+  .assistant-rail-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+
   .assistant-context-strip {
     flex-shrink: 0;
     display: grid;
@@ -3043,8 +3036,8 @@ import Layout from '../layouts/Layout.astro';
     padding: 0.75rem 1.25rem;
     background: linear-gradient(180deg, rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.65));
     border-bottom: 1px solid rgba(203, 213, 225, 0.88);
-    max-height: 28vh;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
   }
   .assistant-context-card {
     border-radius: 1rem;
@@ -3288,9 +3281,9 @@ import Layout from '../layouts/Layout.astro';
   .ai-workspace {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 0 0 auto;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
     background: transparent;
   }
 
@@ -3324,11 +3317,11 @@ import Layout from '../layouts/Layout.astro';
   .chat-log {
     flex: 1;
     overflow-y: auto;
-    padding: 1.1rem 1.25rem 1.25rem;
+    padding: 1rem 1.25rem 1.1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    min-height: 60px;
+    min-height: 0;
     background: transparent;
   }
   .msg {
@@ -3398,8 +3391,8 @@ import Layout from '../layouts/Layout.astro';
     flex-direction: column;
     gap: 0.6rem;
     flex-shrink: 0;
-    max-height: 45vh;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
   }
   .ai-input-area.is-busy {
     opacity: 0.92;
@@ -4468,8 +4461,8 @@ import Layout from '../layouts/Layout.astro';
       padding-right: 0.9rem;
     }
     .chat-log {
-      min-height: 220px;
-      max-height: 42vh;
+      min-height: 0;
+      max-height: none;
     }
     .msg {
       max-width: 100%;
@@ -4675,6 +4668,44 @@ import Layout from '../layouts/Layout.astro';
     text-transform: uppercase;
   }
 
+  .assistant-rail .assistant-rail-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #f8fafc;
+  }
+
+  .assistant-rail .assistant-brief {
+    display: grid;
+    gap: 0.28rem;
+    padding: 0.95rem 1.25rem 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .assistant-rail .assistant-brief-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .assistant-rail .assistant-brief strong {
+    color: #0f172a;
+    font-size: 0.96rem;
+  }
+
+  .assistant-rail .assistant-brief p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.79rem;
+    line-height: 1.45;
+  }
+
+
   .assistant-rail .assistant-context-strip,
   .assistant-rail .ai-workspace,
   .assistant-rail .chat-log {
@@ -4684,6 +4715,8 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail .assistant-context-strip {
     border-bottom: 1px solid #e2e8f0;
     padding: 1rem 1.25rem;
+    max-height: none;
+    overflow: visible;
   }
 
   .assistant-rail .assistant-context-card {
@@ -4729,8 +4762,9 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .chat-log {
-    padding: 1rem 1.25rem;
-    min-height: 72px;
+    padding: 1rem 1.25rem 1.1rem;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .assistant-rail .msg.agent .msg-avatar {
@@ -4754,13 +4788,14 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .ai-input-area {
-    margin-top: auto;
+    margin-top: 0;
     background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     border-top: 1px solid #dbe3ee;
     box-shadow: 0 -8px 18px -18px rgba(15, 23, 42, 0.3);
     padding: 0.95rem 1.25rem 1rem;
     min-width: 0;
-    max-height: 320px;
+    max-height: none;
+    overflow: visible;
     gap: 0.75rem;
   }
 

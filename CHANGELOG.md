@@ -1,5 +1,23 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 85 - 2026-03-11
+
+### Objetivo
+- Simplificar el Copilot lateral para dejar un unico espacio de trabajo util, sin tarjetas ni scrolls superpuestos.
+
+### Cambios implementados
+- [x] Eliminadas tarjetas de contexto y shortcuts del rail del agente.
+- [x] El Copilot queda como panel profesional y compacto: estado/paciente resumido, historial de conversacion y una sola caja de texto para interactuar con IA, manteniendo seleccion de paciente, chat libre, generar plan y guardar PDF.
+- [x] El chat vuelve a ser la unica zona de scroll util dentro del rail.
+
+### Validacion realizada
+- [x] npm run build OK en frontend aislado tras la simplificacion del rail.
+
+### Punto exacto de continuidad
+1. Redeploy de fisio-frontend desde origin/main.
+2. Verificar en produccion que el rail lateral solo tenga un scroll util y que el compositor quede siempre accesible.
+3. Si el UX queda correcto, retomar validacion CRM -> invitacion Telegram del paciente.
+
 ## Sesion 84 - 2026-03-11
 
 ### Objetivo

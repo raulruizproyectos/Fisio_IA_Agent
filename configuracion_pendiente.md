@@ -1,5 +1,22 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 85) - Copilot lateral simplificado
+
+### Completado esta sesion
+- [x] Se simplifica el rail del agente a un layout de uso real: resumen minimo, chat y una unica caja de texto, manteniendo seleccion de paciente, chat libre, generar plan y guardar PDF.
+- [x] Se eliminan cards de contexto y shortcuts que estaban generando scrolls redundantes y solapamiento visual.
+- [x] npm run build OK en frontend aislado.
+
+### Punto de partida exacto (siguiente bloque)
+1. Hacer redeploy de fisio-frontend desde origin/main.
+2. Verificar en produccion que el Copilot tenga una sola zona de scroll util y que el textarea quede siempre visible.
+3. Si el rail ya es usable, seguir con CRM -> invitacion Telegram del paciente.
+
+### Riesgos o bloqueos conocidos
+- El punto pendiente inmediato ya no es de codigo, sino de publicar y validar el nuevo UX del Copilot en produccion.
+
+Estado actualizado para retomar sin perdida.
+
 ## Estado actual (2026-03-11, Sesion 84) - Ajuste visual del Copilot lateral
 
 ### Completado esta sesion
