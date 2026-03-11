@@ -1,29 +1,39 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
-## Estado actual (2026-03-11, Sesion 92) - W1 de citas preparado en repo, publicacion en carpeta n8n pendiente por limite de API
+## Estado actual (2026-03-11, Sesion 93) - Backend con OPENAI_API_KEY y W1 creado en n8n
 
 ### Completado esta sesion
-- [x] Arquitectura cerrada: `@FisioIA_Agent_bot` solo para agente profesional.
-- [x] Confirmado que el bot de pacientes de agenda sera uno nuevo, separado, todavia no creado.
-- [x] Reescrito `n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json` como flujo canonico de agenda con Google Calendar + backend.
-- [x] `scripts/sync-n8n-workflow.mjs` ya soporta `create/update/activate` para workflows n8n.
-- [x] Verificado por API que `Fisio_IA_Agent / W1 Appointment Agent` no existe aun en remoto.
+- [x] `OPENAI_API_KEY` publicada en `fisio-backend` (EasyPanel). Voz nativa Telegram ya puede funcionar.
+- [x] `N8N_APPOINTMENT_WEBHOOK_URL` publicada en `fisio-backend`.
+- [x] `FRONTEND_URL` corregida a `https://fisio-frontend.b5xbaf.easypanel.host` (estaba apuntando a localhost).
+- [x] `TELEGRAM_PHYSIO_BOT_TOKEN` y `TELEGRAM_PHYSIO_BOT_USERNAME` publicadas en backend.
+- [x] Variables de observabilidad del motor de ejercicios publicadas en backend.
+- [x] `fisio-backend` redespliegue con ultimo commit `10d559d` completado.
+- [x] Workflow `Fisio_IA_Agent / W1 Appointment Agent` creado en n8n via API (id=cTp8bORuSL9hsdDk).
+- [x] Corregido bug en `scripts/sync-n8n-workflow.mjs`: create fallaba con propiedades extra rechazadas por n8n API.
+- [x] Nota: W1 queda fuera de la carpeta `Fisio_IA_Agent` en n8n UI (limitacion de API publica con esta licencia).
 
-### Bloqueo exacto
-- La API publica de n8n accesible con este token no permite asignar `projectId/folderId/parentFolderId` al crear workflows.
-- Los endpoints de `folders/projects` necesarios para colocarlo en `Personal / Fisio_IA_Agent` no estan disponibles con esta licencia/token.
-- Resultado: no puedo dejarlo por API dentro de la carpeta correcta sin un paso manual en UI.
+### Bloqueos pendientes
+1. **Google Calendar**: `GOOGLE_CALENDAR_ID`, `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY` siguen vacios en backend.
+   - `calendar_sync.enabled=false` hasta que se publiquen.
+2. **W1 inactivo**: El workflow W1 existe en n8n pero no esta activo porque el bot de pacientes aun no existe.
+3. **Bot nuevo de pacientes**: Pendiente de crear en Telegram. Cuando exista, publicar `TELEGRAM_PATIENT_BOT_TOKEN` y `TELEGRAM_PATIENT_BOT_USERNAME` en backend y activar W1.
 
 ### Punto de partida exacto
-1. Crear manualmente un workflow vacio dentro de `Personal / Fisio_IA_Agent` con nombre `Fisio_IA_Agent / W1 Appointment Agent`.
-2. Sincronizar desde repo con `scripts/sync-n8n-workflow.mjs`.
-3. Activarlo.
-4. Publicar `N8N_APPOINTMENT_WEBHOOK_URL` en `fisio-backend`.
-5. Crear despues el bot nuevo de pacientes y pasar `username + token` para conectarlo.
+1. Obtener credenciales de Google Calendar (service account JSON) y publicar en `fisio-backend`:
+   - `GOOGLE_CALENDAR_ID`
+   - `GOOGLE_CLIENT_EMAIL`
+   - `GOOGLE_PRIVATE_KEY`
+   - Decidir si `GOOGLE_CALENDAR_REQUIRED=true`
+2. Redeploy de `fisio-backend` para activar calendar sync.
+3. Crear nuevo bot de pacientes en Telegram (@BotFather).
+4. Publicar `TELEGRAM_PATIENT_BOT_TOKEN` + `TELEGRAM_PATIENT_BOT_USERNAME` en `fisio-backend`.
+5. Activar W1 en n8n: `node scripts/sync-n8n-workflow.mjs --workflow=n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json --workflowId=cTp8bORuSL9hsdDk --activate=true`
+6. Validar E2E: texto libre + nota de voz + alta en CRM + evento en Google Calendar.
 
 ### Riesgos
-- Si se crea por API fuera de carpeta, seguira siendo funcional, pero incumplira el criterio de orden operativo pedido para n8n.
-- Hasta que no exista el bot nuevo de pacientes, el flujo W1 queda listo pero no conectado a Telegram real.
+- Sin `GOOGLE_CALENDAR_REQUIRED=true`, el sistema sigue funcionando aunque Calendar falle (fallback directo a CRM).
+- Hasta que no exista el bot nuevo de pacientes, W1 queda listo pero desconectado de Telegram.
 ## Estado actual (2026-03-11, Sesion 91) - Citas Telegram validadas en CRM, voz nativa y Calendar pendientes
 
 ### Completado esta sesion

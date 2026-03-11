@@ -1,5 +1,32 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 93 - 2026-03-11
+
+### Objetivo
+- Publicar OPENAI_API_KEY y variables de produccion en fisio-backend, crear W1 en n8n y desbloquear voz nativa Telegram.
+
+### Trabajo realizado
+- [x] Inspeccionado fisio-backend en EasyPanel via API (token correcto: Authorization Bearer, openapi en /api/openapi.json).
+- [x] Publicadas en fisio-backend: OPENAI_API_KEY, FRONTEND_URL (corregida a produccion), N8N_APPOINTMENT_WEBHOOK_URL, N8N_EXERCISE_WEBHOOK_URL, TELEGRAM_PHYSIO_BOT_TOKEN, TELEGRAM_PHYSIO_BOT_USERNAME, EXERCISE_ENGINE_* y GOOGLE_CALENDAR_* (vacias por ahora).
+- [x] Redeploy de fisio-backend con ultimo commit 10d559d completado.
+- [x] Creado workflow `Fisio_IA_Agent / W1 Appointment Agent` en n8n via API (id=cTp8bORuSL9hsdDk).
+- [x] Corregido bug en `scripts/sync-n8n-workflow.mjs`: el create enviaba `meta` y `pinData` que la API de n8n rechaza con 400.
+- [x] Actualizados `configuracion_pendiente.md` y `CHANGELOG.md`.
+
+### Bloqueos reales pendientes
+- Google Calendar: credenciales no disponibles aun (GOOGLE_CALENDAR_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY).
+- Bot nuevo de pacientes: no creado todavia en Telegram.
+- W1 inactivo: esperando bot de pacientes para activar.
+- W1 fuera de carpeta Fisio_IA_Agent en n8n UI: la API publica no permite asignar folder al crear; mover manualmente en UI o via workaround.
+
+### Punto exacto de continuidad
+1. Obtener credenciales Google Calendar y publicar en fisio-backend.
+2. Crear nuevo bot de pacientes en Telegram.
+3. Publicar TELEGRAM_PATIENT_BOT_TOKEN + USERNAME en fisio-backend.
+4. Activar W1: `node scripts/sync-n8n-workflow.mjs --workflowId=cTp8bORuSL9hsdDk --activate=true`
+5. Validar E2E completo.
+
+---
 ## Sesion 92 - 2026-03-11
 
 ### Objetivo

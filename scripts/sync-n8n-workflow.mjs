@@ -203,13 +203,12 @@ if (remoteWorkflowId) {
   });
 } else {
   operation = 'create';
+  // n8n API rejects additional properties (meta, pinData) on create
   const payload = {
     name: localWorkflow.name,
     nodes: localWorkflow.nodes,
     connections: localWorkflow.connections,
     settings: localWorkflow.settings || {},
-    pinData: localWorkflow.pinData || {},
-    meta: localWorkflow.meta || {},
   };
 
   result = await createWorkflow({
