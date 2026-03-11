@@ -1,5 +1,20 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 78 - 2026-03-11 (Mid-task pause)
+
+### Objetivo
+- Validacion final de produccion del fix de UI, actualizacion del Core Agent n8n con Triage Clinico y prueba E2E de Telegram.
+
+### Cambios implementados
+- [x] Fix del rail responsive validado visualmente en produccion.
+- [x] `fisio-agent-core.json` n8n actualizado remotamente via API para la sesion 77.
+- [x] Nuevo plan de Triage: Codigo JS refinado para n8n con evaluacion clinica (localizacion anatomica, factores agravantes, tiempo).
+- [ ] Push del nuevo codigo de triage a n8n fallido por timeout de PowerShell con payload grande.
+
+### Validacion realizada
+- [x] Frontend en prod verificado (chat visible).
+- [x] Telegram dry run post-update de Sesion 77 OK (`session_note`, confidence 0.85).
+
 ## Sesion 77 - 2026-03-10
 
 ### Objetivo

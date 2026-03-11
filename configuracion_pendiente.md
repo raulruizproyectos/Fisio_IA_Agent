@@ -2,6 +2,19 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-11, Sesion 78) - Triage clinico n8n preparado, pendiente upload
+
+### Completado esta sesion
+- [x] Fix responsive UI del assistant rail verificado en produccion (chat input visible).
+- [x] Workflow actual n8n importado y verificado (ruta session_note).
+- [x] Nuevo codigo JS para el nodo "Build Agent Reply" creado (`/tmp/build-agent-reply-v2.js` guardado localmente). Incluye deteccion anatomica, factores agravantes y ruta `triage_needed`.
+
+### Punto de partida exacto (siguiente bloque)
+1. **Atasco actual:** El script de PowerShell para subir el JSON grande del workflow a la API de n8n se queda colgado.
+2. **Accion inmediata:** Importar manualmente el codigo de triage al nodo "Build Agent Reply" en n8n, O probar otro metodo de upload via API.
+3. Una vez subido, probar casos de triage en Telegram dry-run ("me duele" -> espera `triage_needed`).
+4. Prueba final real E2E en Telegram.
+
 ## Estado actual (2026-03-11, Sesion 77) - Fix responsive UI completo, pendiente de redeploy
 
 ### Completado esta sesion
