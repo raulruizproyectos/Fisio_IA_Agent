@@ -21,7 +21,7 @@ Principios de producto reforzados (benchmark funcional del mercado):
 
 Checkpoint de producto actual (2026-03-11):
 
-- El Copilot lateral del CRM se esta consolidando como una consola unica de trabajo: selector y acciones arriba, una sola superficie conversacional abajo.
+- El Copilot lateral del CRM se fija ya como consola clinica clara: selector y acciones arriba, una sola superficie conversacional abajo y contraste alto en mensajes e informe.
 - El backend ya soporta invitacion Telegram del paciente desde CRM y targeting del bot fisio via `crm_perfiles`.
 - El triage clinico del agente n8n ya esta validado tanto en `dry_run` como en un chat real vinculado.
 

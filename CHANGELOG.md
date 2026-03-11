@@ -1,5 +1,25 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 87 - 2026-03-11
+
+### Objetivo
+- Rehacer el Copilot lateral completo para corregir el diseno pobre y los contrastes rotos visibles en produccion.
+
+### Cambios implementados
+- [x] El rail del agente deja atras el bloque oscuro heredado y pasa a una consola clinica clara, alineada con el resto del CRM.
+- [x] Se unifican estilos de mensajes, progreso, informe de ejercicios, botones y compositor para evitar mezcla de estilos legacy dentro del rail.
+- [x] Se corrigen estados de contraste problem?ticos: mensajes del agente, tarjetas del informe, textarea, placeholder y botones deshabilitados.
+- [x] Documentacion principal refrescada otra vez para dejar trazado que el siguiente paso vuelve a ser un redeploy visual del frontend.
+
+### Validacion realizada
+- [x] `npm run build` OK en frontend aislado tras el redise?o completo del rail.
+- [x] CSS compilado verificado: el rail ya no usa la superficie oscura anterior y mantiene una sola superficie conversacional.
+
+### Punto exacto de continuidad
+1. Redeploy de `fisio-frontend` desde `origin/main`.
+2. Verificar en produccion tres casos: chat vacio, mensaje libre del profesional y render de informe de ejercicios.
+3. Si el rail ya queda limpio y legible, retomar CRM -> invitacion Telegram del paciente.
+
 ## Sesion 86 - 2026-03-11
 
 ### Objetivo

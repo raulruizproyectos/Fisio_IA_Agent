@@ -11,7 +11,7 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 ## En pausa
 - Generación de vídeo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 86 - 2026-03-11)
+## Checkpoint actual (Sesion 87 - 2026-03-11)
 - La arquitectura vigente queda fijada como hibrida:
   - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,
   - `n8n` para orquestacion conversacional y clinica,
@@ -20,8 +20,8 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 - El core n8n ya resuelve `triage_needed` para sintomas demasiado vagos y el smoke test remoto Telegram queda en `6/6 OK`.
 - `crm_perfiles` ya permite resolver el chat del bot fisio en produccion y `POST /api/telegram/physio-report/send` queda validado con `target_source=crm_perfiles`.
 - El CRM ya expone la invitacion Telegram del paciente desde historial con `GET /api/telegram/link-code/:patientId`.
-- El Copilot lateral del CRM queda redisenado como una sola superficie conversacional: barra de herramientas arriba y un unico plano de chat + input abajo.
-- Pendiente inmediato: redeploy de `fisio-frontend` para publicar esta ultima simplificacion visual y validarla en produccion.
+- El Copilot lateral del CRM queda redisenado como consola clinica clara, con una sola superficie conversacional y contraste alto para chat, informe y compositor.
+- Pendiente inmediato: redeploy de `fisio-frontend` para publicar este redise?o visual final y validarlo en produccion.
 
 ## Arquitectura actual
 - Frontend CRM: Astro
@@ -52,7 +52,7 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
   - `POST /api/agent/message` validado en CRM
   - `POST /api/telegram/incoming?dry_run=true` validado con 6 casos reales de routing
   - entrega real del triage Telegram validada en chat vinculado
-  - pendiente redeploy de frontend en EasyPanel para publicar la unificacion final del Copilot lateral
+  - pendiente redeploy de frontend en EasyPanel para publicar el redise?o visual final del Copilot lateral
 
 ## Endpoints backend principales
 - `POST /api/telegram/incoming`

@@ -1,5 +1,21 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 87) - Copilot lateral redisenado y pendiente de publicar
+
+### Completado esta sesion
+- [x] Redisenado completo del rail del agente para dejarlo coherente con el CRM y sin mezcla de tema oscuro legacy.
+- [x] Mensajes, informe, textarea y botones quedan con contraste alto y estilo unico.
+- [x] `npm run build` OK en frontend aislado y CSS compilado revisado.
+
+### Punto de partida exacto (siguiente bloque)
+1. Hacer redeploy de `fisio-frontend` desde `origin/main`.
+2. Verificar en produccion un chat vacio, una consulta libre y un informe generado para confirmar que todo el rail mantiene legibilidad.
+3. Si el rail queda bien, volver a CRM -> invitacion Telegram del paciente.
+
+### Riesgos o bloqueos conocidos
+- El unico bloqueo inmediato vuelve a ser publicar y validar el frontend en produccion.
+- Si tras el redeploy aparece cualquier divergencia, el siguiente paso sera inspeccionar directamente el HTML/CSS servido, no seguir tocando el diseno a ciegas.
+
 ## Estado actual (2026-03-11, Sesion 86) - Copilot con una sola superficie conversacional
 
 ### Completado esta sesion
