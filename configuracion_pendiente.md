@@ -1,5 +1,21 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 89) - Contrastes finales del Copilot corregidos
+
+### Completado esta sesion
+- [x] El selector de paciente del rail ya separa placeholder y valor seleccionado con colores distintos y legibles.
+- [x] El rail fuerza modo claro en el control nativo para evitar texto blanco sobre fondo blanco en Chromium.
+- [x] npm run build OK en frontend aislado con la version sincronizada desde el repo canonico.
+
+### Punto de partida exacto (siguiente bloque)
+1. Hacer redeploy de fisio-frontend desde origin/main.
+2. Validar en produccion la seleccion de paciente y los textos del rail.
+3. Si el visual queda cerrado, volver al siguiente frente funcional del CRM.
+
+### Riesgos o bloqueos conocidos
+- frontend/stitch.zip sigue siendo solo referencia local y no debe trackearse.
+- El unico bloqueo inmediato vuelve a ser publicar y validar visualmente en produccion.
+
 ## Estado actual (2026-03-11, Sesion 88) - Copilot alineado con referencia Stitch
 
 ### Completado esta sesion

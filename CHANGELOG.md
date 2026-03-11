@@ -1,5 +1,23 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 89 - 2026-03-11
+
+### Objetivo
+- Corregir los ultimos estados de contraste rotos del Copilot antes de retomar funcionalidad nueva.
+
+### Cambios implementados
+- [x] El selector de paciente del rail distingue visualmente el estado vacio del estado con paciente seleccionado.
+- [x] Se fuerza el control nativo del selector a modo claro con color legible en Chromium (color-scheme, appearance, -webkit-text-fill-color).
+- [x] Se ajustan fondo y borde del toolbar superior y de la superficie conversacional para evitar texto claro sobre fondos claros.
+
+### Validacion realizada
+- [x] npm run build OK en frontend aislado tras sincronizar la version editada desde G:.
+
+### Punto exacto de continuidad
+1. Redeploy de fisio-frontend desde origin/main.
+2. Verificar en produccion que al seleccionar paciente el nombre se vea con contraste correcto y que no queden textos perdidos en el rail.
+3. Si queda validado, retomar el siguiente bloque funcional del CRM.
+
 ## Sesion 88 - 2026-03-11
 
 ### Objetivo

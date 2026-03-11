@@ -663,11 +663,20 @@ import Layout from '../layouts/Layout.astro';
       : 'Informe, PDF y seguimiento vinculados al historial del paciente.';
   };
 
+  const updateAssistantPatientSelectorState = () => {
+    if (!chatPatientSelect) return;
+    const hasValue = Boolean(chatPatientSelect.value);
+    chatPatientSelect.classList.toggle('has-value', hasValue);
+    const selectorShell = chatPatientSelect.closest('.patient-selector');
+    selectorShell?.classList.toggle('has-value', hasValue);
+  };
+
   function syncChatPatientSelection(patientId: string | null, fallbackName = '') {
     if (!chatPatientSelect) return;
     const nextId = patientId || '';
     chatPatientSelect.value = nextId;
     selectedPatientId = nextId || null;
+    updateAssistantPatientSelectorState();
 
     if (!nextId) {
       selectedPatientName = '';
@@ -4700,8 +4709,8 @@ import Layout from '../layouts/Layout.astro';
     align-items: center;
     gap: 0.7rem;
     padding: 0.95rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    background: #ffffff;
+    border-bottom: 1px solid #e8eef5;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbfc 100%);
   }
 
   .assistant-rail .assistant-console-selector {
@@ -4728,8 +4737,9 @@ import Layout from '../layouts/Layout.astro';
     min-height: 3rem;
     padding: 0.65rem 0.9rem;
     border-radius: 1rem;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border: 1px solid #dbe4ee;
+    color-scheme: light;
     transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
   }
 
@@ -4741,23 +4751,43 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .patient-selector select {
     border: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     background: transparent;
     font: inherit;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #334155;
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b !important;
+    caret-color: #1e293b;
+    color-scheme: light;
     outline: none;
     width: 100%;
     min-width: 0;
     cursor: pointer;
   }
 
+  .assistant-rail .patient-selector.has-value select,
+  .assistant-rail .patient-selector select.has-value {
+    color: #1e293b !important;
+    -webkit-text-fill-color: #1e293b !important;
+  }
+
+  .assistant-rail .patient-selector select:disabled {
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b !important;
+    opacity: 1;
+    cursor: not-allowed;
+  }
+
   .assistant-rail .patient-selector option {
+    background: #ffffff;
     color: #0f172a;
   }
 
   .assistant-rail .patient-selector .material-symbols-rounded {
-    color: #14b8a6;
+    color: #0f9f98;
     font-size: 1.05rem;
   }
 
@@ -4766,7 +4796,8 @@ import Layout from '../layouts/Layout.astro';
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(180deg, rgba(248, 250, 252, 0.35) 0%, rgba(248, 250, 252, 0.1) 100%);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.65) 0%, rgba(255, 255, 255, 0.9) 100%);
+    color: #475569;
   }
 
   .assistant-rail .chat-log {
