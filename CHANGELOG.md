@@ -1,5 +1,22 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 84 - 2026-03-11
+
+### Objetivo
+- Corregir el layout visual del Copilot lateral tras desplegar la nueva UI del CRM.
+
+### Cambios implementados
+- [x] Composer del assistant rail compactado con autosize mas bajo segun viewport.
+- [x] Overrides visuales completados para que el rail use un tema claro coherente sin bloques oscuros mezclados.
+
+### Validacion realizada
+- [x] npm run build OK en frontend aislado despues del ajuste visual.
+
+### Punto exacto de continuidad
+1. Redeploy de fisio-frontend desde origin/main.
+2. Verificar en produccion que el rail lateral ya no pisa las cards superiores ni mezcla tema oscuro/claro.
+3. Retomar la validacion CRM -> invitacion Telegram del paciente.
+
 ## Sesion 83 - 2026-03-11
 
 ### Objetivo

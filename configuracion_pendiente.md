@@ -1,5 +1,20 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 84) - Ajuste visual del Copilot lateral
+
+### Completado esta sesion
+- [x] Corregido en repo el conflicto visual claro/oscuro del assistant rail.
+- [x] Reducida la altura efectiva del composer para que no tape el contenido superior en desktop.
+- [x] npm run build OK en frontend aislado.
+
+### Punto de partida exacto (siguiente bloque)
+1. Hacer redeploy de fisio-frontend desde origin/main.
+2. Verificar en produccion que el rail lateral ya no mezcla tema oscuro/claro ni pisa las cards superiores.
+3. Si el visual queda bien, retomar la validacion CRM -> invitacion Telegram del paciente.
+
+### Riesgos o bloqueos conocidos
+- El backend ya no es el bloqueo principal; el punto pendiente inmediato es publicar y verificar el fix visual del frontend.
+
 Estado actualizado para retomar sin perdida.
 
 ## Estado actual (2026-03-11, Sesion 83) - CRM listo para invitacion Telegram de pacientes
