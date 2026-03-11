@@ -110,6 +110,39 @@ async function updateWorkflow({ baseUrl, apiKey, workflowId, workflowPayload }) 
   return payload?.data || payload;
 }
 
+async function createWorkflow({ baseUrl, apiKey, workflowPayload }) {
+  const response = await fetch(`${baseUrl}/api/v1/workflows`, {
+    method: 'POST',
+    headers: {
+      'X-N8N-API-KEY': apiKey,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(workflowPayload),
+  });
+  const payload = await readJson(response);
+  if (!response.ok) {
+    throw new Error(`No se pudo crear workflow (${response.status}): ${JSON.stringify(payload).slice(0, 500)}`);
+  }
+  return payload?.data || payload;
+}
+
+async function setWorkflowActiveState({ baseUrl, apiKey, workflowId, active }) {
+  const action = active ? 'activate' : 'deactivate';
+  const response = await fetch(`${baseUrl}/api/v1/workflows/${workflowId}/${action}`, {
+    method: 'POST',
+    headers: {
+      'X-N8N-API-KEY': apiKey,
+      Accept: 'application/json',
+    },
+  });
+  const payload = await readJson(response);
+  if (!response.ok) {
+    throw new Error(`No se pudo ${action} workflow ${workflowId} (${response.status}): ${JSON.stringify(payload).slice(0, 500)}`);
+  }
+  return payload?.data || payload;
+}
+
 const args = parseArgs(process.argv.slice(2));
 const workflowPath = path.resolve(projectRoot, args.workflow || 'n8n/Fisio_IA_Agent/vnext/fisio-agent-core.json');
 const env = await loadEnv();
@@ -123,48 +156,84 @@ if (!baseUrl || !apiKey) {
 const localWorkflow = JSON.parse(await fs.readFile(workflowPath, 'utf8'));
 const requestedName = args.workflowName || args.workflow_name || localWorkflow.name;
 const workflowId = args.workflowId || args.workflow_id || null;
+const createIfMissing = String(args.createIfMissing || args.create_if_missing || 'false').toLowerCase() === 'true';
+const activateRequested = String(args.activate || 'false').toLowerCase() === 'true';
+const preserveRemoteName = String(args.setName || args.set_name || 'false').toLowerCase() !== 'true';
 
 const workflows = await fetchWorkflowList({ baseUrl, apiKey });
 const matchedWorkflow = workflowId
   ? workflows.find((workflow) => String(workflow?.id) === String(workflowId))
   : findWorkflowMatch(workflows, requestedName);
 
-if (!matchedWorkflow?.id) {
+if (!matchedWorkflow?.id && !createIfMissing) {
   throw new Error(`No se encontro workflow remoto para "${requestedName}"`);
 }
 
-const remoteWorkflow = await fetchWorkflowById({
-  baseUrl,
-  apiKey,
-  workflowId: matchedWorkflow.id,
-});
+let result = null;
+let remoteWorkflowId = matchedWorkflow?.id || null;
+let operation = 'update';
 
-const preserveRemoteName = String(args.setName || args.set_name || 'false').toLowerCase() !== 'true';
+if (remoteWorkflowId) {
+  const remoteWorkflow = await fetchWorkflowById({
+    baseUrl,
+    apiKey,
+    workflowId: remoteWorkflowId,
+  });
 
-const payload = {
-  ...remoteWorkflow,
-  name: preserveRemoteName ? remoteWorkflow.name : localWorkflow.name,
-  nodes: localWorkflow.nodes,
-  connections: localWorkflow.connections,
-  settings: localWorkflow.settings || {},
-  staticData: remoteWorkflow.staticData || null,
-  pinData: remoteWorkflow.pinData || {},
-};
+  const payload = {
+    ...remoteWorkflow,
+    name: preserveRemoteName ? remoteWorkflow.name : localWorkflow.name,
+    nodes: localWorkflow.nodes,
+    connections: localWorkflow.connections,
+    settings: localWorkflow.settings || {},
+    staticData: remoteWorkflow.staticData || null,
+    pinData: remoteWorkflow.pinData || {},
+    meta: localWorkflow.meta || remoteWorkflow.meta || {},
+  };
 
-delete payload.id;
-delete payload.createdAt;
-delete payload.updatedAt;
+  delete payload.id;
+  delete payload.createdAt;
+  delete payload.updatedAt;
 
-const result = await updateWorkflow({
-  baseUrl,
-  apiKey,
-  workflowId: matchedWorkflow.id,
-  workflowPayload: payload,
-});
+  result = await updateWorkflow({
+    baseUrl,
+    apiKey,
+    workflowId: remoteWorkflowId,
+    workflowPayload: payload,
+  });
+} else {
+  operation = 'create';
+  const payload = {
+    name: localWorkflow.name,
+    nodes: localWorkflow.nodes,
+    connections: localWorkflow.connections,
+    settings: localWorkflow.settings || {},
+    pinData: localWorkflow.pinData || {},
+    meta: localWorkflow.meta || {},
+  };
+
+  result = await createWorkflow({
+    baseUrl,
+    apiKey,
+    workflowPayload: payload,
+  });
+  remoteWorkflowId = result?.id || result?.data?.id || null;
+}
+
+if (activateRequested && remoteWorkflowId) {
+  await setWorkflowActiveState({
+    baseUrl,
+    apiKey,
+    workflowId: remoteWorkflowId,
+    active: true,
+  });
+}
 
 console.log(JSON.stringify({
   ok: true,
-  workflow_id: matchedWorkflow.id,
+  operation,
+  workflow_id: remoteWorkflowId,
   workflow_name: result?.name || localWorkflow.name,
+  activated: activateRequested && Boolean(remoteWorkflowId),
   updated_node_count: Array.isArray(localWorkflow.nodes) ? localWorkflow.nodes.length : null,
 }, null, 2));

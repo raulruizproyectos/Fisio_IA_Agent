@@ -1,5 +1,29 @@
-﻿# Configuracion Pendiente - Fisio_IA_Agent
+# Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 92) - W1 de citas preparado en repo, publicacion en carpeta n8n pendiente por limite de API
+
+### Completado esta sesion
+- [x] Arquitectura cerrada: `@FisioIA_Agent_bot` solo para agente profesional.
+- [x] Confirmado que el bot de pacientes de agenda sera uno nuevo, separado, todavia no creado.
+- [x] Reescrito `n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json` como flujo canonico de agenda con Google Calendar + backend.
+- [x] `scripts/sync-n8n-workflow.mjs` ya soporta `create/update/activate` para workflows n8n.
+- [x] Verificado por API que `Fisio_IA_Agent / W1 Appointment Agent` no existe aun en remoto.
+
+### Bloqueo exacto
+- La API publica de n8n accesible con este token no permite asignar `projectId/folderId/parentFolderId` al crear workflows.
+- Los endpoints de `folders/projects` necesarios para colocarlo en `Personal / Fisio_IA_Agent` no estan disponibles con esta licencia/token.
+- Resultado: no puedo dejarlo por API dentro de la carpeta correcta sin un paso manual en UI.
+
+### Punto de partida exacto
+1. Crear manualmente un workflow vacio dentro de `Personal / Fisio_IA_Agent` con nombre `Fisio_IA_Agent / W1 Appointment Agent`.
+2. Sincronizar desde repo con `scripts/sync-n8n-workflow.mjs`.
+3. Activarlo.
+4. Publicar `N8N_APPOINTMENT_WEBHOOK_URL` en `fisio-backend`.
+5. Crear despues el bot nuevo de pacientes y pasar `username + token` para conectarlo.
+
+### Riesgos
+- Si se crea por API fuera de carpeta, seguira siendo funcional, pero incumplira el criterio de orden operativo pedido para n8n.
+- Hasta que no exista el bot nuevo de pacientes, el flujo W1 queda listo pero no conectado a Telegram real.
 ## Estado actual (2026-03-11, Sesion 91) - Citas Telegram validadas en CRM, voz nativa y Calendar pendientes
 
 ### Completado esta sesion

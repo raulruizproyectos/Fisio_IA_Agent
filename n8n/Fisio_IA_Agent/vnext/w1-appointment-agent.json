@@ -1,237 +1,561 @@
-﻿{
-    "name":  "Fisio W1 - Appointment Agent",
-    "nodes":  [
-                  {
-                      "parameters":  {
-                                         "path":  "fisio/w1/appointment",
-                                         "responseMode":  "responseNode",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "WebhookW1Appointment",
-                      "name":  "Webhook W1 Appointment",
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2.1,
-                      "position":  [
-                                       220,
-                                       260
-                                   ],
-                      "webhookId":  "fisio-w1-appointment"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const input = ($json.body \u0026\u0026 typeof $json.body === \u0027object\u0027) ? $json.body : $json;\nconst text = String(input.message_text || \u0027\u0027).trim();\nconst isoMatches = text.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2})?/g) || [];\n\nconst parseIso = (value) =\u003e {\n  if (!value) return null;\n  const d = new Date(String(value));\n  return Number.isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst rawSlotStart = input.slot_start || input.start_at || isoMatches[0] || null;\nconst rawSlotEnd = input.slot_end || input.end_at || isoMatches[1] || null;\n\nconst slotStart = parseIso(rawSlotStart);\nconst slotEnd = parseIso(rawSlotEnd);\nconst hasSlotWindow = !!slotStart \u0026\u0026 !!slotEnd \u0026\u0026 (new Date(slotStart).getTime() \u003c new Date(slotEnd).getTime());\n\nreturn [{\n  json: {\n    request_id: input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`,\n    patient_id: input.patient_id || input.paciente_id || null,\n    professional_id: input.professional_id || input.profesional_id || null,\n    channel: input.channel || input.source || \u0027telegram\u0027,\n    timezone: input.timezone || \u0027Europe/Madrid\u0027,\n    chat_id: input.chat_id || null,\n    username: input.username || null,\n    message_text: text,\n    slot_start: hasSlotWindow ? slotStart : null,\n    slot_end: hasSlotWindow ? slotEnd : null,\n    duration_minutes: Number(input.duration_minutes || 45),\n    has_slot_window: hasSlotWindow\n  }\n}];"
-                                     },
-                      "id":  "NormalizeRequest",
-                      "name":  "Normalize Request",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       480,
-                                       260
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "conditions":  {
-                                                            "options":  {
-                                                                            "caseSensitive":  true,
-                                                                            "leftValue":  "",
-                                                                            "typeValidation":  "strict",
-                                                                            "version":  2
-                                                                        },
-                                                            "conditions":  [
-                                                                               {
-                                                                                   "id":  "has-patient",
-                                                                                   "leftValue":  "={{ $json.patient_id }}",
-                                                                                   "rightValue":  "",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "notEmpty"
-                                                                                                }
-                                                                               },
-                                                                               {
-                                                                                   "id":  "has-professional",
-                                                                                   "leftValue":  "={{ $json.professional_id }}",
-                                                                                   "rightValue":  "",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "notEmpty"
-                                                                                                }
-                                                                               },
-                                                                               {
-                                                                                   "id":  "has-start",
-                                                                                   "leftValue":  "={{ $json.slot_start }}",
-                                                                                   "rightValue":  "",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "notEmpty"
-                                                                                                }
-                                                                               },
-                                                                               {
-                                                                                   "id":  "has-end",
-                                                                                   "leftValue":  "={{ $json.slot_end }}",
-                                                                                   "rightValue":  "",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "notEmpty"
-                                                                                                }
-                                                                               }
-                                                                           ],
-                                                            "combinator":  "and"
-                                                        },
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "HasSlotAndIds",
-                      "name":  "Tiene Slot e IDs",
-                      "type":  "n8n-nodes-base.if",
-                      "typeVersion":  2.2,
-                      "position":  [
-                                       740,
-                                       260
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
-                                         "sendBody":  true,
-                                         "specifyBody":  "json",
-                                         "jsonBody":  "={\n  \"patient_id\": $json.patient_id,\n  \"professional_id\": $json.professional_id,\n  \"start_at\": $json.slot_start,\n  \"end_at\": $json.slot_end,\n  \"channel\": $json.channel || \"telegram\",\n  \"reason\": $json.message_text,\n  \"request_id\": $json.request_id\n}",
-                                         "options":  {
-                                                         "ignoreResponseCode":  true,
-                                                         "timeout":  15000
-                                                     }
-                                     },
-                      "id":  "CreateAppointmentInBackend",
-                      "name":  "Crear Cita en Backend",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       1000,
-                                       180
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const input = $json || {};\nconst payload = input.data || input;\nconst appointmentId = payload.id || payload.appointment_id || null;\nconst requestId = payload.request_id || input.request_id || null;\nconst statusCode = Number(input.statusCode || input.code || payload.statusCode || 0);\nconst backendError = payload.error || payload.message || input.message || null;\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: requestId,\n      status: \u0027confirmed\u0027,\n      appointment_id: appointmentId,\n      message_to_patient_es: \u0027Cita registrada correctamente. Te confirmamos la franja solicitada.\u0027\n    }\n  }];\n}\n\nif (statusCode \u003e= 400 || backendError) {\n  return [{\n    json: {\n      request_id: requestId,\n      status: \u0027error\u0027,\n      appointment_id: null,\n      backend_error: backendError,\n      message_to_patient_es: \u0027No pude registrar la cita automaticamente. Tu solicitud queda en revision manual y te confirmaremos por mensaje.\u0027\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    request_id: requestId,\n    status: \u0027needs_review\u0027,\n    appointment_id: null,\n    message_to_patient_es: \u0027He recibido tu solicitud de cita. Nuestro equipo la revisara y te confirmara disponibilidad.\u0027\n  }\n}];"
-                                     },
-                      "id":  "BuildCreatedResponse",
-                      "name":  "Build Created Response",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1240,
-                                       180
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: \u0027needs_slot_data\u0027,\n    message_to_patient_es: \u0027Para agendar tu cita, indica fecha y hora en formato YYYY-MM-DDTHH:mm (inicio y fin). Ejemplo: 2026-03-10T18:00 a 2026-03-10T18:45.\u0027\n  }\n}];"
-                                     },
-                      "id":  "BuildNeedSlotResponse",
-                      "name":  "Build Need Slot Response",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1000,
-                                       360
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ $json }}"
-                                     },
-                      "id":  "RespondW1",
-                      "name":  "Respond W1",
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       1460,
-                                       260
-                                   ]
-                  }
-              ],
-    "connections":  {
-                        "Webhook W1 Appointment":  {
-                                                       "main":  [
-                                                                    [
-                                                                        {
-                                                                            "node":  "Normalize Request",
-                                                                            "type":  "main",
-                                                                            "index":  0
-                                                                        }
-                                                                    ]
-                                                                ]
-                                                   },
-                        "Normalize Request":  {
-                                                  "main":  [
-                                                               [
-                                                                   {
-                                                                       "node":  "Tiene Slot e IDs",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ]
-                                                           ]
-                                              },
-                        "Tiene Slot e IDs":  {
-                                                 "main":  [
-                                                              [
-                                                                  {
-                                                                      "node":  "Crear Cita en Backend",
-                                                                      "type":  "main",
-                                                                      "index":  0
-                                                                  }
-                                                              ],
-                                                              [
-                                                                  {
-                                                                      "node":  "Build Need Slot Response",
-                                                                      "type":  "main",
-                                                                      "index":  0
-                                                                  }
-                                                              ]
-                                                          ]
-                                             },
-                        "Crear Cita en Backend":  {
-                                                      "main":  [
-                                                                   [
-                                                                       {
-                                                                           "node":  "Build Created Response",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ]
-                                                               ]
-                                                  },
-                        "Build Created Response":  {
-                                                       "main":  [
-                                                                    [
-                                                                        {
-                                                                            "node":  "Respond W1",
-                                                                            "type":  "main",
-                                                                            "index":  0
-                                                                        }
-                                                                    ]
-                                                                ]
-                                                   },
-                        "Build Need Slot Response":  {
-                                                         "main":  [
-                                                                      [
-                                                                          {
-                                                                              "node":  "Respond W1",
-                                                                              "type":  "main",
-                                                                              "index":  0
-                                                                          }
-                                                                      ]
-                                                                  ]
-                                                     }
-                    },
-    "settings":  {
-                     "executionOrder":  "v1"
-                 }
+{
+  "name": "Fisio_IA_Agent / W1 Appointment Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "fisio/w1/appointment",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "WebhookW1Appointment",
+      "name": "Webhook W1 Appointment",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "fisio-w1-appointment"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.message_text || '').trim();\nconst isoMatches = text.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2})?/g) || [];\n\nconst parseIso = (value) => {\n  if (!value) return null;\n  const d = new Date(String(value));\n  return Number.isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst rawSlotStart = input.slot_start || input.start_at || isoMatches[0] || null;\nconst rawSlotEnd = input.slot_end || input.end_at || isoMatches[1] || null;\nconst slotStart = parseIso(rawSlotStart);\nconst slotEnd = parseIso(rawSlotEnd);\nconst hasSlotWindow = !!slotStart && !!slotEnd && (new Date(slotStart).getTime() < new Date(slotEnd).getTime());\n\nreturn [{\n  json: {\n    request_id: input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`,\n    patient_id: input.patient_id || input.paciente_id || null,\n    professional_id: input.professional_id || input.profesional_id || null,\n    channel: input.channel || input.source || 'telegram',\n    timezone: input.timezone || 'Europe/Madrid',\n    chat_id: input.chat_id || null,\n    username: input.username || null,\n    message_text: text,\n    slot_start: hasSlotWindow ? slotStart : null,\n    slot_end: hasSlotWindow ? slotEnd : null,\n    duration_minutes: Number(input.duration_minutes || 45),\n    has_slot_window: hasSlotWindow,\n    patient_label: input.patient_label || input.patient_name || input.nombre_paciente || `Paciente ${input.patient_id || input.paciente_id || 'telegram'}`\n  }\n}];"
+      },
+      "id": "NormalizeRequest",
+      "name": "Normalize Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-patient",
+              "leftValue": "={{ $json.patient_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-professional",
+              "leftValue": "={{ $json.professional_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-start",
+              "leftValue": "={{ $json.slot_start }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-end",
+              "leftValue": "={{ $json.slot_end }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "HasSlotAndIds",
+      "name": "Tiene Slot e IDs",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "raul.ruiz.diaz.bcn@gmail.com",
+          "mode": "list",
+          "cachedResultName": "raul.ruiz.diaz.bcn@gmail.com"
+        },
+        "returnAll": false,
+        "limit": 10,
+        "options": {
+          "timeMin": "={{ $json.slot_start }}",
+          "timeMax": "={{ $json.slot_end }}",
+          "singleEvents": true,
+          "orderBy": "startTime",
+          "timeZone": "={{ $json.timezone || \"Europe/Madrid\" }}"
+        }
+      },
+      "id": "SearchCalendarConflicts",
+      "name": "Buscar Conflictos Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 2,
+      "position": [
+        960,
+        180
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UzAG7J2e9rs78F4r",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const events = $input.all();\nconst request = $('Normalize Request').first().json;\nconst conflictCount = events.filter((item) => item && item.json && item.json.id).length;\nreturn [{\n  json: {\n    ...request,\n    slot_available: conflictCount === 0,\n    conflict_count: conflictCount\n  }\n}];"
+      },
+      "id": "EvaluateAvailability",
+      "name": "Evaluate Availability",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "slot-available",
+              "leftValue": "={{ $json.slot_available }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "SlotAvailable",
+      "name": "Slot Available?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "raul.ruiz.diaz.bcn@gmail.com",
+          "mode": "list",
+          "cachedResultName": "raul.ruiz.diaz.bcn@gmail.com"
+        },
+        "start": "={{ $json.slot_start }}",
+        "end": "={{ $json.slot_end }}",
+        "summary": "={{ `Cita Telegram - ${$json.patient_label}` }}",
+        "additionalFields": {
+          "description": "={{ `Solicitud Telegram\nPaciente CRM: ${$json.patient_id}\nProfesional CRM: ${$json.professional_id}\nChat ID: ${$json.chat_id || \"\"}\nUsername: ${$json.username || \"\"}\nRequest ID: ${$json.request_id}\nMotivo: ${$json.message_text || \"\"}` }}",
+          "timeZone": "={{ $json.timezone || \"Europe/Madrid\" }}"
+        }
+      },
+      "id": "CreateCalendarEvent",
+      "name": "Crear Evento Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        80
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UzAG7J2e9rs78F4r",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const request = $('Evaluate Availability').first().json;\nconst event = $json || {};\nreturn [{\n  json: {\n    request_id: request.request_id,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    timezone: request.timezone || 'Europe/Madrid',\n    google_calendar_event_id: event.id || null,\n    calendar_html_link: event.htmlLink || null,\n    patient_label: request.patient_label,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"
+      },
+      "id": "BuildBackendPayload",
+      "name": "Build Backend Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"patient_id\": $json.patient_id,\n  \"professional_id\": $json.professional_id,\n  \"start_at\": $json.start_at,\n  \"end_at\": $json.end_at,\n  \"channel\": $json.channel || \"telegram\",\n  \"reason\": $json.reason,\n  \"request_id\": $json.request_id,\n  \"google_calendar_event_id\": $json.google_calendar_event_id\n}",
+        "options": {
+          "ignoreResponseCode": true,
+          "timeout": 15000
+        }
+      },
+      "id": "CreateAppointmentInBackend",
+      "name": "Crear Cita en Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json || {};\nconst payload = input.data || input;\nconst request = $('Build Backend Payload').first().json;\nconst appointmentId = payload.id || payload.appointment_id || null;\nconst statusCode = Number(input.statusCode || input.code || payload.statusCode || 0);\nconst backendError = payload.error || payload.message || input.message || null;\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      google_calendar_event_id: request.google_calendar_event_id || null,\n      message_to_patient_es: 'Cita registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409;\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    google_calendar_event_id: request.google_calendar_event_id || null,\n    cleanup_needed: Boolean(request.google_calendar_event_id),\n    backend_error: backendError || `backend_http_${statusCode || 'unknown'}`,\n    message_to_patient_es: becameBusy\n      ? 'Lo siento, ese horario acaba de dejar de estar disponible. Indica otra franja y lo reviso.'\n      : 'No pude registrar la cita automaticamente. Tu solicitud queda en revision manual y te confirmaremos por mensaje.'\n  }\n}];"
+      },
+      "id": "BuildBackendResponse",
+      "name": "Build Backend Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cleanup-needed",
+              "leftValue": "={{ $json.cleanup_needed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "NeedsCleanup",
+      "name": "Needs Cleanup?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "raul.ruiz.diaz.bcn@gmail.com",
+          "mode": "list",
+          "cachedResultName": "raul.ruiz.diaz.bcn@gmail.com"
+        },
+        "eventId": "={{ $json.google_calendar_event_id }}"
+      },
+      "id": "DeleteCalendarEvent",
+      "name": "Eliminar Evento Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        20
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UzAG7J2e9rs78F4r",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $('Build Backend Response').first().json;\nreturn [{\n  json: {\n    request_id: response.request_id || null,\n    status: response.status || 'error',\n    appointment_id: null,\n    message_to_patient_es: response.message_to_patient_es || 'No pude confirmar la cita automaticamente. Te contactaremos para validarla manualmente.'\n  }\n}];"
+      },
+      "id": "BuildCleanupResponse",
+      "name": "Build Cleanup Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'slot_not_available',\n    appointment_id: null,\n    message_to_patient_es: 'Ese horario ya esta ocupado. Indica otra franja y te digo si esta disponible.'\n  }\n}];"
+      },
+      "id": "BuildBusyResponse",
+      "name": "Build Busy Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para agendar tu cita, indica fecha y hora en formato YYYY-MM-DDTHH:mm (inicio y fin). Ejemplo: 2026-03-20T18:00 a 2026-03-20T18:45.'\n  }\n}];"
+      },
+      "id": "BuildNeedSlotResponse",
+      "name": "Build Need Slot Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "RespondW1",
+      "name": "Respond W1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3380,
+        180
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook W1 Appointment": {
+      "main": [
+        [
+          {
+            "node": "Normalize Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Request": {
+      "main": [
+        [
+          {
+            "node": "Tiene Slot e IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene Slot e IDs": {
+      "main": [
+        [
+          {
+            "node": "Buscar Conflictos Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Need Slot Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Conflictos Calendar": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Availability": {
+      "main": [
+        [
+          {
+            "node": "Slot Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slot Available?": {
+      "main": [
+        [
+          {
+            "node": "Crear Evento Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Busy Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Evento Calendar": {
+      "main": [
+        [
+          {
+            "node": "Build Backend Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Backend Payload": {
+      "main": [
+        [
+          {
+            "node": "Crear Cita en Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Cita en Backend": {
+      "main": [
+        [
+          {
+            "node": "Build Backend Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Backend Response": {
+      "main": [
+        [
+          {
+            "node": "Needs Cleanup?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Cleanup?": {
+      "main": [
+        [
+          {
+            "node": "Eliminar Evento Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond W1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eliminar Evento Calendar": {
+      "main": [
+        [
+          {
+            "node": "Build Cleanup Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Cleanup Response": {
+      "main": [
+        [
+          {
+            "node": "Respond W1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Busy Response": {
+      "main": [
+        [
+          {
+            "node": "Respond W1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Need Slot Response": {
+      "main": [
+        [
+          {
+            "node": "Respond W1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
 }

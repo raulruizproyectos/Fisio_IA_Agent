@@ -1,5 +1,34 @@
-﻿# Fisio_IA_Agent - Changelog / Context Log
+# Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 92 - 2026-03-11
+
+### Objetivo
+- Separar definitivamente el bot profesional del bot futuro de pacientes y dejar preparado el workflow canonico nuevo de citas en `n8n/Fisio_IA_Agent`.
+
+### Decisiones cerradas
+- `@FisioIA_Agent_bot` queda reservado solo para el agente profesional del fisioterapeuta.
+- El bot de pacientes para agenda sera uno nuevo y todavia no existe; cuando se cree, se conectara al flujo de citas sin reutilizar el bot profesional.
+- El workflow canonico de citas pasa a ser `n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json` con comprobacion de disponibilidad en Google Calendar, alta en backend y limpieza compensatoria si backend falla tras crear el evento.
+
+### Trabajo realizado
+- [x] Reescrito `w1-appointment-agent.json` como workflow W1 real de agenda para pacientes.
+- [x] Verificado que el contrato encaja con `POST /api/profesional/appointments`.
+- [x] Ampliado `scripts/sync-n8n-workflow.mjs` para soportar create/update/activate por API, no solo update.
+- [x] Comprobado por API que el workflow `Fisio_IA_Agent / W1 Appointment Agent` todavia no existe en remoto.
+
+### Bloqueo real confirmado
+- La API publica disponible para este token no permite ubicar workflows dentro de la carpeta `Fisio_IA_Agent`.
+- `POST /api/v1/workflows` acepta crear workflows, pero rechaza propiedades extra de carpeta/proyecto (`request/body must NOT have additional properties`).
+- Los endpoints de folders/projects necesarios no estan disponibles con esta licencia/token, y el backend interno `/rest/*` no acepta este API key.
+- Conclusion operativa: para que el W1 quede dentro de la carpeta `Fisio_IA_Agent` en n8n, hay que crearlo o moverlo manualmente en la UI, o partir de un placeholder ya creado dentro de esa carpeta y luego sincronizarlo por API.
+
+### Siguiente paso exacto
+1. Crear manualmente en la UI de n8n un workflow vacio dentro de `Personal / Fisio_IA_Agent` con nombre `Fisio_IA_Agent / W1 Appointment Agent`.
+2. Ejecutar `scripts/sync-n8n-workflow.mjs` para cargarle el JSON canonico y activarlo.
+3. Publicar en backend `N8N_APPOINTMENT_WEBHOOK_URL=https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w1/appointment`.
+4. Cuando exista el bot nuevo de pacientes, configurar `TELEGRAM_PATIENT_BOT_USERNAME` y `TELEGRAM_PATIENT_BOT_TOKEN` y validar E2E.
+
+---
 ## Sesion 91 - 2026-03-11
 
 ### Objetivo

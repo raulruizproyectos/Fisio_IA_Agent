@@ -1,4 +1,4 @@
-﻿# Fisio_IA_Agent - Arquitectura Objetivo (Pivot CRM + Agents)
+# Fisio_IA_Agent - Arquitectura Objetivo (Pivot CRM + Agents)
 
 ## 1) Overview
 
@@ -10,7 +10,7 @@ El sistema evoluciona a una plataforma de operacion para centros de fisioterapia
 Estado de alcance:
 
 - En foco: CRM + Telegram + n8n + Supabase + Google Calendar + OpenAI.
-- Fuera de alcance: generaciÃ³n de video (eliminada de frontend y flujos n8n activos).
+- Fuera de alcance: generaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de video (eliminada de frontend y flujos n8n activos).
 
 Principios de producto reforzados (benchmark funcional del mercado):
 
@@ -19,11 +19,14 @@ Principios de producto reforzados (benchmark funcional del mercado):
 - Interoperabilidad basada en datos estructurados y trazabilidad.
 - IA confiable: recomendaciones prudentes, auditables y con gobernanza de datos.
 
-Checkpoint de producto actual (2026-03-11):
+Checkpoint de producto actual (2026-03-11, Sesion 92):
 
 - El Copilot lateral del CRM toma ahora una referencia visual externa real (`frontend/stitch.zip`) y se estructura como consola clinica limpia: selector arriba, chat central y acciones/input abajo.
 - El backend ya soporta invitacion Telegram del paciente desde CRM y targeting del bot fisio via `crm_perfiles`.
 - El triage clinico del agente n8n ya esta validado tanto en dry_run como en un chat real vinculado.
+- `@FisioIA_Agent_bot` queda reservado al fisioterapeuta; el bot de pacientes para agenda sera un bot nuevo y aislado.
+- El workflow canonico de agenda de pacientes es `n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json` y ya encapsula Calendar + backend en W1.
+- La publicacion remota dentro de la carpeta `Fisio_IA_Agent` no puede completarse por API publica con este token; requiere placeholder o movimiento manual en UI.
 - El bot de pacientes ya crea citas reales en crm_citas desde Telegram por texto y por payload voice_transcript.
 - En produccion, Google Calendar sigue inactivo desde backend (calendar_sync.enabled=false) y la rama nativa de audio Telegram sigue bloqueada hasta publicar OPENAI_API_KEY.
 - El repo ya incorpora una correccion para que la resolucion de pacientes legacy no siga creando duplicados en crm_pacientes al entrar por fallback de citas.
@@ -319,27 +322,27 @@ Service role:
 
 ## 8) UX Touchpoints
 
-### Regla obligatoria: Responsive Design (PC + MÃ³vil)
+### Regla obligatoria: Responsive Design (PC + MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil)
 
-Todo el frontend CRM debe ser completamente funcional y visualmente accesible tanto en **escritorio** como en **dispositivos mÃ³viles** (smartphones y tablets).
+Todo el frontend CRM debe ser completamente funcional y visualmente accesible tanto en **escritorio** como en **dispositivos mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³viles** (smartphones y tablets).
 
 Principios responsive:
 
-- **Mobile-first CSS**: diseÃ±ar primero para mÃ³vil, ampliar para desktop con `@media (min-width: ...)`.
-- **Sidebar**: colapsable en mÃ³vil (hamburger menu o drawer), visible en desktop.
-- **Tablas de datos**: scroll horizontal en pantallas pequeÃ±as o layout de tarjetas en mobile.
-- **Topbar/Header**: compacto en mÃ³vil, con menÃº hamburguesa si aplica.
-- **Panel de Agente IA / Chat**: a ancho completo en mÃ³vil (100vw), panel lateral en desktop.
-- **Botones y targets tÃ¡ctiles**: mÃ­nimo 44x44px en mÃ³vil (estÃ¡ndar WCAG).
-- **TipografÃ­a**: escalado fluido (`clamp()` o media queries) para legibilidad en todas las pantallas.
-- **MÃ©tricas/Cards del dashboard**: layout de 1 columna en mÃ³vil, grid multi-columna en desktop.
-- **Formularios e inputs**: ancho completo en mÃ³vil, no overflow horizontal.
+- **Mobile-first CSS**: diseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±ar primero para mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil, ampliar para desktop con `@media (min-width: ...)`.
+- **Sidebar**: colapsable en mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil (hamburger menu o drawer), visible en desktop.
+- **Tablas de datos**: scroll horizontal en pantallas pequeÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±as o layout de tarjetas en mobile.
+- **Topbar/Header**: compacto en mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil, con menÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âº hamburguesa si aplica.
+- **Panel de Agente IA / Chat**: a ancho completo en mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil (100vw), panel lateral en desktop.
+- **Botones y targets tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ctiles**: mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nimo 44x44px en mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil (estÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ndar WCAG).
+- **TipografÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a**: escalado fluido (`clamp()` o media queries) para legibilidad en todas las pantallas.
+- **MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tricas/Cards del dashboard**: layout de 1 columna en mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil, grid multi-columna en desktop.
+- **Formularios e inputs**: ancho completo en mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil, no overflow horizontal.
 - **Viewport meta tag**: obligatorio `<meta name="viewport" content="width=device-width, initial-scale=1">`.
 
 Todo cambio de frontend debe verificarse visualmente en al menos:
 
 - Desktop (~1280px+)
-- MÃ³vil (~375px)
+- MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vil (~375px)
 
 CRM Web (objetivo UX minimo):
 
@@ -387,7 +390,7 @@ Telegram (intents base):
 
 Condicion de continuidad:
 
-- Mantener el flujo centrado en informe clÃ­nico de ejercicios (sÃ­ntomas -> selecciÃ³n -> imÃ¡genes/pautas -> entrega CRM/Telegram).
+- Mantener el flujo centrado en informe clÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nico de ejercicios (sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­ntomas -> selecciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n -> imÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡genes/pautas -> entrega CRM/Telegram).
 
 
 
