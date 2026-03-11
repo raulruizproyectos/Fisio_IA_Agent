@@ -180,20 +180,13 @@ if (remoteWorkflowId) {
     workflowId: remoteWorkflowId,
   });
 
+  // n8n PUT only accepts name, nodes, connections, settings — extra props cause 400
   const payload = {
-    ...remoteWorkflow,
     name: preserveRemoteName ? remoteWorkflow.name : localWorkflow.name,
     nodes: localWorkflow.nodes,
     connections: localWorkflow.connections,
     settings: localWorkflow.settings || {},
-    staticData: remoteWorkflow.staticData || null,
-    pinData: remoteWorkflow.pinData || {},
-    meta: localWorkflow.meta || remoteWorkflow.meta || {},
   };
-
-  delete payload.id;
-  delete payload.createdAt;
-  delete payload.updatedAt;
 
   result = await updateWorkflow({
     baseUrl,
