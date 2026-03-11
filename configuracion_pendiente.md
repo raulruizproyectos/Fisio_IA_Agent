@@ -1,5 +1,21 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 88) - Copilot alineado con referencia Stitch
+
+### Completado esta sesion
+- [x] Se usa `frontend/stitch.zip` como referencia real de diseno para el rail del agente.
+- [x] El Copilot queda reorganizado con selector superior, chat central y pie de acciones/input mas limpio.
+- [x] `npm run build` OK en frontend aislado.
+
+### Punto de partida exacto (siguiente bloque)
+1. Hacer redeploy de `fisio-frontend` desde `origin/main`.
+2. Comparar produccion con la referencia Stitch en tres estados: vacio, chat libre e informe generado.
+3. Si el rail queda validado, volver al siguiente frente funcional pendiente del CRM.
+
+### Riesgos o bloqueos conocidos
+- `frontend/stitch.zip` es solo referencia local del usuario y no debe publicarse al repo.
+- El bloqueo inmediato vuelve a ser publicar y validar visualmente en produccion.
+
 ## Estado actual (2026-03-11, Sesion 87) - Copilot lateral redisenado y pendiente de publicar
 
 ### Completado esta sesion

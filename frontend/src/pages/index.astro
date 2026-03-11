@@ -361,10 +361,6 @@ import Layout from '../layouts/Layout.astro';
                     <option value="">Selecciona paciente para informe...</option>
                   </select>
                 </div>
-                <div class="assistant-toolbar-actions">
-                  <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">picture_as_pdf</span> Guardar PDF</button>
-                  <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
-                </div>
                 <div class="assistant-live-context" aria-live="polite">
                   <strong id="assistantPatientLabel">Sin paciente seleccionado</strong>
                   <p id="assistantPatientMeta">Selecciona uno para vincular la conversacion, el plan y el PDF a su historial.</p>
@@ -375,15 +371,19 @@ import Layout from '../layouts/Layout.astro';
                 <div class="chat-log" id="chatLog"></div>
 
                 <form id="agentForm" class="ai-input-area">
+                  <div class="assistant-action-grid">
+                    <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">picture_as_pdf</span> Guardar PDF</button>
+                    <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
+                  </div>
                   <div class="assistant-composer-shell">
                     <div class="ai-textarea-wrapper">
-                      <textarea id="agentInput" rows="3" placeholder="Describe sintomas, limitaciones u objetivo terapeutico. Ejemplo: dolor punzante en hombro derecho desde hace una semana, sin traumatismo, empeora al elevar el brazo y limita vestirse."></textarea>
+                      <textarea id="agentInput" rows="3" placeholder="Escribe al asistente o describe sintomas, limitaciones u objetivo terapeutico."></textarea>
                     </div>
                     <button type="submit" class="btn-action btn-chat btn-send-compact" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)">
                       <span class="material-symbols-rounded">arrow_upward</span>
-                      <span>Enviar</span>
                     </button>
                   </div>
+                  <p class="assistant-disclaimer">El asistente puede cometer errores. Verifica siempre la informacion medica.</p>
                 </form>
               </div>
             </section>
@@ -4627,11 +4627,11 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail .assistant-rail-tools,
   .assistant-rail .assistant-console,
   .assistant-rail .assistant-toolbar,
-  .assistant-rail .assistant-toolbar-actions,
   .assistant-rail .assistant-dialog-surface,
   .assistant-rail .chat-log,
   .assistant-rail .msg,
-  .assistant-rail .msg-body {
+  .assistant-rail .msg-body,
+  .assistant-rail .ai-input-area {
     opacity: 1;
     filter: none;
   }
@@ -4645,25 +4645,28 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .assistant-eyebrow {
     color: #0f766e;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.18em;
+    font-size: 0.65rem;
+    font-weight: 800;
   }
 
   .assistant-rail .assistant-rail-copy h2 {
-    color: #10233b;
-    font-size: 1rem;
+    color: #1e293b;
+    font-size: 1.02rem;
     font-weight: 800;
     line-height: 1.1;
   }
 
   .assistant-rail .agent-status-pill {
     background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    border: 1px solid #d1fae5;
+    padding: 0.35rem 0.6rem;
+    box-shadow: none;
   }
 
   .assistant-rail .status-text {
     color: #047857;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -4675,8 +4678,8 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 0.85rem;
-    background: linear-gradient(180deg, #eef4f8 0%, #e7eef5 100%);
+    padding: 0;
+    background: #ffffff;
   }
 
   .assistant-rail .assistant-console {
@@ -4684,10 +4687,10 @@ import Layout from '../layouts/Layout.astro';
     min-height: 0;
     display: flex;
     flex-direction: column;
-    border: 1px solid #d5e1eb;
-    border-radius: 1.1rem;
-    background: linear-gradient(180deg, #fcfeff 0%, #f5f9fc 100%);
-    box-shadow: 0 18px 34px -28px rgba(15, 23, 42, 0.35);
+    border: none;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
     overflow: hidden;
   }
 
@@ -4696,21 +4699,14 @@ import Layout from '../layouts/Layout.astro';
     flex-wrap: wrap;
     align-items: center;
     gap: 0.7rem;
-    padding: 0.9rem 0.95rem;
-    border-bottom: 1px solid #dbe6ef;
-    background: linear-gradient(180deg, #ffffff 0%, #f6fafe 100%);
+    padding: 0.95rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: #ffffff;
   }
 
   .assistant-rail .assistant-console-selector {
-    flex: 1 1 240px;
+    flex: 1 1 100%;
     min-width: 0;
-  }
-
-  .assistant-rail .assistant-toolbar-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-    margin-left: auto;
   }
 
   .assistant-rail .assistant-live-context {
@@ -4731,16 +4727,15 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.55rem;
     min-height: 3rem;
     padding: 0.65rem 0.9rem;
-    border-radius: 0.95rem;
+    border-radius: 1rem;
     background: #ffffff;
-    border: 1px solid #d7e3ec;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    border: 1px solid #e2e8f0;
     transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
   }
 
   .assistant-rail .patient-selector:focus-within {
-    border-color: #0f766e;
-    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12);
     background: #ffffff;
   }
 
@@ -4749,8 +4744,8 @@ import Layout from '../layouts/Layout.astro';
     background: transparent;
     font: inherit;
     font-size: 0.9rem;
-    font-weight: 700;
-    color: #15324a;
+    font-weight: 600;
+    color: #334155;
     outline: none;
     width: 100%;
     min-width: 0;
@@ -4762,7 +4757,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .patient-selector .material-symbols-rounded {
-    color: #0f766e;
+    color: #14b8a6;
     font-size: 1.05rem;
   }
 
@@ -4771,33 +4766,32 @@ import Layout from '../layouts/Layout.astro';
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background:
-      radial-gradient(circle at top left, rgba(15, 118, 110, 0.07), transparent 36%),
-      linear-gradient(180deg, #f8fbfe 0%, #eef4f9 100%);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.35) 0%, rgba(248, 250, 252, 0.1) 100%);
   }
 
   .assistant-rail .chat-log {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 1rem;
-    background: transparent;
-    gap: 0.9rem;
+    padding: 1.35rem 1rem 1rem;
+    background: rgba(248, 250, 252, 0.32);
+    gap: 1rem;
   }
 
   .assistant-rail .chat-log:empty::before {
-    content: 'Describe el caso clinico o genera un plan para un paciente.';
+    content: 'Selecciona un paciente o escribe una consulta para empezar.';
     display: block;
-    max-width: 18rem;
-    color: #64748b;
-    font-size: 0.84rem;
+    max-width: 16rem;
+    color: #94a3b8;
+    font-size: 0.82rem;
     line-height: 1.55;
-    padding: 0.2rem 0.15rem;
+    padding: 0.1rem 0.1rem;
   }
 
   .assistant-rail .msg {
-    max-width: min(92%, 32rem);
-    gap: 0.75rem;
+    max-width: 88%;
+    gap: 0.55rem;
+    animation: msg-in 0.2s ease-out;
   }
 
   .assistant-rail .msg.agent {
@@ -4809,109 +4803,106 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .msg-avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 0.9rem;
-    background: linear-gradient(180deg, #ecfeff 0%, #dbeafe 100%);
-    border: 1px solid #c7d9ee;
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 0.4rem;
+    background: #14b8a6;
+    border: none;
+    color: #ffffff;
     box-shadow: none;
   }
 
-  .assistant-rail .msg.agent .msg-avatar {
-    background: linear-gradient(180deg, #ecfeff 0%, #dbeafe 100%);
-    border-color: #bfdbfe;
+  .assistant-rail .msg-avatar .material-symbols-rounded {
+    font-size: 0.85rem;
+    color: inherit;
   }
 
-  .assistant-rail .msg.agent .msg-avatar .material-symbols-rounded {
-    color: #0f766e;
+  .assistant-rail .msg.user .msg-avatar {
+    display: none;
   }
 
   .assistant-rail .msg-body {
     box-shadow: none;
-    border-radius: 1rem;
-    padding: 0.9rem 1rem;
+    border-radius: 1.15rem;
+    padding: 0.95rem 1rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
   }
 
   .assistant-rail .msg.agent .msg-body {
     background: #ffffff;
-    border: 1px solid #d9e5f0;
-    color: #15324a;
-    border-top-left-radius: 0.38rem;
-    box-shadow: 0 10px 20px -18px rgba(15, 23, 42, 0.26);
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    border-top-left-radius: 0.3rem;
   }
 
   .assistant-rail .msg.agent .msg-body * {
     color: inherit;
   }
 
-  .assistant-rail .msg.user .msg-body {
-    background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
+  .assistant-rail .msg.user .msg-body,
+  .assistant-rail .msg-body.user-msg {
+    background: #0f9f98;
     border: none;
     color: #ffffff;
-    border-top-right-radius: 0.38rem;
-    box-shadow: 0 14px 28px -20px rgba(37, 99, 235, 0.4);
+    border-top-right-radius: 0.3rem;
+    box-shadow: 0 10px 20px -18px rgba(15, 118, 110, 0.45);
   }
 
-  .assistant-rail .msg.user .msg-body * {
+  .assistant-rail .msg.user .msg-body *,
+  .assistant-rail .msg-body.user-msg * {
     color: inherit;
   }
 
   .assistant-rail .msg-sender {
     display: block;
-    margin-bottom: 0.35rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin-bottom: 0.38rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #94a3b8;
   }
 
   .assistant-rail .msg.agent .msg-sender {
-    color: #0f766e;
-  }
-
-  .assistant-rail .msg.user .msg-sender {
-    color: rgba(255, 255, 255, 0.82);
+    color: #64748b;
   }
 
   .assistant-rail .msg-body p {
     margin: 0;
-    line-height: 1.6;
     white-space: pre-line;
   }
 
   .assistant-rail .msg-progress .msg-avatar {
-    background: #eff6ff;
-    border-color: #bfdbfe;
+    background: #0f172a;
   }
 
   .assistant-rail .msg-progress .msg-body {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px dashed #bfd1e4;
-    color: #1e3a5f;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
   }
 
   .assistant-rail .exercise-report {
     display: grid;
-    gap: 0.8rem;
-    color: #15324a;
+    gap: 0.75rem;
+    color: #475569;
   }
 
   .assistant-rail .exercise-alert {
     background: #fff1f2;
     border: 1px solid #fecdd3;
     color: #be123c;
-    padding: 0.65rem 0.8rem;
-    border-radius: 0.9rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 1rem;
     margin-bottom: 0;
   }
 
   .assistant-rail .exercise-note,
   .assistant-rail .exercise-summary,
   .assistant-rail .exercise-patient-msg {
-    background: #f8fbff;
-    border: 1px solid #dbe7f2;
-    border-radius: 0.9rem;
-    color: #36506b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    color: #64748b;
     padding: 0.75rem 0.85rem;
     margin: 0;
   }
@@ -4919,21 +4910,22 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail .exercise-summary strong,
   .assistant-rail .exercise-note strong,
   .assistant-rail .exercise-patient-msg strong,
-  .assistant-rail .exercise-card-why strong {
-    color: #10233b;
+  .assistant-rail .exercise-card-why strong,
+  .assistant-rail .exercise-id strong {
+    color: #334155;
   }
 
   .assistant-rail .exercise-card {
     background: #ffffff;
-    border: 1px solid #dce7f1;
+    border: 1px solid #e2e8f0;
     border-radius: 1rem;
     padding: 0.75rem;
     margin-bottom: 0;
-    box-shadow: 0 10px 18px -18px rgba(15, 23, 42, 0.22);
+    box-shadow: 0 8px 18px -18px rgba(15, 23, 42, 0.2);
   }
 
   .assistant-rail .exercise-card:hover {
-    border-color: #93c5fd;
+    border-color: #cbd5e1;
   }
 
   .assistant-rail .exercise-card-img {
@@ -4942,19 +4934,19 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .exercise-card-title {
-    color: #10233b;
+    color: #334155;
   }
 
   .assistant-rail .exercise-zona {
     color: #0f766e;
-    background: rgba(15, 118, 110, 0.12);
+    background: rgba(15, 118, 110, 0.1);
   }
 
   .assistant-rail .exercise-card-pauta,
   .assistant-rail .exercise-card-proc,
   .assistant-rail .exercise-card-why,
   .assistant-rail .exercise-id {
-    color: #50687f;
+    color: #64748b;
   }
 
   .assistant-rail .exercise-card-caution {
@@ -4964,152 +4956,160 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail .ai-input-area {
     flex-shrink: 0;
     margin-top: 0;
-    background: transparent;
-    border-top: none;
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
     box-shadow: none;
-    padding: 0.85rem 1rem 1rem;
+    padding: 1rem;
     min-width: 0;
     max-height: none;
     overflow: visible;
-    gap: 0;
+    gap: 0.75rem;
+  }
+
+  .assistant-rail .assistant-action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
   }
 
   .assistant-rail .assistant-composer-shell {
     display: flex;
     align-items: flex-end;
     gap: 0.75rem;
-    padding: 0.8rem;
-    border: 1px solid #d9e5ee;
-    border-radius: 1rem;
-    background: #ffffff;
-    box-shadow: 0 14px 28px -24px rgba(15, 23, 42, 0.28);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .assistant-rail .ai-textarea-wrapper {
-    background: #f8fbfd;
-    border: 1px solid #d7e3ec;
-    border-radius: 0.95rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: none;
     flex: 1 1 auto;
   }
 
   .assistant-rail .ai-textarea-wrapper:focus-within {
     background: #ffffff;
-    border-color: #0f766e;
-    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12);
   }
 
   .assistant-rail .ai-textarea-wrapper textarea {
     width: 100%;
-    min-height: 116px;
-    max-height: 220px;
+    min-height: 6rem;
+    max-height: 14rem;
     border: none;
     background: transparent;
-    color: #10233b;
-    line-height: 1.6;
+    color: #334155;
+    line-height: 1.55;
     padding: 0.95rem 1rem;
     resize: none;
     outline: none;
+    font-size: 0.9rem;
   }
 
   .assistant-rail .ai-textarea-wrapper textarea::placeholder {
-    color: #7c8da0;
+    color: #94a3b8;
     opacity: 1;
+  }
+
+  .assistant-rail .assistant-disclaimer {
+    margin: 0;
+    text-align: center;
+    font-size: 0.65rem;
+    line-height: 1.45;
+    color: #94a3b8;
   }
 
   .assistant-rail .btn-action {
     border: 1px solid transparent;
     border-radius: 0.95rem;
-    min-height: 2.75rem;
+    min-height: 2.9rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    justify-content: center;
   }
 
-  .assistant-rail .assistant-toolbar-actions .btn-action {
-    min-height: 2.45rem;
-    padding: 0.58rem 0.85rem;
-    font-size: 0.78rem;
+  .assistant-rail .btn-action .material-symbols-rounded {
+    font-size: 1rem;
   }
 
   .assistant-rail .btn-action:disabled {
-    background: #edf2f7 !important;
-    border-color: #dbe5ee !important;
-    color: #94a3b8 !important;
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    color: #cbd5e1 !important;
     box-shadow: none !important;
     cursor: not-allowed;
     opacity: 1;
   }
 
-  .assistant-rail .btn-generate {
-    background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
-    color: #ffffff;
-    box-shadow: 0 12px 24px -18px rgba(37, 99, 235, 0.42);
-  }
-
-  .assistant-rail .btn-generate:hover {
-    background: linear-gradient(135deg, #0b5f5a 0%, #1d4ed8 100%);
-  }
-
   .assistant-rail .btn-pdf,
   .assistant-rail .btn-chat {
     background: #ffffff;
-    border: 1px solid #d9e5ee;
-    color: #28415c;
+    border: 1px solid #e2e8f0;
+    color: #475569;
   }
 
   .assistant-rail .btn-pdf:hover,
   .assistant-rail .btn-chat:hover {
-    background: #eff6ff !important;
-    border-color: #bfdbfe !important;
-    color: #1d4ed8 !important;
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+  }
+
+  .assistant-rail .btn-generate {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: #ffffff;
+    box-shadow: none;
+  }
+
+  .assistant-rail .btn-generate .material-symbols-rounded {
+    color: #2dd4bf;
+  }
+
+  .assistant-rail .btn-generate:hover {
+    background: #020617;
+    border-color: #020617;
   }
 
   .assistant-rail .btn-send-compact {
-    background: #0f766e;
-    border-color: #0f766e;
+    width: 2.8rem;
+    min-width: 2.8rem;
+    padding: 0;
+    background: #0f9f98;
+    border-color: #0f9f98;
     color: #ffffff;
-    padding: 0.85rem 1rem;
-    gap: 0.45rem;
-    flex: 0 0 auto;
+    border-radius: 0.75rem;
+    align-self: flex-end;
+    box-shadow: 0 10px 20px -18px rgba(15, 118, 110, 0.5);
   }
 
   .assistant-rail .btn-send-compact:hover {
-    background: #0b5f5a !important;
-    border-color: #0b5f5a !important;
+    background: #0f766e !important;
+    border-color: #0f766e !important;
     color: #ffffff !important;
   }
 
   .assistant-rail .assistant-rail-close {
     background: #ffffff !important;
-    border-color: #dbe6ef !important;
-    color: #334155 !important;
+    border-color: #e2e8f0 !important;
+    color: #475569 !important;
   }
 
   @media (max-width: 1100px) {
     .assistant-rail .assistant-rail-body {
-      padding: 0.75rem;
+      padding: 0;
     }
 
-    .assistant-rail .assistant-toolbar {
-      padding: 0.85rem 0.9rem;
-    }
-
+    .assistant-rail .assistant-toolbar,
     .assistant-rail .chat-log,
     .assistant-rail .ai-input-area {
       padding-left: 0.9rem;
       padding-right: 0.9rem;
-    }
-
-    .assistant-rail .assistant-console-selector {
-      flex-basis: 100%;
-    }
-
-    .assistant-rail .assistant-toolbar-actions {
-      margin-left: 0;
-      width: 100%;
-    }
-
-    .assistant-rail .assistant-toolbar-actions .btn-action {
-      flex: 1 1 180px;
-      justify-content: center;
     }
   }
 
@@ -5122,10 +5122,6 @@ import Layout from '../layouts/Layout.astro';
       font-size: 0.98rem;
     }
 
-    .assistant-rail .assistant-rail-body {
-      padding: 0.65rem;
-    }
-
     .assistant-rail .assistant-toolbar {
       padding: 0.8rem 0.85rem;
     }
@@ -5136,18 +5132,18 @@ import Layout from '../layouts/Layout.astro';
       padding-right: 0.85rem;
     }
 
-    .assistant-rail .assistant-composer-shell {
-      flex-direction: column;
-      align-items: stretch;
+    .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr;
     }
 
-    .assistant-rail .ai-textarea-wrapper textarea {
-      min-height: 132px;
+    .assistant-rail .assistant-composer-shell {
+      align-items: stretch;
     }
 
     .assistant-rail .btn-send-compact {
       width: 100%;
-      justify-content: center;
+      min-width: 0;
+      min-height: 2.8rem;
     }
   }
 </style>

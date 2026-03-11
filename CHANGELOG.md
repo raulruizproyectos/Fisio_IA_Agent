@@ -1,5 +1,24 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 88 - 2026-03-11
+
+### Objetivo
+- Rehacer el Copilot lateral usando como referencia real el export de Stitch proporcionado por el usuario.
+
+### Cambios implementados
+- [x] Se toma como referencia visual `frontend/stitch.zip` y se inspeccionan `code.html` y `screen.png`.
+- [x] El rail adopta la composicion de Stitch: selector arriba, historial limpio en el centro y pie con acciones, textarea y disclaimer medico.
+- [x] Se ajustan bubbles, colores, bordes, CTA y textarea al lenguaje visual blanco/slate/teal del export.
+- [x] Se mantiene toda la funcionalidad previa del agente: seleccionar paciente, guardar PDF, generar plan y chat libre.
+
+### Validacion realizada
+- [x] `npm run build` OK en frontend aislado tras aplicar la referencia Stitch.
+
+### Punto exacto de continuidad
+1. Redeploy de `fisio-frontend` desde `origin/main`.
+2. Verificar en produccion el rail vacio, un mensaje libre y un informe de ejercicios para comprobar paridad visual con la referencia Stitch.
+3. Si queda correcto, retomar el siguiente bloque funcional pendiente del CRM.
+
 ## Sesion 87 - 2026-03-11
 
 ### Objetivo
