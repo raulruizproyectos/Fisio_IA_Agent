@@ -1,8 +1,9 @@
-﻿{
+{
     "name":  "Fisio_IA_Agent / Puente Error Backend",
     "nodes":  [
                   {
                       "parameters":  {
+                                         "httpMethod":  "POST",
                                          "path":  "fisio/error/notify",
                                          "responseMode":  "responseNode",
                                          "options":  {

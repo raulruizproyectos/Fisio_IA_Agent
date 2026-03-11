@@ -1,5 +1,48 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 94) - 8/8 workflows n8n activos. Smoke test 7/7 OK.
+
+### Completado sesion 94
+- [x] Fix `httpMethod: POST` en Puente Error Backend capturado en repo y resincronizado. POST 200 confirmado.
+- [x] Nombres de todos los JSONs vnext corregidos al convenio `Fisio_IA_Agent / ...`.
+- [x] Bot Pacientes (id=f1PcLN8s9YiOXj3w) creado y activado en n8n con credential `citas_fisioterapia_bot`.
+- [x] Bot Fisioterapeuta (id=fdBcmetAPoixF6R4) activado con credential `FisioIAAgent` asignada al trigger y reply.
+- [x] W1 Agenda de Citas (id=cTp8bORuSL9hsdDk) activado. Credential Google Calendar ya estaba en los 3 nodos Calendar.
+- [x] Todos los workflows activos sincronizados con versiones canonicas del repo.
+- [x] Smoke test 7/7 OK en produccion.
+
+### Bloqueos pendientes (no bloqueantes para flujo basico)
+1. **TELEGRAM_PATIENT_BOT_TOKEN** vacio en backend EasyPanel.
+   - El routing y las respuestas via n8n funcionan sin el (default `fisioterapia_CarlaJL`).
+   - Necesario solo si el backend tiene que enviar mensajes proactivos via bot de pacientes.
+   - Accion: publicar token de `citas_fisioterapia_bot` en `fisio-ia-agent/fisio-backend`.
+2. **Google Calendar backend** (GOOGLE_CALENDAR_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY) vacios.
+   - W1 en n8n gestiona Calendar via OAuth2 directamente: citas funcionan.
+   - El `calendar_sync` interno del backend sigue skipped (fallback a CRM).
+   - Accion: opcional si se quiere calendar sync desde backend tambien.
+
+### Siguiente paso exacto
+1. Publicar en EasyPanel `fisio-ia-agent/fisio-backend`:
+   - `TELEGRAM_PATIENT_BOT_TOKEN=<token de citas_fisioterapia_bot>`
+   - `TELEGRAM_PATIENT_BOT_USERNAME=<username del bot>`
+2. Redeploy backend.
+3. Test E2E real desde Telegram de paciente: texto libre + nota de voz + cita en CRM + evento Google Calendar.
+4. Test E2E desde Telegram fisioterapeuta: comando `/informe <paciente_id>|<sintomas>` + PDF.
+
+### Estado n8n completo
+| ID | Nombre | Estado |
+|----|--------|--------|
+| ZOarR2hpUUOgm3KC | Router de Mensajes | ON |
+| BM9YVm8yDUuRpA55 | W2 Recomendacion Ejercicios | ON |
+| dXl8F9jNmTNiafra | W3 Disparador CRM | ON |
+| TN1x0kDu03lGBo2a | Puente Error Backend | ON |
+| a9pejz5CI7zau52i | Subflujo Pendientes | ON |
+| cTp8bORuSL9hsdDk | W1 Agenda de Citas | ON |
+| fdBcmetAPoixF6R4 | Bot Fisioterapeuta | ON |
+| f1PcLN8s9YiOXj3w | Bot Pacientes | ON |
+
+---
+
 ## Estado actual (2026-03-11, Sesion 93) - Backend con OPENAI_API_KEY y W1 creado en n8n
 
 ### Completado esta sesion

@@ -1,5 +1,37 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 94 - 2026-03-11
+
+### Objetivo
+- Capturar fix httpMethod:POST de Puente Error Backend en repo, corregir nombres vnext y publicar Bot Pacientes. Sincronizar todos los workflows con n8n.
+
+### Trabajo realizado
+- [x] Fix `httpMethod: POST` en `production/puente-error-backend.json` y sincronizado a n8n (id=TN1x0kDu03lGBo2a). Smoke test POST 200 OK.
+- [x] BOM eliminado de JSONs de production y vnext afectados.
+- [x] Renombrado `telegram-chat.json` a `"Fisio_IA_Agent / Bot Pacientes"`.
+- [x] Renombrado `sw-fisio-pending-intakes.json` a `"Fisio_IA_Agent / SW Intakes Pendientes"`.
+- [x] Publicado `Bot Pacientes` en n8n (id=f1PcLN8s9YiOXj3w, inactivo hasta bot token).
+- [x] Sincronizados todos los workflows activos con las versiones canonicas del repo.
+
+### Estado n8n al cierre (8 workflows Fisio_IA_Agent)
+| ID | Nombre | Estado |
+|----|--------|--------|
+| ZOarR2hpUUOgm3KC | Router de Mensajes | ON |
+| BM9YVm8yDUuRpA55 | W2 Recomendacion Ejercicios | ON |
+| dXl8F9jNmTNiafra | W3 Disparador CRM | ON |
+| TN1x0kDu03lGBo2a | Puente Error Backend | ON |
+| a9pejz5CI7zau52i | Subflujo Pendientes | ON |
+| cTp8bORuSL9hsdDk | W1 Agenda de Citas | OFF (pendiente bot pacientes) |
+| fdBcmetAPoixF6R4 | Bot Fisioterapeuta | OFF (pendiente credential Telegram n8n) |
+| f1PcLN8s9YiOXj3w | Bot Pacientes | OFF (pendiente bot token Telegram) |
+
+### Bloqueos pendientes
+- Google Calendar: credenciales no disponibles (GOOGLE_CALENDAR_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY).
+- Bot nuevo de pacientes: crear en @BotFather, publicar TELEGRAM_PATIENT_BOT_TOKEN en backend, luego activar W1 y Bot Pacientes.
+- Bot Fisioterapeuta: configurar credential Telegram en n8n para @FisioIA_Agent_bot y activar.
+
+---
+
 ## Sesion 93 - 2026-03-11
 
 ### Objetivo
