@@ -19,10 +19,7 @@ Antes de planificar, editar o ejecutar cambios:
 
 ## 3) Documentacion viva
 
-Cada sesion debe actualizar:
-
-- `CHANGELOG.md` (avance y decisiones).
-- `configuracion_pendiente.md` (estado real para retomar rapido).
+Actualizar CHANGELOG.md y configuracion_pendiente.md SOLO cuando el usuario lo indique explicitamente al final de la sesion. No actualizar documentacion durante el desarrollo para ahorrar tokens.
 
 ## 4) Seguridad
 
