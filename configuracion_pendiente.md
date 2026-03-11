@@ -1,5 +1,22 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 86) - Copilot con una sola superficie conversacional
+
+### Completado esta sesion
+- [x] El rail lateral del agente queda reducido a una unica superficie de conversacion e input.
+- [x] Se elimina la tarjeta inicial visible que hacia sentir que habia una segunda ventana de texto.
+- [x] Selector de paciente y acciones rapidas se mantienen, pero ya no compiten visualmente con el area conversacional.
+- [x] `npm run build` OK en frontend aislado.
+
+### Punto de partida exacto (siguiente bloque)
+1. Hacer redeploy de `fisio-frontend` desde `origin/main`.
+2. Verificar en produccion que el Copilot tenga una unica superficie de texto y que el historial aparezca dentro del mismo plano visual que el compositor.
+3. Si el rail ya queda comodo y profesional, volver a CRM -> invitacion Telegram del paciente.
+
+### Riesgos o bloqueos conocidos
+- El punto pendiente inmediato vuelve a ser de publicacion y validacion visual en produccion.
+- El repo ya refleja el UX final de este bloque; si produccion difiere tras el redeploy, el siguiente paso sera inspeccionar directamente el HTML/CSS servido.
+
 ## Estado actual (2026-03-11, Sesion 85) - Copilot lateral simplificado
 
 ### Completado esta sesion

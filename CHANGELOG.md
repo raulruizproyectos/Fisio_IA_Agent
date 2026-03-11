@@ -1,5 +1,24 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 86 - 2026-03-11
+
+### Objetivo
+- Dejar el Copilot lateral con una unica superficie de interaccion textual y actualizar toda la documentacion de continuidad antes del siguiente redeploy.
+
+### Cambios implementados
+- [x] El rail del agente se unifica en una sola superficie conversacional (`assistant-dialog-surface`) que agrupa historial y compositor.
+- [x] Se elimina el mensaje inicial visible que hacia parecer que habia dos ventanas distintas para hablar con la IA.
+- [x] El selector de paciente y las acciones (`Generar Plan`, `Guardar PDF`) quedan fuera del flujo conversacional, como barra de herramientas compacta.
+- [x] Documentacion principal actualizada para reflejar el estado real del desarrollo: `README.md`, `ARCHITECTURE.md`, `CHANGELOG.md` y `configuracion_pendiente.md`.
+
+### Validacion realizada
+- [x] `npm run build` OK en frontend aislado tras la unificacion final del rail.
+
+### Punto exacto de continuidad
+1. Redeploy de `fisio-frontend` desde `origin/main`.
+2. Verificar en produccion que el Copilot muestre una sola superficie conversacional, sin tarjeta inicial duplicada ni scrolls redundantes.
+3. Si el UX queda correcto, retomar CRM -> invitacion Telegram del paciente.
+
 ## Sesion 85 - 2026-03-11
 
 ### Objetivo

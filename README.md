@@ -11,17 +11,17 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 ## En pausa
 - Generación de vídeo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 83 - 2026-03-11)\r
-- La arquitectura vigente queda fijada como hibrida:\r
-  - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,\r
-  - `n8n` para orquestacion conversacional y clinica,\r
-  - frontend como superficie de producto.\r
-- El PDF profesional sigue unificado en backend y sirve tanto al CRM como al Telegram profesional.\r
-- Fix critico del assistant rail responsive: chat input siempre visible en cualquier tamano de pantalla.\r
-- Migracion `crm_async_jobs` aplicada en Supabase para persistencia de jobs async.\r
-- n8n `fisio-agent-core` refinado con mejor clasificacion de intents.\r
+## Checkpoint actual (Sesion 86 - 2026-03-11)
+- La arquitectura vigente queda fijada como hibrida:
+  - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,
+  - `n8n` para orquestacion conversacional y clinica,
+  - frontend como superficie de producto.
+- El PDF profesional sigue unificado en backend y sirve tanto al CRM como al Telegram profesional.
 - El core n8n ya resuelve `triage_needed` para sintomas demasiado vagos y el smoke test remoto Telegram queda en `6/6 OK`.
 - `crm_perfiles` ya permite resolver el chat del bot fisio en produccion y `POST /api/telegram/physio-report/send` queda validado con `target_source=crm_perfiles`.
+- El CRM ya expone la invitacion Telegram del paciente desde historial con `GET /api/telegram/link-code/:patientId`.
+- El Copilot lateral del CRM queda redisenado como una sola superficie conversacional: barra de herramientas arriba y un unico plano de chat + input abajo.
+- Pendiente inmediato: redeploy de `fisio-frontend` para publicar esta ultima simplificacion visual y validarla en produccion.
 
 ## Arquitectura actual
 - Frontend CRM: Astro
@@ -50,8 +50,9 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 - Producción:
   - `POST /api/exercises/recommend` y `/async` validados con imágenes
   - `POST /api/agent/message` validado en CRM
-  - `POST /api/telegram/incoming?dry_run=true` validado con 5 casos reales de routing
-  - pendiente redeploy de frontend en EasyPanel para publicar fix responsive del rail
+  - `POST /api/telegram/incoming?dry_run=true` validado con 6 casos reales de routing
+  - entrega real del triage Telegram validada en chat vinculado
+  - pendiente redeploy de frontend en EasyPanel para publicar la unificacion final del Copilot lateral
 
 ## Endpoints backend principales
 - `POST /api/telegram/incoming`

@@ -371,27 +371,21 @@ import Layout from '../layouts/Layout.astro';
                 </div>
               </div>
 
-              <div class="chat-log" id="chatLog">
-                <article class="msg agent">
-                  <div class="msg-avatar"><span class="material-symbols-rounded">medical_information</span></div>
-                  <div class="msg-body">
-                    <span class="msg-sender">Asistente Clinico</span>
-                    <p>Escribe la consulta clinica. Si eliges un paciente, la conversacion y el informe quedaran asociados a su ficha.</p>
-                  </div>
-                </article>
-              </div>
+              <div class="assistant-dialog-surface">
+                <div class="chat-log" id="chatLog"></div>
 
-              <form id="agentForm" class="ai-input-area">
-                <div class="assistant-composer-shell">
-                  <div class="ai-textarea-wrapper">
-                    <textarea id="agentInput" rows="3" placeholder="Describe sintomas, limitaciones u objetivo terapeutico. Ejemplo: dolor punzante en hombro derecho desde hace una semana, sin traumatismo, empeora al elevar el brazo y limita vestirse."></textarea>
+                <form id="agentForm" class="ai-input-area">
+                  <div class="assistant-composer-shell">
+                    <div class="ai-textarea-wrapper">
+                      <textarea id="agentInput" rows="3" placeholder="Describe sintomas, limitaciones u objetivo terapeutico. Ejemplo: dolor punzante en hombro derecho desde hace una semana, sin traumatismo, empeora al elevar el brazo y limita vestirse."></textarea>
+                    </div>
+                    <button type="submit" class="btn-action btn-chat btn-send-compact" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)">
+                      <span class="material-symbols-rounded">arrow_upward</span>
+                      <span>Enviar</span>
+                    </button>
                   </div>
-                  <button type="submit" class="btn-action btn-chat btn-send-compact" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)">
-                    <span class="material-symbols-rounded">arrow_upward</span>
-                    <span>Enviar</span>
-                  </button>
-                </div>
-              </form>
+                </form>
+              </div>
             </section>
           </div>
         </section>
@@ -4634,6 +4628,7 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail .assistant-console,
   .assistant-rail .assistant-toolbar,
   .assistant-rail .assistant-toolbar-actions,
+  .assistant-rail .assistant-dialog-surface,
   .assistant-rail .chat-log,
   .assistant-rail .msg,
   .assistant-rail .msg-body {
@@ -4729,41 +4724,83 @@ import Layout from '../layouts/Layout.astro';
     border: 0;
   }
 
+  .assistant-rail .assistant-dialog-surface {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  }
+
   .assistant-rail .chat-log {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 0.95rem;
+    padding: 0.95rem 0.95rem 0.5rem;
     background: transparent;
+    gap: 0.75rem;
+  }
+
+  .assistant-rail .chat-log:empty::before {
+    content: 'La conversacion aparecera aqui.';
+    display: block;
+    color: rgba(226, 232, 240, 0.44);
+    font-size: 0.83rem;
+    line-height: 1.5;
+    padding: 0.1rem 0.15rem;
+  }
+
+  .assistant-rail .msg {
+    max-width: 100%;
+    gap: 0.65rem;
+  }
+
+  .assistant-rail .msg-avatar {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: none;
   }
 
   .assistant-rail .msg.agent .msg-avatar {
-    background: #eef2ff;
-    border-color: transparent;
+    background: rgba(79, 70, 229, 0.14);
+    border-color: rgba(99, 102, 241, 0.22);
   }
 
   .assistant-rail .msg.agent .msg-avatar .material-symbols-rounded {
-    color: #4f46e5;
+    color: #a5b4fc;
+  }
+
+  .assistant-rail .msg-body {
+    box-shadow: none;
   }
 
   .assistant-rail .msg.agent .msg-body {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #0f172a;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    background: transparent;
+    border: none;
+    color: #dbe7f4;
+    padding: 0.05rem 0 0;
+  }
+
+  .assistant-rail .msg.user .msg-body {
+    background: rgba(37, 99, 235, 0.22);
+    border: 1px solid rgba(96, 165, 250, 0.24);
+    color: #ffffff;
+    box-shadow: none;
   }
 
   .assistant-rail .msg.agent .msg-sender {
-    color: #4f46e5;
+    color: #93c5fd;
   }
 
   .assistant-rail .ai-input-area {
     flex-shrink: 0;
     margin-top: 0;
-    background: #ffffff;
-    border-top: 1px solid #dbe3ee;
+    background: transparent;
+    border-top: none;
     box-shadow: none;
-    padding: 0.85rem 0.9rem 0.9rem;
+    padding: 0 0.95rem 0.95rem;
     min-width: 0;
     max-height: none;
     overflow: visible;
@@ -4774,20 +4811,30 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: flex-end;
     gap: 0.7rem;
+    padding: 0.75rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    background: rgba(15, 23, 42, 0.42);
   }
 
   .assistant-rail .ai-textarea-wrapper {
-    background: #ffffff;
-    border: 1px solid #d5dfeb;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    background: transparent;
+    border: none;
+    box-shadow: none;
     flex: 1 1 auto;
   }
 
+  .assistant-rail .ai-textarea-wrapper:focus-within {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
   .assistant-rail .ai-textarea-wrapper textarea {
-    min-height: 104px;
-    max-height: 184px;
-    color: #0f172a;
-    line-height: 1.55;
+    min-height: 126px;
+    max-height: 220px;
+    color: #f8fafc;
+    line-height: 1.6;
+    padding: 0.15rem 0.1rem;
   }
 
   .assistant-rail .btn-action {
@@ -4809,8 +4856,7 @@ import Layout from '../layouts/Layout.astro';
     box-shadow: none;
   }
 
-  .assistant-rail .patient-selector:focus-within,
-  .assistant-rail .ai-textarea-wrapper:focus-within {
+  .assistant-rail .patient-selector:focus-within {
     border-color: #818cf8;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
     background: #ffffff;
@@ -4825,8 +4871,12 @@ import Layout from '../layouts/Layout.astro';
     color: #2563eb;
   }
 
+  .assistant-rail .ai-textarea-wrapper textarea {
+    color: #f8fafc;
+  }
+
   .assistant-rail .ai-textarea-wrapper textarea::placeholder {
-    color: #94a3b8;
+    color: rgba(203, 213, 225, 0.56);
     opacity: 1;
   }
 
@@ -4848,18 +4898,18 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .btn-send-compact {
-    background: #0f172a;
-    border-color: #0f172a;
-    color: #ffffff;
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #0f172a;
     padding: 0.8rem 0.95rem;
     gap: 0.4rem;
     flex: 0 0 auto;
   }
 
   .assistant-rail .btn-send-compact:hover {
-    background: #1e293b !important;
-    border-color: #1e293b !important;
-    color: #ffffff !important;
+    background: #e2e8f0 !important;
+    border-color: #e2e8f0 !important;
+    color: #0f172a !important;
   }
 
   .assistant-rail .btn-pdf:hover,
