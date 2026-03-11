@@ -1,5 +1,47 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 77 - 2026-03-10
+
+### Objetivo
+- Resolver todos los problemas pendientes: migracion DB, validacion local, smoke tests, responsive UI, refinamiento n8n core.
+
+### Cambios implementados
+- [x] Migracion `crm_async_jobs` aplicada en Supabase via MCP (`apply_migration`). Tabla + indices + trigger `updated_at`.
+- [x] Frontend: fix critico de responsive en el assistant rail (`index.astro`):
+  - Eliminados todos los `!important` del bloque enterprise refresh CSS.
+  - `.assistant-rail`: display:flex, overflow:hidden, max-height:calc(100vh-60px).
+  - `.assistant-rail-card`: max-height:100%.
+  - `.assistant-module-header`: flex-shrink:0, padding reducido.
+  - `.assistant-context-strip`: flex-shrink:0, max-height:28vh, overflow-y:auto.
+  - `.ai-workspace`: overflow:hidden.
+  - `.chat-log`: min-height reducido de 220px a 60px.
+  - `.ai-input-area`: flex-shrink:0, max-height:45vh, padding reducido.
+  - textarea rows reducidas de 7 a 3.
+  - min-width:0 anadido a .content, .card, .widget-card, .page-section.
+- [x] n8n: `fisio-agent-core.json` refinado - mas keywords de clasificacion (disponibilidad, entrenar, pinchazo...), ruta `fallback` nueva, replies mas especificos y clinicos.
+- [x] `scripts/bootstrap-local-workspace.ps1` anadido al repo.
+- [x] `AGENTS.md` actualizado con reglas de sesion.
+
+### Validacion realizada
+- [x] Backend: `node --check` OK en index.js, agent.js, exercises.js, telegram.js, professional.js.
+- [x] Frontend: `astro build` OK (1 pagina, 1.69s).
+- [x] Health check produccion: `GET /api/health` → `{"status":"ok"}`.
+- [x] Telegram dry run produccion: 5/5 OK.
+- [x] W2 async smoke produccion: `done` en 12 polls con patientId y professionalId.
+
+### Punto exacto de continuidad (Sesion 78)
+1. **Redeploy frontend** en EasyPanel para que los cambios de CSS surtan efecto.
+2. **Redeploy backend** en EasyPanel.
+3. **Importar `n8n/Fisio_IA_Agent/vnext/fisio-agent-core.json`** actualizado en n8n.
+4. Verificar visualmente el frontend post-deploy (assistant rail + chat input visible).
+5. Prueba manual del bot Telegram real con chat vinculado.
+
+### Commits
+- `2b72db5` - fix(ui): responsive + feat(n8n): intent classification
+- `5d54a40` - fix(ui): pin chat input at bottom
+- `2df261a` - fix(ui): bulletproof assistant rail flex layout
+
+
 ## Sesion 76 - 2026-03-10
 
 ### Objetivo

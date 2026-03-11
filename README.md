@@ -11,18 +11,16 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 ## En pausa
 - Generación de vídeo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 76 - 2026-03-10)
-- La arquitectura vigente queda fijada como h?brida:
-  - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,
-  - `n8n` para orquestaci?n conversacional y cl?nica,
-  - frontend como superficie de producto.
-- El PDF profesional sigue unificado en backend y sirve tanto al CRM como al Telegram profesional.
-- El workspace recomendado en Windows sigue siendo `C:\Temp\Fisio_IA_Agent_workspace`; para aislamiento m?ximo, usar `bootstrap-local-workspace.ps1 -Mode standalone`.
-- Estado real al cierre de hoy:
-  - `frontend/src/pages/index.astro` y `frontend/src/layouts/Layout.astro` ya se han saneado de caracteres corruptos a nivel de c?digo fuente,
-  - la build local del frontend vuelve a pasar en limpio,
-  - persiste un bug visual en producci?n en el rail del agente: el compositor inferior puede quedar cortado en ciertos tama?os de pantalla y al mover la ventana entre monitores.
-- Punto exacto de continuidad: `docs/checkpoint_20260310_ui_handoff.md`.
+## Checkpoint actual (Sesion 77 - 2026-03-11)\r
+- La arquitectura vigente queda fijada como hibrida:\r
+  - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,\r
+  - `n8n` para orquestacion conversacional y clinica,\r
+  - frontend como superficie de producto.\r
+- El PDF profesional sigue unificado en backend y sirve tanto al CRM como al Telegram profesional.\r
+- Fix critico del assistant rail responsive: chat input siempre visible en cualquier tamano de pantalla.\r
+- Migracion `crm_async_jobs` aplicada en Supabase para persistencia de jobs async.\r
+- n8n `fisio-agent-core` refinado con mejor clasificacion de intents.\r
+- Pendiente: redeploy frontend y backend en EasyPanel para que los cambios surtan efecto.
 
 ## Arquitectura actual
 - Frontend CRM: Astro
@@ -52,7 +50,7 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
   - `POST /api/exercises/recommend` y `/async` validados con imágenes
   - `POST /api/agent/message` validado en CRM
   - `POST /api/telegram/incoming?dry_run=true` validado con 5 casos reales de routing
-  - pendiente corregir el rail responsive del agente antes del siguiente redeploy de frontend
+  - pendiente redeploy de frontend en EasyPanel para publicar fix responsive del rail
 
 ## Endpoints backend principales
 - `POST /api/telegram/incoming`

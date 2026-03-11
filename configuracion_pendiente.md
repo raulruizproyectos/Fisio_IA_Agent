@@ -2,6 +2,26 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-11, Sesion 77) - Fix responsive UI completo, pendiente de redeploy
+
+### Completado esta sesion
+- [x] Migracion `crm_async_jobs` aplicada en Supabase (tabla + indices + trigger).
+- [x] Frontend: fix critico del assistant rail (chat input visible en cualquier pantalla).
+- [x] n8n core: refinamiento de clasificacion con mas keywords y ruta fallback.
+- [x] Smoke tests OK: Telegram 5/5, W2 async done, health OK.
+- [x] Todos los cambios pusheados a GitHub main (commits 2b72db5, 5d54a40, 2df261a).
+- [x] CHANGELOG actualizado a Sesion 77.
+
+### Punto de partida exacto (siguiente bloque)
+1. Redeploy frontend y backend en EasyPanel.
+2. Importar `fisio-agent-core.json` actualizado en n8n.
+3. Verificar visualmente el frontend post-deploy (assistant rail + chat input).
+4. Prueba manual del bot Telegram real con chat vinculado.
+
+### Riesgos o bloqueos conocidos
+- El frontend en produccion aun muestra la version anterior. Necesita redeploy en EasyPanel.
+- El n8n sigue con el workflow anterior hasta que se importe el JSON actualizado.
+
 ## Estado actual (2026-03-09, Sesion 70) - Smoke test remoto de Telegram ya automatizado y validado
 
 ### Completado esta sesion
