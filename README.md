@@ -1,19 +1,19 @@
-# Fisio_IA_Agent
+﻿# Fisio_IA_Agent
 
-CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recomendaciones de ejercicios desde Telegram y CRM web, orquestado con n8n y Supabase.
+CRM + agentes para centros de fisioterapia: gestiÃ³n de pacientes, citas y recomendaciones de ejercicios desde Telegram y CRM web, orquestado con n8n y Supabase.
 
 ## Alcance activo (pivot)
-- CRM web para operación clínica.
+- CRM web para operaciÃ³n clÃ­nica.
 - Agente de citas: Telegram + n8n + Google Calendar + Supabase.
 - Bot de pacientes: solicitudes de cita por texto libre, comando `/cita` y nota de voz transcrita.
 
 - Agente IA de ejercicios: Telegram + CRM + n8n/OpenAI + Supabase + Storage.
-- Source of truth único: Supabase del proyecto `Fisio_IA_Agent`.
+- Source of truth Ãºnico: Supabase del proyecto `Fisio_IA_Agent`.
 
 ## En pausa
-- Generación de vídeo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
+- GeneraciÃ³n de vÃ­deo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 88 - 2026-03-11)
+## Checkpoint actual (Sesion 91 - 2026-03-11)
 - La arquitectura vigente queda fijada como hibrida:
   - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,
   - `n8n` para orquestacion conversacional y clinica,
@@ -23,15 +23,20 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 - `crm_perfiles` ya permite resolver el chat del bot fisio en produccion y `POST /api/telegram/physio-report/send` queda validado con `target_source=crm_perfiles`.
 - El CRM ya expone la invitacion Telegram del paciente desde historial con `GET /api/telegram/link-code/:patientId`.
 - El Copilot lateral se rehace tomando como referencia `frontend/stitch.zip`: composicion mas limpia, acciones abajo y tono visual blanco/slate/teal.
-- Pendiente inmediato: redeploy de `fisio-frontend` para validar esta iteracion visual en produccion.
+- El bot de pacientes ya crea citas reales en crm_citas desde Telegram por texto y por voice_transcript.
+- Bloqueos reales ya confirmados en produccion:
+  - falta OPENAI_API_KEY en fisio-backend para cerrar la rama nativa de nota de voz,
+  - Google Calendar sigue desactivado en runtime backend (calendar_sync.enabled=false).
+- El repo ya corrige la reutilizacion del paciente CRM cuando el flujo parte de un paciente legacy vinculado por Telegram.
+- Pendiente inmediato: publicar credenciales reales de voz y Google Calendar en fisio-backend y repetir E2E con nota de voz real.
 
 ## Arquitectura actual
 - Frontend CRM: Astro
 - Backend API: Node.js + Express
 - Base de datos: Supabase (PostgreSQL)
 - Storage: Supabase Storage bucket `ejercicios` (private)
-- Automatización: n8n
-- IA de selección: OpenAI vía n8n
+- AutomatizaciÃ³n: n8n
+- IA de selecciÃ³n: OpenAI vÃ­a n8n
 - Agenda: Google Calendar (n8n + fallback backend opcional)
 - Canales conversacionales: CRM web + Telegram
 
@@ -49,12 +54,15 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 - Backend:
   - `node --check` OK en rutas principales
   - `npm run lint` OK en copia local aislada con dependencias completas
-- Producción:
-  - `POST /api/exercises/recommend` y `/async` validados con imágenes
+- ProducciÃ³n:
+  - `POST /api/exercises/recommend` y `/async` validados con imÃ¡genes
   - `POST /api/agent/message` validado en CRM
   - `POST /api/telegram/incoming?dry_run=true` validado con 6 casos reales de routing
   - entrega real del triage Telegram validada en chat vinculado
-  - pendiente redeploy de frontend en EasyPanel para publicar la iteracion visual del Copilot basada en Stitch
+  - GET /api/telegram/link-code/:patientId validado en backend publico
+  - alta real de citas Telegram validada en crm_citas`r
+  - voz nativa pendiente de OPENAI_API_KEY`r
+  - sync a Google Calendar pendiente de credenciales backend
 
 ## Endpoints backend principales
 - `POST /api/telegram/incoming`
@@ -72,35 +80,35 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 - `GET /api/profesional/patients/:patientId/history`
 - `POST /api/profesional/notes`
 
-## W2 asíncrono (polling CRM)
+## W2 asÃ­ncrono (polling CRM)
 - El CRM puede lanzar el informe de ejercicios en segundo plano con `POST /api/exercises/recommend/async`.
 - El estado se consulta con `GET /api/exercises/recommend/jobs/:jobId`.
 - Si existe la tabla `crm_async_jobs`, el polling sobrevive a reinicios y despliegues del backend.
-- Si la migración aún no está aplicada, el backend cae temporalmente a memoria sin romper el flujo.
+- Si la migraciÃ³n aÃºn no estÃ¡ aplicada, el backend cae temporalmente a memoria sin romper el flujo.
 
 ## Observabilidad W2 (timeouts y reintentos)
 - `POST /api/exercises/recommend` devuelve `engine_observability` con:
   - `attempts`, `retries_used`, `fallback_used`, `fallback_reason`, `total_duration_ms`
-  - `catalog_total`, `candidate_count`, `candidate_limit` para medir cuánto contexto se envía al motor
+  - `catalog_total`, `candidate_count`, `candidate_limit` para medir cuÃ¡nto contexto se envÃ­a al motor
 - Variables de entorno backend:
   - `EXERCISE_ENGINE_TIMEOUT_MS` (default `30000`)
   - `EXERCISE_ENGINE_MAX_ATTEMPTS` (default `2`)
   - `EXERCISE_ENGINE_CANDIDATE_LIMIT` (default `24`)
   - `EXERCISE_REQUIRE_PATIENT_ASSOCIATION` (default `true`)
-- El frontend CRM muestra la métrica operativa `Timeouts/Reintentos IA` sin doble conteo cuando el backend devuelve `engine_observability`.
+- El frontend CRM muestra la mÃ©trica operativa `Timeouts/Reintentos IA` sin doble conteo cuando el backend devuelve `engine_observability`.
 
 ## Informe PDF (CRM y Telegram)
 - En CRM (`Agente clinico n8n`):
-  - genera recomendación desde el rail derecho
+  - genera recomendaciÃ³n desde el rail derecho
   - permite descargar el informe estructurado en PDF
   - el KPI `Informes IA archivados` solo incrementa cuando `/api/exercises/reports/archive` responde OK
 - En Telegram fisio (`FisioIA_Agent_bot`):
-  - comando: `/informe <paciente_id> | <síntomas>`
-  - el backend genera la recomendación y envía el PDF en el chat
+  - comando: `/informe <paciente_id> | <sÃ­ntomas>`
+  - el backend genera la recomendaciÃ³n y envÃ­a el PDF en el chat
 
 ## Workflows n8n versionados en el repo
-- Producción actual: `n8n/Fisio_IA_Agent/production/`.
-- Canónicos vNext: `n8n/Fisio_IA_Agent/vnext/`
+- ProducciÃ³n actual: `n8n/Fisio_IA_Agent/production/`.
+- CanÃ³nicos vNext: `n8n/Fisio_IA_Agent/vnext/`
   - `telegram-chat.json`
   - `telegram-fisio-reports.json`
   - `fisio-agent-core.json`
@@ -109,8 +117,8 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
   - `w3-crm-trigger.json`
   - `sw-fisio-pending-intakes.json`
 
-## Migración de credenciales (test a definitivo)
-El sistema está preparado para migrar cuentas sin tocar código: solo `.env` y credenciales n8n.
+## MigraciÃ³n de credenciales (test a definitivo)
+El sistema estÃ¡ preparado para migrar cuentas sin tocar cÃ³digo: solo `.env` y credenciales n8n.
 
 - Backend `.env`:
   - `TELEGRAM_PATIENT_BOT_TOKEN`
@@ -128,7 +136,7 @@ El sistema está preparado para migrar cuentas sin tocar código: solo `.env` y 
   - workflow de fisio con la credencial del bot de informes
   - credencial Google Calendar del entorno definitivo
 
-## Inicio rápido
+## Inicio rÃ¡pido
 ```bash
 # backend
 cd backend
@@ -142,7 +150,7 @@ npm install
 npm run dev
 ```
 
-## Validación local segura del frontend
+## ValidaciÃ³n local segura del frontend
 Si `npm install` del frontend se bloquea en la ruta sincronizada (`G:\Mi unidad\...`), usa el flujo seguro ya validado en una ruta local no sincronizada:
 
 ```powershell
@@ -162,20 +170,23 @@ node .\scripts\telegram-dry-run.mjs --baseUrl=https://fisio-backend.b5xbaf.easyp
 - Espera `route` y `next_action` correctos sin crear pacientes, intakes, citas ni recomendaciones.
 - Para ejecutar un caso concreto: `--only=exercise_free_text`.
 
-## Smoke test rápido del flujo asíncrono W2
+## Smoke test rÃ¡pido del flujo asÃ­ncrono W2
 ```powershell
 node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<uuid> --professionalId=<uuid>
 ```
 
 ## Continuidad
-- Estado detallado por sesión: `CHANGELOG.md`
+- Estado detallado por sesiÃ³n: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
 - Checkpoint operativo: `docs/checkpoint_20260309_async_validation.md`
-- Análisis PROET: `docs/proet/platform_analysis_20260304.md`
+- AnÃ¡lisis PROET: `docs/proet/platform_analysis_20260304.md`
 - Norma n8n obligatoria: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
-- Playbook de importación y smoke test n8n: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`
+- Playbook de importaciÃ³n y smoke test n8n: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`
 - Norma de robustez y errores: `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`
+
+
+
 
 
 

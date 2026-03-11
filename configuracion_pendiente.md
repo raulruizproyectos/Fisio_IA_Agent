@@ -1,5 +1,32 @@
-# Configuracion Pendiente - Fisio_IA_Agent
+﻿# Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 91) - Citas Telegram validadas en CRM, voz nativa y Calendar pendientes
+
+### Completado esta sesion
+- [x] Verificado en produccion GET /api/telegram/link-code/:patientId con respuesta correcta de vinculo Telegram del paciente.
+- [x] Verificadas dos altas reales por POST /api/telegram/incoming:
+  - texto libre de cita
+  - payload con voice_transcript
+- [x] Confirmadas filas reales en crm_citas con canal_origen=telegram y estado=pendiente.
+- [x] Confirmado rastro en mensajes_ingesta_paciente para la solicitud simulada de voz transcrita.
+- [x] Confirmado en crm_comunicaciones que la cita entra por fallback backend y que calendar_sync queda skipped.
+- [x] El repo ya corrige la duplicacion de crm_pacientes cuando una cita entra por fallback con paciente legacy sin email.
+
+### Punto de partida exacto (siguiente bloque)
+1. Publicar OPENAI_API_KEY en fisio-backend.
+2. Publicar GOOGLE_CALENDAR_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY y, si procede, GOOGLE_CALENDAR_REQUIRED=true.
+3. Redeploy de fisio-backend.
+4. Validar con un chat real del bot de pacientes:
+   - texto libre de cita
+   - nota de voz real de Telegram
+   - alta en CRM
+   - evento en Google Calendar
+
+### Riesgos o bloqueos conocidos
+- Sin OPENAI_API_KEY en backend productivo, la nota de voz nativa seguira contestando que no puede procesar audios.
+- Sin credenciales de Google Calendar en backend productivo, las citas seguiran entrando en CRM pero calendar_sync quedara skipped.
+- El flujo de voz nativo aun no puede darse por cerrado sin un file_id real de Telegram de una nota de voz real.
+- frontend/stitch.zip sigue siendo solo referencia local y no debe trackearse.
 ## Estado actual (2026-03-11, Sesion 90) - Bot pacientes preparado para citas por texto o voz
 
 ### Completado esta sesion
@@ -419,12 +446,12 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-07, Sesion 59) - Checkpoint seguro tras crash y validacion limpia
 
 ### Completado esta sesion
-- âœ… Revision repo/Git/GitHub completada para reconstruir el estado tras el crash.
-- âœ… Corregida incoherencia en `frontend/src/pages/index.astro`:
+- Ã¢Å“â€¦ Revision repo/Git/GitHub completada para reconstruir el estado tras el crash.
+- Ã¢Å“â€¦ Corregida incoherencia en `frontend/src/pages/index.astro`:
   - `Timeouts/Reintentos IA` sin doble conteo entre reintentos locales y `engine_observability`.
   - `Informes IA archivados` solo sube cuando el PDF se archiva con exito.
   - eliminado helper TS sin uso para dejar `astro check` limpio.
-- âœ… Validacion segura completada:
+- Ã¢Å“â€¦ Validacion segura completada:
   - `node --check` backend OK.
   - JSON n8n OK.
   - `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`.
@@ -443,32 +470,32 @@ Estado actualizado para retomar sin perdida.
 
 ### Riesgos o bloqueos conocidos
 - En la ruta sincronizada `G:\Mi unidad\...` `npm install` del frontend puede bloquearse; usar validacion temporal en `C:\Temp`.
-- Falta aun validacion funcional manual con backend/API vivos tras el rediseÃ±o de UI.
+- Falta aun validacion funcional manual con backend/API vivos tras el rediseÃƒÂ±o de UI.
 
 ## Estado actual (2026-03-07, Sesion 58) - Cierre para continuar manana
 
 ### Completado esta sesion
-- âœ… Cambio global de Theme a Light Clinical Theme (`Layout.astro`).
-- âœ… ReesctructuraciÃ³n del Dashboard (`index.astro`) a formato vertical.
-- âœ… MÃ³dulo central de IA posicionado full-width desplazando el sidebar antÃ­guo.
-- âœ… MenÃº de navegaciÃ³n reordenado para flujo clÃ­nico.
+- Ã¢Å“â€¦ Cambio global de Theme a Light Clinical Theme (`Layout.astro`).
+- Ã¢Å“â€¦ ReesctructuraciÃƒÂ³n del Dashboard (`index.astro`) a formato vertical.
+- Ã¢Å“â€¦ MÃƒÂ³dulo central de IA posicionado full-width desplazando el sidebar antÃƒÂ­guo.
+- Ã¢Å“â€¦ MenÃƒÂº de navegaciÃƒÂ³n reordenado para flujo clÃƒÂ­nico.
 
 ### Punto de partida exacto (siguiente sesion)
 1. Terminar ajustes visuales CSS en `index.astro` (responsive breakpoints finos, hover states).
 2. Aplicar "Empty states" y "Loading states" limpios y profesionales.
-3. Refinar Copywriting (textos mÃ¡s clÃ­nicos y directos).
+3. Refinar Copywriting (textos mÃƒÂ¡s clÃƒÂ­nicos y directos).
 4. Levantar servidor entorno dev para comprobar que los layouts, modales y APIs heredadas funcionan en el nuevo DOM sin romper funcionalidad.
 
 ## Estado actual (2026-03-05, Sesion 57) - Punto de control previo
 
 ### Completado esta sesion
-- âœ… CRM chat con selector de paciente obligatorio para informe de ejercicios.
-- âœ… Eliminado bloqueo funcional `patient_required` en UX (validacion previa en frontend).
-- âœ… Panel/chat ajustado para small desktop + movil (evita cortes y desestructuracion).
-- âœ… Doble bot Telegram consolidado en codigo/documentacion:
+- Ã¢Å“â€¦ CRM chat con selector de paciente obligatorio para informe de ejercicios.
+- Ã¢Å“â€¦ Eliminado bloqueo funcional `patient_required` en UX (validacion previa en frontend).
+- Ã¢Å“â€¦ Panel/chat ajustado para small desktop + movil (evita cortes y desestructuracion).
+- Ã¢Å“â€¦ Doble bot Telegram consolidado en codigo/documentacion:
   - `fisioterapia_CarlaJL` para citas.
   - `FisioIA_Agent_bot` para informes PDF de ejercicios.
-- âœ… `CHANGELOG.md` actualizado con resumen completo y arranque de siguiente sesion.
+- Ã¢Å“â€¦ `CHANGELOG.md` actualizado con resumen completo y arranque de siguiente sesion.
 
 ### Punto de partida exacto (siguiente sesion)
 1. Deploy backend y frontend en EasyPanel con el ultimo commit de `main`.
@@ -489,13 +516,13 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-05, Sesion 56) - Exportacion PDF de informe implementada
 
 ### Completado esta sesion
-- âœ… Dashboard CRM con nuevo boton `PDF` en el panel del agente.
-- âœ… Exportacion de informe de ejercicios a PDF estructurado (jsPDF en frontend):
+- Ã¢Å“â€¦ Dashboard CRM con nuevo boton `PDF` en el panel del agente.
+- Ã¢Å“â€¦ Exportacion de informe de ejercicios a PDF estructurado (jsPDF en frontend):
   - resumen clinico,
   - ejercicios con pauta y motivos,
   - mensajes de paciente/fisio,
   - IDs de trazabilidad (`request_id`, `recommendation_id`).
-- âœ… Estilos y comportamiento responsive del boton PDF aÃ±adidos.
+- Ã¢Å“â€¦ Estilos y comportamiento responsive del boton PDF aÃƒÂ±adidos.
 
 ### Pendiente inmediato para cierre operativo
 1. Redeploy de `fisio-frontend` para publicar boton PDF en produccion.
@@ -508,11 +535,11 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-05, Sesion 55) - Observabilidad W2 endurecida y documentada
 
 ### Completado esta sesion
-- âœ… `backend/src/routes/exercises.js`:
+- Ã¢Å“â€¦ `backend/src/routes/exercises.js`:
   - fallback explicito `engine_target_not_configured` cuando no hay target IA valido.
-- âœ… `frontend/src/pages/index.astro`:
+- Ã¢Å“â€¦ `frontend/src/pages/index.astro`:
   - metrica `Timeouts/Reintentos IA` ahora incorpora observabilidad backend por `request_id` (sin doble conteo).
-- âœ… Configuracion/documentacion alineada:
+- Ã¢Å“â€¦ Configuracion/documentacion alineada:
   - `backend/.env.example` incluye `EXERCISE_ENGINE_TIMEOUT_MS` y `EXERCISE_ENGINE_MAX_ATTEMPTS`.
   - `README.md` documenta observabilidad de `POST /api/exercises/recommend`.
   - script `scripts/w2-smoke-observability.mjs` para smoke test rapido de observabilidad.
@@ -528,15 +555,15 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-05, Sesion 54) - Observabilidad timeout/reintentos implementada
 
 ### Completado esta sesion
-- âœ… Backend robustecido en `backend/src/routes/exercises.js`:
+- Ã¢Å“â€¦ Backend robustecido en `backend/src/routes/exercises.js`:
   - llamada al motor IA con retries y backoff (`callEngineWithRetry`).
   - retry en timeout/red y HTTP transitorios (`429/5xx`).
   - metrica `engine_observability` en respuesta de `/api/exercises/recommend`.
-- âœ… Frontend actualizado en `frontend/src/pages/index.astro`:
+- Ã¢Å“â€¦ Frontend actualizado en `frontend/src/pages/index.astro`:
   - metrica nueva `Timeouts/Reintentos IA` visible en dashboard.
   - reintento automatico en timeout para recomendaciones de ejercicios.
   - reporte visual incluye intentos/reintentos y aviso de fallback activo.
-- âœ… Verificacion tecnica local:
+- Ã¢Å“â€¦ Verificacion tecnica local:
   - `node --check` OK en rutas backend principales.
 
 ### Pendiente inmediato para cierre operativo
@@ -551,34 +578,34 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-04, Sesion 52) - Agente ejercicios estabilizado
 
 ### Completado esta sesion
-- âœ… Root cause identificado del fallo reportado en chat:
+- Ã¢Å“â€¦ Root cause identificado del fallo reportado en chat:
   - timeout frontend (8s) menor que latencia real del motor IA (~12s).
-- âœ… Fix aplicado en `frontend/src/pages/index.astro`:
+- Ã¢Å“â€¦ Fix aplicado en `frontend/src/pages/index.astro`:
   - `fetchJson(url, opts, timeoutMs)` configurable.
   - flujo de ejercicios con timeout `45000ms`.
   - mensajes de error diferenciados (timeout vs error HTTP).
   - eliminado falso "sin conexion" por timeout puntual del flujo de ejercicios.
-- âœ… Build local validado (`scripts/frontend-local-build.ps1` OK).
+- Ã¢Å“â€¦ Build local validado (`scripts/frontend-local-build.ps1` OK).
 
 ### Pendiente inmediato para manana
 1. Subir cobertura de imagenes en recomendaciones (priorizar `metadata.proet_image_url` y media principal).
-2. AÃ±adir metrica operacional para timeout/reintentos del agente en frontend y backend.
+2. AÃƒÂ±adir metrica operacional para timeout/reintentos del agente en frontend y backend.
 
 ## Estado actual (2026-03-04, Sesion 51) - Build valido sin video, produccion aun legacy
 
 ### Completado esta sesion
-- âœ… Normalizados archivos criticos a `UTF-8 sin BOM` para evitar roturas de parseo en scripts/JSON.
-- âœ… Build frontend validado en entorno local no sincronizado (`scripts/frontend-local-build.ps1`).
-- âœ… Verificado `dist/index.html` local:
+- Ã¢Å“â€¦ Normalizados archivos criticos a `UTF-8 sin BOM` para evitar roturas de parseo en scripts/JSON.
+- Ã¢Å“â€¦ Build frontend validado en entorno local no sincronizado (`scripts/frontend-local-build.ps1`).
+- Ã¢Å“â€¦ Verificado `dist/index.html` local:
   - no contiene seccion `Videos`.
   - no contiene textos `generar video`.
-- âœ… Endpoint robustecido:
+- Ã¢Å“â€¦ Endpoint robustecido:
   - `POST /api/exercises/recommend` genera informe aun sin `patient_id`.
   - persistencia en DB condicionada a `patient_id` disponible.
-- âœ… Redeploy ejecutado por API EasyPanel:
+- Ã¢Å“â€¦ Redeploy ejecutado por API EasyPanel:
   - `fisio-frontend` y `fisio-backend` en commit actualizado.
   - frontend productivo validado sin modulo `Videos`.
-- âœ… Corregido bug backend detectado tras deploy:
+- Ã¢Å“â€¦ Corregido bug backend detectado tras deploy:
   - `exercises.js` usaba variable no definida en `composeClinicalReport` y devolvia `500`.
   - fix aplicado para usar `symptom_summary`.
 
@@ -586,45 +613,45 @@ Estado actualizado para retomar sin perdida.
 1. Endurecer calidad de recomendacion:
    - aumentar cobertura de `imagen_url` en ejercicios recomendados (faltan URLs en algunos items).
 2. Mejorar observabilidad:
-   - aÃ±adir metrica/alerta cuando `persistence_skipped=true` para distinguir uso sin paciente seleccionado.
+   - aÃƒÂ±adir metrica/alerta cuando `persistence_skipped=true` para distinguir uso sin paciente seleccionado.
 
 ## Estado actual (2026-03-04, Sesion 50) - Video eliminado y flujo centrado en informe de ejercicios
 
 ### Completado esta sesion
-- âœ… Frontend sin mÃ³dulo de video:
-  - eliminadas secciÃ³n/pÃ¡gina de videos.
-  - agente CRM orientado a informe clÃ­nico con procedimiento + imagen.
-- âœ… Backend adaptado:
+- Ã¢Å“â€¦ Frontend sin mÃƒÂ³dulo de video:
+  - eliminadas secciÃƒÂ³n/pÃƒÂ¡gina de videos.
+  - agente CRM orientado a informe clÃƒÂ­nico con procedimiento + imagen.
+- Ã¢Å“â€¦ Backend adaptado:
   - `agent.js` sin copy/intents de video.
   - `exercises.js` devuelve `informe_clinico` + campos de pauta (`series/repeticiones/duracion`) + `imagen_url`.
   - `telegram.js` genera respuesta desde `/api/exercises/recommend` (sin pipeline de video).
   - endpoints `video-jobs*` bloqueados por defecto (`410`) salvo `ENABLE_VIDEO_WORKFLOWS=true`.
-- âœ… n8n limpio de video:
+- Ã¢Å“â€¦ n8n limpio de video:
   - repo: eliminados `orquestador-intake-video` + `subflujo-crear-render-video` + `subflujo-revision-video`.
   - remoto: workflows de video borrados por API.
-  - verificaciÃ³n remota: `0` workflows con â€œvideoâ€ en nombre.
-- âœ… ValidaciÃ³n:
+  - verificaciÃƒÂ³n remota: `0` workflows con Ã¢â‚¬Å“videoÃ¢â‚¬Â en nombre.
+- Ã¢Å“â€¦ ValidaciÃƒÂ³n:
   - `node --check` backend OK.
   - JSON de workflows (`production` + `vnext`) OK.
-- âœ… Base de datos nutrida desde PROET:
+- Ã¢Å“â€¦ Base de datos nutrida desde PROET:
   - script nuevo `scripts/proet-sync-supabase.mjs`.
-  - ejecuciÃ³n real completada: `72` dolencias insertadas y `179` ejercicios `PROET-*` upsertados en `crm_ejercicios_catalogo`.
-  - imÃ¡genes PROET registradas en `metadata.proet_image_url` para consumo del agente.
-- âœ… Robustez obligatoria formalizada:
+  - ejecuciÃƒÂ³n real completada: `72` dolencias insertadas y `179` ejercicios `PROET-*` upsertados en `crm_ejercicios_catalogo`.
+  - imÃƒÂ¡genes PROET registradas en `metadata.proet_image_url` para consumo del agente.
+- Ã¢Å“â€¦ Robustez obligatoria formalizada:
   - `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`.
   - fallback operativo en `POST /api/exercises/recommend` cuando falla el motor IA externo.
 
 ### Pendiente inmediato para cerrar funcionamiento real
-1. Validar build frontend en entorno con red estable (`npm install` en esta sesiÃ³n expira por timeout).
+1. Validar build frontend en entorno con red estable (`npm install` en esta sesiÃƒÂ³n expira por timeout).
 2. Configurar secreto `OPENAI_API_KEY` en Supabase Edge Function `exercise-recommend`.
-3. Redeploy backend/frontend y validar E2E que Telegram + chat CRM devuelven informe con imÃ¡genes usando el catÃ¡logo PROET nutrido.
+3. Redeploy backend/frontend y validar E2E que Telegram + chat CRM devuelven informe con imÃƒÂ¡genes usando el catÃƒÂ¡logo PROET nutrido.
 
 ## Estado actual (2026-03-04, Sesion 49) - W2/W3 activos con bloqueos de produccion detectados
 
 ### Completado esta sesion
-- âœ… W2/W3 recreados en n8n con `POST` y activos.
-- âœ… Ajustados workflows para evitar `$env` en expresiones (bloqueadas por la instancia n8n).
-- âœ… Corregido body JSON de nodos HTTP en W2/W3 (error previo de parseo).
+- Ã¢Å“â€¦ W2/W3 recreados en n8n con `POST` y activos.
+- Ã¢Å“â€¦ Ajustados workflows para evitar `$env` en expresiones (bloqueadas por la instancia n8n).
+- Ã¢Å“â€¦ Corregido body JSON de nodos HTTP en W2/W3 (error previo de parseo).
 
 ### Bloqueos confirmados
 1. Frontend productivo sin redeploy:
@@ -637,19 +664,19 @@ Estado actualizado para retomar sin perdida.
 
 ### Pendiente inmediato para cerrar funcionamiento real
 1. Redeploy manual o por API de `fisio-frontend` y `fisio-backend` en EasyPanel.
-2. Configurar secreto `OPENAI_API_KEY` en Supabase para la funciÃ³n `exercise-recommend`.
+2. Configurar secreto `OPENAI_API_KEY` en Supabase para la funciÃƒÂ³n `exercise-recommend`.
 3. Mover en UI de n8n W2/W3 a carpeta/tag `Fisio_IA_Agent` y revalidar inventario.
 
 ## Estado actual (2026-03-04, Sesion 48) - Norma obligatoria n8n carpeta/tag
 
 ### Completado esta sesion
-- âœ… Norma formal y obligatoria creada:
+- Ã¢Å“â€¦ Norma formal y obligatoria creada:
   - `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
-- âœ… Enlaces aÃ±adidos en documentaciÃ³n principal:
+- Ã¢Å“â€¦ Enlaces aÃƒÂ±adidos en documentaciÃƒÂ³n principal:
   - `README.md`
   - `n8n/README.md`
-- âœ… Regla operativa fijada:
-  - cualquier workflow creado/modificado debe quedar dentro de carpeta/tag `Fisio_IA_Agent` antes de cerrar sesiÃ³n.
+- Ã¢Å“â€¦ Regla operativa fijada:
+  - cualquier workflow creado/modificado debe quedar dentro de carpeta/tag `Fisio_IA_Agent` antes de cerrar sesiÃƒÂ³n.
 
 ### Pendiente para proxima sesion
 1. Mover manualmente en UI los workflows que aparezcan fuera de carpeta cuando falle API de tags.
@@ -658,11 +685,11 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-04, Sesion 47) - UI modo oscuro aplicada
 
 ### Completado esta sesion
-- âœ… RediseÃ±o a modo oscuro en CRM frontend:
+- Ã¢Å“â€¦ RediseÃƒÂ±o a modo oscuro en CRM frontend:
   - `frontend/src/layouts/Layout.astro`: variables globales dark theme.
   - `frontend/src/pages/index.astro`: sidebar, topbar, cards, tablas, inputs y selectores ajustados al nuevo esquema.
-- âœ… Se mantiene compatibilidad responsive (desktop y movil) sin cambiar la estructura funcional.
-- âœ… n8n remoto:
+- Ã¢Å“â€¦ Se mantiene compatibilidad responsive (desktop y movil) sin cambiar la estructura funcional.
+- Ã¢Å“â€¦ n8n remoto:
   - creados `Fisio_IA_Agent / W2 Exercise Agent` y `Fisio_IA_Agent / W3 CRM Trigger` (inactivos).
   - eliminados duplicados temporales de W3 de pruebas API.
 
@@ -673,16 +700,16 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-04, Sesion 46) - Fix frontend prod + CORS + W2/W3
 
 ### Completado esta sesion
-- âœ… Diagnostico de produccion:
+- Ã¢Å“â€¦ Diagnostico de produccion:
   - frontend entregaba TypeScript sin transpilar en HTML (`<script lang="ts">` con tipos `as HTML...`).
   - backend devolvia CORS restringido a `http://localhost:4321`.
-- âœ… Correcciones aplicadas:
+- Ã¢Å“â€¦ Correcciones aplicadas:
   - `frontend/src/pages/index.astro`: `<script>` procesable por Astro.
   - `backend/src/index.js`: CORS con allowlist robusta (localhost + dominio frontend prod + env `FRONTEND_URLS/FRONTEND_URL`).
-- âœ… vNext n8n completado en repo con nuevos workflows:
+- Ã¢Å“â€¦ vNext n8n completado en repo con nuevos workflows:
   - `n8n/Fisio_IA_Agent/vnext/w2-exercise-agent.json`
   - `n8n/Fisio_IA_Agent/vnext/w3-crm-trigger.json`
-- âœ… Documentacion sincronizada:
+- Ã¢Å“â€¦ Documentacion sincronizada:
   - `README.md`
   - `n8n/README.md`
   - `CHANGELOG.md`
@@ -696,14 +723,14 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-04, Sesion 45) - Orden n8n por entorno (production/vnext)
 
 ### Completado esta sesion
-- âœ… Sincronizacion remota de workflows activos n8n a repo:
+- Ã¢Å“â€¦ Sincronizacion remota de workflows activos n8n a repo:
   - `n8n/Fisio_IA_Agent/production/` con los `6` flujos activos actuales.
-- âœ… Reordenacion de flujos canonicos en desarrollo:
+- Ã¢Å“â€¦ Reordenacion de flujos canonicos en desarrollo:
   - `n8n/Fisio_IA_Agent/vnext/` con `telegram-chat`, `fisio-agent-core`, `w1-appointment-agent`, `sw-fisio-pending-intakes`.
-- âœ… Verificacion tecnica:
+- Ã¢Å“â€¦ Verificacion tecnica:
   - `telegram-chat.json` en `vnext` mantiene `Telegram Trigger` nativo.
   - CI ajustada para validar JSON recursivo en `n8n/Fisio_IA_Agent/**`.
-- âœ… Documentacion sincronizada:
+- Ã¢Å“â€¦ Documentacion sincronizada:
   - `CHANGELOG.md`
   - `n8n/README.md`
   - `docs/n8n/workflow_audit_20260304.md`
@@ -717,15 +744,15 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-04, Sesion 44) - Plantillas + clonado implementado
 
 ### Completado esta sesion
-- âœ… Backend:
+- Ã¢Å“â€¦ Backend:
   - `GET /api/profesional/program-templates` (agregacion de plantillas desde `planes/items_plan`)
   - `POST /api/profesional/program-templates/clone` (clonado real de plan + items al paciente destino)
-- âœ… Frontend:
-  - nueva secciÃ³n SPA `Plantillas`
+- Ã¢Å“â€¦ Frontend:
+  - nueva secciÃƒÂ³n SPA `Plantillas`
   - selector de paciente destino
-  - acciÃ³n `Clonar` conectada a backend
+  - acciÃƒÂ³n `Clonar` conectada a backend
   - estilos responsive para controles de plantillas
-- âœ… Documentacion:
+- Ã¢Å“â€¦ Documentacion:
   - `README.md` con endpoints nuevos
   - `CHANGELOG.md` y este archivo actualizados
 
@@ -742,7 +769,7 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-04, Sesion 43) - Analisis completo PROET (frontend + backend)
 
 ### Completado esta sesion
-- âœ… Analisis de secciones del frontend profesional (sidebar):
+- Ã¢Å“â€¦ Analisis de secciones del frontend profesional (sidebar):
   - Inici
   - Crear programa
   - Meus programes
@@ -752,10 +779,10 @@ Estado actualizado para retomar sin perdida.
   - Contacte
   - Meu calendari
   - Meu perfil
-- âœ… Inventario API backend PROET por escaneo de bundles:
+- Ã¢Å“â€¦ Inventario API backend PROET por escaneo de bundles:
   - `148` endpoints unicos detectados.
   - mayor volumen en: `programs (29)`, `exercises (23)`, `authentication (11)`, `users (11)`, `clients (10)`.
-- âœ… Documentacion de analisis versionada:
+- Ã¢Å“â€¦ Documentacion de analisis versionada:
   - `docs/proet/platform_analysis_20260304.md`
   - `docs/proet/sections_endpoints_20260304.json`
   - `docs/proet/api_groups_20260304.json`
@@ -769,23 +796,23 @@ Estado actualizado para retomar sin perdida.
 
 ### Pendiente para proxima sesion
 1. Implementar en Fisio_IA_Agent el bloque de mayor ROI: `Plantillas + clonacion`.
-2. DiseÃ±ar el flujo `Invitacion paciente` en CRM (UI + backend + eventos).
+2. DiseÃƒÂ±ar el flujo `Invitacion paciente` en CRM (UI + backend + eventos).
 3. Mantener pendiente infra: redeploy backend EasyPanel para publicar rutas W1 (`/api/profesional/appointments` en prod sigue `404`).
 
 ## Estado actual (2026-03-04, Sesion 42) - Ingesta PROET para W2
 
 ### Completado esta sesion
-- âœ… Nuevo script `scripts/proet-export.mjs` para extraer catalogo desde PROET.
+- Ã¢Å“â€¦ Nuevo script `scripts/proet-export.mjs` para extraer catalogo desde PROET.
   - Endpoints usados: auth + programas usuario + detalle programas + ejercicios por programa + templates mas usados.
   - Salida normalizada: perfil origen, templates, programas y ejercicios unicos.
-- âœ… Snapshot real generado y versionado:
+- Ã¢Å“â€¦ Snapshot real generado y versionado:
   - `docs/data/proet_snapshot_20260304.json`
   - Volumen actual:
     - `20` programas de usuario
     - `59` templates top
     - `309` registros programa-ejercicio
     - `179` ejercicios unicos
-- âœ… `README.md` actualizado con comando de exportacion:
+- Ã¢Å“â€¦ `README.md` actualizado con comando de exportacion:
   - `node scripts/proet-export.mjs --email=<tu_email> --locale=val`
 
 ### Estado de produccion verificado
@@ -800,50 +827,50 @@ Estado actualizado para retomar sin perdida.
 ## Estado actual (2026-03-04, Sesion 41) - W1 Telegram en progreso
 
 ### Completado esta sesion
-- âœ… `backend/src/routes/telegram.js`: W1 de citas ya no queda en mensaje placeholder.
+- Ã¢Å“â€¦ `backend/src/routes/telegram.js`: W1 de citas ya no queda en mensaje placeholder.
   - Si W0 clasifica `appointment` con confianza >= 0.6, backend dispara `N8N_APPOINTMENT_WEBHOOK_URL`.
-  - Se envÃ­a payload con `request_id`, `patient_id`, `professional_id`, `chat_id`, `message_text`, `timestamp`.
+  - Se envÃƒÂ­a payload con `request_id`, `patient_id`, `professional_id`, `chat_id`, `message_text`, `timestamp`.
   - Se mantiene fallback seguro para paciente si n8n no responde.
-- âœ… Trazabilidad W1: log tÃ©cnico en `crm_comunicaciones` (si tabla disponible).
-- âœ… `backend/src/routes/exercises.js`: fix de runtime (`crypto` import).
-- âœ… `.github/workflows/ci.yml`: aÃ±adida validaciÃ³n sintÃ¡ctica para `src/routes/exercises.js`.
-- âœ… `.github/workflows/ci.yml`: aÃ±adido job `n8n_json_validate` para validar workflows JSON de `n8n/Fisio_IA_Agent/`.
+- Ã¢Å“â€¦ Trazabilidad W1: log tÃƒÂ©cnico en `crm_comunicaciones` (si tabla disponible).
+- Ã¢Å“â€¦ `backend/src/routes/exercises.js`: fix de runtime (`crypto` import).
+- Ã¢Å“â€¦ `.github/workflows/ci.yml`: aÃƒÂ±adida validaciÃƒÂ³n sintÃƒÂ¡ctica para `src/routes/exercises.js`.
+- Ã¢Å“â€¦ `.github/workflows/ci.yml`: aÃƒÂ±adido job `n8n_json_validate` para validar workflows JSON de `n8n/Fisio_IA_Agent/`.
   - incluye limpieza de BOM UTF-8 para evitar fallos de parseo en archivos heredados.
-- âœ… `.env.example`: aÃ±adida variable `N8N_APPOINTMENT_WEBHOOK_URL`.
+- Ã¢Å“â€¦ `.env.example`: aÃƒÂ±adida variable `N8N_APPOINTMENT_WEBHOOK_URL`.
   - con ejemplo local preconfigurado: `http://localhost:5678/webhook/fisio/w1/appointment`.
-- âœ… `backend/src/routes/professional.js`: API de citas W1 implementada.
+- Ã¢Å“â€¦ `backend/src/routes/professional.js`: API de citas W1 implementada.
   - `GET /api/profesional/appointments`
   - `POST /api/profesional/appointments`
   - `PATCH /api/profesional/appointments/:appointmentId`
   - con validaciones de estado/canal/fechas, control de conflictos y mapeo de IDs legacy -> CRM.
-- âœ… `n8n/Fisio_IA_Agent/w1-appointment-agent.json`: workflow W1 versionado para intake de citas desde Telegram.
-- âœ… `backend/src/routes/telegram.js`: comando `/cita <inicio_iso> <fin_iso> [nota]` aÃ±adido para solicitud directa de cita.
-- âœ… `frontend/src/pages/index.astro`: nueva secciÃ³n SPA `Citas` conectada a API W1 (`GET/PATCH /api/profesional/appointments`).
-- âœ… Docs actualizadas (`README.md`, `n8n/README.md`, `n8n/telegram-bot.md`) con rutas/workflow W1 y comando `/cita`.
+- Ã¢Å“â€¦ `n8n/Fisio_IA_Agent/w1-appointment-agent.json`: workflow W1 versionado para intake de citas desde Telegram.
+- Ã¢Å“â€¦ `backend/src/routes/telegram.js`: comando `/cita <inicio_iso> <fin_iso> [nota]` aÃƒÂ±adido para solicitud directa de cita.
+- Ã¢Å“â€¦ `frontend/src/pages/index.astro`: nueva secciÃƒÂ³n SPA `Citas` conectada a API W1 (`GET/PATCH /api/profesional/appointments`).
+- Ã¢Å“â€¦ Docs actualizadas (`README.md`, `n8n/README.md`, `n8n/telegram-bot.md`) con rutas/workflow W1 y comando `/cita`.
 
-### Pendiente para prÃ³xima sesiÃ³n
-1. **Config producciÃ³n**: definir `N8N_APPOINTMENT_WEBHOOK_URL` en EasyPanel/backend.
-2. **W1 n8n**: conectar credenciales Google Calendar y completar confirmaciÃ³n automÃ¡tica.
-3. **E2E**: test Telegram de intenciÃ³n cita y validaciÃ³n en `crm_comunicaciones`.
+### Pendiente para prÃƒÂ³xima sesiÃƒÂ³n
+1. **Config producciÃƒÂ³n**: definir `N8N_APPOINTMENT_WEBHOOK_URL` en EasyPanel/backend.
+2. **W1 n8n**: conectar credenciales Google Calendar y completar confirmaciÃƒÂ³n automÃƒÂ¡tica.
+3. **E2E**: test Telegram de intenciÃƒÂ³n cita y validaciÃƒÂ³n en `crm_comunicaciones`.
 
 ## Estado actual (2026-03-04, Sesion 39) - PIVOTE CRM + AGENTES IA
 
 ### Completado esta sesion
-- âœ… 12 tablas CRM creadas en Supabase (27 total) con RLS + triggers + policies service_role
-- âœ… 16 ejercicios migrados a `crm_ejercicios_catalogo` con metadata
-- âœ… Bucket privado `ejercicios` en Storage (10MB, JPEG/PNG/GIF/WebP/MP4)
-- âœ… W2: `exercises.js` (4 endpoints) + Edge Function `exercise-recommend` (gpt-4o-mini)
-- âœ… W0: Edge Function `intent-router` + integracion Telegram auto-routing
-- âœ… W3: Boton CRM ðŸ‹ï¸ en frontend â†’ `/api/exercises/recommend`
-- âœ… `OPENAI_API_KEY` almacenada en Supabase Vault + funciÃ³n `vault_read_secret`
-- âœ… Fix security advisory: search_path en `crm_set_updated_at`
+- Ã¢Å“â€¦ 12 tablas CRM creadas en Supabase (27 total) con RLS + triggers + policies service_role
+- Ã¢Å“â€¦ 16 ejercicios migrados a `crm_ejercicios_catalogo` con metadata
+- Ã¢Å“â€¦ Bucket privado `ejercicios` en Storage (10MB, JPEG/PNG/GIF/WebP/MP4)
+- Ã¢Å“â€¦ W2: `exercises.js` (4 endpoints) + Edge Function `exercise-recommend` (gpt-4o-mini)
+- Ã¢Å“â€¦ W0: Edge Function `intent-router` + integracion Telegram auto-routing
+- Ã¢Å“â€¦ W3: Boton CRM Ã°Å¸Ââ€¹Ã¯Â¸Â en frontend Ã¢â€ â€™ `/api/exercises/recommend`
+- Ã¢Å“â€¦ `OPENAI_API_KEY` almacenada en Supabase Vault + funciÃƒÂ³n `vault_read_secret`
+- Ã¢Å“â€¦ Fix security advisory: search_path en `crm_set_updated_at`
 
 ### Pendiente para proxima sesion
 1. **W1**: Citas + Google Calendar (requiere OAuth config manual)
 2. **E2E**: Prueba completa multicanal Telegram + CRM + Supabase
 3. **Deploy backend**: Push codigo actualizado a EasyPanel (nuevas rutas: exercises.js, telegram.js W0)
 4. **Deploy frontend**: Push index.astro con boton ejercicios (W3)
-5. **Seguridad**: Rotar `OPENAI_API_KEY` (expuesta en chat) â†’ actualizar Vault
+5. **Seguridad**: Rotar `OPENAI_API_KEY` (expuesta en chat) Ã¢â€ â€™ actualizar Vault
 6. **RLS policies**: Granulares para auth de usuarios (actual: solo service_role)
 
 ### URLs produccion
@@ -986,26 +1013,26 @@ Tablas necesarias confirmadas:
 - CI base: configurada en `.github/workflows/ci.yml`
 - Plantillas y gobernanza: ISSUE/PR templates, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`
 
-## Punto de SituaciÃ³n (Checkpoint - Fin SesiÃ³n 40)
+## Punto de SituaciÃƒÂ³n (Checkpoint - Fin SesiÃƒÂ³n 40)
 
-### âœ… Lo que ya estÃ¡ funcionando / Terminado
-1. **Frontend Responsive**: Interfaz adaptada a mÃ³vil/tablet/desktop con sidebar colapsable, mÃ©tricas en grid fluido y diseÃ±o mobile-first.
-2. **Seguridad (RLS)**: Bases de datos protegidas. Las 27 tablas en Supabase tienen polÃ­ticas RLS granulares habilitadas. Service Role backend intacto. Advisor de seguridad en 0 alertas.
-3. **Backend APIs y Subflujos n8n**: Backend en EasyPanel (`fisio-backend`) respondiendo a n8n. Flujo de video E2E probado vÃ­a API interna.
-4. **Reglas de Agente**: AÃ±adidas reglas estrictas sobre el Frontend Responsive obligatorio y la ReutilizaciÃ³n de Workflows en n8n.
+### Ã¢Å“â€¦ Lo que ya estÃƒÂ¡ funcionando / Terminado
+1. **Frontend Responsive**: Interfaz adaptada a mÃƒÂ³vil/tablet/desktop con sidebar colapsable, mÃƒÂ©tricas en grid fluido y diseÃƒÂ±o mobile-first.
+2. **Seguridad (RLS)**: Bases de datos protegidas. Las 27 tablas en Supabase tienen polÃƒÂ­ticas RLS granulares habilitadas. Service Role backend intacto. Advisor de seguridad en 0 alertas.
+3. **Backend APIs y Subflujos n8n**: Backend en EasyPanel (`fisio-backend`) respondiendo a n8n. Flujo de video E2E probado vÃƒÂ­a API interna.
+4. **Reglas de Agente**: AÃƒÂ±adidas reglas estrictas sobre el Frontend Responsive obligatorio y la ReutilizaciÃƒÂ³n de Workflows en n8n.
 
-### â³ Lo que falta hacer (Siguiente sesiÃ³n)
+### Ã¢ÂÂ³ Lo que falta hacer (Siguiente sesiÃƒÂ³n)
 
 #### Bloque 1: Despliegues y Validaciones Inmediatas
-- [ ] **[MANUAL] Redeploy en EasyPanel**: Entrar al panel y hacer deploy de `fisio-frontend` y `fisio-backend` para que los cambios responsive y de cÃ³digo subido a GitHub se reflejen en la URL pÃºblica.
+- [ ] **[MANUAL] Redeploy en EasyPanel**: Entrar al panel y hacer deploy de `fisio-frontend` y `fisio-backend` para que los cambios responsive y de cÃƒÂ³digo subido a GitHub se reflejen en la URL pÃƒÂºblica.
 - [ ] **Test E2E Completo Multicanal**: Probar flujo desde mensaje de Telegram -> webhook backend -> n8n -> Supabase -> Respuesta en CRM Frontend.
 
 #### Bloque 2: Nuevas Funcionalidades (Roadmap original)
-- [ ] **W1: Citas y Calendario (Google Calendar)**: ConfiguraciÃ³n manual OAuth requerida para conectar el agente con la creaciÃ³n de citas reales.
-- [ ] **W3: BotÃ³n Trigger CRM**: AÃ±adir en el frontend el botÃ³n para disparar recomendaciones de ejercicios manualmente desde la interfaz web.
+- [ ] **W1: Citas y Calendario (Google Calendar)**: ConfiguraciÃƒÂ³n manual OAuth requerida para conectar el agente con la creaciÃƒÂ³n de citas reales.
+- [ ] **W3: BotÃƒÂ³n Trigger CRM**: AÃƒÂ±adir en el frontend el botÃƒÂ³n para disparar recomendaciones de ejercicios manualmente desde la interfaz web.
 
-#### Bloque 3: AuditorÃ­a Final y Seguridad
-- [ ] Rotar `OPENAI_API_KEY` (actualmente en cÃ³digo/clear text en algunos puntos histÃ³ricos).
+#### Bloque 3: AuditorÃƒÂ­a Final y Seguridad
+- [ ] Rotar `OPENAI_API_KEY` (actualmente en cÃƒÂ³digo/clear text en algunos puntos histÃƒÂ³ricos).
 - [ ] Pruebas exhaustivas de concurrencia.
 
 ## Nota de terminologia
@@ -1105,13 +1132,13 @@ Tablas necesarias confirmadas:
 
 ## Arranque minimo recomendado (siguiente sesion)
 1. **[Infra Manual]**: Crear App `fisio-frontend` en EasyPanel desde GitHub repo, usando `Dockerfile` y path `/frontend`.
-2. **[Infra Manual]**: Asegurar branch protection de `main` en configuraciÃ³n web de GitHub.
-3. Ejecutar testing funcional manual en Telegram (`/start`, `/plan`, `/dolor`) desde un mÃ³vil real.
+2. **[Infra Manual]**: Asegurar branch protection de `main` en configuraciÃƒÂ³n web de GitHub.
+3. Ejecutar testing funcional manual en Telegram (`/start`, `/plan`, `/dolor`) desde un mÃƒÂ³vil real.
 4. Validar llegada a base de datos en Supabase.
-5. Continuar desarrollo de lÃ³gicas del Agente IA y vÃ­deos de seguimiento.
+5. Continuar desarrollo de lÃƒÂ³gicas del Agente IA y vÃƒÂ­deos de seguimiento.
 
 ## Decision UX/UI registrada (2026-03-03)
-- Frontend rediseÃ±ado completamente en sesion 24.
+- Frontend rediseÃƒÂ±ado completamente en sesion 24.
 - Dashboard profesional dark mode con sidebar, metricas, tabla de intakes, chat del agente IA.
 - Proyecto Stitch de referencia: ID 8185935624241829024.
 - Paleta: #0f1419 / #1a2332 / #0d9488 (teal).
@@ -1123,9 +1150,9 @@ Tablas necesarias confirmadas:
 - Build local validado: 0 errores, 0 warnings.
 
 ## Guia despliegue frontend (EasyPanel)
-1. EasyPanel â†’ Proyecto `n8n` â†’ **+ Create Service** â†’ **App**.
+1. EasyPanel Ã¢â€ â€™ Proyecto `n8n` Ã¢â€ â€™ **+ Create Service** Ã¢â€ â€™ **App**.
 2. Nombre: `fisio-frontend`.
-3. Source: GitHub â†’ `https://github.com/raulruizproyectos/Fisio_IA_Agent.git` â†’ `main` â†’ Root: `/frontend`.
+3. Source: GitHub Ã¢â€ â€™ `https://github.com/raulruizproyectos/Fisio_IA_Agent.git` Ã¢â€ â€™ `main` Ã¢â€ â€™ Root: `/frontend`.
 4. Build: Dockerfile.
 5. Domains: asignar dominio (ej. `fisio-frontend.b5xbaf.easypanel.host`).
 6. Puerto: `80`.
@@ -1133,7 +1160,7 @@ Tablas necesarias confirmadas:
 
 ## Arranque minimo (siguiente paso)
 1. Push a GitHub y crear App en EasyPanel (7 pasos arriba).
-2. Verificar `https://fisio-frontend.b5xbaf.easypanel.host/health` â†’ 200.
+2. Verificar `https://fisio-frontend.b5xbaf.easypanel.host/health` Ã¢â€ â€™ 200.
 3. Probar dashboard y chat agente IA desde el frontend desplegado.
 4. Ejecutar E2E Telegram (`/start`, `/plan`, `/dolor`).
 5. Configurar branch protection en `main`.
@@ -1149,8 +1176,8 @@ Tablas necesarias confirmadas:
       - Dashboard/Intakes: `Revisar` -> abre Historial del paciente.
       - Pacientes: `Ver` -> abre Historial del paciente.
       - Videos: `Historial` -> abre Historial del paciente.
-    - SecciÃ³n Videos conectada a datos reales de backend.
-    - SecciÃ³n Historial conectada a:
+    - SecciÃƒÂ³n Videos conectada a datos reales de backend.
+    - SecciÃƒÂ³n Historial conectada a:
       - `GET /api/pacientes/:id`
       - `GET /api/profesional/patients/:patientId/history`
 
@@ -1174,7 +1201,7 @@ Tablas necesarias confirmadas:
   - Build configurado en EasyPanel como `dockerfile` (`file: Dockerfile`).
   - Deploy actualizado al commit `c3a8aae`.
   - Estado actual: sigue en `502`.
-  - SeÃ±ales tÃ©cnicas:
+  - SeÃƒÂ±ales tÃƒÂ©cnicas:
     - `monitor.getDockerTaskStats`: `fisio-ia-agent_fisio-frontend` -> `actual=0`, `desired=1`.
     - `projects.getDockerContainers`: sin contenedor corriendo para frontend.
     - `services.common.getServiceError`: `null` (sin detalle).
@@ -1182,14 +1209,14 @@ Tablas necesarias confirmadas:
 ## Pendiente inmediato (nuevo)
 1. **[Manual EasyPanel UI]** abrir logs/historial de deploy de `fisio-frontend` para capturar causa exacta del task fail.
 2. **[Manual Host/Docker Swarm]** revisar reason del servicio `fisio-ia-agent_fisio-frontend` (si hay acceso a consola del nodo).
-3. **Aplicar fix de runtime/build** segÃºn log y redeploy.
+3. **Aplicar fix de runtime/build** segÃƒÂºn log y redeploy.
 4. Confirmar estado final:
    - `https://fisio-frontend.b5xbaf.easypanel.host/` -> 200
    - `monitor.getDockerTaskStats` frontend -> `actual=1`, `desired=1`.
 5. Mantener pendientes ya abiertos:
    - E2E Telegram real.
    - branch protection en `main`.
-   - rotaciÃ³n de credenciales.
+   - rotaciÃƒÂ³n de credenciales.
 
 ## Corte tecnico actualizado (2026-03-03, antes de nueva arquitectura)
 - Infra:
@@ -1200,17 +1227,17 @@ Tablas necesarias confirmadas:
   - Backend: OK (200 en `/api/health`).
   - Frontend: KO (502 en dominio principal).
 - Repositorio:
-  - `main` sincronizada con commits de fix y documentaciÃ³n.
-  - Ãšltimos commits clave:
-    - `cd47cba` (documentaciÃ³n de migraciÃ³n y estado actual)
+  - `main` sincronizada con commits de fix y documentaciÃƒÂ³n.
+  - ÃƒÅ¡ltimos commits clave:
+    - `cd47cba` (documentaciÃƒÂ³n de migraciÃƒÂ³n y estado actual)
     - `c3a8aae` (fix Dockerfile frontend sin lockfile obligatorio)
 - Bloqueo activo para retomar:
   - frontend no llega a levantar task/contendor en runtime de EasyPanel.
 
 ## Prioridad de arranque tras nuevo prompt
 1. Revisar y decidir nueva arquitectura objetivo (componentes, contratos y despliegue).
-2. Definir plan de migraciÃ³n por fases sin romper backend actual operativo.
-3. Replantear frontend dentro de la nueva arquitectura y resolver bloqueo 502 durante la transiciÃ³n.
+2. Definir plan de migraciÃƒÂ³n por fases sin romper backend actual operativo.
+3. Replantear frontend dentro de la nueva arquitectura y resolver bloqueo 502 durante la transiciÃƒÂ³n.
 
 ## Actualizacion (2026-03-03, Sesion 30)
 - Limpieza aplicada para nueva arquitectura:
@@ -1269,7 +1296,7 @@ Tablas necesarias confirmadas:
 
 ## Pendiente inmediato (orden en instancia n8n)
 1. Listar workflows en n8n remoto y detectar duplicados por nombre + contenido.
-2. Renombrar con convenciÃ³n W0/W1/W2/W3 donde aplique.
+2. Renombrar con convenciÃƒÂ³n W0/W1/W2/W3 donde aplique.
 3. Mover/etiquetar todos los workflows del proyecto bajo carpeta/tag `Fisio_IA_Agent`.
 4. Desactivar/eliminar duplicados remotos no canonicos tras backup JSON.
 5. Exportar snapshot final de n8n y versionarlo en `n8n/Fisio_IA_Agent/`.
@@ -1335,6 +1362,9 @@ Tablas necesarias confirmadas:
 1. En UI n8n: anadir tag `Fisio_IA_Agent` a `Fisio_IA_Agent / Nucleo Agente` para que aparezcan 6/6 en carpeta.
 2. Importar/publicar desde repo los workflows endurecidos (`telegram-chat` y `fisio-agent-core`).
 3. Validar E2E W0->backend->reply y en paralelo preparar hardening W2/W3.
+
+
+
 
 
 

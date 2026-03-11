@@ -23,7 +23,10 @@ Checkpoint de producto actual (2026-03-11):
 
 - El Copilot lateral del CRM toma ahora una referencia visual externa real (`frontend/stitch.zip`) y se estructura como consola clinica limpia: selector arriba, chat central y acciones/input abajo.
 - El backend ya soporta invitacion Telegram del paciente desde CRM y targeting del bot fisio via `crm_perfiles`.
-- El triage clinico del agente n8n ya esta validado tanto en `dry_run` como en un chat real vinculado.
+- El triage clinico del agente n8n ya esta validado tanto en dry_run como en un chat real vinculado.
+- El bot de pacientes ya crea citas reales en crm_citas desde Telegram por texto y por payload voice_transcript.
+- En produccion, Google Calendar sigue inactivo desde backend (calendar_sync.enabled=false) y la rama nativa de audio Telegram sigue bloqueada hasta publicar OPENAI_API_KEY.
+- El repo ya incorpora una correccion para que la resolucion de pacientes legacy no siga creando duplicados en crm_pacientes al entrar por fallback de citas.
 
 ## 2) Component Map
 
@@ -385,6 +388,9 @@ Telegram (intents base):
 Condicion de continuidad:
 
 - Mantener el flujo centrado en informe clÃ­nico de ejercicios (sÃ­ntomas -> selecciÃ³n -> imÃ¡genes/pautas -> entrega CRM/Telegram).
+
+
+
 
 
 

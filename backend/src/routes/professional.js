@@ -276,6 +276,17 @@ async function resolveCrmPatientId(rawPatientId) {
   if (legacyPatient.error) throw legacyPatient.error;
   if (!legacyPatient.data) return null;
 
+  const migrationObservation = `auto_migrated_from_legacy_patient:${legacyPatient.data.id}`;
+
+  const existingByObservation = await supabase
+    .from('crm_pacientes')
+    .select('id')
+    .eq('observaciones', migrationObservation)
+    .maybeSingle();
+
+  if (existingByObservation.error) throw existingByObservation.error;
+  if (existingByObservation.data?.id) return existingByObservation.data.id;
+
   if (legacyPatient.data.email) {
     const existingByEmail = await supabase
       .from('crm_pacientes')
@@ -288,6 +299,39 @@ async function resolveCrmPatientId(rawPatientId) {
   }
 
   const { nombre, apellidos } = splitFullName(legacyPatient.data.nombre_completo);
+  let migratedMatchQuery = supabase
+    .from('crm_pacientes')
+    .select('id, observaciones')
+    .eq('nombre', nombre)
+    .order('created_at', { ascending: true })
+    .limit(5);
+
+  migratedMatchQuery = apellidos ? migratedMatchQuery.eq('apellidos', apellidos) : migratedMatchQuery.is('apellidos', null);
+  migratedMatchQuery = legacyPatient.data.phone
+    ? migratedMatchQuery.eq('telefono', legacyPatient.data.phone)
+    : migratedMatchQuery.is('telefono', null);
+  migratedMatchQuery = legacyPatient.data.fecha_nacimiento
+    ? migratedMatchQuery.eq('fecha_nacimiento', legacyPatient.data.fecha_nacimiento)
+    : migratedMatchQuery.is('fecha_nacimiento', null);
+
+  const migratedMatch = await migratedMatchQuery;
+  if (migratedMatch.error) throw migratedMatch.error;
+
+  const reusableMigrated = (migratedMatch.data || []).find((row) => {
+    const note = String(row?.observaciones || '');
+    return note === 'auto_migrated_from_legacy_patient' || note.startsWith('auto_migrated_from_legacy_patient:');
+  });
+
+  if (reusableMigrated?.id) {
+    if (reusableMigrated.observaciones !== migrationObservation) {
+      await supabase
+        .from('crm_pacientes')
+        .update({ observaciones: migrationObservation })
+        .eq('id', reusableMigrated.id);
+    }
+    return reusableMigrated.id;
+  }
+
   const inserted = await supabase
     .from('crm_pacientes')
     .insert({
@@ -296,7 +340,7 @@ async function resolveCrmPatientId(rawPatientId) {
       telefono: legacyPatient.data.phone || null,
       email: legacyPatient.data.email || null,
       fecha_nacimiento: legacyPatient.data.fecha_nacimiento || null,
-      observaciones: 'auto_migrated_from_legacy_patient',
+      observaciones: migrationObservation,
       activo: true,
     })
     .select('id')
@@ -1394,5 +1438,4 @@ router.post('/video-jobs/:jobId/send', async (req, res, next) => {
     next(err);
   }
 });
-
 export default router;
