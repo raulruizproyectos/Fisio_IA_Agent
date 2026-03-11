@@ -108,7 +108,7 @@ Regla de negocio transversal:
 ```json
 {
   "request_id": "uuid",
-  "route": "appointment|exercise|session_note|unknown",
+  "route": "appointment|exercise|session_note|triage_needed|unknown",
   "confidence": 0.0,
   "normalized_payload": {}
 }
@@ -117,6 +117,7 @@ Regla de negocio transversal:
 ### Error handling
 
 - Reintentos para fallos transitorios de red.
+- Si falta contexto clinico minimo en mensajes de sintomas vagos: ruta `triage_needed` con solicitud de aclaracion segura.
 - Si clasificacion falla: ruta `unknown` y mensaje seguro al usuario.
 - Registro en `comunicaciones` y `audit_log`.
 

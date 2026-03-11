@@ -2,6 +2,90 @@
 
 Estado actualizado para retomar sin perdida.
 
+## Estado actual (2026-03-11, Sesion 83) - CRM listo para invitacion Telegram de pacientes
+
+### Completado esta sesion
+- [x] Backend endurecido: GET /api/telegram/link-code/:patientId y POST seguro sin reset accidental de chats ya vinculados.
+- [x] Historial del CRM ya muestra estado Telegram del paciente.
+- [x] Desde CRM ya se puede preparar invitacion, copiar /start, copiar deep link y regenerar codigo si la vinculacion sigue pendiente.
+
+### Punto de partida exacto (siguiente bloque)
+1. Si se quiere usar en produccion, hacer redeploy manual de fisio-backend y fisio-frontend.
+2. Validar un caso real desde CRM + Telegram: generar codigo en historial, abrir Telegram y completar /start CODIGO.
+3. Si queda estable, volver al siguiente frente visible del CRM/EasyPanel.
+
+### Riesgos o bloqueos conocidos
+- La UI nueva y el GET /api/telegram/link-code aun no estan en produccion hasta redeploy.
+- Sigue pendiente una prueba manual real del flujo CRM -> invitacion -> vinculacion Telegram en canal vivo.
+
+## Estado actual (2026-03-11, Sesion 82) - Bot fisio desbloqueado via crm_perfiles
+
+### Completado esta sesion
+- [x] Migracion productiva aplicada sobre crm_perfiles para columnas Telegram.
+- [x] /informe del bot fisio ya persiste el chat profesional en crm_perfiles.
+- [x] /api/telegram/physio-report/send funciona sin chat_id explicito y resuelve el target desde crm_perfiles.
+- [x] Nuevo dry_run local implementado para esa ruta, pendiente redeploy backend.
+
+### Punto de partida exacto (siguiente bloque)
+1. Decidir si hacer redeploy del backend para publicar el dry_run nuevo.
+2. Si no hacemos redeploy ahora, volver al siguiente frente visible del CRM/EasyPanel.
+3. No hace falta seguir invirtiendo tiempo en el cuello de botella del bot fisio: ya esta funcionalmente resuelto.
+
+### Riesgos o bloqueos conocidos
+- El dry_run de physio-report/send aun no esta en produccion hasta redeploy.
+- Los chats historicos de test siguen obsoletos; el unico target real confirmado sigue siendo el chat vivo ya vinculado.
+
+## Estado actual (2026-03-11, Sesion 81) - Telegram triage validado en chat real
+
+### Completado esta sesion
+- [x] Entrega real a Telegram validada sobre el chat vinculado de raulruizdiaz.
+- [x] El backend devuelve 200 y el mensaje se persiste en mensajes_ingesta_paciente.
+- [x] Queda demostrado que el triage nuevo funciona tambien fuera de dry run.
+
+### Punto de partida exacto (siguiente bloque)
+1. Revisar el texto recibido en el chat real y decidir si necesita pulido de copy.
+2. Si el copy es valido, cerrar este bloque como DONE.
+3. Elegir siguiente frente: bot fisio/crm_perfiles o redeploys pendientes de CRM.
+
+### Riesgos o bloqueos conocidos
+- Los chats de test historicos siguen devolviendo chat not found; no sirven como target real repetible.
+- crm_perfiles en produccion sigue sin las columnas telegram_chat_id/telegram_username/telegram_linked_at.
+
+## Estado actual (2026-03-11, Sesion 80) - Validacion real controlada Telegram OK, pendiente chat humano
+
+### Completado esta sesion
+- [x] Prueba no dry_run sobre POST /api/telegram/incoming con payload custom y paciente de test ya vinculado.
+- [x] El backend responde con el copy nuevo de triage para Me duele.
+- [x] Se verifica registro real en mensajes_ingesta_paciente para TestE2E con estado=pendiente_revision.
+- [x] La prueba evita enviar mensaje real a Telegram porque no entra por webhook nativo.
+
+### Punto de partida exacto (siguiente bloque)
+1. Ejecutar prueba manual real desde Telegram con un chat humano ya vinculado.
+2. Confirmar recepcion visible del mensaje de triage en el chat real.
+3. Si la UX es correcta, cerrar el bloque Telegram triage y pasar al siguiente foco funcional.
+
+### Riesgos o bloqueos conocidos
+- Sigue faltando la prueba final con mensaje real entregado por Telegram al usuario.
+- La tabla crm_perfiles en produccion aun no expone las columnas telegram_chat_id/telegram_username/telegram_linked_at; por eso el targeting del bot fisio sigue dependiendo de otras rutas o configuracion.
+## Estado actual (2026-03-11, Sesion 79) - Triage clinico n8n desplegado y validado por dry run
+
+### Completado esta sesion
+- [x] `build-agent-reply-triage.js` versionado en repo como fuente del nodo n8n.
+- [x] `fisio-agent-core.json` actualizado con ruta `triage_needed` y extraccion de contexto clinico minimo.
+- [x] Corregido el webhook del core a `POST`; el backend ya no cae por `n8n_http_error` en este flujo.
+- [x] Nuevo script `scripts/sync-n8n-workflow.mjs` para sincronizar workflows n8n sin depender de PowerShell.
+- [x] Workflow remoto `Fisio_IA_Agent / Nucleo Agente` actualizado por API.
+- [x] Smoke test remoto Telegram dry run completado: `6/6 OK`, incluyendo `triage_free_text` -> `triage_needed`.
+
+### Punto de partida exacto (siguiente bloque)
+1. Ejecutar prueba manual real del bot Telegram con un chat ya vinculado.
+2. Confirmar que el triage en canal real pide contexto suficiente sin sonar robotico.
+3. Si la UX es correcta, siguiente paso: ajustar wording final o dejar el triage como baseline estable.
+
+### Riesgos o bloqueos conocidos
+- Falta aun la prueba manual E2E real en Telegram; hasta entonces la validacion es fuerte pero sigue siendo `dry_run`.
+- El redeploy de frontend/backend en EasyPanel sigue siendo un tema aparte cuando se quiera publicar cambios visibles del CRM.
+
 ## Estado actual (2026-03-11, Sesion 78) - Triage clinico n8n preparado, pendiente upload
 
 ### Completado esta sesion
@@ -1138,4 +1222,8 @@ Tablas necesarias confirmadas:
 1. En UI n8n: anadir tag `Fisio_IA_Agent` a `Fisio_IA_Agent / Nucleo Agente` para que aparezcan 6/6 en carpeta.
 2. Importar/publicar desde repo los workflows endurecidos (`telegram-chat` y `fisio-agent-core`).
 3. Validar E2E W0->backend->reply y en paralelo preparar hardening W2/W3.
+
+
+
+
 

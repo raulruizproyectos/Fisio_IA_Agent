@@ -27,6 +27,17 @@ async function readJson(response) {
 function buildCases({ patientId, professionalId }) {
   return [
     {
+      name: 'triage_free_text',
+      expectedRoute: 'triage_needed',
+      expectedAction: 'create_intake_and_reply',
+      body: {
+        chat_id: 'dryrun-chat-0',
+        texto_mensaje: 'Me duele',
+        patient_id: patientId,
+        professional_id: professionalId,
+      },
+    },
+    {
       name: 'exercise_free_text',
       expectedRoute: 'exercise',
       expectedAction: 'trigger_w2',

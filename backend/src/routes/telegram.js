@@ -440,6 +440,66 @@ function getPatientDisplayName(payload) {
   return `Paciente Telegram ${payload.chat_id}`;
 }
 
+function generateTelegramLinkCode() {
+  return crypto.randomBytes(3).toString('hex').toUpperCase();
+}
+
+async function getTelegramLinkPatient(patientId) {
+  const { data, error } = await supabase
+    .from('pacientes')
+    .select('id, profesional_id, nombre_completo')
+    .eq('id', patientId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data || null;
+}
+
+async function getPatientTelegramLinkRecord(patientId) {
+  const { data, error } = await supabase
+    .from('vinculos_telegram_pacientes')
+    .select(
+      'id, paciente_id, profesional_id, telegram_chat_id, telegram_username, codigo_vinculacion, vinculado_en, creado_en, actualizado_en'
+    )
+    .eq('paciente_id', patientId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data || null;
+}
+
+function buildPatientTelegramLinkResponse({ patient, link = null }) {
+  const linkCode = String(link?.codigo_vinculacion || '').trim() || null;
+  const linkedChatId = String(link?.telegram_chat_id || '').trim() || null;
+  const linkedAt = link?.vinculado_en || null;
+  const linkStatus = linkedChatId || linkedAt ? 'linked' : linkCode ? 'pending' : 'not_linked';
+  const telegramStartCommand = linkCode ? `/start ${linkCode}` : null;
+  const telegramDeepLink =
+    linkCode && TELEGRAM_PATIENT_BOT_USERNAME
+      ? `https://t.me/${TELEGRAM_PATIENT_BOT_USERNAME}?start=${encodeURIComponent(linkCode)}`
+      : null;
+
+  return {
+    data: {
+      patient_id: patient?.id || null,
+      patient_name: patient?.nombre_completo || null,
+      professional_id: patient?.profesional_id || null,
+      link_status: linkStatus,
+      codigo_vinculacion: linkCode,
+      telegram_chat_id: linkedChatId,
+      telegram_username: link?.telegram_username || null,
+      vinculado_en: linkedAt,
+      creado_en: link?.creado_en || null,
+      actualizado_en: link?.actualizado_en || null,
+      telegram_start_command: telegramStartCommand,
+      telegram_deep_link: telegramDeepLink,
+    },
+    instructions: telegramStartCommand
+      ? `Comparte este mensaje con el paciente: ${telegramStartCommand}`
+      : null,
+  };
+}
+
 async function autoLinkFirstContact(payload) {
   const professionalId = await getDefaultProfessionalId();
   const fullName = getPatientDisplayName(payload);
@@ -461,7 +521,7 @@ async function autoLinkFirstContact(payload) {
 
   if (patientError) throw patientError;
 
-  const linkCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+  const linkCode = generateTelegramLinkCode();
   const { error: linkError } = await supabase
     .from('vinculos_telegram_pacientes')
     .insert({
@@ -792,6 +852,7 @@ router.post('/physio-report/send', async (req, res, next) => {
     const chatId = pickBodyValue(req.body, 'chat_id');
     const caption = pickBodyValue(req.body, 'caption') || `Informe profesional listo${patientName ? ` para ${patientName}` : ''}`;
     const exercises = Array.isArray(req.body?.exercises) ? req.body.exercises : [];
+    const dryRun = parseBooleanFlag(req.query?.dry_run) || parseBooleanFlag(req.body?.dry_run);
 
     if (!fisioterapeutaId) {
       return res.status(400).json({ error: 'fisioterapeuta_id es obligatorio' });
@@ -817,6 +878,18 @@ router.post('/physio-report/send', async (req, res, next) => {
     };
 
     const pdfBuffer = await buildExerciseReportPdfBuffer(pdfPayload);
+
+    if (dryRun) {
+      return res.json({
+        ok: true,
+        dry_run: true,
+        delivered_via: 'telegram',
+        target_source: target.source,
+        recommendation_id: recommendationId || null,
+        pdf_bytes: pdfBuffer.length || 0,
+      });
+    }
+
     await sendTelegramDocument({
       chatId: target.chatId,
       filename: `informe-ejercicios-${String(recommendationId || Date.now())}.pdf`,
@@ -836,20 +909,64 @@ router.post('/physio-report/send', async (req, res, next) => {
   }
 });
 
+router.get('/link-code/:patientId', async (req, res, next) => {
+  try {
+    const { patientId } = req.params;
+    const patient = await getTelegramLinkPatient(patientId);
+    if (!patient) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    let link = null;
+    try {
+      link = await getPatientTelegramLinkRecord(patient.id);
+    } catch (error) {
+      if (isMissingTableError(error)) {
+        return res.status(400).json({
+          error: 'Falta configurar la base de datos: tabla vinculos_telegram_pacientes no existe. Ejecuta la migracion SQL y vuelve a intentarlo.',
+        });
+      }
+      throw error;
+    }
+
+    res.json(buildPatientTelegramLinkResponse({ patient, link }));
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/link-code/:patientId', async (req, res, next) => {
   try {
     const { patientId } = req.params;
+    const regenerate = parseBooleanFlag(pickBodyValue(req.body, 'regenerate')) || parseBooleanFlag(req.query?.regenerate);
+    const resetLinked = parseBooleanFlag(pickBodyValue(req.body, 'reset_linked', 'force_reset')) || parseBooleanFlag(req.query?.reset_linked);
 
-    const { data: patient, error: patientError } = await supabase
-      .from('pacientes')
-      .select('id, profesional_id, nombre_completo')
-      .eq('id', patientId)
-      .single();
-
-    if (patientError) throw patientError;
+    const patient = await getTelegramLinkPatient(patientId);
     if (!patient) return res.status(404).json({ error: 'Paciente no encontrado' });
 
-    const linkCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+    let existingLink;
+    try {
+      existingLink = await getPatientTelegramLinkRecord(patient.id);
+    } catch (error) {
+      if (isMissingTableError(error)) {
+        return res.status(400).json({
+          error: 'Falta configurar la base de datos: tabla vinculos_telegram_pacientes no existe. Ejecuta la migracion SQL y vuelve a intentarlo.',
+        });
+      }
+      throw error;
+    }
+
+    const isLinked = Boolean(existingLink?.telegram_chat_id || existingLink?.vinculado_en);
+    if (isLinked && !resetLinked) {
+      return res.json({
+        ...buildPatientTelegramLinkResponse({ patient, link: existingLink }),
+        warning: 'patient_already_linked',
+      });
+    }
+
+    if (existingLink?.codigo_vinculacion && !regenerate && !resetLinked) {
+      return res.json(buildPatientTelegramLinkResponse({ patient, link: existingLink }));
+    }
+
+    const linkCode = generateTelegramLinkCode();
 
     const { data, error } = await supabase
       .from('vinculos_telegram_pacientes')
@@ -864,15 +981,14 @@ router.post('/link-code/:patientId', async (req, res, next) => {
         },
         { onConflict: 'paciente_id' }
       )
-      .select('paciente_id, codigo_vinculacion')
+      .select(
+        'id, paciente_id, profesional_id, telegram_chat_id, telegram_username, codigo_vinculacion, vinculado_en, creado_en, actualizado_en'
+      )
       .single();
 
     if (error) throw error;
 
-    res.json({
-      data,
-      instructions: `Comparte este mensaje con el paciente: /start ${linkCode}`,
-    });
+    res.json(buildPatientTelegramLinkResponse({ patient, link: data }));
   } catch (err) {
     next(err);
   }

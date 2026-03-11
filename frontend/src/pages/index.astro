@@ -659,6 +659,7 @@ import Layout from '../layouts/Layout.astro';
   let selectedPatientName = '';
   let patientCatalog: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let selectedTemplatePatientId: string | null = null;
+  let currentPatientTelegramLinkState: any = null;
   let lastExerciseReportPayload: any = null;
   let pendingExerciseRecommendationJobId: string | null = null;
   const exerciseOpsStats = {
@@ -2119,25 +2120,116 @@ import Layout from '../layouts/Layout.astro';
     feedbackEl.setAttribute('data-state', state);
   };
 
+  const TELEGRAM_LINK_STATUS_META: Record<string, { label: string; chipClass: string }> = {
+    linked: { label: 'Vinculado', chipClass: 'aprobado' },
+    pending: { label: 'Codigo pendiente', chipClass: 'pendiente' },
+    not_linked: { label: 'Sin vincular', chipClass: 'rechazado' },
+  };
+
+  const copyTextToClipboard = async (rawValue: unknown) => {
+    const value = String(rawValue || '').trim();
+    if (!value) return false;
+
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+
+    const temp = document.createElement('textarea');
+    temp.value = value;
+    temp.setAttribute('readonly', 'true');
+    temp.style.position = 'absolute';
+    temp.style.left = '-9999px';
+    document.body.appendChild(temp);
+    temp.select();
+    const copied = document.execCommand('copy');
+    document.body.removeChild(temp);
+    return copied;
+  };
+
+  const renderPatientTelegramLinkBlock = (linkState: any, errorMessage = '') => {
+    if (errorMessage) {
+      return `
+        <div class="detail-block">
+          <h3>Canal Telegram</h3>
+          <p class="detail-caption telegram-link-error">${escapeHtml(errorMessage)}</p>
+        </div>
+      `;
+    }
+
+    const normalizedStatus = String(linkState?.link_status || 'not_linked');
+    const statusMeta = TELEGRAM_LINK_STATUS_META[normalizedStatus] || TELEGRAM_LINK_STATUS_META.not_linked;
+    const username = linkState?.telegram_username ? `@${linkState.telegram_username}` : null;
+    const linkedAt = linkState?.vinculado_en ? fmtDate(linkState.vinculado_en) : null;
+    const startCommand = linkState?.telegram_start_command || '';
+    const deepLink = linkState?.telegram_deep_link || '';
+    const actions: string[] = [];
+
+    if (normalizedStatus === 'not_linked') {
+      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-create">Preparar invitacion</button>');
+    }
+
+    if (normalizedStatus === 'pending') {
+      actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-copy-command" data-copy-value="${escapeAttr(startCommand)}">Copiar /start</button>`);
+      if (deepLink) {
+        actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-copy-link" data-copy-value="${escapeAttr(deepLink)}">Copiar enlace</button>`);
+      }
+      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-regenerate">Regenerar codigo</button>');
+    }
+
+    const hint = normalizedStatus === 'linked'
+      ? 'El paciente ya tiene un chat Telegram vinculado. No genero un codigo nuevo para no romper ese enlace.'
+      : normalizedStatus === 'pending'
+        ? 'Comparte el comando o el enlace con el paciente para completar la vinculacion desde Telegram.'
+        : 'Genera una invitacion segura para que el paciente vincule su chat con /start.';
+
+    return `
+      <div class="detail-block">
+        <div class="telegram-link-head">
+          <div>
+            <h3>Canal Telegram</h3>
+            <p class="detail-caption">${escapeHtml(hint)}</p>
+          </div>
+          <span class="status-chip ${statusMeta.chipClass}">${escapeHtml(statusMeta.label)}</span>
+        </div>
+        <div class="telegram-link-card">
+          <div class="telegram-link-grid">
+            <p><strong>Paciente:</strong> ${escapeHtml(linkState?.patient_name || selectedPatientName || 'Paciente seleccionado')}</p>
+            <p><strong>Usuario:</strong> ${escapeHtml(username || 'Sin username')}</p>
+            <p><strong>Vinculado:</strong> ${escapeHtml(linkedAt || 'Aun no')}</p>
+            <p><strong>Codigo:</strong> ${escapeHtml(linkState?.codigo_vinculacion || 'No generado')}</p>
+          </div>
+          ${startCommand ? `<div class="telegram-link-command"><code>${escapeHtml(startCommand)}</code></div>` : ''}
+          ${actions.length ? `<div class="telegram-link-actions">${actions.join('')}</div>` : ''}
+        </div>
+      </div>
+    `;
+  };
+
   // === LOAD HISTORIAL ===
   const loadHistorial = async () => {
     if (!historialContent) return;
     if (!selectedPatientId) {
+      currentPatientTelegramLinkState = null;
       historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">history</span><p>Selecciona un paciente para ver su historial</p></div>`;
       return;
     }
     historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
 
     try {
-      const [patientResp, historyResp, recommendationsResp] = await Promise.all([
+      const [patientResp, historyResp, recommendationsResp, telegramLinkResp] = await Promise.all([
         fetchJson(`${BACKEND_BASE}/api/pacientes/${selectedPatientId}`),
         fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`),
         fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${selectedPatientId}?limit=25`),
+        fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`).catch((err: any) => ({ error: err?.message || 'No se pudo cargar el estado de Telegram.' })),
       ]);
 
       const patient = patientResp?.data || {};
       const notes = historyResp?.data?.notas_seguimiento || [];
       const recommendations = recommendationsResp?.data || [];
+      const telegramLink = telegramLinkResp?.data || null;
+      const telegramLinkError = telegramLinkResp?.error || '';
+      currentPatientTelegramLinkState = telegramLink;
       const displayName = patient?.nombre_completo || selectedPatientName || `Paciente #${selectedPatientId}`;
 
       const notesHtml = notes.length
@@ -2205,7 +2297,7 @@ import Layout from '../layouts/Layout.astro';
           <h3>${escapeHtml(displayName)}</h3>
           <p><strong>Email:</strong> ${escapeHtml(patient.email || '-')} - <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '-'}</p>
         </div>
-        <div class="detail-block">
+        ${renderPatientTelegramLinkBlock(telegramLink, telegramLinkError)}
         <div class="detail-block">
           <h3>Registrar seguimiento</h3>
           <p class="detail-caption">Guarda observaciones clinicas del paciente directamente desde el CRM. Usa Ctrl+Enter para enviar mas rapido.</p>
@@ -2215,17 +2307,84 @@ import Layout from '../layouts/Layout.astro';
           <h3>Notas de seguimiento (${notes.length})</h3>
           ${notesHtml}
         </div>
+        <div class="detail-block">
           <h3>Informes y recomendaciones (${recommendations.length})</h3>
-          <h3>Informes y recomendaciÃ³nes (${recommendations.length})</h3>
           ${recommendationsHtml}
         </div>
       `;
     } catch {
+      currentPatientTelegramLinkState = null;
       historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>No se pudo cargar el historial del paciente seleccionado.</p></div>`;
     }
   };
   pageLoaders['historial'] = loadHistorial;
   document.getElementById('refreshHistorial')?.addEventListener('click', loadHistorial);
+  historialContent?.addEventListener('click', async (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest('button[data-action^="telegram-"]') as HTMLButtonElement | null;
+    if (!btn || !selectedPatientId) return;
+
+    const action = btn.getAttribute('data-action') || '';
+    const patientName = selectedPatientName || currentPatientTelegramLinkState?.patient_name || 'el paciente seleccionado';
+
+    if (action === 'telegram-copy-command' || action === 'telegram-copy-link') {
+      const copyValue = btn.getAttribute('data-copy-value') || '';
+      if (!copyValue) {
+        addMessage('No hay un valor de invitacion disponible para copiar.', 'agent');
+        return;
+      }
+
+      try {
+        const copied = await copyTextToClipboard(copyValue);
+        addMessage(
+          copied
+            ? `Invitacion Telegram copiada para ${patientName}.`
+            : 'No pude copiar el texto al portapapeles en este navegador.',
+          'agent'
+        );
+      } catch {
+        addMessage('No pude copiar el texto al portapapeles en este navegador.', 'agent');
+      }
+      return;
+    }
+
+    if (!['telegram-link-create', 'telegram-link-regenerate'].includes(action)) return;
+
+    const previousLabel = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-rounded">sync</span> Preparando...';
+
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(action === 'telegram-link-regenerate' ? { regenerate: true } : {}),
+      }, 15000);
+
+      currentPatientTelegramLinkState = payload?.data || null;
+      await loadHistorial();
+
+      if (payload?.warning === 'patient_already_linked') {
+        addMessage(
+          `Telegram ya estaba vinculado para ${patientName}. No genero un codigo nuevo para no romper el chat actual.`,
+          'agent'
+        );
+        return;
+      }
+
+      const command = payload?.data?.telegram_start_command || '';
+      addMessage(
+        command
+          ? `Invitacion Telegram lista para ${patientName}. Puedes compartir ${command}.`
+          : `Estado Telegram actualizado para ${patientName}.`,
+        'agent'
+      );
+    } catch (err: any) {
+      addMessage(`No se pudo preparar la invitacion Telegram: ${err?.message || 'error no identificado'}`, 'agent');
+      btn.disabled = false;
+      btn.innerHTML = previousLabel;
+    }
+  });
   historialContent?.addEventListener('submit', async (event: Event) => {
     const formEl = event.target as HTMLFormElement | null;
     if (!formEl?.matches('form[data-role="history-note-form"]')) return;
@@ -3725,6 +3884,50 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-muted);
     font-size: 0.84rem;
     line-height: 1.45;
+  }
+  .telegram-link-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+  }
+  .telegram-link-card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(14, 165, 233, 0.16);
+    background: linear-gradient(180deg, rgba(240, 249, 255, 0.92), rgba(248, 250, 252, 0.98));
+  }
+  .telegram-link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.55rem 1rem;
+  }
+  .telegram-link-grid p {
+    margin: 0;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+  }
+  .telegram-link-command {
+    padding: 0.75rem 0.85rem;
+    border-radius: 0.85rem;
+    background: rgba(15, 23, 42, 0.92);
+    overflow-x: auto;
+  }
+  .telegram-link-command code {
+    color: #e2e8f0;
+    font-size: 0.84rem;
+    white-space: nowrap;
+  }
+  .telegram-link-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+  .telegram-link-error {
+    color: #991b1b;
   }
   .history-note-form {
     margin-top: 0.85rem;

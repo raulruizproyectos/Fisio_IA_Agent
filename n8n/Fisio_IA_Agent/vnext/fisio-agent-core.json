@@ -1,77 +1,76 @@
 {
-    "name":  "Fisio Agent Core",
-    "nodes":  [
-                  {
-                      "parameters":  {
-                                         "path":  "agent/core",
-                                         "responseMode":  "responseNode",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "WebhookAgentCore",
-                      "name":  "Webhook Agent Core",
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2.1,
-                      "position":  [
-                                       220,
-                                       260
-                                   ],
-                      "webhookId":  "fisio-agent-core"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const input = ($json.body \u0026\u0026 typeof $json.body === \u0027object\u0027) ? $json.body : $json;\nconst text = String(input.text || input.message_text || input.texto_mensaje || \u0027\u0027).trim();\nconst textLower = text.toLowerCase();\n\nconst requestId = input.request_id || \"req_${Date.now()}_${Math.floor(Math.random() * 100000)}\";\nconst role = input.role || \u0027professional\u0027;\n\nlet route = \u0027unknown\u0027;\nlet confidence = 0.5;\nlet reply = \u0027He recibido tu mensaje. Lo estoy analizando...\u0027;\n\nif (/\\b(cita|agendar|agenda|reservar|reserva|hueco|hora|calendario|consulta|visita|disponibilidad)\\b/i.test(textLower)) {\n  route = \u0027appointment\u0027;\n  confidence = 0.95;\n  reply = \u0027He recibido tu solicitud de cita. Ahora mismo compruebo la agenda y te confirmo las opciones disponibles.\u0027;\n} else if (/\\b(ejercicio|ejercicios|estiramiento|estiramientos|rutina|movilidad|fortalecimiento|plan|tabla|pauta|entrenar)\\b/i.test(textLower)) {\n  route = \u0027exercise\u0027;\n  confidence = 0.95;\n  reply = \u0027Entendido. Voy a procesar el caso y a preparar un plan de ejercicios personalizado. Esto tomará unos segundos...\u0027;\n} else if (/\\b(dolor|sintoma|sintomas|molestia|lesion|evolucion|seguimiento|mejora|empeorado|noto|duele|pinchazo)\\b/i.test(textLower)) {\n  route = \u0027session_note\u0027;\n  confidence = 0.85;\n  reply = \u0027He registrado la evolución clínica en el historial para tenerlo en cuenta durante el tratamiento.\u0027;\n} else if (text.length \u003c= 2) {\n  route = \u0027unknown\u0027;\n  confidence = 0.1;\n  reply = \u0027No he podido entender el mensaje. ¿Puedes darme más detalles?\u0027;\n} else {\n  route = \u0027fallback\u0027;\n  confidence = 0.3;\n  reply = \u0027He anotado tu mensaje en el sistema para revisarlo en detalle.\u0027;\n}\n\nreturn [{\n  json: {\n    ok: true,\n    request_id: requestId,\n    role,\n    route,\n    confidence,\n    reply_text: reply,\n    intent_hint: route,\n    normalized_payload: {\n      text,\n      channel: input.channel || \u0027web\u0027,\n      patient_id: input.paciente_id || input.patient_id || null,\n      professional_id: input.profesional_id || input.professional_id || null\n    },\n    received: {\n      channel: input.channel || \u0027web\u0027,\n      paciente_id: input.paciente_id || input.patient_id || null,\n      profesional_id: input.profesional_id || input.professional_id || null,\n      text\n    }\n  }\n}];"
-                                     },
-                      "id":  "BuildAgentReply",
-                      "name":  "Build Agent Reply",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       500,
-                                       260
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ $json }}"
-                                     },
-                      "id":  "RespondAgentCore",
-                      "name":  "Respond Agent Core",
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       760,
-                                       260
-                                   ]
-                  }
-              ],
-    "connections":  {
-                        "Webhook Agent Core":  {
-                                                   "main":  [
-                                                                [
-                                                                    {
-                                                                        "node":  "Build Agent Reply",
-                                                                        "type":  "main",
-                                                                        "index":  0
-                                                                    }
-                                                                ]
-                                                            ]
-                                               },
-                        "Build Agent Reply":  {
-                                                  "main":  [
-                                                               [
-                                                                   {
-                                                                       "node":  "Respond Agent Core",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ]
-                                                           ]
-                                              }
-                    },
-    "settings":  {
-                     "executionOrder":  "v1"
-                 }
+    "name": "Fisio Agent Core",
+    "nodes": [
+        {
+            "parameters": {
+                "path": "agent/core",
+                "responseMode": "responseNode",
+                "options": {},
+                "httpMethod": "POST"
+            },
+            "id": "WebhookAgentCore",
+            "name": "Webhook Agent Core",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [
+                220,
+                260
+            ],
+            "webhookId": "fisio-agent-core"
+        },
+        {
+            "parameters": {
+                "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.text || input.message_text || input.texto_mensaje || '').trim();\nconst requestId = input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`;\nconst role = input.role || 'professional';\nconst channel = input.channel || 'web';\nconst patientId = input.paciente_id || input.patient_id || null;\nconst professionalId = input.profesional_id || input.professional_id || null;\n\nconst normalizeText = (value = '') => String(value || '')\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '');\n\nconst textLower = normalizeText(text);\n\nconst collectMatches = (rules = []) => {\n  const matches = [];\n  for (const rule of rules) {\n    if (!rule?.pattern) continue;\n    if (!rule.pattern.test(textLower)) continue;\n    matches.push(rule.value);\n  }\n  return [...new Set(matches)];\n};\n\nconst appointmentKeywords = /\\b(cita|agendar|agenda|reservar|reserva|hueco|hora|calendario|consulta|visita|disponibilidad)\\b/i;\nconst exerciseKeywords = /\\b(ejercicio|ejercicios|estiramiento|estiramientos|rutina|fortalecimiento|plan|tabla|pauta|rehabilitacion|rehab|entrenar)\\b/i;\nconst mobilityAsExerciseContext = /\\b(movilidad)\\b/i;\nconst exerciseRequestContext = /\\b(necesito|quiero|preparar|manda|manda(?:me)?|recomienda|dame|ponme|plan|rutina|tabla|pauta|ejercicios|entrenar|trabajar)\\b/i;\nconst symptomKeywords = /\\b(dolor|dolores|sintoma|sintomas|molestia|molestias|lesion|evolucion|seguimiento|mejora|empeorado|noto|duele|pinchazo|rigidez|inflamacion|carga)\\b/i;\n\nconst locationRules = [\n  { value: 'cervical', pattern: /\\b(cervical|cuello|trapecio)\\b/i },\n  { value: 'hombro', pattern: /\\b(hombro|manguito rotador)\\b/i },\n  { value: 'espalda_dorsal', pattern: /\\b(dorsal|espalda alta|omoplato|escapula)\\b/i },\n  { value: 'lumbar', pattern: /\\b(lumbar|lumbares|espalda baja|lumbalgia)\\b/i },\n  { value: 'cadera', pattern: /\\b(cadera|gluteo|ingle)\\b/i },\n  { value: 'rodilla', pattern: /\\b(rodilla|rotula|menisco)\\b/i },\n  { value: 'tobillo', pattern: /\\b(tobillo)\\b/i },\n  { value: 'pie', pattern: /\\b(pie|planta|talon)\\b/i },\n  { value: 'codo', pattern: /\\b(codo)\\b/i },\n  { value: 'muneca', pattern: /\\b(muneca|mano|dedos)\\b/i },\n  { value: 'pecho', pattern: /\\b(pecho|torax)\\b/i },\n  { value: 'cabeza', pattern: /\\b(cabeza|cefalea|migra)\\b/i },\n];\n\nconst aggravatingFactorRules = [\n  { value: 'al_girar', pattern: /\\b(al girar|girando|girar el cuello|giro)\\b/i },\n  { value: 'al_caminar', pattern: /\\b(al caminar|caminando|al andar)\\b/i },\n  { value: 'al_levantar', pattern: /\\b(al levantar|levantando|coger peso|cargar peso)\\b/i },\n  { value: 'al_agacharse', pattern: /\\b(al agach|agachandome|inclinarme)\\b/i },\n  { value: 'al_sentarse', pattern: /\\b(al sentar|sentado|al incorporarme)\\b/i },\n  { value: 'al_dormir', pattern: /\\b(al dormir|por la noche|nocturno)\\b/i },\n  { value: 'al_mover', pattern: /\\b(al mover|moviendo|al estirar|al flexionar|al extender)\\b/i },\n  { value: 'rigidez_o_menos_movilidad', pattern: /\\b(rigidez|menos movilidad|limitacion|rango de movimiento|bloqueo)\\b/i },\n  { value: 'en_reposo', pattern: /\\b(en reposo|parado|sin moverme)\\b/i },\n];\n\nconst durationRules = [\n  { value: 'hoy', pattern: /\\b(hoy|esta manana|esta tarde|esta noche)\\b/i },\n  { value: 'ayer', pattern: /\\b(ayer|anoche)\\b/i },\n  { value: 'dias', pattern: /\\b(desde hace \\d+ dias?|hace \\d+ dias?|unos dias?|varios dias?)\\b/i },\n  { value: 'semanas', pattern: /\\b(desde hace \\d+ semanas?|hace \\d+ semanas?|unas semanas?|varias semanas?)\\b/i },\n  { value: 'meses', pattern: /\\b(desde hace \\d+ meses?|hace \\d+ meses?|unos meses?|varios meses?)\\b/i },\n  { value: 'desde_evento', pattern: /\\b(desde que|desde el|desde la|tras|despues de)\\b/i },\n];\n\nconst anatomicalLocations = collectMatches(locationRules);\nconst aggravatingFactors = collectMatches(aggravatingFactorRules);\nconst durationMarkers = collectMatches(durationRules);\n\nconst triageSignals = {\n  anatomical_location: anatomicalLocations,\n  aggravating_factors: aggravatingFactors,\n  duration_markers: durationMarkers,\n};\n\nconst missingTriageFields = [];\nif (anatomicalLocations.length === 0) missingTriageFields.push('anatomical_location');\nif (durationMarkers.length === 0) missingTriageFields.push('duration');\nif (aggravatingFactors.length === 0) missingTriageFields.push('aggravating_factors');\n\nconst triageDetailScore = [anatomicalLocations.length, durationMarkers.length, aggravatingFactors.length]\n  .filter((count) => count > 0)\n  .length;\n\nlet route = 'unknown';\nlet confidence = 0.5;\nlet reply = 'He recibido tu mensaje. Lo estoy analizando...';\n\nif (appointmentKeywords.test(textLower)) {\n  route = 'appointment';\n  confidence = 0.95;\n  reply = 'He recibido tu solicitud de cita. Ahora mismo compruebo la agenda y te confirmo las opciones disponibles.';\n} else if (exerciseKeywords.test(textLower) || (mobilityAsExerciseContext.test(textLower) && exerciseRequestContext.test(textLower))) {\n  route = 'exercise';\n  confidence = 0.95;\n  reply = 'Entendido. Voy a procesar el caso y a preparar un plan de ejercicios personalizado. Esto tomara unos segundos...';\n} else if (text.length <= 2) {\n  route = 'unknown';\n  confidence = 0.1;\n  reply = 'No he podido entender el mensaje. Puedes darme mas detalles?';\n} else if (symptomKeywords.test(textLower)) {\n  if (triageDetailScore >= 2) {\n    route = 'session_note';\n    confidence = 0.86;\n    reply = 'He registrado la evolucion clinica en el historial para tenerla en cuenta durante el tratamiento.';\n  } else {\n    route = 'triage_needed';\n    confidence = 0.9;\n    reply = 'Para orientarte mejor necesito tres datos: zona exacta, desde cuando te pasa y que movimiento o situacion lo empeora. Ejemplo: dolor lumbar desde ayer al levantarme.';\n  }\n} else {\n  route = 'fallback';\n  confidence = 0.3;\n  reply = 'He anotado tu mensaje en el sistema para revisarlo en detalle.';\n}\n\nreturn [{\n  json: {\n    ok: true,\n    request_id: requestId,\n    role,\n    route,\n    confidence,\n    reply_text: reply,\n    intent_hint: route,\n    normalized_payload: {\n      text,\n      channel,\n      patient_id: patientId,\n      professional_id: professionalId,\n      triage: {\n        ...triageSignals,\n        missing_fields: missingTriageFields,\n        needs_clarification: route === 'triage_needed',\n      },\n    },\n    received: {\n      channel,\n      paciente_id: patientId,\n      profesional_id: professionalId,\n      text,\n    },\n  },\n}];"
+            },
+            "id": "BuildAgentReply",
+            "name": "Build Agent Reply",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                500,
+                260
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ $json }}"
+            },
+            "id": "RespondAgentCore",
+            "name": "Respond Agent Core",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                760,
+                260
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Agent Core": {
+            "main": [
+                [
+                    {
+                        "node": "Build Agent Reply",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Build Agent Reply": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Agent Core",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    }
 }

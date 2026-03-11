@@ -11,7 +11,7 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 ## En pausa
 - Generación de vídeo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 77 - 2026-03-11)\r
+## Checkpoint actual (Sesion 83 - 2026-03-11)\r
 - La arquitectura vigente queda fijada como hibrida:\r
   - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,\r
   - `n8n` para orquestacion conversacional y clinica,\r
@@ -20,7 +20,8 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 - Fix critico del assistant rail responsive: chat input siempre visible en cualquier tamano de pantalla.\r
 - Migracion `crm_async_jobs` aplicada en Supabase para persistencia de jobs async.\r
 - n8n `fisio-agent-core` refinado con mejor clasificacion de intents.\r
-- Pendiente: redeploy frontend y backend en EasyPanel para que los cambios surtan efecto.
+- El core n8n ya resuelve `triage_needed` para sintomas demasiado vagos y el smoke test remoto Telegram queda en `6/6 OK`.
+- `crm_perfiles` ya permite resolver el chat del bot fisio en produccion y `POST /api/telegram/physio-report/send` queda validado con `target_source=crm_perfiles`.
 
 ## Arquitectura actual
 - Frontend CRM: Astro
@@ -172,6 +173,8 @@ node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<u
 - Norma n8n obligatoria: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
 - Playbook de importación y smoke test n8n: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`
 - Norma de robustez y errores: `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`
+
+
 
 
 

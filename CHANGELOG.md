@@ -1,5 +1,89 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 83 - 2026-03-11
+
+### Objetivo
+- Cerrar la invitacion/vinculacion Telegram de pacientes desde el CRM sin romper chats ya enlazados.
+
+### Cambios implementados
+- [x] Nuevo GET /api/telegram/link-code/:patientId para consultar estado, codigo actual y deep link sin mutar datos.
+- [x] POST /api/telegram/link-code/:patientId ya no resetea un chat vinculado por defecto; devuelve warning seguro si el paciente ya esta enlazado.
+- [x] El historial del CRM muestra estado Telegram del paciente y permite preparar invitacion, copiar /start, copiar enlace y regenerar codigo cuando sigue pendiente.
+
+### Validacion realizada
+- [x] node --check OK en backend/src/routes/telegram.js.
+- [x] npm run build OK en frontend aislado tras integrar la UI de invitacion Telegram.
+
+### Punto exacto de continuidad
+1. Si quieres publicar esta UI/endpoint en produccion, sigue pendiente el redeploy manual de fisio-backend y fisio-frontend.
+2. Tras el redeploy, validar en CRM real un paciente sin vincular: preparar invitacion, copiar /start y completar /start CODIGO desde Telegram.
+3. Si esa prueba queda bien, siguiente foco optimo: volver a pendientes visibles del CRM/EasyPanel.
+
+## Sesion 82 - 2026-03-11
+
+### Objetivo
+- Cerrar el cuello de botella del bot fisio sobre crm_perfiles y dejar una validacion repetible sin envios reales para el futuro.
+
+### Cambios implementados
+- [x] Migracion productiva aplicada: crm_perfiles ya tiene telegram_chat_id, telegram_username y telegram_linked_at.
+- [x] Validado el flujo real /informe del bot fisio: enlaza el chat profesional en crm_perfiles y envia el PDF.
+- [x] Validado POST /api/telegram/physio-report/send sin chat_id explicito: resuelve target via crm_perfiles con respuesta 200.
+- [x] Nuevo soporte local en repo para dry_run de /api/telegram/physio-report/send.
+- [x] Nuevo script scripts/physio-report-send-dry-run.mjs para smoke seguro del targeting del bot fisio.
+
+### Validacion realizada
+- [x] crm_perfiles en produccion refleja el chat 147659207 y username raulruizdiaz para Profesional Demo.
+- [x] /api/telegram/physio-report/send responde { ok: true, target_source: crm_perfiles } sin chat_id explicito.
+- [x] El dry_run nuevo compila en local; queda pendiente redeploy backend para usarlo en produccion.
+
+### Punto exacto de continuidad
+1. Si queremos usar el nuevo dry_run en prod, hacer redeploy de fisio-backend.
+2. Si no es prioritario el redeploy, siguiente foco optimo: volver a pendientes visibles del CRM/EasyPanel.
+3. El bloque del bot fisio basado en crm_perfiles puede considerarse funcionalmente desbloqueado.
+
+## Sesion 81 - 2026-03-11
+
+### Objetivo
+- Cerrar la validacion E2E real del triage en Telegram con entrega efectiva al chat vinculado.
+
+### Cambios implementados
+- [x] Intento con chats de test historicos confirma bloqueo operativo: Telegram devuelve chat not found aunque el backend persiste intake.
+- [x] Intento controlado sobre el chat vinculado de raulruizdiaz (chat_id 147659207) entrega correctamente via Telegram.
+- [x] El backend responde 200 OK y persiste el mensaje real 'Me duele' en mensajes_ingesta_paciente.
+
+### Validacion realizada
+- [x] Entrega real Telegram confirmada por backend con respuesta 200.
+- [x] Nuevo intake real en Supabase para el paciente vinculado a raulruizdiaz.
+- [x] Queda validado que el copy nuevo de triage ya funciona en canal real, no solo en dry run.
+
+### Punto exacto de continuidad
+1. Revisar en el propio chat si el copy recibido resulta natural o necesita pulido.
+2. Si el texto convence, cerrar el bloque Telegram triage como DONE.
+3. Siguiente foco sugerido: resolver la capa de targeting del bot fisio sobre crm_perfiles o volver al frente CRM/EasyPanel segun prioridad.
+
+## Sesion 80 - 2026-03-11
+
+### Objetivo
+- Ejecutar la validacion real mas segura posible del triage Telegram sin escribir a un chat humano real.
+
+### Cambios implementados
+- [x] Validacion no dry_run contra POST /api/telegram/incoming usando paciente de test ya vinculado:
+  - paciente TestE2E (923dcae8-0fd8-4070-b7ff-fd1d5e8df1c6),
+  - chat vinculado 12345678,
+  - username test_e2e_bot.
+- [x] Confirmado que el backend devuelve en real el mensaje de triage para Me duele sin caer a fallback antiguo.
+- [x] Confirmado write real en Supabase sobre mensajes_ingesta_paciente con estado=pendiente_revision y fuente=telegram.
+
+### Validacion realizada
+- [x] Respuesta backend real: reply_text pide zona, tiempo y factor agravante.
+- [x] Nuevo registro productivo controlado en mensajes_ingesta_paciente para el paciente de test TestE2E.
+- [x] No se envio mensaje real a Telegram porque la prueba entro por payload custom, no por webhook nativo.
+
+### Punto exacto de continuidad
+1. Ejecutar prueba manual real desde Telegram con un chat humano ya vinculado.
+2. Verificar recepcion del mensaje en el chat real y confirmar que el copy de triage es suficientemente natural.
+3. Si queda bien, cerrar este bloque como estable.
+
 ## Sesion 78 - 2026-03-11 (Mid-task pause)
 
 ### Objetivo
@@ -2656,6 +2740,10 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Ambos workflows quedan endurecidos y validados como JSON.
 - Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
+
+
+
+
 
 
 
