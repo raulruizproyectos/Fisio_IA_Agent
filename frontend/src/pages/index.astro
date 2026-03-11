@@ -614,6 +614,19 @@ import Layout from '../layouts/Layout.astro';
     row?.pacientes?.nombre_completo ||
     row?.paciente?.nombre_completo ||
     (row?.paciente_id ? `Paciente #${row.paciente_id}` : 'Paciente sin identificar');
+  const focusHistoryAnchor = (anchor: 'telegram') => {
+    const targetId = anchor === 'telegram' ? 'patientTelegramLinkBlock' : '';
+    if (!targetId) return;
+
+    window.requestAnimationFrame(() => {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      target.classList.add('detail-block-spotlight');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.setTimeout(() => target.classList.remove('detail-block-spotlight'), 1800);
+    });
+  };
+
   const openPatientHistory = (patientId: string | null, patientName = '') => {
     if (!patientId) return;
     selectedPatientId = patientId;
@@ -635,6 +648,7 @@ import Layout from '../layouts/Layout.astro';
   let patientCatalog: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let selectedTemplatePatientId: string | null = null;
   let currentPatientTelegramLinkState: any = null;
+  let pendingHistoryAnchor: 'telegram' | null = null;
   let lastExerciseReportPayload: any = null;
   let pendingExerciseRecommendationJobId: string | null = null;
   const exerciseOpsStats = {
@@ -1684,7 +1698,7 @@ import Layout from '../layouts/Layout.astro';
       if (!pts.length) { setTableState(pacientesBody, 5, 'person_off', 'Sin pacientes registrados'); return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
         const patientName = p.nombre_completo || 'â€”';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'â€”')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'â€”'}</td><td>${fmtDate(p.creado_en||'')}</td><td><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button></td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'â€”')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'â€”'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
       }).join('');
     } catch {
       setTableState(pacientesBody, 5, 'cloud_off', 'Error al cargar pacientes');
@@ -1826,12 +1840,18 @@ import Layout from '../layouts/Layout.astro';
 
   pacientesBody?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
-    const btn = target?.closest('button[data-action="view-patient"]') as HTMLButtonElement | null;
+    const btn = target?.closest('button[data-action]') as HTMLButtonElement | null;
     if (!btn) return;
+
+    const action = btn.getAttribute('data-action') || '';
+    if (!['view-patient', 'patient-telegram'].includes(action)) return;
+
     const patientId = btn.getAttribute('data-patient-id');
+    const patientName = btn.getAttribute('data-patient-name') || '';
     selectedTemplatePatientId = patientId;
     renderTemplatePatientOptions();
-    openPatientHistory(patientId, btn.getAttribute('data-patient-name') || '');
+    pendingHistoryAnchor = action === 'patient-telegram' ? 'telegram' : null;
+    openPatientHistory(patientId, patientName);
   });
 
   // === LOAD PLANTILLAS ===
@@ -2175,7 +2195,7 @@ import Layout from '../layouts/Layout.astro';
         : 'Genera una invitacion segura para que el paciente vincule su chat con /start.';
 
     return `
-      <div class="detail-block">
+      <div class="detail-block" id="patientTelegramLinkBlock" tabindex="-1">
         <div class="telegram-link-head">
           <div>
             <h3>Canal Telegram</h3>
@@ -2303,7 +2323,13 @@ import Layout from '../layouts/Layout.astro';
           ${recommendationsHtml}
         </div>
       `;
+
+      if (pendingHistoryAnchor) {
+        focusHistoryAnchor(pendingHistoryAnchor);
+        pendingHistoryAnchor = null;
+      }
     } catch {
+      pendingHistoryAnchor = null;
       currentPatientTelegramLinkState = null;
       historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>No se pudo cargar el historial del paciente seleccionado.</p></div>`;
     }
@@ -3707,6 +3733,12 @@ import Layout from '../layouts/Layout.astro';
   }
   .btn-sm:hover { color: var(--text-primary); background: var(--border); }
   .btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+  .table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    justify-content: flex-end;
+  }
 
   .empty-state {
     display: flex;
@@ -3869,6 +3901,11 @@ import Layout from '../layouts/Layout.astro';
   }
   .detail-block:last-child {
     border-bottom: none;
+  }
+  .detail-block-spotlight {
+    background: linear-gradient(180deg, rgba(240, 253, 250, 0.96), rgba(248, 250, 252, 0.98));
+    box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.18), 0 0 0 4px rgba(20, 184, 166, 0.08);
+    transition: box-shadow 0.2s ease, background 0.2s ease;
   }
   .detail-block h3 {
     font-size: 0.95rem;

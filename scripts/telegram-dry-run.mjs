@@ -61,6 +61,19 @@ function buildCases({ patientId, professionalId }) {
       },
     },
     {
+      name: 'appointment_voice_transcript',
+      expectedRoute: 'appointment',
+      expectedAction: 'trigger_w1',
+      body: {
+        chat_id: 'dryrun-chat-2b',
+        voice_file_id: 'dryrun-voice-1',
+        voice_transcript: 'Quiero reservar una cita el jueves por la tarde para revisar el hombro',
+        patient_id: patientId,
+        professional_id: professionalId,
+        bot_username: 'fisioterapia_CarlaJL',
+      },
+    },
+    {
       name: 'session_follow_up',
       expectedRoute: 'session_note',
       expectedAction: 'create_intake_and_reply',

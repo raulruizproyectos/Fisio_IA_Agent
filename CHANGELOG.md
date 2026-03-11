@@ -1,5 +1,27 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 90 - 2026-03-11
+
+### Objetivo
+- Reorientar el siguiente bloque al canal real del bot de pacientes: citas por Telegram en texto o voz, con reflejo posterior en CRM y Google Calendar.
+
+### Cambios implementados
+- [x] `backend/src/routes/telegram.js` ya acepta payloads Telegram con `voice`/`audio` ademas de texto.
+- [x] Se anade descarga del adjunto desde Telegram y transcripcion con OpenAI (`OPENAI_API_KEY`, `TELEGRAM_TRANSCRIPTION_MODEL`) para convertir la nota de voz en texto antes de pasar por el flujo W1 de citas.
+- [x] El bot de pacientes actualiza su ayuda y onboarding para indicar que se puede pedir cita por texto, nota de voz o comando `/cita`.
+- [x] `frontend/src/pages/index.astro` incorpora accion rapida `Telegram` en la lista de pacientes para abrir Historial directamente sobre el bloque de vinculacion del canal Telegram.
+- [x] `scripts/telegram-dry-run.mjs` suma un caso `appointment_voice_transcript` para cubrir el camino de voz transcrita en dry run custom.
+
+### Validacion realizada
+- [x] `node --check backend/src/routes/telegram.js` OK.
+- [x] `node --check scripts/telegram-dry-run.mjs` OK.
+- [x] `npm run build` OK en frontend aislado con el nuevo acceso rapido a Telegram desde Pacientes.
+
+### Punto exacto de continuidad
+1. Configurar en backend productivo `OPENAI_API_KEY` y, si hace falta, confirmar `TELEGRAM_PATIENT_BOT_USERNAME` / `TELEGRAM_PATIENT_BOT_TOKEN`.
+2. Redeploy de `fisio-backend` y `fisio-frontend`.
+3. Probar E2E del bot pacientes con texto y nota de voz: solicitud de cita -> CRM -> Google Calendar.
+
 ## Sesion 89 - 2026-03-11
 
 ### Objetivo

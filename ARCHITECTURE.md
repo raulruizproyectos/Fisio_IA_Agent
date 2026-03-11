@@ -354,6 +354,8 @@ CRM Web (objetivo UX minimo):
 Telegram (intents base):
 
 - Citas: "quiero cita", "cambiar cita", "cancelar cita".
+- Bot pacientes/citas: entrada por texto y nota de voz Telegram; la voz se transcribe antes de clasificar la intencion.
+
 - Ejercicios: "me duele lumbar", "necesito ejercicios para hombro".
 - Nota de sesion: resumen breve post-tratamiento.
 - Triage inicial recomendado en agente de ejercicios:

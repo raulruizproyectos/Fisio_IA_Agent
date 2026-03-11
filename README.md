@@ -5,6 +5,8 @@ CRM + agentes para centros de fisioterapia: gestión de pacientes, citas y recom
 ## Alcance activo (pivot)
 - CRM web para operación clínica.
 - Agente de citas: Telegram + n8n + Google Calendar + Supabase.
+- Bot de pacientes: solicitudes de cita por texto libre, comando `/cita` y nota de voz transcrita.
+
 - Agente IA de ejercicios: Telegram + CRM + n8n/OpenAI + Supabase + Storage.
 - Source of truth único: Supabase del proyecto `Fisio_IA_Agent`.
 
@@ -156,7 +158,7 @@ Para validar Telegram sin tocar chats reales ni crear datos productivos:
 node .\scripts\telegram-dry-run.mjs --baseUrl=https://fisio-backend.b5xbaf.easypanel.host
 ```
 
-- Valida 5 casos: mensaje libre de ejercicios, cita libre, seguimiento, comando `/cita` y comando `/informe` del bot fisio.
+- Valida 7 casos: triage, ejercicio, cita libre, cita por voz transcrita, seguimiento, comando `/cita` y comando `/informe` del bot fisio.
 - Espera `route` y `next_action` correctos sin crear pacientes, intakes, citas ni recomendaciones.
 - Para ejecutar un caso concreto: `--only=exercise_free_text`.
 

@@ -16,6 +16,8 @@ const TELEGRAM_PHYSIO_BOT_USERNAME = String(process.env.TELEGRAM_PHYSIO_BOT_USER
   .toLowerCase();
 const TELEGRAM_PATIENT_BOT_TOKEN = process.env.TELEGRAM_PATIENT_BOT_TOKEN?.trim() || null;
 const TELEGRAM_PHYSIO_BOT_TOKEN = process.env.TELEGRAM_PHYSIO_BOT_TOKEN?.trim() || null;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY?.trim() || null;
+const TELEGRAM_TRANSCRIPTION_MODEL = process.env.TELEGRAM_TRANSCRIPTION_MODEL?.trim() || 'gpt-4o-mini-transcribe';
 
 function normalizeCommand(text = '') {
   return text.trim();
@@ -207,11 +209,20 @@ function buildTelegramExerciseFallback(payload = {}) {
 }
 
 function parseIncomingPayload(body = {}) {
-  if (body.chat_id && (body.texto_mensaje || body.message_text)) {
+  if (body.chat_id && (body.texto_mensaje || body.message_text || body.voice_transcript || body.voice_message_text || body.voice?.file_id || body.voice_file_id)) {
     return {
       chat_id: body.chat_id,
       username: body.username || null,
-      texto_mensaje: body.texto_mensaje || body.message_text,
+      texto_mensaje: body.texto_mensaje || body.message_text || body.voice_transcript || body.voice_message_text || null,
+      voice: body.voice?.file_id || body.voice_file_id
+        ? {
+            file_id: body.voice?.file_id || body.voice_file_id,
+            duration: Number(body.voice?.duration || body.voice_duration || 0) || null,
+            mime_type: body.voice?.mime_type || body.voice_mime_type || 'audio/ogg',
+            file_unique_id: body.voice?.file_unique_id || body.voice_file_unique_id || null,
+            source: 'custom',
+          }
+        : null,
       first_name: body.first_name || null,
       last_name: body.last_name || null,
       bot_username: body.bot_username || null,
@@ -223,13 +234,23 @@ function parseIncomingPayload(body = {}) {
   const chatId = message?.chat?.id;
   const username = message?.from?.username || message?.chat?.username || null;
   const text = message?.text || message?.caption || null;
+  const voice = message?.voice || message?.audio || null;
 
-  if (!chatId || !text) return null;
+  if (!chatId || (!text && !voice)) return null;
 
   return {
     chat_id: chatId,
     username,
     texto_mensaje: text,
+    voice: voice
+      ? {
+          file_id: voice.file_id,
+          duration: Number(voice.duration || 0) || null,
+          mime_type: voice.mime_type || (message?.voice ? 'audio/ogg' : 'audio/mpeg'),
+          file_unique_id: voice.file_unique_id || null,
+          source: message?.voice ? 'voice' : 'audio',
+        }
+      : null,
     first_name: message?.from?.first_name || null,
     last_name: message?.from?.last_name || null,
     bot_username: body.bot_username || null,
@@ -307,6 +328,122 @@ async function sendTelegramDocument({ chatId, filename, buffer, caption = '', ag
   if (!response.ok || !payload?.ok) {
     throw new Error(`Telegram sendDocument fallo: ${JSON.stringify(payload)}`);
   }
+}
+
+async function getTelegramFileDownloadInfo(fileId, agentMode = 'legacy') {
+  const token = resolveTelegramToken(agentMode);
+  if (!token) throw new Error('No hay token Telegram configurado para descargar adjuntos');
+
+  const response = await fetch(`https://api.telegram.org/bot${token}/getFile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file_id: fileId }),
+  });
+
+  const payload = await response.json();
+  if (!response.ok || !payload?.ok || !payload?.result?.file_path) {
+    throw new Error(`Telegram getFile fallo: ${JSON.stringify(payload)}`);
+  }
+
+  return {
+    token,
+    filePath: payload.result.file_path,
+  };
+}
+
+async function downloadTelegramFileBuffer(fileId, agentMode = 'legacy') {
+  const { token, filePath } = await getTelegramFileDownloadInfo(fileId, agentMode);
+  const response = await fetch(`https://api.telegram.org/file/bot${token}/${filePath}`);
+  if (!response.ok) {
+    throw new Error(`No se pudo descargar el audio de Telegram (${response.status})`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return {
+    buffer: Buffer.from(arrayBuffer),
+    filePath,
+  };
+}
+
+async function transcribeAudioBuffer({ buffer, filename = 'telegram-voice.ogg', mimeType = 'audio/ogg' }) {
+  if (!OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY_missing');
+  }
+
+  const form = new FormData();
+  form.append('file', new Blob([buffer], { type: mimeType || 'audio/ogg' }), filename);
+  form.append('model', TELEGRAM_TRANSCRIPTION_MODEL);
+  form.append('language', 'es');
+  form.append('response_format', 'json');
+
+  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+    },
+    body: form,
+    signal: AbortSignal.timeout(45000),
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(payload?.error?.message || `OpenAI transcription fallo (${response.status})`);
+  }
+
+  const text = normalizeCommand(String(payload?.text || ''));
+  if (!text) {
+    throw new Error('empty_transcription');
+  }
+
+  return {
+    text,
+    model: TELEGRAM_TRANSCRIPTION_MODEL,
+  };
+}
+
+async function resolveIncomingMessageText(parsedPayload, agentMode = 'legacy') {
+  const directText = normalizeCommand(parsedPayload?.texto_mensaje || '');
+  if (directText) {
+    return {
+      text: directText,
+      inputType: parsedPayload?.voice ? 'voice_transcript' : 'text',
+      transcription: null,
+    };
+  }
+
+  const voice = parsedPayload?.voice || null;
+  if (!voice?.file_id) {
+    return {
+      text: '',
+      inputType: 'unknown',
+      transcription: null,
+    };
+  }
+
+  const downloaded = await downloadTelegramFileBuffer(voice.file_id, agentMode);
+  const filename = downloaded.filePath?.split('/').pop() || `telegram-voice-${voice.file_unique_id || Date.now()}.ogg`;
+  const transcription = await transcribeAudioBuffer({
+    buffer: downloaded.buffer,
+    filename,
+    mimeType: voice.mime_type || 'audio/ogg',
+  });
+
+  return {
+    text: transcription.text,
+    inputType: 'voice',
+    transcription: {
+      ...transcription,
+      duration_seconds: voice.duration || null,
+      file_id: voice.file_id,
+      file_path: downloaded.filePath,
+    },
+  };
 }
 
 function isMissingTableError(error) {
@@ -837,6 +974,7 @@ function getHelpMessage() {
 function getPatientAppointmentHelpMessage() {
   return [
     'Comandos disponibles (citas):',
+    'Tambien puedes escribir o enviar una nota de voz para pedir cita.',
     '/cita <inicio_iso> <fin_iso> [nota] - Solicitar cita',
     'Ejemplo: /cita 2026-03-10T18:00 2026-03-10T18:45 dolor cervical',
     '/ayuda - Ver esta ayuda',
@@ -1000,13 +1138,36 @@ router.post('/incoming', async (req, res, next) => {
     const parsedPayload = parseIncomingPayload(req.body);
     if (!parsedPayload) {
       return res.status(400).json({
-        error: 'Payload invalido. Envia chat_id + texto_mensaje (o message_text) o el webhook nativo de Telegram',
+        error: 'Payload invalido. Envia chat_id + texto_mensaje, voice_transcript o el webhook nativo de Telegram (texto o audio).',
       });
     }
 
-    const { chat_id, username, texto_mensaje } = parsedPayload;
+    const { chat_id, username } = parsedPayload;
     const agentMode = detectTelegramAgentMode(parsedPayload);
-    const text = normalizeCommand(texto_mensaje);
+
+    let resolvedIncoming = null;
+    try {
+      resolvedIncoming = await resolveIncomingMessageText(parsedPayload, agentMode);
+    } catch (voiceErr) {
+      const voiceReply = OPENAI_API_KEY
+        ? 'He recibido tu audio, pero no he podido transcribirlo. Prueba a reenviarlo o escribeme la solicitud por texto.'
+        : 'Ahora mismo no puedo procesar audios. Enviame tu solicitud por texto.';
+
+      if (fromTelegramWebhook) {
+        await sendTelegramMessage(chat_id, voiceReply, agentMode);
+        return res.status(200).json({ ok: true, transcription_error: voiceErr.message });
+      }
+
+      return res.status(400).json({ error: voiceReply, detail: voiceErr.message });
+    }
+
+    const text = normalizeCommand(resolvedIncoming?.text || '');
+    if (!text) {
+      return res.status(400).json({ error: 'No he podido obtener texto del mensaje recibido.' });
+    }
+
+    parsedPayload.texto_mensaje = text;
+    const isVoiceInput = resolvedIncoming?.inputType === 'voice';
     const isCommand = text.startsWith('/');
     const dryRun = parseBooleanFlag(pickBodyValue(req.body, 'dry_run')) || parseBooleanFlag(req.query?.dry_run);
     const forcedPatientId = pickBodyValue(req.body, 'paciente_id', 'patient_id');
@@ -1212,6 +1373,7 @@ router.post('/incoming', async (req, res, next) => {
         let nextAction = forcedPatientId ? 'create_intake_and_reply' : 'auto_link_and_create_intake';
         let replyText = sharedAgentReply;
         const notes = ['dry_run: no se crean fichas, intakes, citas ni recomendaciones'];
+        if (isVoiceInput) notes.push('entrada_voz_transcrita: se evaluaria igual que texto libre');
         if (!forcedPatientId) {
           notes.push('envia patient_id o paciente_id para simular un chat ya vinculado');
         }
@@ -1388,7 +1550,7 @@ router.post('/incoming', async (req, res, next) => {
 
       if (agentMode === 'patient_appointments') {
         return await reply(
-          `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha.\n\nPara agendar, envia: /cita 2026-03-10T18:00 2026-03-10T18:45\n\n${getPatientAppointmentHelpMessage()}`
+          `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha.\n\nPara agendar, escribe tu solicitud, envia una nota de voz o usa: /cita 2026-03-10T18:00 2026-03-10T18:45\n\n${getPatientAppointmentHelpMessage()}`
         );
       }
 

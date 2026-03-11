@@ -1,5 +1,21 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-11, Sesion 90) - Bot pacientes preparado para citas por texto o voz
+
+### Completado esta sesion
+- [x] El bot de pacientes ya puede recibir audio/voice de Telegram y transcribirlo a texto antes de enrutar la cita.
+- [x] El CRM gana acceso rapido `Telegram` desde la lista de pacientes para llegar al bloque de vinculacion del canal.
+- [x] El smoke test incluye un caso simulado de cita por voz transcrita.
+
+### Punto de partida exacto (siguiente bloque)
+1. Publicar variables backend para voz: `OPENAI_API_KEY` y, si aplica, revisar `TELEGRAM_PATIENT_BOT_USERNAME` / `TELEGRAM_PATIENT_BOT_TOKEN`.
+2. Hacer redeploy de `fisio-backend` y `fisio-frontend`.
+3. Validar con un paciente real: texto libre de cita, nota de voz, alta en CRM y sync a Google Calendar.
+
+### Riesgos o bloqueos conocidos
+- Sin `OPENAI_API_KEY` en backend productivo, el bot de pacientes seguira aceptando texto pero respondera que no puede procesar audios.
+- `frontend/stitch.zip` sigue siendo solo referencia local y no debe trackearse.
+
 ## Estado actual (2026-03-11, Sesion 89) - Contrastes finales del Copilot corregidos
 
 ### Completado esta sesion
