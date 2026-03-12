@@ -1298,100 +1298,25 @@ import Layout from '../layouts/Layout.astro';
   };
 
   const exportExerciseReportPdf = async (payload: any) => {
-    const JsPDF = await loadJsPdf();
-    const doc = new JsPDF({ unit: 'mm', format: 'a4' });
-    const marginLeft = 14;
-    const marginRight = 14;
-    const maxWidth = 210 - marginLeft - marginRight;
-    const maxY = 287;
-    let y = 16;
-
-    const ensureSpace = (needed = 8) => {
-      if (y + needed <= maxY) return;
-      doc.addPage();
-      y = 16;
-    };
-
-    const writeWrapped = (text: string, fontSize = 10, indent = 0, lineGap = 5) => {
-      const value = String(text || '').trim();
-      if (!value) return;
-      doc.setFontSize(fontSize);
-      const x = marginLeft + indent;
-      const lines = doc.splitTextToSize(value, maxWidth - indent);
-      lines.forEach((line: string) => {
-        ensureSpace(lineGap);
-        doc.text(line, x, y);
-        y += lineGap;
-      });
-    };
-
-    const writeSectionTitle = (title: string) => {
-      ensureSpace(8);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(title, marginLeft, y);
-      y += 6;
-      doc.setFont('helvetica', 'normal');
-    };
-
-    const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
-    const reportDate = new Date().toLocaleString('es-ES');
     const filenameDate = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text('Informe de Ejercicios - Fisio IA Agent', marginLeft, y);
-    y += 7;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Fecha: ${reportDate}`, marginLeft, y);
-    y += 5;
-    doc.text(`ID recomendaciÃ³n: ${payload?.recommendation_id || '-'}`, marginLeft, y);
-    y += 5;
-    doc.text(`Request ID: ${payload?.request_id || '-'}`, marginLeft, y);
-    y += 8;
-
-    writeSectionTitle('Resumen clÃ­nico');
-    writeWrapped(`Sintomas: ${payload?.symptom_summary || 'No informado'}`);
-    writeWrapped(`Razon de seleccion: ${payload?.selection_rationale || '-'}`);
-
-    const redFlags = payload?.red_flags || {};
-    const redFlagItems = Array.isArray(redFlags?.items) ? redFlags.items.join(', ') : '';
-    writeWrapped(`Alertas rojas: ${redFlags?.present ? 'Si' : 'No'}${redFlagItems ? ` (${redFlagItems})` : ''}`);
-    y += 2;
-
-    writeSectionTitle(`Ejercicios recomendados (${exercises.length})`);
-    if (!exercises.length) {
-      writeWrapped('No hay ejercicios en el informe.');
-    }
-
-    exercises.forEach((ex: any, idx: number) => {
-      ensureSpace(14);
-      const order = ex?.orden || idx + 1;
-      const title = `${order}. ${ex?.nombre || 'Ejercicio'} (${ex?.zona_corporal || 'general'})`;
-      doc.setFont('helvetica', 'bold');
-      writeWrapped(title, 11);
-      doc.setFont('helvetica', 'normal');
-
-      const pauta = [
-        ex?.series ? `Series ${ex.series}` : null,
-        ex?.repeticiones ? `Repeticiones ${ex.repeticiones}` : null,
-        ex?.duracion_segundos ? `Duracion ${ex.duracion_segundos}s` : null,
-      ].filter(Boolean).join(' | ');
-
-      if (pauta) writeWrapped(`Pauta: ${pauta}`, 10, 2);
-      if (ex?.procedimiento) writeWrapped(`Procedimiento: ${Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : ex.procedimiento}`, 10, 2);
-      if (ex?.why) writeWrapped(`Motivo: ${ex.why}`, 10, 2);
-      if (Array.isArray(ex?.cautions) && ex.cautions.length) writeWrapped(`Cautelas: ${ex.cautions.join('; ')}`, 10, 2);
-      if (ex?.imagen_url) writeWrapped(`Imagen URL: ${ex.imagen_url}`, 9, 2, 4.5);
-      y += 2;
+    const res = await fetch(`${BACKEND_BASE}/api/exercises/reports/pdf`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
-
-    writeSectionTitle('Mensajes');
-    writeWrapped(`Para paciente: ${payload?.message_to_patient || '-'}`);
-    writeWrapped(`Para fisioterapeuta: ${payload?.message_to_therapist || '-'}`);
-
-    doc.save(`informe-ejercicios-${filenameDate}.pdf`);
+    if (!res.ok) {
+      const msg = await res.text().catch(() => res.statusText);
+      throw new Error(`Error generando PDF: ${res.status} ${msg}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `informe-ejercicios-${filenameDate}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
