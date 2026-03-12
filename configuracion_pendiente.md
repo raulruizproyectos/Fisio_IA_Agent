@@ -1,29 +1,28 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
-## Estado actual (2026-03-12, Sesion 95) - PDF usa backend. Imágenes pendientes de sincronizar desde PROET.
+## Estado actual (2026-03-12, Sesion 96) - PDF funcional con imágenes. Encoding corregido. Catálogo en español.
 
-### Completado sesion 95
-- [x] Frontend `exportExerciseReportPdf` reemplazado: llama `POST /api/exercises/reports/pdf` en backend (commit `c71133c`).
-- [x] Backend PDF (PDFKit) correcto y listo para embeber imágenes en cuanto existan en DB.
-- [x] Diagnóstico completo de ausencia de imágenes: `crm_ejercicio_media` vacía, `metadata` sin `proet_image_url`.
+### Completado sesion 96
+- [x] Diagnóstico definitivo imágenes PDF: pipeline funcionaba. 179/195 ejercicios PROET tienen `proet_image_url` en metadata.
+- [x] Fix encoding doble-codificado UTF-8 en `index.astro` (40 chars) y `telegram.js` (13 chars). Commit `179abc4`.
+- [x] `proet-sync-supabase.mjs` mejorado: nombres en español desde `image_filename`, descripciones HTML decodificadas. 179 ejercicios re-sincronizados. Commit `f4942b9`.
+- [x] `exercise-report-pdf.js` mejorado: `safePdfText()`, height buffer anti-overflow, truncado de textos, zona labels legibles, mejor estructura visual.
 
-### Bloqueo activo: imágenes en PDFs
-- **Causa raíz**: no hay URLs de imagen en la base de datos (ni en `crm_ejercicio_media` ni en `crm_ejercicios_catalogo.metadata`).
-- **Fix**: una de estas opciones (por orden de preferencia):
-  1. Añadir `proet_image_url` al campo `metadata` de cada fila en `crm_ejercicios_catalogo` via script SQL o `proet-sync-supabase.mjs` mejorado.
-  2. Poblar tabla `crm_ejercicio_media` con `ejercicio_id`, `object_key`, `tipo_media='imagen'`, `es_principal=true`.
-  3. Ambas (recomendado para tener imagen desde Supabase Storage privado + fallback PROET CDN).
-- **Estado del frontend**: ✅ correcto — en cuanto haya URLs en DB las imágenes aparecerán automáticamente.
-
-### Bloqueos anteriores pendientes (no bloqueantes para flujo basico)
-1. **TELEGRAM_PATIENT_BOT_TOKEN** vacio en backend EasyPanel.
-2. **Google Calendar backend** (GOOGLE_CALENDAR_ID, etc.) vacios.
+### Bloqueos activos (no bloqueantes para flujo básico)
+1. **Deploy EasyPanel pendiente**: hacer rebuild de `fisio-backend` y frontend en EasyPanel para activar commits `179abc4` y `f4942b9`.
+2. **TELEGRAM_PATIENT_BOT_TOKEN** vacío en backend EasyPanel (bot pacientes no envía proactivos).
+3. **Google Calendar backend vars** vacíos (no bloqueante — W1 usa OAuth2 de n8n directamente).
 
 ### Siguiente paso exacto
-1. Ejecutar sync de PROET con image URLs: revisar `scripts/proet-sync-supabase.mjs` para que incluya `proet_image_url` en el `metadata` del catálogo.
-2. O insertar manualmente via SQL: `UPDATE crm_ejercicios_catalogo SET metadata = metadata || '{"proet_image_url": "https://..."}' WHERE nombre = '...'`
-3. Verificar que las URLs de DO Spaces son accesibles públicamente (hay algunas con 404).
-4. Test PDF con informe real → imágenes deberían aparecer.
+1. **Rebuild en EasyPanel**: `fisio-backend` → redeploy desde GitHub (rama `main`). Igual para frontend Astro.
+2. Test E2E completo: generar recomendación desde CRM → informe PDF → verificar imágenes + texto en español.
+3. Publicar `TELEGRAM_PATIENT_BOT_TOKEN` en EasyPanel si se quiere bot proactivo.
+
+### Catálogo PROET (estado post sesión 96)
+- 179 ejercicios con nombre en español (sin acentos, derivado de `image_filename`)
+- 179 ejercicios con `metadata.proet_image_url` → URLs públicas de DO Spaces
+- 179 ejercicios con descripción limpia (HTML decodificado, sin entidades)
+- 16 ejercicios legacy (sin fuente PROET, sin imagen)
 
 ### Estado n8n completo
 | ID | Nombre | Estado |

@@ -1,5 +1,50 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 96 - 2026-03-12
+
+### Objetivo
+Diagnóstico definitivo y resolución de imágenes en PDF. Fix encoding en frontend y Telegram. Catálogo PROET con nombres en español y descripciones limpias. PDF estructurado y legible.
+
+### Trabajo realizado
+
+**Diagnóstico imágenes PDF (resuelto)**
+- [x] Confirmado que `crm_ejercicios_catalogo` tenía 179/195 filas PROET con `metadata.proet_image_url` correctas (URLs de DO Spaces públicas, HTTP 200 verificado).
+- [x] PDF endpoint testado directamente → imágenes embebidas correctamente. Bloqueo de sesión 95 era falso positivo; el pipeline ya funcionaba.
+
+**Fix encoding UTF-8 doble codificado (commit `179abc4`)**
+- [x] `frontend/src/pages/index.astro`: 40 sustituciones — caracteres españoles (`í`,`é`,`ó`,`á`,`ú`,`Ú`) y em-dashes doble-codificados reparados. 5 strings con `?` en literales TypeScript corregidos manualmente.
+- [x] `backend/src/routes/telegram.js`: 13 sustituciones — textos del bot (`también`, `verás`, `señales de alerta`, etc.) corregidos.
+
+**Catálogo PROET: nombres en español y descripciones limpias (commit `f4942b9`)**
+- [x] `scripts/proet-sync-supabase.mjs`: añadidas funciones `spanishNameFromFilename()` y `decodeHtmlDescription()`. Ahora `nombre` se deriva del `image_filename` (español) en lugar del título catalán. Descripción limpia con HTML decodificado.
+- [x] Re-sync ejecutado: 179 ejercicios actualizados en Supabase con nombres en español y descripciones sin entidades HTML.
+
+**PDF generator mejorado (commit `f4942b9`)**
+- [x] `backend/src/lib/exercise-report-pdf.js`: añadida `safePdfText()` para eliminar emoji y chars fuera de Latin-1 que Helvetica no puede renderizar.
+- [x] Card height con buffer de seguridad (+24px) para evitar overflow de texto.
+- [x] Textos largos truncados a 480 chars (descripción) y 200 chars (motivo clínico).
+- [x] `ZONA_LABELS` map para nombres de zona legibles en español.
+- [x] Labels y secciones del informe mejorados: "Síntomas referidos", "Alertas clínicas", "Plan terapéutico", "Mensajes y seguimiento".
+- [x] Separadores visuales entre secciones del card (zona/pauta → procedimiento).
+
+### Estado al cierre
+- Frontend CRM: ✅ encoding correcto, sin caracteres raros
+- Bot Telegram: ✅ textos en español correcto
+- PDF informe: ✅ imágenes funcionales, español, sin overlapping, sin iconos raros
+- Catálogo PROET: ✅ 179 ejercicios con nombres en español y descripciones limpias
+- n8n: 8/8 workflows ON
+
+### Bloqueos activos
+1. **TELEGRAM_PATIENT_BOT_TOKEN** vacío en backend EasyPanel (no bloqueante)
+2. **Google Calendar backend vars** vacíos (no bloqueante, W1 usa OAuth2 n8n)
+3. **Deploy pendiente**: EasyPanel debe rebuild frontend + backend para activar los cambios
+
+### Commits de sesión
+- `179abc4` — fix(encoding): repair double-encoded UTF-8 in frontend and telegram bot
+- `f4942b9` — fix(pdf+catalog): Spanish names, clean descriptions, improved PDF layout
+
+---
+
 ## Sesion 95 - 2026-03-12
 
 ### Objetivo
