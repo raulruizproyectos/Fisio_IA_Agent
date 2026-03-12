@@ -1272,31 +1272,6 @@ import Layout from '../layouts/Layout.astro';
     scrollAssistantRailToBottom();
   };
 
-  const loadJsPdf = async () => {
-    const win = window as any;
-    if (win?.jspdf?.jsPDF) return win.jspdf.jsPDF;
-
-    await new Promise<void>((resolve, reject) => {
-      const existing = document.querySelector('script[data-lib="jspdf"]') as HTMLScriptElement | null;
-      if (existing) {
-        existing.addEventListener('load', () => resolve(), { once: true });
-        existing.addEventListener('error', () => reject(new Error('No se pudo cargar jsPDF')), { once: true });
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
-      script.async = true;
-      script.dataset.lib = 'jspdf';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('No se pudo cargar jsPDF'));
-      document.head.appendChild(script);
-    });
-
-    if (!win?.jspdf?.jsPDF) throw new Error('jsPDF no disponible');
-    return win.jspdf.jsPDF;
-  };
-
   const exportExerciseReportPdf = async (payload: any) => {
     const filenameDate = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
     const res = await fetch(`${BACKEND_BASE}/api/exercises/reports/pdf`, {
@@ -1482,7 +1457,7 @@ import Layout from '../layouts/Layout.astro';
       clearAgentProgress();
       addExerciseReport(payload);
       if (retriesUsed > 0) {
-        addMessage(`Motor IA respondi? tras ${retriesUsed} reintento(s).`, 'agent');
+        addMessage(`Motor IA respondió tras ${retriesUsed} reintento(s).`, 'agent');
       }
       setAgentStatus(true);
     } catch (err: any) {
