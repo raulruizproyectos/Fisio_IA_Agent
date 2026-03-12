@@ -73,20 +73,44 @@ function spanishNameFromFilename(filename) {
     .replace(/\.[a-z]+$/i, '')   // remove extension
     .replace(/-\d+$/, '');        // remove trailing numeric ID
   const words = base.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
-  if (!words) return null;
+  // Reject if purely numeric (e.g. filename was just an ID)
+  if (!words || /^\d+$/.test(words)) return null;
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-function inferBodyZone(text) {
+/**
+ * Core zone inference.
+ * @param {string} text
+ * @param {boolean} includeGenericArm — allow "brazo" to trigger hombro_brazo (only from exercise name)
+ */
+function inferBodyZoneFromText(text, includeGenericArm = false) {
   const value = String(text || '').toLowerCase();
   if (/(cervical|cuello|trapecio)/.test(value)) return 'cervical';
-  if (/(hombro|esc[aá]pula|manguito|brazo)/.test(value)) return 'hombro_brazo';
-  if (/(lumbar|espalda|dorsal|columna)/.test(value)) return 'espalda';
-  if (/(cadera|gl[uú]te|pelvis)/.test(value)) return 'cadera';
-  if (/(rodilla|menisco|ligamento cruzado)/.test(value)) return 'rodilla';
-  if (/(tobillo|pie|aquiles|gemelo|pantorrilla)/.test(value)) return 'tobillo_pie';
-  if (/(respir|covid|pulmon)/.test(value)) return 'respiratorio';
+  const armPat = includeGenericArm
+    ? /(hombro|esc[aá]pula|manguito|b[ií]cep|tr[ií]cep|ax[ií]la|brazo)/
+    : /(hombro|esc[aá]pula|manguito|b[ií]cep|tr[ií]cep|ax[ií]la)/;
+  if (armPat.test(value)) return 'hombro_brazo';
+  if (/(lumbar|espalda|dorsal|columna|paravertebral)/.test(value)) return 'espalda';
+  if (/(cadera|gl[uú]te|pelvis|psoas|piriforme)/.test(value)) return 'cadera';
+  if (/(rodilla|menisco|ligamento cruzado|cuadr[ií]cep|isquiotibial|f[eé]mur|muslo|pierna)/.test(value)) return 'rodilla';
+  if (/(tobillo|aquiles|gemelo|pantorrilla|sural)/.test(value)) return 'tobillo_pie';
+  if (/(respir|covid|pulm[oó]n|tos|bronq)/.test(value)) return 'respiratorio';
   return 'general';
+}
+
+/**
+ * Infer body zone.
+ * When called with two args: name has priority; falls back to description only if name gives 'general'.
+ * "brazo" in the exercise NAME triggers hombro_brazo (direct reference); in descriptions it does not (too generic).
+ */
+function inferBodyZone(nameText, fullText) {
+  if (fullText === undefined) {
+    // Legacy single-arg call (dolencias)
+    return inferBodyZoneFromText(nameText, true);
+  }
+  const fromName = inferBodyZoneFromText(nameText, true);
+  if (fromName !== 'general') return fromName;
+  return inferBodyZoneFromText(fullText, false);
 }
 
 function inferLevel(text) {
@@ -144,7 +168,7 @@ function buildDolencias(snapshot, nowIso) {
     const description = cleanText(item.target || item.notes || '');
     map.set(key, {
       nombre: name,
-      zona_corporal: inferBodyZone(`${name} ${description}`),
+      zona_corporal: inferBodyZone(name, description),
       descripcion: description || null,
       niveles_severidad: ['leve', 'moderada', 'severa'],
       activo: true,
@@ -162,13 +186,13 @@ function buildCrmExercises(snapshot, nowIso) {
       if (!nombreEs) return null;
       const description = decodeHtmlDescription(ex.description_html || ex.description_text || '');
       const sourceTitles = Array.isArray(ex.source_program_titles) ? ex.source_program_titles.filter(Boolean) : [];
-      const textForInference = `${nombreEs} ${description} ${sourceTitles.join(' ')}`;
+      const fullTextForInference = `${description} ${sourceTitles.join(' ')}`;
       return {
         codigo: `PROET-${ex.source_exercise_id}`,
         nombre: nombreEs,
         descripcion: description || null,
-        zona_corporal: inferBodyZone(textForInference),
-        nivel: inferLevel(textForInference),
+        zona_corporal: inferBodyZone(nombreEs, fullTextForInference),
+        nivel: inferLevel(`${nombreEs} ${fullTextForInference}`),
         contraindicaciones: null,
         activo: true,
         metadata: {
