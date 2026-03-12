@@ -40,6 +40,43 @@ function cleanText(value) {
     .trim();
 }
 
+/** Decode HTML entities and strip tags from PROET description_html */
+function decodeHtmlDescription(html) {
+  if (!html) return '';
+  return String(html)
+    // Strip HTML tags
+    .replace(/<[^>]*>/g, ' ')
+    // Named entities (Spanish chars)
+    .replace(/&Aacute;/gi, 'Á').replace(/&aacute;/gi, 'á')
+    .replace(/&Eacute;/gi, 'É').replace(/&eacute;/gi, 'é')
+    .replace(/&Iacute;/gi, 'Í').replace(/&iacute;/gi, 'í')
+    .replace(/&Oacute;/gi, 'Ó').replace(/&oacute;/gi, 'ó')
+    .replace(/&Uacute;/gi, 'Ú').replace(/&uacute;/gi, 'ú')
+    .replace(/&Ntilde;/gi, 'Ñ').replace(/&ntilde;/gi, 'ñ')
+    .replace(/&Uuml;/gi, 'Ü').replace(/&uuml;/gi, 'ü')
+    .replace(/&Ouml;/gi, 'Ö').replace(/&ouml;/gi, 'ö')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"').replace(/&apos;/gi, "'")
+    .replace(/&nbsp;/gi, ' ')
+    // Numeric entities
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    // Normalize whitespace
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Derive Spanish name from PROET image_filename (e.g. "abduccion-cadera-8059.png" -> "Abduccion cadera") */
+function spanishNameFromFilename(filename) {
+  if (!filename) return null;
+  const base = String(filename)
+    .replace(/\.[a-z]+$/i, '')   // remove extension
+    .replace(/-\d+$/, '');        // remove trailing numeric ID
+  const words = base.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!words) return null;
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 function inferBodyZone(text) {
   const value = String(text || '').toLowerCase();
   if (/(cervical|cuello|trapecio)/.test(value)) return 'cervical';
@@ -121,14 +158,14 @@ function buildCrmExercises(snapshot, nowIso) {
   const uniqueExercises = Array.isArray(snapshot.unique_exercises) ? snapshot.unique_exercises : [];
   return uniqueExercises
     .map((ex) => {
-      const name = cleanText(ex.title);
-      if (!name) return null;
-      const description = cleanText(ex.description_text || '');
+      const nombreEs = spanishNameFromFilename(ex.image_filename) || cleanText(ex.title);
+      if (!nombreEs) return null;
+      const description = decodeHtmlDescription(ex.description_html || ex.description_text || '');
       const sourceTitles = Array.isArray(ex.source_program_titles) ? ex.source_program_titles.filter(Boolean) : [];
-      const textForInference = `${name} ${description} ${sourceTitles.join(' ')}`;
+      const textForInference = `${nombreEs} ${description} ${sourceTitles.join(' ')}`;
       return {
         codigo: `PROET-${ex.source_exercise_id}`,
-        nombre: name,
+        nombre: nombreEs,
         descripcion: description || null,
         zona_corporal: inferBodyZone(textForInference),
         nivel: inferLevel(textForInference),
@@ -140,6 +177,7 @@ function buildCrmExercises(snapshot, nowIso) {
           proet_source_exercise_id: ex.source_exercise_id,
           proet_image_filename: ex.image_filename || null,
           proet_image_url: ex.image_url || null,
+          proet_title_original: ex.title || null,
           proet_youtube_url: ex.youtube_url || null,
           source_program_ids: Array.isArray(ex.source_program_ids) ? ex.source_program_ids : [],
           source_program_titles: sourceTitles,
