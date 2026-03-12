@@ -14,13 +14,56 @@ function pickValue(obj, ...keys) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const { data, error } = await supabase
-      .from('pacientes')
-      .select('*')
-      .order('creado_en', { ascending: false });
+    // Fetch from both legacy and CRM patient tables in parallel
+    const [legacyResult, crmResult] = await Promise.allSettled([
+      supabase.from('pacientes').select('*').order('creado_en', { ascending: false }),
+      supabase.from('crm_pacientes').select('id, nombre, apellidos, email, telefono, fecha_nacimiento, activo, created_at').eq('activo', true).order('created_at', { ascending: false }),
+    ]);
 
-    if (error) throw error;
-    res.json({ data });
+    const legacyRows = legacyResult.status === 'fulfilled' && !legacyResult.value.error
+      ? (legacyResult.value.data || [])
+      : [];
+
+    const crmRows = crmResult.status === 'fulfilled' && !crmResult.value.error
+      ? (crmResult.value.data || [])
+      : [];
+
+    // Normalize CRM rows to match legacy shape
+    const crmNormalized = crmRows.map((p) => ({
+      id: p.id,
+      nombre_completo: [p.nombre, p.apellidos].filter(Boolean).join(' ').trim() || `Paciente ${p.id}`,
+      email: p.email || null,
+      phone: p.telefono || null,
+      fecha_nacimiento: p.fecha_nacimiento || null,
+      notas_medicas: {},
+      creado_en: p.created_at || null,
+      _source: 'crm',
+    }));
+
+    // Merge: prefer CRM records; dedup by email (CRM wins over legacy)
+    const seenEmails = new Set();
+    const seenIds = new Set();
+    const merged = [];
+
+    for (const row of crmNormalized) {
+      seenIds.add(String(row.id));
+      if (row.email) seenEmails.add(String(row.email).toLowerCase());
+      merged.push(row);
+    }
+
+    for (const row of legacyRows) {
+      if (seenIds.has(String(row.id))) continue;
+      if (row.email && seenEmails.has(String(row.email).toLowerCase())) continue;
+      merged.push({ ...row, _source: 'legacy' });
+    }
+
+    merged.sort((a, b) => {
+      const dateA = a.creado_en ? new Date(a.creado_en).getTime() : 0;
+      const dateB = b.creado_en ? new Date(b.creado_en).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    res.json({ data: merged });
   } catch (err) {
     next(err);
   }
