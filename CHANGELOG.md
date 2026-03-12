@@ -1,5 +1,29 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 95 - 2026-03-12
+
+### Objetivo
+- Diagnóstico y fix de imágenes en PDFs de informes. Mejora visual del frontend.
+
+### Trabajo realizado
+- [x] Reemplazado `exportExerciseReportPdf` en frontend: ya no usa jsPDF client-side; ahora llama `POST /api/exercises/reports/pdf` al backend y descarga el blob (commit `c71133c`).
+- [x] Backend `buildExerciseReportPdfBuffer` (PDFKit) ya tenía código correcto para embeber imágenes — verificado.
+- [x] Diagnóstico profundo: `crm_ejercicio_media` está VACÍA → `mediaMap` siempre `{}`. `crm_ejercicios_catalogo.metadata` no tiene `proet_image_url` ni `image_url`. Resultado: `imagen_url` es `null` en todas las recomendaciones salvo que OpenAI lo incluya en el JSON estructurado (no fiable).
+- [x] Causa raíz: las imágenes de ejercicios nunca se cargaron en la base de datos — faltan en `crm_ejercicio_media` O en `crm_ejercicios_catalogo.metadata.proet_image_url`.
+- [x] Docs actualizados al cierre de sesion (CHANGELOG + configuracion_pendiente).
+
+### Bloqueo identificado: imágenes de ejercicios
+- **Causa**: `crm_ejercicio_media` vacía. `metadata` del catálogo no tiene `proet_image_url`.
+- **Fix necesario**: ejecutar `scripts/proet-sync-supabase.mjs` con soporte de image URLs, O poblar `crm_ejercicio_media` con las URLs de DO Spaces, O añadir `proet_image_url` al campo `metadata` de `crm_ejercicios_catalogo`.
+- **Workaround temporal**: el PDF ya usa backend (PDFKit) y está listo para embeber imágenes en cuanto las URLs existan en DB.
+
+### Estado al cierre
+- Frontend PDF: ✅ llama backend, código correcto para embeber imágenes
+- Imágenes en PDF: ❌ pendiente poblar `crm_ejercicio_media` o `metadata.proet_image_url`
+- n8n 8/8 workflows ON
+
+---
+
 ## Sesion 94 - 2026-03-11
 
 ### Objetivo

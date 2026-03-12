@@ -1,5 +1,44 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
+## Estado actual (2026-03-12, Sesion 95) - PDF usa backend. Imágenes pendientes de sincronizar desde PROET.
+
+### Completado sesion 95
+- [x] Frontend `exportExerciseReportPdf` reemplazado: llama `POST /api/exercises/reports/pdf` en backend (commit `c71133c`).
+- [x] Backend PDF (PDFKit) correcto y listo para embeber imágenes en cuanto existan en DB.
+- [x] Diagnóstico completo de ausencia de imágenes: `crm_ejercicio_media` vacía, `metadata` sin `proet_image_url`.
+
+### Bloqueo activo: imágenes en PDFs
+- **Causa raíz**: no hay URLs de imagen en la base de datos (ni en `crm_ejercicio_media` ni en `crm_ejercicios_catalogo.metadata`).
+- **Fix**: una de estas opciones (por orden de preferencia):
+  1. Añadir `proet_image_url` al campo `metadata` de cada fila en `crm_ejercicios_catalogo` via script SQL o `proet-sync-supabase.mjs` mejorado.
+  2. Poblar tabla `crm_ejercicio_media` con `ejercicio_id`, `object_key`, `tipo_media='imagen'`, `es_principal=true`.
+  3. Ambas (recomendado para tener imagen desde Supabase Storage privado + fallback PROET CDN).
+- **Estado del frontend**: ✅ correcto — en cuanto haya URLs en DB las imágenes aparecerán automáticamente.
+
+### Bloqueos anteriores pendientes (no bloqueantes para flujo basico)
+1. **TELEGRAM_PATIENT_BOT_TOKEN** vacio en backend EasyPanel.
+2. **Google Calendar backend** (GOOGLE_CALENDAR_ID, etc.) vacios.
+
+### Siguiente paso exacto
+1. Ejecutar sync de PROET con image URLs: revisar `scripts/proet-sync-supabase.mjs` para que incluya `proet_image_url` en el `metadata` del catálogo.
+2. O insertar manualmente via SQL: `UPDATE crm_ejercicios_catalogo SET metadata = metadata || '{"proet_image_url": "https://..."}' WHERE nombre = '...'`
+3. Verificar que las URLs de DO Spaces son accesibles públicamente (hay algunas con 404).
+4. Test PDF con informe real → imágenes deberían aparecer.
+
+### Estado n8n completo
+| ID | Nombre | Estado |
+|----|--------|--------|
+| ZOarR2hpUUOgm3KC | Router de Mensajes | ON |
+| BM9YVm8yDUuRpA55 | W2 Recomendacion Ejercicios | ON |
+| dXl8F9jNmTNiafra | W3 Disparador CRM | ON |
+| TN1x0kDu03lGBo2a | Puente Error Backend | ON |
+| a9pejz5CI7zau52i | Subflujo Pendientes | ON |
+| cTp8bORuSL9hsdDk | W1 Agenda de Citas | ON |
+| fdBcmetAPoixF6R4 | Bot Fisioterapeuta | ON |
+| f1PcLN8s9YiOXj3w | Bot Pacientes | ON |
+
+---
+
 ## Estado actual (2026-03-11, Sesion 94) - 8/8 workflows n8n activos. Smoke test 7/7 OK.
 
 ### Completado sesion 94
