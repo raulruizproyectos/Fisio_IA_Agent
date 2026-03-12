@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Fisio IA Agent â€” CRM ClÃ­nico Inteligente">
+<Layout title="Fisio IA Agent — CRM Clínico Inteligente">
   <div class="app-shell">
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
@@ -171,7 +171,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-title-group">
                 <p class="modal-eyebrow">CRM</p>
                 <h2 id="patientModalTitle">Alta de paciente</h2>
-                <p>Registra un paciente nuevo y dejalo listo para historial, chat clÃ­nico y plantillas.</p>
+                <p>Registra un paciente nuevo y dejalo listo para historial, chat clínico y plantillas.</p>
               </div>
               <button type="button" class="modal-close" id="closePatientModalBtn" aria-label="Cerrar formulario de paciente">
                 <span class="material-symbols-rounded">close</span>
@@ -214,7 +214,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PLANTILLAS === -->
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas TerapÃ©uticas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terapéuticas</h1>
             <div class="page-tools">
               <label class="inline-field">
                 <span>Paciente destino</span>
@@ -226,17 +226,17 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Plantillas mÃ¡s reÃºtilizadas</h2></header>
+            <header class="card-header"><h2>Plantillas más reútilizadas</h2></header>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>TÃ­tulo</th>
+                    <th>Título</th>
                     <th>Usos</th>
                     <th>Ejercicios</th>
-                    <th>Ãšltimo uso</th>
+                    <th>Último uso</th>
                     <th>Origen</th>
-                    <th>AcciÃ³n</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
                 <tbody id="templatesBody">
@@ -291,7 +291,7 @@ import Layout from '../layouts/Layout.astro';
                   </label>
                   <label class="field field-full">
                     <span>Motivo</span>
-                    <textarea id="appointmentReasonInput" rows="3" placeholder="Ej.: revisiÃ³n lumbar, seguimiento post ejercicio, valoraciÃ³n inicial."></textarea>
+                    <textarea id="appointmentReasonInput" rows="3" placeholder="Ej.: revisión lumbar, seguimiento post ejercicio, valoración inicial."></textarea>
                   </label>
                 </div>
                 <p class="form-feedback" id="appointmentFormFeedback" hidden></p>
@@ -324,20 +324,20 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: CONFIG === -->
         <div class="page-section" data-page="config">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> ConfiguraciÃ³n</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Configuración</h1>
           </div>
           <div class="config-grid">
             <section class="card">
               <header class="card-header"><h2>Conexiones</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">â€”</span><span class="status-chip" id="cfgBackendStatus">â€”</span></div>
-                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">â€”</span><span class="status-chip" id="cfgAgentStatus">â€”</span></div>
+                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">—</span><span class="status-chip" id="cfgBackendStatus">—</span></div>
+                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">—</span><span class="status-chip" id="cfgAgentStatus">—</span></div>
               </div>
             </section>
             <section class="card">
               <header class="card-header"><h2>Proyecto</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">VersiÃ³n</span><span class="config-value">0.0.1</span></div>
+                <div class="config-item"><span class="config-label">Versión</span><span class="config-value">0.0.1</span></div>
                 <div class="config-item"><span class="config-label">Stack</span><span class="config-value">Astro + Express + Supabase + n8n</span></div>
                 <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub â†—</a></div>
               </div>
@@ -559,7 +559,7 @@ import Layout from '../layouts/Layout.astro';
   };
   const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'â€”'; } };
+  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '—'; } };
   const isTodayDate = (d: string) => {
     try {
       const target = new Date(d);
@@ -687,7 +687,7 @@ import Layout from '../layouts/Layout.astro';
     const displayName = selected?.nombre_completo || selectedPatientName || `Paciente ${selectedPatientId}`;
     assistantPatientLabel.textContent = displayName;
     assistantPatientMeta.textContent = selected?.email
-      ? `Informe y conversaciÃ³n vinculados a ${selected.email}.`
+      ? `Informe y conversación vinculados a ${selected.email}.`
       : 'Informe, PDF y seguimiento vinculados al historial del paciente.';
   };
 
@@ -868,7 +868,7 @@ import Layout from '../layouts/Layout.astro';
     log.appendChild(article);
     scrollAssistantRailToBottom();
   };
-  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexiÃ³n'; };
+  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
   const exerciseBtnDefaultHtml = exerciseBtn?.innerHTML || '';
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
@@ -919,7 +919,7 @@ import Layout from '../layouts/Layout.astro';
       progress = document.createElement('article');
       progress.id = 'agentProgressMsg';
       progress.className = 'msg agent msg-progress';
-      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clÃ­nico</span><p></p></div>';
+      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clínico</span><p></p></div>';
       log.appendChild(progress);
     }
     const p = progress.querySelector('p');
@@ -1446,8 +1446,8 @@ import Layout from '../layouts/Layout.astro';
     }
     syncChatPatientSelection(activePatientId);
 
-    addMessage(`Solicitar recomendaci?n para: ${text}`, 'user');
-    upsertAgentProgress('Preparando solicitud cl?nica...');
+    addMessage(`Solicitar recomendación para: ${text}`, 'user');
+    upsertAgentProgress('Preparando solicitud clínica...');
     setSending(true, 'exercise');
     try {
       let payload: any = null;
@@ -1464,7 +1464,7 @@ import Layout from '../layouts/Layout.astro';
           payload = await pollExerciseRecommendationJob(String(job?.job_id || ''), 90, 1500);
         } catch (asyncErr: any) {
           if (!shouldFallbackToSyncExerciseRequest(asyncErr)) throw asyncErr;
-          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por v?a directa...');
+          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por vía directa...');
           const directResponse = await requestExerciseRecommendation(text, 2);
           payload = directResponse.payload;
           retriesUsed = directResponse.retriesUsed;
@@ -1474,7 +1474,7 @@ import Layout from '../layouts/Layout.astro';
       renderExerciseOpsMetric();
 
       if (!payload.ok) {
-        addMessage(`Error: ${payload.error || 'No se pudo generar recomendaci?n'}`, 'agent');
+        addMessage(`Error: ${payload.error || 'No se pudo generar recomendación'}`, 'agent');
         return;
       }
 
@@ -1488,10 +1488,10 @@ import Layout from '../layouts/Layout.astro';
     } catch (err: any) {
       clearAgentProgress();
       if (err?.code === 'async_poll_timeout') {
-        addMessage('El informe sigue gener?ndose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
+        addMessage('El informe sigue generándose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
       } else if (isTimeoutError(err)) {
         pendingExerciseRecommendationJobId = null;
-        addMessage('El agente de ejercicios tarda m?s de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
+        addMessage('El agente de ejercicios tarda más de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
       } else {
         pendingExerciseRecommendationJobId = null;
         addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
@@ -1566,7 +1566,7 @@ import Layout from '../layouts/Layout.astro';
     if (!text) return;
     addMessage(text, 'user');
     resizeAgentInput();
-    upsertAgentProgress('Consultando al asistente clÃ­nico...');
+    upsertAgentProgress('Consultando al asistente clínico...');
     setSending(true, 'chat');
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/agent/message`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({role:'professional',channel:'web',text}) });
@@ -1574,7 +1574,7 @@ import Layout from '../layouts/Layout.astro';
       clearAgentProgress();
       addMessage(answer, 'agent');
       setAgentStatus(!payload.n8n_unreachable);
-    } catch { clearAgentProgress(); addMessage('Error de conexiÃ³n con el agente.', 'agent'); setAgentStatus(false); }
+    } catch { clearAgentProgress(); addMessage('Error de conexión con el agente.', 'agent'); setAgentStatus(false); }
     finally { clearAgentProgress(); setSending(false); }
   });
 
@@ -1636,8 +1636,8 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(pts.length);
       if (!pts.length) { setTableState(pacientesBody, 5, 'person_off', 'Sin pacientes registrados'); return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
-        const patientName = p.nombre_completo || 'â€”';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'â€”')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'â€”'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
+        const patientName = p.nombre_completo || '—';
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'—')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'—'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
       }).join('');
     } catch {
       setTableState(pacientesBody, 5, 'cloud_off', 'Error al cargar pacientes');
@@ -1802,7 +1802,7 @@ import Layout from '../layouts/Layout.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
       const templates = payload.data || [];
       if (!templates.length) {
-        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todavÃ­a.');
+        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todavía.');
         return;
       }
       templatesBody.innerHTML = templates.map((tpl: any) => {
@@ -1813,8 +1813,8 @@ import Layout from '../layouts/Layout.astro';
           <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
           <td>${tpl.usage_count || 0}</td>
           <td>${tpl.exercises_count || 0}</td>
-          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : 'â€”'}</td>
-          <td>${escapeHtml(tpl.source_patient_name || 'â€”')}</td>
+          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : '—'}</td>
+          <td>${escapeHtml(tpl.source_patient_name || '—')}</td>
           <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
         </tr>`;
       }).join('');
@@ -1872,9 +1872,9 @@ import Layout from '../layouts/Layout.astro';
       const intakes = payload.data || [];
       if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin intakes pendientes'); return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
-        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">âš  SÃ­</span>` : '<span class="status-chip aprobado">No</span>';
+        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">âš  Sí</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'â€”')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'—')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
     } catch {
       setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar intakes');
@@ -1937,7 +1937,7 @@ import Layout from '../layouts/Layout.astro';
 
       citasBody.innerHTML = citas.map((cita: any) => {
         const canCancel = ['pendiente', 'confirmada', 'reprogramada'].includes(cita.estado);
-        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || 'â€”')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : 'â€”'}</td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || '—')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : '—'}</td></tr>`;
       }).join('');
     } catch {
       setTableState(citasBody, 6, 'cloud_off', 'Error al cargar citas');
@@ -1966,7 +1966,7 @@ import Layout from '../layouts/Layout.astro';
     const startDate = new Date(startValue);
     const endDate = new Date(endValue);
     if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-      setAppointmentFormFeedback('Las fechas indicadas no son vÃ¡lidas.');
+      setAppointmentFormFeedback('Las fechas indicadas no son válidas.');
       return;
     }
     if (endDate.getTime() <= startDate.getTime()) {

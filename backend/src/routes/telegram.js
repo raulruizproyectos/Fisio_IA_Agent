@@ -263,14 +263,14 @@ function isNativeTelegramPayload(body = {}) {
 }
 
 const RED_FLAG_RULES = [
-  { key: 'perdida_fuerza', pattern: /(p[eÃ©]rdida|pierdo).*(fuerza)/i },
-  { key: 'esfinteres', pattern: /(esf[iÃ­]nter|orina|incontinencia)/i },
-  { key: 'dolor_toracico', pattern: /(dolor).*(pecho|tor[aÃ¡]c)/i },
+  { key: 'perdida_fuerza', pattern: /(p[eé]rdida|pierdo).*(fuerza)/i },
+  { key: 'esfinteres', pattern: /(esf[ií]nter|orina|incontinencia)/i },
+  { key: 'dolor_toracico', pattern: /(dolor).*(pecho|tor[aá]c)/i },
   { key: 'dificultad_respiratoria', pattern: /(falta de aire|dificultad.*respir|ahogo)/i },
-  { key: 'deficit_neurologico', pattern: /(hormigueo.*progres|adormecimiento.*progres|par[aÃ¡]lisis)/i },
+  { key: 'deficit_neurologico', pattern: /(hormigueo.*progres|adormecimiento.*progres|par[aá]lisis)/i },
   { key: 'fiebre_alta', pattern: /(fiebre).*(alta|39|40)/i },
   { key: 'dolor_nocturno_severo', pattern: /(dolor).*(noche|nocturno).*(fuerte|severo|intenso)/i },
-  { key: 'trauma_reciente', pattern: /(ca[iÃ­]da|golpe|accidente|trauma).*(reciente|hoy|ayer)/i },
+  { key: 'trauma_reciente', pattern: /(ca[ií]da|golpe|accidente|trauma).*(reciente|hoy|ayer)/i },
 ];
 
 function detectRedFlags(messageText = '') {
@@ -793,7 +793,7 @@ async function createAppointmentDirectFallback({
       fallbackUsed: true,
       appointment: data?.data || null,
       messageToPatient:
-        'Cita registrada correctamente. Te confirmaremos cualquier ajuste y tambiÃ©n la verÃ¡s en el CRM.',
+        'Cita registrada correctamente. Te confirmaremos cualquier ajuste y también la verás en el CRM.',
       response: data,
     };
   } catch (error) {
@@ -1545,7 +1545,7 @@ router.post('/incoming', async (req, res, next) => {
       });
 
       if (redFlagResult.tiene_alertas_rojas) {
-        return await reply('He detectado seÃ±ales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+        return await reply('He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
       if (agentMode === 'patient_appointments') {
@@ -1633,7 +1633,7 @@ router.post('/incoming', async (req, res, next) => {
       });
 
       if (redFlagResult.tiene_alertas_rojas) {
-        return await reply('âš ï¸ He detectado seÃ±ales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+        return await reply('âš ï¸ He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
       // W2: If intent is exercise with decent confidence, auto-recommend
@@ -1706,7 +1706,7 @@ router.post('/incoming', async (req, res, next) => {
         }
 
         return await reply(
-          'ðŸ“… He recibido tu solicitud de cita. Nuestro equipo la revisarÃ¡ y te confirmarÃ¡ disponibilidad lo antes posible.'
+          'ðŸ“… He recibido tu solicitud de cita. Nuestro equipo la revisará y te confirmará disponibilidad lo antes posible.'
         );
       }
 
@@ -1837,7 +1837,7 @@ router.post('/incoming', async (req, res, next) => {
         return await reply(appointment.messageToPatient);
       }
 
-      return await reply('ðŸ“… He recibido tu solicitud de cita. Nuestro equipo la revisarÃ¡ y te confirmarÃ¡ disponibilidad lo antes posible.');
+      return await reply('ðŸ“… He recibido tu solicitud de cita. Nuestro equipo la revisará y te confirmará disponibilidad lo antes posible.');
     }
 
     return await reply(`No reconozco ese comando.\n\n${getHelpMessage()}`);
