@@ -220,15 +220,26 @@ async function fetchImageBuffer(url) {
   const candidates = buildImageSourceCandidates(url);
   if (!candidates.length) return null;
 
+  const supabaseBase = String(process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+  const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+
   for (const source of candidates) {
     try {
+      const headers = {
+        Accept: 'image/png,image/jpeg,image/*;q=0.8,*/*;q=0.5',
+        'User-Agent': 'FisioIAAgent/1.0',
+      };
+
+      // Bucket ejercicios es privado: añadir service role key para URLs de Supabase Storage
+      if (serviceKey && supabaseBase && source.startsWith(supabaseBase)) {
+        headers['Authorization'] = `Bearer ${serviceKey}`;
+        headers['apikey'] = serviceKey;
+      }
+
       const response = await fetch(source, {
         signal: AbortSignal.timeout(12000),
         redirect: 'follow',
-        headers: {
-          Accept: 'image/png,image/jpeg,image/*;q=0.8,*/*;q=0.5',
-          'User-Agent': 'FisioIAAgent/1.0',
-        },
+        headers,
       });
       if (!response.ok) continue;
       const arr = await response.arrayBuffer();
