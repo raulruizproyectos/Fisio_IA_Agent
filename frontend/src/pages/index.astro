@@ -10,7 +10,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="brand-icon-wrapper">
           <span class="brand-icon material-symbols-rounded">medical_services</span>
         </div>
-        <span class="brand-text">FisioPlatform</span>
+        <span class="brand-text">Fisio Platform</span>
       </div>
 
       <nav class="sidebar-nav">
@@ -26,7 +26,7 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">calendar_today</span>
           <span class="nav-label">Agenda</span>
         </a>
-        <a href="#" class="nav-item nav-item-agent" id="focusAgentNav" style="color: var(--accent);">
+        <a href="#" class="nav-item nav-item-agent" id="focusAgentNav">
           <span class="material-symbols-rounded">psychology</span>
           <span class="nav-label">Copilot IA</span>
         </a>
@@ -37,7 +37,7 @@ import Layout from '../layouts/Layout.astro';
       </nav>
 
       <div class="sidebar-bottom">
-        <div class="divider"></div>
+        <div class="sidebar-section-label">Comunicaci&oacute;n</div>
         <a href="#" class="nav-item has-badge" data-section="intakes">
           <span class="material-symbols-rounded">forward_to_inbox</span>
           <span class="nav-label">Mensajes Intake</span>
@@ -59,7 +59,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="main-area">
       <!-- HEADER -->
       <header class="topbar">
-        <button class="sidebar-toggle" id="sidebarToggle" aria-label="MenÃº">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Men&uacute;">
           <span class="material-symbols-rounded">menu</span>
         </button>
         <div class="search-box">
@@ -68,17 +68,17 @@ import Layout from '../layouts/Layout.astro';
           <div class="search-results" id="searchResults" hidden></div>
         </div>
         <div class="topbar-right">
-          <button class="assistant-launch-btn" id="assistantRailToggle" type="button" aria-label="Abrir copilot clÃ­nico" aria-controls="assistantRail" aria-expanded="false">
+          <button class="assistant-launch-btn" id="assistantRailToggle" type="button" aria-label="Abrir copilot cl&iacute;nico" aria-controls="assistantRail" aria-expanded="false">
             <span class="material-symbols-rounded">right_panel_open</span>
             <span>Copilot</span>
           </button>
-          <button class="icon-btn" aria-label="Notificaciones" id="notifBtn">
+          <button class="icon-btn topbar-notif-btn" aria-label="Notificaciones" id="notifBtn">
             <span class="material-symbols-rounded">notifications</span>
             <span class="dot-indicator"></span>
           </button>
           <div class="user-pill">
             <div class="avatar">RR</div>
-            <span class="user-name">Dr. RaÃºl Ruiz</span>
+            <span class="user-name">Dr. Ra&uacute;l Ruiz</span>
           </div>
         </div>
       </header>
@@ -91,22 +91,34 @@ import Layout from '../layouts/Layout.astro';
           <div class="dashboard-layout">
             
             <!-- Hero Section -->
-            <section class="hero-section">
-              <div class="hero-content">
-                <h1 class="hero-title">Panel clÃ­nico de hoy</h1>
-                <p class="hero-subtitle">Supervisa pacientes, agenda y recomendaciÃ³nes IA con trazabilidad clÃ­nica en tiempo real.</p>
+            <section class=”hero-section”>
+              <div class=”hero-content”>
+                <h1 class=”hero-title”>Panel cl&iacute;nico de hoy</h1>
+                <p class=”hero-subtitle”>Supervisa pacientes, agenda y recomendaciones IA con trazabilidad cl&iacute;nica en tiempo real.</p>
               </div>
-              <div class="hero-actions">
-                <button class="btn-primary" id="heroAgentShortcutBtn"><span class="material-symbols-rounded">psychology</span> Nueva recomendaciÃ³n</button>
+              <div class=”hero-actions”>
+                <button class=”btn-primary btn-primary-teal” id=”heroAgentShortcutBtn”><span class=”material-symbols-rounded”>psychology</span> Nueva recomendaci&oacute;n</button>
               </div>
             </section>
 
             <!-- Metrics -->
-            <section class="metrics-row clinical-metrics">
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(15, 118, 110, 0.1); color: var(--accent);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">â€”</span><span class="metric-label">Pacientes Activos</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">â€”</span><span class="metric-label">Citas Hoy</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Informes IA archivados</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">monitoring</span></div><div class="metric-data"><span class="metric-value" id="metricEngineOps">0/0</span><span class="metric-label">Timeouts / Reintentos IA</span></div></div>
+            <section class=”metrics-row clinical-metrics”>
+              <div class=”metric-card metric-card-v2”>
+                <div class=”metric-icon metric-icon-blue”><span class=”material-symbols-rounded”>group</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricPacientes”>&mdash;</span><span class=”metric-label”>Pacientes Activos</span></div>
+              </div>
+              <div class=”metric-card metric-card-v2”>
+                <div class=”metric-icon metric-icon-emerald”><span class=”material-symbols-rounded”>event_available</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricSesiones”>&mdash;</span><span class=”metric-label”>Citas Hoy</span></div>
+              </div>
+              <div class=”metric-card metric-card-v2”>
+                <div class=”metric-icon metric-icon-indigo”><span class=”material-symbols-rounded”>description</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricInformes”>0</span><span class=”metric-label”>Informes IA archivados</span></div>
+              </div>
+              <div class=”metric-card metric-card-v2”>
+                <div class=”metric-icon metric-icon-amber”><span class=”material-symbols-rounded”>monitoring</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricEngineOps”>0/0</span><span class=”metric-label”>Timeouts / Reintentos IA</span></div>
+              </div>
             </section>
 
             <!-- Bottom Row: Citas y Actividad -->
@@ -338,14 +350,16 @@ import Layout from '../layouts/Layout.astro';
         <section class="ai-clinical-module card assistant-rail-card">
           <header class="module-header assistant-module-header">
             <div class="assistant-rail-copy">
-              <span class="assistant-eyebrow">Copilot clinico</span>
-              <h2>Asistente clinico IA</h2>
+              <div class="assistant-rail-header-row">
+                <span class="assistant-eyebrow">COPILOT CL&Iacute;NICO</span>
+                <div class="assistant-connected-badge">
+                  <span class="status-dot connected pulse-dot" id="agentDot"></span>
+                  <span class="status-text" id="agentStatusText">CONECTADO</span>
+                </div>
+              </div>
+              <h2>Asistente cl&iacute;nico IA</h2>
             </div>
             <div class="assistant-rail-tools">
-              <div class="agent-status-pill">
-                <span class="status-dot connected" id="agentDot"></span>
-                <span class="status-text" id="agentStatusText">Conectado</span>
-              </div>
               <button type="button" class="assistant-rail-close" id="assistantRailClose" aria-label="Cerrar copilot">
                 <span class="material-symbols-rounded">close</span>
               </button>
@@ -377,13 +391,13 @@ import Layout from '../layouts/Layout.astro';
                   </div>
                   <div class="assistant-composer-shell">
                     <div class="ai-textarea-wrapper">
-                      <textarea id="agentInput" rows="3" placeholder="Escribe al asistente o describe sintomas, limitaciones u objetivo terapeutico."></textarea>
+                      <textarea id="agentInput" rows="3" placeholder="Escribe al asistente..."></textarea>
                     </div>
                     <button type="submit" class="btn-action btn-chat btn-send-compact" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)">
                       <span class="material-symbols-rounded">arrow_upward</span>
                     </button>
                   </div>
-                  <p class="assistant-disclaimer">El asistente puede cometer errores. Verifica siempre la informacion medica.</p>
+                  <p class="assistant-disclaimer">El asistente puede cometer errores. Verifica siempre la informaci&oacute;n m&eacute;dica.</p>
                 </form>
               </div>
             </section>
@@ -2637,15 +2651,15 @@ import Layout from '../layouts/Layout.astro';
   .sidebar {
     width: 240px;
     min-width: 240px;
-    background: linear-gradient(180deg, #0e1728 0%, #0b1322 100%);
-    border-right: 1px solid var(--border);
+    background: #0f172a;
+    border-right: 1px solid #1e293b;
+    color: #cbd5e1;
     display: flex;
     flex-direction: column;
     padding: 1rem 0.75rem;
     transition: width var(--transition), min-width var(--transition);
     overflow: hidden;
     z-index: 10;
-    box-shadow: inset -1px 0 0 rgba(119, 153, 204, 0.08);
   }
   .sidebar.collapsed {
     width: 64px;
@@ -2659,18 +2673,28 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    padding: 0.5rem 0.65rem 1.25rem;
+    padding: 0.65rem 0.5rem 1.25rem;
+  }
+  .brand-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    background: #14b8a6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
   .brand-icon {
-    font-size: 28px;
-    color: var(--accent);
-    filter: drop-shadow(0 4px 10px var(--accent-glow));
+    font-size: 18px;
+    color: #ffffff;
   }
   .brand-text {
     font-weight: 700;
-    font-size: 1.15rem;
+    font-size: 1.12rem;
     letter-spacing: -0.02em;
     white-space: nowrap;
+    color: #ffffff;
   }
 
   .sidebar-nav {
@@ -2680,34 +2704,44 @@ import Layout from '../layouts/Layout.astro';
     flex: 1;
   }
   .sidebar-bottom {
-    border-top: 1px solid var(--border);
-    padding-top: 0.5rem;
-    margin-top: 0.5rem;
+    padding-top: 0.25rem;
+    margin-top: 0.25rem;
+  }
+  .sidebar-section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 1.25rem 0.75rem 0.5rem;
   }
 
   .nav-item {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
-    padding: 0.6rem 0.75rem;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.75rem;
+    color: #94a3b8;
+    font-size: 0.88rem;
     font-weight: 500;
     transition: all var(--transition);
     position: relative;
     white-space: nowrap;
   }
   .nav-item:hover {
-    background: var(--bg-elevated);
-    color: var(--text-primary);
+    background: #1e293b;
+    color: #e2e8f0;
   }
   .nav-item.active {
-    background: linear-gradient(90deg, rgba(44, 196, 184, 0.22) 0%, rgba(102, 163, 255, 0.2) 100%);
-    color: var(--accent);
-    box-shadow: 0 0 0 1px rgba(102, 163, 255, 0.26) inset;
+    background: rgba(20, 184, 166, 0.1);
+    color: #2dd4bf;
+    font-weight: 600;
   }
-  .nav-item .material-symbols-rounded { font-size: 22px; flex-shrink: 0; }
+  .nav-item-agent {
+    color: #94a3b8;
+  }
+  .nav-item .material-symbols-rounded { font-size: 20px; flex-shrink: 0; }
 
   .badge {
     background: var(--danger);
@@ -2730,13 +2764,12 @@ import Layout from '../layouts/Layout.astro';
 
   /* === TOPBAR === */
   .topbar {
-    height: 60px;
-    background: rgba(13, 21, 35, 0.82);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
+    height: 64px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
-    padding: 0 1.25rem;
+    padding: 0 1.5rem;
     gap: 1rem;
   }
   .sidebar-toggle {
@@ -2766,20 +2799,20 @@ import Layout from '../layouts/Layout.astro';
   }
   .search-box input {
     width: 100%;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
     padding: 0.52rem 0.75rem 0.52rem 2.5rem;
     color: var(--text-primary);
     font: inherit;
     font-size: 0.88rem;
-    transition: border-color var(--transition);
+    transition: border-color var(--transition), box-shadow var(--transition);
   }
   .search-box input::placeholder { color: var(--text-muted); }
   .search-box input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-soft);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
   }
 
   .search-results {
@@ -2902,21 +2935,30 @@ import Layout from '../layouts/Layout.astro';
     border: 1px solid var(--border);
   }
   .avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #0a7f78, #1f6fd6);
+    background: #0d9488;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: #fff;
+    box-shadow: 0 0 0 3px #ccfbf1;
   }
   .user-name {
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
     white-space: nowrap;
+    color: #0f172a;
+  }
+  .topbar-notif-btn {
+    position: relative;
+    color: #64748b;
+  }
+  .topbar-notif-btn:hover {
+    color: #334155;
   }
 
   /* === CONTENT === */
@@ -2932,7 +2974,7 @@ import Layout from '../layouts/Layout.astro';
     grid-column: 1;
     min-height: 0;
     min-width: 0;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 64px);
     padding: 1.4rem 2rem;
     overflow-y: auto;
     overflow-x: hidden;
@@ -2970,8 +3012,8 @@ import Layout from '../layouts/Layout.astro';
     top: 0;
     align-self: start;
     min-height: 0;
-    height: calc(100vh - 60px);
-    max-height: calc(100vh - 60px);
+    height: calc(100vh - 64px);
+    max-height: calc(100vh - 64px);
     padding: 1rem 1rem 1rem 0.35rem;
     border-left: 1px solid rgba(148, 163, 184, 0.14);
     display: flex;
@@ -3124,22 +3166,31 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.35rem;
   }
   .hero-title {
-    font-size: 1.85rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #1e293b;
     margin: 0;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
   .hero-subtitle {
-    font-size: 0.95rem;
-    color: var(--text-muted);
-    margin: 0;
+    font-size: 0.93rem;
+    color: #64748b;
+    margin: 0.25rem 0 0;
     max-width: 600px;
   }
   .hero-actions .btn-primary {
     padding: 0.75rem 1.25rem;
     font-size: 0.95rem;
     border-radius: var(--radius-md);
+  }
+  .btn-primary-teal {
+    background: #0d9488 !important;
+    box-shadow: 0 4px 14px -4px rgba(13, 148, 136, 0.45) !important;
+    border-radius: 0.75rem !important;
+  }
+  .btn-primary-teal:hover {
+    background: #0f766e !important;
+    filter: none !important;
   }
 
   /* === METRICS === */
@@ -3203,6 +3254,51 @@ import Layout from '../layouts/Layout.astro';
     font-weight: 500;
     color: var(--text-secondary);
     margin-top: 6px;
+  }
+
+  /* === METRIC CARDS V2 (Stitch redesign) === */
+  .metric-card-v2 {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .metric-card-v2:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    transform: translateY(-1px);
+  }
+  .metric-card-v2 .metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    flex-shrink: 0;
+  }
+  .metric-card-v2 .metric-icon .material-symbols-rounded { font-size: 24px; }
+  .metric-card-v2 .metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .metric-card-v2 .metric-label {
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+  .metric-icon-blue {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+  .metric-icon-emerald {
+    background: #ecfdf5;
+    color: #059669;
+  }
+  .metric-icon-indigo {
+    background: #eef2ff;
+    color: #4f46e5;
+  }
+  .metric-icon-amber {
+    background: #fffbeb;
+    color: #d97706;
   }
 
   /* === CARD BASE === */
@@ -3676,48 +3772,49 @@ import Layout from '../layouts/Layout.astro';
   /* === TABLE OVERRIDES === */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
+  thead { background: #f8fafc; }
   th {
     text-align: left;
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    padding: 0.85rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-surface);
+    letter-spacing: 0.08em;
+    color: #64748b;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: #f8fafc;
   }
   td {
-    padding: 1rem 1.25rem;
+    padding: 1rem 1.5rem;
     font-size: 0.9rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid #f8fafc;
     vertical-align: middle;
     color: var(--text-primary);
   }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--bg-card-hover); }
-  .td-patient { font-weight: 600; color: var(--text-primary); }
+  tr:hover td { background: #f8fafc; transition: background 0.15s; }
+  .td-patient { font-weight: 600; color: #334155; }
 
   .status-chip {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
     text-transform: capitalize;
   }
   .status-chip.pendiente,
-  .status-chip.pendiente_revision { background: rgba(245,158,11,0.15); color: #d97706; }
+  .status-chip.pendiente_revision { background: #fffbeb; color: #b45309; }
   .status-chip.confirmada,
-  .status-chip.reprogramada { background: rgba(59,130,246,0.15); color: var(--info); }
+  .status-chip.reprogramada { background: #ecfdf5; color: #047857; }
   .status-chip.aprobado,
   .status-chip.enviado,
-  .status-chip.completada { background: rgba(16,185,129,0.15); color: var(--success); }
+  .status-chip.completada { background: #ecfdf5; color: #047857; }
   .status-chip.rechazado,
   .status-chip.cancelada,
-  .status-chip.no_show { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .status-chip.no_show { background: #fff1f2; color: #be123c; }
 
   .btn-sm {
     background: var(--bg-surface);
@@ -4292,7 +4389,7 @@ import Layout from '../layouts/Layout.astro';
     background: var(--accent-soft);
   }
 
-  /* === RESPONSIVE: SMALL DESKTOP (â‰¤ 1360px) === */
+  /* === RESPONSIVE: SMALL DESKTOP (<= 1360px) === */
   @media (max-width: 1360px) {
     .workspace-shell {
       grid-template-columns: minmax(0, 1fr) 400px;
@@ -4320,7 +4417,7 @@ import Layout from '../layouts/Layout.astro';
     }
     .assistant-rail {
       position: fixed;
-      top: 60px;
+      top: 64px;
       right: 0;
       bottom: 0;
       z-index: 80;
@@ -4342,7 +4439,7 @@ import Layout from '../layouts/Layout.astro';
     }
     .assistant-rail-backdrop {
       position: fixed;
-      inset: 60px 0 0 0;
+      inset: 64px 0 0 0;
       background: rgba(2, 6, 23, 0.58);
       backdrop-filter: blur(6px);
       opacity: 0;
@@ -4356,7 +4453,7 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* === RESPONSIVE: TABLET (â‰¤ 1100px) === */
+  /* === RESPONSIVE: TABLET (<= 1100px) === */
   @media (max-width: 1100px) {
     .topbar {
       padding: 0 1rem;
@@ -4407,7 +4504,7 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* === RESPONSIVE: MOBILE (â‰¤ 768px) === */
+  /* === RESPONSIVE: MOBILE (<= 768px) === */
   @media (max-width: 768px) {
     .sidebar {
       position: fixed;
@@ -4453,7 +4550,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     .content {
-      height: calc(100vh - 60px);
+      height: calc(100vh - 64px);
       padding: 0.9rem 0.75rem;
     }
     .dashboard-layout {
@@ -4481,7 +4578,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     .assistant-rail {
-      top: 60px;
+      top: 64px;
       width: 100%;
       padding: 0.75rem;
     }
@@ -4622,13 +4719,13 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* === RESPONSIVE: SMALL MOBILE (â‰¤ 480px) === */
+  /* === RESPONSIVE: SMALL MOBILE (<= 480px) === */
   @media (max-width: 480px) {
     .metrics-row {
       grid-template-columns: 1fr;
     }
     .topbar {
-      height: 54px;
+      height: 56px;
     }
     .search-box input {
       font-size: 16px;
@@ -4664,8 +4761,8 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail .assistant-module-header {
     background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
-    padding: 0.9rem 1rem;
-    align-items: center;
+    padding: 1rem 1.1rem;
+    align-items: flex-start;
     gap: 0.85rem;
   }
 
@@ -4691,16 +4788,47 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .assistant-eyebrow {
     color: #0f766e;
-    letter-spacing: 0.18em;
-    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    font-size: 0.625rem;
     font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .assistant-rail .assistant-rail-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .assistant-rail .assistant-connected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    background: #ecfdf5;
+    border-radius: 9999px;
+  }
+
+  .assistant-rail .pulse-dot {
+    animation: pulse-dot 2s infinite;
+  }
+
+  .assistant-rail .assistant-connected-badge .status-text {
+    color: #047857;
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .assistant-rail .assistant-rail-copy h2 {
     color: #1e293b;
-    font-size: 1.02rem;
+    font-size: 1.05rem;
     font-weight: 800;
     line-height: 1.1;
+    margin: 0;
   }
 
   .assistant-rail .agent-status-pill {
