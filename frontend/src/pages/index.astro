@@ -34,6 +34,10 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">prescriptions</span>
           <span class="nav-label">Plantillas</span>
         </a>
+        <a href="#" class="nav-item" data-section="pagos">
+          <span class="material-symbols-rounded">payments</span>
+          <span class="nav-label">Pagos</span>
+        </a>
       </nav>
 
       <div class="sidebar-bottom">
@@ -304,6 +308,150 @@ import Layout from '../layouts/Layout.astro';
             <header class="card-header"><h2>Notas de seguimiento</h2><button class="btn-ghost" id="refreshHistorial"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
             <div id="historialContent" class="section-body"><div class="empty-state"><span class="material-symbols-rounded">history</span><p>Selecciona un paciente para ver su historial</p></div></div>
           </section>
+        </div>
+
+        <!-- === PAGE: PAGOS === -->
+        <div class="page-section" data-page="pagos">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Pagos</h1>
+            <button class="btn-primary" id="addPagoBtn">
+              <span class="material-symbols-rounded">add_card</span> Registrar pago
+            </button>
+          </div>
+
+          <!-- Filtros y resumen -->
+          <section class="card pagos-filters-card">
+            <div class="pagos-filters-row">
+              <label class="pagos-filter">
+                <span>A&ntilde;o</span>
+                <select id="pagosAnioFilter"></select>
+              </label>
+              <label class="pagos-filter">
+                <span>Mes</span>
+                <select id="pagosMesFilter">
+                  <option value="">Todos</option>
+                  <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                  <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                  <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                  <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                </select>
+              </label>
+              <label class="pagos-filter">
+                <span>M&eacute;todo</span>
+                <select id="pagosMetodoFilter">
+                  <option value="">Todos</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="tarjeta">Tarjeta</option>
+                </select>
+              </label>
+              <button class="btn-ghost" id="refreshPagos"><span class="material-symbols-rounded">refresh</span></button>
+            </div>
+            <div class="pagos-summary-row" id="pagosSummary">
+              <div class="pagos-stat"><span class="pagos-stat-label">Total</span><span class="pagos-stat-value" id="pagosTotalImporte">0 &euro;</span></div>
+              <div class="pagos-stat"><span class="pagos-stat-label">Sesiones</span><span class="pagos-stat-value" id="pagosTotalSesiones">0</span></div>
+              <div class="pagos-stat"><span class="pagos-stat-label">Efectivo</span><span class="pagos-stat-value" id="pagosTotalEfectivo">0 &euro;</span></div>
+              <div class="pagos-stat"><span class="pagos-stat-label">Tarjeta</span><span class="pagos-stat-value" id="pagosTotalTarjeta">0 &euro;</span></div>
+            </div>
+          </section>
+
+          <!-- Informe mensual -->
+          <section class="card pagos-report-card" id="pagosReportCard" hidden>
+            <header class="card-header">
+              <h2 id="pagosReportTitle">Informe anual</h2>
+              <button class="btn-ghost" id="togglePagosReport"><span class="material-symbols-rounded">bar_chart</span> Ver informe</button>
+            </header>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Mes</th><th>Sesiones</th><th>Efectivo</th><th>Tarjeta</th><th>Total</th></tr>
+                </thead>
+                <tbody id="pagosReportBody"></tbody>
+                <tfoot id="pagosReportFoot"></tfoot>
+              </table>
+            </div>
+          </section>
+
+          <!-- Tabla de pagos -->
+          <section class="card table-card">
+            <header class="card-header">
+              <h2>Listado de pagos</h2>
+              <button class="btn-ghost" id="togglePagosReportBtn"><span class="material-symbols-rounded">bar_chart</span> Informe mensual</button>
+            </header>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Paciente</th>
+                    <th>Concepto</th>
+                    <th>M&eacute;todo</th>
+                    <th class="text-right">Importe</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="pagosBody">
+                  <tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pagos...</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- Modal: Nuevo/Editar Pago -->
+        <div class="modal-shell" id="pagoModal" aria-hidden="true">
+          <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pagoModalTitle">
+            <div class="modal-header">
+              <div class="modal-title-group">
+                <p class="modal-eyebrow">PAGOS</p>
+                <h2 id="pagoModalTitle">Registrar pago</h2>
+                <p>Registra el cobro de una sesi&oacute;n de fisioterapia.</p>
+              </div>
+              <button type="button" class="modal-close" id="closePagoModalBtn" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+            </div>
+            <form id="pagoForm" class="patient-form">
+              <input type="hidden" id="pagoEditId" value="" />
+              <div class="form-grid">
+                <label class="field field-full">
+                  <span>Paciente</span>
+                  <div class="pagos-patient-search-wrap">
+                    <input id="pagoPacienteSearch" type="text" placeholder="Buscar paciente por nombre..." autocomplete="off" required />
+                    <input type="hidden" id="pagoPacienteId" />
+                    <div class="pagos-patient-dropdown" id="pagoPacienteDropdown" hidden></div>
+                  </div>
+                </label>
+                <label class="field">
+                  <span>Fecha</span>
+                  <input id="pagoFechaInput" name="fecha" type="date" required />
+                </label>
+                <label class="field">
+                  <span>Importe (&euro;)</span>
+                  <input id="pagoImporteInput" name="importe" type="number" step="0.01" min="0.01" placeholder="35.00" required />
+                </label>
+                <label class="field">
+                  <span>M&eacute;todo de pago</span>
+                  <select id="pagoMetodoInput" name="metodo_pago" required>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Concepto</span>
+                  <input id="pagoConceptoInput" name="concepto" type="text" value="Sesion de fisioterapia" />
+                </label>
+                <label class="field field-full">
+                  <span>Notas (opcional)</span>
+                  <textarea id="pagoNotasInput" name="notas" rows="2" placeholder="Notas adicionales..."></textarea>
+                </label>
+              </div>
+              <p class="form-feedback" id="pagoFormFeedback" hidden></p>
+              <div class="modal-actions">
+                <button type="button" class="btn-ghost" id="pagoModalDismiss">Cancelar</button>
+                <button type="submit" class="btn-primary" id="pagoSubmitBtn">
+                  <span class="material-symbols-rounded">save</span> Guardar pago
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- === PAGE: CONFIG === -->
@@ -2437,6 +2585,284 @@ import Layout from '../layouts/Layout.astro';
 
 
   // === CONFIG PAGE ===
+  // ===================== PAGOS =====================
+  const pagosBody = document.getElementById('pagosBody') as HTMLElement | null;
+  const pagosAnioFilter = document.getElementById('pagosAnioFilter') as HTMLSelectElement | null;
+  const pagosMesFilter = document.getElementById('pagosMesFilter') as HTMLSelectElement | null;
+  const pagosMetodoFilter = document.getElementById('pagosMetodoFilter') as HTMLSelectElement | null;
+  const pagoModal = document.getElementById('pagoModal');
+  const pagoForm = document.getElementById('pagoForm') as HTMLFormElement | null;
+  const pagoEditId = document.getElementById('pagoEditId') as HTMLInputElement | null;
+  const pagoPacienteSearch = document.getElementById('pagoPacienteSearch') as HTMLInputElement | null;
+  const pagoPacienteId = document.getElementById('pagoPacienteId') as HTMLInputElement | null;
+  const pagoPacienteDropdown = document.getElementById('pagoPacienteDropdown') as HTMLElement | null;
+  const pagoFechaInput = document.getElementById('pagoFechaInput') as HTMLInputElement | null;
+  const pagoImporteInput = document.getElementById('pagoImporteInput') as HTMLInputElement | null;
+  const pagoMetodoInput = document.getElementById('pagoMetodoInput') as HTMLSelectElement | null;
+  const pagoConceptoInput = document.getElementById('pagoConceptoInput') as HTMLInputElement | null;
+  const pagoNotasInput = document.getElementById('pagoNotasInput') as HTMLTextAreaElement | null;
+  const pagoFormFeedback = document.getElementById('pagoFormFeedback') as HTMLElement | null;
+  const pagoSubmitBtn = document.getElementById('pagoSubmitBtn') as HTMLButtonElement | null;
+  const pagoModalTitle = document.getElementById('pagoModalTitle');
+  const pagosReportCard = document.getElementById('pagosReportCard') as HTMLElement | null;
+  const pagosReportBody = document.getElementById('pagosReportBody') as HTMLElement | null;
+  const pagosReportFoot = document.getElementById('pagosReportFoot') as HTMLElement | null;
+  const pagosReportTitle = document.getElementById('pagosReportTitle');
+
+  const MESES_NOMBRE = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+  // Populate year selector
+  (() => {
+    if (!pagosAnioFilter) return;
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= currentYear - 5; y--) {
+      const opt = document.createElement('option');
+      opt.value = String(y);
+      opt.textContent = String(y);
+      pagosAnioFilter.appendChild(opt);
+    }
+  })();
+
+  const setPagoFeedback = (text = '', state: 'error' | 'success' = 'error') => {
+    if (!pagoFormFeedback) return;
+    if (!text) { pagoFormFeedback.hidden = true; pagoFormFeedback.textContent = ''; pagoFormFeedback.removeAttribute('data-state'); return; }
+    pagoFormFeedback.hidden = false;
+    pagoFormFeedback.textContent = text;
+    pagoFormFeedback.setAttribute('data-state', state);
+  };
+
+  const openPagoModal = (editData?: any) => {
+    pagoForm?.reset();
+    setPagoFeedback();
+    if (pagoEditId) pagoEditId.value = '';
+    if (pagoPacienteId) pagoPacienteId.value = '';
+    if (pagoPacienteSearch) pagoPacienteSearch.value = '';
+    if (pagoFechaInput) pagoFechaInput.value = new Date().toISOString().slice(0, 10);
+    if (pagoConceptoInput) pagoConceptoInput.value = 'Sesion de fisioterapia';
+
+    if (editData) {
+      if (pagoModalTitle) pagoModalTitle.textContent = 'Editar pago';
+      if (pagoEditId) pagoEditId.value = editData.id;
+      const pName = editData.crm_pacientes ? `${editData.crm_pacientes.nombre || ''} ${editData.crm_pacientes.apellidos || ''}`.trim() : '';
+      if (pagoPacienteSearch) pagoPacienteSearch.value = pName;
+      if (pagoPacienteId) pagoPacienteId.value = editData.paciente_id;
+      if (pagoFechaInput) pagoFechaInput.value = editData.fecha || '';
+      if (pagoImporteInput) pagoImporteInput.value = String(editData.importe);
+      if (pagoMetodoInput) pagoMetodoInput.value = editData.metodo_pago;
+      if (pagoConceptoInput) pagoConceptoInput.value = editData.concepto || '';
+      if (pagoNotasInput) pagoNotasInput.value = editData.notas || '';
+    } else {
+      if (pagoModalTitle) pagoModalTitle.textContent = 'Registrar pago';
+    }
+
+    pagoModal?.classList.add('open');
+    pagoModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
+    window.setTimeout(() => pagoPacienteSearch?.focus(), 25);
+  };
+
+  const closePagoModal = () => {
+    pagoModal?.classList.remove('open');
+    pagoModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('has-modal-open');
+  };
+
+  document.getElementById('addPagoBtn')?.addEventListener('click', () => openPagoModal());
+  document.getElementById('closePagoModalBtn')?.addEventListener('click', closePagoModal);
+  document.getElementById('pagoModalDismiss')?.addEventListener('click', closePagoModal);
+
+  // Patient search dropdown
+  let pagoSearchTimeout: any = null;
+  pagoPacienteSearch?.addEventListener('input', () => {
+    clearTimeout(pagoSearchTimeout);
+    const q = pagoPacienteSearch.value.trim().toLowerCase();
+    if (q.length < 2) { if (pagoPacienteDropdown) pagoPacienteDropdown.hidden = true; return; }
+    pagoSearchTimeout = setTimeout(async () => {
+      if (!patientCatalog.length) await fetchPatientCatalog();
+      const matches = patientCatalog.filter((p: any) =>
+        (p.nombre_completo || '').toLowerCase().includes(q)
+      ).slice(0, 8);
+      if (!pagoPacienteDropdown) return;
+      if (!matches.length) { pagoPacienteDropdown.innerHTML = '<div class="pagos-dd-item pagos-dd-empty">Sin resultados</div>'; pagoPacienteDropdown.hidden = false; return; }
+      pagoPacienteDropdown.innerHTML = matches.map((p: any) =>
+        `<div class="pagos-dd-item" data-id="${p.id}" data-name="${escapeAttr(p.nombre_completo || '')}">${escapeHtml(p.nombre_completo || '—')}</div>`
+      ).join('');
+      pagoPacienteDropdown.hidden = false;
+    }, 200);
+  });
+
+  pagoPacienteDropdown?.addEventListener('click', (e: Event) => {
+    const item = (e.target as HTMLElement).closest('.pagos-dd-item[data-id]') as HTMLElement | null;
+    if (!item) return;
+    if (pagoPacienteSearch) pagoPacienteSearch.value = item.getAttribute('data-name') || '';
+    if (pagoPacienteId) pagoPacienteId.value = item.getAttribute('data-id') || '';
+    if (pagoPacienteDropdown) pagoPacienteDropdown.hidden = true;
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e: Event) => {
+    if (pagoPacienteDropdown && !pagoPacienteDropdown.contains(e.target as Node) && e.target !== pagoPacienteSearch) {
+      pagoPacienteDropdown.hidden = true;
+    }
+  });
+
+  const fmtMoney = (n: number) => n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.').replace(/\.(\d{2})$/, ',$1') + ' \u20ac';
+
+  // Load pagos list
+  const loadPagos = async () => {
+    if (!pagosBody) return;
+    setTableState(pagosBody, 6, 'sync', 'Cargando pagos...', true);
+
+    const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
+    const mes = pagosMesFilter?.value || '';
+    const metodo = pagosMetodoFilter?.value || '';
+
+    const params = new URLSearchParams();
+    params.set('anio', anio);
+    if (mes) params.set('mes', mes);
+    if (metodo) params.set('metodo_pago', metodo);
+
+    try {
+      const [listPayload, resumenPayload] = await Promise.all([
+        fetchJson(`${BACKEND_BASE}/api/pagos?${params.toString()}`),
+        fetchJson(`${BACKEND_BASE}/api/pagos/resumen?anio=${anio}`),
+      ]);
+
+      const pagos = listPayload?.data || [];
+      const resumen = resumenPayload?.resumen || [];
+
+      // Update summary stats
+      if (mes) {
+        const mData = resumen.find((r: any) => r.mes === Number(mes)) || { total: 0, sesiones: 0, efectivo: 0, tarjeta: 0 };
+        document.getElementById('pagosTotalImporte')!.textContent = fmtMoney(mData.total);
+        document.getElementById('pagosTotalSesiones')!.textContent = String(mData.sesiones);
+        document.getElementById('pagosTotalEfectivo')!.textContent = fmtMoney(mData.efectivo);
+        document.getElementById('pagosTotalTarjeta')!.textContent = fmtMoney(mData.tarjeta);
+      } else {
+        const totalAnual = resumenPayload?.total_anual || 0;
+        const totalSesiones = resumenPayload?.total_sesiones || 0;
+        const totalEfectivo = resumen.reduce((s: number, r: any) => s + (r.efectivo || 0), 0);
+        const totalTarjeta = resumen.reduce((s: number, r: any) => s + (r.tarjeta || 0), 0);
+        document.getElementById('pagosTotalImporte')!.textContent = fmtMoney(totalAnual);
+        document.getElementById('pagosTotalSesiones')!.textContent = String(totalSesiones);
+        document.getElementById('pagosTotalEfectivo')!.textContent = fmtMoney(totalEfectivo);
+        document.getElementById('pagosTotalTarjeta')!.textContent = fmtMoney(totalTarjeta);
+      }
+
+      // Render report table
+      if (pagosReportBody) {
+        pagosReportBody.innerHTML = resumen.map((r: any) =>
+          `<tr><td>${MESES_NOMBRE[r.mes]}</td><td>${r.sesiones}</td><td>${fmtMoney(r.efectivo)}</td><td>${fmtMoney(r.tarjeta)}</td><td class="text-right"><strong>${fmtMoney(r.total)}</strong></td></tr>`
+        ).join('');
+      }
+      if (pagosReportFoot) {
+        pagosReportFoot.innerHTML = `<tr><td><strong>TOTAL</strong></td><td><strong>${resumenPayload?.total_sesiones || 0}</strong></td><td><strong>${fmtMoney(resumen.reduce((s: number, r: any) => s + (r.efectivo || 0), 0))}</strong></td><td><strong>${fmtMoney(resumen.reduce((s: number, r: any) => s + (r.tarjeta || 0), 0))}</strong></td><td class="text-right"><strong>${fmtMoney(resumenPayload?.total_anual || 0)}</strong></td></tr>`;
+      }
+      if (pagosReportTitle) pagosReportTitle.textContent = `Informe ${anio}`;
+
+      // Render payments list
+      if (!pagos.length) { setTableState(pagosBody, 6, 'credit_card_off', 'Sin pagos registrados en este periodo'); return; }
+
+      pagosBody.innerHTML = pagos.map((p: any) => {
+        const pName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : '—';
+        const metodoChip = p.metodo_pago === 'efectivo'
+          ? '<span class="pagos-chip pagos-chip-cash">Efectivo</span>'
+          : '<span class="pagos-chip pagos-chip-card">Tarjeta</span>';
+        return `<tr>
+          <td>${p.fecha ? new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-ES', {day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+          <td class="td-patient">${escapeHtml(pName)}</td>
+          <td>${escapeHtml(p.concepto || '—')}</td>
+          <td>${metodoChip}</td>
+          <td class="text-right"><strong>${fmtMoney(Number(p.importe))}</strong></td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-sm btn-outline" data-action="edit-pago" data-pago='${escapeAttr(JSON.stringify(p))}'>Editar</button>
+              <button class="btn-sm btn-outline btn-danger-outline" data-action="delete-pago" data-pago-id="${p.id}">Borrar</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+    } catch {
+      setTableState(pagosBody, 6, 'cloud_off', 'Error al cargar pagos');
+    }
+  };
+
+  pageLoaders['pagos'] = loadPagos;
+  document.getElementById('refreshPagos')?.addEventListener('click', loadPagos);
+  pagosAnioFilter?.addEventListener('change', loadPagos);
+  pagosMesFilter?.addEventListener('change', loadPagos);
+  pagosMetodoFilter?.addEventListener('change', loadPagos);
+
+  // Toggle report
+  document.getElementById('togglePagosReportBtn')?.addEventListener('click', () => {
+    if (!pagosReportCard) return;
+    pagosReportCard.hidden = !pagosReportCard.hidden;
+  });
+
+  // Table actions: edit / delete
+  pagosBody?.addEventListener('click', async (event: Event) => {
+    const btn = (event.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
+    if (!btn) return;
+    const action = btn.getAttribute('data-action') || '';
+
+    if (action === 'edit-pago') {
+      try {
+        const pagoData = JSON.parse(btn.getAttribute('data-pago') || '{}');
+        openPagoModal(pagoData);
+      } catch { /* ignore parse error */ }
+    }
+
+    if (action === 'delete-pago') {
+      const pagoId = btn.getAttribute('data-pago-id');
+      if (!pagoId || !confirm('¿Eliminar este pago? Esta acción no se puede deshacer.')) return;
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
+        await loadPagos();
+      } catch (err: any) {
+        alert('Error al eliminar: ' + (err?.message || 'desconocido'));
+      }
+    }
+  });
+
+  // Form submit: create or update
+  pagoForm?.addEventListener('submit', async (event: Event) => {
+    event.preventDefault();
+    const pacienteId = pagoPacienteId?.value || '';
+    if (!pacienteId) { setPagoFeedback('Selecciona un paciente del buscador.'); pagoPacienteSearch?.focus(); return; }
+    const importe = Number(pagoImporteInput?.value);
+    if (!importe || importe <= 0) { setPagoFeedback('El importe debe ser mayor que 0.'); pagoImporteInput?.focus(); return; }
+
+    const previousLabel = pagoSubmitBtn?.innerHTML || '';
+    if (pagoSubmitBtn) { pagoSubmitBtn.disabled = true; pagoSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...'; }
+    setPagoFeedback('Guardando pago...', 'success');
+
+    const payload: any = {
+      paciente_id: pacienteId,
+      fecha: pagoFechaInput?.value || new Date().toISOString().slice(0, 10),
+      importe,
+      metodo_pago: pagoMetodoInput?.value || 'efectivo',
+      concepto: pagoConceptoInput?.value || 'Sesion de fisioterapia',
+      notas: pagoNotasInput?.value || null,
+    };
+
+    const editId = pagoEditId?.value;
+    const method = editId ? 'PATCH' : 'POST';
+    const url = editId ? `${BACKEND_BASE}/api/pagos/${editId}` : `${BACKEND_BASE}/api/pagos`;
+
+    try {
+      await fetchJson(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, 15000);
+      closePagoModal();
+      await loadPagos();
+    } catch (err: any) {
+      setPagoFeedback(`Error: ${err?.message || 'no se pudo guardar'}`);
+    } finally {
+      if (pagoSubmitBtn) { pagoSubmitBtn.disabled = false; pagoSubmitBtn.innerHTML = previousLabel; }
+    }
+  });
+
+  // ===================== END PAGOS =====================
+
   const loadConfig = async () => {
     const cfgBackend = document.getElementById('cfgBackend');
     const cfgBackendStatus = document.getElementById('cfgBackendStatus');
@@ -3887,6 +4313,121 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  /* === PAGOS === */
+  .pagos-filters-card {
+    padding: 1rem 1.25rem;
+  }
+  .pagos-filters-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .pagos-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .pagos-filter select {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.88rem;
+    background: var(--bg-primary);
+    min-width: 110px;
+  }
+  .pagos-summary-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .pagos-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .pagos-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .pagos-stat-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .pagos-chip {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .pagos-chip-cash {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .pagos-chip-card {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .text-right {
+    text-align: right;
+  }
+  .btn-danger-outline {
+    color: #dc2626;
+    border-color: #fca5a5;
+  }
+  .btn-danger-outline:hover {
+    background: #fee2e2;
+  }
+
+  /* Patient search dropdown in Pagos modal */
+  .pagos-patient-search-wrap {
+    position: relative;
+  }
+  .pagos-patient-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 100;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .pagos-dd-item {
+    padding: 0.6rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.12s;
+  }
+  .pagos-dd-item:hover {
+    background: var(--bg-hover, #f1f5f9);
+  }
+  .pagos-dd-empty {
+    color: var(--text-muted);
+    cursor: default;
+  }
+
+  .pagos-report-card .table-wrap {
+    max-height: 500px;
+  }
+  .pagos-report-card tfoot td {
+    border-top: 2px solid var(--border);
+    padding-top: 0.75rem;
   }
 
   /* === CONFIG GRID === */

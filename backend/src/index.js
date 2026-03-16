@@ -7,6 +7,7 @@ import telegramRouter from './routes/telegram.js';
 import professionalRouter from './routes/professional.js';
 import agentRouter from './routes/agent.js';
 import exercisesRouter from './routes/exercises.js';
+import paymentsRouter from './routes/payments.js';
 
 // Configuracion
 const app = express();
@@ -72,6 +73,7 @@ app.use('/api/agent', agentRouter);
 app.use('/api/agente', agentRouter);
 app.use('/api/exercises', exercisesRouter);
 app.use('/api/ejercicios', exercisesRouter);
+app.use('/api/pagos', paymentsRouter);
 
 // Error handler
 app.use((err, req, res, _next) => {
