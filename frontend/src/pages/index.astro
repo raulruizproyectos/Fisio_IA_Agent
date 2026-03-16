@@ -2937,7 +2937,7 @@ import Layout from '../layouts/Layout.astro';
     height: calc(100vh - 64px);
     padding: 1.4rem 2rem;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     background: var(--bg-base);
   }
 
@@ -3740,12 +3740,12 @@ import Layout from '../layouts/Layout.astro';
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: #64748b;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid #f1f5f9;
     background: #f8fafc;
   }
   td {
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1rem;
     font-size: 0.9rem;
     border-bottom: 1px solid #f8fafc;
     vertical-align: middle;
@@ -3844,7 +3844,9 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   .page-tools {
@@ -4269,9 +4271,11 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
   }
   .week-label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-primary);
     min-width: 160px;
@@ -4448,10 +4452,34 @@ import Layout from '../layouts/Layout.astro';
     background: var(--accent-soft);
   }
 
+  /* === RESPONSIVE: WIDE DESKTOP (<= 1440px) === */
+  @media (max-width: 1440px) {
+    .workspace-shell {
+      grid-template-columns: minmax(0, 1fr) clamp(300px, 26vw, 360px);
+    }
+    .sidebar { width: 220px; min-width: 220px; }
+    .sidebar.collapsed { width: 56px; min-width: 56px; }
+    th { padding: 0.65rem 0.85rem; }
+    td { padding: 0.65rem 0.85rem; font-size: 0.875rem; }
+  }
+
+  /* === RESPONSIVE: SMALL DESKTOP (<= 1280px) === */
+  @media (max-width: 1280px) {
+    .workspace-shell {
+      grid-template-columns: minmax(0, 1fr) clamp(280px, 25vw, 340px);
+    }
+    .sidebar { width: 200px; min-width: 200px; }
+    .sidebar.collapsed { width: 52px; min-width: 52px; }
+    .content { padding: 1.1rem 1.25rem; }
+    th { padding: 0.6rem 0.75rem; font-size: 0.7rem; }
+    td { padding: 0.6rem 0.75rem; font-size: 0.85rem; }
+    .page-title { font-size: 1.35rem; }
+  }
+
   /* === RESPONSIVE: SMALL DESKTOP (<= 1360px) === */
   @media (max-width: 1360px) {
     .workspace-shell {
-      grid-template-columns: minmax(0, 1fr) 400px;
+      grid-template-columns: minmax(0, 1fr) 360px;
     }
     .content {
       padding: 1.2rem 1.35rem;
@@ -4463,7 +4491,7 @@ import Layout from '../layouts/Layout.astro';
       max-width: none;
     }
     .dashboard-bottom-row {
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
   }
 
@@ -4514,6 +4542,8 @@ import Layout from '../layouts/Layout.astro';
 
   /* === RESPONSIVE: TABLET (<= 1100px) === */
   @media (max-width: 1100px) {
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 560px; }
     .topbar {
       padding: 0 1rem;
     }
