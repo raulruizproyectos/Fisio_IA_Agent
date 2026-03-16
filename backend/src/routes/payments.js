@@ -79,6 +79,69 @@ router.get('/resumen', async (req, res, next) => {
   }
 });
 
+// GET /api/pagos/gestoria — per-patient per-month breakdown for accounting
+router.get('/gestoria', async (req, res, next) => {
+  try {
+    const { anio } = req.query;
+    const year = Number(anio) || new Date().getFullYear();
+
+    const { data, error } = await supabase
+      .from('crm_pagos')
+      .select('fecha, importe, metodo_pago, paciente_id, crm_pacientes(nombre, apellidos)')
+      .gte('fecha', `${year}-01-01`)
+      .lt('fecha', `${year + 1}-01-01`)
+      .order('fecha', { ascending: true });
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Aggregate by patient + month
+    const byPatient = {};
+    const totalesMes = {};
+    for (let m = 1; m <= 12; m++) totalesMes[m] = { sesiones: 0, efectivo: 0, tarjeta: 0, total: 0 };
+
+    for (const p of data || []) {
+      const m = new Date(p.fecha + 'T00:00:00').getMonth() + 1;
+      const importe = Number(p.importe);
+      const pid = p.paciente_id;
+
+      if (!byPatient[pid]) {
+        const nom = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin nombre';
+        byPatient[pid] = { paciente_id: pid, nombre: nom, meses: {}, total_anual: 0, efectivo_anual: 0, tarjeta_anual: 0, sesiones_anual: 0 };
+      }
+      if (!byPatient[pid].meses[m]) byPatient[pid].meses[m] = { sesiones: 0, efectivo: 0, tarjeta: 0, total: 0 };
+
+      byPatient[pid].meses[m].sesiones += 1;
+      byPatient[pid].meses[m].total += importe;
+      byPatient[pid].sesiones_anual += 1;
+      byPatient[pid].total_anual += importe;
+      totalesMes[m].sesiones += 1;
+      totalesMes[m].total += importe;
+
+      if (p.metodo_pago === 'efectivo') {
+        byPatient[pid].meses[m].efectivo += importe;
+        byPatient[pid].efectivo_anual += importe;
+        totalesMes[m].efectivo += importe;
+      } else {
+        byPatient[pid].meses[m].tarjeta += importe;
+        byPatient[pid].tarjeta_anual += importe;
+        totalesMes[m].tarjeta += importe;
+      }
+    }
+
+    const pacientes = Object.values(byPatient).sort((a, b) => b.total_anual - a.total_anual);
+    const gran_total = {
+      efectivo: pacientes.reduce((s, p) => s + p.efectivo_anual, 0),
+      tarjeta: pacientes.reduce((s, p) => s + p.tarjeta_anual, 0),
+      total: pacientes.reduce((s, p) => s + p.total_anual, 0),
+      sesiones: pacientes.reduce((s, p) => s + p.sesiones_anual, 0),
+    };
+
+    res.json({ anio: year, pacientes, totales_mes: totalesMes, gran_total });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/pagos — create payment
 router.post('/', async (req, res, next) => {
   try {

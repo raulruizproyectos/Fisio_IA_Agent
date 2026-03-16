@@ -38,6 +38,10 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">payments</span>
           <span class="nav-label">Pagos</span>
         </a>
+        <a href="#" class="nav-item" data-section="gestoria">
+          <span class="material-symbols-rounded">account_balance</span>
+          <span class="nav-label">Gestor&iacute;a</span>
+        </a>
       </nav>
 
       <div class="sidebar-bottom">
@@ -407,6 +411,36 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </form>
           </div>
+        </div>
+
+        <!-- === PAGE: GESTORIA === -->
+        <div class="page-section" data-page="gestoria">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</h1>
+            <div class="pagos-filters-row">
+              <select id="gestoriaAnioFilter" title="A&ntilde;o"></select>
+            </div>
+          </div>
+
+          <!-- Gran total -->
+          <div class="pagos-summary-row" style="margin-bottom:1rem">
+            <div class="pagos-stat"><span class="pagos-stat-label">Facturaci&oacute;n total</span><span class="pagos-stat-value" id="gestoriaGranTotal">0,00 &euro;</span></div>
+            <div class="pagos-stat"><span class="pagos-stat-label">Sesiones</span><span class="pagos-stat-value" id="gestoriaGranSesiones">0</span></div>
+            <div class="pagos-stat pagos-stat-cash"><span class="pagos-stat-label">Efectivo</span><span class="pagos-stat-value" id="gestoriaGranEfectivo">0,00 &euro;</span></div>
+            <div class="pagos-stat pagos-stat-card"><span class="pagos-stat-label">Tarjeta</span><span class="pagos-stat-value" id="gestoriaGranTarjeta">0,00 &euro;</span></div>
+          </div>
+
+          <!-- Tabla desglose por paciente x mes -->
+          <section class="card table-card">
+            <div class="table-wrap gestoria-table-wrap">
+              <table class="gestoria-table">
+                <thead id="gestoriaHead"></thead>
+                <tbody id="gestoriaBody">
+                  <tr class="empty-row"><td colspan="16"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando datos...</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
         <!-- === PAGE: CONFIG === -->
@@ -2740,6 +2774,94 @@ import Layout from '../layouts/Layout.astro';
 
   // ===================== END PAGOS =====================
 
+  // ===================== GESTORIA =====================
+  const gestoriaBody = document.getElementById('gestoriaBody') as HTMLElement | null;
+  const gestoriaHead = document.getElementById('gestoriaHead') as HTMLElement | null;
+  const gestoriaAnioFilter = document.getElementById('gestoriaAnioFilter') as HTMLSelectElement | null;
+
+  (() => {
+    if (!gestoriaAnioFilter) return;
+    const y = new Date().getFullYear();
+    for (let i = y; i >= y - 3; i--) {
+      const o = document.createElement('option');
+      o.value = String(i); o.textContent = String(i);
+      gestoriaAnioFilter.appendChild(o);
+    }
+  })();
+
+  const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  const loadGestoria = async () => {
+    if (!gestoriaBody || !gestoriaHead) return;
+    setTableState(gestoriaBody, 16, 'sync', 'Cargando datos de gestor\u00eda...', true);
+
+    const anio = gestoriaAnioFilter?.value || String(new Date().getFullYear());
+
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/pagos/gestoria?anio=${anio}`, undefined, 15000);
+      const { pacientes, totales_mes, gran_total } = payload;
+
+      // Grand totals
+      document.getElementById('gestoriaGranTotal')!.textContent = fmtMoney(gran_total.total);
+      document.getElementById('gestoriaGranSesiones')!.textContent = String(gran_total.sesiones);
+      document.getElementById('gestoriaGranEfectivo')!.textContent = fmtMoney(gran_total.efectivo);
+      document.getElementById('gestoriaGranTarjeta')!.textContent = fmtMoney(gran_total.tarjeta);
+
+      // Header
+      gestoriaHead.innerHTML = `<tr>
+        <th class="gestoria-col-patient">Paciente</th>
+        ${MESES_CORTOS.map(m => `<th class="text-right gestoria-col-mes">${m}</th>`).join('')}
+        <th class="text-right gestoria-col-total">Total</th>
+        <th class="text-right gestoria-col-efe">Efectivo</th>
+        <th class="text-right gestoria-col-tar">Tarjeta</th>
+      </tr>`;
+
+      if (!pacientes.length) {
+        setTableState(gestoriaBody, 16, 'credit_card_off', 'Sin pagos registrados en ' + anio);
+        return;
+      }
+
+      // Patient rows
+      let html = pacientes.map((p: any) => {
+        const cells = MESES_CORTOS.map((_: string, i: number) => {
+          const md = p.meses[String(i + 1)];
+          if (!md || md.total === 0) return '<td class="text-right gestoria-cell-empty">\u2014</td>';
+          const tip = `Efectivo: ${fmtMoney(md.efectivo)} | Tarjeta: ${fmtMoney(md.tarjeta)} | Sesiones: ${md.sesiones}`;
+          return `<td class="text-right gestoria-cell-filled" title="${escapeAttr(tip)}">${fmtMoney(md.total)}</td>`;
+        }).join('');
+        return `<tr>
+          <td class="gestoria-patient-name">${escapeHtml(p.nombre)}</td>
+          ${cells}
+          <td class="text-right"><strong>${fmtMoney(p.total_anual)}</strong></td>
+          <td class="text-right gestoria-efe">${fmtMoney(p.efectivo_anual)}</td>
+          <td class="text-right gestoria-tar">${fmtMoney(p.tarjeta_anual)}</td>
+        </tr>`;
+      }).join('');
+
+      // Totals row (facturación total del mes)
+      const totalCells = MESES_CORTOS.map((_: string, i: number) => {
+        const md = totales_mes[String(i + 1)];
+        const val = md ? md.total : 0;
+        return `<td class="text-right"><strong>${val ? fmtMoney(val) : '\u2014'}</strong></td>`;
+      }).join('');
+      html += `<tr class="gestoria-totals-row">
+        <td class="gestoria-patient-name"><strong>TOTAL</strong></td>
+        ${totalCells}
+        <td class="text-right"><strong>${fmtMoney(gran_total.total)}</strong></td>
+        <td class="text-right gestoria-efe"><strong>${fmtMoney(gran_total.efectivo)}</strong></td>
+        <td class="text-right gestoria-tar"><strong>${fmtMoney(gran_total.tarjeta)}</strong></td>
+      </tr>`;
+
+      gestoriaBody.innerHTML = html;
+    } catch {
+      setTableState(gestoriaBody, 16, 'cloud_off', 'Error al cargar datos de gestor\u00eda');
+    }
+  };
+
+  pageLoaders['gestoria'] = loadGestoria;
+  gestoriaAnioFilter?.addEventListener('change', loadGestoria);
+  // ===================== END GESTORIA =====================
+
   const loadConfig = async () => {
     const cfgBackend = document.getElementById('cfgBackend');
     const cfgBackendStatus = document.getElementById('cfgBackendStatus');
@@ -4286,6 +4408,39 @@ import Layout from '../layouts/Layout.astro';
     opacity: 1;
     border-color: currentColor;
   }
+
+  /* === GESTORIA === */
+  .gestoria-table-wrap {
+    overflow-x: auto;
+  }
+  .gestoria-table {
+    min-width: 1000px;
+  }
+  .gestoria-col-patient {
+    min-width: 150px;
+    position: sticky;
+    left: 0;
+    background: var(--bg-card);
+    z-index: 1;
+  }
+  .gestoria-patient-name {
+    position: sticky;
+    left: 0;
+    background: var(--bg-card);
+    z-index: 1;
+    white-space: nowrap;
+  }
+  .gestoria-col-mes { min-width: 65px; font-size: 0.82rem; }
+  .gestoria-col-total, .gestoria-col-efe, .gestoria-col-tar { min-width: 80px; }
+  .gestoria-cell-empty { color: #cbd5e1; }
+  .gestoria-cell-filled { cursor: default; }
+  .gestoria-efe { color: #166534; }
+  .gestoria-tar { color: #1e40af; }
+  .gestoria-totals-row {
+    background: #f8fafc;
+    border-top: 2px solid var(--border);
+  }
+  .gestoria-totals-row td { padding-top: 0.75rem; }
 
   /* === CONFIG GRID === */
   .config-grid {
