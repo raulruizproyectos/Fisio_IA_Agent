@@ -43,6 +43,7 @@ const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL?.trim() || '';
 const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '';
 const GOOGLE_CALENDAR_TIMEZONE = process.env.GOOGLE_CALENDAR_TIMEZONE?.trim() || 'Europe/Madrid';
 const GOOGLE_CALENDAR_REQUIRED = String(process.env.GOOGLE_CALENDAR_REQUIRED || 'false').toLowerCase() === 'true';
+const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events';
 
 function rejectVideoFeatureIfDisabled(res) {
   if (VIDEO_WORKFLOWS_ENABLED) return false;
@@ -484,6 +485,22 @@ router.get('/intakes/pending', async (req, res, next) => {
   }
 });
 
+async function fetchCalendarAppointments(timeMin, timeMax) {
+  try {
+    const res = await fetch(W5_CALENDAR_READER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ time_min: timeMin, time_max: timeMax }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.events) ? data.events : [];
+  } catch {
+    return [];
+  }
+}
+
 router.get('/appointments', async (req, res, next) => {
   try {
     const professionalIdRaw = pickValue(req.query, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
@@ -511,7 +528,6 @@ router.get('/appointments', async (req, res, next) => {
     if (pickValue(req.query, 'desde', 'from') && !fromAt) {
       return res.status(400).json({ error: 'Formato de fecha invalido en desde/from' });
     }
-
     if (pickValue(req.query, 'hasta', 'to') && !toAt) {
       return res.status(400).json({ error: 'Formato de fecha invalido en hasta/to' });
     }
@@ -528,17 +544,48 @@ router.get('/appointments', async (req, res, next) => {
     if (fromAt) query = query.gte('inicio_en', fromAt);
     if (toAt) query = query.lte('inicio_en', toAt);
 
-    const { data, error } = await query;
+    const [{ data, error }, calendarEvents] = await Promise.all([
+      query,
+      // Only fetch from Calendar when no patient filter and a date range is given
+      (!patientId && !statusFilter && fromAt && toAt)
+        ? fetchCalendarAppointments(fromAt, toAt)
+        : Promise.resolve([]),
+    ]);
+
     if (error) {
       if (isMissingTableError(error, 'crm_citas')) {
-        return res.status(400).json({
-          error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.',
-        });
+        return res.status(400).json({ error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.' });
       }
       throw error;
     }
 
-    res.json({ data: (data || []).map(normalizeAppointmentRow) });
+    const supabaseRows = (data || []).map(normalizeAppointmentRow);
+    const supabaseCalIds = new Set(supabaseRows.map(r => r.google_calendar_event_id).filter(Boolean));
+
+    // Calendar events not yet in Supabase → synthetic rows for display
+    const calendarOnly = calendarEvents
+      .filter(ev => !supabaseCalIds.has(ev.google_calendar_event_id))
+      .map(ev => {
+        const nameFromSummary = (ev.summary || '').replace(/^cita fisioterapia\s*[-–]\s*/i, '').trim();
+        return {
+          id: `cal_${ev.google_calendar_event_id}`,
+          google_calendar_event_id: ev.google_calendar_event_id,
+          inicio_en: ev.inicio_en,
+          fin_en: ev.fin_en,
+          estado: 'pendiente',
+          canal_origen: 'calendar',
+          motivo: ev.description || null,
+          nombre_paciente: nameFromSummary || null,
+          paciente_id: null,
+          fisioterapeuta_id: professionalId,
+        };
+      });
+
+    const merged = [...supabaseRows, ...calendarOnly].sort(
+      (a, b) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime()
+    );
+
+    res.json({ data: merged });
   } catch (err) {
     if (
       isMissingTableError(err, 'crm_citas') ||
