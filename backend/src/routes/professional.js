@@ -112,12 +112,17 @@ function getGoogleCalendarClient() {
   return google.calendar({ version: 'v3', auth });
 }
 
-function formatCalendarNameParts(patientName, professionalName) {
+function formatCalendarNameParts(patientName, patientPhone, professionalName) {
   const cleanPatient = String(patientName || '').trim() || 'Paciente';
   const cleanProfessional = String(professionalName || '').trim() || 'Fisioterapeuta';
+  const cleanPhone = String(patientPhone || '').trim();
   return {
     summary: `Cita fisioterapia - ${cleanPatient}`,
-    description: `Paciente: ${cleanPatient}\nFisioterapeuta: ${cleanProfessional}`,
+    description: [
+      `Paciente: ${cleanPatient}`,
+      cleanPhone ? `Tel: ${cleanPhone}` : null,
+      `Fisioterapeuta: ${cleanProfessional}`,
+    ].filter(Boolean).join('\n'),
   };
 }
 
@@ -125,7 +130,7 @@ async function fetchCalendarContext({ patientId, professionalId }) {
   const [patientResp, professionalResp] = await Promise.all([
     supabase
       .from('crm_pacientes')
-      .select('nombre, apellidos')
+      .select('nombre, apellidos, telefono')
       .eq('id', patientId)
       .maybeSingle(),
     supabase
@@ -139,19 +144,21 @@ async function fetchCalendarContext({ patientId, professionalId }) {
   if (professionalResp.error) throw professionalResp.error;
 
   const patientName = [patientResp.data?.nombre, patientResp.data?.apellidos].filter(Boolean).join(' ').trim() || null;
+  const patientPhone = patientResp.data?.telefono || null;
   const professionalName = professionalResp.data?.nombre_completo || null;
-  return { patientName, professionalName };
+  return { patientName, patientPhone, professionalName };
 }
 
 function buildCalendarEventPayload({
   patientName,
+  patientPhone,
   professionalName,
   startAt,
   endAt,
   reason,
   appointmentId,
 }) {
-  const nameParts = formatCalendarNameParts(patientName, professionalName);
+  const nameParts = formatCalendarNameParts(patientName, patientPhone, professionalName);
   const extraReason = String(reason || '').trim();
   const description = [
     nameParts.description,
@@ -595,6 +602,7 @@ router.post('/appointments', async (req, res, next) => {
       const context = await fetchCalendarContext({ patientId, professionalId });
       const calendarEventPayload = buildCalendarEventPayload({
         patientName: context.patientName,
+        patientPhone: context.patientPhone,
         professionalName: context.professionalName,
         startAt,
         endAt,
@@ -766,6 +774,7 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
         });
         const calendarEventPayload = buildCalendarEventPayload({
           patientName: context.patientName,
+          patientPhone: context.patientPhone,
           professionalName: context.professionalName,
           startAt: nextStartAt,
           endAt: nextEndAt,
