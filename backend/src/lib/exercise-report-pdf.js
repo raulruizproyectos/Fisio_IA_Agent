@@ -189,125 +189,143 @@ async function fetchImageBuffer(url) {
 
 // ─── Exercise card ────────────────────────────────────────────────────────────
 async function drawExerciseCard(doc, state, exercise, index, total) {
-  const bounds  = contentBounds(doc);
-  const pad     = 14;
-  const imgW    = 110;
-  const imgH    = 85;
-  const gap     = 12;
+  const bounds = contentBounds(doc);
+  const pad    = 14;
+  const imgW   = 110;
+  const imgH   = 85;
+  const gap    = 12;
 
   const hasImg    = Boolean(String(exercise?.imagen_url || '').trim());
   const imgBuffer = hasImg ? await fetchImageBuffer(exercise.imagen_url) : null;
 
-  const textW  = bounds.width - pad * 2 - (hasImg ? imgW + gap : 0);
-  const order  = exercise?.orden || index + 1;
+  const textW = bounds.width - pad * 2 - (hasImg ? imgW + gap : 0);
+  const order = exercise?.orden || index + 1;
   const nombre = safeText(exercise?.nombre || 'Ejercicio');
 
-  // ── Zone label ──
+  // ── Texts ──
   const zonaRaw   = safeText(exercise?.zona_corporal || '', '');
   const zonaLabel = ZONE_LABELS[zonaRaw] || (zonaRaw ? zonaRaw.replace(/_/g, ' ') : '');
 
-  // ── Pauta (series / reps / duration) ──
   const pautaParts = [
-    exercise?.series          ? `Series: ${exercise.series}`                       : null,
-    exercise?.repeticiones    ? `Repeticiones: ${exercise.repeticiones}`           : null,
-    exercise?.duracion_segundos ? `Duracion: ${exercise.duracion_segundos}s`       : null,
+    exercise?.series             ? `Series: ${exercise.series}`              : null,
+    exercise?.repeticiones       ? `Reps: ${exercise.repeticiones}`          : null,
+    exercise?.duracion_segundos  ? `Duracion: ${exercise.duracion_segundos}s`: null,
   ].filter(Boolean);
   const pauta = pautaParts.join('   |   ');
 
-  // ── Texts ──
-  const rawProc    = normalizeParagraph(exercise?.procedimiento || exercise?.descripcion, '');
-  const procedure  = truncate(rawProc, 500) || 'Sin descripcion detallada.';
-  const why        = truncate(normalizeParagraph(exercise?.why, ''), 200);
-  const cautions   = normalizeList(exercise?.cautions).map((c) => truncate(c, 120));
+  const rawProc   = normalizeParagraph(exercise?.procedimiento || exercise?.descripcion, '');
+  const procedure = truncate(rawProc, 500) || 'Sin descripcion detallada.';
+  const why       = truncate(normalizeParagraph(exercise?.why, ''), 200);
+  const cautions  = normalizeList(exercise?.cautions).map((c) => truncate(c, 120));
 
-  // ── Measure sections ──
-  const headerLineH = doc.font('Helvetica-Bold').fontSize(S.lg).heightOfString(nombre, { width: textW, lineGap: 2 });
-  const zonaH       = zonaLabel ? doc.font('Helvetica').fontSize(S.sm).heightOfString(zonaLabel, { width: textW }) + 4 : 0;
-  const pautaH      = pauta ? doc.font('Helvetica').fontSize(S.sm).heightOfString(pauta, { width: textW }) + 10 : 0;
-  const procedureH  = doc.font('Helvetica').fontSize(S.md).heightOfString(procedure, { width: textW, lineGap: 3 }) + 6;
-  const whyH        = why ? doc.font('Helvetica').fontSize(S.sm).heightOfString(why, { width: textW, lineGap: 3 }) + 16 : 0;
-  const cautionH    = cautions.length
-    ? doc.font('Helvetica').fontSize(S.sm).heightOfString(cautions.map((c) => `- ${c}`).join('\n'), { width: textW, lineGap: 2 }) + 22
-    : 0;
+  // ── Measure every element with the EXACT same params used when rendering ──
+  const mCounter   = doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString(`EJERCICIO ${order} DE ${total}`, { width: textW });
+  const mNombre    = doc.font('Helvetica-Bold').fontSize(S.lg).heightOfString(nombre, { width: textW, lineGap: 2 });
+  const mZona      = zonaLabel ? doc.font('Helvetica').fontSize(S.sm).heightOfString(`Zona: ${zonaLabel}`, { width: textW }) : 0;
+  const mSeparator = 8;
+  const mPauta     = pauta ? doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString(pauta, { width: textW }) : 0;
+  const mInstrLbl  = doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString('INSTRUCCIONES', { width: textW });
+  const mProcedure = doc.font('Helvetica').fontSize(S.md).heightOfString(procedure, { width: textW, lineGap: 3 });
+  const mWhyLbl    = why ? doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString('POR QUE ESTE EJERCICIO', { width: textW }) : 0;
+  const mWhyBody   = why ? doc.font('Helvetica').fontSize(S.sm).heightOfString(why, { width: textW, lineGap: 3 }) : 0;
+  // Caution text rendered with textW - 16 (8px inner padding each side)
+  const cautionInnerW = textW - 16;
+  const mCautLbl   = cautions.length ? doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString('PRECAUCIONES', { width: cautionInnerW }) : 0;
+  const mCautBody  = cautions.length ? doc.font('Helvetica').fontSize(S.sm).heightOfString(cautions.map((c) => `- ${c}`).join('\n'), { width: cautionInnerW, lineGap: 2 }) : 0;
 
-  const textContentH = pad + headerLineH + 6 + zonaH + pautaH + procedureH + whyH + cautionH + pad;
-  const cardH = Math.max(hasImg ? imgH + pad * 2 + 10 : 120, textContentH + 8);
+  // ── Spacers between elements (match rendering exactly) ──
+  const spAfterCounter  = 6;
+  const spAfterNombre   = 4;
+  const spAfterZona     = 4;   // included in zonaH gap
+  const spAfterPauta    = 8;
+  const spAfterInstrLbl = 4;
+  const spAfterProcedure= 6;
+  const spAfterWhyLbl   = 4;
+  const spAfterWhyBody  = 6;
+  const cautionPad      = cautions.length ? 8 + 8 : 0; // top + bottom padding of caution block
+
+  const textContentH = pad
+    + mCounter   + spAfterCounter
+    + mNombre    + spAfterNombre
+    + (zonaLabel ? mZona + spAfterZona : 0)
+    + mSeparator
+    + (pauta ? mPauta + spAfterPauta : 0)
+    + mInstrLbl  + spAfterInstrLbl
+    + mProcedure + spAfterProcedure
+    + (why ? mWhyLbl + spAfterWhyLbl + mWhyBody + spAfterWhyBody : 0)
+    + (cautions.length ? cautionPad + mCautLbl + spAfterWhyLbl + mCautBody : 0)
+    + pad;
+
+  const cardH = Math.max(hasImg ? imgH + pad * 2 + 10 : 120, textContentH + 6);
 
   ensureSpace(doc, state, cardH + 16);
 
   // ── Card background ──
-  doc.roundedRect(bounds.left, state.y, bounds.width, cardH, 8)
-    .fillAndStroke(C.white, C.border);
-
-  // ── Left accent stripe ──
+  doc.roundedRect(bounds.left, state.y, bounds.width, cardH, 8).fillAndStroke(C.white, C.border);
+  // Left accent stripe
   doc.rect(bounds.left, state.y, 4, cardH).fill(C.accent);
 
   const textX = bounds.left + pad + 4;
   let cy = state.y + pad;
 
-  // ── Exercise counter ──
+  // ── Counter ──
   doc.font('Helvetica-Bold').fontSize(S.sm).fillColor(C.accent);
-  const counter = `EJERCICIO ${order} DE ${total}`;
-  doc.text(counter, textX, cy, { width: textW, lineBreak: false, characterSpacing: 1.2 });
-  cy += doc.heightOfString(counter, { width: textW }) + 6;
+  doc.text(`EJERCICIO ${order} DE ${total}`, textX, cy, { width: textW, lineBreak: false, characterSpacing: 1.2 });
+  cy += mCounter + spAfterCounter;
 
-  // ── Exercise name ──
+  // ── Name ──
   doc.font('Helvetica-Bold').fontSize(S.lg).fillColor(C.dark);
   doc.text(nombre, textX, cy, { width: textW, lineGap: 2 });
-  cy += headerLineH + 4;
+  cy += mNombre + spAfterNombre;
 
   // ── Zone ──
   if (zonaLabel) {
     doc.font('Helvetica').fontSize(S.sm).fillColor(C.accent);
     doc.text(`Zona: ${zonaLabel}`, textX, cy, { width: textW, lineBreak: false });
-    cy += zonaH;
+    cy += mZona + spAfterZona;
   }
 
   // ── Separator ──
   drawLine(doc, textX, cy, textX + textW, C.border);
-  cy += 8;
+  cy += mSeparator;
 
   // ── Pauta ──
   if (pauta) {
     doc.font('Helvetica-Bold').fontSize(S.sm).fillColor(C.muted);
     doc.text(pauta, textX, cy, { width: textW, lineBreak: false });
-    cy += pautaH;
+    cy += mPauta + spAfterPauta;
   }
 
   // ── Instructions label ──
   doc.font('Helvetica-Bold').fontSize(S.sm).fillColor(C.muted);
-  const instrLabel = 'INSTRUCCIONES';
-  doc.text(instrLabel, textX, cy, { width: textW, lineBreak: false, characterSpacing: 1.1 });
-  cy += doc.heightOfString(instrLabel, { width: textW }) + 4;
+  doc.text('INSTRUCCIONES', textX, cy, { width: textW, lineBreak: false, characterSpacing: 1.1 });
+  cy += mInstrLbl + spAfterInstrLbl;
 
   // ── Procedure ──
   doc.font('Helvetica').fontSize(S.md).fillColor(C.body);
   doc.text(procedure, textX, cy, { width: textW, lineGap: 3 });
-  cy += procedureH;
+  cy += mProcedure + spAfterProcedure;
 
   // ── Why ──
   if (why) {
     doc.font('Helvetica-Bold').fontSize(S.sm).fillColor(C.muted);
-    const whyLabel = 'POR QUE ESTE EJERCICIO';
-    doc.text(whyLabel, textX, cy, { width: textW, lineBreak: false, characterSpacing: 1.1 });
-    cy += doc.heightOfString(whyLabel, { width: textW }) + 4;
+    doc.text('POR QUE ESTE EJERCICIO', textX, cy, { width: textW, lineBreak: false, characterSpacing: 1.1 });
+    cy += mWhyLbl + spAfterWhyLbl;
     doc.font('Helvetica').fontSize(S.sm).fillColor(C.muted);
     doc.text(why, textX, cy, { width: textW, lineGap: 3 });
-    cy += doc.heightOfString(why, { width: textW, lineGap: 3 }) + 6;
+    cy += mWhyBody + spAfterWhyBody;
   }
 
   // ── Cautions ──
   if (cautions.length) {
-    // Caution background strip
-    const cautionBlockH = cautionH - 6;
+    const cautionBlockH = 8 + mCautLbl + spAfterWhyLbl + mCautBody + 8;
     doc.roundedRect(textX, cy, textW, cautionBlockH, 6).fill(C.warnBg);
     cy += 8;
     doc.font('Helvetica-Bold').fontSize(S.sm).fillColor(C.warn);
-    doc.text('PRECAUCIONES', textX + 8, cy, { width: textW - 16, characterSpacing: 1.1, lineBreak: false });
-    cy += doc.heightOfString('PRECAUCIONES', { width: textW - 16 }) + 4;
+    doc.text('PRECAUCIONES', textX + 8, cy, { width: cautionInnerW, lineBreak: false, characterSpacing: 1.1 });
+    cy += mCautLbl + spAfterWhyLbl;
     doc.font('Helvetica').fontSize(S.sm).fillColor(C.warn);
-    const cautionText = cautions.map((c) => `- ${c}`).join('\n');
-    doc.text(cautionText, textX + 8, cy, { width: textW - 16, lineGap: 2 });
+    doc.text(cautions.map((c) => `- ${c}`).join('\n'), textX + 8, cy, { width: cautionInnerW, lineGap: 2 });
   }
 
   // ── Image ──
