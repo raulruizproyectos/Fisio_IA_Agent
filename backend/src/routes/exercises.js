@@ -560,7 +560,7 @@ router.get('/recommendations/:patientId', async (req, res) => {
         estado, request_id, created_at,
         crm_recomendacion_items (
           id, ejercicio_id, confidence, why, cautions, orden,
-          crm_ejercicios_catalogo ( id, nombre, descripcion, zona_corporal, nivel )
+          crm_ejercicios_catalogo ( id, nombre, descripcion, zona_corporal, nivel, metadata )
         )
       `)
       .eq('paciente_id', patientId)
