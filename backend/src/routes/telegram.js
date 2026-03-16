@@ -134,8 +134,6 @@ function parseNaturalAppointmentSlots(text = '') {
     }
   }
 
-  if (!day) return { slotStart: null, slotEnd: null };
-
   // "a las 10:00", "a las 10", "10:00", "10h"
   let hours = null, minutes = 0;
   const timeMatchFull = t.match(/a\s+las?\s+(\d{1,2})(?::(\d{2}))?/);
@@ -148,7 +146,10 @@ function parseNaturalAppointmentSlots(text = '') {
     if (h >= 0 && h <= 23 && m >= 0 && m <= 59) { hours = h; minutes = m; }
   }
 
-  if (hours === null) return { slotStart: null, slotEnd: null };
+  // Return partial info so the caller can give Carla a smarter context
+  if (!day && hours !== null) return { slotStart: null, slotEnd: null, missingDay: true, parsedHour: hours, parsedMinutes: minutes };
+  if (!day) return { slotStart: null, slotEnd: null };
+  if (hours === null) return { slotStart: null, slotEnd: null, missingTime: true };
 
   const pad = (n) => String(n).padStart(2, '0');
 
@@ -189,7 +190,7 @@ Reglas:
 - Combina respuestas cortas y largas para sonar natural.
 Horario: lunes a viernes, mañanas 9:00-13:00, tardes 15:00-19:00. Sábados, domingos y festivos: cerrado.
 Las sesiones son de 1 hora. Los slots válidos son en punto o y media (9:00, 9:30, 10:00, 10:30...).
-Flujo de reserva: cuando el paciente quiera pedir cita, primero pregunta el motivo o dolencia si no lo ha indicado, luego pregunta el día y hora. Con ambos datos procede a gestionar la reserva.
+Flujo de reserva: cuando el paciente quiera pedir cita, pregunta SOLO lo que falta. Si ya indicó el motivo, no lo vuelvas a preguntar. Si ya indicó el día, no lo vuelvas a preguntar. Si solo falta la hora, pregunta solo la hora. Si el mensaje parece una respuesta a una pregunta anterior (empieza por "y", "a las", "el", etc.), interpreta el contexto e intenta resolver directamente.
 Ahora son las ${nowMadrid}.`;
 
   const messages = [{ role: 'system', content: systemPrompt }];
@@ -1892,7 +1893,17 @@ router.post('/incoming', async (req, res, next) => {
         // If no slot could be parsed, let Carla ask naturally for date/time.
         if (!slotStart) {
           const nameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-          const carlaAsk = await callCarlaAgent(text, `${nameCtx}El paciente quiere pedir cita pero no ha indicado fecha u hora concreta. Si no mencionó motivo de consulta, pregúntaselo también. Luego pídele día y hora de forma natural.`);
+          const parsed = parseNaturalAppointmentSlots(text);
+          let carlaCtx;
+          if (parsed.missingDay && parsed.parsedHour !== undefined) {
+            const hStr = `${parsed.parsedHour}:${String(parsed.parsedMinutes || 0).padStart(2, '0')}`;
+            carlaCtx = `${nameCtx}El paciente pregunta por disponibilidad a las ${hStr}. Solo falta el día. Pregúntale únicamente para qué día quiere la cita a esa hora. No preguntes el motivo (ya lo sabe).`;
+          } else if (parsed.missingTime) {
+            carlaCtx = `${nameCtx}El paciente ha indicado el día pero no la hora. Pregúntale a qué hora le viene mejor (recuerda los slots válidos: en punto o y media, de 9:00 a 13:00 y 15:00 a 19:00).`;
+          } else {
+            carlaCtx = `${nameCtx}El paciente quiere pedir cita pero no ha indicado ni día ni hora. Pregúntale cuándo le viene mejor de forma natural.`;
+          }
+          const carlaAsk = await callCarlaAgent(text, carlaCtx);
           return await reply(carlaAsk || 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.');
         }
 
