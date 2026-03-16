@@ -358,12 +358,14 @@ Reglas generales:
 - Responde siempre en español de España, sin expresiones de Latinoamérica.
 - Máximo 100 palabras por respuesta. Solo texto plano, sin emojis ni markdown.
 - Evita ofrecimientos genéricos al final del mensaje.
-Horario de la clínica: lunes a viernes, mañanas 9:00-13:00, tardes 15:00-19:00. Sábados, domingos y festivos: cerrado.
+Horario de la clínica: LUNES A VIERNES (los cinco días), mañanas 9:00-13:00, tardes 15:00-19:00. Solo cerrado sábados, domingos y festivos.
 Las sesiones duran 1 hora. Los slots válidos son en punto o y media (9:00, 9:30, 10:00, 10:30...).
 REGLAS DE DISPONIBILIDAD — MUY IMPORTANTE:
+- NUNCA digas que un día está cerrado (lunes, martes, miércoles, jueves o viernes) a menos que el "Contexto actual" te lo indique explícitamente. La clínica abre todos los días laborables.
 - NUNCA digas que un horario está ocupado o libre a menos que el "Contexto actual" te lo indique explícitamente.
 - NUNCA sugieras horas alternativas por tu cuenta. Solo propón alternativas si el contexto te dice que el slot está ocupado Y te indica cuáles están libres.
 - Tu trabajo es recoger la info del paciente (día, hora, motivo) y transmitirla al sistema, no gestionar el calendario tú misma.
+- NUNCA confirmes que una cita ha quedado registrada a menos que el "Contexto actual" diga explícitamente que está CONFIRMADA.
 Flujo de reserva:
 - Necesitas tres datos: día, hora y motivo de la consulta. Pide solo lo que falta.
 - Usa el historial para no repetir preguntas. Si ya indicó el día, no lo pidas. Si ya indicó la hora, no la pidas.
@@ -2129,9 +2131,9 @@ router.post('/incoming', async (req, res, next) => {
                 timeZone: 'Europe/Madrid', weekday: 'long', day: 'numeric',
                 month: 'long', hour: '2-digit', minute: '2-digit', hour12: false,
               }).format(new Date(slotValidation.snappedSlot.slotStart));
-              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario (${horario}). Explícaselo brevemente y ofrécele el siguiente slot disponible: ${snapFmt}. Si confirma con "sí" o similar, quedará reservado ese horario.`;
+              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario. Indícale el horario COMPLETO de la consulta: mañanas 9:00-13:00 y tardes 15:00-19:00, lunes a viernes. Luego ofrécele el siguiente slot disponible: ${snapFmt}. Pregúntale si le viene bien ese horario. NO confirmes ninguna cita todavía.`;
             } else {
-              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario de atención. La consulta atiende: ${horario}. Los slots son en punto o y media. Explícaselo y pregúntale un horario disponible.`;
+              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario. Indícale el horario COMPLETO: mañanas 9:00-13:00 y tardes 15:00-19:00, lunes a viernes. Pregúntale qué horario le viene bien dentro de esos tramos.`;
             }
           }
           const replyText = await carlaReplyAndSave(carlaCtx, `Lo siento, ese horario no está disponible. Atendemos ${horario}.`, nextPendingSlot);
@@ -2144,7 +2146,7 @@ router.post('/incoming', async (req, res, next) => {
 
         if (!motivo) {
           // Save the slot as pending and ask for the motivo
-          const carlaCtx = `${patientNameCtx}El paciente ya indicó el horario. Necesitas saber el motivo de la consulta. Pregúntale de forma concisa si es una dolencia nueva (y cuál es) o es seguimiento de una consulta anterior.`;
+          const carlaCtx = `${patientNameCtx}El sistema aún NO ha registrado ninguna cita. ANTES de confirmar NADA, debes preguntar el motivo de la consulta: si es una dolencia nueva (y cuál es) o es seguimiento de una consulta anterior. No digas que la cita está reservada ni confirmada.`;
           const replyText = await carlaReplyAndSave(carlaCtx, '¿Es una consulta nueva o seguimiento? Cuéntame brevemente el motivo.', { slotStart, slotEnd });
           return await reply(replyText);
         }
