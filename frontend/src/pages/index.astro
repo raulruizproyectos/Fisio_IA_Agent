@@ -374,11 +374,9 @@ import Layout from '../layouts/Layout.astro';
               <div class="form-grid">
                 <label class="field field-full">
                   <span>Paciente</span>
-                  <div class="pagos-patient-search-wrap">
-                    <input id="pagoPacienteSearch" type="text" placeholder="Escribe para buscar paciente..." autocomplete="off" required />
-                    <input type="hidden" id="pagoPacienteId" />
-                    <div class="pagos-patient-dropdown" id="pagoPacienteDropdown" hidden></div>
-                  </div>
+                  <select id="pagoPacienteSelect" required>
+                    <option value="">-- Selecciona paciente --</option>
+                  </select>
                 </label>
                 <label class="field">
                   <span>Importe (&euro;)</span>
@@ -2549,9 +2547,7 @@ import Layout from '../layouts/Layout.astro';
   const pagoModal = document.getElementById('pagoModal');
   const pagoForm = document.getElementById('pagoForm') as HTMLFormElement | null;
   const pagoEditId = document.getElementById('pagoEditId') as HTMLInputElement | null;
-  const pagoPacienteSearch = document.getElementById('pagoPacienteSearch') as HTMLInputElement | null;
-  const pagoPacienteId = document.getElementById('pagoPacienteId') as HTMLInputElement | null;
-  const pagoPacienteDropdown = document.getElementById('pagoPacienteDropdown') as HTMLElement | null;
+  const pagoPacienteSelect = document.getElementById('pagoPacienteSelect') as HTMLSelectElement | null;
   const pagoFechaInput = document.getElementById('pagoFechaInput') as HTMLInputElement | null;
   const pagoImporteInput = document.getElementById('pagoImporteInput') as HTMLInputElement | null;
   const pagoNotasInput = document.getElementById('pagoNotasInput') as HTMLInputElement | null;
@@ -2589,20 +2585,28 @@ import Layout from '../layouts/Layout.astro';
     if (radio) radio.checked = true;
   };
 
-  const openPagoModal = (editData?: any) => {
+  const populatePagoPacienteSelect = async () => {
+    if (!pagoPacienteSelect) return;
+    if (!patientCatalog.length) await fetchPatientCatalog();
+    const current = pagoPacienteSelect.value;
+    pagoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
+      patientCatalog.map((p: any) =>
+        `<option value="${p.id}">${escapeHtml(p.nombre_completo || '—')}</option>`
+      ).join('');
+    if (current) pagoPacienteSelect.value = current;
+  };
+
+  const openPagoModal = async (editData?: any) => {
     pagoForm?.reset();
     setPagoFeedback();
     if (pagoEditId) pagoEditId.value = '';
-    if (pagoPacienteId) pagoPacienteId.value = '';
-    if (pagoPacienteSearch) pagoPacienteSearch.value = '';
     if (pagoFechaInput) pagoFechaInput.value = new Date().toISOString().slice(0, 10);
+    await populatePagoPacienteSelect();
 
     if (editData) {
       if (pagoModalTitle) pagoModalTitle.textContent = 'Editar pago';
       if (pagoEditId) pagoEditId.value = editData.id;
-      const pName = editData.crm_pacientes ? `${editData.crm_pacientes.nombre || ''} ${editData.crm_pacientes.apellidos || ''}`.trim() : '';
-      if (pagoPacienteSearch) pagoPacienteSearch.value = pName;
-      if (pagoPacienteId) pagoPacienteId.value = editData.paciente_id;
+      if (pagoPacienteSelect) pagoPacienteSelect.value = editData.paciente_id || '';
       if (pagoFechaInput) pagoFechaInput.value = editData.fecha || '';
       if (pagoImporteInput) pagoImporteInput.value = String(editData.importe);
       setSelectedMetodo(editData.metodo_pago || 'efectivo');
@@ -2614,7 +2618,7 @@ import Layout from '../layouts/Layout.astro';
     pagoModal?.classList.add('open');
     pagoModal?.setAttribute('aria-hidden', 'false');
     document.body.classList.add('has-modal-open');
-    window.setTimeout(() => pagoPacienteSearch?.focus(), 25);
+    window.setTimeout(() => pagoPacienteSelect?.focus(), 25);
   };
 
   const closePagoModal = () => {
@@ -2626,52 +2630,6 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('addPagoBtn')?.addEventListener('click', () => openPagoModal());
   document.getElementById('closePagoModalBtn')?.addEventListener('click', closePagoModal);
   document.getElementById('pagoModalDismiss')?.addEventListener('click', closePagoModal);
-
-  // Patient search dropdown
-  let pagoSearchTimeout: any = null;
-  pagoPacienteSearch?.addEventListener('input', () => {
-    clearTimeout(pagoSearchTimeout);
-    const q = pagoPacienteSearch.value.trim().toLowerCase();
-    if (q.length < 1) { if (pagoPacienteDropdown) pagoPacienteDropdown.hidden = true; if (pagoPacienteId) pagoPacienteId.value = ''; return; }
-    pagoSearchTimeout = setTimeout(async () => {
-      if (!patientCatalog.length) await fetchPatientCatalog();
-      const matches = patientCatalog.filter((p: any) =>
-        (p.nombre_completo || '').toLowerCase().includes(q)
-      ).slice(0, 8);
-      if (!pagoPacienteDropdown) return;
-      if (!matches.length) { pagoPacienteDropdown.innerHTML = '<div class="pagos-dd-item pagos-dd-empty">Sin resultados</div>'; pagoPacienteDropdown.hidden = false; return; }
-      pagoPacienteDropdown.innerHTML = matches.map((p: any) =>
-        `<div class="pagos-dd-item" data-id="${p.id}" data-name="${escapeAttr(p.nombre_completo || '')}">${escapeHtml(p.nombre_completo || '—')}</div>`
-      ).join('');
-      pagoPacienteDropdown.hidden = false;
-    }, 150);
-  });
-
-  // Also show all patients on focus if empty
-  pagoPacienteSearch?.addEventListener('focus', async () => {
-    if (pagoPacienteSearch.value.trim() && pagoPacienteId?.value) return;
-    if (!patientCatalog.length) await fetchPatientCatalog();
-    if (!pagoPacienteDropdown) return;
-    pagoPacienteDropdown.innerHTML = patientCatalog.slice(0, 12).map((p: any) =>
-      `<div class="pagos-dd-item" data-id="${p.id}" data-name="${escapeAttr(p.nombre_completo || '')}">${escapeHtml(p.nombre_completo || '—')}</div>`
-    ).join('');
-    pagoPacienteDropdown.hidden = false;
-  });
-
-  pagoPacienteDropdown?.addEventListener('click', (e: Event) => {
-    const item = (e.target as HTMLElement).closest('.pagos-dd-item[data-id]') as HTMLElement | null;
-    if (!item) return;
-    if (pagoPacienteSearch) pagoPacienteSearch.value = item.getAttribute('data-name') || '';
-    if (pagoPacienteId) pagoPacienteId.value = item.getAttribute('data-id') || '';
-    if (pagoPacienteDropdown) pagoPacienteDropdown.hidden = true;
-    pagoImporteInput?.focus();
-  });
-
-  document.addEventListener('click', (e: Event) => {
-    if (pagoPacienteDropdown && !pagoPacienteDropdown.contains(e.target as Node) && e.target !== pagoPacienteSearch) {
-      pagoPacienteDropdown.hidden = true;
-    }
-  });
 
   const fmtMoney = (n: number) => n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.').replace(/\.(\d{2})$/, ',$1') + ' \u20ac';
 
@@ -2747,8 +2705,8 @@ import Layout from '../layouts/Layout.astro';
 
   pagoForm?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
-    const pacienteId = pagoPacienteId?.value || '';
-    if (!pacienteId) { setPagoFeedback('Selecciona un paciente.'); pagoPacienteSearch?.focus(); return; }
+    const pacienteId = pagoPacienteSelect?.value || '';
+    if (!pacienteId) { setPagoFeedback('Selecciona un paciente.'); pagoPacienteSelect?.focus(); return; }
     const importe = Number(pagoImporteInput?.value);
     if (!importe || importe <= 0) { setPagoFeedback('Introduce un importe.'); pagoImporteInput?.focus(); return; }
 
@@ -4298,29 +4256,15 @@ import Layout from '../layouts/Layout.astro';
   }
   .btn-danger-outline:hover { background: #fee2e2; }
 
-  /* Patient search dropdown */
-  .pagos-patient-search-wrap { position: relative; }
-  .pagos-patient-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--bg-primary);
+  /* Pago patient select */
+  #pagoPacienteSelect {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
     border: 1px solid var(--border);
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    z-index: 100;
-    max-height: 240px;
-    overflow-y: auto;
-  }
-  .pagos-dd-item {
-    padding: 0.55rem 0.8rem;
-    cursor: pointer;
+    border-radius: 6px;
     font-size: 0.9rem;
-    transition: background 0.1s;
+    background: var(--bg-primary);
   }
-  .pagos-dd-item:hover { background: var(--bg-hover, #f1f5f9); }
-  .pagos-dd-empty { color: var(--text-muted); cursor: default; }
 
   /* Method toggle in modal */
   .pagos-metodo-toggle {
@@ -4630,12 +4574,6 @@ import Layout from '../layouts/Layout.astro';
     border-radius: 1.4rem;
     box-shadow: var(--shadow-lg);
     overflow: hidden;
-  }
-  #pagoModal .modal-panel {
-    overflow: visible;
-  }
-  #pagoModal .modal-header {
-    border-radius: 1.4rem 1.4rem 0 0;
   }
   .modal-header {
     display: flex;
