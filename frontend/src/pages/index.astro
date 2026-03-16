@@ -268,45 +268,30 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: CITAS === -->
         <div class="page-section" data-page="citas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">calendar_month</span> Citas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">calendar_month</span> Agenda</h1>
+            <div class="week-nav-bar">
+              <button class="btn-ghost btn-icon" id="prevWeek" title="Semana anterior"><span class="material-symbols-rounded">chevron_left</span></button>
+              <span id="weekLabel" class="week-label">Cargando...</span>
+              <button class="btn-ghost btn-icon" id="nextWeek" title="Semana siguiente"><span class="material-symbols-rounded">chevron_right</span></button>
+              <button class="btn-ghost" id="thisWeek">Hoy</button>
+              <button class="btn-ghost btn-icon" id="refreshCitas" title="Actualizar"><span class="material-symbols-rounded">refresh</span></button>
+            </div>
           </div>
-          <section class="card">
-            <header class="card-header"><h2>Programar nueva cita</h2></header>
-            <div class="section-body">
-              <form id="appointmentForm" class="appointment-form">
-                <div class="form-grid">
-                  <label class="field field-full">
-                    <span>Paciente</span>
-                    <select id="appointmentPatientSelect" required>
-                      <option value="">Selecciona paciente</option>
-                    </select>
-                  </label>
-                  <label class="field">
-                    <span>Inicio</span>
-                    <input id="appointmentStartInput" type="datetime-local" required />
-                  </label>
-                  <label class="field">
-                    <span>Fin</span>
-                    <input id="appointmentEndInput" type="datetime-local" required />
-                  </label>
-                  <label class="field field-full">
-                    <span>Motivo</span>
-                    <textarea id="appointmentReasonInput" rows="3" placeholder="Ej.: revisión lumbar, seguimiento post ejercicio, valoración inicial."></textarea>
-                  </label>
-                </div>
-                <p class="form-feedback" id="appointmentFormFeedback" hidden></p>
-                <div class="form-actions-row">
-                  <button type="submit" class="btn-primary" id="appointmentSubmitBtn">
-                    <span class="material-symbols-rounded">event_available</span>
-                    Crear cita
-                  </button>
-                </div>
-              </form>
+          <section class="card agenda-cal-card">
+            <div id="agendaCalendar" class="agenda-calendar">
+              <div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>
             </div>
           </section>
           <section class="card table-card">
-            <header class="card-header"><h2>Agenda del fisioterapeuta</h2><button class="btn-ghost" id="refreshCitas"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
-            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Motivo</th><th>Acciones</th></tr></thead><tbody id="citasBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando citas...</p></div></td></tr></tbody></table></div>
+            <header class="card-header">
+              <h2>Pacientes esta semana <span class="badge-week-count" id="weekPatientCount"></span></h2>
+            </header>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Paciente</th><th>Día</th><th>Hora</th><th>Motivo</th><th>Canal</th><th>Estado</th></tr></thead>
+                <tbody id="citasBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando agenda...</p></div></td></tr></tbody>
+              </table>
+            </div>
           </section>
         </div>
 
@@ -1892,125 +1877,158 @@ import Layout from '../layouts/Layout.astro';
     }).join('');
   };
 
+  // === AGENDA SEMANAL ===
+  const getWeekMonday = (d: Date): Date => {
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  };
+  const fmtHourOnly = (iso: string) => {
+    try { return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }); } catch { return ''; }
+  };
+  const fmtDayShortName = (d: Date) =>
+    d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', timeZone: 'Europe/Madrid' });
+  const fmtDayFull = (d: Date) =>
+    d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Madrid' });
+
+  let agendaWeekStart: Date = getWeekMonday(new Date());
+
+  const renderAgendaCalendar = (citas: any[], weekStart: Date) => {
+    const cal = document.getElementById('agendaCalendar');
+    if (!cal) return;
+    const HOUR_SLOTS = [9, 10, 11, 12, 15, 16, 17, 18];
+    const weekDays: Date[] = Array.from({ length: 5 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    });
+
+    // Map day×hour → appointments
+    const apptMap = new Map<string, any[]>();
+    for (const cita of citas) {
+      const start = new Date(cita.inicio_en);
+      const dayIdx = weekDays.findIndex(d => d.toDateString() === start.toDateString());
+      if (dayIdx < 0) continue;
+      const hour = start.getHours();
+      const slotHour = HOUR_SLOTS.find(h => hour >= h && hour < h + 1);
+      if (slotHour === undefined) continue;
+      const key = `${dayIdx}-${slotHour}`;
+      if (!apptMap.has(key)) apptMap.set(key, []);
+      apptMap.get(key)!.push(cita);
+    }
+
+    const todayStr = new Date().toDateString();
+    let html = '<div class="agenda-cal-grid">';
+    // Header
+    html += '<div class="agenda-cal-time-header"></div>';
+    for (let i = 0; i < 5; i++) {
+      const isToday = weekDays[i].toDateString() === todayStr;
+      html += `<div class="agenda-cal-day-header${isToday ? ' today' : ''}">${fmtDayShortName(weekDays[i])}</div>`;
+    }
+    // Rows
+    for (const hour of HOUR_SLOTS) {
+      const isLunchBreak = hour === 13 || hour === 14;
+      html += `<div class="agenda-cal-time">${String(hour).padStart(2,'0')}:00</div>`;
+      for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
+        const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
+        html += `<div class="agenda-cal-cell${isLunchBreak ? ' closed' : ''}">`;
+        for (const a of appts) {
+          const st = a.estado || 'pendiente';
+          const name = (a.nombre_paciente || 'Paciente').split(' ')[0];
+          const timeStr = fmtHourOnly(a.inicio_en);
+          const motivo = a.motivo ? escapeHtml(a.motivo.slice(0, 28)) : '';
+          html += `<div class="agenda-appt ${st}" title="${escapeAttr((a.nombre_paciente || '') + (a.motivo ? ' — ' + a.motivo : ''))}">
+            <span class="appt-time">${timeStr}</span>
+            <span class="appt-name">${escapeHtml(name)}</span>
+            ${motivo ? `<span class="appt-motivo">${motivo}</span>` : ''}
+          </div>`;
+        }
+        html += '</div>';
+      }
+    }
+    html += '</div>';
+    cal.innerHTML = html;
+  };
+
   // === LOAD CITAS ===
   const loadCitas = async () => {
-    if (!citasBody) return;
-    setTableState(citasBody, 6, 'sync', 'Cargando agenda...', true);
+    const cal = document.getElementById('agendaCalendar');
+    if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>';
+    if (citasBody) setTableState(citasBody, 6, 'sync', 'Cargando agenda...', true);
     setListState(dashCitasBody, 'sync', 'Actualizando agenda...', true);
+
+    const weekLabelEl = document.getElementById('weekLabel');
+    if (weekLabelEl) {
+      const weekEnd = new Date(agendaWeekStart);
+      weekEnd.setDate(agendaWeekStart.getDate() + 4);
+      weekLabelEl.textContent = `${agendaWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} – ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    }
+
+    const desde = new Date(agendaWeekStart).toISOString();
+    const hastaDate = new Date(agendaWeekStart);
+    hastaDate.setDate(hastaDate.getDate() + 5);
+    const hasta = hastaDate.toISOString();
+
     try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments?fisioterapeuta_id=${PROF_ID}&limit=50`);
+      const payload = await fetchJson(
+        `${BACKEND_BASE}/api/profesional/appointments?fisioterapeuta_id=${PROF_ID}&limit=100&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`
+      );
       const citas = payload.data || [];
       renderDashboardCitas(citas);
       const todayCount = citas.filter((c: any) => isTodayDate(c.inicio_en || '')).length;
       const metricEl = document.getElementById('metricSesiones');
       if (metricEl) metricEl.textContent = String(todayCount);
 
+      renderAgendaCalendar(citas, agendaWeekStart);
+
+      const countEl = document.getElementById('weekPatientCount');
+      if (countEl) countEl.textContent = citas.length ? String(citas.length) : '';
+
+      if (!citasBody) return;
       if (!citas.length) {
-        setTableState(citasBody, 6, 'event_busy', 'No hay citas registradas.');
+        setTableState(citasBody, 6, 'event_busy', 'No hay citas esta semana.');
         return;
       }
-
-      citasBody.innerHTML = citas.map((cita: any) => {
-        const canCancel = ['pendiente', 'confirmada', 'reprogramada'].includes(cita.estado);
-        return `<tr><td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</td><td>${fmtDate(cita.inicio_en || '')}</td><td>${fmtDate(cita.fin_en || '')}</td><td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td><td>${escapeHtml(cita.motivo || '—')}</td><td>${canCancel ? `<button class="btn-sm btn-outline" data-action="cancel-appointment" data-appointment-id="${cita.id}">Cancelar</button>` : '—'}</td></tr>`;
+      const sorted = [...citas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+      citasBody.innerHTML = sorted.map((cita: any) => {
+        const start = new Date(cita.inicio_en);
+        const dayStr = fmtDayFull(start);
+        const hourStr = fmtHourOnly(cita.inicio_en);
+        const canal = cita.canal_origen === 'telegram' ? 'Telegram' : cita.canal_origen === 'crm_web' ? 'CRM Web' : cita.canal_origen || '—';
+        return `<tr>
+          <td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente')}</td>
+          <td>${escapeHtml(dayStr)}</td>
+          <td>${escapeHtml(hourStr)}</td>
+          <td>${escapeHtml(cita.motivo || '—')}</td>
+          <td>${escapeHtml(canal)}</td>
+          <td><span class="status-chip ${cita.estado || 'pendiente'}">${escapeHtml(cita.estado || 'pendiente')}</span></td>
+        </tr>`;
       }).join('');
     } catch {
+      if (cal) cal.innerHTML = '<div class="agenda-cal-loading">Error al cargar la agenda</div>';
       setTableState(citasBody, 6, 'cloud_off', 'Error al cargar citas');
       renderDashboardCitas([], 'error');
     }
   };
-  setAppointmentFormDefaults(true);
+
   pageLoaders['citas'] = loadCitas;
   document.getElementById('refreshCitas')?.addEventListener('click', loadCitas);
-  appointmentPatientSelect?.addEventListener('focus', () => {
-    if (!patientCatalog.length) {
-      ensurePatientCatalog().catch(() => {});
-    }
+  document.getElementById('prevWeek')?.addEventListener('click', () => {
+    agendaWeekStart = new Date(agendaWeekStart);
+    agendaWeekStart.setDate(agendaWeekStart.getDate() - 7);
+    loadCitas();
   });
-  appointmentForm?.addEventListener('submit', async (event: Event) => {
-    event.preventDefault();
-
-    const patientId = appointmentPatientSelect?.value || selectedPatientId || '';
-    const startValue = appointmentStartInput?.value || '';
-    const endValue = appointmentEndInput?.value || '';
-    if (!patientId || !startValue || !endValue) {
-      setAppointmentFormFeedback('Selecciona paciente, inicio y fin antes de crear la cita.');
-      return;
-    }
-
-    const startDate = new Date(startValue);
-    const endDate = new Date(endValue);
-    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-      setAppointmentFormFeedback('Las fechas indicadas no son válidas.');
-      return;
-    }
-    if (endDate.getTime() <= startDate.getTime()) {
-      setAppointmentFormFeedback('La hora de fin debe ser posterior a la de inicio.');
-      return;
-    }
-
-    const previousLabel = appointmentSubmitBtn?.innerHTML || '';
-    if (appointmentSubmitBtn) {
-      appointmentSubmitBtn.disabled = true;
-      appointmentSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Creando...';
-    }
-    setAppointmentFormFeedback('Creando cita y sincronizando agenda...', 'success');
-
-    try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paciente_id: patientId,
-          fisioterapeuta_id: PROF_ID,
-          inicio_en: startDate.toISOString(),
-          fin_en: endDate.toISOString(),
-          motivo: appointmentReasonInput?.value.trim() || null,
-          canal_origen: 'crm_web',
-        }),
-      }, 20000);
-
-      const appointment = payload?.data || {};
-      const patientName = patientCatalog.find((patient) => patient.id === patientId)?.nombre_completo || selectedPatientName || 'paciente seleccionado';
-      setAppointmentFormFeedback('Cita creada correctamente y agenda actualizada.', 'success');
-      addMessage(`Cita creada para ${patientName} (${fmtDate(appointment?.inicio_en || startDate.toISOString())}).`, 'agent');
-      selectedPatientId = patientId;
-      selectedTemplatePatientId = patientId;
-      renderTemplatePatientOptions();
-      syncChatPatientSelection(patientId, patientName);
-      if (appointmentReasonInput) appointmentReasonInput.value = '';
-      setAppointmentFormDefaults(true);
-      await loadCitas();
-    } catch (err: any) {
-      setAppointmentFormFeedback(`No se pudo crear la cita: ${err?.message || 'error no identificado'}`);
-    } finally {
-      if (appointmentSubmitBtn) {
-        appointmentSubmitBtn.disabled = false;
-        appointmentSubmitBtn.innerHTML = previousLabel;
-      }
-    }
+  document.getElementById('nextWeek')?.addEventListener('click', () => {
+    agendaWeekStart = new Date(agendaWeekStart);
+    agendaWeekStart.setDate(agendaWeekStart.getDate() + 7);
+    loadCitas();
   });
-
-  citasBody?.addEventListener('click', async (event: Event) => {
-    const target = event.target as HTMLElement | null;
-    const btn = target?.closest('button[data-action="cancel-appointment"]') as HTMLButtonElement | null;
-    if (!btn) return;
-
-    const appointmentId = btn.getAttribute('data-appointment-id');
-    if (!appointmentId) return;
-
-    btn.disabled = true;
-    try {
-      await fetchJson(`${BACKEND_BASE}/api/profesional/appointments/${appointmentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'cancelada' }),
-      });
-      await loadCitas();
-    } catch {
-      btn.disabled = false;
-      addMessage('No se pudo cancelar la cita seleccionada.', 'agent');
-    }
+  document.getElementById('thisWeek')?.addEventListener('click', () => {
+    agendaWeekStart = getWeekMonday(new Date());
+    loadCitas();
   });
   loadCitas();
 
@@ -4204,10 +4222,109 @@ import Layout from '../layouts/Layout.astro';
     border-color: var(--accent);
     box-shadow: 0 0 0 4px var(--accent-soft);
   }
-  .appointment-form {
-    display: grid;
-    gap: 0.9rem;
+  /* === AGENDA SEMANAL === */
+  .week-nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
   }
+  .week-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 160px;
+    text-align: center;
+  }
+  .agenda-cal-card { padding: 0; overflow: hidden; }
+  .agenda-calendar { width: 100%; overflow-x: auto; }
+  .agenda-cal-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  .agenda-cal-grid {
+    display: grid;
+    grid-template-columns: 52px repeat(5, 1fr);
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    min-width: 560px;
+  }
+  .agenda-cal-grid > * {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .agenda-cal-time-header { background: var(--bg-surface); }
+  .agenda-cal-day-header {
+    background: var(--bg-surface);
+    padding: 0.6rem 0.4rem;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+  }
+  .agenda-cal-day-header.today {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .agenda-cal-time {
+    background: var(--bg-surface);
+    padding: 0.4rem 0.35rem;
+    text-align: right;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+  }
+  .agenda-cal-cell {
+    background: #fff;
+    min-height: 56px;
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .agenda-cal-cell.closed {
+    background: repeating-linear-gradient(135deg, transparent, transparent 5px, #f8fafc 5px, #f8fafc 10px);
+  }
+  .agenda-appt {
+    border-radius: 4px;
+    padding: 2px 5px 3px;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    overflow: hidden;
+    cursor: default;
+    border-left: 3px solid;
+  }
+  .agenda-appt .appt-time { display: block; font-weight: 700; font-size: 0.65rem; opacity: 0.8; }
+  .agenda-appt .appt-name { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agenda-appt .appt-motivo { display: block; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.65rem; }
+  .agenda-appt.confirmada { background: #d1fae5; color: #065f46; border-color: #10b981; }
+  .agenda-appt.pendiente  { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+  .agenda-appt.cancelada  { background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1; text-decoration: line-through; }
+  .agenda-appt.completada { background: #ede9fe; color: #4c1d95; border-color: #7c3aed; }
+  .agenda-appt.no_show    { background: #fff1f2; color: #be123c; border-color: #f43f5e; }
+  .badge-week-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 6px;
+  }
+  .badge-week-count:empty { display: none; }
   .field select,
   .field textarea {
     width: 100%;

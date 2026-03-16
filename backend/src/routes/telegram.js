@@ -187,6 +187,7 @@ Reglas:
 - Combina respuestas cortas y largas para sonar natural.
 Horario: lunes a viernes, mañanas 9:00-13:00, tardes 15:00-19:00. Sábados, domingos y festivos: cerrado.
 Las sesiones son de 1 hora. Los slots válidos son en punto o y media (9:00, 9:30, 10:00, 10:30...).
+Flujo de reserva: cuando el paciente quiera pedir cita, primero pregunta el motivo o dolencia si no lo ha indicado, luego pregunta el día y hora. Con ambos datos procede a gestionar la reserva.
 Ahora son las ${nowMadrid}.`;
 
   const messages = [{ role: 'system', content: systemPrompt }];
