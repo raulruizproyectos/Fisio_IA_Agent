@@ -72,6 +72,86 @@ function getPhysioHelpMessage() {
   ].join('\n');
 }
 
+// ── Clinic slot validation ─────────────────────────────────────────────────
+
+function getEasterSunday(year) {
+  // Meeus/Jones/Butcher algorithm
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return { month, day };
+}
+
+function isPublicHolidayCatalunya(year, month, day) {
+  // Fixed national + Cataluña festivos (month/day)
+  const fixed = [
+    [1, 1],   // Año Nuevo
+    [1, 6],   // Reyes Magos
+    [5, 1],   // Día del Trabajo
+    [6, 24],  // Sant Joan (Cataluña)
+    [8, 15],  // Asunción
+    [9, 11],  // Diada Nacional de Catalunya
+    [9, 24],  // La Mercè (Barcelona/comarca)
+    [10, 12], // Fiesta Nacional de España
+    [11, 1],  // Todos los Santos
+    [12, 6],  // Día de la Constitución
+    [12, 8],  // Inmaculada Concepción
+    [12, 25], // Navidad
+    [12, 26], // Sant Esteve (Cataluña)
+    // Terrassa local
+    [7, 22],  // Sant Marçal (patrón de Terrassa)
+  ];
+  for (const [m, d] of fixed) {
+    if (month === m && day === d) return true;
+  }
+  // Dynamic: Easter-based
+  const easter = getEasterSunday(year);
+  const easterMs = Date.UTC(year, easter.month - 1, easter.day);
+  const testMs = Date.UTC(year, month - 1, day);
+  if (testMs === easterMs - 2 * 86400000) return true; // Viernes Santo
+  if (testMs === easterMs + 86400000) return true;      // Lunes de Pascua (Cataluña)
+  return false;
+}
+
+function validateBookingSlot(slotStart) {
+  if (!slotStart) return { valid: false, reason: 'no_slot' };
+  const date = new Date(slotStart);
+  // Get date/time in Europe/Madrid timezone
+  const fmt = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+    hour12: false,
+  }).format(date);
+  const [datePart, timePart] = fmt.split(' ');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute] = timePart.split(':').map(Number);
+  const dayOfWeek = new Date(`${datePart}T12:00:00Z`).getUTCDay(); // 0=Sun, 6=Sat
+
+  if (dayOfWeek === 0 || dayOfWeek === 6) return { valid: false, reason: 'weekend' };
+  if (isPublicHolidayCatalunya(year, month, day)) return { valid: false, reason: 'festivo' };
+
+  const totalMin = hour * 60 + minute;
+  const morning = totalMin >= 9 * 60 && totalMin < 13 * 60;
+  const afternoon = totalMin >= 15 * 60 && totalMin < 19 * 60;
+  if (!morning && !afternoon) return { valid: false, reason: 'outside_hours' };
+
+  return { valid: true };
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 function extractIsoSlots(messageText = '') {
   const matches = messageText.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?/g) || [];
   return {
@@ -2008,6 +2088,23 @@ router.post('/incoming', async (req, res, next) => {
             }
           }
           const replyText = await carlaReplyAndSave(carlaCtx, 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.', null);
+          return await reply(replyText);
+        }
+
+        // ── Validate slot: weekend / festivo / outside hours ─────────────────
+        const slotValidation = validateBookingSlot(slotStart);
+        if (!slotValidation.valid) {
+          const horario = 'lunes a viernes, mañanas 9:00-13:00 y tardes 15:00-19:00, cerrado sábados, domingos y festivos';
+          let carlaCtx;
+          if (slotValidation.reason === 'weekend') {
+            carlaCtx = `${patientNameCtx}El paciente ha pedido cita para un fin de semana. La consulta no abre sábados ni domingos. Explícaselo con naturalidad e indícale el horario: ${horario}.`;
+          } else if (slotValidation.reason === 'festivo') {
+            carlaCtx = `${patientNameCtx}El paciente ha pedido cita para un día festivo en que la consulta está cerrada. Explícaselo con naturalidad, indica el horario: ${horario}, y pregúntale otro día.`;
+          } else {
+            carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario de atención. La consulta atiende: ${horario}. Los slots son en punto o y media. Explícaselo y pregúntale un horario disponible.`;
+          }
+          // Clear any pending slot — invalid slot should not persist
+          const replyText = await carlaReplyAndSave(carlaCtx, `Lo siento, ese horario no está disponible. Atendemos ${horario}.`, null);
           return await reply(replyText);
         }
 
