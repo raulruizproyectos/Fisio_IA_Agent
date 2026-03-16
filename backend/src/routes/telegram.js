@@ -78,6 +78,85 @@ function extractIsoSlots(messageText = '') {
   };
 }
 
+function parseNaturalAppointmentSlots(text = '') {
+  const iso = extractIsoSlots(text);
+  if (iso.slotStart) return iso;
+
+  const MONTHS = {
+    enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
+    julio: 7, agosto: 8, septiembre: 9, octubre: 10, noviembre: 11, diciembre: 12,
+  };
+  const DAY_NAMES = {
+    lunes: 1, martes: 2, miércoles: 3, miercoles: 3,
+    jueves: 4, viernes: 5, sábado: 6, sabado: 6, domingo: 0,
+  };
+
+  const t = text.toLowerCase();
+  const now = new Date();
+  const nowYear = now.getFullYear();
+  const nowMonth = now.getMonth() + 1;
+  const nowDay = now.getDate();
+  let day = null, month = null, year = nowYear;
+
+  // "17 de marzo", "el 17 de marzo"
+  const monthMatch = t.match(/\b(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/);
+  if (monthMatch) {
+    day = parseInt(monthMatch[1]);
+    month = MONTHS[monthMatch[2]];
+    if (month < nowMonth || (month === nowMonth && day < nowDay)) year = nowYear + 1;
+  }
+
+  // "mañana"
+  if (!day && /\bmañana\b/.test(t)) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 1);
+    day = d.getDate(); month = d.getMonth() + 1; year = d.getFullYear();
+  }
+
+  // "hoy"
+  if (!day && /\bhoy\b/.test(t)) {
+    day = nowDay; month = nowMonth; year = nowYear;
+  }
+
+  // "el lunes", "el martes", etc. — próxima ocurrencia
+  if (!day) {
+    for (const [name, targetDow] of Object.entries(DAY_NAMES)) {
+      if (t.includes(name)) {
+        const d = new Date(now);
+        let daysAhead = targetDow - d.getDay();
+        if (daysAhead <= 0) daysAhead += 7;
+        d.setDate(d.getDate() + daysAhead);
+        day = d.getDate(); month = d.getMonth() + 1; year = d.getFullYear();
+        break;
+      }
+    }
+  }
+
+  if (!day) return { slotStart: null, slotEnd: null };
+
+  // "a las 10:00", "a las 10", "10:00", "10h"
+  let hours = null, minutes = 0;
+  const timeMatchFull = t.match(/a\s+las?\s+(\d{1,2})(?::(\d{2}))?/);
+  const timeMatchStd = !timeMatchFull && t.match(/(?<!\d)(\d{1,2}):(\d{2})(?!\d)/);
+  const timeMatchH = !timeMatchFull && !timeMatchStd && t.match(/(?<!\d)(\d{1,2})\s*h(?:oras?)?(?!\d)/);
+  const tm = timeMatchFull || timeMatchStd || timeMatchH;
+  if (tm) {
+    const h = parseInt(tm[1]);
+    const m = parseInt(tm[2] || '0');
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) { hours = h; minutes = m; }
+  }
+
+  if (hours === null) return { slotStart: null, slotEnd: null };
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const slotStart = `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}`;
+  let endH = hours, endM = minutes + 45;
+  if (endM >= 60) { endH += 1; endM -= 60; }
+  const slotEnd = `${year}-${pad(month)}-${pad(day)}T${pad(endH)}:${pad(endM)}`;
+
+  return { slotStart, slotEnd };
+}
+
 function truncateTelegramMessage(text = '', maxLen = 3900) {
   const clean = String(text || '').trim();
   if (!clean) return '';
@@ -1670,7 +1749,7 @@ router.post('/incoming', async (req, res, next) => {
 
       // W1: appointment intent detected, trigger dedicated n8n workflow if configured.
       if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
-        const { slotStart, slotEnd } = extractIsoSlots(text);
+        const { slotStart, slotEnd } = parseNaturalAppointmentSlots(text);
         const appointment = await triggerAppointmentWorkflow({
           req,
           patientId: link.paciente_id,
