@@ -169,6 +169,45 @@ function parseNaturalAppointmentSlots(text = '') {
   return { slotStart, slotEnd };
 }
 
+async function callCarlaAgent(userMessage, context = null) {
+  if (!OPENAI_API_KEY) return null;
+  const nowMadrid = new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', weekday: 'long',
+  }).format(new Date());
+
+  const systemPrompt = `Eres Carla, asistente de recepción de la clínica "Fisioterapia Carla JL" en Terrassa (Barcelona). Tu misión es ayudar a reservar citas de fisioterapia.
+Personalidad: auténtica, tranquila, profesional. Te comunicas de forma natural como en un chat de WhatsApp. Eres empática y transmites tranquilidad.
+Reglas:
+- NUNCA menciones que eres IA, asistente virtual o bot.
+- Responde siempre en español de España, sin expresiones de Latinoamérica.
+- Máximo 100 palabras por respuesta. Solo texto plano, sin emojis ni markdown.
+- Evita ofrecimientos genéricos al final del mensaje.
+- Combina respuestas cortas y largas para sonar natural.
+Horario: lunes a viernes, mañanas 9:00-13:00, tardes 15:00-19:00. Sábados, domingos y festivos: cerrado.
+Las sesiones son de 1 hora. Los slots válidos son en punto o y media (9:00, 9:30, 10:00, 10:30...).
+Ahora son las ${nowMadrid}.`;
+
+  const messages = [{ role: 'system', content: systemPrompt }];
+  if (context) messages.push({ role: 'system', content: `Contexto: ${context}` });
+  messages.push({ role: 'user', content: userMessage });
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 200, temperature: 0.75 }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 function truncateTelegramMessage(text = '', maxLen = 3900) {
   const clean = String(text || '').trim();
   if (!clean) return '';
@@ -1640,9 +1679,11 @@ router.post('/incoming', async (req, res, next) => {
       }
 
       if (agentMode === 'patient_appointments') {
-        return await reply(
-          `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha.\n\nPara agendar, escribe tu solicitud, envia una nota de voz o usa: /cita 2026-03-10T18:00 2026-03-10T18:45\n\n${getPatientAppointmentHelpMessage()}`
+        const carlaWelcome = await callCarlaAgent(
+          text,
+          `El paciente se llama ${onboarding.fullName} y acaba de registrarse en el sistema. Salúdale y pregúntale qué día y hora le viene mejor para su cita.`
         );
+        return await reply(carlaWelcome || `Hola ${onboarding.fullName}, soy Carla. ¿Qué día y a qué hora te viene mejor para la cita?`);
       }
 
       return await reply(
@@ -1762,6 +1803,13 @@ router.post('/incoming', async (req, res, next) => {
       // W1: appointment intent detected, trigger dedicated n8n workflow if configured.
       if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
         const { slotStart, slotEnd } = parseNaturalAppointmentSlots(text);
+
+        // If no slot could be parsed, let Carla ask naturally for date/time.
+        if (!slotStart) {
+          const carlaAsk = await callCarlaAgent(text, 'El paciente quiere pedir cita pero no ha indicado fecha u hora concreta. Pregúntale de forma natural qué día y a qué hora le viene mejor.');
+          return await reply(carlaAsk || 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.');
+        }
+
         const appointment = await triggerAppointmentWorkflow({
           req,
           patientId: link.paciente_id,
@@ -1793,15 +1841,29 @@ router.post('/incoming', async (req, res, next) => {
         });
 
         if (appointment.ok) {
-          return await reply(appointment.messageToPatient);
+          const w1Status = appointment.status || '';
+          let carlaContext;
+          if (w1Status === 'confirmed') {
+            carlaContext = `La cita ha sido CONFIRMADA. Slot: ${slotStart} hasta ${slotEnd}. Dile que la cita queda confirmada, la fecha y hora, y que procure llegar puntual.`;
+          } else if (w1Status === 'slot_not_available') {
+            carlaContext = `El horario solicitado (${slotStart}) está OCUPADO. Pídele que proponga otra franja horaria disponible en el horario de la clínica.`;
+          } else {
+            carlaContext = appointment.messageToPatient || 'La solicitud de cita ha sido procesada.';
+          }
+          const carlaReply = await callCarlaAgent(text, carlaContext);
+          return await reply(carlaReply || appointment.messageToPatient);
         }
 
-        return await reply(
-          'ðŸ“… He recibido tu solicitud de cita. Nuestro equipo la revisará y te confirmará disponibilidad lo antes posible.'
-        );
+        const carlaError = await callCarlaAgent(text, 'Ha habido un problema técnico al gestionar la reserva. Disculpate brevemente y dile que lo intente de nuevo en unos minutos.');
+        return await reply(carlaError || 'Ha habido un problema al gestionar tu cita. Inténtalo de nuevo en un momento.');
       }
 
-      // Default: intake created, return the shared agent reply if available.
+      // Default: use Carla for any other patient message.
+      if (agentMode === 'patient_appointments') {
+        const carlaDefault = await callCarlaAgent(text);
+        return await reply(carlaDefault || truncateTelegramMessage(sharedAgentReply));
+      }
+
       return await reply(truncateTelegramMessage(sharedAgentReply));
     }
 
