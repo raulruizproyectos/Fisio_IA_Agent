@@ -1706,25 +1706,23 @@ router.post('/incoming', async (req, res, next) => {
         const chatKey = String(chat_id);
 
         // Check Supabase for a pending registration (survives server restarts)
-        const { data: pendingJob } = await supabase
-          .from('crm_async_jobs')
-          .select('id')
-          .eq('job_type', 'telegram_onboarding')
-          .eq('status', 'awaiting_name')
-          .eq('channel', chatKey)
+        const { data: pendingRow } = await supabase
+          .from('telegram_onboarding_pending')
+          .select('telegram_chat_id')
+          .eq('telegram_chat_id', chatKey)
           .maybeSingle();
 
-        if (pendingJob) {
+        if (pendingRow) {
           // Patient has replied with their name
           const providedName = text.trim().slice(0, 100);
           if (!providedName || providedName.length < 2) {
             return await reply('Por favor, dime tu nombre completo para poder darte de alta en el sistema.');
           }
 
-          const onboarding = await autoLinkFirstContact(parsedPayload, providedName);
+          await autoLinkFirstContact(parsedPayload, providedName);
 
-          // Remove the pending job
-          await supabase.from('crm_async_jobs').delete().eq('id', pendingJob.id);
+          // Remove the pending row
+          await supabase.from('telegram_onboarding_pending').delete().eq('telegram_chat_id', chatKey);
 
           const carlaWelcome = await callCarlaAgent(
             text,
@@ -1734,11 +1732,9 @@ router.post('/incoming', async (req, res, next) => {
         }
 
         // First contact — persist pending state and ask for name
-        await supabase.from('crm_async_jobs').insert({
-          job_type: 'telegram_onboarding',
-          status: 'awaiting_name',
-          channel: chatKey,
-          request_payload: { chat_id: chatKey, username: username || null },
+        await supabase.from('telegram_onboarding_pending').upsert({
+          telegram_chat_id: chatKey,
+          telegram_username: username || null,
         });
 
         const carlaAskName = await callCarlaAgent(
