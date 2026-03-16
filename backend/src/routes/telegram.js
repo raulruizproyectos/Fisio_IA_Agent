@@ -5,6 +5,11 @@ import { supabase } from '../index.js';
 import { resolveAgentConversation } from './agent.js';
 
 const router = Router();
+
+// In-memory state for new-patient registration (step: 'awaiting_name')
+// Keyed by chat_id string. Cleared once the patient is created in Supabase.
+const pendingRegistrations = new Map();
+
 const INTENT_CONFIDENCE_THRESHOLD = 0.6;
 const TELEGRAM_EDGE_ROUTER_ENABLED = String(process.env.TELEGRAM_EDGE_ROUTER_ENABLED || 'false').toLowerCase() === 'true';
 const APPOINTMENT_WEBHOOK_URL = process.env.N8N_APPOINTMENT_WEBHOOK_URL?.trim() || null;
@@ -797,9 +802,9 @@ function buildPatientTelegramLinkResponse({ patient, link = null }) {
   };
 }
 
-async function autoLinkFirstContact(payload) {
+async function autoLinkFirstContact(payload, overrideName = null) {
   const professionalId = await getDefaultProfessionalId();
-  const fullName = getPatientDisplayName(payload);
+  const fullName = overrideName || getPatientDisplayName(payload);
 
   const { data: patient, error: patientError } = await supabase
     .from('pacientes')
@@ -1699,6 +1704,38 @@ router.post('/incoming', async (req, res, next) => {
     if (linkError) throw linkError;
 
     if (!link) {
+      // ── patient_appointments: two-step onboarding (ask name first) ──────────
+      if (agentMode === 'patient_appointments') {
+        const chatKey = String(chat_id);
+        const pending = pendingRegistrations.get(chatKey);
+
+        if (pending?.step === 'awaiting_name') {
+          // Patient has replied with their name
+          const providedName = text.trim().slice(0, 100);
+          if (!providedName || providedName.length < 2) {
+            return await reply('Por favor, dime tu nombre completo para poder darte de alta en el sistema.');
+          }
+
+          const onboarding = await autoLinkFirstContact(parsedPayload, providedName);
+          pendingRegistrations.delete(chatKey);
+
+          const carlaWelcome = await callCarlaAgent(
+            text,
+            `El paciente se llama ${providedName} y acaba de ser dado de alta en el sistema. Confirma que ya está registrado y pregúntale cuál es el motivo de su consulta (qué dolor o molestia tiene) y para cuándo necesita cita.`
+          );
+          return await reply(carlaWelcome || `Perfecto, ${providedName}, ya tienes tu ficha creada. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
+        }
+
+        // First contact — ask for name before creating anything in DB
+        pendingRegistrations.set(chatKey, { step: 'awaiting_name' });
+        const carlaAskName = await callCarlaAgent(
+          text,
+          'Es la primera vez que este paciente contacta. Salúdale, preséntate como Carla de Fisioterapia Carla JL en Terrassa, y pídele su nombre completo para poder darle de alta en el sistema antes de gestionar su cita.'
+        );
+        return await reply(carlaAskName || 'Hola, soy Carla de Fisioterapia Carla JL en Terrassa. Para darte de alta en nuestro sistema, ¿me dices tu nombre completo?');
+      }
+
+      // ── Other modes: create immediately with Telegram profile name ───────────
       const onboarding = await autoLinkFirstContact(parsedPayload);
       const professionalId = await getDefaultProfessionalId();
       const historySnapshot = await getPatientHistorySnapshot(onboarding.patientId);
@@ -1717,11 +1754,12 @@ router.post('/incoming', async (req, res, next) => {
       }
 
       if (agentMode === 'patient_appointments') {
+        // (unreachable now, kept for safety)
         const carlaWelcome = await callCarlaAgent(
           text,
-          `Paciente nuevo que acaba de registrarse en la clínica. Se llama ${onboarding.fullName}. Dale la bienvenida, explícale brevemente que puede reservar citas a través de este chat, y pregúntale cuál es el motivo de su consulta (qué dolor o molestia tiene) y para cuándo necesita cita.`
+          `Paciente nuevo que acaba de registrarse. Se llama ${onboarding.fullName}. Dale la bienvenida y pregúntale motivo de consulta y cuándo necesita cita.`
         );
-        return await reply(carlaWelcome || `Hola ${onboarding.fullName}, soy Carla de Fisioterapia Carla JL. Puedes reservar citas directamente desde aquí. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
+        return await reply(carlaWelcome || `Hola ${onboarding.fullName}, soy Carla. ¿Cuál es el motivo de tu consulta?`);
       }
 
       return await reply(
