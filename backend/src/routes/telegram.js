@@ -1672,15 +1672,23 @@ router.post('/incoming', async (req, res, next) => {
       if (updateError) throw updateError;
 
       const patientName = link.pacientes?.nombre_completo || 'paciente';
+      if (agentMode === 'patient_appointments') {
+        const carlaWelcome = await callCarlaAgent(
+          '/start',
+          `El paciente se llama ${patientName} y acaba de vincularse al sistema. Es un paciente ya registrado en la clínica. Salúdale por su nombre, y pregúntale cuál es el motivo de su consulta (qué dolor o molestia tiene) y para cuándo necesita cita.`
+        );
+        return await reply(carlaWelcome || `Hola ${patientName}, soy Carla. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
+      }
       const modeHelp = agentMode === 'patient_appointments' ? getPatientAppointmentHelpMessage() : getHelpMessage();
       return await reply(`Vinculacion completada para ${patientName}.\n\n${modeHelp}`);
     }
 
     const { data: link, error: linkError } = await supabase
       .from('vinculos_telegram_pacientes')
-      .select('paciente_id')
+      .select('paciente_id, pacientes(nombre_completo)')
       .eq('telegram_chat_id', String(chat_id))
       .maybeSingle();
+    const linkedPatientName = link?.pacientes?.nombre_completo || null;
 
     if (isMissingTableError(linkError)) {
       return await reply(
@@ -1711,9 +1719,9 @@ router.post('/incoming', async (req, res, next) => {
       if (agentMode === 'patient_appointments') {
         const carlaWelcome = await callCarlaAgent(
           text,
-          `El paciente se llama ${onboarding.fullName} y acaba de registrarse en el sistema. Salúdale y pregúntale qué día y hora le viene mejor para su cita.`
+          `Paciente nuevo que acaba de registrarse en la clínica. Se llama ${onboarding.fullName}. Dale la bienvenida, explícale brevemente que puede reservar citas a través de este chat, y pregúntale cuál es el motivo de su consulta (qué dolor o molestia tiene) y para cuándo necesita cita.`
         );
-        return await reply(carlaWelcome || `Hola ${onboarding.fullName}, soy Carla. ¿Qué día y a qué hora te viene mejor para la cita?`);
+        return await reply(carlaWelcome || `Hola ${onboarding.fullName}, soy Carla de Fisioterapia Carla JL. Puedes reservar citas directamente desde aquí. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
       }
 
       return await reply(
@@ -1836,7 +1844,8 @@ router.post('/incoming', async (req, res, next) => {
 
         // If no slot could be parsed, let Carla ask naturally for date/time.
         if (!slotStart) {
-          const carlaAsk = await callCarlaAgent(text, 'El paciente quiere pedir cita pero no ha indicado fecha u hora concreta. Pregúntale de forma natural qué día y a qué hora le viene mejor.');
+          const nameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
+          const carlaAsk = await callCarlaAgent(text, `${nameCtx}El paciente quiere pedir cita pero no ha indicado fecha u hora concreta. Si no mencionó motivo de consulta, pregúntaselo también. Luego pídele día y hora de forma natural.`);
           return await reply(carlaAsk || 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.');
         }
 
@@ -1881,17 +1890,20 @@ router.post('/incoming', async (req, res, next) => {
           } else {
             carlaContext = appointment.messageToPatient || 'La solicitud de cita ha sido procesada.';
           }
-          const carlaReply = await callCarlaAgent(text, carlaContext);
+          const nameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
+          const carlaReply = await callCarlaAgent(text, `${nameCtx}${carlaContext}`);
           return await reply(carlaReply || appointment.messageToPatient);
         }
 
-        const carlaError = await callCarlaAgent(text, 'Ha habido un problema técnico al gestionar la reserva. Disculpate brevemente y dile que lo intente de nuevo en unos minutos.');
+        const nameCtxErr = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
+        const carlaError = await callCarlaAgent(text, `${nameCtxErr}Ha habido un problema técnico al gestionar la reserva. Disculpate brevemente y dile que lo intente de nuevo en unos minutos.`);
         return await reply(carlaError || 'Ha habido un problema al gestionar tu cita. Inténtalo de nuevo en un momento.');
       }
 
       // Default: use Carla for any other patient message.
       if (agentMode === 'patient_appointments') {
-        const carlaDefault = await callCarlaAgent(text);
+        const nameCtxDefault = linkedPatientName ? `El paciente se llama ${linkedPatientName}.` : '';
+        const carlaDefault = await callCarlaAgent(text, nameCtxDefault || null);
         return await reply(carlaDefault || truncateTelegramMessage(sharedAgentReply));
       }
 
