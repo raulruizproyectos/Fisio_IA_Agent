@@ -176,32 +176,38 @@ const CHAT_HISTORY_MAX = 8;   // 4 exchanges max
 const CHAT_MSG_MAX_LEN = 250; // chars per message stored
 const CHAT_SESSION_TTL_H = 6; // clear sessions idle > 6h
 
-async function loadChatHistory(chatId) {
+async function loadChatSession(chatId) {
   try {
     const { data } = await supabase
       .from('telegram_chat_sessions')
-      .select('recent_messages, updated_at')
+      .select('recent_messages, pending_slot, updated_at')
       .eq('telegram_chat_id', String(chatId))
       .maybeSingle();
-    if (!data) return [];
-    // Expire stale sessions
+    if (!data) return { history: [], pendingSlot: null };
     const ageMs = Date.now() - new Date(data.updated_at).getTime();
-    if (ageMs > CHAT_SESSION_TTL_H * 3600 * 1000) return [];
-    return Array.isArray(data.recent_messages) ? data.recent_messages : [];
+    if (ageMs > CHAT_SESSION_TTL_H * 3600 * 1000) return { history: [], pendingSlot: null };
+    return {
+      history: Array.isArray(data.recent_messages) ? data.recent_messages : [],
+      pendingSlot: data.pending_slot || null,
+    };
   } catch {
-    return [];
+    return { history: [], pendingSlot: null };
   }
 }
 
-async function saveChatHistory(chatId, history) {
+async function saveChatSession(chatId, history, pendingSlot = null) {
   try {
     const trimmed = history
       .slice(-CHAT_HISTORY_MAX)
       .map((m) => ({ role: m.role, content: String(m.content || '').slice(0, CHAT_MSG_MAX_LEN) }));
     await supabase
       .from('telegram_chat_sessions')
-      .upsert({ telegram_chat_id: String(chatId), recent_messages: trimmed, updated_at: new Date().toISOString() });
-    // Occasionally purge old sessions (1-in-20 chance per write)
+      .upsert({
+        telegram_chat_id: String(chatId),
+        recent_messages: trimmed,
+        pending_slot: pendingSlot || null,
+        updated_at: new Date().toISOString(),
+      });
     if (Math.random() < 0.05) {
       await supabase
         .from('telegram_chat_sessions')
@@ -211,6 +217,36 @@ async function saveChatHistory(chatId, history) {
   } catch {
     // non-blocking
   }
+}
+
+// Merge slot from current message with a pending slot (handles "a las 12" after pending day)
+function resolveSlot(parsedCurrent, pendingSlot) {
+  if (parsedCurrent.slotStart) return parsedCurrent; // complete slot in current message
+  if (!pendingSlot) return parsedCurrent;
+
+  // Current message has a time but no day → use pending slot's date with new time
+  if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
+    const date = pendingSlot.slotStart.slice(0, 10); // YYYY-MM-DD
+    const tz = pendingSlot.slotStart.slice(-6);       // +01:00
+    const pad = (n) => String(n).padStart(2, '0');
+    const h = parsedCurrent.parsedHour;
+    const m = parsedCurrent.parsedMinutes || 0;
+    let eH = h, eM = m + 60;
+    if (eM >= 60) { eH += 1; eM -= 60; }
+    return {
+      slotStart: `${date}T${pad(h)}:${pad(m)}:00${tz}`,
+      slotEnd: `${date}T${pad(eH)}:${pad(eM)}:00${tz}`,
+    };
+  }
+
+  // Current message has no slot info → reuse pending slot
+  return { slotStart: pendingSlot.slotStart, slotEnd: pendingSlot.slotEnd };
+}
+
+// Build a combined text from recent user messages + current for motivo extraction
+function buildCombinedUserText(history, currentText) {
+  const recentUser = history.filter((m) => m.role === 'user').slice(-4).map((m) => String(m.content || ''));
+  return [...recentUser, currentText].join(' ');
 }
 
 async function callCarlaAgent(userMessage, context = null, history = []) {
@@ -1925,59 +1961,69 @@ router.post('/incoming', async (req, res, next) => {
       // W1: appointment intent detected, trigger dedicated n8n workflow if configured.
       if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
         const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-        const chatHistory = await loadChatHistory(chat_id);
+        const { history: chatHistory, pendingSlot } = await loadChatSession(chat_id);
 
-        // Helper: call Carla with history, save updated history, and reply
-        const carlaReplyAndSave = async (carlaCtx, fallback) => {
+        // Helper: call Carla with history, persist session, return reply text
+        const carlaReplyAndSave = async (carlaCtx, fallback, newPendingSlot = null) => {
           const carlaReply = await callCarlaAgent(text, carlaCtx, chatHistory);
           const replyText = carlaReply || fallback;
-          await saveChatHistory(chat_id, [
+          await saveChatSession(chat_id, [
             ...chatHistory,
             { role: 'user', content: text },
             { role: 'assistant', content: replyText },
-          ]);
+          ], newPendingSlot);
           return replyText;
         };
 
-        const parsedSlot = parseNaturalAppointmentSlots(text);
-        const { slotStart, slotEnd } = parsedSlot;
+        // Resolve slot: try current message, then merge with pending slot
+        const parsedCurrent = parseNaturalAppointmentSlots(text);
+        const { slotStart, slotEnd } = resolveSlot(parsedCurrent, pendingSlot);
 
-        // If no slot could be parsed, let Carla ask naturally using conversation history.
+        // ── No slot yet → ask for date/time ──────────────────────────────────
         if (!slotStart) {
           let carlaCtx;
           if (chatHistory.length > 0) {
-            // Ongoing conversation: Carla has context from history — just tell her what's missing
-            if (parsedSlot.missingDay && parsedSlot.parsedHour !== undefined) {
-              const hStr = `${parsedSlot.parsedHour}:${String(parsedSlot.parsedMinutes || 0).padStart(2, '0')}`;
-              carlaCtx = `${patientNameCtx}El paciente indica las ${hStr}. Consulta el historial y pregúntale solo lo que falta.`;
-            } else if (parsedSlot.missingTime) {
-              carlaCtx = `${patientNameCtx}El paciente ha indicado el día. Consulta el historial y pregúntale solo lo que falta.`;
+            if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
+              const hStr = `${parsedCurrent.parsedHour}:${String(parsedCurrent.parsedMinutes || 0).padStart(2, '0')}`;
+              carlaCtx = `${patientNameCtx}El paciente indica las ${hStr}. Consulta el historial y pregúntale solo el día.`;
+            } else if (parsedCurrent.missingTime) {
+              carlaCtx = `${patientNameCtx}El paciente ha indicado el día. Consulta el historial y pregúntale solo la hora.`;
             } else {
               carlaCtx = `${patientNameCtx}Continúa la conversación de forma natural para completar la reserva.`;
             }
           } else {
-            // First message: be explicit about what's missing
-            if (parsedSlot.missingDay && parsedSlot.parsedHour !== undefined) {
-              const hStr = `${parsedSlot.parsedHour}:${String(parsedSlot.parsedMinutes || 0).padStart(2, '0')}`;
+            if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
+              const hStr = `${parsedCurrent.parsedHour}:${String(parsedCurrent.parsedMinutes || 0).padStart(2, '0')}`;
               carlaCtx = `${patientNameCtx}El paciente quiere cita a las ${hStr} pero no ha dicho el día. Pregúntale solo para qué día.`;
-            } else if (parsedSlot.missingTime) {
+            } else if (parsedCurrent.missingTime) {
               carlaCtx = `${patientNameCtx}El paciente ha indicado el día pero no la hora. Pregúntale a qué hora (slots válidos: en punto o y media, 9:00-13:00 y 15:00-19:00).`;
             } else {
-              carlaCtx = `${patientNameCtx}El paciente quiere pedir cita pero no ha indicado día ni hora. Pregúntale cuándo le viene mejor.`;
+              carlaCtx = `${patientNameCtx}El paciente quiere pedir cita. Pregúntale cuándo le viene bien (día y hora) y el motivo de la consulta.`;
             }
           }
-          const replyText = await carlaReplyAndSave(carlaCtx, 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.');
+          const replyText = await carlaReplyAndSave(carlaCtx, 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.', null);
           return await reply(replyText);
         }
 
-        const motivo = await extractMotivoFromText(text);
+        // ── Slot found → check motivo ─────────────────────────────────────────
+        const combinedText = buildCombinedUserText(chatHistory, text);
+        const motivo = await extractMotivoFromText(combinedText);
+
+        if (!motivo) {
+          // Save the slot as pending and ask for the motivo
+          const carlaCtx = `${patientNameCtx}El paciente ya indicó el horario. Solo falta el motivo de la consulta (nueva dolencia, seguimiento, etc.). Pregúntaselo de forma concisa.`;
+          const replyText = await carlaReplyAndSave(carlaCtx, '¿Cuál es el motivo de tu consulta?', { slotStart, slotEnd });
+          return await reply(replyText);
+        }
+
+        // ── All info collected → book ─────────────────────────────────────────
         const appointment = await triggerAppointmentWorkflow({
           req,
           patientId: link.paciente_id,
           professionalId,
           chatId: chat_id,
           username,
-          messageText: motivo || text,
+          messageText: motivo,
           slotStart,
           slotEnd,
         });
@@ -2011,15 +2057,16 @@ router.post('/incoming', async (req, res, next) => {
           } else {
             carlaContext = appointment.messageToPatient || 'La solicitud de cita ha sido procesada.';
           }
-          const replyText = await carlaReplyAndSave(`${patientNameCtx}${carlaContext}`, appointment.messageToPatient);
-          // Clear history after confirmed appointment to start fresh next time
-          if (w1Status === 'confirmed') await saveChatHistory(chat_id, []);
+          const replyText = await carlaReplyAndSave(`${patientNameCtx}${carlaContext}`, appointment.messageToPatient, null);
+          // Clear session after confirmed appointment
+          if (w1Status === 'confirmed') await saveChatSession(chat_id, [], null);
           return await reply(replyText);
         }
 
         const replyText = await carlaReplyAndSave(
           `${patientNameCtx}Ha habido un problema técnico al gestionar la reserva. Disculpate brevemente y dile que lo intente de nuevo.`,
-          'Ha habido un problema al gestionar tu cita. Inténtalo de nuevo en un momento.'
+          'Ha habido un problema al gestionar tu cita. Inténtalo de nuevo en un momento.',
+          null
         );
         return await reply(replyText);
       }
@@ -2027,14 +2074,14 @@ router.post('/incoming', async (req, res, next) => {
       // Default: use Carla for any other patient message.
       if (agentMode === 'patient_appointments') {
         const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-        const chatHistory = await loadChatHistory(chat_id);
+        const { history: chatHistory } = await loadChatSession(chat_id);
         const carlaReply = await callCarlaAgent(text, patientNameCtx || null, chatHistory);
         const replyText = carlaReply || truncateTelegramMessage(sharedAgentReply);
-        await saveChatHistory(chat_id, [
+        await saveChatSession(chat_id, [
           ...chatHistory,
           { role: 'user', content: text },
           { role: 'assistant', content: replyText },
-        ]);
+        ], null);
         return await reply(replyText);
       }
 
