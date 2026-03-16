@@ -6,9 +6,6 @@ import { resolveAgentConversation } from './agent.js';
 
 const router = Router();
 
-// In-memory state for new-patient registration (step: 'awaiting_name')
-// Keyed by chat_id string. Cleared once the patient is created in Supabase.
-const pendingRegistrations = new Map();
 
 const INTENT_CONFIDENCE_THRESHOLD = 0.6;
 const TELEGRAM_EDGE_ROUTER_ENABLED = String(process.env.TELEGRAM_EDGE_ROUTER_ENABLED || 'false').toLowerCase() === 'true';
@@ -1707,9 +1704,17 @@ router.post('/incoming', async (req, res, next) => {
       // ── patient_appointments: two-step onboarding (ask name first) ──────────
       if (agentMode === 'patient_appointments') {
         const chatKey = String(chat_id);
-        const pending = pendingRegistrations.get(chatKey);
 
-        if (pending?.step === 'awaiting_name') {
+        // Check Supabase for a pending registration (survives server restarts)
+        const { data: pendingJob } = await supabase
+          .from('crm_async_jobs')
+          .select('id')
+          .eq('job_type', 'telegram_onboarding')
+          .eq('status', 'awaiting_name')
+          .eq('channel', chatKey)
+          .maybeSingle();
+
+        if (pendingJob) {
           // Patient has replied with their name
           const providedName = text.trim().slice(0, 100);
           if (!providedName || providedName.length < 2) {
@@ -1717,7 +1722,9 @@ router.post('/incoming', async (req, res, next) => {
           }
 
           const onboarding = await autoLinkFirstContact(parsedPayload, providedName);
-          pendingRegistrations.delete(chatKey);
+
+          // Remove the pending job
+          await supabase.from('crm_async_jobs').delete().eq('id', pendingJob.id);
 
           const carlaWelcome = await callCarlaAgent(
             text,
@@ -1726,8 +1733,14 @@ router.post('/incoming', async (req, res, next) => {
           return await reply(carlaWelcome || `Perfecto, ${providedName}, ya tienes tu ficha creada. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
         }
 
-        // First contact — ask for name before creating anything in DB
-        pendingRegistrations.set(chatKey, { step: 'awaiting_name' });
+        // First contact — persist pending state and ask for name
+        await supabase.from('crm_async_jobs').insert({
+          job_type: 'telegram_onboarding',
+          status: 'awaiting_name',
+          channel: chatKey,
+          request_payload: { chat_id: chatKey, username: username || null },
+        });
+
         const carlaAskName = await callCarlaAgent(
           text,
           'Es la primera vez que este paciente contacta. Salúdale, preséntate como Carla de Fisioterapia Carla JL en Terrassa, y pídele su nombre completo para poder darle de alta en el sistema antes de gestionar su cita.'
