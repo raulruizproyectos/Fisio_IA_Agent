@@ -1165,6 +1165,7 @@ async function triggerAppointmentWorkflow({
   messageText,
   slotStart = null,
   slotEnd = null,
+  patientName = null,
 }) {
   const requestId = crypto.randomUUID();
 
@@ -1197,6 +1198,7 @@ async function triggerAppointmentWorkflow({
     professional_id: professionalId,
     chat_id: String(chatId),
     username: username || null,
+    patient_name: patientName || null,
     message_text: messageText,
     slot_start: slotStart,
     slot_end: slotEnd,
@@ -2161,6 +2163,7 @@ router.post('/incoming', async (req, res, next) => {
           messageText: motivo,
           slotStart,
           slotEnd,
+          patientName: linkedPatientName,
         });
 
         await logCrmCommunication({
