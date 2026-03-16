@@ -90,7 +90,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const events = $input.all();\nconst request = $('Normalize Request').first().json;\nconst slotStart = new Date(request.slot_start).getTime();\nconst slotEnd = new Date(request.slot_end).getTime();\n\n// Filter only events that actually overlap with the requested slot\nconst conflicts = events.filter((item) => {\n  const ev = item.json || {};\n  if (!ev.id) return false;\n  const evStart = ev.start?.dateTime ? new Date(ev.start.dateTime).getTime()\n    : ev.start?.date ? new Date(ev.start.date + 'T00:00:00').getTime() : null;\n  const evEnd = ev.end?.dateTime ? new Date(ev.end.dateTime).getTime()\n    : ev.end?.date ? new Date(ev.end.date + 'T23:59:59').getTime() : null;\n  if (!evStart || !evEnd) return false;\n  // Check overlap: slot starts before event ends AND slot ends after event starts\n  return slotStart < evEnd && slotEnd > evStart;\n});\n\nreturn [{\n  json: {\n    ...request,\n    slot_available: conflicts.length === 0,\n    conflict_count: conflicts.length,\n    conflicts: conflicts.map(c => ({ id: c.json.id, summary: c.json.summary || '', start: c.json.start }))\n  }\n}];"
+        "jsCode": "const events = $input.all();\nconst request = $('Normalize Request').first().json;\n// Skip all-day events (festivos, public holidays) — they have start.date but no start.dateTime\nconst conflicts = events.filter((item) => {\n  if (!item?.json?.id) return false;\n  if (item.json.start?.date && !item.json.start?.dateTime) return false;\n  return true;\n});\nreturn [{\n  json: {\n    ...request,\n    slot_available: conflicts.length === 0,\n    conflict_count: conflicts.length,\n    conflicts: conflicts.map(c => ({ id: c.json.id, summary: c.json.summary || '', start: c.json.start }))\n  }\n}];"
       },
       "id": "EvaluateAvailability",
       "name": "Evaluate Availability",
@@ -699,7 +699,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const events = $input.all();\nconst request = $('Normalize Request').first().json;\nconst conflictCount = events.filter((item) => item && item.json && item.json.id).length;\nreturn [{\n  json: {\n    ...request,\n    slot_available: conflictCount === 0,\n    conflict_count: conflictCount\n  }\n}];"
+          "jsCode": "const events = $input.all();\nconst request = $('Normalize Request').first().json;\n// Skip all-day events (festivos, public holidays) — they have start.date but no start.dateTime\nconst conflicts = events.filter((item) => {\n  if (!item?.json?.id) return false;\n  if (item.json.start?.date && !item.json.start?.dateTime) return false;\n  return true;\n});\nreturn [{\n  json: {\n    ...request,\n    slot_available: conflicts.length === 0,\n    conflict_count: conflicts.length,\n    conflicts: conflicts.map(c => ({ id: c.json.id, summary: c.json.summary || '', start: c.json.start }))\n  }\n}];"
         },
         "id": "EvaluateAvailability",
         "name": "Evaluate Availability",
