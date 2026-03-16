@@ -1682,8 +1682,8 @@ router.post('/incoming', async (req, res, next) => {
         );
         return await reply(carlaWelcome || `Hola ${patientName}, soy Carla. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
       }
-      const modeHelp = agentMode === 'patient_appointments' ? getPatientAppointmentHelpMessage() : getHelpMessage();
-      return await reply(`Vinculacion completada para ${patientName}.\n\n${modeHelp}`);
+      // Only reached for non-patient_appointments modes (that branch returns above)
+      return await reply(`Vinculacion completada para ${patientName}.\n\n${getHelpMessage()}`);
     }
 
     const { data: link, error: linkError } = await supabase
