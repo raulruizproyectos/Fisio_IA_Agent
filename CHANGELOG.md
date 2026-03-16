@@ -1,5 +1,51 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 101 - 2026-03-16
+
+### Objetivo
+Fix bug citas: Calendar event creado a hora incorrecta (16:00 en vez de 15:00), falsos "slot ocupado" por falta de overlap check, nombre del paciente como UUID en Calendar.
+
+### Trabajo realizado
+
+**Fix hora incorrecta en Calendar events**
+- [x] Diagnosticado: backend enviaba `slot_start` sin timezone (`"2026-03-20T15:00:00"`) → n8n trataba como UTC → Calendar mostraba 16:00 en vez de 15:00 Madrid.
+- [x] Verificado: el snap code con `+01:00` ya era correcto (commits sesión 100), solo faltaba el fix de W1.
+
+**Fix falsos "slot ocupado" en W1 `EvaluateAvailability` (commit `edcea12`)**
+- [x] Bug: el nodo Google Calendar de n8n devolvía todos los eventos del calendario sin respetar `timeMin`/`timeMax`, causando falsos conflictos (ej: evento del 18 de marzo contado como conflicto para slot del 20).
+- [x] Fix: añadido overlap check real (`evStart < slotE && evEnd > slotS`) en `EvaluateAvailability`. Solo eventos que realmente se solapan con el slot solicitado cuentan como conflictos.
+- [x] Desplegado en n8n vía API.
+
+**Nombre real del paciente en Calendar events (commit `bb23058`)**
+- [x] Backend ahora resuelve `linkedPatientName` desde `vinculos_telegram_pacientes.pacientes.nombre_completo` y lo pasa como `patient_name` a W1.
+- [x] W1 `Normalize Request` propaga `patient_name` como campo separado.
+- [x] W1 `Create an event` prioriza `patient_name` sobre `username` en el summary: `"Cita fisioterapia - Raul Ruiz"` en vez de `"Cita fisioterapia - raulruizdiaz"` o UUIDs.
+- [x] Verificado E2E: Calendar muestra "Cita fisioterapia - Raul Ruiz" + hora correcta 15:00 + motivo.
+
+**Limpieza**
+- [x] Citas test canceladas en Supabase (Mar 19, Mar 20).
+- [x] Eventos huérfanos de Calendar identificados (8 test events) — requieren borrado manual en Google Calendar.
+- [x] W5 Calendar Reader: verificado que mover a carpeta n8n no rompe webhooks.
+
+### Estado al cierre
+- W1 Agenda de Citas: ✅ overlap check real, hora correcta, nombre paciente
+- Calendar events: ✅ "Cita fisioterapia - Raul Ruiz" + hora Madrid correcta + motivo
+- Backend: ✅ arriba y respondiendo tras rebuild
+- n8n: ✅ 8/8 workflows ON, W1 actualizado
+- GitHub: ✅ todo pusheado (`bb23058`)
+- EasyPanel: ✅ backend rebuildeado
+
+### Commits de sesión
+- `edcea12` — fix(w1): add time overlap check in EvaluateAvailability
+- `bb23058` — fix(bot,w1): show patient real name in Calendar events and CRM
+
+### Pendiente menor
+- 8 eventos test huérfanos en Google Calendar (Mar 17/19/20/23) — borrar manualmente.
+- Mover 7 workflows restantes a carpeta `Fisio_IA_Agent` en n8n UI (API no permite).
+- (Opcional) Normalizar 16 ejercicios con zona_corporal no estándar.
+
+---
+
 ## Sesion 100 - 2026-03-16
 
 ### Objetivo

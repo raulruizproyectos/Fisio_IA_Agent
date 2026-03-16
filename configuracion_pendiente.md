@@ -1,22 +1,34 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
-## Estado actual (2026-03-12, Sesion 96) - PDF funcional con imágenes. Encoding corregido. Catálogo en español.
+## Estado actual (2026-03-16, Sesion 101) - Citas E2E funcional. Calendar con nombre real + hora correcta + motivo.
 
-### Completado sesion 96
-- [x] Diagnóstico definitivo imágenes PDF: pipeline funcionaba. 179/195 ejercicios PROET tienen `proet_image_url` en metadata.
-- [x] Fix encoding doble-codificado UTF-8 en `index.astro` (40 chars) y `telegram.js` (13 chars). Commit `179abc4`.
-- [x] `proet-sync-supabase.mjs` mejorado: nombres en español desde `image_filename`, descripciones HTML decodificadas. 179 ejercicios re-sincronizados. Commit `f4942b9`.
-- [x] `exercise-report-pdf.js` mejorado: `safePdfText()`, height buffer anti-overflow, truncado de textos, zona labels legibles, mejor estructura visual.
+### Completado sesiones 99-101
+- [x] Validación slot: horario laboral (9-13, 15-19), fines de semana, festivos Catalunya/Terrassa.
+- [x] Snap outside-hours: si paciente pide 14h, Carla ofrece 15h y guarda como `pendingSlot`.
+- [x] Motivo obligatorio antes de confirmar cita (nueva dolencia / seguimiento).
+- [x] Motivo aparece en Calendar event description.
+- [x] `slotFmt`: fecha legible en español para evitar Carla invente el día de la semana.
+- [x] Session note post-confirmación (1 línea en vez de limpiar todo).
+- [x] `continueOnFail: true` en W1 HTTP node para limpiar Calendar si backend falla.
+- [x] `status_code: 409` en body de conflict response para que W1 lo detecte.
+- [x] W5 Calendar Reader: nuevo workflow para lectura de eventos.
+- [x] EvaluateAvailability: overlap check real (`evStart < slotE && evEnd > slotS`).
+- [x] Nombre real paciente en Calendar: `"Cita fisioterapia - Raul Ruiz"`.
+- [x] Backend resuelve `linkedPatientName` y lo pasa como `patient_name` a W1.
+- [x] Historial conversación per-chat (`telegram_chat_sessions`).
+- [x] Anti-hallucination: Carla no inventa disponibilidad ni confirma sin CONFIRMADA.
 
 ### Bloqueos activos (no bloqueantes para flujo básico)
-1. **Deploy EasyPanel pendiente**: hacer rebuild de `fisio-backend` y frontend en EasyPanel para activar commits `179abc4` y `f4942b9`.
-2. **TELEGRAM_PATIENT_BOT_TOKEN** vacío en backend EasyPanel (bot pacientes no envía proactivos).
-3. **Google Calendar backend vars** vacíos (no bloqueante — W1 usa OAuth2 de n8n directamente).
+1. **TELEGRAM_PATIENT_BOT_TOKEN** vacío en backend EasyPanel (bot pacientes no envía proactivos).
+2. **Google Calendar backend vars** vacíos (no bloqueante — W1 usa OAuth2 de n8n directamente).
+3. **8 eventos test huérfanos** en Google Calendar (Mar 17/19/20/23) — borrar manualmente.
 
 ### Siguiente paso exacto
-1. **Rebuild en EasyPanel**: `fisio-backend` → redeploy desde GitHub (rama `main`). Igual para frontend Astro.
-2. Test E2E completo: generar recomendación desde CRM → informe PDF → verificar imágenes + texto en español.
-3. Publicar `TELEGRAM_PATIENT_BOT_TOKEN` en EasyPanel si se quiere bot proactivo.
+1. **Rebuild backend en EasyPanel** para activar commit `bb23058` (patient_name en W1).
+2. **Test E2E real** desde Telegram paciente: texto → motivo → cita → Calendar con nombre correcto.
+3. Borrar 8 eventos test huérfanos en Google Calendar.
+4. Mover 7 workflows restantes a carpeta `Fisio_IA_Agent` en n8n UI.
+5. (Opcional) Normalizar 16 registros zona_corporal con valores no estándar.
 
 ### Catálogo PROET (estado post sesión 96)
 - 179 ejercicios con nombre en español (sin acentos, derivado de `image_filename`)
