@@ -145,7 +145,21 @@ function validateBookingSlot(slotStart) {
   const totalMin = hour * 60 + minute;
   const morning = totalMin >= 9 * 60 && totalMin < 13 * 60;
   const afternoon = totalMin >= 15 * 60 && totalMin < 19 * 60;
-  if (!morning && !afternoon) return { valid: false, reason: 'outside_hours' };
+  if (!morning && !afternoon) {
+    // Snap to nearest valid slot so the caller can offer it as pendingSlot
+    let snapH = null;
+    if (totalMin < 9 * 60) snapH = 9;                                   // too early → 9:00
+    else if (totalMin >= 13 * 60 && totalMin < 15 * 60) snapH = 15;     // midday gap → 15:00
+    // after 19:00 we don't snap (no more slots today)
+    const snappedSlot = snapH !== null ? (() => {
+      const pad = (n) => String(n).padStart(2, '0');
+      const tz = slotStart.slice(-6).match(/^[+-]\d{2}:\d{2}$/) ? slotStart.slice(-6) : '+01:00';
+      const start = `${datePart}T${pad(snapH)}:00:00${tz}`;
+      const end   = `${datePart}T${pad(snapH + 1)}:00:00${tz}`;
+      return { slotStart: start, slotEnd: end };
+    })() : null;
+    return { valid: false, reason: 'outside_hours', snappedSlot };
+  }
 
   return { valid: true };
 }
@@ -2102,15 +2116,25 @@ router.post('/incoming', async (req, res, next) => {
         if (!slotValidation.valid) {
           const horario = 'lunes a viernes, mañanas 9:00-13:00 y tardes 15:00-19:00, cerrado sábados, domingos y festivos';
           let carlaCtx;
+          let nextPendingSlot = null;
           if (slotValidation.reason === 'weekend') {
             carlaCtx = `${patientNameCtx}El paciente ha pedido cita para un fin de semana. La consulta no abre sábados ni domingos. Explícaselo con naturalidad e indícale el horario: ${horario}.`;
           } else if (slotValidation.reason === 'festivo') {
             carlaCtx = `${patientNameCtx}El paciente ha pedido cita para un día festivo en que la consulta está cerrada. Explícaselo con naturalidad, indica el horario: ${horario}, y pregúntale otro día.`;
           } else {
-            carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario de atención. La consulta atiende: ${horario}. Los slots son en punto o y media. Explícaselo y pregúntale un horario disponible.`;
+            // outside_hours: if we have a snapped slot, offer it and save it as pendingSlot
+            if (slotValidation.snappedSlot) {
+              nextPendingSlot = slotValidation.snappedSlot;
+              const snapFmt = new Intl.DateTimeFormat('es-ES', {
+                timeZone: 'Europe/Madrid', weekday: 'long', day: 'numeric',
+                month: 'long', hour: '2-digit', minute: '2-digit', hour12: false,
+              }).format(new Date(slotValidation.snappedSlot.slotStart));
+              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario (${horario}). Explícaselo brevemente y ofrécele el siguiente slot disponible: ${snapFmt}. Si confirma con "sí" o similar, quedará reservado ese horario.`;
+            } else {
+              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario de atención. La consulta atiende: ${horario}. Los slots son en punto o y media. Explícaselo y pregúntale un horario disponible.`;
+            }
           }
-          // Clear any pending slot — invalid slot should not persist
-          const replyText = await carlaReplyAndSave(carlaCtx, `Lo siento, ese horario no está disponible. Atendemos ${horario}.`, null);
+          const replyText = await carlaReplyAndSave(carlaCtx, `Lo siento, ese horario no está disponible. Atendemos ${horario}.`, nextPendingSlot);
           return await reply(replyText);
         }
 
@@ -2169,7 +2193,8 @@ router.post('/incoming', async (req, res, next) => {
           } else if (w1Status === 'slot_not_available') {
             carlaContext = `El horario solicitado (${slotFmt}) está OCUPADO. Pídele que proponga otro horario disponible.`;
           } else {
-            carlaContext = appointment.messageToPatient || 'La solicitud de cita ha sido procesada.';
+            // W1 returned error (backend save failed) — inform patient we will contact them
+            carlaContext = `No ha sido posible registrar la cita automáticamente. Discúlpate y dile que nos pondremos en contacto con él/ella lo antes posible para confirmarla.`;
           }
           const replyText = await carlaReplyAndSave(`${patientNameCtx}${carlaContext}`, appointment.messageToPatient, null);
           // After confirmed: keep a brief note so Carla can answer follow-up questions ("¿seguro?")
@@ -2182,8 +2207,8 @@ router.post('/incoming', async (req, res, next) => {
         }
 
         const replyText = await carlaReplyAndSave(
-          `${patientNameCtx}Ha habido un problema técnico al gestionar la reserva. Disculpate brevemente y dile que lo intente de nuevo.`,
-          'Ha habido un problema al gestionar tu cita. Inténtalo de nuevo en un momento.',
+          `${patientNameCtx}No ha sido posible registrar la cita en este momento por un problema técnico. Discúlpate y dile que nos pondremos en contacto con él/ella lo antes posible para confirmarla.`,
+          'Lo siento, no ha sido posible registrar tu cita en este momento. Nos pondremos en contacto contigo lo antes posible para confirmártela.',
           null
         );
         return await reply(replyText);
