@@ -651,6 +651,7 @@ router.post('/appointments', async (req, res, next) => {
     if (conflicts.length) {
       return res.status(409).json({
         error: 'Conflicto de agenda: ya existe una cita activa en ese rango horario',
+        status_code: 409,
         conflicts,
       });
     }

@@ -2158,17 +2158,26 @@ router.post('/incoming', async (req, res, next) => {
 
         if (appointment.ok) {
           const w1Status = appointment.status || '';
+          // Format slot in human-readable Spanish so Carla doesn't have to convert ISO and get wrong weekday
+          const slotFmt = new Intl.DateTimeFormat('es-ES', {
+            timeZone: 'Europe/Madrid', weekday: 'long', day: 'numeric',
+            month: 'long', hour: '2-digit', minute: '2-digit', hour12: false,
+          }).format(new Date(slotStart));
           let carlaContext;
-          if (w1Status === 'confirmed') {
-            carlaContext = `La cita ha sido CONFIRMADA para ${slotStart}. Dile que queda confirmada, menciona la fecha y hora, y que procure llegar puntual.`;
+          if (w1Status === 'confirmed' || w1Status === 'created_direct') {
+            carlaContext = `La cita ha sido CONFIRMADA para el ${slotFmt}. Dile que queda confirmada con esa fecha y hora exactas, y que procure llegar puntual.`;
           } else if (w1Status === 'slot_not_available') {
-            carlaContext = `El horario solicitado (${slotStart}) está OCUPADO. Pídele que proponga otro horario disponible.`;
+            carlaContext = `El horario solicitado (${slotFmt}) está OCUPADO. Pídele que proponga otro horario disponible.`;
           } else {
             carlaContext = appointment.messageToPatient || 'La solicitud de cita ha sido procesada.';
           }
           const replyText = await carlaReplyAndSave(`${patientNameCtx}${carlaContext}`, appointment.messageToPatient, null);
-          // Clear session after confirmed appointment
-          if (w1Status === 'confirmed') await saveChatSession(chat_id, [], null);
+          // After confirmed: keep a brief note so Carla can answer follow-up questions ("¿seguro?")
+          if (w1Status === 'confirmed' || w1Status === 'created_direct') {
+            await saveChatSession(chat_id, [
+              { role: 'assistant', content: `Cita confirmada: ${slotFmt} — ${motivo}` },
+            ], null);
+          }
           return await reply(replyText);
         }
 
