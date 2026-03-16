@@ -149,10 +149,22 @@ function parseNaturalAppointmentSlots(text = '') {
   if (hours === null) return { slotStart: null, slotEnd: null };
 
   const pad = (n) => String(n).padStart(2, '0');
-  const slotStart = `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}`;
-  let endH = hours, endM = minutes + 45;
+
+  // Compute Europe/Madrid UTC offset for the target date to avoid timezone shift
+  const refDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  const tzParts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', timeZoneName: 'shortOffset' })
+    .formatToParts(refDate);
+  const tzName = tzParts.find((p) => p.type === 'timeZoneName')?.value || 'GMT+1';
+  const offsetMatch = tzName.match(/GMT([+-])(\d+)(?::(\d+))?/);
+  const offsetSign = offsetMatch?.[1] || '+';
+  const offsetH = pad(parseInt(offsetMatch?.[2] || '1'));
+  const offsetM = pad(parseInt(offsetMatch?.[3] || '0'));
+  const tzOffset = `${offsetSign}${offsetH}:${offsetM}`;
+
+  const slotStart = `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00${tzOffset}`;
+  let endH = hours, endM = minutes + 60;
   if (endM >= 60) { endH += 1; endM -= 60; }
-  const slotEnd = `${year}-${pad(month)}-${pad(day)}T${pad(endH)}:${pad(endM)}`;
+  const slotEnd = `${year}-${pad(month)}-${pad(day)}T${pad(endH)}:${pad(endM)}:00${tzOffset}`;
 
   return { slotStart, slotEnd };
 }
