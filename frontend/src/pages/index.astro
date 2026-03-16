@@ -441,6 +441,36 @@ import Layout from '../layouts/Layout.astro';
               </table>
             </div>
           </section>
+
+          <!-- Informe mensual detallado -->
+          <section class="card table-card" style="margin-top:1rem">
+            <header class="card-header">
+              <h2><span class="material-symbols-rounded" style="font-size:1.1rem;vertical-align:middle">receipt_long</span> Informe mensual</h2>
+              <select id="gestoriaMesFilter" title="Mes" class="gestoria-mes-select">
+                <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+              </select>
+            </header>
+            <!-- Totales del mes -->
+            <div class="gestoria-mes-totals" id="gestoriaMesTotals">
+              <span class="gestoria-mes-chip">Total: <strong id="gestoriaMesTotal">0,00 &euro;</strong></span>
+              <span class="gestoria-mes-chip gestoria-mes-cash">Efectivo: <strong id="gestoriaMesEfectivo">0,00 &euro;</strong></span>
+              <span class="gestoria-mes-chip gestoria-mes-card">Tarjeta: <strong id="gestoriaMesTarjeta">0,00 &euro;</strong></span>
+              <span class="gestoria-mes-chip">Sesiones: <strong id="gestoriaMesSesiones">0</strong></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Fecha</th><th>Paciente</th><th>M&eacute;todo</th><th class="text-right">Importe</th></tr>
+                </thead>
+                <tbody id="gestoriaMesBody">
+                  <tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">calendar_month</span><p>Selecciona un mes</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
         <!-- === PAGE: CONFIG === -->
@@ -2859,7 +2889,65 @@ import Layout from '../layouts/Layout.astro';
   };
 
   pageLoaders['gestoria'] = loadGestoria;
-  gestoriaAnioFilter?.addEventListener('change', loadGestoria);
+  gestoriaAnioFilter?.addEventListener('change', () => { loadGestoria(); loadGestoriaMes(); });
+
+  // Monthly detail report
+  const gestoriaMesFilter = document.getElementById('gestoriaMesFilter') as HTMLSelectElement | null;
+  const gestoriaMesBody = document.getElementById('gestoriaMesBody') as HTMLElement | null;
+
+  // Auto-select current month
+  if (gestoriaMesFilter) gestoriaMesFilter.value = String(new Date().getMonth() + 1);
+
+  const loadGestoriaMes = async () => {
+    if (!gestoriaMesBody) return;
+    setTableState(gestoriaMesBody, 4, 'sync', 'Cargando...', true);
+
+    const anio = gestoriaAnioFilter?.value || String(new Date().getFullYear());
+    const mes = gestoriaMesFilter?.value || String(new Date().getMonth() + 1);
+
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?anio=${anio}&mes=${mes}`);
+      const pagos = payload?.data || [];
+
+      // Calculate totals for the month
+      let totalMes = 0, efecMes = 0, tarjMes = 0;
+      for (const p of pagos) {
+        const imp = Number(p.importe);
+        totalMes += imp;
+        if (p.metodo_pago === 'efectivo') efecMes += imp; else tarjMes += imp;
+      }
+      document.getElementById('gestoriaMesTotal')!.textContent = fmtMoney(totalMes);
+      document.getElementById('gestoriaMesEfectivo')!.textContent = fmtMoney(efecMes);
+      document.getElementById('gestoriaMesTarjeta')!.textContent = fmtMoney(tarjMes);
+      document.getElementById('gestoriaMesSesiones')!.textContent = String(pagos.length);
+
+      if (!pagos.length) {
+        setTableState(gestoriaMesBody, 4, 'credit_card_off', 'Sin pagos en este mes');
+        return;
+      }
+
+      gestoriaMesBody.innerHTML = pagos.map((p: any) => {
+        const pName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : '\u2014';
+        const chip = p.metodo_pago === 'efectivo'
+          ? '<span class="pagos-chip pagos-chip-cash">Efectivo</span>'
+          : '<span class="pagos-chip pagos-chip-card">Tarjeta</span>';
+        return `<tr>
+          <td>${p.fecha ? new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) : '\u2014'}</td>
+          <td class="td-patient">${escapeHtml(pName)}</td>
+          <td>${chip}</td>
+          <td class="text-right"><strong>${fmtMoney(Number(p.importe))}</strong></td>
+        </tr>`;
+      }).join('');
+    } catch {
+      setTableState(gestoriaMesBody, 4, 'cloud_off', 'Error al cargar datos');
+    }
+  };
+
+  gestoriaMesFilter?.addEventListener('change', loadGestoriaMes);
+
+  // Load both on page enter
+  const origLoadGestoria = loadGestoria;
+  pageLoaders['gestoria'] = async () => { await origLoadGestoria(); await loadGestoriaMes(); };
   // ===================== END GESTORIA =====================
 
   const loadConfig = async () => {
@@ -4441,6 +4529,28 @@ import Layout from '../layouts/Layout.astro';
     border-top: 2px solid var(--border);
   }
   .gestoria-totals-row td { padding-top: 0.75rem; }
+  .gestoria-mes-select {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: var(--bg-primary);
+  }
+  .gestoria-mes-totals {
+    display: flex;
+    gap: 1rem;
+    padding: 0.7rem 1.25rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+  }
+  .gestoria-mes-chip {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .gestoria-mes-chip strong { color: var(--text-primary); }
+  .gestoria-mes-cash strong { color: #166534; }
+  .gestoria-mes-card strong { color: #1e40af; }
 
   /* === CONFIG GRID === */
   .config-grid {
