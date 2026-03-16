@@ -1899,6 +1899,7 @@ import Layout from '../layouts/Layout.astro';
   const renderAgendaCalendar = (citas: any[], weekStart: Date) => {
     const cal = document.getElementById('agendaCalendar');
     if (!cal) return;
+
     const HOUR_SLOTS = [9, 10, 11, 12, 15, 16, 17, 18];
     const weekDays: Date[] = Array.from({ length: 5 }, (_, i) => {
       const d = new Date(weekStart);
@@ -1920,36 +1921,77 @@ import Layout from '../layouts/Layout.astro';
       apptMap.get(key)!.push(cita);
     }
 
+    // Status colors (inline — Astro scoped styles don't apply to dynamic innerHTML)
+    const STATUS: Record<string, { bg: string; color: string; border: string }> = {
+      confirmada: { bg: '#d1fae5', color: '#065f46', border: '#10b981' },
+      pendiente:  { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
+      cancelada:  { bg: '#f1f5f9', color: '#94a3b8', border: '#cbd5e1' },
+      completada: { bg: '#ede9fe', color: '#4c1d95', border: '#7c3aed' },
+      no_show:    { bg: '#fff1f2', color: '#be123c', border: '#f43f5e' },
+    };
+    const DEF = STATUS.pendiente;
     const todayStr = new Date().toDateString();
-    let html = '<div class="agenda-cal-grid">';
-    // Header
-    html += '<div class="agenda-cal-time-header"></div>';
+
+    // Table layout — works regardless of Astro style scoping
+    const thBase = 'padding:10px 8px;text-align:center;border-bottom:2px solid #e2e8f0;font-size:0.8rem;font-weight:700;white-space:nowrap;';
+    let html = `<div style="overflow-x:auto;width:100%;">
+<table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
+<thead><tr>
+  <th style="${thBase}width:52px;background:#f8fafc;color:#94a3b8;"></th>`;
+
     for (let i = 0; i < 5; i++) {
       const isToday = weekDays[i].toDateString() === todayStr;
-      html += `<div class="agenda-cal-day-header${isToday ? ' today' : ''}">${fmtDayShortName(weekDays[i])}</div>`;
+      const label = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
+      const dayNum = weekDays[i].toLocaleDateString('es-ES', { day: 'numeric' });
+      const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short' });
+      const bg = isToday ? '#eff6ff' : '#f8fafc';
+      const col = isToday ? '#2563eb' : '#334155';
+      html += `<th style="${thBase}background:${bg};color:${col};text-transform:capitalize;">
+        <span style="display:block;font-size:0.7rem;font-weight:500;opacity:0.7;">${escapeHtml(dayName)}</span>
+        <span style="display:block;font-size:1.1rem;font-weight:700;">${dayNum}</span>
+      </th>`;
     }
-    // Rows
-    for (const hour of HOUR_SLOTS) {
-      const isLunchBreak = hour === 13 || hour === 14;
-      html += `<div class="agenda-cal-time">${String(hour).padStart(2,'0')}:00</div>`;
+    html += '</tr></thead><tbody>';
+
+    // Separator row between morning and afternoon
+    let prevSlotWasBreak = false;
+
+    for (let si = 0; si < HOUR_SLOTS.length; si++) {
+      const hour = HOUR_SLOTS[si];
+      const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
+      // Lunch break separator
+      if (prevHour !== null && hour - prevHour > 1) {
+        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 – 15:00</td></tr>`;
+      }
+
+      const timeLabel = `${String(hour).padStart(2,'0')}:00`;
+      html += `<tr>
+        <td style="padding:6px 8px;text-align:right;font-size:0.72rem;color:#94a3b8;font-weight:600;vertical-align:top;white-space:nowrap;background:#f8fafc;border-right:2px solid #e2e8f0;border-bottom:1px solid #f1f5f9;">${timeLabel}</td>`;
+
       for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
         const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
-        html += `<div class="agenda-cal-cell${isLunchBreak ? ' closed' : ''}">`;
+        const isToday = weekDays[dayIdx].toDateString() === todayStr;
+        const cellBg = isToday ? '#fafcff' : '#fff';
+        html += `<td style="padding:3px;vertical-align:top;background:${cellBg};border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;min-height:58px;height:58px;">`;
         for (const a of appts) {
           const st = a.estado || 'pendiente';
-          const name = (a.nombre_paciente || 'Paciente').split(' ')[0];
+          const c = STATUS[st] || DEF;
+          const firstName = (a.nombre_paciente || 'Paciente').split(' ')[0];
           const timeStr = fmtHourOnly(a.inicio_en);
-          const motivo = a.motivo ? escapeHtml(a.motivo.slice(0, 28)) : '';
-          html += `<div class="agenda-appt ${st}" title="${escapeAttr((a.nombre_paciente || '') + (a.motivo ? ' — ' + a.motivo : ''))}">
-            <span class="appt-time">${timeStr}</span>
-            <span class="appt-name">${escapeHtml(name)}</span>
-            ${motivo ? `<span class="appt-motivo">${motivo}</span>` : ''}
+          const motivo = a.motivo ? a.motivo.slice(0, 22) : '';
+          const tip = escapeAttr(`${a.nombre_paciente || ''} ${a.motivo ? '– ' + a.motivo : ''}`);
+          html += `<div style="background:${c.bg};color:${c.color};border-left:3px solid ${c.border};border-radius:4px;padding:3px 5px 4px;margin-bottom:2px;font-size:0.71rem;overflow:hidden;cursor:default;line-height:1.3;" title="${tip}">
+            <div style="font-weight:700;font-size:0.63rem;opacity:0.8;margin-bottom:1px;">${timeStr}</div>
+            <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(firstName)}</div>
+            ${motivo ? `<div style="font-size:0.62rem;opacity:0.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(motivo)}</div>` : ''}
           </div>`;
         }
-        html += '</div>';
+        html += '</td>';
       }
+      html += '</tr>';
     }
-    html += '</div>';
+
+    html += '</tbody></table></div>';
     cal.innerHTML = html;
   };
 

@@ -209,6 +209,35 @@ Ahora son las ${nowMadrid}.`;
   }
 }
 
+async function extractMotivoFromText(text = '') {
+  if (!OPENAI_API_KEY || !text.trim()) return null;
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'Extrae en máximo 8 palabras la dolencia, molestia o motivo de consulta que menciona el paciente. Si no hay motivo claro responde exactamente: null. Solo devuelve el motivo, sin explicaciones.',
+          },
+          { role: 'user', content: text },
+        ],
+        max_tokens: 30,
+        temperature: 0,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const result = data.choices?.[0]?.message?.content?.trim() || null;
+    return result === 'null' || !result ? null : result;
+  } catch {
+    return null;
+  }
+}
+
 function truncateTelegramMessage(text = '', maxLen = 3900) {
   const clean = String(text || '').trim();
   if (!clean) return '';
@@ -1811,13 +1840,14 @@ router.post('/incoming', async (req, res, next) => {
           return await reply(carlaAsk || 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.');
         }
 
+        const motivo = await extractMotivoFromText(text);
         const appointment = await triggerAppointmentWorkflow({
           req,
           patientId: link.paciente_id,
           professionalId,
           chatId: chat_id,
           username,
-          messageText: text,
+          messageText: motivo || text,
           slotStart,
           slotEnd,
         });
