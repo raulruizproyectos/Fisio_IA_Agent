@@ -3,13 +3,13 @@
 -- ============================================================
 
 INSERT INTO dolencias (nombre, zona_corporal, descripcion, niveles_severidad) VALUES
-  ('Lumbalgia', 'espalda baja', 'Dolor en la zona lumbar de origen mecanico o postural.', ARRAY['leve', 'moderada', 'severa']),
-  ('Cervicalgia', 'cuello', 'Dolor cervical con posible irradiacion a hombros.', ARRAY['leve', 'moderada', 'severa']),
-  ('Tendinitis de hombro', 'hombro', 'Inflamacion de los tendones del manguito rotador.', ARRAY['leve', 'moderada']),
-  ('Esguince de tobillo', 'tobillo', 'Lesion ligamentosa por inversion del pie.', ARRAY['grado_I', 'grado_II', 'grado_III']),
-  ('Fascitis plantar', 'pie', 'Inflamacion de la fascia plantar con dolor al apoyo.', ARRAY['leve', 'moderada', 'severa']),
-  ('Epicondilitis', 'codo', 'Dolor en el epicondilo lateral (codo de tenista).', ARRAY['leve', 'moderada']),
-  ('Sindrome del tunel carpiano', 'muneca', 'Compresion del nervio mediano en el tunel carpiano.', ARRAY['leve', 'moderada', 'severa']),
+  ('Lumbalgia', 'espalda', 'Dolor en la zona lumbar de origen mecanico o postural.', ARRAY['leve', 'moderada', 'severa']),
+  ('Cervicalgia', 'cervical', 'Dolor cervical con posible irradiacion a hombros.', ARRAY['leve', 'moderada', 'severa']),
+  ('Tendinitis de hombro', 'hombro_brazo', 'Inflamacion de los tendones del manguito rotador.', ARRAY['leve', 'moderada']),
+  ('Esguince de tobillo', 'tobillo_pie', 'Lesion ligamentosa por inversion del pie.', ARRAY['grado_I', 'grado_II', 'grado_III']),
+  ('Fascitis plantar', 'tobillo_pie', 'Inflamacion de la fascia plantar con dolor al apoyo.', ARRAY['leve', 'moderada', 'severa']),
+  ('Epicondilitis', 'hombro_brazo', 'Dolor en el epicondilo lateral (codo de tenista).', ARRAY['leve', 'moderada']),
+  ('Sindrome del tunel carpiano', 'hombro_brazo', 'Compresion del nervio mediano en el tunel carpiano.', ARRAY['leve', 'moderada', 'severa']),
   ('Gonartrosis', 'rodilla', 'Artrosis de rodilla con desgaste del cartilago articular.', ARRAY['leve', 'moderada', 'severa']);
 
 INSERT INTO ejercicios (dolencia_id, nombre, descripcion, fase, dificultad, series_defecto, repeticiones_defecto, duracion_segundos_defecto) VALUES
