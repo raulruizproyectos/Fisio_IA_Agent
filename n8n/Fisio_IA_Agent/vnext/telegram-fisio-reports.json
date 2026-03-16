@@ -108,7 +108,9 @@
       "parameters": {
         "chatId": "={{ $('Prepare Input').item.json.chat_id }}",
         "text": "={{ $json.reply_text }}",
-        "additionalFields": {}
+        "additionalFields": {
+          "appendAttribution": false
+        }
       },
       "id": "TelegramReply",
       "name": "Telegram Reply",
