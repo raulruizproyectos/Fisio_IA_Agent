@@ -1,5 +1,36 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 99 - 2026-03-16
+
+### Objetivo
+Continuación de sesión 98. Revisión y limpieza de código (`/simplify`) en los ficheros cambiados durante la sesión 98 (PDF redesign + bot onboarding + fix slot detection).
+
+### Trabajo realizado
+
+**Refactoring `telegram.js` (commit `c50ea30`)**
+- [x] Eliminada doble llamada a `parseNaturalAppointmentSlots(text)` en la rama appointment — resultado del primer parse reutilizado con `parsedSlot`.
+- [x] Unificadas 4 variantes de `nameCtx`/`nameCtxErr`/`nameCtxDefault` en una sola variable `patientNameCtx` (había inconsistencia de trailing space).
+- [x] Eliminado bloque `patient_appointments` inalcanzable dentro de la rama `!link` (el two-step onboarding retorna siempre antes de llegar a él).
+- [x] Optimización: `resolveAgentConversation` y `intent-router` se saltan completamente en modo `patient_appointments` (intent siempre se forzaba a `appointment`, las llamadas eran work waste de ~12-8s).
+
+### Estado al cierre
+- Bot pacientes: ✅ onboarding two-step, saludar por nombre, Carla gestiona citas
+- Bot fisio: ✅ genera PDF + envía por Telegram
+- PDF informe: ✅ diseño limpio, sin overlapping, imágenes PROET
+- Refactoring simplify: ✅ código limpio, sin duplicados, sin código inalcanzable
+- n8n: 8/8 workflows ON (W2 bypassed en prod, backend usa Edge Function directa)
+- EasyPanel: ⚠️ necesita rebuild backend para activar commit `c50ea30`
+
+### Commits de sesión
+- `c50ea30` — refactor(bot-pacientes): eliminate duplicated code from simplify review
+
+### Próximos pasos
+1. Rebuild backend en EasyPanel (commit `c50ea30`).
+2. Test E2E completo: Telegram paciente → nombre → motivo → fecha/hora → cita confirmada → visible en Agenda CRM.
+3. (Opcional) Normalizar 16 registros zona_corporal con valores no estándar.
+
+---
+
 ## Sesion 96 - 2026-03-12
 
 ### Objetivo
