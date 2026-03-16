@@ -143,8 +143,20 @@ async function fetchCalendarContext({ patientId, professionalId }) {
   if (patientResp.error) throw patientResp.error;
   if (professionalResp.error) throw professionalResp.error;
 
-  const patientName = [patientResp.data?.nombre, patientResp.data?.apellidos].filter(Boolean).join(' ').trim() || null;
-  const patientPhone = patientResp.data?.telefono || null;
+  let patientName = [patientResp.data?.nombre, patientResp.data?.apellidos].filter(Boolean).join(' ').trim() || null;
+  let patientPhone = patientResp.data?.telefono || null;
+
+  // Fallback to legacy pacientes table (Telegram auto-onboarded patients)
+  if (!patientName) {
+    const { data: legacy } = await supabase
+      .from('pacientes')
+      .select('nombre_completo, phone')
+      .eq('id', patientId)
+      .maybeSingle();
+    patientName = legacy?.nombre_completo || null;
+    patientPhone = patientPhone || legacy?.phone || null;
+  }
+
   const professionalName = professionalResp.data?.nombre_completo || null;
   return { patientName, patientPhone, professionalName };
 }
