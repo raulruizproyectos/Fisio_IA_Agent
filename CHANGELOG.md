@@ -1,5 +1,61 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 100 - 2026-03-16
+
+### Objetivo
+Continuación de sesión 99. Historial de conversación en bot pacientes, nombre real en Google Calendar, teléfono+motivo en cita, flujo de recogida de motivo, fix Carla inventando disponibilidad.
+
+### Trabajo realizado
+
+**Historial de conversación por chat (`telegram_chat_sessions`) (commits `5981670`, `a9f4342`)**
+- [x] Tabla `telegram_chat_sessions` creada en Supabase: `telegram_chat_id TEXT PK`, `recent_messages JSONB`, `pending_slot JSONB`, `updated_at TIMESTAMPTZ`.
+- [x] `loadChatSession(chatId)` / `saveChatSession(chatId, history, pendingSlot)` — max 8 mensajes, 250 chars/msg, TTL 6h, purge aleatorio 5%.
+- [x] `callCarlaAgent` acepta `history = []` y lo inyecta en el array de mensajes OpenAI → Carla ya no olvida el contexto entre mensajes.
+- [x] Helper `carlaReplyAndSave` encapsula llamada + guardado de sesión + pending slot.
+
+**Slot persistence y resolución (`resolveSlot`) (commit `a9f4342`)**
+- [x] Cuando el paciente confirma día/hora pero falta motivo, se guarda `pending_slot` en la sesión.
+- [x] `resolveSlot(parsedCurrent, pendingSlot)` — si el mensaje actual tiene hora pero no día, extrae la fecha del pending slot y combina con la nueva hora (ej. "mañana a las 10" + "a las 12" → cita a las 12 del día ya acordado).
+- [x] `buildCombinedUserText(history, currentText)` — concatena últimos 4 mensajes del usuario + mensaje actual para extracción de motivo cross-turn.
+
+**Nombre real del paciente en Google Calendar (commit `decc11f`)**
+- [x] `fetchCalendarContext` en `professional.js`: si el paciente no está en `crm_pacientes`, hace fallback a tabla `pacientes` (legacy Telegram).
+- [x] Nombre y teléfono del legacy patient ahora se incluyen en el evento de Calendar.
+
+**Teléfono y motivo en Google Calendar (commit `aab0f99`)**
+- [x] `formatCalendarNameParts` actualizado para incluir `Tel: X` y `Motivo: Y` en la descripción del evento.
+- [x] Ambos call sites de `buildCalendarEventPayload` pasan `patientPhone` y `motivo`.
+- [x] Motivo recogido por Carla se almacena en `crm_citas.motivo` y en Google Calendar.
+
+**Fix Carla inventando disponibilidad (commit `6cdec81`)**
+- [x] System prompt actualizado con "REGLAS DE DISPONIBILIDAD — MUY IMPORTANTE": Carla no puede decir que un slot está ocupado/libre salvo que el contexto lo indique, y no puede sugerir alternativas por su cuenta.
+- [x] Flujo de reserva refactorizado: solicita los tres datos (día, hora, motivo) sin repetir preguntas.
+
+**Limpieza DB**
+- [x] Eliminada cita test basura en `crm_citas` (id `bdca5c57`, motivo "Si mañana a als 15h").
+
+### Estado al cierre
+- Bot pacientes: ✅ historial persistente, no olvida contexto, recoge motivo antes de reservar
+- Carla: ✅ no inventa disponibilidad, no sugiere slots falsos
+- Google Calendar: ✅ muestra nombre real del paciente + teléfono + motivo
+- crm_citas: ✅ campo motivo rellenado en el booking
+- EasyPanel: ⚠️ necesita rebuild backend para activar commits `5981670`..`6cdec81`
+
+### Commits de sesión
+- `c50ea30` — refactor(bot-pacientes): eliminate duplicated code from simplify review
+- `5981670` — feat(bot): add per-chat conversation history via telegram_chat_sessions
+- `a9f4342` — feat(bot): add pending_slot persistence and resolveSlot for multi-turn booking
+- `decc11f` — fix(calendar): resolve patient name from legacy pacientes table fallback
+- `aab0f99` — feat(calendar): include patient phone and motivo in Google Calendar event
+- `6cdec81` — fix(carla): prohibir inventar disponibilidad y mejorar flujo de reserva
+
+### Próximos pasos
+1. **Rebuild backend en EasyPanel** para activar todos los commits de sesión.
+2. **Test E2E**: Telegram paciente → motivo → día/hora → cita confirmada → Calendar con nombre+teléfono+motivo.
+3. (Opcional) Normalizar 16 registros zona_corporal con valores no estándar.
+
+---
+
 ## Sesion 99 - 2026-03-16
 
 ### Objetivo
