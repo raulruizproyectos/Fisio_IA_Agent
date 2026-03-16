@@ -29,6 +29,7 @@ const exerciseRecommendationJobs = new Map();
 let lastExerciseJobCleanupAt = 0;
 const EXERCISE_ASYNC_JOB_TABLE = 'crm_async_jobs';
 let exerciseAsyncJobPersistenceEnabled = true;
+const EXERCISE_CATALOG_SELECT = 'nombre, descripcion, zona_corporal, nivel, contraindicaciones, metadata';
 
 // --- GET /api/exercises/catalog ---
 // Returns active exercises from crm_ejercicios_catalogo, optionally filtered
@@ -37,7 +38,7 @@ router.get('/catalog', async (req, res) => {
     const { zona, nivel, q } = req.query;
     let query = supabase
       .from('crm_ejercicios_catalogo')
-      .select('id, codigo, nombre, descripcion, zona_corporal, nivel, contraindicaciones, metadata')
+      .select(`id, codigo, ${EXERCISE_CATALOG_SELECT}`)
       .eq('activo', true)
       .order('zona_corporal')
       .order('nombre');
@@ -205,7 +206,7 @@ router.post('/recommend', async (req, res) => {
     // 1. Fetch full catalog for OpenAI context
     const { data: catalog, error: catErr } = await supabase
       .from('crm_ejercicios_catalogo')
-      .select('id, nombre, descripcion, zona_corporal, nivel, contraindicaciones, metadata')
+      .select(`id, ${EXERCISE_CATALOG_SELECT}`)
       .eq('activo', true);
 
     if (catErr) throw catErr;
@@ -560,7 +561,7 @@ router.get('/recommendations/:patientId', async (req, res) => {
         estado, request_id, created_at,
         crm_recomendacion_items (
           id, ejercicio_id, confidence, why, cautions, orden,
-          crm_ejercicios_catalogo ( id, nombre, descripcion, zona_corporal, nivel, metadata )
+          crm_ejercicios_catalogo ( id, nombre, descripcion, zona_corporal, nivel )
         )
       `)
       .eq('paciente_id', patientId)
