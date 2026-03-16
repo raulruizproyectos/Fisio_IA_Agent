@@ -388,11 +388,17 @@ async function extractMotivoFromText(text = '') {
         messages: [
           {
             role: 'system',
-            content: 'Extrae en máximo 8 palabras la dolencia, molestia o motivo de consulta que menciona el paciente. Si no hay motivo claro responde exactamente: null. Solo devuelve el motivo, sin explicaciones.',
+            content: [
+              'Analiza el texto de un paciente que quiere reservar una cita de fisioterapia.',
+              'Extrae el motivo clínico SOLO si el paciente menciona explícitamente una dolencia, molestia, lesión, dolor, zona corporal afectada, o indica si es seguimiento de una consulta anterior.',
+              'Formatea el motivo como: "Nueva dolencia: [descripción]" o "Seguimiento: [descripción]" según corresponda.',
+              'Si no hay ninguna referencia clínica clara (el mensaje es solo sobre fecha/hora o intención de reservar), responde exactamente: null.',
+              'Máximo 12 palabras en el motivo. Sin explicaciones adicionales.',
+            ].join(' '),
           },
           { role: 'user', content: text },
         ],
-        max_tokens: 30,
+        max_tokens: 40,
         temperature: 0,
       }),
       signal: AbortSignal.timeout(5000),
@@ -2114,8 +2120,8 @@ router.post('/incoming', async (req, res, next) => {
 
         if (!motivo) {
           // Save the slot as pending and ask for the motivo
-          const carlaCtx = `${patientNameCtx}El paciente ya indicó el horario. Solo falta el motivo de la consulta (nueva dolencia, seguimiento, etc.). Pregúntaselo de forma concisa.`;
-          const replyText = await carlaReplyAndSave(carlaCtx, '¿Cuál es el motivo de tu consulta?', { slotStart, slotEnd });
+          const carlaCtx = `${patientNameCtx}El paciente ya indicó el horario. Necesitas saber el motivo de la consulta. Pregúntale de forma concisa si es una dolencia nueva (y cuál es) o es seguimiento de una consulta anterior.`;
+          const replyText = await carlaReplyAndSave(carlaCtx, '¿Es una consulta nueva o seguimiento? Cuéntame brevemente el motivo.', { slotStart, slotEnd });
           return await reply(replyText);
         }
 
