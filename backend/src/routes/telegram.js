@@ -1763,15 +1763,6 @@ router.post('/incoming', async (req, res, next) => {
         return await reply('He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
-      if (agentMode === 'patient_appointments') {
-        // (unreachable now, kept for safety)
-        const carlaWelcome = await callCarlaAgent(
-          text,
-          `Paciente nuevo que acaba de registrarse. Se llama ${onboarding.fullName}. Dale la bienvenida y pregúntale motivo de consulta y cuándo necesita cita.`
-        );
-        return await reply(carlaWelcome || `Hola ${onboarding.fullName}, soy Carla. ¿Cuál es el motivo de tu consulta?`);
-      }
-
       return await reply(
         `Bienvenido/a ${onboarding.fullName}. Ya he creado tu ficha y enviado tus sintomas al fisioterapeuta para revision.\n\n${getHelpMessage()}`
       );
@@ -1782,57 +1773,59 @@ router.post('/incoming', async (req, res, next) => {
       const historySnapshot = await getPatientHistorySnapshot(link.paciente_id);
       const redFlagResult = detectRedFlags(text);
 
+      // In patient_appointments mode intent is always appointment — skip the n8n call.
       let agentConversation = null;
       let intent = { route: 'unknown', confidence: 0 };
-      try {
-        agentConversation = await resolveAgentConversation({
-          channel: 'telegram',
-          role: 'patient',
-          chatId: chat_id,
-          patientId: link.paciente_id,
-          professionalId,
-          text,
-          requestId: crypto.randomUUID(),
-          timeoutMs: 12000,
-        });
-        intent = {
-          route: String(agentConversation?.data?.route || agentConversation?.data?.intent_hint || 'unknown'),
-          confidence: Number(agentConversation?.data?.confidence || 0),
-        };
-      } catch (agentErr) {
-        console.warn('[telegram] n8n agent gateway error:', agentErr.message);
-      }
-
-      if (
-        TELEGRAM_EDGE_ROUTER_ENABLED &&
-        process.env.SUPABASE_URL &&
-        (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD)
-      ) {
+      if (agentMode !== 'patient_appointments') {
         try {
-          const routerUrl = `${process.env.SUPABASE_URL}/functions/v1/intent-router`;
-          const routerResp = await fetch(routerUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message_text: text, request_id: crypto.randomUUID() }),
-            signal: AbortSignal.timeout(8000),
+          agentConversation = await resolveAgentConversation({
+            channel: 'telegram',
+            role: 'patient',
+            chatId: chat_id,
+            patientId: link.paciente_id,
+            professionalId,
+            text,
+            requestId: crypto.randomUUID(),
+            timeoutMs: 12000,
           });
-          if (routerResp.ok) {
-            const routerIntent = await routerResp.json();
-            if (routerIntent?.route) {
-              intent = routerIntent;
-            }
-          }
-        } catch (routerErr) {
-          console.warn('[telegram] W0 intent-router error:', routerErr.message);
+          intent = {
+            route: String(agentConversation?.data?.route || agentConversation?.data?.intent_hint || 'unknown'),
+            confidence: Number(agentConversation?.data?.confidence || 0),
+          };
+        } catch (agentErr) {
+          console.warn('[telegram] n8n agent gateway error:', agentErr.message);
         }
-      }
 
-      const fallbackIntent = inferIntentFromText(text);
-      if (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD) {
-        intent = fallbackIntent;
-      }
-      if (agentMode === 'patient_appointments') {
-        intent = { route: 'appointment', confidence: Math.max(Number(intent.confidence || 0), 0.95) };
+        if (
+          TELEGRAM_EDGE_ROUTER_ENABLED &&
+          process.env.SUPABASE_URL &&
+          (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD)
+        ) {
+          try {
+            const routerUrl = `${process.env.SUPABASE_URL}/functions/v1/intent-router`;
+            const routerResp = await fetch(routerUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message_text: text, request_id: crypto.randomUUID() }),
+              signal: AbortSignal.timeout(8000),
+            });
+            if (routerResp.ok) {
+              const routerIntent = await routerResp.json();
+              if (routerIntent?.route) {
+                intent = routerIntent;
+              }
+            }
+          } catch (routerErr) {
+            console.warn('[telegram] W0 intent-router error:', routerErr.message);
+          }
+        }
+
+        const fallbackIntent = inferIntentFromText(text);
+        if (!intent?.route || intent.route === 'unknown' || Number(intent.confidence || 0) < INTENT_CONFIDENCE_THRESHOLD) {
+          intent = fallbackIntent;
+        }
+      } else {
+        intent = { route: 'appointment', confidence: 0.95 };
       }
 
       const sharedAgentReply = String(
@@ -1888,20 +1881,20 @@ router.post('/incoming', async (req, res, next) => {
 
       // W1: appointment intent detected, trigger dedicated n8n workflow if configured.
       if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
-        const { slotStart, slotEnd } = parseNaturalAppointmentSlots(text);
+        const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
+        const parsedSlot = parseNaturalAppointmentSlots(text);
+        const { slotStart, slotEnd } = parsedSlot;
 
         // If no slot could be parsed, let Carla ask naturally for date/time.
         if (!slotStart) {
-          const nameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-          const parsed = parseNaturalAppointmentSlots(text);
           let carlaCtx;
-          if (parsed.missingDay && parsed.parsedHour !== undefined) {
-            const hStr = `${parsed.parsedHour}:${String(parsed.parsedMinutes || 0).padStart(2, '0')}`;
-            carlaCtx = `${nameCtx}El paciente pregunta por disponibilidad a las ${hStr}. Solo falta el día. Pregúntale únicamente para qué día quiere la cita a esa hora. No preguntes el motivo (ya lo sabe).`;
-          } else if (parsed.missingTime) {
-            carlaCtx = `${nameCtx}El paciente ha indicado el día pero no la hora. Pregúntale a qué hora le viene mejor (recuerda los slots válidos: en punto o y media, de 9:00 a 13:00 y 15:00 a 19:00).`;
+          if (parsedSlot.missingDay && parsedSlot.parsedHour !== undefined) {
+            const hStr = `${parsedSlot.parsedHour}:${String(parsedSlot.parsedMinutes || 0).padStart(2, '0')}`;
+            carlaCtx = `${patientNameCtx}El paciente pregunta por disponibilidad a las ${hStr}. Solo falta el día. Pregúntale únicamente para qué día quiere la cita a esa hora. No preguntes el motivo (ya lo sabe).`;
+          } else if (parsedSlot.missingTime) {
+            carlaCtx = `${patientNameCtx}El paciente ha indicado el día pero no la hora. Pregúntale a qué hora le viene mejor (recuerda los slots válidos: en punto o y media, de 9:00 a 13:00 y 15:00 a 19:00).`;
           } else {
-            carlaCtx = `${nameCtx}El paciente quiere pedir cita pero no ha indicado ni día ni hora. Pregúntale cuándo le viene mejor de forma natural.`;
+            carlaCtx = `${patientNameCtx}El paciente quiere pedir cita pero no ha indicado ni día ni hora. Pregúntale cuándo le viene mejor de forma natural.`;
           }
           const carlaAsk = await callCarlaAgent(text, carlaCtx);
           return await reply(carlaAsk || 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.');
@@ -1948,20 +1941,18 @@ router.post('/incoming', async (req, res, next) => {
           } else {
             carlaContext = appointment.messageToPatient || 'La solicitud de cita ha sido procesada.';
           }
-          const nameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-          const carlaReply = await callCarlaAgent(text, `${nameCtx}${carlaContext}`);
+          const carlaReply = await callCarlaAgent(text, `${patientNameCtx}${carlaContext}`);
           return await reply(carlaReply || appointment.messageToPatient);
         }
 
-        const nameCtxErr = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-        const carlaError = await callCarlaAgent(text, `${nameCtxErr}Ha habido un problema técnico al gestionar la reserva. Disculpate brevemente y dile que lo intente de nuevo en unos minutos.`);
+        const carlaError = await callCarlaAgent(text, `${patientNameCtx}Ha habido un problema técnico al gestionar la reserva. Disculpate brevemente y dile que lo intente de nuevo en unos minutos.`);
         return await reply(carlaError || 'Ha habido un problema al gestionar tu cita. Inténtalo de nuevo en un momento.');
       }
 
       // Default: use Carla for any other patient message.
       if (agentMode === 'patient_appointments') {
-        const nameCtxDefault = linkedPatientName ? `El paciente se llama ${linkedPatientName}.` : '';
-        const carlaDefault = await callCarlaAgent(text, nameCtxDefault || null);
+        const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
+        const carlaDefault = await callCarlaAgent(text, patientNameCtx || null);
         return await reply(carlaDefault || truncateTelegramMessage(sharedAgentReply));
       }
 
