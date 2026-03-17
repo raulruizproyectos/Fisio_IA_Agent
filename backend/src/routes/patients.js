@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { supabase } from '../index.js';
 
 const router = Router();
@@ -12,23 +12,21 @@ function pickValue(obj, ...keys) {
   return null;
 }
 
+const CRM_FIELDS = 'id, nombre, apellidos, email, telefono, fecha_nacimiento, dni, direccion, profesion, medico_derivador, aseguradora, alergias, antecedentes, observaciones, activo, created_at, updated_at';
+
 router.get('/', async (req, res, next) => {
   try {
-    // Fetch from both legacy and CRM patient tables in parallel
     const [legacyResult, crmResult] = await Promise.allSettled([
       supabase.from('pacientes').select('*').order('creado_en', { ascending: false }),
-      supabase.from('crm_pacientes').select('id, nombre, apellidos, email, telefono, fecha_nacimiento, activo, created_at').eq('activo', true).order('created_at', { ascending: false }),
+      supabase.from('crm_pacientes').select(CRM_FIELDS).eq('activo', true).order('created_at', { ascending: false }),
     ]);
 
     const legacyRows = legacyResult.status === 'fulfilled' && !legacyResult.value.error
-      ? (legacyResult.value.data || [])
-      : [];
+      ? (legacyResult.value.data || []) : [];
 
     const crmRows = crmResult.status === 'fulfilled' && !crmResult.value.error
-      ? (crmResult.value.data || [])
-      : [];
+      ? (crmResult.value.data || []) : [];
 
-    // Normalize CRM rows to match legacy shape
     const crmNormalized = crmRows.map((p) => ({
       id: p.id,
       nombre_completo: [p.nombre, p.apellidos].filter(Boolean).join(' ').trim() || `Paciente ${p.id}`,
@@ -40,7 +38,6 @@ router.get('/', async (req, res, next) => {
       _source: 'crm',
     }));
 
-    // Merge: prefer CRM records; dedup by email (CRM wins over legacy)
     const seenEmails = new Set();
     const seenIds = new Set();
     const merged = [];
@@ -64,6 +61,62 @@ router.get('/', async (req, res, next) => {
     });
 
     res.json({ data: merged });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Ficha completa de un paciente CRM: datos + citas + pagos + notas
+router.get('/:id/ficha', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const [patientRes, citasRes, pagosRes, notasRes] = await Promise.allSettled([
+      supabase.from('crm_pacientes').select(CRM_FIELDS).eq('id', id).single(),
+      supabase.from('crm_citas').select('id, fecha_hora, estado, motivo, created_at').eq('paciente_id', id).order('fecha_hora', { ascending: false }).limit(50),
+      supabase.from('crm_pagos').select('id, fecha, importe, metodo_pago, concepto, notas').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
+      supabase.from('crm_notas_clinicas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
+    ]);
+
+    if (patientRes.status === 'rejected' || patientRes.value.error) {
+      return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+
+    const p = patientRes.value.data;
+    res.json({
+      paciente: {
+        ...p,
+        nombre_completo: [p.nombre, p.apellidos].filter(Boolean).join(' ').trim(),
+      },
+      citas: citasRes.status === 'fulfilled' && !citasRes.value.error ? citasRes.value.data : [],
+      pagos: pagosRes.status === 'fulfilled' && !pagosRes.value.error ? pagosRes.value.data : [],
+      notas: notasRes.status === 'fulfilled' && !notasRes.value.error ? notasRes.value.data : [],
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Update CRM patient (enriched fields)
+router.patch('/:id', async (req, res, next) => {
+  try {
+    const fields = {};
+    const allowed = ['nombre', 'apellidos', 'email', 'telefono', 'fecha_nacimiento', 'dni', 'direccion', 'profesion', 'medico_derivador', 'aseguradora', 'alergias', 'antecedentes', 'observaciones'];
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) fields[key] = req.body[key];
+    }
+    if (!Object.keys(fields).length) return res.status(400).json({ error: 'No fields to update' });
+
+    fields.updated_at = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('crm_pacientes')
+      .update(fields)
+      .eq('id', req.params.id)
+      .select(CRM_FIELDS)
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Paciente no encontrado' });
+    res.json({ data });
   } catch (err) {
     next(err);
   }

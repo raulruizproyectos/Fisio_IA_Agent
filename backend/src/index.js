@@ -8,6 +8,7 @@ import professionalRouter from './routes/professional.js';
 import agentRouter from './routes/agent.js';
 import exercisesRouter from './routes/exercises.js';
 import paymentsRouter from './routes/payments.js';
+import clinicalNotesRouter from './routes/clinical-notes.js';
 
 // Configuracion
 const app = express();
@@ -74,6 +75,7 @@ app.use('/api/agente', agentRouter);
 app.use('/api/exercises', exercisesRouter);
 app.use('/api/ejercicios', exercisesRouter);
 app.use('/api/pagos', paymentsRouter);
+app.use('/api/notas-clinicas', clinicalNotesRouter);
 
 // Error handler
 app.use((err, req, res, _next) => {

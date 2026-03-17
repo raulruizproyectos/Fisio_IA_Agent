@@ -473,6 +473,117 @@ import Layout from '../layouts/Layout.astro';
           </section>
         </div>
 
+        <!-- === PAGE: FICHA PACIENTE (detalle) === -->
+        <div class="page-section" data-page="ficha-paciente">
+          <div class="page-header-row">
+            <button class="btn-ghost" id="fichaBackBtn"><span class="material-symbols-rounded">arrow_back</span> Volver</button>
+            <h1 class="page-title" id="fichaTitulo"><span class="material-symbols-rounded">person</span> Ficha de paciente</h1>
+            <button class="btn-primary btn-sm" id="fichaEditToggle"><span class="material-symbols-rounded">edit</span> Editar datos</button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="ficha-tabs">
+            <button class="ficha-tab active" data-ficha-tab="datos">Datos personales</button>
+            <button class="ficha-tab" data-ficha-tab="notas">Notas cl&iacute;nicas</button>
+            <button class="ficha-tab" data-ficha-tab="citas">Historial citas</button>
+            <button class="ficha-tab" data-ficha-tab="pagos">Historial pagos</button>
+          </div>
+
+          <!-- Tab: Datos personales -->
+          <div class="ficha-panel active" data-ficha-panel="datos">
+            <section class="card">
+              <div class="ficha-datos-grid" id="fichaDatosView">
+                <!-- Rendered by JS -->
+              </div>
+              <form id="fichaDatosForm" class="ficha-datos-grid" hidden>
+                <label class="field"><span>Nombre</span><input name="nombre" type="text" required /></label>
+                <label class="field"><span>Apellidos</span><input name="apellidos" type="text" /></label>
+                <label class="field"><span>Email</span><input name="email" type="email" /></label>
+                <label class="field"><span>Tel&eacute;fono</span><input name="telefono" type="tel" /></label>
+                <label class="field"><span>DNI/NIF</span><input name="dni" type="text" /></label>
+                <label class="field"><span>Fecha nac.</span><input name="fecha_nacimiento" type="date" /></label>
+                <label class="field"><span>Direcci&oacute;n</span><input name="direccion" type="text" /></label>
+                <label class="field"><span>Profesi&oacute;n</span><input name="profesion" type="text" /></label>
+                <label class="field"><span>M&eacute;dico derivador</span><input name="medico_derivador" type="text" /></label>
+                <label class="field"><span>Aseguradora</span><input name="aseguradora" type="text" /></label>
+                <label class="field field-full"><span>Alergias</span><textarea name="alergias" rows="2"></textarea></label>
+                <label class="field field-full"><span>Antecedentes</span><textarea name="antecedentes" rows="2"></textarea></label>
+                <label class="field field-full"><span>Observaciones</span><textarea name="observaciones" rows="2"></textarea></label>
+                <div class="ficha-form-actions">
+                  <button type="button" class="btn-ghost" id="fichaCancelEdit">Cancelar</button>
+                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar</button>
+                </div>
+              </form>
+            </section>
+          </div>
+
+          <!-- Tab: Notas clínicas -->
+          <div class="ficha-panel" data-ficha-panel="notas">
+            <section class="card">
+              <header class="card-header">
+                <h2>Notas de evoluci&oacute;n</h2>
+                <button class="btn-primary btn-sm" id="fichaAddNota"><span class="material-symbols-rounded">add</span> Nueva nota</button>
+              </header>
+              <div id="fichaNotasTimeline" class="ficha-timeline">
+                <p class="empty-inline">Sin notas cl&iacute;nicas registradas</p>
+              </div>
+            </section>
+            <!-- Inline form for new note -->
+            <section class="card" id="fichaNotaFormCard" hidden>
+              <header class="card-header"><h2 id="fichaNotaFormTitle">Nueva nota cl&iacute;nica</h2></header>
+              <form id="fichaNotaForm" class="ficha-datos-grid">
+                <input type="hidden" name="nota_id" />
+                <label class="field"><span>Fecha</span><input name="fecha" type="date" required /></label>
+                <label class="field"><span>Zona corporal</span>
+                  <select name="zona_corporal">
+                    <option value="">-- Seleccionar --</option>
+                    <option value="cervical">Cervical</option>
+                    <option value="espalda">Espalda</option>
+                    <option value="hombro_brazo">Hombro/Brazo</option>
+                    <option value="codo_mano">Codo/Mano</option>
+                    <option value="cadera">Cadera</option>
+                    <option value="rodilla">Rodilla</option>
+                    <option value="tobillo_pie">Tobillo/Pie</option>
+                    <option value="abdomen_core">Abdomen/Core</option>
+                    <option value="suelo_pelvico">Suelo p&eacute;lvico</option>
+                    <option value="general">General</option>
+                  </select>
+                </label>
+                <label class="field"><span>Dolor (EVA 0-10)</span><input name="dolor_eva" type="number" min="0" max="10" step="1" placeholder="0-10" /></label>
+                <label class="field field-full"><span>Nota de sesi&oacute;n</span><textarea name="nota" rows="4" required placeholder="Describe la sesi&oacute;n, tratamiento aplicado, observaciones..."></textarea></label>
+                <label class="field field-full"><span>Pruebas realizadas</span><textarea name="pruebas_realizadas" rows="2" placeholder="Tests, mediciones, etc."></textarea></label>
+                <div class="ficha-form-actions">
+                  <button type="button" class="btn-ghost" id="fichaNotaCancel">Cancelar</button>
+                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar nota</button>
+                </div>
+              </form>
+            </section>
+          </div>
+
+          <!-- Tab: Historial citas -->
+          <div class="ficha-panel" data-ficha-panel="citas">
+            <section class="card">
+              <header class="card-header"><h2>Historial de citas</h2></header>
+              <div class="table-wrap">
+                <table><thead><tr><th>Fecha</th><th>Estado</th><th>Motivo</th></tr></thead>
+                <tbody id="fichaCitasBody"><tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p></div></td></tr></tbody></table>
+              </div>
+            </section>
+          </div>
+
+          <!-- Tab: Historial pagos -->
+          <div class="ficha-panel" data-ficha-panel="pagos">
+            <section class="card">
+              <header class="card-header"><h2>Historial de pagos</h2></header>
+              <div class="table-wrap">
+                <table><thead><tr><th>Fecha</th><th>Importe</th><th>M&eacute;todo</th><th>Concepto</th></tr></thead>
+                <tbody id="fichaPagosBody"><tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p></div></td></tr></tbody></table>
+              </div>
+              <div class="ficha-pagos-total" id="fichaPagosTotal"></div>
+            </section>
+          </div>
+        </div>
+
         <!-- === PAGE: CONFIG === -->
         <div class="page-section" data-page="config">
           <div class="page-header-row">
@@ -2807,6 +2918,299 @@ import Layout from '../layouts/Layout.astro';
 
   // ===================== END PAGOS =====================
 
+  // ===================== FICHA PACIENTE =====================
+  let fichaPatientId: string | null = null;
+  let fichaData: any = null;
+  const fichaTitulo = document.getElementById('fichaTitulo');
+  const fichaDatosView = document.getElementById('fichaDatosView');
+  const fichaDatosForm = document.getElementById('fichaDatosForm') as HTMLFormElement | null;
+  const fichaEditToggle = document.getElementById('fichaEditToggle');
+  const fichaCancelEdit = document.getElementById('fichaCancelEdit');
+  const fichaCitasBody = document.getElementById('fichaCitasBody');
+  const fichaPagosBody = document.getElementById('fichaPagosBody');
+  const fichaPagosTotal = document.getElementById('fichaPagosTotal');
+  const fichaNotasTimeline = document.getElementById('fichaNotasTimeline');
+  const fichaNotaFormCard = document.getElementById('fichaNotaFormCard');
+  const fichaNotaForm = document.getElementById('fichaNotaForm') as HTMLFormElement | null;
+  const fichaNotaFormTitle = document.getElementById('fichaNotaFormTitle');
+  const fichaAddNota = document.getElementById('fichaAddNota');
+  const fichaNotaCancel = document.getElementById('fichaNotaCancel');
+
+  // Tab switching
+  document.querySelectorAll('.ficha-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.ficha-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.ficha-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const panel = document.querySelector(`[data-ficha-panel="${tab.getAttribute('data-ficha-tab')}"]`);
+      panel?.classList.add('active');
+    });
+  });
+
+  const openFichaPaciente = async (patientId: string) => {
+    fichaPatientId = patientId;
+    // Switch to ficha page
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelector('[data-page="ficha-paciente"]')?.classList.add('active');
+    // Reset to first tab
+    document.querySelectorAll('.ficha-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.ficha-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('[data-ficha-tab="datos"]')?.classList.add('active');
+    document.querySelector('[data-ficha-panel="datos"]')?.classList.add('active');
+    // Hide edit form, show view
+    if (fichaDatosForm) fichaDatosForm.hidden = true;
+    if (fichaDatosView) fichaDatosView.hidden = false;
+    if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
+
+    // Load data
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`);
+      fichaData = payload;
+      renderFichaDatos(payload.paciente);
+      renderFichaCitas(payload.citas);
+      renderFichaPagos(payload.pagos);
+      renderFichaNotas(payload.notas);
+      if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
+    } catch (err: any) {
+      if (fichaDatosView) fichaDatosView.innerHTML = `<p class="empty-inline">Error al cargar ficha: ${escapeHtml(err?.message || '')}</p>`;
+    }
+  };
+
+  const fichaField = (label: string, value: string, full = false) =>
+    `<div class="ficha-dato${full ? ' ficha-dato-full' : ''}"><span class="ficha-dato-label">${escapeHtml(label)}</span><span class="ficha-dato-value">${escapeHtml(value || '')}</span></div>`;
+
+  const renderFichaDatos = (p: any) => {
+    if (!fichaDatosView) return;
+    fichaDatosView.innerHTML = [
+      fichaField('Nombre', p.nombre),
+      fichaField('Apellidos', p.apellidos),
+      fichaField('Email', p.email),
+      fichaField('Teléfono', p.telefono),
+      fichaField('DNI/NIF', p.dni),
+      fichaField('Fecha nac.', p.fecha_nacimiento ? fmtDate(p.fecha_nacimiento) : ''),
+      fichaField('Dirección', p.direccion),
+      fichaField('Profesión', p.profesion),
+      fichaField('Médico derivador', p.medico_derivador),
+      fichaField('Aseguradora', p.aseguradora),
+      fichaField('Alergias', p.alergias, true),
+      fichaField('Antecedentes', p.antecedentes, true),
+      fichaField('Observaciones', p.observaciones, true),
+    ].join('');
+  };
+
+  // Edit toggle
+  fichaEditToggle?.addEventListener('click', () => {
+    if (!fichaData?.paciente || !fichaDatosForm) return;
+    const p = fichaData.paciente;
+    if (fichaDatosView) fichaDatosView.hidden = true;
+    fichaDatosForm.hidden = false;
+    const fill = (name: string, val: string) => {
+      const el = fichaDatosForm.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (el) el.value = val || '';
+    };
+    fill('nombre', p.nombre); fill('apellidos', p.apellidos); fill('email', p.email);
+    fill('telefono', p.telefono); fill('dni', p.dni); fill('fecha_nacimiento', p.fecha_nacimiento);
+    fill('direccion', p.direccion); fill('profesion', p.profesion);
+    fill('medico_derivador', p.medico_derivador); fill('aseguradora', p.aseguradora);
+    fill('alergias', p.alergias); fill('antecedentes', p.antecedentes); fill('observaciones', p.observaciones);
+  });
+
+  fichaCancelEdit?.addEventListener('click', () => {
+    if (fichaDatosForm) fichaDatosForm.hidden = true;
+    if (fichaDatosView) fichaDatosView.hidden = false;
+  });
+
+  fichaDatosForm?.addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    if (!fichaPatientId) return;
+    const fd = new FormData(fichaDatosForm);
+    const body: any = {};
+    for (const [k, v] of fd.entries()) body[k] = (v as string) || null;
+    try {
+      await fetchJson(`${BACKEND_BASE}/api/pacientes/${fichaPatientId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      // Reload ficha
+      await openFichaPaciente(fichaPatientId);
+    } catch (err: any) {
+      alert(`Error al guardar: ${err?.message || 'desconocido'}`);
+    }
+  });
+
+  // Render citas
+  const renderFichaCitas = (citas: any[]) => {
+    if (!fichaCitasBody) return;
+    if (!citas.length) {
+      fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p></div></td></tr>';
+      return;
+    }
+    fichaCitasBody.innerHTML = citas.map((c: any) => {
+      const estado = c.estado || 'pendiente';
+      return `<tr><td>${c.fecha_hora ? fmtDate(c.fecha_hora) : '—'}</td><td><span class="status-chip ${estado}">${estado}</span></td><td>${escapeHtml(c.motivo || '—')}</td></tr>`;
+    }).join('');
+  };
+
+  // Render pagos
+  const renderFichaPagos = (pagos: any[]) => {
+    if (!fichaPagosBody) return;
+    if (!pagos.length) {
+      fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p></div></td></tr>';
+      if (fichaPagosTotal) fichaPagosTotal.textContent = '';
+      return;
+    }
+    fichaPagosBody.innerHTML = pagos.map((p: any) => {
+      const metodoClass = p.metodo_pago === 'tarjeta' ? 'pagos-stat-card' : 'pagos-stat-cash';
+      return `<tr><td>${fmtDate(p.fecha)}</td><td><strong>${Number(p.importe).toFixed(2)} €</strong></td><td><span class="${metodoClass}" style="font-weight:600">${p.metodo_pago}</span></td><td>${escapeHtml(p.concepto || '—')}</td></tr>`;
+    }).join('');
+    const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
+    if (fichaPagosTotal) fichaPagosTotal.textContent = `Total: ${total.toFixed(2)} €`;
+  };
+
+  // Render notas clínicas (timeline)
+  const evaClass = (v: number) => v <= 3 ? 'eva-low' : v <= 6 ? 'eva-mid' : 'eva-high';
+  const zonaLabels: Record<string, string> = {
+    cervical: 'Cervical', espalda: 'Espalda', hombro_brazo: 'Hombro/Brazo',
+    codo_mano: 'Codo/Mano', cadera: 'Cadera', rodilla: 'Rodilla',
+    tobillo_pie: 'Tobillo/Pie', abdomen_core: 'Abdomen/Core',
+    suelo_pelvico: 'Suelo pélvico', general: 'General',
+  };
+
+  const renderFichaNotas = (notas: any[]) => {
+    if (!fichaNotasTimeline) return;
+    if (!notas.length) {
+      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clínicas registradas</p>';
+      return;
+    }
+    fichaNotasTimeline.innerHTML = notas.map((n: any) => {
+      const zonaLabel = zonaLabels[n.zona_corporal] || n.zona_corporal || '';
+      const evaHtml = n.dolor_eva != null ? `<span class="ficha-nota-eva ${evaClass(n.dolor_eva)}">EVA ${n.dolor_eva}/10</span>` : '';
+      const zonaHtml = zonaLabel ? `<span class="ficha-nota-zona">${escapeHtml(zonaLabel)}</span>` : '';
+      const pruebasHtml = n.pruebas_realizadas ? `<div class="ficha-nota-pruebas">Pruebas: ${escapeHtml(n.pruebas_realizadas)}</div>` : '';
+      return `<div class="ficha-nota-card">
+        <div class="ficha-nota-actions">
+          <button title="Editar" data-action="edit-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded" style="font-size:1.1rem">edit</span></button>
+          <button title="Eliminar" data-action="delete-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded" style="font-size:1.1rem">delete</span></button>
+        </div>
+        <div class="ficha-nota-header">
+          <span class="ficha-nota-date">${fmtDate(n.fecha)}</span>
+          ${zonaHtml}${evaHtml}
+        </div>
+        <div class="ficha-nota-text">${escapeHtml(n.nota)}</div>
+        ${pruebasHtml}
+      </div>`;
+    }).join('');
+  };
+
+  // Nota actions (add / edit / delete)
+  fichaAddNota?.addEventListener('click', () => {
+    if (!fichaNotaFormCard || !fichaNotaForm) return;
+    fichaNotaForm.reset();
+    const notaIdInput = fichaNotaForm.querySelector('[name="nota_id"]') as HTMLInputElement;
+    if (notaIdInput) notaIdInput.value = '';
+    const fechaInput = fichaNotaForm.querySelector('[name="fecha"]') as HTMLInputElement;
+    if (fechaInput) fechaInput.value = new Date().toISOString().slice(0, 10);
+    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clínica';
+    fichaNotaFormCard.hidden = false;
+    fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  fichaNotaCancel?.addEventListener('click', () => {
+    if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
+  });
+
+  fichaNotaForm?.addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    if (!fichaPatientId) return;
+    const fd = new FormData(fichaNotaForm);
+    const notaId = fd.get('nota_id') as string;
+    const body: any = {
+      paciente_id: fichaPatientId,
+      fecha: fd.get('fecha') || new Date().toISOString().slice(0, 10),
+      zona_corporal: fd.get('zona_corporal') || null,
+      dolor_eva: fd.get('dolor_eva') ? Number(fd.get('dolor_eva')) : null,
+      nota: fd.get('nota') as string,
+      pruebas_realizadas: fd.get('pruebas_realizadas') || null,
+    };
+    try {
+      if (notaId) {
+        await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        });
+      } else {
+        await fetchJson(`${BACKEND_BASE}/api/notas-clinicas`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        });
+      }
+      if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
+      // Reload notas
+      const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
+      if (fichaData) fichaData.notas = notasPayload.data || [];
+      renderFichaNotas(fichaData?.notas || []);
+    } catch (err: any) {
+      alert(`Error: ${err?.message || 'no se pudo guardar la nota'}`);
+    }
+  });
+
+  // Delegate nota edit/delete clicks
+  fichaNotasTimeline?.addEventListener('click', async (e: Event) => {
+    const target = e.target as HTMLElement;
+    const btn = target.closest('button[data-action]') as HTMLButtonElement | null;
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const notaId = btn.getAttribute('data-nota-id');
+    if (!notaId || !fichaPatientId) return;
+
+    if (action === 'delete-nota') {
+      if (!confirm('¿Eliminar esta nota clínica?')) return;
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
+        const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
+        if (fichaData) fichaData.notas = notasPayload.data || [];
+        renderFichaNotas(fichaData?.notas || []);
+      } catch (err: any) {
+        alert(`Error: ${err?.message}`);
+      }
+    }
+
+    if (action === 'edit-nota') {
+      const nota = fichaData?.notas?.find((n: any) => n.id === notaId);
+      if (!nota || !fichaNotaForm || !fichaNotaFormCard) return;
+      fichaNotaForm.reset();
+      const fill = (name: string, val: string) => {
+        const el = fichaNotaForm.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+        if (el) el.value = val || '';
+      };
+      fill('nota_id', nota.id);
+      fill('fecha', nota.fecha);
+      fill('zona_corporal', nota.zona_corporal);
+      fill('dolor_eva', nota.dolor_eva != null ? String(nota.dolor_eva) : '');
+      fill('nota', nota.nota);
+      fill('pruebas_realizadas', nota.pruebas_realizadas);
+      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota clínica';
+      fichaNotaFormCard.hidden = false;
+      fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+
+  // Back button
+  document.getElementById('fichaBackBtn')?.addEventListener('click', () => {
+    navigateTo('pacientes');
+  });
+
+  // Intercept view-patient action to open ficha
+  pacientesBody?.addEventListener('click', (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest('button[data-action="view-patient"]') as HTMLButtonElement | null;
+    if (!btn) return;
+    const patientId = btn.getAttribute('data-patient-id');
+    if (patientId) {
+      event.stopPropagation();
+      openFichaPaciente(patientId);
+    }
+  }, true); // capture phase to intercept before existing handler
+
   // ===================== GESTORIA =====================
   const gestoriaBody = document.getElementById('gestoriaBody') as HTMLElement | null;
   const gestoriaHead = document.getElementById('gestoriaHead') as HTMLElement | null;
@@ -4498,6 +4902,154 @@ import Layout from '../layouts/Layout.astro';
   .pagos-toggle-opt input:checked + .pagos-chip {
     opacity: 1;
     border-color: currentColor;
+  }
+
+  /* === FICHA PACIENTE === */
+  .ficha-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 1.2rem;
+  }
+  .ficha-tab {
+    padding: 0.65rem 1.2rem;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .ficha-tab:hover { color: var(--text-primary); }
+  .ficha-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .ficha-panel { display: none; }
+  .ficha-panel.active { display: block; }
+
+  .ficha-datos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .ficha-dato {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .ficha-dato-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .ficha-dato-value {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    min-height: 1.4em;
+  }
+  .ficha-dato-value:empty::after { content: '—'; color: var(--text-muted); }
+  .ficha-dato-full { grid-column: 1 / -1; }
+
+  .ficha-form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  /* Timeline notas */
+  .ficha-timeline {
+    padding: 0.5rem 1rem 1rem;
+  }
+  .ficha-nota-card {
+    border-left: 3px solid var(--accent);
+    padding: 0.8rem 1rem;
+    margin-bottom: 1rem;
+    background: var(--bg-app);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    position: relative;
+  }
+  .ficha-nota-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .ficha-nota-date {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+  }
+  .ficha-nota-zona {
+    font-size: 0.75rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    font-weight: 600;
+  }
+  .ficha-nota-eva {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+  }
+  .eva-low { background: #dcfce7; color: #166534; }
+  .eva-mid { background: #fef9c3; color: #854d0e; }
+  .eva-high { background: #fee2e2; color: #991b1b; }
+  .ficha-nota-text {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+  .ficha-nota-pruebas {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .ficha-nota-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.3rem;
+  }
+  .ficha-nota-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    padding: 0.2rem;
+    border-radius: 4px;
+  }
+  .ficha-nota-actions button:hover { color: var(--accent); background: var(--accent-soft); }
+
+  .ficha-pagos-total {
+    padding: 0.8rem 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: right;
+    color: var(--text-primary);
+  }
+
+  .empty-inline {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+    font-size: 0.9rem;
   }
 
   /* === GESTORIA === */
