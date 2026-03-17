@@ -3306,15 +3306,35 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 ### Estado
 - Ambos workflows quedan endurecidos y validados como JSON.
 - Pendiente operativo: import/publicacion en n8n remoto (API create/update sigue devolviendo 500).
+---
 
+## [Sesion 38] - 2026-03-17 (Cockpit publicado + rail del copilot afinado)
+### Objetivo
+- Recuperar la fuente real del deploy, estabilizar el frontend visible en produccion y dejar el rail del agente utilizable para seguir evolucionando el producto desde ahi.
 
+### Cambios aplicados
+- Se alineo el trabajo local con `origin/main`, que era la fuente real del servicio `fisio-frontend`.
+- Se identifico que la URL publica habia estado sirviendo una build rota con markup corrupto y estilos heredados conflictivos.
+- Se rehizo y publico la home como cockpit de producto en `frontend/src/pages/index.astro`.
+- Se reforzo el rail del agente de ejercicios:
+  - cabecera clara con contraste correcto,
+  - badge de conexion legible,
+  - textarea mas compacto,
+  - estado vacio mas claro,
+  - auto-resize del composer limitado para no invadir el rail.
+- Se sincronizo tambien parte de la realidad de n8n:
+  - anadido `n8n/Fisio_IA_Agent/vnext/w5-calendar-reader.json`
+  - documentado el drift repo vs instancia viva en `docs/n8n/live_vs_repo_sync_20260317.md`
 
+### Verificaciones
+- `powershell -ExecutionPolicy Bypass -File .\scripts\frontend-local-build.ps1` -> OK
+- `npm run check` en `C:\Temp\Fisio_IA_Agent_frontend_local` -> `0 errors`, `0 warnings`, `11 hints`
 
+### Commits de sesion
+- `c0b0aa0` - `fix: repair cockpit and exercise copilot UI`
+- `7b9bf04` - `fix: improve copilot rail contrast and composer`
 
-
-
-
-
-
-
-
+### Estado al cierre
+- GitHub queda sincronizado en `origin/main`.
+- El siguiente paso exacto es redeploy de `fisio-frontend` para ver el ultimo ajuste del rail en la URL publica.
+- Despues de validar visualmente ese redeploy, la siguiente iteracion ya debe centrarse en funcionalidad real del agente de ejercicios, agenda online y automatizacion administrativa.

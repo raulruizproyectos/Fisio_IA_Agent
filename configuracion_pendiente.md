@@ -1496,11 +1496,24 @@ Tablas necesarias confirmadas:
 1. En UI n8n: anadir tag `Fisio_IA_Agent` a `Fisio_IA_Agent / Nucleo Agente` para que aparezcan 6/6 en carpeta.
 2. Importar/publicar desde repo los workflows endurecidos (`telegram-chat` y `fisio-agent-core`).
 3. Validar E2E W0->backend->reply y en paralelo preparar hardening W2/W3.
+## Actualizacion (2026-03-17, Cierre de sesion frontend/copilot)
+- GitHub queda sincronizado en `origin/main` hasta el commit `7b9bf04`.
+- El frontend publicado ya refleja el cockpit nuevo; el ultimo ajuste del rail del agente queda listo para verse tras redeploy de `fisio-frontend`.
+- Validacion cerrada fuera de Google Drive:
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\frontend-local-build.ps1` -> OK
+  - `npm run check` en `C:\Temp\Fisio_IA_Agent_frontend_local` -> `0 errors`, `0 warnings`, `11 hints`
+- Repo y n8n quedan mejor alineados:
+  - versionado `n8n/Fisio_IA_Agent/vnext/w5-calendar-reader.json`
+  - documentado drift en `docs/n8n/live_vs_repo_sync_20260317.md`
 
-
-
-
-
-
-
-
+## Pendiente inmediato actualizado (2026-03-17)
+1. Redeploy de `fisio-frontend` para publicar el ajuste final del rail del agente.
+2. Validar visualmente en la URL publica:
+   - contraste del titulo del copilot,
+   - badge `Conectado`,
+   - composer mas compacto,
+   - rail usable en portatil.
+3. Si el rail queda bien en produccion, retomar desarrollo funcional en este orden:
+   - agente de ejercicios,
+   - agenda online,
+   - intake/paciente y automatizacion administrativa.

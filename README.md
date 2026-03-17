@@ -182,7 +182,7 @@ node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<u
 - Estado detallado por sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
-- Checkpoint operativo: `docs/checkpoint_20260309_async_validation.md`
+- Checkpoint operativo: `docs/checkpoint_20260317_frontend_copilot_handoff.md`
 - AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis PROET: `docs/proet/platform_analysis_20260304.md`
 - Norma n8n obligatoria: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
 - Playbook de importaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n y smoke test n8n: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`
