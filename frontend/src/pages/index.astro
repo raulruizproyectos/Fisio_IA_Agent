@@ -113,19 +113,30 @@ import Layout from '../layouts/Layout.astro';
             <section class=”metrics-row clinical-metrics”>
               <div class=”metric-card metric-card-v2”>
                 <div class=”metric-icon metric-icon-blue”><span class=”material-symbols-rounded”>group</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricPacientes”>&mdash;</span><span class=”metric-label”>Pacientes Activos</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricPacientes”>&mdash;</span><span class=”metric-label”>Pacientes activos</span></div>
               </div>
               <div class=”metric-card metric-card-v2”>
                 <div class=”metric-icon metric-icon-emerald”><span class=”material-symbols-rounded”>event_available</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricSesiones”>&mdash;</span><span class=”metric-label”>Citas Hoy</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricSesiones”>&mdash;</span><span class=”metric-label”>Citas hoy</span></div>
               </div>
               <div class=”metric-card metric-card-v2”>
-                <div class=”metric-icon metric-icon-indigo”><span class=”material-symbols-rounded”>description</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricInformes”>0</span><span class=”metric-label”>Informes IA archivados</span></div>
+                <div class=”metric-icon metric-icon-green”><span class=”material-symbols-rounded”>euro</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricIngresosMes”>0 &euro;</span><span class=”metric-label”>Ingresos este mes</span></div>
               </div>
               <div class=”metric-card metric-card-v2”>
-                <div class=”metric-icon metric-icon-amber”><span class=”material-symbols-rounded”>monitoring</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricEngineOps”>0/0</span><span class=”metric-label”>Timeouts / Reintentos IA</span></div>
+                <div class=”metric-icon metric-icon-amber”><span class=”material-symbols-rounded”>receipt_long</span></div>
+                <div class=”metric-data”><span class=”metric-value” id=”metricSesionesMes”>0</span><span class=”metric-label”>Sesiones este mes</span></div>
+              </div>
+            </section>
+
+            <!-- Chart: Ingresos mensuales -->
+            <section class=”card widget-card dashboard-chart-card”>
+              <header class=”card-header”>
+                <h2>Ingresos mensuales</h2>
+                <span class=”chart-year-label” id=”dashChartYear”></span>
+              </header>
+              <div class=”dashboard-chart-wrap” id=”dashChartWrap”>
+                <canvas id=”dashIncomeChart” height=”180”></canvas>
               </div>
             </section>
 
@@ -1864,6 +1875,105 @@ import Layout from '../layouts/Layout.astro';
     const patientName = btn.getAttribute('data-patient-name') || '';
     openPatientHistory(patientId, patientName);
   });
+
+  // === DASHBOARD KPIs + CHART ===
+  let dashChartInstance: any = null;
+
+  const loadDashboardKPIs = async () => {
+    try {
+      const now = new Date();
+      const anio = now.getFullYear();
+      const mes = now.getMonth() + 1;
+      const resumen = await fetchJson(`${BACKEND_BASE}/api/pagos/resumen?anio=${anio}`);
+      const mesData = (resumen.resumen || []).find((r: any) => r.mes === mes);
+      const ingresosMes = mesData ? Number(mesData.total || 0) : 0;
+      const sesionesMes = mesData ? Number(mesData.sesiones || 0) : 0;
+
+      const elIngresos = document.getElementById('metricIngresosMes');
+      const elSesiones = document.getElementById('metricSesionesMes');
+      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} €`;
+      if (elSesiones) elSesiones.textContent = String(sesionesMes);
+
+      // Draw chart
+      const chartYear = document.getElementById('dashChartYear');
+      if (chartYear) chartYear.textContent = String(anio);
+
+      const canvas = document.getElementById('dashIncomeChart') as HTMLCanvasElement | null;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const efectivoData = new Array(12).fill(0);
+      const tarjetaData = new Array(12).fill(0);
+      for (const r of (resumen.resumen || [])) {
+        const idx = (r.mes || 1) - 1;
+        efectivoData[idx] = Number(r.efectivo || 0);
+        tarjetaData[idx] = Number(r.tarjeta || 0);
+      }
+
+      // Simple bar chart (no external library needed)
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = rect.height;
+      const pad = { top: 10, right: 10, bottom: 30, left: 50 };
+      const chartW = W - pad.left - pad.right;
+      const chartH = H - pad.top - pad.bottom;
+      const maxVal = Math.max(1, ...efectivoData.map((e, i) => e + tarjetaData[i]));
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+
+      const barW = chartW / 12;
+      const innerBar = barW * 0.6;
+
+      for (let i = 0; i < 12; i++) {
+        const x = pad.left + i * barW + (barW - innerBar) / 2;
+        const totalH = ((efectivoData[i] + tarjetaData[i]) / maxVal) * chartH;
+        const efH = (efectivoData[i] / maxVal) * chartH;
+        const tarH = (tarjetaData[i] / maxVal) * chartH;
+
+        // Tarjeta (bottom)
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(x, pad.top + chartH - totalH, innerBar, tarH);
+        // Efectivo (top)
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(x, pad.top + chartH - totalH + tarH, innerBar, efH);
+
+        // Month label
+        ctx.fillStyle = i === mes - 1 ? '#0f766e' : '#94a3b8';
+        ctx.font = i === mes - 1 ? 'bold 11px system-ui' : '11px system-ui';
+        ctx.fillText(meses[i], pad.left + i * barW + barW / 2, H - 8);
+      }
+
+      // Y axis labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px system-ui';
+      ctx.textAlign = 'right';
+      for (let v = 0; v <= maxVal; v += Math.ceil(maxVal / 4)) {
+        const y = pad.top + chartH - (v / maxVal) * chartH;
+        ctx.fillText(`${v}€`, pad.left - 6, y + 4);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(W - pad.right, y);
+        ctx.stroke();
+      }
+
+    } catch {
+      // silently fail — dashboard still usable
+    }
+  };
+
+  pageLoaders['dashboard'] = loadDashboardKPIs;
+  // Auto-load on first paint
+  loadDashboardKPIs();
 
   // === LOAD PACIENTES ===
   const loadPacientes = async () => {
@@ -4566,6 +4676,22 @@ import Layout from '../layouts/Layout.astro';
   .btn-chat:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* === DASHBOARD BOTTOM ROW === */
+  .dashboard-chart-card {
+    min-height: auto;
+  }
+  .dashboard-chart-wrap {
+    padding: 0.5rem 1rem 0.5rem 0.5rem;
+  }
+  .dashboard-chart-wrap canvas {
+    width: 100%;
+    height: 180px;
+  }
+  .chart-year-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .metric-icon-green { background: #dcfce7; color: #166534; }
   .dashboard-bottom-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
