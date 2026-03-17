@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Fisio IA Agent — CRM Clínico Inteligente">
+<Layout title="Fisio IA Agent - CRM Clinico Inteligente">
   <div class="app-shell">
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
@@ -10,7 +10,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="brand-icon-wrapper">
           <span class="brand-icon material-symbols-rounded">&#xf109;</span>
         </div>
-        <span class="brand-text">Fisio Platform</span>
+        <span class="brand-text">Fisio IA Agent</span>
       </div>
 
       <nav class="sidebar-nav">
@@ -99,80 +99,141 @@ import Layout from '../layouts/Layout.astro';
       <div class="workspace-shell">
         <main class="content">
         <!-- === PAGE: DASHBOARD === -->
-        <div class="page-section active" data-page="dashboard">
+                <div class="page-section active" data-page="dashboard">
           <div class="dashboard-layout">
-            
-            <!-- Hero Section -->
-            <section class=”hero-section”>
-              <div class=”hero-content”>
-                <h1 class=”hero-title”>Panel cl&iacute;nico de hoy</h1>
-                <p class=”hero-subtitle”>Supervisa pacientes, agenda y recomendaciones IA con trazabilidad cl&iacute;nica en tiempo real.</p>
+            <section class="hero-section cockpit-hero">
+              <div class="hero-panel-main">
+                <div class="hero-heading-stack">
+                  <span class="hero-eyebrow">Cockpit clinico inteligente</span>
+                  <h1 class="hero-title">Opera la clinica desde una sola vista</h1>
+                  <p class="hero-subtitle">Agenda, intake, seguimiento y agente de ejercicios en un cockpit pensado para fisioterapeutas que necesitan decidir y actuar rapido.</p>
+                </div>
+                <div class="hero-actions hero-action-row">
+                  <button class="btn-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
+                  <button class="btn-secondary" id="heroAgendaShortcutBtn" type="button"><span class="material-symbols-rounded">calendar_today</span> Abrir agenda</button>
+                  <button class="btn-ghost" id="heroNewPatientShortcutBtn" type="button"><span class="material-symbols-rounded">add</span> Alta express</button>
+                </div>
+                <div class="hero-signal-grid">
+                  <article class="signal-card">
+                    <span class="signal-kicker">Agenda online</span>
+                    <strong class="signal-value">Prepara la sesion desde la home.</strong>
+                    <p>Mueve citas, detecta huecos y salta al paciente sin perder el contexto clinico.</p>
+                  </article>
+                  <article class="signal-card">
+                    <span class="signal-kicker">Intake a decision</span>
+                    <strong class="signal-value">Convierte mensajes en siguiente accion.</strong>
+                    <p>La bandeja deja de ser solo lectura y pasa a ser triage operativo.</p>
+                  </article>
+                  <article class="signal-card">
+                    <span class="signal-kicker">Agente de ejercicios</span>
+                    <strong class="signal-value">Nuestro diferencial no es el chat, es el flujo.</strong>
+                    <p>Genera, archiva, exporta y da continuidad al plan dentro del historial real del paciente.</p>
+                  </article>
+                  <article class="signal-card">
+                    <span class="signal-kicker">Automatizacion</span>
+                    <strong class="signal-value">n8n + backend + Supabase trabajando juntos.</strong>
+                    <p>W1, W2, W3, Telegram y PDF ya forman parte del producto y deben verse asi.</p>
+                  </article>
+                </div>
               </div>
-              <div class=”hero-actions”>
-                <button class=”btn-primary btn-primary-teal” id=”heroAgentShortcutBtn”><span class=”material-symbols-rounded”>&#xea4a;</span> Nueva recomendaci&oacute;n</button>
+              <div class="hero-panel-side">
+                <article class="cockpit-side-card cockpit-side-card-agent">
+                  <span class="cockpit-side-kicker">Motor IA de ejercicios</span>
+                  <h2 class="cockpit-side-title">El copilot tiene que cerrar trabajo real</h2>
+                  <p>Selecciona paciente, pide el objetivo clinico, genera el plan y dejalo listo para PDF e historial. Ese es el salto de producto que tenemos que ganar.</p>
+                  <div class="cockpit-side-actions">
+                    <button class="btn-ghost" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">right_panel_open</span> Abrir copilot</button>
+                    <button class="btn-ghost" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Ver historial</button>
+                  </div>
+                </article>
+                <article class="cockpit-side-card">
+                  <span class="cockpit-side-kicker">Flujos prioritarios</span>
+                  <div class="ops-list">
+                    <div class="ops-item">
+                      <span>W1 Agenda</span>
+                      <strong>Cita, disponibilidad y preparacion de sesion desde CRM.</strong>
+                    </div>
+                    <div class="ops-item">
+                      <span>W2 Ejercicios</span>
+                      <strong>Recomendacion guiada conectada a Supabase y exportacion PDF.</strong>
+                    </div>
+                    <div class="ops-item">
+                      <span>W3 CRM trigger</span>
+                      <strong>Camino asincrono preparado para escalar la carga clinica.</strong>
+                    </div>
+                    <div class="ops-item">
+                      <span>Telegram</span>
+                      <strong>Seguimiento y continuidad fuera de consulta.</strong>
+                    </div>
+                  </div>
+                </article>
               </div>
             </section>
 
-            <!-- Metrics -->
-            <section class=”metrics-row clinical-metrics”>
-              <div class=”metric-card metric-card-v2”>
-                <div class=”metric-icon metric-icon-blue”><span class=”material-symbols-rounded”>&#xe7ef;</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricPacientes”>&mdash;</span><span class=”metric-label”>Pacientes activos</span></div>
-              </div>
-              <div class=”metric-card metric-card-v2”>
-                <div class=”metric-icon metric-icon-emerald”><span class=”material-symbols-rounded”>&#xe614;</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricSesiones”>&mdash;</span><span class=”metric-label”>Citas hoy</span></div>
-              </div>
-              <div class=”metric-card metric-card-v2”>
-                <div class=”metric-icon metric-icon-green”><span class=”material-symbols-rounded”>&#xea15;</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricIngresosMes”>0 &euro;</span><span class=”metric-label”>Ingresos este mes</span></div>
-              </div>
-              <div class=”metric-card metric-card-v2”>
-                <div class=”metric-icon metric-icon-amber”><span class=”material-symbols-rounded”>&#xef6b;</span></div>
-                <div class=”metric-data”><span class=”metric-value” id=”metricSesionesMes”>0</span><span class=”metric-label”>Sesiones este mes</span></div>
-              </div>
+            <section class="metrics-row clinical-metrics">
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(15, 118, 110, 0.1); color: var(--accent);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">&mdash;</span><span class="metric-label">Pacientes activos</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">&mdash;</span><span class="metric-label">Citas hoy</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Planes archivados</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">monitoring</span></div><div class="metric-data"><span class="metric-value" id="metricEngineOps">0/0</span><span class="metric-label">Timeouts / reintentos IA</span></div></div>
             </section>
 
-            <!-- Chart: Ingresos mensuales -->
-            <section class=”card widget-card dashboard-chart-card”>
-              <header class=”card-header”>
-                <h2>Ingresos mensuales</h2>
-                <span class=”chart-year-label” id=”dashChartYear”></span>
-              </header>
-              <div class=”dashboard-chart-wrap” id=”dashChartWrap”>
-                <canvas id=”dashIncomeChart” height=”180”></canvas>
-              </div>
+            <section class="dashboard-ops-grid">
+              <article class="cockpit-block">
+                <header class="cockpit-block-head">
+                  <div class="cockpit-block-copy">
+                    <span class="hero-eyebrow">Arquitectura operativa</span>
+                    <h2>Malla real del producto</h2>
+                  </div>
+                </header>
+                <div class="workflow-stack">
+                  <div class="workflow-row"><span class="workflow-tag">n8n</span><p>Orquesta agenda, Telegram, intake y activacion del agente.</p></div>
+                  <div class="workflow-row"><span class="workflow-tag">Backend</span><p>Expone CRM, historial, PDF, citas, pagos y puntos de integracion.</p></div>
+                  <div class="workflow-row"><span class="workflow-tag">Supabase</span><p>Persistencia, jobs y funciones que convierten el agente de ejercicios en una capacidad de producto.</p></div>
+                </div>
+              </article>
+              <article class="cockpit-block">
+                <header class="cockpit-block-head">
+                  <div class="cockpit-block-copy">
+                    <span class="hero-eyebrow">Accesos clinicos reales</span>
+                    <h2>Trabaja por flujo, no por menu</h2>
+                  </div>
+                </header>
+                <div class="command-grid">
+                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-kicker">Admision</span><strong>Alta guiada de paciente</strong><p>Registra y deja todo listo para historial, chat y seguimiento.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-kicker">Agenda</span><strong>Crear o mover cita</strong><p>Salta a la agenda sin pasar por menus intermedios.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-kicker">Triage</span><strong>Vaciar bandeja entrante</strong><p>Convierte mensajes pendientes en respuesta o siguiente accion clinica.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-kicker">Ejercicios</span><strong>Abrir motor IA</strong><p>Pide el programa, revisa el plan y dejalo listo para exportacion.</p></button>
+                </div>
+              </article>
             </section>
 
-            <!-- Bottom Row: Citas y Actividad -->
             <div class="dashboard-bottom-row">
               <section class="card widget-card">
                 <header class="card-header">
                   <h2>Agenda inmediata</h2>
-                  <button class="btn-ghost" onclick="document.querySelector('[data-section=\'citas\']').click()"><span class="material-symbols-rounded">&#xe5c8;</span> Ver todas</button>
+                  <button class="btn-ghost" type="button" data-dashboard-nav="citas"><span class="material-symbols-rounded">arrow_forward</span> Ver todas</button>
                 </header>
                 <div class="widget-body list-clean" id="dashCitasBody">
                   <div class="empty-state-sm state-loading">
-                    <span class="material-symbols-rounded">&#xe627;</span>
+                    <span class="material-symbols-rounded">update</span>
                     <p>Actualizando agenda...</p>
                   </div>
                 </div>
               </section>
-              
+
               <section class="card widget-card">
                 <header class="card-header">
                   <h2>Mensajes de pacientes</h2>
-                  <button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">&#xe5d5;</span></button>
+                  <button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span></button>
                 </header>
                 <div class="widget-body list-clean" id="intakeBody">
                   <div class="empty-state-sm state-loading">
-                    <span class="material-symbols-rounded">&#xe627;</span>
+                    <span class="material-symbols-rounded">update</span>
                     <p>Actualizando bandeja...</p>
                   </div>
                 </div>
               </section>
             </div>
-
           </div>
         </div>
 
@@ -816,7 +877,7 @@ import Layout from '../layouts/Layout.astro';
                   <span class="status-text" id="agentStatusText">CONECTADO</span>
                 </div>
               </div>
-              <h2>Asistente cl&iacute;nico IA</h2>
+              <h2>Motor de ejercicios IA</h2>
             </div>
             <div class="assistant-rail-tools">
               <button type="button" class="assistant-rail-close" id="assistantRailClose" aria-label="Cerrar copilot">
@@ -836,27 +897,46 @@ import Layout from '../layouts/Layout.astro';
                 </div>
                 <div class="assistant-live-context" aria-live="polite">
                   <strong id="assistantPatientLabel">Sin paciente seleccionado</strong>
-                  <p id="assistantPatientMeta">Selecciona uno para vincular la conversacion, el plan y el PDF a su historial.</p>
+                  <p id="assistantPatientMeta">Selecciona uno para vincular la conversacion, el plan, el PDF y el seguimiento a su historial.</p>
                 </div>
               </div>
 
-              <div class="assistant-dialog-surface">
+                            <div class="assistant-dialog-surface">
+                <div class="assistant-focus-grid">
+                  <article class="assistant-focus-card">
+                    <span class="assistant-focus-kicker">Pipeline activo del copilot</span>
+                    <strong>Paciente, plan, PDF e historial dentro del mismo flujo.</strong>
+                    <p>El objetivo es que el fisioterapeuta pueda decidir, generar y dejar rastro clinico sin salir del rail.</p>
+                  </article>
+                </div>
+
+                <div class="assistant-workflow-strip">
+                  <span>Usa el rail para generar ejercicios, responder dudas, preparar seguimiento o dejar el caso listo para exportacion.</span>
+                  <button type="button" class="btn-link-inline" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Abrir historial</button>
+                </div>
+
+                <div class="assistant-shortcuts">
+                  <button type="button" class="assistant-chip" data-assistant-prompt="Genera un plan inicial para dolor lumbar con progresion de 3 semanas."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
+                  <button type="button" class="assistant-chip" data-assistant-prompt="Resume el objetivo de la siguiente sesion y que revisar en consulta."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
+                  <button type="button" class="assistant-chip" data-assistant-prompt="Redacta un mensaje claro para explicar el plan al paciente."><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
+                </div>
+
                 <div class="chat-log" id="chatLog"></div>
 
                 <form id="agentForm" class="ai-input-area">
                   <div class="assistant-action-grid">
-                    <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">&#xe415;</span> Guardar PDF</button>
-                    <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">&#xec1c;</span> Generar Plan</button>
+                    <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">picture_as_pdf</span> Guardar PDF</button>
+                    <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
                   </div>
                   <div class="assistant-composer-shell">
                     <div class="ai-textarea-wrapper">
-                      <textarea id="agentInput" rows="1" placeholder="Escribe al asistente..."></textarea>
+                      <textarea id="agentInput" rows="1" placeholder="Escribe objetivos, dolor, restricciones o pide un programa..."></textarea>
                     </div>
                     <button type="submit" class="btn-action btn-chat btn-send-compact" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)">
-                      <span class="material-symbols-rounded">&#xe5d8;</span>
+                      <span class="material-symbols-rounded">arrow_upward</span>
                     </button>
                   </div>
-                  <p class="assistant-disclaimer">El asistente puede cometer errores. Verifica siempre la informaci&oacute;n m&eacute;dica.</p>
+                  <p class="assistant-disclaimer">El asistente puede cometer errores. Verifica siempre la informacion medica.</p>
                 </form>
               </div>
             </section>
@@ -904,6 +984,11 @@ import Layout from '../layouts/Layout.astro';
   const templatesBody = document.getElementById('templatesBody') as HTMLElement | null;
   const templateTargetPatient = document.getElementById('templateTargetPatient') as HTMLSelectElement | null;
   const chatPatientSelect = document.getElementById('chatPatientSelect') as HTMLSelectElement | null;
+  const heroAgendaShortcutBtn = document.getElementById('heroAgendaShortcutBtn') as HTMLButtonElement | null;
+  const heroNewPatientShortcutBtn = document.getElementById('heroNewPatientShortcutBtn') as HTMLButtonElement | null;
+  const dashboardNavButtons = document.querySelectorAll('[data-dashboard-nav]') as NodeListOf<HTMLElement>;
+  const dashboardActionButtons = document.querySelectorAll('[data-dashboard-action]') as NodeListOf<HTMLElement>;
+  const assistantPromptButtons = document.querySelectorAll('[data-assistant-prompt]') as NodeListOf<HTMLButtonElement>;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
@@ -1294,6 +1379,43 @@ import Layout from '../layouts/Layout.astro';
   heroAgentShortcutBtn?.addEventListener('click', () => {
     openAssistantRail();
     input?.focus();
+  });
+  heroAgendaShortcutBtn?.addEventListener('click', () => navigateTo('citas'));
+  heroNewPatientShortcutBtn?.addEventListener('click', () => openPatientModal());
+  dashboardNavButtons.forEach((button) => {
+    button.addEventListener('click', (event: Event) => {
+      event.preventDefault();
+      const section = (button as HTMLElement).dataset.dashboardNav;
+      if (!section) return;
+      navigateTo(section);
+      if (isMobile()) closeSidebar();
+    });
+  });
+  dashboardActionButtons.forEach((button) => {
+    button.addEventListener('click', (event: Event) => {
+      event.preventDefault();
+      const action = (button as HTMLElement).dataset.dashboardAction;
+      if (action === 'open-copilot') {
+        openAssistantRail();
+        input?.focus();
+        return;
+      }
+      if (action === 'new-patient') {
+        openPatientModal();
+      }
+    });
+  });
+  assistantPromptButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const prompt = button.dataset.assistantPrompt || '';
+      openAssistantRail();
+      if (input) {
+        input.value = prompt;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    });
   });
 
   // Close sidebar on nav click (mobile)
@@ -7527,4 +7649,243 @@ import Layout from '../layouts/Layout.astro';
       min-height: 2.1rem;
     }
   }
+
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 3rem;
+    padding: 0.82rem 1.15rem;
+    border: 1px solid #bfd8e3;
+    border-radius: 0.95rem;
+    background: linear-gradient(180deg, #ffffff 0%, #eff7fa 100%);
+    color: #13405e;
+    font-weight: 700;
+    box-shadow: 0 12px 22px -22px rgba(15, 23, 42, 0.34);
+    transition: transform 160ms ease-out, box-shadow 160ms ease-out, border-color 160ms ease-out;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-1px);
+    border-color: #a9cbd9;
+    box-shadow: 0 18px 28px -24px rgba(15, 23, 42, 0.36);
+  }
+
+  .cockpit-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(18rem, 0.95fr);
+    gap: 1.2rem;
+  }
+
+  .hero-panel-main,
+  .hero-panel-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .hero-heading-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .hero-eyebrow,
+  .signal-kicker,
+  .cockpit-side-kicker,
+  .command-tile-kicker,
+  .assistant-focus-kicker,
+  .workflow-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #0f766e;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero-action-row,
+  .cockpit-side-actions,
+  .assistant-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .hero-signal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .signal-card,
+  .cockpit-side-card,
+  .cockpit-block,
+  .assistant-focus-card {
+    border: 1px solid #d9e7ee;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 16px 32px -28px rgba(15, 23, 42, 0.2);
+  }
+
+  .signal-card,
+  .cockpit-side-card,
+  .cockpit-block,
+  .assistant-focus-card {
+    padding: 1rem;
+  }
+
+  .signal-card,
+  .cockpit-side-card,
+  .assistant-focus-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .signal-value,
+  .cockpit-side-title,
+  .command-tile strong,
+  .assistant-focus-card strong {
+    color: #10233d;
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .signal-card p,
+  .cockpit-side-card p,
+  .command-tile p,
+  .assistant-focus-card p,
+  .workflow-row p {
+    margin: 0;
+    color: #647b90;
+    line-height: 1.55;
+  }
+
+  .dashboard-ops-grid,
+  .assistant-focus-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .command-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .command-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.42rem;
+    padding: 1rem;
+    border: 1px solid #d6e5ed;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f5fafc 100%);
+    text-align: left;
+    transition: transform 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out;
+  }
+
+  .command-tile:hover {
+    transform: translateY(-1px);
+    border-color: #b8d4df;
+    box-shadow: 0 18px 30px -24px rgba(15, 23, 42, 0.24);
+  }
+
+  .ops-list,
+  .workflow-stack {
+    display: grid;
+    gap: 0.72rem;
+  }
+
+  .ops-item,
+  .workflow-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #d9e6ed;
+    border-radius: 0.95rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f6fafb 100%);
+  }
+
+  .ops-item span {
+    color: #6d8297;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .ops-item strong {
+    color: #10233d;
+    font-size: 0.96rem;
+    line-height: 1.35;
+  }
+
+  .assistant-workflow-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.8rem 0.9rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid #d8e5ed;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.82);
+    color: #5f7488;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .assistant-chip,
+  .btn-link-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.3rem;
+    padding: 0.58rem 0.8rem;
+    border: 1px solid #cde0ea;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #13405e;
+    font-weight: 700;
+    transition: transform 160ms ease-out, border-color 160ms ease-out, background-color 160ms ease-out;
+  }
+
+  .assistant-chip:hover,
+  .btn-link-inline:hover {
+    border-color: #a8c9d8;
+    background: #ffffff;
+  }
+
+  @media (max-width: 1180px) {
+    .cockpit-hero,
+    .command-grid,
+    .hero-signal-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-action-row,
+    .cockpit-side-actions,
+    .assistant-shortcuts,
+    .assistant-workflow-strip {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .btn-secondary,
+    .assistant-chip,
+    .btn-link-inline {
+      width: 100%;
+    }
+  }
+
 </style>
