@@ -76,7 +76,7 @@ router.post('/:id/usar', async (req, res, next) => {
 router.patch('/:id', async (req, res, next) => {
   try {
     const allowed = ['nombre', 'sesiones_total', 'precio', 'estado', 'fecha_caducidad', 'notas'];
-    const fields: any = {};
+    const fields = {};
     for (const k of allowed) if (req.body[k] !== undefined) fields[k] = req.body[k];
     fields.updated_at = new Date().toISOString();
     const { data, error } = await supabase
