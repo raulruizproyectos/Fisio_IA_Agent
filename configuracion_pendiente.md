@@ -1,36 +1,37 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
-## Estado actual (2026-03-17, Sesion 103) - CRM profesional: ficha paciente, notas clinicas, KPIs, pagos, gestoria.
+## Estado actual (2026-03-17, Sesion 103) - CRM profesional completo: 5/9 roadmap completado.
 
 ### Completado sesion 103
 - [x] Fix FK pagos: filtro pacientes legacy en modal de pago.
 - [x] Ficha paciente enriquecida: 13 campos, 4 pestañas (datos, notas, citas, pagos).
 - [x] Notas clinicas: timeline con EVA, zona corporal, pruebas. CRUD completo.
 - [x] Dashboard KPIs: ingresos mes, sesiones mes, grafico barras apiladas.
+- [x] Recordatorios 24h automaticos: endpoint + mensaje Telegram con fecha/hora/motivo.
+- [x] Facturacion PDF: tabla crm_facturas, numeracion secuencial, PDF con pdfkit, IVA configurable.
 - [x] Benchmarking 7 competidores, plan de mejora de 9 puntos.
 
-### Completado sesiones 101-102
-- [x] Pagos + Gestoria, zona_corporal normalizada, overlap check, nombre real Calendar.
-
 ### Acciones requeridas antes de probar
-1. **Ejecutar migration 008** en Supabase SQL Editor (`database/migrations/008_ficha_paciente_enriquecida.sql`).
-2. **Rebuild frontend+backend en EasyPanel** (commit `d901d70`).
+1. **Ejecutar migration 009** en Supabase SQL Editor (`database/migrations/009_crm_facturas.sql`).
+2. **Rebuild frontend+backend en EasyPanel** (commit `b5cd17f`).
+3. Configurar scheduler para recordatorios (n8n Schedule Trigger → POST /api/cron/recordatorios cada hora).
+4. Configurar `TELEGRAM_PATIENT_BOT_TOKEN` en EasyPanel si no esta.
 
 ### Siguiente paso exacto
-1. Ejecutar migration 008 en Supabase.
+1. Ejecutar migration 009 en Supabase.
 2. Rebuild en EasyPanel.
-3. Probar ficha paciente: "Ver" → pestañas → editar datos → crear nota clinica.
-4. Probar dashboard KPIs y grafico con pagos existentes.
-5. **Roadmap**: Recordatorios 24h Telegram → Facturacion PDF → Firma digital.
+3. Probar facturacion: generar factura desde pagos → descargar PDF.
+4. Probar ficha paciente: editar datos → crear nota clinica.
+5. **Roadmap siguiente**: Firma digital → Bonos → Reserva online.
 
-### Roadmap competitivo
+### Roadmap competitivo (5/9 completado)
 | # | Mejora | Estado |
 |---|--------|--------|
 | 1 | Ficha paciente enriquecida + vista unificada | ✅ |
 | 2 | Dashboard KPIs financieros + grafico | ✅ |
 | 3 | Notas de evolucion clinica (timeline) | ✅ |
-| 4 | Recordatorios 24h automaticos via Telegram | Pendiente |
-| 5 | Facturacion PDF con datos fiscales | Pendiente |
+| 4 | Recordatorios 24h automaticos via Telegram | ✅ |
+| 5 | Facturacion PDF con datos fiscales | ✅ |
 | 6 | Firma digital consentimientos | Pendiente |
 | 7 | Bonos / paquetes de sesiones | Pendiente |
 | 8 | Reserva online publica | Pendiente |

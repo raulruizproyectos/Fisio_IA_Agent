@@ -35,22 +35,39 @@ Benchmarking contra TuFisio, FisioSalus, Fibbel, iFisia, iGaleno, Nubimed, Docfa
 - DB: ⚠️ usuario debe ejecutar migration 008 en Supabase SQL Editor
 - Backend: ✅ endpoints ficha + notas clinicas + pagos + gestoria
 - Frontend: ✅ dashboard KPIs + ficha paciente con tabs + notas clinicas
-- GitHub: ✅ todo pusheado (`d901d70`)
+- GitHub: ✅ todo pusheado (`b5cd17f`)
 - EasyPanel: ⚠️ rebuild necesario para frontend+backend
+- DB: ⚠️ ejecutar migrations 008 (✅ hecha) + 009 (pendiente) en Supabase
 
 ### Commits de sesion
 - `3431fea` — fix(pagos): filter legacy patients from payment modal
 - `eaa04da` — feat(ficha): enriched patient profile with tabs, clinical notes timeline
 - `d901d70` — feat(dashboard): add financial KPIs and monthly income chart
+- `9d2ca43` — feat(reminders): 24h automatic appointment reminders via Telegram
+- `b5cd17f` — feat(invoices): PDF invoice generation with fiscal data
 
-### Plan de mejora (roadmap competitivo)
+### Trabajo adicional (post-benchmarking)
+
+**Feature: Recordatorios 24h automaticos (commit `9d2ca43`)**
+- [x] Endpoint POST /api/cron/recordatorios: busca citas en ventana 23-25h, envia recordatorio via bot pacientes.
+- [x] GET /api/cron/recordatorios/preview: dry-run para ver que se enviaria.
+- [x] Mensaje con fecha, hora Madrid, motivo. Necesita scheduler externo (n8n o cron).
+
+**Feature: Facturacion PDF (commit `b5cd17f`)**
+- [x] Migration 009: tabla crm_facturas (numero UNIQUE, lineas JSONB, IVA, totales, estado).
+- [x] Backend: GET /facturas (lista), POST /facturas (crea desde pagos), GET /facturas/:id/pdf (genera PDF).
+- [x] PDF incluye: cabecera clinica, datos fiscales paciente (DNI, direccion), lineas detalle, base + IVA + total.
+- [x] Numeracion secuencial FACT-YYYY-NNNN.
+- [x] Frontend: seccion Facturacion en sidebar, tabla facturas, modal generar desde pagos, descarga PDF.
+
+### Roadmap competitivo (actualizado)
 | # | Mejora | Estado |
 |---|--------|--------|
-| 1 | Ficha paciente enriquecida + vista unificada | ✅ Hecho |
-| 2 | Dashboard con KPIs financieros + grafico | ✅ Hecho |
-| 3 | Notas de evolucion clinica (timeline) | ✅ Hecho |
-| 4 | Recordatorios 24h automaticos via Telegram | Pendiente |
-| 5 | Facturacion PDF con datos fiscales | Pendiente |
+| 1 | Ficha paciente enriquecida + vista unificada | ✅ |
+| 2 | Dashboard KPIs financieros + grafico | ✅ |
+| 3 | Notas de evolucion clinica (timeline) | ✅ |
+| 4 | Recordatorios 24h automaticos via Telegram | ✅ |
+| 5 | Facturacion PDF con datos fiscales | ✅ |
 | 6 | Firma digital consentimientos | Pendiente |
 | 7 | Bonos / paquetes de sesiones | Pendiente |
 | 8 | Reserva online publica | Pendiente |
