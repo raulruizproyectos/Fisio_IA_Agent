@@ -14,7 +14,7 @@ body { font-family: sans-serif; padding: 2rem; }
 <h1>Material Symbols Test</h1>
 
 <div class="test">
-<h3>Test 1: Class from material-symbols.css</h3>
+<h3>Test 1: Solo material-symbols.css (funciona)</h3>
 <span class="material-symbols-rounded">home</span>
 <span class="material-symbols-rounded">group</span>
 <span class="material-symbols-rounded">euro</span>
@@ -23,30 +23,76 @@ body { font-family: sans-serif; padding: 2rem; }
 <span class="material-symbols-rounded">event_available</span>
 </div>
 
-<div class="test">
-<h3>Test 2: Inline style (bypass all CSS)</h3>
-<span style="font-family:'Material Symbols Rounded'; font-feature-settings:'liga'; font-size:24px;">home</span>
-<span style="font-family:'Material Symbols Rounded'; font-feature-settings:'liga'; font-size:24px;">group</span>
-<span style="font-family:'Material Symbols Rounded'; font-feature-settings:'liga'; font-size:24px;">euro</span>
+<div class="test" id="test2">
+<h3>Test 2: + Astro compiled CSS loaded (click to load)</h3>
+<span class="material-symbols-rounded">home</span>
+<span class="material-symbols-rounded">group</span>
+<span class="material-symbols-rounded">euro</span>
+<span class="material-symbols-rounded">psychology</span>
+<span class="material-symbols-rounded">receipt_long</span>
+<span class="material-symbols-rounded">event_available</span>
+<br><button onclick="loadAstroCSS()">Load Astro CSS</button>
 </div>
 
 <div class="test">
-<h3>Test 3: Unicode code points (bypass ligatures)</h3>
-<span class="material-symbols-rounded">&#xe88a;</span>
-<span class="material-symbols-rounded">&#xe7ef;</span>
-<span class="material-symbols-rounded">&#xea58;</span>
+<h3>Test 3: Simula estructura CRM (metric-card)</h3>
+<div class="metric-card metric-card-v2">
+  <div class="metric-icon metric-icon-blue"><span class="material-symbols-rounded">group</span></div>
+</div>
+<div class="metric-card metric-card-v2">
+  <div class="metric-icon metric-icon-emerald"><span class="material-symbols-rounded">event_available</span></div>
+</div>
+<div class="metric-card metric-card-v2">
+  <div class="metric-icon metric-icon-green"><span class="material-symbols-rounded">euro</span></div>
+</div>
 </div>
 
 <div class="test">
-<h3>Test 4: Google Fonts CDN (independent load)</h3>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap">
-<span style="font-family:'Material Symbols Rounded'; font-feature-settings:'liga'; font-size:24px;" class="gf-test">home</span>
-<span style="font-family:'Material Symbols Rounded'; font-feature-settings:'liga'; font-size:24px;" class="gf-test">group</span>
-<span style="font-family:'Material Symbols Rounded'; font-feature-settings:'liga'; font-size:24px;" class="gf-test">euro</span>
+<h3>Test 4: Computed styles check</h3>
+<span class="material-symbols-rounded" id="checkIcon">home</span>
+<pre id="computedInfo"></pre>
 </div>
 
 <script>
+function loadAstroCSS() {
+  // Find the actual Astro CSS filename from the main page
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  // We'll try to find it dynamically
+  fetch('/').then(r => r.text()).then(html => {
+    const match = html.match(/\/_astro\/index\.[^"]+\.css/);
+    if (match) {
+      link.href = match[0];
+      document.head.appendChild(link);
+      document.getElementById('test2').querySelector('h3').textContent =
+        'Test 2: + Astro CSS loaded: ' + match[0];
+      setTimeout(() => {
+        // Check if icons still render
+        const span = document.getElementById('test2').querySelector('.material-symbols-rounded');
+        const cs = getComputedStyle(span);
+        alert('After Astro CSS:\nfont-family: ' + cs.fontFamily + '\nfont-feature-settings: ' + cs.fontFeatureSettings);
+      }, 1000);
+    } else {
+      alert('Could not find Astro CSS file');
+    }
+  });
+}
+
+// Show computed styles for the check icon
 document.fonts.ready.then(() => {
+  const el = document.getElementById('checkIcon');
+  const cs = getComputedStyle(el);
+  const info = document.getElementById('computedInfo');
+  info.textContent =
+    'font-family: ' + cs.fontFamily + '\n' +
+    'font-feature-settings: ' + cs.fontFeatureSettings + '\n' +
+    'font-variant-ligatures: ' + cs.fontVariantLigatures + '\n' +
+    'font-size: ' + cs.fontSize + '\n' +
+    'font-weight: ' + cs.fontWeight + '\n' +
+    'display: ' + cs.display + '\n' +
+    'rendered width: ' + el.offsetWidth + 'px (icon=24px, text=wider)';
+
+  // Font status
   const status = document.createElement('div');
   status.style.cssText = 'margin:1rem 0;padding:1rem;border:2px solid green;background:#e8f5e9;';
   let html = '<h3>Font Status:</h3><ul>';
