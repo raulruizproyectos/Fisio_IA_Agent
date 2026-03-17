@@ -4343,7 +4343,7 @@ import Layout from '../layouts/Layout.astro';
   .brand-icon {
     font-size: 18px;
     color: #ffffff;
-    font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
   .brand-text {
     font-weight: 700;
@@ -4399,7 +4399,7 @@ import Layout from '../layouts/Layout.astro';
     box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
   }
   .nav-item.active .material-symbols-rounded {
-    font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
   .nav-item-agent {
     color: var(--sidebar-text);
@@ -4713,7 +4713,7 @@ import Layout from '../layouts/Layout.astro';
     flex-direction: column;
     border-radius: 1.45rem;
     border: 1px solid rgba(203, 213, 225, 0.96);
-    background: linear-gradient(180deg, #fdfefe, #f3f7fb 58%, #eef3f7 100%);
+    background: #f8fafc;
     box-shadow: 0 20px 48px rgba(15, 23, 42, 0.12);
     overflow: hidden;
   }
@@ -4722,9 +4722,9 @@ import Layout from '../layouts/Layout.astro';
     flex-shrink: 0;
     align-items: flex-start;
     gap: 1rem;
-    padding: 1rem 1.25rem 0.85rem;
-    background: linear-gradient(180deg, #ffffff, #f5f9fc);
-    border-bottom: 1px solid rgba(203, 213, 225, 0.92);
+    padding: 1rem 1.25rem 0.9rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 60%, #0d3241 100%);
+    border-bottom: 2px solid #0f9f98;
   }
 
   .assistant-rail-copy {
@@ -4957,7 +4957,7 @@ import Layout from '../layouts/Layout.astro';
   }
   .metric-card-v2 .metric-icon .material-symbols-rounded {
     font-size: clamp(20px, 1.8vw, 24px);
-    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
   .metric-card-v2 .metric-value {
     font-size: clamp(1.4rem, 1.8vw, 1.75rem);
@@ -6999,7 +6999,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .assistant-eyebrow {
-    color: #0f766e;
+    color: #5eead4;
     letter-spacing: 0.2em;
     font-size: 0.625rem;
     font-weight: 800;
@@ -7019,7 +7019,8 @@ import Layout from '../layouts/Layout.astro';
     align-items: center;
     gap: 0.35rem;
     padding: 0.2rem 0.55rem;
-    background: #ecfdf5;
+    background: rgba(15, 159, 152, 0.2);
+    border: 1px solid rgba(94, 234, 212, 0.3);
     border-radius: 9999px;
   }
 
@@ -7028,7 +7029,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .assistant-connected-badge .status-text {
-    color: #047857;
+    color: #5eead4;
     font-size: 0.58rem;
     font-weight: 800;
     letter-spacing: 0.14em;
@@ -7036,7 +7037,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .assistant-rail-copy h2 {
-    color: #1e293b;
+    color: #f1f5f9;
     font-size: 0.95rem;
     font-weight: 800;
     line-height: 1.1;
@@ -7506,9 +7507,9 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .assistant-rail-close {
-    background: #ffffff !important;
-    border-color: #e2e8f0 !important;
-    color: #475569 !important;
+    background: rgba(255,255,255,0.08) !important;
+    border-color: rgba(255,255,255,0.15) !important;
+    color: #cbd5e1 !important;
   }
 
   @media (max-width: 1100px) {
