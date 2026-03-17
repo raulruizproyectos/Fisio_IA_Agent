@@ -1,5 +1,63 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 103 - 2026-03-17
+
+### Objetivo
+Evolucion del CRM hacia software profesional de gestion de clinicas de fisioterapia.
+Benchmarking contra TuFisio, FisioSalus, Fibbel, iFisia, iGaleno, Nubimed, Docfav.
+
+### Trabajo realizado
+
+**Fix pagos FK constraint (commit `3431fea`)**
+- [x] Bug: select de pacientes en modal de pagos incluia pacientes legacy cuyo UUID no existia en crm_pacientes. FK violation al guardar.
+- [x] Fix: filtro `_source !== 'legacy'` en `populatePagoPacienteSelect`.
+
+**Feature: Ficha de paciente enriquecida (commit `eaa04da`)**
+- [x] Migration 008: nuevos campos en crm_pacientes (DNI, direccion, profesion, medico_derivador, aseguradora, alergias, antecedentes).
+- [x] Nueva tabla `crm_notas_clinicas` (notas de evolucion por sesion con fecha, zona_corporal, dolor EVA, nota, pruebas).
+- [x] Backend: GET /pacientes/:id/ficha (paciente + citas + pagos + notas en una llamada), PATCH /pacientes/:id (editar campos enriquecidos), CRUD /notas-clinicas.
+- [x] Frontend: pagina de detalle con 4 pestañas:
+  - **Datos personales**: vista lectura + formulario edicion con 13 campos.
+  - **Notas clinicas**: timeline visual con EVA colorizado (verde/amarillo/rojo), zona corporal, pruebas. CRUD inline.
+  - **Historial citas**: tabla con estado (chip) y motivo.
+  - **Historial pagos**: tabla con totales acumulados.
+
+**Feature: Dashboard con KPIs financieros (commit `d901d70`)**
+- [x] Metricas: ingresos del mes, sesiones del mes (reemplazaron metricas genericas).
+- [x] Grafico de barras apiladas (efectivo verde + tarjeta azul) por mes — canvas puro, sin dependencias.
+- [x] Auto-carga al abrir el dashboard.
+
+**Benchmarking competidores**
+- [x] Analisis de 7 plataformas: TuFisio, FisioSalus, Fibbel, iFisia, iGaleno, Nubimed, Docfav.
+- [x] Plan de mejora de 9 puntos priorizado (ver MEMORY.md).
+
+### Estado al cierre
+- DB: ⚠️ usuario debe ejecutar migration 008 en Supabase SQL Editor
+- Backend: ✅ endpoints ficha + notas clinicas + pagos + gestoria
+- Frontend: ✅ dashboard KPIs + ficha paciente con tabs + notas clinicas
+- GitHub: ✅ todo pusheado (`d901d70`)
+- EasyPanel: ⚠️ rebuild necesario para frontend+backend
+
+### Commits de sesion
+- `3431fea` — fix(pagos): filter legacy patients from payment modal
+- `eaa04da` — feat(ficha): enriched patient profile with tabs, clinical notes timeline
+- `d901d70` — feat(dashboard): add financial KPIs and monthly income chart
+
+### Plan de mejora (roadmap competitivo)
+| # | Mejora | Estado |
+|---|--------|--------|
+| 1 | Ficha paciente enriquecida + vista unificada | ✅ Hecho |
+| 2 | Dashboard con KPIs financieros + grafico | ✅ Hecho |
+| 3 | Notas de evolucion clinica (timeline) | ✅ Hecho |
+| 4 | Recordatorios 24h automaticos via Telegram | Pendiente |
+| 5 | Facturacion PDF con datos fiscales | Pendiente |
+| 6 | Firma digital consentimientos | Pendiente |
+| 7 | Bonos / paquetes de sesiones | Pendiente |
+| 8 | Reserva online publica | Pendiente |
+| 9 | Teleconsulta | Pendiente |
+
+---
+
 ## Sesion 102 - 2026-03-16 (continuacion)
 
 ### Objetivo

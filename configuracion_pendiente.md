@@ -1,32 +1,40 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
-## Estado actual (2026-03-16, Sesion 102) - Pagos + Gestoria implementados. CRM con gestion contable completa.
+## Estado actual (2026-03-17, Sesion 103) - CRM profesional: ficha paciente, notas clinicas, KPIs, pagos, gestoria.
 
-### Completado sesion 102
-- [x] Tabla `crm_pagos` creada en Supabase (migration 007).
-- [x] Backend CRUD `/api/pagos` (list, resumen, gestoria, create, update, delete).
-- [x] Frontend seccion Pagos: filtros mes/anio, resumen, tabla, modal con select paciente nativo + toggle efectivo/tarjeta.
-- [x] Frontend seccion Gestoria: tabla paciente x mes, gran total, informe mensual detallado con lista de pagos.
-- [x] Normalizado 16 ejercicios zona_corporal no estandar.
+### Completado sesion 103
+- [x] Fix FK pagos: filtro pacientes legacy en modal de pago.
+- [x] Ficha paciente enriquecida: 13 campos, 4 pestañas (datos, notas, citas, pagos).
+- [x] Notas clinicas: timeline con EVA, zona corporal, pruebas. CRUD completo.
+- [x] Dashboard KPIs: ingresos mes, sesiones mes, grafico barras apiladas.
+- [x] Benchmarking 7 competidores, plan de mejora de 9 puntos.
 
-### Completado sesiones 99-101
-- [x] Validacion slot: horario laboral (9-13, 15-19), fines de semana, festivos Catalunya/Terrassa.
-- [x] Snap outside-hours: si paciente pide 14h, Carla ofrece 15h.
-- [x] Motivo obligatorio antes de confirmar cita.
-- [x] EvaluateAvailability: overlap check real.
-- [x] Nombre real paciente en Calendar: `"Cita fisioterapia - Raul Ruiz"`.
-- [x] Anti-hallucination Carla: no inventa disponibilidad, no confirma sin CONFIRMADA.
+### Completado sesiones 101-102
+- [x] Pagos + Gestoria, zona_corporal normalizada, overlap check, nombre real Calendar.
 
-### Bloqueos activos (no bloqueantes)
-1. **Google Calendar backend vars** vacios (W1 usa OAuth2 de n8n directamente).
-2. **Eventos test huerfanos** en Google Calendar — borrar manualmente si quedan.
+### Acciones requeridas antes de probar
+1. **Ejecutar migration 008** en Supabase SQL Editor (`database/migrations/008_ficha_paciente_enriquecida.sql`).
+2. **Rebuild frontend+backend en EasyPanel** (commit `d901d70`).
 
 ### Siguiente paso exacto
-1. **Rebuild frontend+backend en EasyPanel** para ultimo commit (`5710a1f`).
-2. **Probar Pagos**: registrar 2-3 pagos reales desde la web.
-3. **Probar Gestoria**: verificar tabla anual + informe mensual con datos reales.
-4. **Test E2E Telegram**: cita completa con nombre real en Calendar.
-5. Mover workflows restantes a carpeta `Fisio_IA_Agent` en n8n UI (manual).
+1. Ejecutar migration 008 en Supabase.
+2. Rebuild en EasyPanel.
+3. Probar ficha paciente: "Ver" → pestañas → editar datos → crear nota clinica.
+4. Probar dashboard KPIs y grafico con pagos existentes.
+5. **Roadmap**: Recordatorios 24h Telegram → Facturacion PDF → Firma digital.
+
+### Roadmap competitivo
+| # | Mejora | Estado |
+|---|--------|--------|
+| 1 | Ficha paciente enriquecida + vista unificada | ✅ |
+| 2 | Dashboard KPIs financieros + grafico | ✅ |
+| 3 | Notas de evolucion clinica (timeline) | ✅ |
+| 4 | Recordatorios 24h automaticos via Telegram | Pendiente |
+| 5 | Facturacion PDF con datos fiscales | Pendiente |
+| 6 | Firma digital consentimientos | Pendiente |
+| 7 | Bonos / paquetes de sesiones | Pendiente |
+| 8 | Reserva online publica | Pendiente |
+| 9 | Teleconsulta | Pendiente |
 
 ### Catálogo PROET (estado post sesión 96)
 - 179 ejercicios con nombre en español (sin acentos, derivado de `image_filename`)
