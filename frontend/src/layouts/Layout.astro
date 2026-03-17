@@ -42,6 +42,36 @@ const { title, description = 'Plataforma inteligente de prescripción y seguimie
   <body>
     <slot />
     <script is:inline>
+      /* === ICON LIGATURE → UNICODE FIX === */
+      (() => {
+        const M={home:'\ue88a',group:'\ue7ef',calendar_today:'\ue935',prescriptions:'\uf0e3',payments:'\uef63',account_balance:'\ue84f',receipt_long:'\uef6b',confirmation_number:'\ue638',forward_to_inbox:'\uf187',folder_open:'\ue2c8',settings:'\ue8b8',menu:'\ue5d2',psychology:'\uea4a',event_available:'\ue614',euro:'\uea15',person:'\ue7fd',close:'\ue5cd',picture_as_pdf:'\ue415',electric_bolt:'\uec1c',arrow_upward:'\ue5d8',medical_services:'\uf109',right_panel_open:'\uf7cf',notifications:'\ue7f4',search:'\ue8b6',report:'\ue160',refresh:'\ue5d5',arrow_forward:'\ue5c8',edit:'\ue3c9',delete:'\ue872',save:'\ue161',add:'\ue145',check:'\ue5ca',visibility:'\ue8f4',visibility_off:'\ue8f5',expand_more:'\ue5cf',expand_less:'\ue5ce',content_copy:'\ue14d',done:'\ue876',info:'\ue88e',warning:'\ue002',error:'\ue000',help:'\ue887',smart_toy:'\uefff',description:'\ue873',check_circle:'\ue86c',cancel:'\ue5c9',more_vert:'\ue5d4',star:'\ue838',favorite:'\ue87d',schedule:'\ue8b5',place:'\ue55f',phone:'\ue0cd',email:'\ue0be',chat:'\ue0b7',send:'\ue163',attach_file:'\ue226',download:'\uf090',upload:'\uf09b',print:'\ue8ad',share:'\ue80d',link:'\ue157',open_in_new:'\ue89e',fullscreen:'\ue5d0',zoom_in:'\ue8ff',zoom_out:'\ue900',undo:'\ue166',redo:'\ue15a',filter_list:'\ue152',sort:'\ue164',drag_indicator:'\ue945',chevron_left:'\ue5cb',chevron_right:'\ue5cc',keyboard_arrow_down:'\ue313',keyboard_arrow_up:'\ue316',first_page:'\ue5dc',last_page:'\ue5dd',navigate_before:'\ue408',navigate_next:'\ue409',radio_button_unchecked:'\ue836',radio_button_checked:'\ue837',check_box:'\ue834',check_box_outline_blank:'\ue835',indeterminate_check_box:'\ue909',toggle_on:'\ue9f6',toggle_off:'\ue9f5',lock:'\ue897',lock_open:'\ue898',verified:'\uef76',task_alt:'\ue2e6',pending:'\uef64',hourglass_empty:'\ue88b',timer:'\ue425',update:'\ue923',history:'\ue889',trending_up:'\ue8e5',trending_down:'\ue8e3',bar_chart:'\ue26b',pie_chart:'\ue6c4',analytics:'\uef3e',dashboard:'\ue871',inventory:'\ue179',local_hospital:'\ue548',healing:'\ue3f3',fitness_center:'\ueb43',accessibility_new:'\ue92c',self_improvement:'\uea78',spa:'\ueb4c',sports:'\uea30',directions_run:'\ue566',elderly:'\uf21a'};
+        const fix = () => {
+          document.querySelectorAll('.material-symbols-rounded').forEach(el => {
+            const t = el.textContent.trim();
+            if (M[t]) el.textContent = M[t];
+          });
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
+        else fix();
+        new MutationObserver(muts => {
+          for (const m of muts) {
+            for (const n of m.addedNodes) {
+              if (n.nodeType === 1) {
+                if (n.classList?.contains('material-symbols-rounded')) {
+                  const t = n.textContent.trim();
+                  if (M[t]) n.textContent = M[t];
+                }
+                n.querySelectorAll?.('.material-symbols-rounded')?.forEach(el => {
+                  const t = el.textContent.trim();
+                  if (M[t]) el.textContent = M[t];
+                });
+              }
+            }
+          }
+        }).observe(document.documentElement, {childList: true, subtree: true});
+      })();
+    </script>
+    <script is:inline>
       (() => {
         const MOJIBAKE_RE = /(?:\u00C3|\u00C2|\u00E2|\u00F0|\u00D0|\u00D1|\uFFFD|\u0152|\u0153|\u0161|\u0178|\u00EF\u00BF\u00BD)/;
         const CP1252_UNICODE_TO_BYTE = {
