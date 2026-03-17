@@ -1,34 +1,32 @@
 # Configuracion Pendiente - Fisio_IA_Agent
 
-## Estado actual (2026-03-16, Sesion 101) - Citas E2E funcional. Calendar con nombre real + hora correcta + motivo.
+## Estado actual (2026-03-16, Sesion 102) - Pagos + Gestoria implementados. CRM con gestion contable completa.
+
+### Completado sesion 102
+- [x] Tabla `crm_pagos` creada en Supabase (migration 007).
+- [x] Backend CRUD `/api/pagos` (list, resumen, gestoria, create, update, delete).
+- [x] Frontend seccion Pagos: filtros mes/anio, resumen, tabla, modal con select paciente nativo + toggle efectivo/tarjeta.
+- [x] Frontend seccion Gestoria: tabla paciente x mes, gran total, informe mensual detallado con lista de pagos.
+- [x] Normalizado 16 ejercicios zona_corporal no estandar.
 
 ### Completado sesiones 99-101
-- [x] Validación slot: horario laboral (9-13, 15-19), fines de semana, festivos Catalunya/Terrassa.
-- [x] Snap outside-hours: si paciente pide 14h, Carla ofrece 15h y guarda como `pendingSlot`.
-- [x] Motivo obligatorio antes de confirmar cita (nueva dolencia / seguimiento).
-- [x] Motivo aparece en Calendar event description.
-- [x] `slotFmt`: fecha legible en español para evitar Carla invente el día de la semana.
-- [x] Session note post-confirmación (1 línea en vez de limpiar todo).
-- [x] `continueOnFail: true` en W1 HTTP node para limpiar Calendar si backend falla.
-- [x] `status_code: 409` en body de conflict response para que W1 lo detecte.
-- [x] W5 Calendar Reader: nuevo workflow para lectura de eventos.
-- [x] EvaluateAvailability: overlap check real (`evStart < slotE && evEnd > slotS`).
+- [x] Validacion slot: horario laboral (9-13, 15-19), fines de semana, festivos Catalunya/Terrassa.
+- [x] Snap outside-hours: si paciente pide 14h, Carla ofrece 15h.
+- [x] Motivo obligatorio antes de confirmar cita.
+- [x] EvaluateAvailability: overlap check real.
 - [x] Nombre real paciente en Calendar: `"Cita fisioterapia - Raul Ruiz"`.
-- [x] Backend resuelve `linkedPatientName` y lo pasa como `patient_name` a W1.
-- [x] Historial conversación per-chat (`telegram_chat_sessions`).
-- [x] Anti-hallucination: Carla no inventa disponibilidad ni confirma sin CONFIRMADA.
+- [x] Anti-hallucination Carla: no inventa disponibilidad, no confirma sin CONFIRMADA.
 
-### Bloqueos activos (no bloqueantes para flujo básico)
-1. **TELEGRAM_PATIENT_BOT_TOKEN** vacío en backend EasyPanel (bot pacientes no envía proactivos).
-2. **Google Calendar backend vars** vacíos (no bloqueante — W1 usa OAuth2 de n8n directamente).
-3. **8 eventos test huérfanos** en Google Calendar (Mar 17/19/20/23) — borrar manualmente.
+### Bloqueos activos (no bloqueantes)
+1. **Google Calendar backend vars** vacios (W1 usa OAuth2 de n8n directamente).
+2. **Eventos test huerfanos** en Google Calendar — borrar manualmente si quedan.
 
 ### Siguiente paso exacto
-1. **Rebuild backend en EasyPanel** para activar commit `bb23058` (patient_name en W1).
-2. **Test E2E real** desde Telegram paciente: texto → motivo → cita → Calendar con nombre correcto.
-3. Borrar 8 eventos test huérfanos en Google Calendar.
-4. Mover 7 workflows restantes a carpeta `Fisio_IA_Agent` en n8n UI.
-5. (Opcional) Normalizar 16 registros zona_corporal con valores no estándar.
+1. **Rebuild frontend+backend en EasyPanel** para ultimo commit (`5710a1f`).
+2. **Probar Pagos**: registrar 2-3 pagos reales desde la web.
+3. **Probar Gestoria**: verificar tabla anual + informe mensual con datos reales.
+4. **Test E2E Telegram**: cita completa con nombre real en Calendar.
+5. Mover workflows restantes a carpeta `Fisio_IA_Agent` en n8n UI (manual).
 
 ### Catálogo PROET (estado post sesión 96)
 - 179 ejercicios con nombre en español (sin acentos, derivado de `image_filename`)

@@ -1,5 +1,46 @@
 # Fisio_IA_Agent - Changelog / Context Log
 
+## Sesion 102 - 2026-03-16 (continuacion)
+
+### Objetivo
+Implementar gestion de pagos (cobros de sesiones) y seccion de gestoria contable en el CRM.
+
+### Trabajo realizado
+
+**Feature: Pagos (cobros de sesiones)**
+- [x] Tabla `crm_pagos` en Supabase (migration 007): paciente_id FK, fecha, importe, metodo_pago (efectivo/tarjeta), concepto, notas, timestamps.
+- [x] Backend CRUD completo (`backend/src/routes/payments.js`): GET list+filtros, GET resumen mensual, POST crear, PATCH editar, DELETE borrar.
+- [x] Ruta registrada en `backend/src/index.js` como `/api/pagos`.
+- [x] Frontend: nav item "Pagos" en sidebar, pagina con filtros (mes/anio), resumen inline (total, sesiones, efectivo, tarjeta), tabla de pagos, boton registrar pago.
+- [x] Modal de registro: select nativo con todos los pacientes, importe, toggle efectivo/tarjeta (chips visuales), fecha (default hoy), notas opcional.
+- [x] Iterado 3 veces: custom dropdown → fix overflow → select nativo (mas fiable).
+- [x] Normalizado 16 ejercicios con zona_corporal no estandar (commit `59375a1`).
+
+**Feature: Gestoria (contabilidad)**
+- [x] Backend endpoint `GET /api/pagos/gestoria?anio=X`: agrega pagos por paciente x mes con totales efectivo/tarjeta/total y gran total.
+- [x] Frontend: nav item "Gestoria", pagina con:
+  - Gran total anual (facturacion, sesiones, efectivo verde, tarjeta azul).
+  - Tabla paciente x mes (12 columnas) con tooltip desglose, columna paciente sticky, fila TOTAL con facturacion total del mes.
+  - Informe mensual detallado: selector de mes, lista de cada pago individual (fecha, paciente, metodo, importe), totales del mes.
+
+### Estado al cierre
+- Backend: ✅ `/api/pagos` (CRUD + resumen + gestoria) funcionando en produccion
+- Frontend: ✅ Pagos + Gestoria operativos
+- Tabla `crm_pagos`: ✅ creada en Supabase, vacia (lista para uso real)
+- GitHub: ✅ todo pusheado (`5710a1f`)
+- EasyPanel: ⚠️ usuario debe hacer rebuild de frontend+backend para ultimo commit
+
+### Commits de sesion
+- `59375a1` — fix(db): normalize zona_corporal values in seed.sql and Supabase
+- `465a8f4` — feat(pagos): add full payment management — backend CRUD + frontend page
+- `dc9eee9` — fix(pagos): allow patient dropdown to overflow modal panel
+- `07d1c16` — refactor(pagos): simplify UI — cleaner layout, toggle method, auto-month
+- `52903fc` — fix(pagos): replace custom dropdown with native select for patient picker
+- `ed06dd9` — feat(gestoria): add accounting section with per-patient monthly breakdown
+- `5710a1f` — feat(gestoria): add monthly detail report with per-payment breakdown
+
+---
+
 ## Sesion 101 - 2026-03-16
 
 ### Objetivo
