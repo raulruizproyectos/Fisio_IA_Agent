@@ -43,6 +43,16 @@ router.post('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET /api/bonos/:id
+router.get('/:id', async (req, res, next) => {
+  try {
+    const { data, error } = await supabase
+      .from('crm_bonos').select(BONO_SELECT).eq('id', req.params.id).single();
+    if (error || !data) return res.status(404).json({ error: 'Bono no encontrado' });
+    res.json({ data });
+  } catch (err) { next(err); }
+});
+
 // POST /api/bonos/:id/usar — use one session from bono
 router.post('/:id/usar', async (req, res, next) => {
   try {

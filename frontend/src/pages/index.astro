@@ -26,10 +26,6 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">calendar_today</span>
           <span class="nav-label">Agenda</span>
         </a>
-        <a href="#" class="nav-item nav-item-agent" id="focusAgentNav">
-          <span class="material-symbols-rounded">psychology</span>
-          <span class="nav-label">Copilot IA</span>
-        </a>
         <a href="#" class="nav-item" data-section="plantillas">
           <span class="material-symbols-rounded">prescriptions</span>
           <span class="nav-label">Plantillas</span>
@@ -3683,8 +3679,8 @@ import Layout from '../layouts/Layout.astro';
         const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : '—';
         const restantes = b.sesiones_total - b.sesiones_usadas;
         const pct = Math.round((b.sesiones_usadas / b.sesiones_total) * 100);
-        const estadoClass = b.estado === 'activo' ? 'confirmada' : b.estado === 'agotado' ? 'cancelada' : 'pendiente';
-        return `<tr>
+        const estadoClass = b.estado; // activo/agotado/caducado/anulado — CSS defines .status-chip.activo etc.
+        return `<tr data-bono="${escapeAttr(JSON.stringify(b))}">
           <td class="td-patient">${escapeHtml(pName)}</td>
           <td>${escapeHtml(b.nombre)}</td>
           <td>
@@ -3784,11 +3780,9 @@ import Layout from '../layouts/Layout.astro';
       } catch (err: any) { alert(`Error: ${err?.message}`); }
     }
     if (action === 'edit-bono') {
-      const row = btn.closest('tr');
-      // Fetch full bono data
+      const row = btn.closest('tr') as HTMLTableRowElement | null;
       try {
-        const payload = await fetchJson(`${BACKEND_BASE}/api/bonos?estado=`);
-        const bono = (payload.data || []).find((b: any) => b.id === bonoId);
+        const bono = row?.dataset.bono ? JSON.parse(row.dataset.bono) : null;
         if (bono) openBonoModal(bono);
       } catch {}
     }
@@ -7415,8 +7409,8 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .ai-textarea-wrapper textarea {
     width: 100%;
-    min-height: 6rem;
-    max-height: 14rem;
+    min-height: 3.5rem;
+    max-height: 10rem;
     border: none;
     background: transparent;
     color: #334155;
