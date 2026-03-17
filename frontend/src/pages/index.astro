@@ -1391,11 +1391,9 @@ import Layout from '../layouts/Layout.astro';
   };
   const resizeAgentInput = () => {
     if (!input) return;
-    const viewportHeight = window.innerHeight || 900;
-    const minHeight = viewportHeight < 900 ? 96 : 116;
-    const maxHeight = viewportHeight < 900 ? 148 : 176;
     input.style.height = 'auto';
-    input.style.height = `${Math.min(Math.max(input.scrollHeight, minHeight), maxHeight)}px`;
+    const maxPx = Math.min(Math.round(window.innerHeight * 0.18), 140);
+    input.style.height = `${Math.min(input.scrollHeight, maxPx)}px`;
   };
 
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
@@ -6975,9 +6973,9 @@ import Layout from '../layouts/Layout.astro';
   .assistant-rail .assistant-module-header {
     background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
-    padding: 1rem 1.1rem;
-    align-items: flex-start;
-    gap: 0.85rem;
+    padding: 0.65rem 1rem;
+    align-items: center;
+    gap: 0.7rem;
   }
 
   .assistant-rail .assistant-rail-copy,
@@ -7039,7 +7037,7 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .assistant-rail-copy h2 {
     color: #1e293b;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 800;
     line-height: 1.1;
     margin: 0;
@@ -7086,8 +7084,8 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.7rem;
-    padding: 0.95rem 1rem;
+    gap: 0.5rem;
+    padding: 0.55rem 0.9rem;
     border-bottom: 1px solid #e8eef5;
     background: linear-gradient(180deg, #ffffff 0%, #f8fbfc 100%);
   }
@@ -7113,9 +7111,9 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     gap: 0.55rem;
-    min-height: 3rem;
-    padding: 0.65rem 0.9rem;
-    border-radius: 1rem;
+    min-height: 2.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.75rem;
     background: #f8fafc;
     border: 1px solid #dbe4ee;
     color-scheme: light;
@@ -7183,9 +7181,9 @@ import Layout from '../layouts/Layout.astro';
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 1.35rem 1rem 1rem;
+    padding: 0.9rem 0.9rem 0.75rem;
     background: rgba(248, 250, 252, 0.32);
-    gap: 1rem;
+    gap: 0.85rem;
   }
 
   .assistant-rail .chat-log:empty::before {
@@ -7369,17 +7367,16 @@ import Layout from '../layouts/Layout.astro';
     background: #ffffff;
     border-top: 1px solid #f1f5f9;
     box-shadow: none;
-    padding: 1rem;
+    padding: 0.6rem 0.9rem 0.65rem;
     min-width: 0;
     max-height: none;
     overflow: visible;
-    gap: 0.75rem;
+    gap: 0.45rem;
   }
 
   .assistant-rail .assistant-action-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    display: flex;
+    gap: 0.45rem;
   }
 
   .assistant-rail .assistant-composer-shell {
@@ -7409,13 +7406,13 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .ai-textarea-wrapper textarea {
     width: 100%;
-    min-height: 3.5rem;
-    max-height: 10rem;
+    min-height: 2.5rem;
+    max-height: 8.75rem;
     border: none;
     background: transparent;
     color: #334155;
     line-height: 1.55;
-    padding: 0.95rem 1rem;
+    padding: 0.6rem 0.85rem;
     resize: none;
     outline: none;
     font-size: 0.9rem;
@@ -7436,11 +7433,13 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .btn-action {
     border: 1px solid transparent;
-    border-radius: 0.95rem;
-    min-height: 2.9rem;
-    font-size: 0.78rem;
+    border-radius: 0.75rem;
+    min-height: 2rem;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     justify-content: center;
+    flex: 1 1 auto;
   }
 
   .assistant-rail .btn-action .material-symbols-rounded {
@@ -7487,14 +7486,16 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .btn-send-compact {
-    width: 2.8rem;
-    min-width: 2.8rem;
+    width: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
     padding: 0;
     background: #0f9f98;
     border-color: #0f9f98;
     color: #ffffff;
     border-radius: 0.75rem;
     align-self: flex-end;
+    flex: 0 0 auto;
     box-shadow: 0 10px 20px -18px rgba(15, 118, 110, 0.5);
   }
 
@@ -7542,18 +7543,14 @@ import Layout from '../layouts/Layout.astro';
       padding-right: 0.85rem;
     }
 
-    .assistant-rail .assistant-action-grid {
-      grid-template-columns: 1fr;
-    }
-
     .assistant-rail .assistant-composer-shell {
       align-items: stretch;
     }
 
     .assistant-rail .btn-send-compact {
-      width: 100%;
-      min-width: 0;
-      min-height: 2.8rem;
+      width: 2.5rem;
+      min-width: 2.5rem;
+      min-height: 2.5rem;
     }
   }
 </style>
