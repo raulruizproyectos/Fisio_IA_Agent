@@ -10,6 +10,7 @@ import exercisesRouter from './routes/exercises.js';
 import paymentsRouter from './routes/payments.js';
 import clinicalNotesRouter from './routes/clinical-notes.js';
 import remindersRouter from './routes/reminders.js';
+import invoicesRouter from './routes/invoices.js';
 
 // Configuracion
 const app = express();
@@ -78,6 +79,7 @@ app.use('/api/ejercicios', exercisesRouter);
 app.use('/api/pagos', paymentsRouter);
 app.use('/api/notas-clinicas', clinicalNotesRouter);
 app.use('/api/cron/recordatorios', remindersRouter);
+app.use('/api/facturas', invoicesRouter);
 
 // Error handler
 app.use((err, req, res, _next) => {

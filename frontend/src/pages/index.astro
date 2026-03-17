@@ -42,6 +42,10 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">account_balance</span>
           <span class="nav-label">Gestor&iacute;a</span>
         </a>
+        <a href="#" class="nav-item" data-section="facturas">
+          <span class="material-symbols-rounded">receipt_long</span>
+          <span class="nav-label">Facturaci&oacute;n</span>
+        </a>
       </nav>
 
       <div class="sidebar-bottom">
@@ -592,6 +596,68 @@ import Layout from '../layouts/Layout.astro';
               </div>
               <div class="ficha-pagos-total" id="fichaPagosTotal"></div>
             </section>
+          </div>
+        </div>
+
+        <!-- === PAGE: FACTURACION === -->
+        <div class="page-section" data-page="facturas">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">receipt_long</span> Facturaci&oacute;n</h1>
+            <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">add</span> Nueva factura</button>
+          </div>
+
+          <section class="card table-card">
+            <header class="card-header">
+              <h2>Facturas emitidas</h2>
+              <div class="pagos-filters-row">
+                <select id="facturasAnioFilter" title="A&ntilde;o"></select>
+                <button class="btn-ghost btn-sm" id="refreshFacturas"><span class="material-symbols-rounded">refresh</span></button>
+              </div>
+            </header>
+            <div class="table-wrap">
+              <table><thead><tr><th>N&uacute;mero</th><th>Fecha</th><th>Paciente</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="facturasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">receipt_long</span><p>Sin facturas emitidas</p></div></td></tr></tbody></table>
+            </div>
+          </section>
+
+          <!-- Modal nueva factura -->
+          <div class="modal-shell" id="facturaModal" aria-hidden="true">
+            <div class="modal-panel" role="dialog" aria-modal="true">
+              <div class="modal-header">
+                <div class="modal-title-group">
+                  <p class="modal-eyebrow">FACTURACI&Oacute;N</p>
+                  <h2>Generar factura</h2>
+                  <p>Selecciona un paciente para facturar sus pagos pendientes.</p>
+                </div>
+                <button type="button" class="modal-close" id="facturaModalClose" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+              </div>
+              <form id="facturaForm">
+                <div class="form-grid">
+                  <label class="field field-full"><span>Paciente</span>
+                    <select id="facturaPacienteSelect" required>
+                      <option value="">-- Selecciona paciente --</option>
+                    </select>
+                  </label>
+                  <label class="field"><span>IVA (%)</span>
+                    <select id="facturaIvaPct">
+                      <option value="0">0% (Exento)</option>
+                      <option value="4">4%</option>
+                      <option value="10">10%</option>
+                      <option value="21" selected>21%</option>
+                    </select>
+                  </label>
+                  <label class="field field-full"><span>Notas</span>
+                    <textarea id="facturaNotas" rows="2" placeholder="Notas adicionales (opcional)"></textarea>
+                  </label>
+                </div>
+                <div id="facturaPreview" class="factura-preview" hidden></div>
+                <p class="form-feedback" id="facturaFeedback" hidden></p>
+                <div class="modal-actions">
+                  <button type="button" class="btn-ghost" id="facturaModalDismiss">Cancelar</button>
+                  <button type="submit" class="btn-primary" id="facturaSubmitBtn"><span class="material-symbols-rounded">receipt</span> Generar factura</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
 
@@ -3321,6 +3387,149 @@ import Layout from '../layouts/Layout.astro';
     }
   }, true); // capture phase to intercept before existing handler
 
+  // ===================== FACTURACION =====================
+  const facturasBody = document.getElementById('facturasBody') as HTMLElement | null;
+  const facturasAnioFilter = document.getElementById('facturasAnioFilter') as HTMLSelectElement | null;
+  const facturaModal = document.getElementById('facturaModal');
+  const facturaForm = document.getElementById('facturaForm') as HTMLFormElement | null;
+  const facturaPacienteSelect = document.getElementById('facturaPacienteSelect') as HTMLSelectElement | null;
+  const facturaIvaPct = document.getElementById('facturaIvaPct') as HTMLSelectElement | null;
+  const facturaNotas = document.getElementById('facturaNotas') as HTMLTextAreaElement | null;
+  const facturaPreview = document.getElementById('facturaPreview');
+  const facturaFeedback = document.getElementById('facturaFeedback') as HTMLElement | null;
+  const facturaSubmitBtn = document.getElementById('facturaSubmitBtn') as HTMLButtonElement | null;
+
+  // Populate year filter
+  (() => {
+    if (!facturasAnioFilter) return;
+    const y = new Date().getFullYear();
+    for (let i = y; i >= y - 3; i--) {
+      const opt = document.createElement('option');
+      opt.value = String(i); opt.textContent = String(i);
+      facturasAnioFilter.appendChild(opt);
+    }
+  })();
+
+  const setFacturaFeedback = (text?: string) => {
+    if (!facturaFeedback) return;
+    if (!text) { facturaFeedback.hidden = true; return; }
+    facturaFeedback.hidden = false;
+    facturaFeedback.textContent = text;
+  };
+
+  const loadFacturas = async () => {
+    if (!facturasBody) return;
+    setTableState(facturasBody, 8, 'sync', 'Cargando facturas...', true);
+    try {
+      const anio = facturasAnioFilter?.value || new Date().getFullYear();
+      const payload = await fetchJson(`${BACKEND_BASE}/api/facturas?anio=${anio}`);
+      const facturas = payload.data || [];
+      if (!facturas.length) {
+        setTableState(facturasBody, 8, 'receipt_long', 'Sin facturas emitidas');
+        return;
+      }
+      facturasBody.innerHTML = facturas.map((f: any) => {
+        const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : '—';
+        const estadoClass = f.estado === 'anulada' ? 'cancelada' : f.estado === 'pagada' ? 'confirmada' : 'pendiente';
+        return `<tr>
+          <td><strong>${escapeHtml(f.numero)}</strong></td>
+          <td>${fmtDate(f.fecha)}</td>
+          <td class="td-patient">${escapeHtml(pName)}</td>
+          <td>${Number(f.importe_bruto).toFixed(2)} €</td>
+          <td>${Number(f.importe_iva).toFixed(2)} €</td>
+          <td><strong>${Number(f.importe_total).toFixed(2)} €</strong></td>
+          <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
+          <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf" target="_blank" class="btn-sm btn-outline">PDF</a></td>
+        </tr>`;
+      }).join('');
+    } catch {
+      setTableState(facturasBody, 8, 'cloud_off', 'Error al cargar facturas');
+    }
+  };
+  pageLoaders['facturas'] = loadFacturas;
+  facturasAnioFilter?.addEventListener('change', loadFacturas);
+  document.getElementById('refreshFacturas')?.addEventListener('click', loadFacturas);
+
+  // Modal
+  const openFacturaModal = async () => {
+    facturaForm?.reset();
+    setFacturaFeedback();
+    if (facturaPreview) facturaPreview.hidden = true;
+    // Populate patient select (CRM only)
+    if (facturaPacienteSelect) {
+      if (!patientCatalog.length) await fetchPatientCatalog();
+      const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
+      facturaPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '—')}</option>`).join('');
+    }
+    facturaModal?.classList.add('open');
+    facturaModal?.setAttribute('aria-hidden', 'false');
+  };
+  const closeFacturaModal = () => {
+    facturaModal?.classList.remove('open');
+    facturaModal?.setAttribute('aria-hidden', 'true');
+  };
+
+  document.getElementById('nuevaFacturaBtn')?.addEventListener('click', openFacturaModal);
+  document.getElementById('facturaModalClose')?.addEventListener('click', closeFacturaModal);
+  document.getElementById('facturaModalDismiss')?.addEventListener('click', closeFacturaModal);
+
+  // Preview payments when patient selected
+  facturaPacienteSelect?.addEventListener('change', async () => {
+    if (!facturaPreview) return;
+    const pacienteId = facturaPacienteSelect.value;
+    if (!pacienteId) { facturaPreview.hidden = true; return; }
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?paciente_id=${pacienteId}`);
+      const pagos = payload.data || [];
+      if (!pagos.length) {
+        facturaPreview.innerHTML = '<p class="empty-inline">Este paciente no tiene pagos para facturar</p>';
+        facturaPreview.hidden = false;
+        return;
+      }
+      const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
+      facturaPreview.innerHTML = `
+        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) — Base: ${total.toFixed(2)} €</p>
+        <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Método</th><th>Importe</th></tr></thead><tbody>
+        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesión')}</td><td>${p.metodo_pago}</td><td>${Number(p.importe).toFixed(2)} €</td></tr>`).join('')}
+        </tbody></table></div>`;
+      facturaPreview.hidden = false;
+    } catch {
+      facturaPreview.innerHTML = '<p class="empty-inline">Error al cargar pagos</p>';
+      facturaPreview.hidden = false;
+    }
+  });
+
+  // Submit
+  facturaForm?.addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    const pacienteId = facturaPacienteSelect?.value;
+    if (!pacienteId) { setFacturaFeedback('Selecciona un paciente'); return; }
+    const prev = facturaSubmitBtn?.innerHTML || '';
+    if (facturaSubmitBtn) { facturaSubmitBtn.disabled = true; facturaSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Generando...'; }
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/facturas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paciente_id: pacienteId,
+          iva_pct: Number(facturaIvaPct?.value || 21),
+          notas: facturaNotas?.value || null,
+        }),
+      });
+      closeFacturaModal();
+      await loadFacturas();
+      // Open PDF in new tab
+      if (payload.data?.id) {
+        window.open(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf`, '_blank');
+      }
+    } catch (err: any) {
+      setFacturaFeedback(`Error: ${err?.message || 'no se pudo generar'}`);
+    } finally {
+      if (facturaSubmitBtn) { facturaSubmitBtn.disabled = false; facturaSubmitBtn.innerHTML = prev; }
+    }
+  });
+
   // ===================== GESTORIA =====================
   const gestoriaBody = document.getElementById('gestoriaBody') as HTMLElement | null;
   const gestoriaHead = document.getElementById('gestoriaHead') as HTMLElement | null;
@@ -5029,6 +5238,17 @@ import Layout from '../layouts/Layout.astro';
     opacity: 1;
     border-color: currentColor;
   }
+
+  /* === FACTURACION === */
+  .factura-preview {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--bg-app);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .factura-preview .table-wrap { margin-top: 0.5rem; }
+  .factura-preview table { font-size: 0.85rem; }
 
   /* === FICHA PACIENTE === */
   .ficha-tabs {
