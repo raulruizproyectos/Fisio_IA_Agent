@@ -12,6 +12,7 @@ import clinicalNotesRouter from './routes/clinical-notes.js';
 import remindersRouter from './routes/reminders.js';
 import invoicesRouter from './routes/invoices.js';
 import documentsRouter from './routes/documents.js';
+import bonosRouter from './routes/bonos.js';
 
 // Configuracion
 const app = express();
@@ -82,6 +83,7 @@ app.use('/api/notas-clinicas', clinicalNotesRouter);
 app.use('/api/cron/recordatorios', remindersRouter);
 app.use('/api/facturas', invoicesRouter);
 app.use('/api/documentos', documentsRouter);
+app.use('/api/bonos', bonosRouter);
 
 // Error handler
 app.use((err, req, res, _next) => {

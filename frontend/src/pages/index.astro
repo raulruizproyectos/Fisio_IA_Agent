@@ -46,6 +46,10 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">receipt_long</span>
           <span class="nav-label">Facturaci&oacute;n</span>
         </a>
+        <a href="#" class="nav-item" data-section="bonos">
+          <span class="material-symbols-rounded">confirmation_number</span>
+          <span class="nav-label">Bonos</span>
+        </a>
       </nav>
 
       <div class="sidebar-bottom">
@@ -644,6 +648,76 @@ import Layout from '../layouts/Layout.astro';
             <div class="modal-actions">
               <button type="button" class="btn-ghost" id="firmaModalDismiss">Cancelar</button>
               <button type="button" class="btn-primary" id="firmaGuardarBtn"><span class="material-symbols-rounded">draw</span> Guardar firma y generar PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- === PAGE: BONOS === -->
+        <div class="page-section" data-page="bonos">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">confirmation_number</span> Bonos de sesiones</h1>
+            <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">add</span> Nuevo bono</button>
+          </div>
+          <section class="card table-card">
+            <header class="card-header">
+              <h2>Bonos activos y hist&oacute;rico</h2>
+              <div class="pagos-filters-row">
+                <select id="bonosEstadoFilter" title="Estado">
+                  <option value="">Todos</option>
+                  <option value="activo" selected>Activos</option>
+                  <option value="agotado">Agotados</option>
+                  <option value="anulado">Anulados</option>
+                </select>
+                <button class="btn-ghost btn-sm" id="refreshBonos"><span class="material-symbols-rounded">refresh</span></button>
+              </div>
+            </header>
+            <div class="table-wrap">
+              <table><thead><tr><th>Paciente</th><th>Bono</th><th>Sesiones</th><th>Precio</th><th>Inicio</th><th>Caducidad</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="bonosBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">confirmation_number</span><p>Sin bonos registrados</p></div></td></tr></tbody></table>
+            </div>
+          </section>
+
+          <!-- Modal nuevo bono -->
+          <div class="modal-shell" id="bonoModal" aria-hidden="true">
+            <div class="modal-panel" role="dialog" aria-modal="true">
+              <div class="modal-header">
+                <div class="modal-title-group">
+                  <p class="modal-eyebrow">BONOS</p>
+                  <h2 id="bonoModalTitle">Nuevo bono</h2>
+                </div>
+                <button type="button" class="modal-close" id="bonoModalClose"><span class="material-symbols-rounded">close</span></button>
+              </div>
+              <form id="bonoForm" class="form-grid">
+                <input type="hidden" id="bonoEditId" />
+                <label class="field field-full"><span>Paciente</span>
+                  <select id="bonoPacienteSelect" required>
+                    <option value="">-- Selecciona paciente --</option>
+                  </select>
+                </label>
+                <label class="field field-full"><span>Nombre del bono</span>
+                  <input id="bonoNombre" type="text" placeholder="Ej: Bono 10 sesiones" required />
+                </label>
+                <label class="field"><span>N&uacute;mero de sesiones</span>
+                  <input id="bonoSesiones" type="number" min="1" max="100" value="10" required />
+                </label>
+                <label class="field"><span>Precio total (€)</span>
+                  <input id="bonoPrecio" type="number" min="0" step="0.01" placeholder="0.00" required />
+                </label>
+                <label class="field"><span>Fecha inicio</span>
+                  <input id="bonoFechaInicio" type="date" />
+                </label>
+                <label class="field"><span>Fecha caducidad (opcional)</span>
+                  <input id="bonoFechaCaducidad" type="date" />
+                </label>
+                <label class="field field-full"><span>Notas</span>
+                  <textarea id="bonoNotas" rows="2" placeholder="Observaciones..."></textarea>
+                </label>
+                <p class="form-feedback" id="bonoFeedback" hidden></p>
+                <div class="modal-actions" style="grid-column:1/-1">
+                  <button type="button" class="btn-ghost" id="bonoModalDismiss">Cancelar</button>
+                  <button type="submit" class="btn-primary" id="bonoSubmitBtn"><span class="material-symbols-rounded">save</span> Guardar</button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -3579,6 +3653,152 @@ import Layout from '../layouts/Layout.astro';
     }
   });
 
+  // ===================== BONOS =====================
+  const bonosBody = document.getElementById('bonosBody') as HTMLElement | null;
+  const bonosEstadoFilter = document.getElementById('bonosEstadoFilter') as HTMLSelectElement | null;
+  const bonoModal = document.getElementById('bonoModal');
+  const bonoForm = document.getElementById('bonoForm') as HTMLFormElement | null;
+  const bonoPacienteSelect = document.getElementById('bonoPacienteSelect') as HTMLSelectElement | null;
+  const bonoFeedback = document.getElementById('bonoFeedback') as HTMLElement | null;
+  const bonoSubmitBtn = document.getElementById('bonoSubmitBtn') as HTMLButtonElement | null;
+  const bonoEditId = document.getElementById('bonoEditId') as HTMLInputElement | null;
+  const bonoModalTitle = document.getElementById('bonoModalTitle');
+
+  const setBonoFeedback = (t?: string) => {
+    if (!bonoFeedback) return;
+    if (!t) { bonoFeedback.hidden = true; return; }
+    bonoFeedback.hidden = false; bonoFeedback.textContent = t;
+  };
+
+  const loadBonos = async () => {
+    if (!bonosBody) return;
+    setTableState(bonosBody, 8, 'sync', 'Cargando bonos...', true);
+    try {
+      const estado = bonosEstadoFilter?.value || '';
+      const url = `${BACKEND_BASE}/api/bonos${estado ? `?estado=${estado}` : ''}`;
+      const payload = await fetchJson(url);
+      const bonos = payload.data || [];
+      if (!bonos.length) { setTableState(bonosBody, 8, 'confirmation_number', 'Sin bonos'); return; }
+      bonosBody.innerHTML = bonos.map((b: any) => {
+        const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : '—';
+        const restantes = b.sesiones_total - b.sesiones_usadas;
+        const pct = Math.round((b.sesiones_usadas / b.sesiones_total) * 100);
+        const estadoClass = b.estado === 'activo' ? 'confirmada' : b.estado === 'agotado' ? 'cancelada' : 'pendiente';
+        return `<tr>
+          <td class="td-patient">${escapeHtml(pName)}</td>
+          <td>${escapeHtml(b.nombre)}</td>
+          <td>
+            <div class="bono-progress">
+              <span>${b.sesiones_usadas}/${b.sesiones_total} <small>(${restantes} restantes)</small></span>
+              <div class="bono-bar"><div class="bono-bar-fill" style="width:${pct}%"></div></div>
+            </div>
+          </td>
+          <td>${Number(b.precio).toFixed(2)} €</td>
+          <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : '—'}</td>
+          <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : '—'}</td>
+          <td><span class="status-chip ${estadoClass}">${b.estado}</span></td>
+          <td>
+            <div class="table-actions">
+              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesión</button>` : ''}
+              <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
+              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-bono" data-bono-id="${b.id}">✕</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    } catch { setTableState(bonosBody, 8, 'cloud_off', 'Error al cargar bonos'); }
+  };
+  pageLoaders['bonos'] = loadBonos;
+  bonosEstadoFilter?.addEventListener('change', loadBonos);
+  document.getElementById('refreshBonos')?.addEventListener('click', loadBonos);
+
+  const openBonoModal = async (editData?: any) => {
+    bonoForm?.reset();
+    setBonoFeedback();
+    if (bonoEditId) bonoEditId.value = '';
+    if (!patientCatalog.length) await fetchPatientCatalog();
+    const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
+    if (bonoPacienteSelect) {
+      bonoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '—')}</option>`).join('');
+    }
+    const fechaInicio = document.getElementById('bonoFechaInicio') as HTMLInputElement;
+    if (fechaInicio && !editData) fechaInicio.value = new Date().toISOString().slice(0, 10);
+    if (editData) {
+      if (bonoModalTitle) bonoModalTitle.textContent = 'Editar bono';
+      if (bonoEditId) bonoEditId.value = editData.id;
+      if (bonoPacienteSelect) bonoPacienteSelect.value = editData.paciente_id || '';
+      const set = (id: string, v: string) => { const el = document.getElementById(id) as HTMLInputElement; if (el) el.value = v || ''; };
+      set('bonoNombre', editData.nombre); set('bonoSesiones', editData.sesiones_total);
+      set('bonoPrecio', editData.precio); set('bonoFechaInicio', editData.fecha_inicio);
+      set('bonoFechaCaducidad', editData.fecha_caducidad); set('bonoNotas', editData.notas);
+    } else {
+      if (bonoModalTitle) bonoModalTitle.textContent = 'Nuevo bono';
+    }
+    bonoModal?.classList.add('open'); bonoModal?.setAttribute('aria-hidden', 'false');
+  };
+  const closeBonoModal = () => { bonoModal?.classList.remove('open'); bonoModal?.setAttribute('aria-hidden', 'true'); };
+
+  document.getElementById('nuevoBonoBtn')?.addEventListener('click', () => openBonoModal());
+  document.getElementById('bonoModalClose')?.addEventListener('click', closeBonoModal);
+  document.getElementById('bonoModalDismiss')?.addEventListener('click', closeBonoModal);
+
+  bonoForm?.addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    const id = bonoEditId?.value;
+    const body: any = {
+      paciente_id: bonoPacienteSelect?.value,
+      nombre: (document.getElementById('bonoNombre') as HTMLInputElement)?.value,
+      sesiones_total: Number((document.getElementById('bonoSesiones') as HTMLInputElement)?.value),
+      precio: Number((document.getElementById('bonoPrecio') as HTMLInputElement)?.value),
+      fecha_inicio: (document.getElementById('bonoFechaInicio') as HTMLInputElement)?.value || null,
+      fecha_caducidad: (document.getElementById('bonoFechaCaducidad') as HTMLInputElement)?.value || null,
+      notas: (document.getElementById('bonoNotas') as HTMLTextAreaElement)?.value || null,
+    };
+    if (!body.paciente_id) { setBonoFeedback('Selecciona un paciente'); return; }
+    const prev = bonoSubmitBtn?.innerHTML || '';
+    if (bonoSubmitBtn) { bonoSubmitBtn.disabled = true; bonoSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...'; }
+    try {
+      if (id) {
+        await fetchJson(`${BACKEND_BASE}/api/bonos/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      } else {
+        await fetchJson(`${BACKEND_BASE}/api/bonos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      }
+      closeBonoModal(); await loadBonos();
+    } catch (err: any) { setBonoFeedback(`Error: ${err?.message || 'no se pudo guardar'}`); }
+    finally { if (bonoSubmitBtn) { bonoSubmitBtn.disabled = false; bonoSubmitBtn.innerHTML = prev; } }
+  });
+
+  // Table actions
+  bonosBody?.addEventListener('click', async (e: Event) => {
+    const btn = (e.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const bonoId = btn.getAttribute('data-bono-id');
+    if (!bonoId) return;
+
+    if (action === 'usar-bono') {
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
+        await loadBonos();
+      } catch (err: any) { alert(`Error: ${err?.message}`); }
+    }
+    if (action === 'edit-bono') {
+      const row = btn.closest('tr');
+      // Fetch full bono data
+      try {
+        const payload = await fetchJson(`${BACKEND_BASE}/api/bonos?estado=`);
+        const bono = (payload.data || []).find((b: any) => b.id === bonoId);
+        if (bono) openBonoModal(bono);
+      } catch {}
+    }
+    if (action === 'delete-bono') {
+      if (!confirm('¿Eliminar este bono?')) return;
+      try { await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' }); await loadBonos(); }
+      catch (err: any) { alert(`Error: ${err?.message}`); }
+    }
+  });
+
   // ===================== FIRMA DIGITAL =====================
   let firmaDocId: string | null = null;
   let firmaDrawing = false;
@@ -5466,6 +5686,11 @@ import Layout from '../layouts/Layout.astro';
     opacity: 1;
     border-color: currentColor;
   }
+
+  /* === BONOS === */
+  .bono-progress { display: flex; flex-direction: column; gap: 0.3rem; }
+  .bono-bar { height: 6px; background: var(--border); border-radius: 99px; width: 120px; }
+  .bono-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
 
   /* === FIRMA DIGITAL === */
   .modal-panel-wide { max-width: 720px; }
