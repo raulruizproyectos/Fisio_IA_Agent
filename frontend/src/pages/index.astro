@@ -502,6 +502,7 @@ import Layout from '../layouts/Layout.astro';
             <button class="ficha-tab" data-ficha-tab="notas">Notas cl&iacute;nicas</button>
             <button class="ficha-tab" data-ficha-tab="citas">Historial citas</button>
             <button class="ficha-tab" data-ficha-tab="pagos">Historial pagos</button>
+            <button class="ficha-tab" data-ficha-tab="documentos">Documentos</button>
           </div>
 
           <!-- Tab: Datos personales -->
@@ -596,6 +597,54 @@ import Layout from '../layouts/Layout.astro';
               </div>
               <div class="ficha-pagos-total" id="fichaPagosTotal"></div>
             </section>
+          </div>
+
+          <!-- Tab: Documentos firmados -->
+          <div class="ficha-panel" data-ficha-panel="documentos">
+            <section class="card">
+              <header class="card-header">
+                <h2>Documentos y consentimientos</h2>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                  <button class="btn-sm btn-outline" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
+                  <button class="btn-sm btn-outline" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
+                  <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocación</button>
+                </div>
+              </header>
+              <div id="fichaDocsList" class="ficha-docs-list">
+                <p class="empty-inline">Sin documentos registrados</p>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Modal firma digital -->
+        <div class="modal-shell" id="firmaModal" aria-hidden="true">
+          <div class="modal-panel modal-panel-wide" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <div class="modal-title-group">
+                <p class="modal-eyebrow">FIRMA DIGITAL</p>
+                <h2 id="firmaModalTitle">Consentimiento Informado</h2>
+              </div>
+              <button type="button" class="modal-close" id="firmaModalClose"><span class="material-symbols-rounded">close</span></button>
+            </div>
+            <!-- Document content preview -->
+            <div id="firmaDocContenido" class="firma-doc-contenido"></div>
+            <!-- Signature pad -->
+            <div class="firma-pad-section">
+              <p class="firma-pad-label">Firma del paciente <span class="firma-pad-hint">(dibuja tu firma con el ratón o dedo)</span></p>
+              <div class="firma-pad-wrap">
+                <canvas id="firmaCanvas" width="600" height="160"></canvas>
+              </div>
+              <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+                <button type="button" class="btn-ghost btn-sm" id="firmaClearBtn"><span class="material-symbols-rounded">restart_alt</span> Borrar</button>
+                <span id="firmaStatus" class="firma-status-hint">Sin firma</span>
+              </div>
+            </div>
+            <p class="form-feedback" id="firmaFeedback" hidden></p>
+            <div class="modal-actions">
+              <button type="button" class="btn-ghost" id="firmaModalDismiss">Cancelar</button>
+              <button type="button" class="btn-primary" id="firmaGuardarBtn"><span class="material-symbols-rounded">draw</span> Guardar firma y generar PDF</button>
+            </div>
           </div>
         </div>
 
@@ -3530,6 +3579,185 @@ import Layout from '../layouts/Layout.astro';
     }
   });
 
+  // ===================== FIRMA DIGITAL =====================
+  let firmaDocId: string | null = null;
+  let firmaDrawing = false;
+  let firmaHasSig = false;
+  const firmaModal = document.getElementById('firmaModal');
+  const firmaCanvas = document.getElementById('firmaCanvas') as HTMLCanvasElement | null;
+  const firmaStatus = document.getElementById('firmaStatus');
+  const firmaFeedback = document.getElementById('firmaFeedback') as HTMLElement | null;
+  const firmaModalTitle = document.getElementById('firmaModalTitle');
+  const firmaDocContenido = document.getElementById('firmaDocContenido');
+
+  const setFirmaFeedback = (t?: string) => {
+    if (!firmaFeedback) return;
+    if (!t) { firmaFeedback.hidden = true; return; }
+    firmaFeedback.hidden = false;
+    firmaFeedback.textContent = t;
+  };
+
+  // Signature pad
+  const initFirmaPad = () => {
+    if (!firmaCanvas) return;
+    const ctx = firmaCanvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
+    firmaHasSig = false;
+    if (firmaStatus) firmaStatus.textContent = 'Sin firma';
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    const getPos = (e: MouseEvent | TouchEvent) => {
+      const rect = firmaCanvas.getBoundingClientRect();
+      const scaleX = firmaCanvas.width / rect.width;
+      const scaleY = firmaCanvas.height / rect.height;
+      const src = e instanceof TouchEvent ? e.touches[0] : e;
+      return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY };
+    };
+
+    firmaCanvas.onmousedown = (e) => { firmaDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    firmaCanvas.onmousemove = (e) => { if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = '✓ Firma capturada'; };
+    firmaCanvas.onmouseup = () => { firmaDrawing = false; };
+    firmaCanvas.onmouseleave = () => { firmaDrawing = false; };
+    firmaCanvas.ontouchstart = (e) => { e.preventDefault(); firmaDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    firmaCanvas.ontouchmove = (e) => { e.preventDefault(); if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = '✓ Firma capturada'; };
+    firmaCanvas.ontouchend = () => { firmaDrawing = false; };
+  };
+
+  document.getElementById('firmaClearBtn')?.addEventListener('click', () => {
+    if (!firmaCanvas) return;
+    const ctx = firmaCanvas.getContext('2d');
+    ctx?.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
+    firmaHasSig = false;
+    if (firmaStatus) firmaStatus.textContent = 'Sin firma';
+  });
+
+  const openFirmaModal = async (tipo: string) => {
+    if (!fichaPatientId) return;
+    setFirmaFeedback();
+    firmaDocId = null;
+    try {
+      // Create document
+      const payload = await fetchJson(`${BACKEND_BASE}/api/documentos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paciente_id: fichaPatientId, tipo }),
+      });
+      firmaDocId = payload.data?.id || null;
+      if (firmaModalTitle) firmaModalTitle.textContent = payload.data?.titulo || 'Documento';
+      if (firmaDocContenido) firmaDocContenido.textContent = payload.contenido || '';
+      firmaModal?.classList.add('open');
+      firmaModal?.setAttribute('aria-hidden', 'false');
+      initFirmaPad();
+    } catch (err: any) {
+      alert(`Error: ${err?.message || 'no se pudo crear el documento'}`);
+    }
+  };
+
+  const closeFirmaModal = () => {
+    firmaModal?.classList.remove('open');
+    firmaModal?.setAttribute('aria-hidden', 'true');
+  };
+
+  document.getElementById('firmaModalClose')?.addEventListener('click', closeFirmaModal);
+  document.getElementById('firmaModalDismiss')?.addEventListener('click', closeFirmaModal);
+
+  // Buttons to open firma modal from ficha
+  ['btnDocConsentimiento', 'btnDocLopd', 'btnDocRevocacion'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const tipo = btn.getAttribute('data-doc-tipo') || 'consentimiento_informado';
+      openFirmaModal(tipo);
+    });
+  });
+
+  // Save signature
+  document.getElementById('firmaGuardarBtn')?.addEventListener('click', async () => {
+    if (!firmaDocId) return;
+    if (!firmaHasSig) { setFirmaFeedback('Por favor, dibuja tu firma antes de continuar.'); return; }
+    if (!firmaCanvas) return;
+    const firmaB64 = firmaCanvas.toDataURL('image/png');
+    const btn = document.getElementById('firmaGuardarBtn') as HTMLButtonElement;
+    const prev = btn?.innerHTML || '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...'; }
+    try {
+      await fetchJson(`${BACKEND_BASE}/api/documentos/${firmaDocId}/firmar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firma_base64: firmaB64 }),
+      });
+      closeFirmaModal();
+      // Open PDF
+      window.open(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf`, '_blank');
+      // Reload docs list
+      if (fichaPatientId) {
+        const docsPayload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
+        renderFichaDocumentos(docsPayload.data || []);
+      }
+    } catch (err: any) {
+      setFirmaFeedback(`Error: ${err?.message || 'no se pudo guardar'}`);
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = prev; }
+    }
+  });
+
+  // Render documents list
+  const renderFichaDocumentos = (docs: any[]) => {
+    const el = document.getElementById('fichaDocsList');
+    if (!el) return;
+    if (!docs.length) { el.innerHTML = '<p class="empty-inline">Sin documentos registrados</p>'; return; }
+    const tipoLabel: Record<string, string> = {
+      consentimiento_informado: 'Consentimiento Informado',
+      lopd: 'LOPD / RGPD',
+      revocacion: 'Revocación',
+      otro: 'Documento',
+    };
+    el.innerHTML = docs.map((d: any) => {
+      const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
+      const fechaFirma = d.fecha_firma ? ` · Firmado ${fmtDate(d.fecha_firma)}` : '';
+      return `<div class="ficha-doc-card">
+        <span class="material-symbols-rounded ficha-doc-icon">description</span>
+        <div class="ficha-doc-info">
+          <div class="ficha-doc-title">${escapeHtml(tipoLabel[d.tipo] || d.tipo)}</div>
+          <div class="ficha-doc-meta"><span class="status-chip ${estadoClass}">${d.estado}</span>${escapeHtml(fechaFirma)}</div>
+        </div>
+        <div class="ficha-doc-actions">
+          <a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf" target="_blank" class="btn-sm btn-outline">PDF</a>
+          <button class="btn-sm btn-outline" data-action="delete-doc" data-doc-id="${d.id}" style="color:#ef4444">Eliminar</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Delete docs
+    el.querySelectorAll('button[data-action="delete-doc"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('¿Eliminar este documento?')) return;
+        const docId = (btn as HTMLElement).getAttribute('data-doc-id');
+        if (!docId) return;
+        try {
+          await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
+          if (fichaPatientId) {
+            const pl = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
+            renderFichaDocumentos(pl.data || []);
+          }
+        } catch (err: any) { alert(`Error: ${err?.message}`); }
+      });
+    });
+  };
+
+  // Load docs when ficha opens — patch openFichaPaciente to also load docs
+  const _origOpenFicha = openFichaPaciente;
+  // Override: we extend after docs tab loads
+  document.querySelector('[data-ficha-tab="documentos"]')?.addEventListener('click', async () => {
+    if (!fichaPatientId) return;
+    const pl = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
+    renderFichaDocumentos(pl.data || []);
+  });
+
   // ===================== GESTORIA =====================
   const gestoriaBody = document.getElementById('gestoriaBody') as HTMLElement | null;
   const gestoriaHead = document.getElementById('gestoriaHead') as HTMLElement | null;
@@ -5238,6 +5466,49 @@ import Layout from '../layouts/Layout.astro';
     opacity: 1;
     border-color: currentColor;
   }
+
+  /* === FIRMA DIGITAL === */
+  .modal-panel-wide { max-width: 720px; }
+  .firma-doc-contenido {
+    max-height: 220px;
+    overflow-y: auto;
+    background: var(--bg-app);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: var(--text-secondary);
+    margin: 0 0 1rem;
+  }
+  .firma-pad-section { margin-bottom: 1rem; }
+  .firma-pad-label { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; }
+  .firma-pad-hint { font-weight: 400; font-size: 0.8rem; color: var(--text-muted); }
+  .firma-pad-wrap {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    cursor: crosshair;
+    display: inline-block;
+    width: 100%;
+  }
+  .firma-pad-wrap canvas { display: block; width: 100%; height: 160px; }
+  .firma-status-hint { font-size: 0.8rem; color: var(--text-muted); align-self: center; }
+  .ficha-docs-list { padding: 0.5rem 1rem 1rem; }
+  .ficha-doc-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ficha-doc-card:last-child { border-bottom: none; }
+  .ficha-doc-icon { font-size: 1.6rem; color: var(--accent); }
+  .ficha-doc-info { flex: 1; }
+  .ficha-doc-title { font-weight: 600; font-size: 0.92rem; }
+  .ficha-doc-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem; }
+  .ficha-doc-actions { display: flex; gap: 0.4rem; }
 
   /* === FACTURACION === */
   .factura-preview {

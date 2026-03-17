@@ -11,6 +11,7 @@ import paymentsRouter from './routes/payments.js';
 import clinicalNotesRouter from './routes/clinical-notes.js';
 import remindersRouter from './routes/reminders.js';
 import invoicesRouter from './routes/invoices.js';
+import documentsRouter from './routes/documents.js';
 
 // Configuracion
 const app = express();
@@ -80,6 +81,7 @@ app.use('/api/pagos', paymentsRouter);
 app.use('/api/notas-clinicas', clinicalNotesRouter);
 app.use('/api/cron/recordatorios', remindersRouter);
 app.use('/api/facturas', invoicesRouter);
+app.use('/api/documentos', documentsRouter);
 
 // Error handler
 app.use((err, req, res, _next) => {
