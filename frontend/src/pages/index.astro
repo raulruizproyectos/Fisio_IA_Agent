@@ -921,7 +921,7 @@ import Layout from '../layouts/Layout.astro';
 
                 <form id="agentForm" class="ai-input-area">
                   <div class="assistant-action-grid">
-                    <button type="button" class="btn-action btn-pdf is-pending" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF"><span class="material-symbols-rounded">picture_as_pdf</span> PDF tras generar</button>
+                    <button type="button" class="btn-action btn-pdf is-pending" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF"><span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar</button>
                     <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
                   </div>
                   <div class="assistant-composer-shell">
@@ -1527,11 +1527,11 @@ import Layout from '../layouts/Layout.astro';
   // === SIDEBAR TOGGLE (responsive) ===
   const sidebarBackdrop = document.getElementById('sidebarBackdrop') as HTMLElement | null;
   const isMobile = () => window.innerWidth <= 768;
-  const isCompactAssistantViewport = () => window.innerWidth <= 1480 || window.innerHeight <= 900;
+  const isCompactAssistantViewport = () => true;
 
   const syncOverlayBodyLock = () => {
     const sidebarOpen = Boolean(sidebar?.classList.contains('open'));
-    const assistantOpen = Boolean(isCompactAssistantViewport() && assistantRail?.classList.contains('open'));
+    const assistantOpen = Boolean(assistantRail?.classList.contains('open'));
     document.body.style.overflow = sidebarOpen || assistantOpen ? 'hidden' : '';
   };
 
@@ -1547,10 +1547,6 @@ import Layout from '../layouts/Layout.astro';
   };
 
   const openAssistantRail = () => {
-    if (!isCompactAssistantViewport()) {
-      input?.focus();
-      return;
-    }
     assistantRail?.classList.add('open');
     assistantRailBackdrop?.classList.add('visible');
     assistantRailToggle?.setAttribute('aria-expanded', 'true');
@@ -1577,11 +1573,7 @@ import Layout from '../layouts/Layout.astro';
   sidebarBackdrop?.addEventListener('click', closeSidebar);
 
   assistantRailToggle?.addEventListener('click', () => {
-    if (isCompactAssistantViewport()) {
-      assistantRail?.classList.contains('open') ? closeAssistantRail() : openAssistantRail();
-      return;
-    }
-    input?.focus();
+    assistantRail?.classList.contains('open') ? closeAssistantRail() : openAssistantRail();
   });
   assistantRailFab?.addEventListener('click', () => {
     assistantRail?.classList.contains('open') ? closeAssistantRail() : openAssistantRail();
@@ -1641,13 +1633,7 @@ import Layout from '../layouts/Layout.astro';
   // Clean up on resize
   window.addEventListener('resize', () => {
     if (!isMobile()) closeSidebar();
-    if (!isCompactAssistantViewport()) {
-      assistantRail?.classList.remove('open');
-      assistantRailBackdrop?.classList.remove('visible');
-      assistantRailToggle?.setAttribute('aria-expanded', 'false');
-    assistantRailFab?.setAttribute('aria-expanded', 'false');
-      syncOverlayBodyLock();
-    }
+    syncOverlayBodyLock();
   });
 
   // === CHAT ===
@@ -1673,13 +1659,13 @@ import Layout from '../layouts/Layout.astro';
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
     const hasReport = Boolean(lastExerciseReportPayload);
-    exercisePdfBtn.disabled = !hasReport;
+    exercisePdfBtn.disabled = false;
     exercisePdfBtn.classList.toggle('is-pending', !hasReport);
     exercisePdfBtn.classList.toggle('is-available', hasReport);
     exercisePdfBtn.innerHTML = hasReport
       ? '<span class="material-symbols-rounded">picture_as_pdf</span> Descargar PDF'
-      : '<span class="material-symbols-rounded">picture_as_pdf</span> PDF tras generar';
-    exercisePdfBtn.title = hasReport ? 'Exportar a PDF' : 'Genera un plan para habilitar el PDF';
+      : '<span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar';
+    exercisePdfBtn.title = hasReport ? 'Exportar a PDF' : 'Genera un plan y luego exportalo a PDF';
     exercisePdfBtn.setAttribute('aria-label', hasReport ? 'Descargar PDF del plan actual' : 'PDF disponible tras generar un plan');
   };
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
@@ -8563,4 +8549,231 @@ import Layout from '../layouts/Layout.astro';
     font-size: 0.65rem;
     line-height: 1.4;
     color: #6f8599;
+  }
+  /* --- Final copilot layout reset --- */
+  .workspace-shell {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .content {
+    grid-column: 1 / -1;
+  }
+
+  .assistant-launch-btn {
+    display: inline-flex !important;
+    position: static !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+  }
+
+  .assistant-fab {
+    display: none !important;
+  }
+
+  .assistant-rail {
+    position: fixed !important;
+    top: var(--topbar-height);
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: min(440px, calc(100vw - 1rem));
+    height: auto !important;
+    max-height: none !important;
+    padding: 0.85rem !important;
+    border-left: none !important;
+    background: transparent !important;
+    transform: translateX(calc(100% + 1rem));
+    transition: transform 0.24s ease;
+    pointer-events: none;
+    z-index: 92;
+    box-shadow: none !important;
+  }
+
+  .assistant-rail.open {
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .assistant-rail-card {
+    height: 100%;
+    min-height: 0;
+    border: 1px solid #dce8ee !important;
+    border-radius: 1.25rem !important;
+    background: #ffffff !important;
+    box-shadow: 0 28px 70px -38px rgba(15, 23, 42, 0.5) !important;
+    overflow: hidden;
+  }
+
+  .assistant-rail-body,
+  .assistant-console,
+  .assistant-dialog-surface {
+    min-height: 0;
+  }
+
+  .assistant-rail .assistant-module-header {
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+
+  .assistant-rail .assistant-dialog-surface {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 0.75rem;
+    padding: 0.8rem;
+  }
+
+  .assistant-rail .assistant-toolbar {
+    padding: 0.8rem;
+    gap: 0.65rem;
+  }
+
+  .assistant-rail .assistant-live-context {
+    display: none;
+  }
+
+  .assistant-rail:not(.assistant-has-patient) .assistant-patient-brief {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .assistant-rail .chat-log {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .assistant-rail .chat-log:empty {
+    display: none;
+  }
+
+  .assistant-rail .ai-input-area {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    padding: 0.75rem 0.8rem 0.7rem;
+    border-top: 1px solid #e7eef3;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .assistant-rail .assistant-action-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+    gap: 0.55rem;
+  }
+
+  .assistant-rail .btn-action {
+    min-height: 2.9rem;
+    font-size: 0.84rem;
+    white-space: nowrap;
+  }
+
+  .assistant-rail .btn-pdf.is-pending {
+    background: #f6fbff;
+    border: 1px solid #b4c8d6;
+    color: #21445a;
+  }
+
+  .assistant-rail .btn-pdf.is-available {
+    background: #ffffff;
+    border: 1px solid #b6c7d3;
+    color: #1f3147;
+  }
+
+  .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 6rem !important;
+    height: 6rem !important;
+    max-height: 10rem !important;
+  }
+
+  .assistant-rail-close {
+    display: inline-flex !important;
+  }
+
+  .assistant-rail-backdrop {
+    position: fixed !important;
+    inset: var(--topbar-height) 0 0 0;
+    background: rgba(2, 6, 23, 0.56);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+    z-index: 91;
+  }
+
+  .assistant-rail-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  @media (max-width: 1480px), (max-height: 920px) {
+    .assistant-launch-btn {
+      display: none !important;
+    }
+
+    .assistant-fab {
+      display: inline-flex !important;
+    }
+
+    .assistant-rail {
+      width: min(430px, calc(100vw - 0.75rem));
+      padding: 0.5rem 0.4rem 0.5rem 0.6rem !important;
+    }
+  }
+
+  @media (max-width: 1280px) {
+    .user-name {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .assistant-rail {
+      width: min(420px, calc(100vw - 0.35rem));
+      padding: 0.35rem 0.2rem 0.35rem 0.35rem !important;
+    }
+
+    .assistant-rail .assistant-dialog-surface {
+      padding: 0.7rem;
+    }
+
+    .assistant-rail .assistant-shortcuts {
+      display: none;
+    }
+
+    .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .assistant-rail .ai-textarea-wrapper textarea {
+      min-height: 4.8rem !important;
+      height: 4.8rem !important;
+      max-height: 8rem !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .assistant-rail {
+      width: 100vw;
+      padding: 0 !important;
+    }
+
+    .assistant-rail-card {
+      border-radius: 1rem 1rem 0 0 !important;
+      border-right: none !important;
+      border-bottom: none !important;
+    }
+
+    .assistant-fab {
+      right: 0.75rem;
+      bottom: 0.75rem;
+    }
   }</style>
