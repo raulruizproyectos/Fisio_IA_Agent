@@ -934,6 +934,19 @@ import Layout from '../layouts/Layout.astro';
                     <button type="button" class="assistant-mode-chip" data-assistant-mode="patient-message" aria-pressed="false"><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
                   </div>
 
+                  <div class="assistant-mode-card" id="assistantModeCard" aria-live="polite">
+                    <div class="assistant-mode-card-head">
+                      <span class="assistant-brief-kicker">Modo activo</span>
+                      <strong id="assistantModeTitle">Nuevo plan guiado</strong>
+                    </div>
+                    <p class="assistant-mode-copy" id="assistantModeSummary">Genera una propuesta inicial con plan IA, PDF e historial listos desde un briefing corto.</p>
+                    <div class="assistant-mode-meta">
+                      <span class="assistant-mode-pill" id="assistantModeOutput">Salida: plan IA + PDF</span>
+                      <span class="assistant-mode-pill is-soft" id="assistantModeRequirement">Requiere: paciente + objetivo</span>
+                    </div>
+                    <p class="assistant-mode-tip" id="assistantModeTip">Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.</p>
+                  </div>
+
                   <div class="chat-log" id="chatLog"></div>
                 </div>
 
@@ -1003,6 +1016,12 @@ import Layout from '../layouts/Layout.astro';
   const assistantFlowTitle = document.getElementById('assistantFlowTitle') as HTMLElement | null;
   const assistantShortcuts = document.getElementById('assistantShortcuts') as HTMLElement | null;
   const assistantModeSwitch = document.getElementById('assistantModeSwitch') as HTMLElement | null;
+  const assistantModeCard = document.getElementById('assistantModeCard') as HTMLElement | null;
+  const assistantModeTitle = document.getElementById('assistantModeTitle') as HTMLElement | null;
+  const assistantModeSummary = document.getElementById('assistantModeSummary') as HTMLElement | null;
+  const assistantModeOutput = document.getElementById('assistantModeOutput') as HTMLElement | null;
+  const assistantModeRequirement = document.getElementById('assistantModeRequirement') as HTMLElement | null;
+  const assistantModeTip = document.getElementById('assistantModeTip') as HTMLElement | null;
   const inputArea = document.querySelector('.ai-input-area') as HTMLElement | null;
   const dashCitasBody = document.getElementById('dashCitasBody') as HTMLElement | null;
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
@@ -1243,6 +1262,11 @@ import Layout from '../layouts/Layout.astro';
     primaryBusyLabel: string;
     primaryIcon: string;
     action: 'exercise' | 'chat';
+    title: string;
+    summary: string;
+    outputLabel: string;
+    requirementLabel: string;
+    tip: string;
   }> = {
     'new-plan': {
       placeholder: 'Describe dolor, restriccion funcional u objetivo clinico para generar un plan...',
@@ -1250,6 +1274,11 @@ import Layout from '../layouts/Layout.astro';
       primaryBusyLabel: 'Generando...',
       primaryIcon: 'electric_bolt',
       action: 'exercise',
+      title: 'Nuevo plan guiado',
+      summary: 'Genera una propuesta inicial con plan IA, PDF e historial listos desde un briefing corto.',
+      outputLabel: 'Salida: plan IA + PDF',
+      requirementLabel: 'Requiere: paciente + objetivo',
+      tip: 'Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.',
     },
     'update-plan': {
       placeholder: 'Indica que cambio quieres hacer en el plan actual o que evolucion ha habido...',
@@ -1257,6 +1286,11 @@ import Layout from '../layouts/Layout.astro';
       primaryBusyLabel: 'Actualizando...',
       primaryIcon: 'neurology',
       action: 'exercise',
+      title: 'Actualizar plan actual',
+      summary: 'Reformula o progresa el plan existente con el contexto clinico del paciente ya cargado.',
+      outputLabel: 'Salida: plan ajustado',
+      requirementLabel: 'Requiere: paciente con contexto',
+      tip: 'Ideal cuando el dolor cambia, el paciente mejora o hace falta ajustar la dosificacion.',
     },
     'next-session': {
       placeholder: 'Escribe que quieres revisar o preparar para la siguiente sesion...',
@@ -1264,6 +1298,11 @@ import Layout from '../layouts/Layout.astro';
       primaryBusyLabel: 'Preparando...',
       primaryIcon: 'event_available',
       action: 'chat',
+      title: 'Preparar siguiente sesion',
+      summary: 'Resume que revisar en consulta y deja una checklist breve para la siguiente visita.',
+      outputLabel: 'Salida: checklist de sesion',
+      requirementLabel: 'Requiere: paciente con historial',
+      tip: 'Util para entrar a consulta con foco y decidir progresiones o regresiones rapidas.',
     },
     'patient-message': {
       placeholder: 'Indica el tono o el mensaje que quieres enviar al paciente...',
@@ -1271,6 +1310,11 @@ import Layout from '../layouts/Layout.astro';
       primaryBusyLabel: 'Redactando...',
       primaryIcon: 'chat',
       action: 'chat',
+      title: 'Mensaje listo para el paciente',
+      summary: 'Redacta una explicacion clara y profesional del plan para mejorar adherencia y seguimiento.',
+      outputLabel: 'Salida: mensaje editable',
+      requirementLabel: 'Requiere: paciente con contexto',
+      tip: 'Usalo para explicar el plan, reforzar la adherencia o aclarar siguientes pasos.',
     },
   };
   let activeAssistantMode: AssistantWorkMode = 'new-plan';
@@ -1395,6 +1439,50 @@ import Layout from '../layouts/Layout.astro';
     return `${basePrompt}\n\n${label}: ${trimmedExtra}`;
   };
 
+  const renderAssistantModeCard = () => {
+    if (!assistantModeCard || !assistantModeTitle || !assistantModeSummary || !assistantModeOutput || !assistantModeRequirement || !assistantModeTip) return;
+    const modeConfig = getActiveAssistantModeConfig();
+    const hasPatient = Boolean(selectedPatientId);
+    const hasPlan = hasExerciseReportReady();
+    const hasDraft = Boolean(String(input?.value || '').trim());
+    const patientLabel = selectedPatientName || currentAssistantPatientBrief?.patientName || 'Paciente activo';
+
+    assistantModeTitle.textContent = modeConfig.title;
+    assistantModeSummary.textContent = modeConfig.summary;
+    assistantModeOutput.textContent = modeConfig.outputLabel;
+
+    if (!hasPatient && activeAssistantMode !== 'new-plan') {
+      assistantModeRequirement.textContent = 'Paso previo: selecciona un paciente';
+      assistantModeTip.textContent = 'Este modo usa el contexto clinico del caso. Primero vincula el copilot al paciente correcto.';
+      assistantModeCard.classList.add('is-blocked');
+      assistantModeCard.classList.remove('is-ready', 'is-complete');
+      return;
+    }
+
+    assistantModeCard.classList.remove('is-blocked');
+
+    if (hasPlan && activeAssistantMode === 'new-plan') {
+      assistantModeRequirement.textContent = 'Estado: plan generado';
+      assistantModeTip.textContent = `Ya tienes una propuesta para ${patientLabel}. Puedes exportar PDF o cambiar a Actualizar plan para iterar.`;
+      assistantModeCard.classList.add('is-complete');
+      assistantModeCard.classList.remove('is-ready');
+      return;
+    }
+
+    assistantModeCard.classList.remove('is-complete');
+
+    if (hasDraft) {
+      assistantModeRequirement.textContent = modeConfig.requirementLabel;
+      assistantModeTip.textContent = `Briefing listo para ${patientLabel || 'este caso'}. Revisa el texto y lanza ${modeConfig.primaryLabel.toLowerCase()}.`;
+      assistantModeCard.classList.add('is-ready');
+      return;
+    }
+
+    assistantModeRequirement.textContent = modeConfig.requirementLabel;
+    assistantModeTip.textContent = modeConfig.tip;
+    assistantModeCard.classList.remove('is-ready');
+  };
+
   const getAssistantModeDraft = (mode: AssistantWorkMode) => {
     if (mode === 'update-plan') {
       return 'Ajusta el plan segun la evolucion del dolor, tolerancia y adherencia.';
@@ -1417,6 +1505,7 @@ import Layout from '../layouts/Layout.astro';
     }
     renderAssistantModeSwitch();
     renderAssistantPrimaryButton();
+    renderAssistantModeCard();
     renderAssistantFlowCard();
     resizeAgentInput();
     if (options.focus && input) {
@@ -1472,6 +1561,7 @@ import Layout from '../layouts/Layout.astro';
 
   const renderAssistantFlowCard = () => {
     if (!assistantFlowCard || !assistantFlowSteps || !assistantFlowHint || !assistantFlowDraft || !assistantFlowTitle) return;
+    renderAssistantModeCard();
 
     const hasPatient = Boolean(selectedPatientId);
     const hasGoal = String(input?.value || '').trim().length >= 12;
@@ -2020,10 +2110,11 @@ import Layout from '../layouts/Layout.astro';
   updateExercisePdfButton();
   renderAssistantPrimaryButton();
   renderAssistantModeSwitch();
+  renderAssistantModeCard();
   renderAssistantFlowCard();
 
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
-  input?.addEventListener('input', () => { resizeAgentInput(); renderAssistantFlowCard(); });
+  input?.addEventListener('input', () => { resizeAgentInput(); renderAssistantModeCard(); renderAssistantFlowCard(); });
   window.requestAnimationFrame(resizeAgentInput);
 
   assistantShortcuts?.addEventListener('click', (event: Event) => {
@@ -8581,6 +8672,74 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-mode-chip.is-active .material-symbols-rounded {
     color: inherit;
+  }
+
+  .assistant-mode-card {
+    display: grid;
+    gap: 0.72rem;
+    padding: 0.92rem 1rem;
+    border-radius: 1.1rem;
+    border: 1px solid #cfe4ec;
+    background: linear-gradient(180deg, rgba(244, 251, 251, 0.98), rgba(236, 247, 250, 0.94));
+  }
+
+  .assistant-mode-card.is-ready {
+    border-color: #9edacb;
+    box-shadow: 0 18px 34px -30px rgba(13, 148, 136, 0.42);
+  }
+
+  .assistant-mode-card.is-complete {
+    border-color: #7dd3c5;
+    background: linear-gradient(180deg, rgba(236, 255, 248, 0.98), rgba(227, 252, 244, 0.96));
+  }
+
+  .assistant-mode-card.is-blocked {
+    border-color: #f0d9aa;
+    background: linear-gradient(180deg, rgba(255, 251, 238, 0.98), rgba(255, 247, 227, 0.95));
+  }
+
+  .assistant-mode-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .assistant-mode-card-head strong {
+    color: #12334e;
+    font-size: 0.98rem;
+    line-height: 1.3;
+  }
+
+  .assistant-mode-copy,
+  .assistant-mode-tip {
+    margin: 0;
+    color: #5a7286;
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  .assistant-mode-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .assistant-mode-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.95rem;
+    padding: 0.36rem 0.66rem;
+    border-radius: 999px;
+    background: rgba(13, 148, 136, 0.12);
+    color: #0f5f63;
+    font-size: 0.74rem;
+    font-weight: 800;
+  }
+
+  .assistant-mode-pill.is-soft {
+    background: rgba(19, 64, 94, 0.08);
+    color: #36556f;
   }
 
   .assistant-brief-item-secondary {
