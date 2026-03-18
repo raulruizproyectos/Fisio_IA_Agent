@@ -970,6 +970,7 @@ import Layout from '../layouts/Layout.astro';
   const form = document.getElementById('agentForm') as HTMLFormElement | null;
   const input = document.getElementById('agentInput') as HTMLTextAreaElement | null;
   const log = document.getElementById('chatLog') as HTMLElement | null;
+  const assistantDialogScroll = document.querySelector('#assistantRail .assistant-dialog-scroll') as HTMLElement | null;
   const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement | null;
   const exerciseBtn = document.getElementById('exerciseRecoBtn') as HTMLButtonElement | null;
   const exercisePdfBtn = document.getElementById('exercisePdfBtn') as HTMLButtonElement | null;
@@ -1745,8 +1746,11 @@ import Layout from '../layouts/Layout.astro';
 
   // === CHAT ===
   const scrollAssistantRailToBottom = () => {
-    if (!log) return;
-    log.scrollTop = log.scrollHeight;
+    const scrollTarget = assistantDialogScroll || log;
+    if (!scrollTarget) return;
+    window.requestAnimationFrame(() => {
+      scrollTarget.scrollTop = scrollTarget.scrollHeight;
+    });
   };
   const addMessage = (text: string, type: 'user' | 'agent') => {
     if (!log) return;
@@ -2134,68 +2138,36 @@ import Layout from '../layouts/Layout.astro';
     renderAssistantFlowCard();
     const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
     const coverage = payload?.image_coverage || {};
-    const engineObs = payload?.engine_observability || {};
+    const briefClinicalNote = trimAgentBriefText(payload?.message_to_therapist || '', 180)
+      || 'Plan inicial generado. Revisa el resumen y exporta el PDF para ver el informe clinico completo.';
+    const exerciseNames = exercises
+      .map((exercise: any) => String(exercise?.nombre || '').trim())
+      .filter(Boolean)
+      .slice(0, 3);
+
+    const metaBits = [`${exercises.length} ejercicio(s)`];
+    if (coverage.with_image !== undefined && coverage.total !== undefined) {
+      metaBits.push(`${coverage.with_image}/${coverage.total} imagenes`);
+    }
+    if (payload?.red_flags?.present) {
+      metaBits.push('revisar alertas');
+    }
 
     let html = '<div class="msg-avatar"><span class="material-symbols-rounded">&#xea4a;</span></div>';
     html += '<div class="msg-body"><span class="msg-sender">Agente IA</span>';
-    html += '<div class="exercise-report">';
-
-    if (payload?.red_flags?.present) {
-      html += '<div class="exercise-alert"><span class="material-symbols-rounded">&#xe002;</span> ALERTAS: Se recomienda valoracion medica antes de continuar.</div>';
-    }
-    if (payload?.message_to_therapist) {
-      html += `<div class="exercise-note"><strong>Nota clinica:</strong> ${escapeHtml(payload.message_to_therapist)}</div>`;
-    }
-
-    html += `<div class="exercise-summary">Ejercicios recomendados: <strong>${exercises.length}</strong>`;
-    if (coverage.percentage !== undefined) {
-      html += ` | Imagenes: ${coverage.with_image}/${coverage.total}`;
-    }
-    if (typeof engineObs.attempts === 'number') {
-      html += ` | Motor IA: ${engineObs.attempts} intento(s)`;
-      if (typeof engineObs.retries_used === 'number') {
-        html += ` (${engineObs.retries_used} reintentos)`;
-      }
-    }
+    html += '<div class="exercise-report exercise-report-compact">';
+    html += '<div class="exercise-report-head">';
+    html += '<strong>Plan listo para revisar</strong>';
+    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' · '))}</span>`;
     html += '</div>';
-    if (engineObs.fallback_used) {
-      html += `<div class="exercise-note"><strong>Fallback activo:</strong> ${escapeHtml(engineObs.fallback_reason || 'motor_ia_no_disponible')}</div>`;
+    if (payload?.red_flags?.present) {
+      html += '<div class="exercise-alert"><span class="material-symbols-rounded">&#xe002;</span> Revisa alertas antes de prescribir el programa.</div>';
     }
-
-    exercises.forEach((ex: any, idx: number) => {
-      const order = ex.orden || idx + 1;
-      const nombre = escapeHtml(ex.nombre || 'Ejercicio');
-      const zona = escapeHtml(ex.zona_corporal || 'general');
-      const imgUrl = ex.imagen_url || '';
-      const procedimiento = ex.procedimiento
-        ? escapeHtml(Array.isArray(ex.procedimiento) ? ex.procedimiento.join(' ') : String(ex.procedimiento))
-        : (ex.descripcion ? escapeHtml(String(ex.descripcion)) : '');
-
-      const pauta = [
-        ex.series ? `Series: ${ex.series}` : null,
-        ex.repeticiones ? `Rep: ${ex.repeticiones}` : null,
-        ex.duracion_segundos ? `${ex.duracion_segundos}s` : null,
-      ].filter(Boolean).join(' | ');
-
-      html += '<div class="exercise-card">';
-      if (imgUrl) {
-        html += `<div class="exercise-card-img"><img src="${escapeAttr(imgUrl)}" alt="${escapeAttr(ex.nombre || 'Ejercicio')}" loading="lazy" onerror="this.parentElement.style.display='none'"/></div>`;
-      }
-      html += '<div class="exercise-card-body">';
-      html += `<div class="exercise-card-title">${order}. ${nombre} <span class="exercise-zona">${zona}</span></div>`;
-      if (pauta) html += `<div class="exercise-card-pauta">${escapeHtml(pauta)}</div>`;
-      if (procedimiento) html += `<div class="exercise-card-proc">${procedimiento}</div>`;
-      if (ex.why) html += `<div class="exercise-card-why"><strong>Motivo:</strong> ${escapeHtml(ex.why)}</div>`;
-      if (Array.isArray(ex.cautions) && ex.cautions.length) {
-        html += `<div class="exercise-card-caution"><span class="material-symbols-rounded" style="font-size:14px;">report</span> ${escapeHtml(ex.cautions.join('; '))}</div>`;
-      }
-      html += '</div></div>';
-    });
-
-    if (payload?.message_to_patient) {
-      html += `<div class="exercise-patient-msg"><strong>Mensaje para paciente:</strong> ${escapeHtml(payload.message_to_patient)}</div>`;
+    html += `<p class="exercise-note exercise-note-compact">${escapeHtml(briefClinicalNote)}</p>`;
+    if (exerciseNames.length) {
+      html += `<div class="exercise-summary exercise-summary-compact"><strong>Ejercicios clave:</strong> ${escapeHtml(exerciseNames.join(', '))}</div>`;
     }
-    html += `<div class="exercise-id">ID: ${escapeHtml(payload?.recommendation_id || '-')}</div>`;
+    html += '<p class="exercise-report-meta">El detalle completo del informe queda reservado para el PDF y el historial.</p>';
     html += '</div></div>';
 
     const article = document.createElement('article');
@@ -8830,6 +8802,10 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.45rem;
   }
 
+  .assistant-rail.assistant-has-report .assistant-toolbar {
+    padding-bottom: 0.55rem;
+  }
+
   .assistant-flow-head {
     display: grid;
     gap: 0.18rem;
@@ -8912,6 +8888,8 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .chat-log {
+    display: grid;
+    gap: 0.55rem;
     flex: 0 0 auto;
     min-height: 0;
     max-height: none;
@@ -8956,6 +8934,73 @@ import Layout from '../layouts/Layout.astro';
     background: #ffffff;
     border: 1px solid #b6c7d3;
     color: #1f3147;
+  }
+
+  .assistant-rail .exercise-report {
+    margin-top: 0;
+  }
+
+  .assistant-rail .exercise-report-compact {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.8rem;
+    border: 1px solid #dbe7ef;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+  }
+
+  .assistant-rail .exercise-report-head {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  .assistant-rail .exercise-report-head strong {
+    font-size: 0.94rem;
+    line-height: 1.3;
+    color: #10233d;
+  }
+
+  .assistant-rail .exercise-report-pill {
+    width: fit-content;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: #eef7fb;
+    color: #31566f;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .assistant-rail .exercise-note-compact,
+  .assistant-rail .exercise-summary-compact,
+  .assistant-rail .exercise-report-meta {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #4f657a;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .assistant-rail .exercise-summary-compact strong {
+    color: #17324c;
+  }
+
+  .assistant-rail .exercise-report-meta {
+    color: #5f7488;
+  }
+
+  .assistant-rail .exercise-card,
+  .assistant-rail .exercise-card-img,
+  .assistant-rail .exercise-card-body,
+  .assistant-rail .exercise-card-title,
+  .assistant-rail .exercise-card-pauta,
+  .assistant-rail .exercise-card-proc,
+  .assistant-rail .exercise-card-why,
+  .assistant-rail .exercise-card-caution,
+  .assistant-rail .exercise-patient-msg,
+  .assistant-rail .exercise-id {
+    display: none !important;
   }
 
   .assistant-rail .ai-textarea-wrapper textarea {
