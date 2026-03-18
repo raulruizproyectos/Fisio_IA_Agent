@@ -945,6 +945,15 @@ import Layout from '../layouts/Layout.astro';
                     <p class="assistant-mode-tip" id="assistantModeTip">Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.</p>
                   </div>
 
+                  <div class="assistant-delivery-card" id="assistantDeliveryCard" aria-live="polite" hidden>
+                    <div class="assistant-delivery-head">
+                      <span class="assistant-brief-kicker">Entrega paciente</span>
+                      <strong id="assistantDeliveryStatus">Sin paciente vinculado</strong>
+                    </div>
+                    <p class="assistant-delivery-summary" id="assistantDeliverySummary">Selecciona un paciente para preparar el envio por Telegram y la exportacion del PDF.</p>
+                    <div class="assistant-delivery-pills" id="assistantDeliveryPills"></div>
+                  </div>
+
                   <div class="chat-log" id="chatLog"></div>
                 </div>
 
@@ -1022,6 +1031,10 @@ import Layout from '../layouts/Layout.astro';
   const assistantModeOutput = document.getElementById('assistantModeOutput') as HTMLElement | null;
   const assistantModeRequirement = document.getElementById('assistantModeRequirement') as HTMLElement | null;
   const assistantModeTip = document.getElementById('assistantModeTip') as HTMLElement | null;
+  const assistantDeliveryCard = document.getElementById('assistantDeliveryCard') as HTMLElement | null;
+  const assistantDeliveryStatus = document.getElementById('assistantDeliveryStatus') as HTMLElement | null;
+  const assistantDeliverySummary = document.getElementById('assistantDeliverySummary') as HTMLElement | null;
+  const assistantDeliveryPills = document.getElementById('assistantDeliveryPills') as HTMLElement | null;
   const inputArea = document.querySelector('.ai-input-area') as HTMLElement | null;
   const dashCitasBody = document.getElementById('dashCitasBody') as HTMLElement | null;
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
@@ -1247,6 +1260,10 @@ import Layout from '../layouts/Layout.astro';
   // === SPA ROUTING ===
   const navItems = document.querySelectorAll('.nav-item[data-section]');
   const pages = document.querySelectorAll('.page-section');
+  navItems.forEach((item) => {
+    const label = item.querySelector('.nav-label')?.textContent?.replace(/s+/g, ' ').trim();
+    if (label) item.setAttribute('data-nav-label', label);
+  });
   const pageLoaders: Record<string, () => void> = {};
   let selectedPatientId: string | null = null;
   let selectedPatientName = '';
@@ -1319,6 +1336,7 @@ import Layout from '../layouts/Layout.astro';
   let quickSearchMatches: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let quickSearchActiveIndex = -1;
   let assistantTelegramLinkRequestToken = 0;
+  const deliveredExerciseReports = new Map<string, { recommendationId: string | null; sentAt: string }>();
 
   const renderAssistantPatientContext = () => {
     if (!assistantPatientLabel || !assistantPatientMeta) return;
@@ -2054,6 +2072,77 @@ import Layout from '../layouts/Layout.astro';
     const chatId = String(currentPatientTelegramLinkState?.telegram_chat_id || '').trim();
     return linkStatus === 'linked' && Boolean(chatId);
   };
+  const getCurrentReportDeliveryState = () => {
+    if (!selectedPatientId) return null;
+    const entry = deliveredExerciseReports.get(selectedPatientId);
+    if (!entry) return null;
+    const currentRecommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim() || null;
+    if (currentRecommendationId && entry.recommendationId && currentRecommendationId !== entry.recommendationId) {
+      return null;
+    }
+    return entry;
+  };
+  const renderAssistantDeliveryCard = () => {
+    if (!assistantDeliveryCard || !assistantDeliveryStatus || !assistantDeliverySummary || !assistantDeliveryPills) return;
+
+    if (!selectedPatientId) {
+      assistantDeliveryCard.hidden = true;
+      assistantDeliveryPills.innerHTML = '';
+      assistantDeliveryCard.classList.remove('is-ready', 'is-sent', 'is-blocked');
+      return;
+    }
+
+    assistantDeliveryCard.hidden = false;
+    const hasReport = Boolean(lastExerciseReportPayload);
+    const telegramLinked = hasLinkedTelegramPatient();
+    const deliveryState = getCurrentReportDeliveryState();
+    const pill = (label: string, modifier = '') => '<span class="assistant-delivery-pill' + (modifier ? ' ' + modifier : '') + '">' + escapeHtml(label) + '</span>';
+
+    assistantDeliveryCard.classList.remove('is-ready', 'is-sent', 'is-blocked');
+
+    if (!telegramLinked) {
+      assistantDeliveryStatus.textContent = 'Telegram pendiente de vincular';
+      assistantDeliverySummary.textContent = 'Antes de enviar nada al paciente, completa el enlace de Telegram en su ficha para abrir el canal seguro.';
+      assistantDeliveryPills.innerHTML = [
+        pill('Telegram pendiente', 'is-warning'),
+        pill(hasReport ? 'PDF listo' : 'PDF pendiente', hasReport ? 'is-ready' : 'is-soft')
+      ].join('');
+      assistantDeliveryCard.classList.add('is-blocked');
+      return;
+    }
+
+    if (!hasReport) {
+      assistantDeliveryStatus.textContent = 'Canal listo para enviar';
+      assistantDeliverySummary.textContent = 'El paciente ya tiene Telegram vinculado. Genera o actualiza el plan y luego podras enviar el PDF directamente desde aqui.';
+      assistantDeliveryPills.innerHTML = [
+        pill('Telegram vinculado', 'is-ready'),
+        pill('Esperando plan', 'is-soft')
+      ].join('');
+      assistantDeliveryCard.classList.add('is-ready');
+      return;
+    }
+
+    if (deliveryState) {
+      assistantDeliveryStatus.textContent = 'Informe enviado al paciente';
+      assistantDeliverySummary.textContent = 'El PDF ya se envio por Telegram en esta sesion. Si haces cambios en el plan, podras reenviarlo con el boton principal.';
+      assistantDeliveryPills.innerHTML = [
+        pill('Telegram vinculado', 'is-ready'),
+        pill('PDF enviado', 'is-ready'),
+        pill('Puedes reenviar', 'is-soft')
+      ].join('');
+      assistantDeliveryCard.classList.add('is-sent');
+      return;
+    }
+
+    assistantDeliveryStatus.textContent = 'Plan listo para entregar';
+    assistantDeliverySummary.textContent = 'El resumen ya esta revisado y el PDF esta preparado. El siguiente paso natural es enviarlo al paciente por Telegram o descargarlo.';
+    assistantDeliveryPills.innerHTML = [
+      pill('Telegram vinculado', 'is-ready'),
+      pill('PDF listo', 'is-ready'),
+      pill('Entrega pendiente', 'is-soft')
+    ].join('');
+    assistantDeliveryCard.classList.add('is-ready');
+  };
   const updateExerciseTelegramButton = () => {
     if (!exerciseTelegramBtn) return;
     const hasPatient = Boolean(selectedPatientId);
@@ -2081,12 +2170,22 @@ import Layout from '../layouts/Layout.astro';
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Telegram al generar';
       exerciseTelegramBtn.title = 'Genera un plan antes de enviarlo al paciente';
       exerciseTelegramBtn.setAttribute('aria-label', 'Enviar por Telegram cuando el plan este generado');
+      renderAssistantDeliveryCard();
       return;
     }
 
-    exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Enviar Telegram';
+    if (getCurrentReportDeliveryState()) {
+      exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Reenviar Telegram';
+      exerciseTelegramBtn.title = 'Reenviar PDF y mensaje del plan al paciente por Telegram';
+      exerciseTelegramBtn.setAttribute('aria-label', 'Reenviar informe al paciente por Telegram');
+      renderAssistantDeliveryCard();
+      return;
+    }
+
+    exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Enviar PDF Telegram';
     exerciseTelegramBtn.title = 'Enviar PDF y mensaje del plan al paciente por Telegram';
     exerciseTelegramBtn.setAttribute('aria-label', 'Enviar informe al paciente por Telegram');
+    renderAssistantDeliveryCard();
   };
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
     if (sendBtn) sendBtn.disabled = busy;
@@ -2170,6 +2269,7 @@ import Layout from '../layouts/Layout.astro';
 
   updateExercisePdfButton();
   updateExerciseTelegramButton();
+  renderAssistantDeliveryCard();
   renderAssistantPrimaryButton();
   renderAssistantModeSwitch();
   renderAssistantModeCard();
@@ -2458,8 +2558,17 @@ import Layout from '../layouts/Layout.astro';
   const addExerciseReport = (payload: any) => {
     if (!log) return;
     lastExerciseReportPayload = payload;
+    const payloadPatientId = String(payload?.patient_id || selectedPatientId || '').trim();
+    const payloadRecommendationId = String(payload?.recommendation_id || '').trim() || null;
+    if (payloadPatientId) {
+      const delivered = deliveredExerciseReports.get(payloadPatientId);
+      if (delivered && delivered.recommendationId !== payloadRecommendationId) {
+        deliveredExerciseReports.delete(payloadPatientId);
+      }
+    }
     updateExercisePdfButton();
     renderAssistantFlowCard();
+    renderAssistantDeliveryCard();
     const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
     const coverage = payload?.image_coverage || {};
     const briefClinicalNote = trimAgentBriefText(payload?.message_to_therapist || '', 180)
@@ -2822,6 +2931,11 @@ import Layout from '../layouts/Layout.astro';
         } catch {}
       }
 
+      deliveredExerciseReports.set(selectedPatientId, {
+        recommendationId: recommendationId || null,
+        sentAt: new Date().toISOString(),
+      });
+      updateExerciseTelegramButton();
       addMessage('Informe enviado por Telegram al paciente y dejado listo en trazabilidad del caso.', 'agent');
     } catch (err: any) {
       addMessage(`No se pudo enviar por Telegram: ${err?.message || 'error no identificado'}`, 'agent');
@@ -5214,6 +5328,35 @@ import Layout from '../layouts/Layout.astro';
   .sidebar.collapsed .nav-label,
   .sidebar.collapsed .brand-text,
   .sidebar.collapsed .badge { display: none; }
+  .sidebar.collapsed .nav-item {
+    justify-content: center;
+    overflow: visible;
+  }
+  .sidebar.collapsed .nav-item::after {
+    content: attr(data-nav-label);
+    position: absolute;
+    left: calc(100% + 0.65rem);
+    top: 50%;
+    transform: translateY(-50%) translateX(-6px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 30;
+    padding: 0.42rem 0.62rem;
+    border-radius: 0.7rem;
+    background: rgba(12, 26, 46, 0.96);
+    color: #f8fafc;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 18px 32px -24px rgba(2, 6, 23, 0.8);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+  .sidebar.collapsed .nav-item:hover::after,
+  .sidebar.collapsed .nav-item:focus-visible::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
 
   .sidebar-brand {
     display: flex;
@@ -8889,6 +9032,81 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-mode-pill.is-soft {
+    background: rgba(19, 64, 94, 0.08);
+    color: #36556f;
+  }
+
+  .assistant-delivery-card {
+    display: grid;
+    gap: 0.7rem;
+    padding: 0.92rem 1rem;
+    border-radius: 1.1rem;
+    border: 1px solid #cfe4ec;
+    background: linear-gradient(180deg, rgba(249, 252, 252, 0.98), rgba(241, 248, 250, 0.95));
+  }
+
+  .assistant-delivery-card.is-ready {
+    border-color: #9edacb;
+    box-shadow: 0 18px 34px -30px rgba(13, 148, 136, 0.36);
+  }
+
+  .assistant-delivery-card.is-sent {
+    border-color: #7dd3c5;
+    background: linear-gradient(180deg, rgba(236, 255, 248, 0.98), rgba(227, 252, 244, 0.96));
+  }
+
+  .assistant-delivery-card.is-blocked {
+    border-color: #f0d9aa;
+    background: linear-gradient(180deg, rgba(255, 251, 238, 0.98), rgba(255, 247, 227, 0.95));
+  }
+
+  .assistant-delivery-head {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  .assistant-delivery-head strong {
+    color: #12334e;
+    font-size: 0.98rem;
+    line-height: 1.3;
+  }
+
+  .assistant-delivery-summary {
+    margin: 0;
+    color: #5a7286;
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  .assistant-delivery-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .assistant-delivery-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.9rem;
+    padding: 0.34rem 0.64rem;
+    border-radius: 999px;
+    background: rgba(19, 64, 94, 0.08);
+    color: #36556f;
+    font-size: 0.74rem;
+    font-weight: 800;
+  }
+
+  .assistant-delivery-pill.is-ready {
+    background: rgba(13, 148, 136, 0.12);
+    color: #0f5f63;
+  }
+
+  .assistant-delivery-pill.is-warning {
+    background: rgba(245, 158, 11, 0.16);
+    color: #8a4b06;
+  }
+
+  .assistant-delivery-pill.is-soft {
     background: rgba(19, 64, 94, 0.08);
     color: #36556f;
   }
