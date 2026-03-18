@@ -13,6 +13,27 @@ CRM + agentes para centros de fisioterapia: gestiÃƒÆ’Ã†â€™Ãƒâ€
 ## En pausa
 - GeneraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­deo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
+## Checkpoint actual (Sesion 104 - 2026-03-18)
+- Commit exacto para retomar: `d5fe6de`
+- Estado de GitHub: `origin/main` sincronizado con este checkpoint.
+- Estado actual del producto:
+  - el copilot de ejercicios ya es utilizable como superficie principal para generar planes
+  - la agenda semanal del CRM ya se reconcilia contra Google Calendar al consultar la vista
+  - el frontend refresca agenda cada `45s` y al volver a enfocar la pestana
+- Lo que ya hace la agenda ahora:
+  - si una cita se mueve en Google Calendar, se refleja en el CRM
+  - si una cita desaparece o se cancela en Google Calendar, el CRM la muestra cancelada
+  - si aparece un evento nuevo en Google Calendar dentro de la ventana consultada, se refleja en la agenda aunque no exista aun una fila local equivalente
+- Decision de producto actual:
+  - `Mensaje paciente` queda fuera del primer nivel del copilot hasta que pueda enviar una comunicacion real revisada por Telegram y dejar trazabilidad clinica
+- Pendiente inmediato de la proxima sesion:
+  - montar sincronizacion background real de Google Calendar via n8n o backend, para no depender del refresco de la vista
+  - restaurar las etiquetas visibles de la sidebar cuando el colapso automatico no conviene en monitor/portatil
+  - seguir empujando el agente de ejercicios como diferencial principal del producto
+- Despliegue pendiente para ver el ultimo bloque implementado:
+  - `fisio-backend`
+  - `fisio-frontend`
+
 ## Checkpoint actual (Sesion 92 - 2026-03-11)
 - La arquitectura vigente queda fijada como hibrida:
   - backend autoritativo para contratos, seguridad, persistencia, jobs, PDF y entrega,
@@ -182,6 +203,7 @@ node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<u
 - Estado detallado por sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
+- Checkpoint operativo actual: `docs/checkpoint_20260318_agenda_sync_handoff.md`
 - Checkpoint operativo: `docs/checkpoint_20260317_frontend_copilot_handoff.md`
 - AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis PROET: `docs/proet/platform_analysis_20260304.md`
 - Norma n8n obligatoria: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`

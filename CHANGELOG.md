@@ -1,3 +1,41 @@
+## Sesion 104 - 2026-03-18
+
+### Objetivo
+Cerrar la fase de recuperacion del copilot, dejar la agenda conectada con Google Calendar y documentar el punto exacto para continuar sin perder contexto.
+
+### Trabajo realizado
+
+**Copilot / frontend CRM**
+- [x] Se estabiliza el copilot como superficie de trabajo util para generar planes sin mezclar el informe completo dentro del modal.
+- [x] Se consolidan los modos principales del copilot alrededor de trabajo clinico real: nuevo plan, actualizar plan y preparar sesion.
+- [x] `Mensaje paciente` se aparta del primer nivel hasta que pueda convertirse en una accion real con envio y trazabilidad.
+- [x] El responsive del copilot deja una base operativa para seguir iterando, aunque queda un ajuste visual pendiente en la sidebar (etiquetas que desaparecen por el colapso automatico).
+
+**Agenda sincronizada con Google Calendar (commit `d5fe6de`)**
+- [x] `GET /api/profesional/appointments` ya reconcilia la ventana consultada contra Google Calendar.
+- [x] Si un evento vinculado cambia en Calendar, el backend actualiza los datos servidos al CRM.
+- [x] Si un evento vinculado desaparece o se cancela en Calendar, se refleja como cancelado en agenda.
+- [x] Si existe un evento en Calendar dentro de la ventana y aun no tiene representacion local equivalente, la agenda lo muestra igualmente.
+- [x] El frontend refresca agenda cada 45 segundos y al recuperar foco en las vistas Inicio y Agenda.
+
+### Estado al cierre
+- Backend: OK, reconciliacion de agenda con Google Calendar en lectura.
+- Frontend: OK, agenda con auto-refresh y copilot utilizable para seguir desarrollando.
+- GitHub: OK, `origin/main` sincronizado en `d5fe6de`.
+- EasyPanel: pendiente redeploy de `fisio-backend` y `fisio-frontend` para ver el ultimo bloque.
+
+### Punto exacto para retomar
+1. Montar sincronizacion background real de Google Calendar via n8n o backend, para no depender del refresco de la vista.
+2. Corregir la desaparicion de etiquetas en la sidebar cuando el viewport entra en colapso automatico.
+3. Volver al desarrollo funcional del agente de ejercicios y de la agenda ya sobre esta base mas estable.
+
+### Validacion realizada
+- `node --check backend/src/routes/professional.js` OK
+- `astro check` OK en copia limpia (`0 errors`, `0 warnings`, `11 hints`)
+- `astro build` OK en copia limpia
+
+---
+
 # Fisio_IA_Agent - Changelog / Context Log
 
 ## Sesion 103 - 2026-03-17

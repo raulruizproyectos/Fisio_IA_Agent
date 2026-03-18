@@ -1,3 +1,31 @@
+## Estado actual (2026-03-18, Sesion 104) - Copilot estable para seguir y agenda reconciliada con Google Calendar.
+
+### Completado sesion 104
+- [x] El copilot queda suficientemente recuperado para continuar desarrollo sin el bloqueo visual anterior.
+- [x] `Mensaje paciente` sale del primer nivel hasta que exista envio real y trazabilidad por Telegram.
+- [x] La agenda semanal ya se reconcilia contra Google Calendar en backend al consultar la ventana.
+- [x] El frontend refresca agenda automaticamente cada 45s y al volver a la pestana.
+- [x] GitHub queda sincronizado con el checkpoint `d5fe6de`.
+
+### Acciones requeridas antes de probar este bloque
+1. **Redeploy de `fisio-backend` en EasyPanel**.
+2. **Redeploy de `fisio-frontend` en EasyPanel**.
+3. Verificar en produccion:
+   - que la agenda refleja altas, cambios y cancelaciones de Google Calendar dentro de la ventana semanal
+   - que el copilot sigue usable en monitor y portatil
+
+### Siguiente paso exacto
+1. Montar sincronizacion background real de Google Calendar via n8n o backend.
+2. Corregir la desaparicion de etiquetas/textos en la sidebar cuando entra el colapso automatico.
+3. Reanudar desarrollo del agente de ejercicios sobre esta base estable.
+
+### Riesgos o bloqueos conocidos
+- Sin sincronizacion background, la agenda ya queda mucho mejor, pero sigue dependiendo de consultar la vista o del refresco automatico.
+- La sidebar aun puede perder etiquetas en ciertos anchos porque el colapso automatico sigue siendo demasiado agresivo.
+- El modo `Mensaje paciente` no debe reactivarse hasta cerrar el envio real al paciente con trazabilidad.
+
+---
+
 # Configuracion Pendiente - Fisio_IA_Agent
 
 ## Estado actual (2026-03-17, Sesion 103) - CRM profesional completo: 5/9 roadmap completado.
