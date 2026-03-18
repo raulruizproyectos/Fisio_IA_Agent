@@ -1340,6 +1340,20 @@ import Layout from '../layouts/Layout.astro';
     const hasGoal = String(input?.value || '').trim().length >= 12;
     const hasPlan = hasExerciseReportReady();
     const patientName = selectedPatientName || currentAssistantPatientBrief?.patientName || 'Paciente activo';
+    const draftSummary = getAssistantDraftSummary();
+
+    assistantFlowCard.classList.toggle('is-complete', hasPlan);
+    assistantRail?.classList.toggle('assistant-has-report', hasPlan);
+
+    if (hasPlan) {
+      assistantFlowSteps.innerHTML = '';
+      assistantFlowTitle.textContent = 'Plan generado y listo para revisar';
+      assistantFlowHint.textContent = 'El informe ya esta debajo. Revisa el contenido y exporta el PDF cuando quieras.';
+      assistantFlowDraft.textContent = draftSummary
+        ? 'Objetivo usado: ' + draftSummary
+        : 'El plan ya esta preparado para exportacion.';
+      return;
+    }
 
     const steps = [
       {
@@ -1354,13 +1368,13 @@ import Layout from '../layouts/Layout.astro';
       },
       {
         label: 'Plan IA',
-        state: hasPlan ? 'done' : (hasPatient && hasGoal ? 'current' : 'pending'),
-        meta: hasPlan ? 'Propuesta generada' : 'Pulsa Generar plan'
+        state: hasPatient && hasGoal ? 'current' : 'pending',
+        meta: 'Pulsa Generar plan'
       },
       {
         label: 'PDF e historial',
-        state: hasPlan ? 'done' : 'pending',
-        meta: hasPlan ? 'Listo para exportar' : 'Se activa tras generar'
+        state: 'pending',
+        meta: 'Se activa tras generar'
       }
     ];
 
@@ -1380,15 +1394,11 @@ import Layout from '../layouts/Layout.astro';
     } else if (!hasGoal) {
       assistantFlowTitle.textContent = 'El caso ya esta listo para recibir un objetivo clinico';
       assistantFlowHint.textContent = 'Describe dolor, restriccion funcional o meta terapeutica para orientar el plan.';
-    } else if (!hasPlan) {
+    } else {
       assistantFlowTitle.textContent = 'Buen briefing: ahora toca pedir la propuesta del agente';
       assistantFlowHint.textContent = 'Genera el plan para revisar ejercicios, ajustar el mensaje al paciente y habilitar el PDF.';
-    } else {
-      assistantFlowTitle.textContent = 'Plan generado: ya puedes cerrar el flujo';
-      assistantFlowHint.textContent = 'Revisa la propuesta, exporta el PDF y deja trazabilidad en historial sin salir del copilot.';
     }
 
-    const draftSummary = getAssistantDraftSummary();
     assistantFlowDraft.textContent = draftSummary
       ? 'Objetivo actual: ' + draftSummary
       : 'Sin objetivo redactado todavia.';
@@ -8783,6 +8793,35 @@ import Layout from '../layouts/Layout.astro';
     border-radius: 1rem;
     background: linear-gradient(180deg, #fbfeff 0%, #f4fafc 100%);
     flex-shrink: 0;
+  }
+
+  .assistant-flow-card.is-complete {
+    gap: 0.42rem;
+    padding: 0.68rem 0.78rem;
+    background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%);
+    border-color: #bbf7d0;
+  }
+
+  .assistant-flow-card.is-complete .assistant-flow-steps {
+    display: none;
+  }
+
+  .assistant-flow-card.is-complete .assistant-flow-head strong {
+    font-size: 0.9rem;
+  }
+
+  .assistant-flow-card.is-complete .assistant-flow-hint,
+  .assistant-flow-card.is-complete .assistant-flow-draft {
+    font-size: 0.76rem;
+    line-height: 1.38;
+  }
+
+  .assistant-rail.assistant-has-report .assistant-patient-brief {
+    display: none !important;
+  }
+
+  .assistant-rail.assistant-has-report .assistant-dialog-scroll {
+    gap: 0.55rem;
   }
 
   .assistant-flow-head {
