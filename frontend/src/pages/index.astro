@@ -921,7 +921,7 @@ import Layout from '../layouts/Layout.astro';
 
                 <form id="agentForm" class="ai-input-area">
                   <div class="assistant-action-grid">
-                    <button type="button" class="btn-action btn-pdf" id="exercisePdfBtn" aria-label="Descargar PDF" title="Exportar a PDF"><span class="material-symbols-rounded">picture_as_pdf</span> Guardar PDF</button>
+                    <button type="button" class="btn-action btn-pdf is-pending" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF"><span class="material-symbols-rounded">picture_as_pdf</span> PDF tras generar</button>
                     <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
                   </div>
                   <div class="assistant-composer-shell">
@@ -941,6 +941,10 @@ import Layout from '../layouts/Layout.astro';
       </aside>
     </div>
     <div class="assistant-rail-backdrop" id="assistantRailBackdrop"></div>
+    <button class="assistant-fab" id="assistantRailFab" type="button" aria-label="Abrir copilot clinico" aria-controls="assistantRail" aria-expanded="false">
+      <span class="material-symbols-rounded">robot_2</span>
+      <span>Copilot</span>
+    </button>
   </div>
 </Layout>
 
@@ -969,6 +973,7 @@ import Layout from '../layouts/Layout.astro';
   const assistantRailToggle = document.getElementById('assistantRailToggle') as HTMLButtonElement | null;
   const assistantRailClose = document.getElementById('assistantRailClose') as HTMLButtonElement | null;
   const assistantRailBackdrop = document.getElementById('assistantRailBackdrop') as HTMLElement | null;
+  const assistantRailFab = document.getElementById('assistantRailFab') as HTMLButtonElement | null;
   const assistantPatientLabel = document.getElementById('assistantPatientLabel') as HTMLElement | null;
   const assistantPatientMeta = document.getElementById('assistantPatientMeta') as HTMLElement | null;
   const assistantPatientBrief = document.getElementById('assistantPatientBrief') as HTMLElement | null;
@@ -1549,6 +1554,7 @@ import Layout from '../layouts/Layout.astro';
     assistantRail?.classList.add('open');
     assistantRailBackdrop?.classList.add('visible');
     assistantRailToggle?.setAttribute('aria-expanded', 'true');
+    assistantRailFab?.setAttribute('aria-expanded', 'true');
     syncOverlayBodyLock();
     window.setTimeout(() => input?.focus(), 120);
   };
@@ -1557,6 +1563,7 @@ import Layout from '../layouts/Layout.astro';
     assistantRail?.classList.remove('open');
     assistantRailBackdrop?.classList.remove('visible');
     assistantRailToggle?.setAttribute('aria-expanded', 'false');
+    assistantRailFab?.setAttribute('aria-expanded', 'false');
     syncOverlayBodyLock();
   };
 
@@ -1575,6 +1582,9 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     input?.focus();
+  });
+  assistantRailFab?.addEventListener('click', () => {
+    assistantRail?.classList.contains('open') ? closeAssistantRail() : openAssistantRail();
   });
   assistantRailClose?.addEventListener('click', closeAssistantRail);
   assistantRailBackdrop?.addEventListener('click', closeAssistantRail);
@@ -1635,6 +1645,7 @@ import Layout from '../layouts/Layout.astro';
       assistantRail?.classList.remove('open');
       assistantRailBackdrop?.classList.remove('visible');
       assistantRailToggle?.setAttribute('aria-expanded', 'false');
+    assistantRailFab?.setAttribute('aria-expanded', 'false');
       syncOverlayBodyLock();
     }
   });
@@ -1659,10 +1670,28 @@ import Layout from '../layouts/Layout.astro';
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
   const exerciseBtnDefaultHtml = exerciseBtn?.innerHTML || '';
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
+  const updateExercisePdfButton = () => {
+    if (!exercisePdfBtn) return;
+    const hasReport = Boolean(lastExerciseReportPayload);
+    exercisePdfBtn.disabled = !hasReport;
+    exercisePdfBtn.classList.toggle('is-pending', !hasReport);
+    exercisePdfBtn.classList.toggle('is-available', hasReport);
+    exercisePdfBtn.innerHTML = hasReport
+      ? '<span class="material-symbols-rounded">picture_as_pdf</span> Descargar PDF'
+      : '<span class="material-symbols-rounded">picture_as_pdf</span> PDF tras generar';
+    exercisePdfBtn.title = hasReport ? 'Exportar a PDF' : 'Genera un plan para habilitar el PDF';
+    exercisePdfBtn.setAttribute('aria-label', hasReport ? 'Descargar PDF del plan actual' : 'PDF disponible tras generar un plan');
+  };
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
     if (sendBtn) sendBtn.disabled = busy;
     if (exerciseBtn) exerciseBtn.disabled = busy;
-    if (exercisePdfBtn) exercisePdfBtn.disabled = busy;
+    if (exercisePdfBtn) {
+      if (busy) {
+        exercisePdfBtn.disabled = true;
+      } else {
+        updateExercisePdfButton();
+      }
+    }
     if (input) input.disabled = busy;
     if (chatPatientSelect) chatPatientSelect.disabled = busy;
     inputArea?.classList.toggle('is-busy', busy);
@@ -1724,6 +1753,8 @@ import Layout from '../layouts/Layout.astro';
     const maxPx = Math.min(Math.max(Math.round(window.innerHeight * 0.18), 112), 160);
     input.style.height = `${Math.min(input.scrollHeight, maxPx)}px`;
   };
+
+  updateExercisePdfButton();
 
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
   input?.addEventListener('input', resizeAgentInput);
@@ -2262,10 +2293,12 @@ import Layout from '../layouts/Layout.astro';
       syncEngineOpsFromPayload(payload);
       clearAgentProgress();
       addExerciseReport(payload);
+      updateExercisePdfButton();
       if (retriesUsed > 0) {
         addMessage(`Motor IA respondió tras ${retriesUsed} reintento(s).`, 'agent');
       }
       setAgentStatus(true);
+      updateExercisePdfButton();
     } catch (err: any) {
       clearAgentProgress();
       if (err?.code === 'async_poll_timeout') {
@@ -5035,6 +5068,35 @@ import Layout from '../layouts/Layout.astro';
   .assistant-launch-btn .material-symbols-rounded {
     font-size: 1rem;
     color: var(--accent);
+  }
+
+  .assistant-fab {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 95;
+    padding: 0.78rem 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0d9488, #0ea5e9);
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 20px 38px -24px rgba(15, 23, 42, 0.45);
+    cursor: pointer;
+  }
+
+  .assistant-fab .material-symbols-rounded,
+  .assistant-fab span {
+    color: inherit;
+  }
+
+  .assistant-fab[aria-expanded='true'] {
+    background: linear-gradient(135deg, #0f766e, #0369a1);
   }
 
   .assistant-rail {
@@ -7828,6 +7890,18 @@ import Layout from '../layouts/Layout.astro';
     background: #ffffff;
     border: 1px solid #e2e8f0;
     color: #475569;
+  }
+
+  .assistant-rail .btn-pdf.is-pending {
+    background: #eef4f7;
+    border: 1px dashed #9fb6c7;
+    color: #456176;
+  }
+
+  .assistant-rail .btn-pdf.is-available {
+    background: #ffffff;
+    border-style: solid;
+    color: #334155;
   }
 
   .assistant-rail .btn-pdf:hover,
