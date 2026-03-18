@@ -20,6 +20,7 @@ n8n es el orquestador principal para:
   - `w1-appointment-agent.json`
   - `w2-exercise-agent.json`
   - `w3-crm-trigger.json`
+  - `w6-calendar-sync.json`
 
 ## Configuracion 2 bots Telegram
 - Bot pacientes (agenda citas): `fisioterapia_CarlaJL`

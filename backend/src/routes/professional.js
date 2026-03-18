@@ -431,6 +431,44 @@ async function resolveCrmProfessionalId(rawProfessionalId) {
   return inserted.data?.id || null;
 }
 
+async function getDefaultCrmProfessionalId() {
+  const configuredId = process.env.DEFAULT_PROFESSIONAL_ID?.trim();
+  if (configuredId) {
+    const resolvedConfigured = await resolveCrmProfessionalId(configuredId);
+    if (resolvedConfigured) return resolvedConfigured;
+  }
+
+  const crmProfile = await supabase
+    .from('crm_perfiles')
+    .select('id')
+    .eq('activo', true)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (crmProfile.error) throw crmProfile.error;
+  if (crmProfile.data?.id) return crmProfile.data.id;
+
+  const legacyProfessional = await supabase
+    .from('profesionales')
+    .select('id')
+    .order('creado_en', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (legacyProfessional.error) throw legacyProfessional.error;
+  if (!legacyProfessional.data?.id) {
+    throw new Error('No hay profesionales disponibles en CRM/legacy para sincronizar agenda.');
+  }
+
+  const resolvedLegacy = await resolveCrmProfessionalId(legacyProfessional.data.id);
+  if (!resolvedLegacy) {
+    throw new Error('No se pudo resolver el profesional por defecto al modelo CRM.');
+  }
+
+  return resolvedLegacy;
+}
+
 async function findAppointmentConflicts({ professionalId, startAt, endAt, excludeId = null }) {
   let query = supabase
     .from('crm_citas')
@@ -510,6 +548,129 @@ function normalizeCalendarEvent(rawEvent) {
     description: rawEvent?.description ? String(rawEvent.description) : null,
     status: String(rawEvent?.status || '').trim() || 'confirmed',
   };
+}
+
+function extractCalendarDescriptionField(description = '', label = '') {
+  const safeDescription = String(description || '');
+  const safeLabel = String(label || '').trim();
+  if (!safeDescription || !safeLabel) return null;
+  const match = safeDescription.match(new RegExp(`(?:^|\\n)${safeLabel}:\\s*(.+)$`, 'im'));
+  return match?.[1]?.trim() || null;
+}
+
+function normalizeComparableName(value = '') {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeComparablePhone(value = '') {
+  return String(value || '').replace(/\D+/g, '');
+}
+
+async function findCrmPatientIdForCalendarEvent(event) {
+  const calendarPatientName = normalizeCalendarPatientName(event?.summary);
+  if (!calendarPatientName) return null;
+
+  const targetName = normalizeComparableName(calendarPatientName);
+  if (!targetName) return null;
+
+  const phoneHint = normalizeComparablePhone(extractCalendarDescriptionField(event?.description, 'Tel'));
+
+  const { data: crmPatients, error: crmPatientsError } = await supabase
+    .from('crm_pacientes')
+    .select('id, nombre, apellidos, telefono, activo')
+    .limit(500);
+
+  if (crmPatientsError) throw crmPatientsError;
+
+  let matches = (crmPatients || [])
+    .filter((patient) => patient?.activo !== false)
+    .filter((patient) => {
+      const fullName = [patient?.nombre, patient?.apellidos].filter(Boolean).join(' ').trim();
+      return normalizeComparableName(fullName) === targetName;
+    });
+
+  if (phoneHint) {
+    const phoneMatches = matches.filter(
+      (patient) => normalizeComparablePhone(patient?.telefono) === phoneHint
+    );
+    if (phoneMatches.length === 1) return phoneMatches[0].id;
+    if (phoneMatches.length > 1) return null;
+  }
+
+  if (matches.length === 1) return matches[0].id;
+  if (matches.length > 1) return null;
+
+  const { data: legacyPatients, error: legacyPatientsError } = await supabase
+    .from('pacientes')
+    .select('id, nombre_completo, phone')
+    .limit(500);
+
+  if (legacyPatientsError) throw legacyPatientsError;
+
+  let legacyMatches = (legacyPatients || []).filter(
+    (patient) => normalizeComparableName(patient?.nombre_completo) === targetName
+  );
+
+  if (phoneHint) {
+    const legacyPhoneMatches = legacyMatches.filter(
+      (patient) => normalizeComparablePhone(patient?.phone) === phoneHint
+    );
+    if (legacyPhoneMatches.length === 1) {
+      return resolveCrmPatientId(legacyPhoneMatches[0].id);
+    }
+    if (legacyPhoneMatches.length > 1) return null;
+  }
+
+  if (legacyMatches.length === 1) {
+    return resolveCrmPatientId(legacyMatches[0].id);
+  }
+
+  return null;
+}
+
+async function persistCalendarBackfillAppointment({ event, professionalId }) {
+  if (!event?.google_calendar_event_id || !event?.inicio_en || !event?.fin_en) return null;
+
+  const patientId = await findCrmPatientIdForCalendarEvent(event);
+  if (!patientId) return null;
+
+  const insertPayload = {
+    paciente_id: patientId,
+    fisioterapeuta_id: professionalId,
+    inicio_en: event.inicio_en,
+    fin_en: event.fin_en,
+    estado: 'confirmada',
+    canal_origen: 'manual',
+    motivo: event.description || null,
+    google_calendar_event_id: event.google_calendar_event_id,
+  };
+
+  const { data, error } = await supabase
+    .from('crm_citas')
+    .insert(insertPayload)
+    .select(APPOINTMENT_SELECT)
+    .single();
+
+  if (!error && data) return normalizeAppointmentRow(data);
+
+  if (error?.code === '23505') {
+    const { data: existing, error: existingError } = await supabase
+      .from('crm_citas')
+      .select(APPOINTMENT_SELECT)
+      .eq('google_calendar_event_id', event.google_calendar_event_id)
+      .maybeSingle();
+
+    if (existingError) throw existingError;
+    return existing ? normalizeAppointmentRow(existing) : null;
+  }
+
+  if (error) throw error;
+  return null;
 }
 
 async function fetchCalendarAppointmentsDirect(timeMin, timeMax) {
@@ -614,6 +775,7 @@ async function reconcileAppointmentsWithCalendar({
     updated: 0,
     cancelled: 0,
     synthetic: 0,
+    persisted: 0,
     restored: 0,
   };
 
@@ -669,10 +831,25 @@ async function reconcileAppointmentsWithCalendar({
     [...rowById.values()].map((row) => row.google_calendar_event_id).filter(Boolean)
   );
 
-  const calendarOnlyRows = calendarEvents
-    .filter((event) => event.status !== 'cancelled')
-    .filter((event) => !knownCalendarIds.has(event.google_calendar_event_id))
-    .map((event) => buildCalendarSyntheticAppointment(event, professionalId));
+  const calendarOnlyRows = [];
+  for (const event of calendarEvents) {
+    if (!event || event.status === 'cancelled') continue;
+    if (knownCalendarIds.has(event.google_calendar_event_id)) continue;
+
+    const persistedRow = await persistCalendarBackfillAppointment({
+      event,
+      professionalId,
+    });
+
+    if (persistedRow) {
+      rowById.set(persistedRow.id, persistedRow);
+      knownCalendarIds.add(event.google_calendar_event_id);
+      summary.persisted += 1;
+      continue;
+    }
+
+    calendarOnlyRows.push(buildCalendarSyntheticAppointment(event, professionalId));
+  }
 
   summary.synthetic = calendarOnlyRows.length;
 
@@ -796,6 +973,124 @@ router.get('/appointments', async (req, res, next) => {
       isMissingTableError(err, 'profesionales')
     ) {
       return res.status(400).json({ error: 'Faltan tablas de CRM/legacy para crear citas. Ejecuta migraciones pendientes.' });
+    }
+    next(err);
+  }
+});
+
+router.post('/appointments/sync-calendar', async (req, res, next) => {
+  try {
+    const professionalIdRaw =
+      pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id') ||
+      pickValue(req.query, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
+
+    const lookbackRaw = Number.parseInt(
+      String(pickValue(req.body, 'lookback_days', 'dias_atras') || pickValue(req.query, 'lookback_days', 'dias_atras') || '7'),
+      10
+    );
+    const lookaheadRaw = Number.parseInt(
+      String(pickValue(req.body, 'lookahead_days', 'dias_adelante') || pickValue(req.query, 'lookahead_days', 'dias_adelante') || '30'),
+      10
+    );
+
+    const lookbackDays = Number.isFinite(lookbackRaw) ? Math.min(Math.max(lookbackRaw, 0), 90) : 7;
+    const lookaheadDays = Number.isFinite(lookaheadRaw) ? Math.min(Math.max(lookaheadRaw, 1), 180) : 30;
+
+    const fromRaw = pickValue(req.body, 'desde', 'from') || pickValue(req.query, 'desde', 'from');
+    const toRaw = pickValue(req.body, 'hasta', 'to') || pickValue(req.query, 'hasta', 'to');
+
+    const parsedFrom = fromRaw ? parseIsoTimestamp(fromRaw) : null;
+    const parsedTo = toRaw ? parseIsoTimestamp(toRaw) : null;
+
+    if (fromRaw && !parsedFrom) {
+      return res.status(400).json({ error: 'Formato de fecha invalido en desde/from' });
+    }
+    if (toRaw && !parsedTo) {
+      return res.status(400).json({ error: 'Formato de fecha invalido en hasta/to' });
+    }
+
+    const fromAt = parsedFrom || new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString();
+    const toAt = parsedTo || new Date(Date.now() + lookaheadDays * 24 * 60 * 60 * 1000).toISOString();
+
+    const professionalId = professionalIdRaw
+      ? await resolveCrmProfessionalId(professionalIdRaw)
+      : await getDefaultCrmProfessionalId();
+
+    if (!professionalId) {
+      return res.status(400).json({ error: 'No se pudo resolver el profesional para sincronizar agenda' });
+    }
+
+    const [{ data, error }, calendarEvents] = await Promise.all([
+      supabase
+        .from('crm_citas')
+        .select(APPOINTMENT_SELECT)
+        .eq('fisioterapeuta_id', professionalId)
+        .gte('inicio_en', fromAt)
+        .lte('inicio_en', toAt)
+        .order('inicio_en', { ascending: true })
+        .limit(500),
+      fetchCalendarAppointments(fromAt, toAt),
+    ]);
+
+    if (error) {
+      if (isMissingTableError(error, 'crm_citas')) {
+        return res.status(400).json({ error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.' });
+      }
+      throw error;
+    }
+
+    let rows = (data || []).map(normalizeAppointmentRow);
+    const calendarEventIds = calendarEvents
+      .map((event) => event?.google_calendar_event_id)
+      .filter(Boolean);
+
+    if (calendarEventIds.length) {
+      const existingIds = new Set(rows.map((row) => row.id));
+      const { data: linkedRows, error: linkedRowsError } = await supabase
+        .from('crm_citas')
+        .select(APPOINTMENT_SELECT)
+        .eq('fisioterapeuta_id', professionalId)
+        .in('google_calendar_event_id', calendarEventIds);
+
+      if (linkedRowsError) {
+        if (isMissingTableError(linkedRowsError, 'crm_citas')) {
+          return res.status(400).json({ error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.' });
+        }
+        throw linkedRowsError;
+      }
+
+      for (const row of linkedRows || []) {
+        if (existingIds.has(row.id)) continue;
+        rows.push(normalizeAppointmentRow(row));
+      }
+    }
+
+    const reconciled = await reconcileAppointmentsWithCalendar({
+      professionalId,
+      rows,
+      calendarEvents,
+      fromAt,
+      toAt,
+    });
+
+    res.json({
+      data: {
+        professional_id: professionalId,
+        desde: fromAt,
+        hasta: toAt,
+        appointments_considered: reconciled.rows.length,
+      },
+      calendar_sync: reconciled.calendar_sync,
+    });
+  } catch (err) {
+    if (
+      isMissingTableError(err, 'crm_citas') ||
+      isMissingTableError(err, 'crm_pacientes') ||
+      isMissingTableError(err, 'crm_perfiles') ||
+      isMissingTableError(err, 'pacientes') ||
+      isMissingTableError(err, 'profesionales')
+    ) {
+      return res.status(400).json({ error: 'Faltan tablas de CRM/legacy para sincronizar agenda. Ejecuta migraciones pendientes.' });
     }
     next(err);
   }

@@ -1,0 +1,131 @@
+{
+  "name": "Fisio_IA_Agent / W6 Calendar Sync",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ManualTrigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "ScheduleTrigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();\nconst to = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();\nreturn [{ json: { from, to, lookback_days: 7, lookahead_days: 30 } }];"
+      },
+      "id": "BuildSyncWindow",
+      "name": "Build Sync Window",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments/sync-calendar",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"desde\": $json.from,\n  \"hasta\": $json.to,\n  \"lookback_days\": $json.lookback_days,\n  \"lookahead_days\": $json.lookahead_days\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "TriggerCalendarSync",
+      "name": "Trigger Calendar Sync",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $json?.data || {};\nconst summary = $json?.calendar_sync || {};\nreturn [{ json: { ok: true, professional_id: payload.professional_id || null, desde: payload.desde || null, hasta: payload.hasta || null, appointments_considered: payload.appointments_considered || 0, fetched: summary.fetched || 0, updated: summary.updated || 0, cancelled: summary.cancelled || 0, restored: summary.restored || 0, persisted: summary.persisted || 0, synthetic: summary.synthetic || 0, source: summary.source || null } }];"
+      },
+      "id": "SummarizeSync",
+      "name": "Summarize Sync",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        340
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Sync Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Sync Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Sync Window": {
+      "main": [
+        [
+          {
+            "node": "Trigger Calendar Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Calendar Sync": {
+      "main": [
+        [
+          {
+            "node": "Summarize Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

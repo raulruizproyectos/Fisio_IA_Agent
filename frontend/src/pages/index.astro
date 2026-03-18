@@ -1857,7 +1857,6 @@ import Layout from '../layouts/Layout.astro';
     root.dataset.viewportMode = viewportMode;
     root.dataset.assistantMode = assistantMode;
 
-    sidebar?.classList.toggle('collapsed', viewportMode === 'laptop');
 
     if (viewportMode === 'desktop') {
       closeSidebar();
@@ -9595,27 +9594,27 @@ import Layout from '../layouts/Layout.astro';
     }
   }</style>
 <style is:global id="adaptive-responsive-override">
-  html[data-viewport-mode='laptop'] .sidebar {
+  html[data-viewport-mode='laptop'] .sidebar.collapsed {
     width: 88px !important;
     min-width: 88px !important;
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
   }
 
-  html[data-viewport-mode='laptop'] .sidebar-brand {
+  html[data-viewport-mode='laptop'] .sidebar.collapsed .sidebar-brand {
     justify-content: center !important;
     padding-left: 0.25rem !important;
     padding-right: 0.25rem !important;
   }
 
-  html[data-viewport-mode='laptop'] .sidebar .brand-text,
-  html[data-viewport-mode='laptop'] .sidebar .nav-label,
-  html[data-viewport-mode='laptop'] .sidebar .badge,
-  html[data-viewport-mode='laptop'] .sidebar .sidebar-section-label {
+  html[data-viewport-mode='laptop'] .sidebar.collapsed .brand-text,
+  html[data-viewport-mode='laptop'] .sidebar.collapsed .nav-label,
+  html[data-viewport-mode='laptop'] .sidebar.collapsed .badge,
+  html[data-viewport-mode='laptop'] .sidebar.collapsed .sidebar-section-label {
     display: none !important;
   }
 
-  html[data-viewport-mode='laptop'] .sidebar .nav-item {
+  html[data-viewport-mode='laptop'] .sidebar.collapsed .nav-item {
     justify-content: center !important;
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
