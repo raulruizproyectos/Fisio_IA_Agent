@@ -1636,7 +1636,8 @@ import Layout from '../layouts/Layout.astro';
   const sidebarBackdrop = document.getElementById('sidebarBackdrop') as HTMLElement | null;
   const isMobile = () => window.innerWidth <= 768;
   const isLaptopViewport = () => window.innerWidth <= 1600 || window.innerHeight <= 940;
-  const getAssistantViewportMode = () => (isMobile() ? 'mobile' : isLaptopViewport() ? 'compact' : 'desktop');
+  const isCompactAssistantViewport = () => window.innerWidth <= 1400 || window.innerHeight <= 820;
+  const getAssistantViewportMode = () => (isMobile() ? 'mobile' : isCompactAssistantViewport() ? 'compact' : 'desktop');
 
   const syncResponsiveViewportState = () => {
     const root = document.documentElement;
@@ -9208,16 +9209,16 @@ import Layout from '../layouts/Layout.astro';
   }</style>
 <style is:global id="adaptive-responsive-override">
   html[data-viewport-mode='laptop'] .sidebar {
-    width: 78px !important;
-    min-width: 78px !important;
-    padding-left: 0.45rem !important;
-    padding-right: 0.45rem !important;
+    width: 88px !important;
+    min-width: 88px !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
 
   html[data-viewport-mode='laptop'] .sidebar-brand {
     justify-content: center !important;
-    padding-left: 0.2rem !important;
-    padding-right: 0.2rem !important;
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
   }
 
   html[data-viewport-mode='laptop'] .sidebar .brand-text,
@@ -9229,41 +9230,49 @@ import Layout from '../layouts/Layout.astro';
 
   html[data-viewport-mode='laptop'] .sidebar .nav-item {
     justify-content: center !important;
-    padding-left: 0.45rem !important;
-    padding-right: 0.45rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
 
   html[data-viewport-mode='laptop'] .content {
-    padding: 0.78rem 0.82rem !important;
+    padding: 0.95rem 1rem !important;
   }
 
   html[data-viewport-mode='laptop'] .topbar {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-    gap: 0.45rem !important;
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+    gap: 0.55rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-launch-btn {
-    display: none !important;
+    display: inline-flex !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-fab {
-    display: inline-flex !important;
+    display: none !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail {
     top: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    left: auto !important;
-    width: min(312px, 100vw) !important;
+    left: 0 !important;
+    width: 100vw !important;
     max-width: 100vw !important;
-    padding: 0 !important;
-    transform: translateX(100%) !important;
+    padding: 0.9rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    transform: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.18s ease !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail.open {
-    transform: translateX(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail-backdrop {
@@ -9271,77 +9280,93 @@ import Layout from '../layouts/Layout.astro';
   }
 
   html[data-assistant-mode='compact'] .assistant-rail-card {
-    height: 100dvh !important;
-    border-radius: 0 !important;
+    width: min(760px, calc(100vw - 1.8rem)) !important;
+    max-width: min(760px, calc(100vw - 1.8rem)) !important;
+    height: min(860px, calc(100dvh - 1.8rem)) !important;
+    max-height: calc(100dvh - 1.8rem) !important;
+    margin: 0 !important;
+    border-radius: 1.25rem !important;
+    border: 1px solid #dce8ee !important;
+    box-shadow: 0 28px 80px -34px rgba(15, 23, 42, 0.42) !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-module-header {
-    padding: 0.5rem 0.58rem !important;
+    padding: 0.84rem 0.92rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-rail-copy h2 {
-    font-size: 0.78rem !important;
+    font-size: 1.08rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-toolbar {
-    padding: 0.5rem 0.58rem !important;
-    gap: 0.42rem !important;
+    padding: 0.76rem 0.92rem !important;
+    gap: 0.55rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .patient-selector {
-    min-height: 1.8rem !important;
-    padding: 0.25rem 0.5rem !important;
+    min-height: 3rem !important;
+    padding: 0.4rem 0.7rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .patient-selector select {
-    font-size: 0.76rem !important;
+    font-size: 0.9rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface {
     grid-template-rows: minmax(0, 1fr) auto !important;
-    padding: 0.34rem !important;
+    padding: 0.68rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll {
     min-height: 0 !important;
     overflow-y: auto !important;
-    gap: 0.4rem !important;
-    padding-bottom: 0.25rem !important;
+    gap: 0.58rem !important;
+    padding-bottom: 0.28rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .chat-log {
-    gap: 0.4rem !important;
+    gap: 0.58rem !important;
     padding-bottom: 0 !important;
   }
 
-  html[data-assistant-mode='compact'] .assistant-rail .msg-body {
-    font-size: 0.76rem !important;
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-shortcuts {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.55rem !important;
   }
 
-  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-compact {
-    padding: 0.58rem !important;
-    gap: 0.42rem !important;
+  html[data-assistant-mode='compact'] .assistant-rail.assistant-has-patient .assistant-shortcuts,
+  html[data-assistant-mode='compact'] .assistant-rail.assistant-has-report .assistant-shortcuts,
+  html[data-assistant-mode='compact'] .assistant-rail.assistant-has-report .assistant-flow-card,
+  html[data-assistant-mode='compact'] .assistant-rail.assistant-has-report .assistant-patient-brief {
+    display: none !important;
   }
 
-  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-head strong {
-    font-size: 0.8rem !important;
-  }
-
-  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-pill,
+  html[data-assistant-mode='compact'] .assistant-rail .msg-body,
   html[data-assistant-mode='compact'] .assistant-rail .exercise-note-compact,
   html[data-assistant-mode='compact'] .assistant-rail .exercise-summary-compact,
   html[data-assistant-mode='compact'] .assistant-rail .exercise-report-meta {
-    font-size: 0.74rem !important;
-    line-height: 1.38 !important;
+    font-size: 0.84rem !important;
+    line-height: 1.48 !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-head strong {
+    font-size: 0.98rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.16fr) !important;
+    gap: 0.55rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .btn-action {
+    min-height: 2.85rem !important;
+    font-size: 0.84rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .ai-input-area {
     margin-top: auto !important;
-    padding: 0.42rem 0.5rem calc(0.68rem + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0.7rem 0.78rem calc(0.82rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-disclaimer {
@@ -9349,9 +9374,9 @@ import Layout from '../layouts/Layout.astro';
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .ai-textarea-wrapper textarea {
-    min-height: 3.8rem !important;
-    height: 3.8rem !important;
-    max-height: 5.8rem !important;
+    min-height: 4.6rem !important;
+    height: 4.6rem !important;
+    max-height: 7rem !important;
   }
 
   html[data-assistant-mode='mobile'] .sidebar {
@@ -9380,11 +9405,18 @@ import Layout from '../layouts/Layout.astro';
     width: 100vw !important;
     max-width: 100vw !important;
     padding: 0 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    background: transparent !important;
     transform: translateY(100%) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail.open {
     transform: translateY(0) !important;
+    pointer-events: auto !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail-backdrop {
@@ -9392,72 +9424,82 @@ import Layout from '../layouts/Layout.astro';
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail-card {
+    width: 100vw !important;
+    max-width: 100vw !important;
     height: 100dvh !important;
+    max-height: 100dvh !important;
     border-radius: 0 !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .assistant-module-header {
-    padding: 0.56rem 0.62rem !important;
+    padding: calc(0.8rem + env(safe-area-inset-top, 0px)) 0.86rem 0.72rem !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .assistant-rail-copy h2 {
-    font-size: 0.76rem !important;
+    font-size: 1.16rem !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .assistant-toolbar {
-    padding: 0.48rem 0.55rem !important;
+    padding: 0.68rem 0.78rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .patient-selector {
+    min-height: 3.1rem !important;
+    padding: 0.42rem 0.7rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .patient-selector select {
+    font-size: 0.92rem !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
     grid-template-rows: minmax(0, 1fr) auto !important;
-    padding: 0.36rem !important;
+    padding: 0.58rem !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
     min-height: 0 !important;
     overflow-y: auto !important;
-    gap: 0.34rem !important;
-    padding-bottom: 0.2rem !important;
+    gap: 0.48rem !important;
+    padding-bottom: 0.24rem !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
-    gap: 0.35rem !important;
+    gap: 0.48rem !important;
   }
 
-  html[data-assistant-mode='mobile'] .assistant-rail .msg-body {
-    font-size: 0.78rem !important;
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-shortcuts,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+    grid-template-columns: 1fr !important;
   }
 
-  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-compact {
-    padding: 0.52rem !important;
-    gap: 0.34rem !important;
+  html[data-assistant-mode='mobile'] .assistant-rail.assistant-has-patient .assistant-shortcuts,
+  html[data-assistant-mode='mobile'] .assistant-rail.assistant-has-report .assistant-shortcuts,
+  html[data-assistant-mode='mobile'] .assistant-rail.assistant-has-report .assistant-flow-card,
+  html[data-assistant-mode='mobile'] .assistant-rail.assistant-has-report .assistant-patient-brief {
+    display: none !important;
   }
 
-  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-head strong {
-    font-size: 0.76rem !important;
-  }
-
-  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-pill,
+  html[data-assistant-mode='mobile'] .assistant-rail .msg-body,
   html[data-assistant-mode='mobile'] .assistant-rail .exercise-note-compact,
   html[data-assistant-mode='mobile'] .assistant-rail .exercise-summary-compact,
   html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-meta {
-    font-size: 0.72rem !important;
-    line-height: 1.34 !important;
+    font-size: 0.84rem !important;
+    line-height: 1.46 !important;
   }
 
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
-    grid-template-columns: 1fr !important;
-    gap: 0.42rem !important;
+  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-head strong {
+    font-size: 0.96rem !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .btn-action {
-    min-height: 2.55rem !important;
-    font-size: 0.78rem !important;
+    min-height: 2.9rem !important;
+    font-size: 0.84rem !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area {
     margin-top: auto !important;
-    padding: 0.48rem 0.55rem calc(0.84rem + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0.62rem 0.7rem calc(0.9rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .assistant-disclaimer {
@@ -9465,8 +9507,9 @@ import Layout from '../layouts/Layout.astro';
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .ai-textarea-wrapper textarea {
-    min-height: 3.6rem !important;
-    height: 3.6rem !important;
-    max-height: 5.2rem !important;
+    min-height: 4.25rem !important;
+    height: 4.25rem !important;
+    max-height: 6.8rem !important;
+    font-size: 0.92rem !important;
   }
 </style>
