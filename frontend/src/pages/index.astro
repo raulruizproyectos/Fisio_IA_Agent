@@ -915,6 +915,14 @@ import Layout from '../layouts/Layout.astro';
                   <button type="button" class="btn-link-inline" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Abrir historial</button>
                 </div>
 
+                <div class="assistant-patient-brief" id="assistantPatientBrief" aria-live="polite">
+                  <div class="assistant-patient-brief-empty">
+                    <span class="assistant-brief-kicker">Briefing cl&iacute;nico</span>
+                    <strong>Selecciona un paciente para cargar contexto cl&iacute;nico &uacute;til.</strong>
+                    <p>Ver&aacute;s seguimiento reciente, estado del plan y accesos r&aacute;pidos para pedir mejores ejercicios.</p>
+                  </div>
+                </div>
+
                 <div class="assistant-shortcuts">
                   <button type="button" class="assistant-chip" data-assistant-prompt="Genera un plan inicial para dolor lumbar con progresion de 3 semanas."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
                   <button type="button" class="assistant-chip" data-assistant-prompt="Resume el objetivo de la siguiente sesion y que revisar en consulta."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
@@ -975,6 +983,7 @@ import Layout from '../layouts/Layout.astro';
   const assistantRailBackdrop = document.getElementById('assistantRailBackdrop') as HTMLElement | null;
   const assistantPatientLabel = document.getElementById('assistantPatientLabel') as HTMLElement | null;
   const assistantPatientMeta = document.getElementById('assistantPatientMeta') as HTMLElement | null;
+  const assistantPatientBrief = document.getElementById('assistantPatientBrief') as HTMLElement | null;
   const assistantShortcuts = document.getElementById('assistantShortcuts') as HTMLElement | null;
   const inputArea = document.querySelector('.ai-input-area') as HTMLElement | null;
   const dashCitasBody = document.getElementById('dashCitasBody') as HTMLElement | null;
@@ -1205,6 +1214,9 @@ import Layout from '../layouts/Layout.astro';
   let selectedPatientName = '';
   let patientCatalog: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let selectedTemplatePatientId: string | null = null;
+  let assistantPatientBriefCache: Record<string, any> = {};
+  let currentAssistantPatientBrief: any = null;
+  let assistantPatientBriefRequestToken = 0;
   let currentPatientTelegramLinkState: any = null;
   let pendingHistoryAnchor: 'telegram' | null = null;
   let lastExerciseReportPayload: any = null;
@@ -1235,6 +1247,202 @@ import Layout from '../layouts/Layout.astro';
       : 'Informe, PDF y seguimiento vinculados al historial del paciente.';
   };
 
+  const trimAgentBriefText = (value: any, maxLength = 118) => {
+    const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+    if (!normalized) return '';
+    return normalized.length <= maxLength ? normalized : normalized.slice(0, maxLength - 1).trim() + '...';
+  };
+
+  const buildAssistantPatientBrief = (patient: any, notes: any[] = [], recommendations: any[] = []) => {
+    const latestNote = Array.isArray(notes) && notes.length ? notes[0] : null;
+    const latestRecommendation = Array.isArray(recommendations) && recommendations.length ? recommendations[0] : null;
+    const latestFollowUp = Array.isArray(latestRecommendation?.follow_ups) && latestRecommendation.follow_ups.length
+      ? latestRecommendation.follow_ups[0]
+      : null;
+    const reportSnapshot = latestRecommendation?.report_snapshot || {};
+    const reportExercises = Array.isArray(reportSnapshot?.exercises) ? reportSnapshot.exercises : [];
+    const itemExercises = Array.isArray(latestRecommendation?.crm_recomendacion_items)
+      ? latestRecommendation.crm_recomendacion_items
+      : [];
+
+    return {
+      patientId: selectedPatientId,
+      patientName: patient?.nombre_completo || selectedPatientName || 'Paciente seleccionado',
+      patientEmail: patient?.email || null,
+      notesCount: Array.isArray(notes) ? notes.length : 0,
+      latestNoteText: trimAgentBriefText(latestNote?.texto_nota || ''),
+      latestNoteDate: latestNote?.creado_en || latestNote?.created_at || null,
+      recommendationsCount: Array.isArray(recommendations) ? recommendations.length : 0,
+      latestRecommendationId: latestRecommendation?.id || null,
+      latestRecommendationDate: latestRecommendation?.created_at || null,
+      latestRecommendationState: String(latestRecommendation?.estado || 'sin_plan'),
+      latestPainScale: latestFollowUp?.pain_scale ?? null,
+      exerciseCount: reportExercises.length || itemExercises.length || 0,
+      therapistNote: trimAgentBriefText(reportSnapshot?.message_to_therapist || latestRecommendation?.message_to_therapist_es || ''),
+      patientMessage: trimAgentBriefText(reportSnapshot?.message_to_patient || latestRecommendation?.message_to_patient_es || '', 110),
+      redFlagsPresent: Boolean(latestRecommendation?.red_flags_present || reportSnapshot?.red_flags?.present),
+    };
+  };
+
+  const buildAssistantBriefPrompt = (action: 'update-plan' | 'next-session' | 'patient-message') => {
+    if (!currentAssistantPatientBrief) return '';
+    const brief = currentAssistantPatientBrief;
+    const contextLines = [
+      `Paciente: ${brief.patientName}`,
+      brief.patientEmail ? `Email: ${brief.patientEmail}` : '',
+      brief.latestPainScale !== null && brief.latestPainScale !== undefined
+        ? `Ultimo dolor registrado: ${brief.latestPainScale}/10`
+        : 'Ultimo dolor registrado: no disponible',
+      brief.latestNoteText ? `Ultima nota de seguimiento: ${brief.latestNoteText}` : 'Ultima nota de seguimiento: no disponible',
+      brief.therapistNote ? `Nota clinica del ultimo plan: ${brief.therapistNote}` : '',
+      brief.patientMessage ? `Mensaje previo al paciente: ${brief.patientMessage}` : '',
+      brief.exerciseCount ? `Ejercicios del ultimo plan: ${brief.exerciseCount}` : '',
+      brief.latestRecommendationState ? `Estado del ultimo plan: ${brief.latestRecommendationState}` : '',
+      brief.redFlagsPresent ? 'Hay alertas rojas previas a tener en cuenta.' : '',
+    ].filter(Boolean);
+
+    const task = action === 'next-session'
+      ? 'Con este contexto, resume el objetivo de la siguiente sesion, que revisar en consulta y que progresion o regresion valorar.'
+      : action === 'patient-message'
+        ? 'Con este contexto, redacta un mensaje claro, cercano y profesional para explicar el plan al paciente, con foco en adherencia y senales de alarma.'
+        : 'Con este contexto, actualiza el plan de ejercicios domiciliarios con progresion segura, objetivo clinico, red flags y criterio de seguimiento.';
+
+    return contextLines.join('\n') + '\n\n' + task;
+  };
+
+  const renderAssistantPatientBrief = (brief: any = null, options: { loading?: boolean; error?: boolean } = {}) => {
+    if (!assistantPatientBrief) return;
+    const loading = Boolean(options.loading);
+    const error = Boolean(options.error);
+
+    if (!selectedPatientId && !brief) {
+      currentAssistantPatientBrief = null;
+      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>Selecciona un paciente para cargar contexto clinico util.</strong><p>Veras seguimiento reciente, estado del plan y accesos rapidos para pedir mejores ejercicios.</p></div>';
+      assistantPatientBrief.removeAttribute('data-state');
+      return;
+    }
+
+    if (loading) {
+      const loadingName = escapeHtml(brief?.patientName || selectedPatientName || 'Paciente seleccionado');
+      assistantPatientBrief.setAttribute('data-state', 'loading');
+      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>Cargando contexto de ${loadingName}...</strong><p>Recuperando seguimiento, recomendaciones y estado del ultimo plan.</p></div>`;
+      return;
+    }
+
+    if (error) {
+      const errorName = escapeHtml(brief?.patientName || selectedPatientName || 'el paciente seleccionado');
+      assistantPatientBrief.setAttribute('data-state', 'error');
+      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>No se pudo cargar el contexto de ${errorName}.</strong><p>Puedes seguir usando el copilot, pero sin resumen clinico guiado todavia.</p></div>`;
+      return;
+    }
+
+    if (!brief) {
+      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>Sin contexto clinico disponible todavia.</strong><p>Selecciona un paciente con historial para obtener mejores prompts guiados.</p></div>';
+      assistantPatientBrief.removeAttribute('data-state');
+      return;
+    }
+
+    const latestNoteDate = brief.latestNoteDate ? fmtDate(brief.latestNoteDate) : 'Sin fecha';
+    const latestPlanDate = brief.latestRecommendationDate ? fmtDate(brief.latestRecommendationDate) : 'Sin plan';
+    const latestPain = brief.latestPainScale !== null && brief.latestPainScale !== undefined ? `${escapeHtml(String(brief.latestPainScale))}/10` : 'Sin dato';
+    const latestNote = escapeHtml(brief.latestNoteText || 'Sin seguimiento reciente');
+    const therapistNote = escapeHtml(brief.therapistNote || 'Sin nota clinica del ultimo plan');
+    const planState = escapeHtml(brief.latestRecommendationState || 'sin_plan');
+    const planCount = brief.recommendationsCount || 0;
+    const notesCount = brief.notesCount || 0;
+
+    assistantPatientBrief.removeAttribute('data-state');
+    assistantPatientBrief.innerHTML = `
+      <div class="assistant-brief-head">
+        <span class="assistant-brief-kicker">Briefing clinico</span>
+        <span class="assistant-brief-pill">${planCount} plan(es) / ${notesCount} seguimiento(s)</span>
+      </div>
+      <strong class="assistant-brief-title">${escapeHtml(brief.patientName)} listo para trabajar con contexto real.</strong>
+      <div class="assistant-brief-grid">
+        <article class="assistant-brief-item">
+          <span>Ultimo seguimiento</span>
+          <strong>${latestNote}</strong>
+          <small>${escapeHtml(latestNoteDate)}</small>
+        </article>
+        <article class="assistant-brief-item">
+          <span>Ultimo plan</span>
+          <strong>${planCount ? `${escapeHtml(latestPlanDate)} - ${planState}` : 'Sin plan previo'}</strong>
+          <small>${planCount ? `${brief.exerciseCount || 0} ejercicio(s) en la ultima propuesta` : 'Genera una primera propuesta guiada'}</small>
+        </article>
+        <article class="assistant-brief-item">
+          <span>Dolor / alertas</span>
+          <strong>${latestPain}${brief.redFlagsPresent ? ' - revisar alertas' : ''}</strong>
+          <small>${brief.redFlagsPresent ? 'El ultimo informe marco alertas rojas.' : 'Sin alertas rojas en el ultimo informe.'}</small>
+        </article>
+        <article class="assistant-brief-item">
+          <span>Nota clinica del plan</span>
+          <strong>${therapistNote}</strong>
+          <small>${brief.patientMessage ? escapeHtml(brief.patientMessage) : 'Sin mensaje previo al paciente.'}</small>
+        </article>
+      </div>
+      <div class="assistant-brief-actions">
+        <button type="button" class="assistant-chip" data-assistant-brief-action="update-plan"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
+        <button type="button" class="assistant-chip" data-assistant-brief-action="next-session"><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
+        <button type="button" class="assistant-chip" data-assistant-brief-action="patient-message"><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
+      </div>
+    `;
+  };
+
+  const syncAssistantPatientBriefFromData = (patientId: string, patient: any, notes: any[] = [], recommendations: any[] = []) => {
+    const safePatientId = String(patientId || '').trim();
+    if (!safePatientId) {
+      currentAssistantPatientBrief = null;
+      renderAssistantPatientBrief(null);
+      return null;
+    }
+    const brief = buildAssistantPatientBrief(patient, notes, recommendations);
+    assistantPatientBriefCache[safePatientId] = brief;
+    currentAssistantPatientBrief = brief;
+    renderAssistantPatientBrief(brief);
+    return brief;
+  };
+
+  const loadAssistantPatientBrief = async (patientId: string | null, force = false) => {
+    const safePatientId = String(patientId || '').trim();
+    if (!safePatientId) {
+      assistantPatientBriefRequestToken += 1;
+      currentAssistantPatientBrief = null;
+      renderAssistantPatientBrief(null);
+      return null;
+    }
+
+    if (!force && assistantPatientBriefCache[safePatientId]) {
+      currentAssistantPatientBrief = assistantPatientBriefCache[safePatientId];
+      renderAssistantPatientBrief(currentAssistantPatientBrief);
+      return currentAssistantPatientBrief;
+    }
+
+    const requestToken = ++assistantPatientBriefRequestToken;
+    renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { loading: true });
+
+    try {
+      const [patientResp, historyResp, recommendationsResp] = await Promise.all([
+        fetchJson(`${BACKEND_BASE}/api/pacientes/${safePatientId}`),
+        fetchJson(`${BACKEND_BASE}/api/profesional/patients/${safePatientId}/history`),
+        fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${safePatientId}?limit=25`),
+      ]);
+
+      if (requestToken !== assistantPatientBriefRequestToken) return null;
+
+      return syncAssistantPatientBriefFromData(
+        safePatientId,
+        patientResp?.data || {},
+        historyResp?.data?.notas_seguimiento || [],
+        recommendationsResp?.data || []
+      );
+    } catch {
+      if (requestToken !== assistantPatientBriefRequestToken) return null;
+      currentAssistantPatientBrief = null;
+      renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { error: true });
+      return null;
+    }
+  };
+
   const updateAssistantPatientSelectorState = () => {
     if (!chatPatientSelect) return;
     const hasValue = Boolean(chatPatientSelect.value);
@@ -1252,13 +1460,23 @@ import Layout from '../layouts/Layout.astro';
 
     if (!nextId) {
       selectedPatientName = '';
+      currentAssistantPatientBrief = null;
       renderAssistantPatientContext();
+      renderAssistantPatientBrief(null);
       return;
     }
 
     const selected = patientCatalog.find((p) => p.id === nextId);
     selectedPatientName = selected?.nombre_completo || fallbackName || selectedPatientName || '';
     renderAssistantPatientContext();
+
+    const cachedBrief = assistantPatientBriefCache[nextId];
+    if (cachedBrief) {
+      currentAssistantPatientBrief = cachedBrief;
+      renderAssistantPatientBrief(cachedBrief);
+    } else {
+      renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { loading: true });
+    }
   }
 
   const renderExerciseOpsMetric = () => {
@@ -1527,6 +1745,25 @@ import Layout from '../layouts/Layout.astro';
     const shortcut = target?.closest('[data-agent-shortcut]') as HTMLButtonElement | null;
     const prompt = shortcut?.getAttribute('data-agent-shortcut')?.trim();
     if (!prompt || !input) return;
+    input.value = prompt;
+    resizeAgentInput();
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  });
+
+  assistantPatientBrief?.addEventListener('click', (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    const actionBtn = target?.closest('[data-assistant-brief-action]') as HTMLButtonElement | null;
+    if (!actionBtn || !input) return;
+
+    const action = String(actionBtn.getAttribute('data-assistant-brief-action') || '') as 'update-plan' | 'next-session' | 'patient-message';
+    const prompt = buildAssistantBriefPrompt(action);
+    if (!prompt) {
+      addMessage('Selecciona un paciente con historial para preparar un prompt clinico guiado.', 'agent');
+      return;
+    }
+
+    openAssistantRail();
     input.value = prompt;
     resizeAgentInput();
     input.focus();
@@ -2071,6 +2308,7 @@ import Layout from '../layouts/Layout.astro';
     if (patientId) {
       selectedTemplatePatientId = patientId;
       renderTemplatePatientOptions();
+      void loadAssistantPatientBrief(patientId);
     }
   });
 
@@ -2910,6 +3148,7 @@ import Layout from '../layouts/Layout.astro';
       const telegramLinkError = telegramLinkResp?.error || '';
       currentPatientTelegramLinkState = telegramLink;
       const displayName = patient?.nombre_completo || selectedPatientName || `Paciente #${selectedPatientId}`;
+      syncAssistantPatientBriefFromData(selectedPatientId, patient, notes, recommendations);
 
       const notesHtml = notes.length
         ? `<ul class="detail-list">${notes.map((note: any) => `<li><strong>${fmtDate(note.creado_en || '')}</strong><br>${escapeHtml(note.texto_nota || 'Sin texto')}</li>`).join('')}</ul>`
@@ -7848,6 +8087,108 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1.45;
   }
 
+  .assistant-patient-brief {
+    display: grid;
+    gap: 0.72rem;
+    padding: 0.85rem 0.9rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid #d8e5ed;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #fbfeff 0%, #f2f8fa 100%);
+  }
+
+  .assistant-patient-brief[data-state='loading'],
+  .assistant-patient-brief[data-state='error'] {
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbfc 100%);
+  }
+
+  .assistant-patient-brief-empty {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  .assistant-patient-brief-empty strong,
+  .assistant-brief-title {
+    color: #10233d;
+    font-size: 0.96rem;
+    line-height: 1.35;
+  }
+
+  .assistant-patient-brief-empty p {
+    margin: 0;
+    color: #5f7488;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .assistant-brief-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+  }
+
+  .assistant-brief-kicker {
+    color: #0f766e;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .assistant-brief-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.7rem;
+    padding: 0.2rem 0.58rem;
+    border-radius: 999px;
+    border: 1px solid #cae2d7;
+    background: #ecfdf5;
+    color: #166534;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .assistant-brief-grid {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .assistant-brief-item {
+    display: grid;
+    gap: 0.24rem;
+    padding: 0.72rem 0.78rem;
+    border: 1px solid #d9e6ed;
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .assistant-brief-item span {
+    color: #6d8297;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .assistant-brief-item strong {
+    color: #10233d;
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+
+  .assistant-brief-item small {
+    color: #6b7f92;
+    font-size: 0.74rem;
+    line-height: 1.4;
+  }
+
+  .assistant-brief-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   .assistant-chip,
   .btn-link-inline {
     display: inline-flex;
@@ -7882,7 +8223,8 @@ import Layout from '../layouts/Layout.astro';
     .hero-action-row,
     .cockpit-side-actions,
     .assistant-shortcuts,
-    .assistant-workflow-strip {
+    .assistant-workflow-strip,
+    .assistant-brief-actions {
       flex-direction: column;
       align-items: stretch;
     }
@@ -7891,6 +8233,15 @@ import Layout from '../layouts/Layout.astro';
     .assistant-chip,
     .btn-link-inline {
       width: 100%;
+    }
+
+    .assistant-brief-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .assistant-brief-grid {
+      grid-template-columns: 1fr;
     }
   }
 
