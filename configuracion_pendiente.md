@@ -1,28 +1,36 @@
-## Estado actual (2026-03-18, Sesion 104) - Copilot estable para seguir y agenda reconciliada con Google Calendar.
+## Estado actual (2026-03-18, Sesion 105) - Agenda con observabilidad lista, bloqueada por credenciales de Google Calendar en backend.
 
-### Completado sesion 104
-- [x] El copilot queda suficientemente recuperado para continuar desarrollo sin el bloqueo visual anterior.
-- [x] `Mensaje paciente` sale del primer nivel hasta que exista envio real y trazabilidad por Telegram.
-- [x] La agenda semanal ya se reconcilia contra Google Calendar en backend al consultar la ventana.
-- [x] El frontend refresca agenda automaticamente cada 45s y al volver a la pestana.
-- [x] GitHub queda sincronizado con el checkpoint `d5fe6de`.
+### Completado sesion 105
+- [x] W6 Calendar Sync existe y esta activo en n8n cada 2 minutos.
+- [x] El backend expone estado del sincronizador con `GET /api/profesional/appointments/sync-calendar/status`.
+- [x] La agenda del CRM ya muestra el estado del sync y su frescura.
+- [x] GitHub queda sincronizado en `c651966`.
 
-### Acciones requeridas antes de probar este bloque
-1. **Redeploy de `fisio-backend` en EasyPanel**.
-2. **Redeploy de `fisio-frontend` en EasyPanel**.
-3. Verificar en produccion:
-   - que la agenda refleja altas, cambios y cancelaciones de Google Calendar dentro de la ventana semanal
-   - que el copilot sigue usable en monitor y portatil
+### Diagnostico confirmado
+- El backend desplegado sigue devolviendo `enabled: false` para Google Calendar.
+- Por eso la agenda todavia no puede ser espejo real del calendario del profesional.
+- El bloqueo actual no es n8n ni frontend: es configuracion pendiente en EasyPanel del backend.
+
+### Acciones requeridas antes de la proxima implementacion
+1. Publicar en EasyPanel del backend:
+   - `GOOGLE_CALENDAR_ID`
+   - `GOOGLE_CLIENT_EMAIL`
+   - `GOOGLE_PRIVATE_KEY`
+   - opcional: `GOOGLE_CALENDAR_REQUIRED=true`
+2. **Redeploy de `fisio-backend` en EasyPanel**.
+3. Verificar en produccion que `/api/profesional/appointments/sync-calendar/status` devuelve:
+   - `enabled: true`
+   - `last_success_at` con valor real
 
 ### Siguiente paso exacto
-1. Montar sincronizacion background real de Google Calendar via n8n o backend.
-2. Corregir la desaparicion de etiquetas/textos en la sidebar cuando entra el colapso automatico.
-3. Reanudar desarrollo del agente de ejercicios sobre esta base estable.
+1. Espejo real del calendario clinico.
+2. Bloqueos / no disponibilidad desde Google Calendar.
+3. Envio real por Telegram desde el copilot.
+4. Observabilidad ampliada en agenda con ultimo sync, proximo ciclo y errores recientes.
 
 ### Riesgos o bloqueos conocidos
-- Sin sincronizacion background, la agenda ya queda mucho mejor, pero sigue dependiendo de consultar la vista o del refresco automatico.
-- La sidebar aun puede perder etiquetas en ciertos anchos porque el colapso automatico sigue siendo demasiado agresivo.
-- El modo `Mensaje paciente` no debe reactivarse hasta cerrar el envio real al paciente con trazabilidad.
+- Sin esas variables, la agenda seguira mostrando `Solo vista` o `idle` aunque W6 exista.
+- La discrepancia entre Google Calendar y CRM no se resolvera con mas frontend mientras el backend siga con Calendar desactivado.
 
 ---
 

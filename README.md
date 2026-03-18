@@ -13,26 +13,23 @@ CRM + agentes para centros de fisioterapia: gestiÃƒÆ’Ã†â€™Ãƒâ€
 ## En pausa
 - GeneraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­deo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 104 - 2026-03-18)
-- Commit exacto para retomar: `d5fe6de`
+## Checkpoint actual (Sesion 105 - 2026-03-18)
+- Commit exacto para retomar: `c651966`
 - Estado de GitHub: `origin/main` sincronizado con este checkpoint.
-- Estado actual del producto:
-  - el copilot de ejercicios ya es utilizable como superficie principal para generar planes
-  - la agenda semanal del CRM ya se reconcilia contra Google Calendar al consultar la vista
-  - el frontend refresca agenda cada `45s` y al volver a enfocar la pestana
-- Lo que ya hace la agenda ahora:
-  - si una cita se mueve en Google Calendar, se refleja en el CRM
-  - si una cita desaparece o se cancela en Google Calendar, el CRM la muestra cancelada
-  - si aparece un evento nuevo en Google Calendar dentro de la ventana consultada, se refleja en la agenda aunque no exista aun una fila local equivalente
-- Decision de producto actual:
-  - `Mensaje paciente` queda fuera del primer nivel del copilot hasta que pueda enviar una comunicacion real revisada por Telegram y dejar trazabilidad clinica
-- Pendiente inmediato de la proxima sesion:
-  - montar sincronizacion background real de Google Calendar via n8n o backend, para no depender del refresco de la vista
-  - restaurar las etiquetas visibles de la sidebar cuando el colapso automatico no conviene en monitor/portatil
-  - seguir empujando el agente de ejercicios como diferencial principal del producto
-- Despliegue pendiente para ver el ultimo bloque implementado:
-  - `fisio-backend`
-  - `fisio-frontend`
+- Estado real del producto a cierre de sesion:
+  - la agenda ya muestra observabilidad del sincronizador W6 dentro del CRM
+  - el workflow background `W6 Calendar Sync` existe y sigue activo en n8n
+  - el backend desplegado sigue con Google Calendar desactivado en runtime (`enabled: false`)
+  - por eso la agenda todavia no es espejo real del calendario del profesional
+- Diagnostico verificado en produccion:
+  - `GET /api/profesional/appointments/sync-calendar/status` devuelve `enabled: false`, `status: idle`, `last_success_at: null`
+  - el bloqueo real esta en variables faltantes de EasyPanel para backend, no en la UI
+- Siguiente paso exacto de la proxima sesion:
+  - publicar en EasyPanel del backend `GOOGLE_CALENDAR_ID`, `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY` y opcionalmente `GOOGLE_CALENDAR_REQUIRED=true`
+  - redeploy de `fisio-backend`
+  - en cuanto eso este activo, seguir con espejo real del calendario clinico y bloqueos / no disponibilidad desde Google
+  - despues continuar con envio real por Telegram desde el copilot y observabilidad ampliada de agenda
+- Checkpoint operativo actual: `docs/checkpoint_20260318_google_calendar_gate.md`
 
 ## Checkpoint actual (Sesion 92 - 2026-03-11)
 - La arquitectura vigente queda fijada como hibrida:
@@ -203,7 +200,7 @@ node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<u
 - Estado detallado por sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
-- Checkpoint operativo actual: `docs/checkpoint_20260318_agenda_sync_handoff.md`
+- Checkpoint operativo actual: `docs/checkpoint_20260318_google_calendar_gate.md`
 - Checkpoint operativo: `docs/checkpoint_20260317_frontend_copilot_handoff.md`
 - AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis PROET: `docs/proet/platform_analysis_20260304.md`
 - Norma n8n obligatoria: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`

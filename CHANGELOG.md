@@ -1,3 +1,44 @@
+## Sesion 105 - 2026-03-18
+
+### Objetivo
+Dejar la agenda preparada para sincronizacion background real con Google Calendar, anadir observabilidad visible en CRM y cerrar el punto exacto antes del desbloqueo final de EasyPanel.
+
+### Trabajo realizado
+
+**Sync background + observabilidad (commits `d9468c6`, `c651966`)**
+- [x] Endpoint backend nuevo: `GET /api/profesional/appointments/sync-calendar/status`.
+- [x] Heartbeat interno en backend para W6: inicio, exito y error.
+- [x] Workflow `Fisio_IA_Agent / W6 Calendar Sync` versionado y activado en n8n real.
+- [x] La agenda del CRM ya ensena estado del sincronizador: `Al dia`, `Sincronizando`, `Con retraso`, `Error` o `Solo vista`.
+- [x] La agenda resume frescura del ultimo sync y cambios detectados.
+
+**Diagnostico real en produccion**
+- [x] Verificado en vivo que el backend desplegado devuelve `enabled: false` para el sync de Calendar.
+- [x] Verificado que `W6` existe en n8n y sigue programado cada 2 minutos.
+- [x] Confirmado que la discrepancia agenda vs Google Calendar no es de UI: el backend productivo sigue sin credenciales activas de Calendar.
+
+### Estado al cierre
+- Frontend: OK, observabilidad de agenda visible y funcional.
+- Backend: OK en codigo, pero bloqueado en produccion por variables de Google Calendar aun no publicadas.
+- n8n: OK, W6 creado y activo.
+- GitHub: OK, todo sincronizado en `c651966`.
+
+### Siguiente paso exacto
+1. Publicar en EasyPanel del backend:
+   - `GOOGLE_CALENDAR_ID`
+   - `GOOGLE_CLIENT_EMAIL`
+   - `GOOGLE_PRIVATE_KEY`
+   - opcional: `GOOGLE_CALENDAR_REQUIRED=true`
+2. Redeploy de `fisio-backend`.
+3. Validar que `/api/profesional/appointments/sync-calendar/status` pasa a `enabled: true` y registra `last_success_at`.
+4. Seguir con:
+   - espejo real del calendario clinico
+   - bloqueos / no disponibilidad desde Google
+   - envio real por Telegram desde el copilot
+   - observabilidad ampliada en agenda
+
+---
+
 ## Sesion 104 - 2026-03-18
 
 ### Objetivo
