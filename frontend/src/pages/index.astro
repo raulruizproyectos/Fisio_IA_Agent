@@ -922,9 +922,16 @@ import Layout from '../layouts/Layout.astro';
                   </div>
 
                   <div class="assistant-shortcuts" id="assistantShortcuts">
-                    <button type="button" class="assistant-chip" data-assistant-prompt="Genera un plan inicial para dolor lumbar con progresion de 3 semanas."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
-                    <button type="button" class="assistant-chip" data-assistant-prompt="Resume el objetivo de la siguiente sesion y que revisar en consulta."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
-                    <button type="button" class="assistant-chip" data-assistant-prompt="Redacta un mensaje claro para explicar el plan al paciente."><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
+                    <button type="button" class="assistant-chip" data-assistant-mode="new-plan" data-assistant-prompt="Dolor lumbar con progresion de 3 semanas y foco en adherencia."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
+                    <button type="button" class="assistant-chip" data-assistant-mode="next-session" data-assistant-prompt="Que revisar en la proxima sesion y que progresion valorar."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
+                    <button type="button" class="assistant-chip" data-assistant-mode="patient-message" data-assistant-prompt="Explica el plan al paciente con tono claro y motivador."><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
+                  </div>
+
+                  <div class="assistant-mode-switch" id="assistantModeSwitch" aria-label="Modo de trabajo del copilot">
+                    <button type="button" class="assistant-mode-chip is-active" data-assistant-mode="new-plan" aria-pressed="true"><span class="material-symbols-rounded">electric_bolt</span> Nuevo plan</button>
+                    <button type="button" class="assistant-mode-chip" data-assistant-mode="update-plan" aria-pressed="false"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
+                    <button type="button" class="assistant-mode-chip" data-assistant-mode="next-session" aria-pressed="false"><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
+                    <button type="button" class="assistant-mode-chip" data-assistant-mode="patient-message" aria-pressed="false"><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
                   </div>
 
                   <div class="chat-log" id="chatLog"></div>
@@ -995,6 +1002,7 @@ import Layout from '../layouts/Layout.astro';
   const assistantFlowDraft = document.getElementById('assistantFlowDraft') as HTMLElement | null;
   const assistantFlowTitle = document.getElementById('assistantFlowTitle') as HTMLElement | null;
   const assistantShortcuts = document.getElementById('assistantShortcuts') as HTMLElement | null;
+  const assistantModeSwitch = document.getElementById('assistantModeSwitch') as HTMLElement | null;
   const inputArea = document.querySelector('.ai-input-area') as HTMLElement | null;
   const dashCitasBody = document.getElementById('dashCitasBody') as HTMLElement | null;
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
@@ -1008,6 +1016,7 @@ import Layout from '../layouts/Layout.astro';
   const dashboardNavButtons = document.querySelectorAll('[data-dashboard-nav]') as NodeListOf<HTMLElement>;
   const dashboardActionButtons = document.querySelectorAll('[data-dashboard-action]') as NodeListOf<HTMLElement>;
   const assistantPromptButtons = document.querySelectorAll('[data-assistant-prompt]') as NodeListOf<HTMLButtonElement>;
+  const assistantModeButtons = document.querySelectorAll('[data-assistant-mode]') as NodeListOf<HTMLButtonElement>;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
@@ -1227,6 +1236,44 @@ import Layout from '../layouts/Layout.astro';
   let assistantPatientBriefCache: Record<string, any> = {};
   let currentAssistantPatientBrief: any = null;
   let assistantPatientBriefRequestToken = 0;
+  type AssistantWorkMode = 'new-plan' | 'update-plan' | 'next-session' | 'patient-message';
+  const assistantModeConfig: Record<AssistantWorkMode, {
+    placeholder: string;
+    primaryLabel: string;
+    primaryBusyLabel: string;
+    primaryIcon: string;
+    action: 'exercise' | 'chat';
+  }> = {
+    'new-plan': {
+      placeholder: 'Describe dolor, restriccion funcional u objetivo clinico para generar un plan...',
+      primaryLabel: 'Generar plan',
+      primaryBusyLabel: 'Generando...',
+      primaryIcon: 'electric_bolt',
+      action: 'exercise',
+    },
+    'update-plan': {
+      placeholder: 'Indica que cambio quieres hacer en el plan actual o que evolucion ha habido...',
+      primaryLabel: 'Actualizar plan',
+      primaryBusyLabel: 'Actualizando...',
+      primaryIcon: 'neurology',
+      action: 'exercise',
+    },
+    'next-session': {
+      placeholder: 'Escribe que quieres revisar o preparar para la siguiente sesion...',
+      primaryLabel: 'Preparar sesion',
+      primaryBusyLabel: 'Preparando...',
+      primaryIcon: 'event_available',
+      action: 'chat',
+    },
+    'patient-message': {
+      placeholder: 'Indica el tono o el mensaje que quieres enviar al paciente...',
+      primaryLabel: 'Generar mensaje',
+      primaryBusyLabel: 'Redactando...',
+      primaryIcon: 'chat',
+      action: 'chat',
+    },
+  };
+  let activeAssistantMode: AssistantWorkMode = 'new-plan';
   let currentPatientTelegramLinkState: any = null;
   let pendingHistoryAnchor: 'telegram' | null = null;
   let lastExerciseReportPayload: any = null;
@@ -1319,6 +1366,95 @@ import Layout from '../layouts/Layout.astro';
         : 'Con este contexto, actualiza el plan de ejercicios domiciliarios con progresion segura, objetivo clinico, red flags y criterio de seguimiento.';
 
     return contextLines.join('\n') + '\n\n' + task;
+  };
+
+  const getActiveAssistantModeConfig = () => assistantModeConfig[activeAssistantMode];
+
+  const renderAssistantPrimaryButton = () => {
+    if (!exerciseBtn) return;
+    const modeConfig = getActiveAssistantModeConfig();
+    exerciseBtn.innerHTML = `<span class="material-symbols-rounded">${modeConfig.primaryIcon}</span> ${modeConfig.primaryLabel}`;
+    exerciseBtn.setAttribute('data-mode', activeAssistantMode);
+    exerciseBtn.setAttribute('aria-label', modeConfig.primaryLabel);
+  };
+
+  const renderAssistantModeSwitch = () => {
+    if (!assistantModeSwitch) return;
+    assistantModeSwitch.querySelectorAll('[data-assistant-mode]').forEach((button) => {
+      const mode = String(button.getAttribute('data-assistant-mode') || '') as AssistantWorkMode;
+      const active = mode === activeAssistantMode;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  };
+
+  const appendAssistantInstruction = (basePrompt: string, extraText: string, label: string) => {
+    const trimmedExtra = extraText.trim();
+    if (!trimmedExtra) return basePrompt;
+    if (!basePrompt) return `${label}: ${trimmedExtra}`;
+    return `${basePrompt}\n\n${label}: ${trimmedExtra}`;
+  };
+
+  const getAssistantModeDraft = (mode: AssistantWorkMode) => {
+    if (mode === 'update-plan') {
+      return 'Ajusta el plan segun la evolucion del dolor, tolerancia y adherencia.';
+    }
+    if (mode === 'next-session') {
+      return 'Resume que revisar en consulta y que progresion o regresion valorar.';
+    }
+    if (mode === 'patient-message') {
+      return 'Redacta un mensaje claro para explicar el plan y reforzar la adherencia.';
+    }
+    return '';
+  };
+
+  const setAssistantMode = (mode: AssistantWorkMode, options: { focus?: boolean } = {}) => {
+    if (!(mode in assistantModeConfig)) return;
+    activeAssistantMode = mode;
+    const modeConfig = getActiveAssistantModeConfig();
+    if (input) {
+      input.placeholder = modeConfig.placeholder;
+    }
+    renderAssistantModeSwitch();
+    renderAssistantPrimaryButton();
+    renderAssistantFlowCard();
+    resizeAgentInput();
+    if (options.focus && input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  };
+
+  const buildAssistantModeRequest = (rawText: string) => {
+    const text = String(rawText || '').trim();
+    const modeConfig = getActiveAssistantModeConfig();
+    const contextualPrompt = activeAssistantMode === 'new-plan' ? '' : buildAssistantBriefPrompt(activeAssistantMode);
+
+    if (modeConfig.action === 'exercise') {
+      if (!text) return null;
+      const requestText = activeAssistantMode === 'update-plan'
+        ? appendAssistantInstruction(contextualPrompt, text, 'Cambio solicitado')
+        : text;
+      const visibleText = text;
+      return {
+        action: 'exercise' as const,
+        requestText,
+        visibleText,
+      };
+    }
+
+    if (activeAssistantMode !== 'new-plan' && !contextualPrompt) {
+      return null;
+    }
+
+    const draftText = text || getAssistantModeDraft(activeAssistantMode);
+    const requestText = appendAssistantInstruction(contextualPrompt, draftText, 'Solicitud');
+    const visibleText = draftText;
+    return {
+      action: 'chat' as const,
+      requestText,
+      visibleText,
+    };
   };
 
   const getAssistantDraftSummary = () => {
@@ -1742,13 +1878,24 @@ import Layout from '../layouts/Layout.astro';
   assistantPromptButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const prompt = button.dataset.assistantPrompt || '';
+      const mode = String(button.getAttribute('data-assistant-mode') || 'new-plan') as AssistantWorkMode;
       openAssistantRail();
+      setAssistantMode(mode);
       if (input) {
         input.value = prompt;
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.focus();
         input.setSelectionRange(input.value.length, input.value.length);
       }
+    });
+  });
+
+  assistantModeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = String(button.getAttribute('data-assistant-mode') || '') as AssistantWorkMode;
+      if (!mode || !(mode in assistantModeConfig)) return;
+      openAssistantRail();
+      setAssistantMode(mode, { focus: true });
     });
   });
 
@@ -1784,7 +1931,6 @@ import Layout from '../layouts/Layout.astro';
     scrollAssistantRailToBottom();
   };
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
-  const exerciseBtnDefaultHtml = exerciseBtn?.innerHTML || '';
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
@@ -1813,12 +1959,13 @@ import Layout from '../layouts/Layout.astro';
     inputArea?.classList.toggle('is-busy', busy);
 
     if (exerciseBtn) {
+      const modeConfig = getActiveAssistantModeConfig();
       if (busy && context === 'exercise') {
         exerciseBtn.classList.add('is-loading');
-        exerciseBtn.innerHTML = '<span class="material-symbols-rounded">&#xea5e;</span> Generando...';
+        exerciseBtn.innerHTML = `<span class="material-symbols-rounded">hourglass_top</span> ${modeConfig.primaryBusyLabel}`;
       } else {
         exerciseBtn.classList.remove('is-loading');
-        exerciseBtn.innerHTML = exerciseBtnDefaultHtml;
+        renderAssistantPrimaryButton();
       }
     }
 
@@ -1871,6 +2018,8 @@ import Layout from '../layouts/Layout.astro';
   };
 
   updateExercisePdfButton();
+  renderAssistantPrimaryButton();
+  renderAssistantModeSwitch();
   renderAssistantFlowCard();
 
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
@@ -1900,8 +2049,15 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
 
+    const nextMode = action === 'update-plan'
+      ? 'update-plan'
+      : action === 'next-session'
+        ? 'next-session'
+        : 'patient-message';
+
     openAssistantRail();
-    input.value = prompt;
+    setAssistantMode(nextMode, { focus: true });
+    input.value = getAssistantModeDraft(nextMode);
     resizeAgentInput();
     input.focus();
     input.setSelectionRange(input.value.length, input.value.length);
@@ -2336,16 +2492,61 @@ import Layout from '../layouts/Layout.astro';
     throw timeoutError;
   };
 
+  const handleAssistantChat = async (requestText: string, visibleText: string, busySource: 'chat' | 'exercise' = 'chat') => {
+    addMessage(visibleText, 'user');
+    resizeAgentInput();
+    upsertAgentProgress('Consultando al asistente clinico...');
+    setSending(true, busySource);
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/agent/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'professional', channel: 'web', text: requestText }),
+      });
+      const answer = payload?.data?.reply_text || payload?.data?.message || (typeof payload.data === 'string' ? payload.data : JSON.stringify(payload.data));
+      clearAgentProgress();
+      addMessage(answer, 'agent');
+      setAgentStatus(!payload.n8n_unreachable);
+    } catch {
+      clearAgentProgress();
+      addMessage('Error de conexion con el agente.', 'agent');
+      setAgentStatus(false);
+    } finally {
+      clearAgentProgress();
+      setSending(false);
+    }
+  };
+
+  const handleAssistantPrimaryAction = async () => {
+    if (!input) return;
+    const payload = buildAssistantModeRequest(input.value || '');
+    if (!payload) {
+      addMessage(
+        activeAssistantMode === 'new-plan'
+          ? 'Describe un objetivo clinico o dolor principal antes de generar un plan.'
+          : 'Selecciona un paciente con historial para usar este modo guiado del copilot.',
+        'agent'
+      );
+      return;
+    }
+
+    if (payload.action === 'exercise') {
+      handleExerciseRecommend(payload.requestText, payload.visibleText);
+      return;
+    }
+
+    await handleAssistantChat(payload.requestText, payload.visibleText, 'exercise');
+  };
+
   // W3: Exercise recommendation via CRM
-  const handleExerciseRecommend = async (text: string) => {
+  const handleExerciseRecommend = async (text: string, visibleText = text) => {
     const activePatientId = selectedPatientId || chatPatientSelect?.value || null;
     if (!activePatientId) {
       addMessage('Selecciona un paciente en "Paciente del informe" antes de generar ejercicios.', 'agent');
       return;
     }
     syncChatPatientSelection(activePatientId);
-
-    addMessage(`Solicitar recomendación para: ${text}`, 'user');
+    addMessage(`Solicitar recomendacion para: ${visibleText}`, 'user');
     upsertAgentProgress('Preparando solicitud clínica...');
     setSending(true, 'exercise');
     try {
@@ -2402,13 +2603,9 @@ import Layout from '../layouts/Layout.astro';
       setSending(false);
     }
   };
-  // Exercise recommend button handler
+  // Primary assistant action
   exerciseBtn?.addEventListener('click', () => {
-    if (!input) return;
-    const text = input.value.trim();
-    if (!text) return;
-    resizeAgentInput();
-    handleExerciseRecommend(text);
+    void handleAssistantPrimaryAction();
   });
 
   chatPatientSelect?.addEventListener('change', () => {
@@ -2466,18 +2663,7 @@ import Layout from '../layouts/Layout.astro';
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
-    addMessage(text, 'user');
-    resizeAgentInput();
-    upsertAgentProgress('Consultando al asistente clínico...');
-    setSending(true, 'chat');
-    try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/agent/message`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({role:'professional',channel:'web',text}) });
-      const answer = payload?.data?.reply_text || payload?.data?.message || (typeof payload.data==='string'?payload.data:JSON.stringify(payload.data));
-      clearAgentProgress();
-      addMessage(answer, 'agent');
-      setAgentStatus(!payload.n8n_unreachable);
-    } catch { clearAgentProgress(); addMessage('Error de conexión con el agente.', 'agent'); setAgentStatus(false); }
-    finally { clearAgentProgress(); setSending(false); }
+    await handleAssistantChat(text, text, 'chat');
   });
 
   // === HEALTH CHECK ===
@@ -8356,6 +8542,45 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+
+
+  .assistant-mode-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .assistant-mode-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.38rem;
+    min-height: 2.2rem;
+    padding: 0.52rem 0.78rem;
+    border-radius: 999px;
+    border: 1px solid #cde0ea;
+    background: rgba(255, 255, 255, 0.88);
+    color: #13405e;
+    font-size: 0.78rem;
+    font-weight: 800;
+    transition: transform 160ms ease-out, border-color 160ms ease-out, background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out;
+  }
+
+  .assistant-mode-chip:hover {
+    border-color: #a8c9d8;
+    background: #ffffff;
+  }
+
+  .assistant-mode-chip.is-active {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    border-color: #0f766e;
+    color: #ffffff;
+    box-shadow: 0 16px 32px -26px rgba(15, 118, 110, 0.55);
+  }
+
+  .assistant-mode-chip.is-active .material-symbols-rounded {
+    color: inherit;
   }
 
   .assistant-brief-item-secondary {
