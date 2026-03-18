@@ -955,6 +955,26 @@ async function getPatientTelegramLinkRecord(patientId) {
   return data || null;
 }
 
+async function resolvePatientTelegramTarget({ patientId, chatId = null }) {
+  const explicitChatId = String(chatId || '').trim();
+  if (explicitChatId) {
+    return { chatId: explicitChatId, source: 'request_body', link: null };
+  }
+
+  const patient = await getTelegramLinkPatient(patientId);
+  if (!patient) {
+    return { chatId: null, source: 'missing_patient', link: null, patient: null };
+  }
+
+  const link = await getPatientTelegramLinkRecord(patient.id);
+  const linkedChatId = String(link?.telegram_chat_id || '').trim();
+  if (linkedChatId) {
+    return { chatId: linkedChatId, source: 'patient_link', link, patient };
+  }
+
+  return { chatId: null, source: 'not_linked', link, patient };
+}
+
 function buildPatientTelegramLinkResponse({ patient, link = null }) {
   const linkCode = String(link?.codigo_vinculacion || '').trim() || null;
   const linkedChatId = String(link?.telegram_chat_id || '').trim() || null;
@@ -1392,6 +1412,107 @@ router.post('/physio-report/send', async (req, res, next) => {
       ok: true,
       delivered_via: 'telegram',
       target_source: target.source,
+      recommendation_id: recommendationId || null,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.post('/patient-report/send', async (req, res, next) => {
+  try {
+    const patientId = pickBodyValue(req.body, 'patient_id', 'paciente_id');
+    const patientName = pickBodyValue(req.body, 'patient_name', 'paciente_nombre');
+    const recommendationId = pickBodyValue(req.body, 'recommendation_id', 'recomendacion_id');
+    const fisioterapeutaId = pickBodyValue(req.body, 'fisioterapeuta_id', 'professional_id');
+    const chatId = pickBodyValue(req.body, 'chat_id');
+    const dryRun = parseBooleanFlag(req.query?.dry_run) || parseBooleanFlag(req.body?.dry_run);
+    const exercises = Array.isArray(req.body?.exercises) ? req.body.exercises : [];
+    const patientIntro =
+      pickBodyValue(req.body, 'message_text', 'texto_mensaje') ||
+      pickBodyValue(req.body, 'message_to_patient', 'mensaje_paciente') ||
+      '';
+
+    if (!patientId) {
+      return res.status(400).json({ error: 'patient_id es obligatorio' });
+    }
+
+    if (!exercises.length) {
+      return res.status(400).json({ error: 'No hay ejercicios para enviar al paciente por Telegram' });
+    }
+
+    const target = await resolvePatientTelegramTarget({ patientId, chatId });
+    if (!target.patient) {
+      return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+
+    if (!target.chatId) {
+      return res.status(400).json({
+        error: 'El paciente no tiene Telegram vinculado todavia. Genera su invitacion /start y completa el enlace antes de enviar el informe.',
+      });
+    }
+
+    const resolvedProfessionalId = fisioterapeutaId || target.patient?.profesional_id || null;
+    const resolvedPatientName = patientName || target.patient?.nombre_completo || null;
+    const caption =
+      pickBodyValue(req.body, 'caption') ||
+      `Tu plan de ejercicios${resolvedPatientName ? ` - ${resolvedPatientName}` : ''}`;
+    const pdfPayload = {
+      ...req.body,
+      patient_id: patientId,
+      patient_name: resolvedPatientName,
+      recommendation_id: recommendationId || null,
+      fisioterapeuta_id: resolvedProfessionalId,
+    };
+
+    const pdfBuffer = await buildExerciseReportPdfBuffer(pdfPayload);
+
+    if (dryRun) {
+      return res.json({
+        ok: true,
+        dry_run: true,
+        delivered_via: 'telegram',
+        target_source: target.source,
+        patient_id: patientId,
+        recommendation_id: recommendationId || null,
+        pdf_bytes: pdfBuffer.length || 0,
+      });
+    }
+
+    const safePatientIntro = truncateTelegramMessage(String(patientIntro || '').trim(), 900);
+    if (safePatientIntro) {
+      await sendTelegramMessage(target.chatId, safePatientIntro, 'patient_appointments');
+    }
+
+    await sendTelegramDocument({
+      chatId: target.chatId,
+      filename: `plan-ejercicios-${String(recommendationId || Date.now())}.pdf`,
+      buffer: pdfBuffer,
+      caption,
+      agentMode: 'patient_appointments',
+    });
+
+    await logCrmCommunication({
+      channel: 'telegram',
+      direction: 'outbound',
+      message_type: 'document',
+      message_text: safePatientIntro || `Informe PDF enviado al paciente ${resolvedPatientName || patientId}`,
+      payload: {
+        patient_id: patientId,
+        professional_id: resolvedProfessionalId,
+        recommendation_id: recommendationId || null,
+        chat_id: String(target.chatId),
+        target_source: target.source,
+        delivered_document: true,
+      },
+      status: 'sent',
+    });
+
+    return res.json({
+      ok: true,
+      delivered_via: 'telegram',
+      target_source: target.source,
+      patient_id: patientId,
       recommendation_id: recommendationId || null,
     });
   } catch (err) {

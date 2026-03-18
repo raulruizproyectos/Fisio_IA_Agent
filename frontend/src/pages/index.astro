@@ -1,4 +1,4 @@
----
+﻿---
 import Layout from '../layouts/Layout.astro';
 ---
 
@@ -951,6 +951,7 @@ import Layout from '../layouts/Layout.astro';
                 <form id="agentForm" class="ai-input-area">
                   <div class="assistant-action-grid">
                     <button type="button" class="btn-action btn-pdf is-pending" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF"><span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar</button>
+                    <button type="button" class="btn-action btn-telegram is-pending" id="exerciseTelegramBtn" aria-label="Enviar plan por Telegram" title="Vincula Telegram para enviar el plan al paciente"><span class="material-symbols-rounded">send</span> Telegram paciente</button>
                     <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
                   </div>
                   <div class="assistant-composer-shell">
@@ -992,6 +993,7 @@ import Layout from '../layouts/Layout.astro';
   const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement | null;
   const exerciseBtn = document.getElementById('exerciseRecoBtn') as HTMLButtonElement | null;
   const exercisePdfBtn = document.getElementById('exercisePdfBtn') as HTMLButtonElement | null;
+  const exerciseTelegramBtn = document.getElementById('exerciseTelegramBtn') as HTMLButtonElement | null;
   const agentDot = document.getElementById('agentDot') as HTMLElement | null;
   const agentStatusText = document.getElementById('agentStatusText') as HTMLElement | null;
   const metricEngineOps = document.getElementById('metricEngineOps') as HTMLElement | null;
@@ -1316,6 +1318,7 @@ import Layout from '../layouts/Layout.astro';
   const archivedReportIds = new Set<string>();
   let quickSearchMatches: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let quickSearchActiveIndex = -1;
+  let assistantTelegramLinkRequestToken = 0;
 
   const renderAssistantPatientContext = () => {
     if (!assistantPatientLabel || !assistantPatientMeta) return;
@@ -1743,6 +1746,30 @@ import Layout from '../layouts/Layout.astro';
     }
   };
 
+  const loadAssistantTelegramLinkState = async (patientId: string | null) => {
+    const safePatientId = String(patientId || '').trim();
+    const requestToken = ++assistantTelegramLinkRequestToken;
+
+    if (!safePatientId) {
+      currentPatientTelegramLinkState = null;
+      updateExerciseTelegramButton();
+      return null;
+    }
+
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${safePatientId}`);
+      if (requestToken !== assistantTelegramLinkRequestToken) return null;
+      currentPatientTelegramLinkState = payload?.data || null;
+      updateExerciseTelegramButton();
+      return currentPatientTelegramLinkState;
+    } catch {
+      if (requestToken !== assistantTelegramLinkRequestToken) return null;
+      currentPatientTelegramLinkState = null;
+      updateExerciseTelegramButton();
+      return null;
+    }
+  };
+
   const updateAssistantPatientSelectorState = () => {
     if (!chatPatientSelect) return;
     const hasValue = Boolean(chatPatientSelect.value);
@@ -1767,15 +1794,19 @@ import Layout from '../layouts/Layout.astro';
     if (!nextId) {
       selectedPatientName = '';
       currentAssistantPatientBrief = null;
+      currentPatientTelegramLinkState = null;
       renderAssistantPatientContext();
       renderAssistantPatientBrief(null);
       renderAssistantFlowCard();
+      updateExerciseTelegramButton();
       return;
     }
 
     const selected = patientCatalog.find((p) => p.id === nextId);
     selectedPatientName = selected?.nombre_completo || fallbackName || selectedPatientName || '';
+    currentPatientTelegramLinkState = null;
     renderAssistantPatientContext();
+    updateExerciseTelegramButton();
 
     const cachedBrief = assistantPatientBriefCache[nextId];
     if (cachedBrief) {
@@ -1785,6 +1816,7 @@ import Layout from '../layouts/Layout.astro';
       renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { loading: true });
     }
     renderAssistantFlowCard();
+    void loadAssistantTelegramLinkState(nextId);
   }
 
   const renderExerciseOpsMetric = () => {
@@ -2017,6 +2049,45 @@ import Layout from '../layouts/Layout.astro';
     exercisePdfBtn.title = hasReport ? 'Exportar a PDF' : 'Genera un plan y luego exportalo a PDF';
     exercisePdfBtn.setAttribute('aria-label', hasReport ? 'Descargar PDF del plan actual' : 'PDF disponible tras generar un plan');
   };
+  const hasLinkedTelegramPatient = () => {
+    const linkStatus = String(currentPatientTelegramLinkState?.link_status || '').trim();
+    const chatId = String(currentPatientTelegramLinkState?.telegram_chat_id || '').trim();
+    return linkStatus === 'linked' && Boolean(chatId);
+  };
+  const updateExerciseTelegramButton = () => {
+    if (!exerciseTelegramBtn) return;
+    const hasPatient = Boolean(selectedPatientId);
+    const hasReport = Boolean(lastExerciseReportPayload);
+    const isLinked = hasLinkedTelegramPatient();
+    exerciseTelegramBtn.disabled = false;
+    exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !hasReport);
+    exerciseTelegramBtn.classList.toggle('is-available', isLinked && hasReport);
+
+    if (!hasPatient) {
+      exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Telegram paciente';
+      exerciseTelegramBtn.title = 'Selecciona un paciente para preparar el envio';
+      exerciseTelegramBtn.setAttribute('aria-label', 'Selecciona un paciente para preparar el envio por Telegram');
+      return;
+    }
+
+    if (!isLinked) {
+      exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">link</span> Vincular Telegram';
+      exerciseTelegramBtn.title = 'Este paciente aun no tiene Telegram vinculado';
+      exerciseTelegramBtn.setAttribute('aria-label', 'Vincular Telegram del paciente');
+      return;
+    }
+
+    if (!hasReport) {
+      exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Telegram al generar';
+      exerciseTelegramBtn.title = 'Genera un plan antes de enviarlo al paciente';
+      exerciseTelegramBtn.setAttribute('aria-label', 'Enviar por Telegram cuando el plan este generado');
+      return;
+    }
+
+    exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Enviar Telegram';
+    exerciseTelegramBtn.title = 'Enviar PDF y mensaje del plan al paciente por Telegram';
+    exerciseTelegramBtn.setAttribute('aria-label', 'Enviar informe al paciente por Telegram');
+  };
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
     if (sendBtn) sendBtn.disabled = busy;
     if (exerciseBtn) exerciseBtn.disabled = busy;
@@ -2025,6 +2096,13 @@ import Layout from '../layouts/Layout.astro';
         exercisePdfBtn.disabled = true;
       } else {
         updateExercisePdfButton();
+      }
+    }
+    if (exerciseTelegramBtn) {
+      if (busy) {
+        exerciseTelegramBtn.disabled = true;
+      } else {
+        updateExerciseTelegramButton();
       }
     }
     if (input) input.disabled = busy;
@@ -2091,6 +2169,7 @@ import Layout from '../layouts/Layout.astro';
   };
 
   updateExercisePdfButton();
+  updateExerciseTelegramButton();
   renderAssistantPrimaryButton();
   renderAssistantModeSwitch();
   renderAssistantModeCard();
@@ -2685,6 +2764,70 @@ import Layout from '../layouts/Layout.astro';
       selectedTemplatePatientId = patientId;
       renderTemplatePatientOptions();
       void loadAssistantPatientBrief(patientId);
+    }
+  });
+
+  exerciseTelegramBtn?.addEventListener('click', async () => {
+    if (!selectedPatientId) {
+      addMessage('Selecciona un paciente antes de enviar el informe por Telegram.', 'agent');
+      return;
+    }
+
+    if (!hasLinkedTelegramPatient()) {
+      pendingHistoryAnchor = 'telegram';
+      addMessage('Este paciente aun no tiene Telegram vinculado. Te llevo a su ficha para completar el enlace.', 'agent');
+      openPatientHistory(selectedPatientId, selectedPatientName);
+      return;
+    }
+
+    if (!lastExerciseReportPayload) {
+      addMessage('Primero genera y revisa un plan para poder enviarlo al paciente por Telegram.', 'agent');
+      return;
+    }
+
+    try {
+      upsertAgentProgress('Enviando informe al paciente por Telegram...');
+      setSending(true, 'exercise');
+      const recommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim();
+      await fetchJson(`${BACKEND_BASE}/api/telegram/patient-report/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...lastExerciseReportPayload,
+          patient_id: selectedPatientId,
+          patient_name: selectedPatientName || null,
+          fisioterapeuta_id: PROF_ID,
+          recommendation_id: recommendationId || lastExerciseReportPayload?.recommendation_id || null,
+          message_text:
+            lastExerciseReportPayload?.message_to_patient ||
+            currentAssistantPatientBrief?.patientMessage ||
+            '',
+        }),
+      });
+
+      if (recommendationId) {
+        try {
+          await fetchJson(`${BACKEND_BASE}/api/exercises/reports/archive`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recommendation_id: recommendationId,
+              patient_id: selectedPatientId,
+              fisioterapeuta_id: PROF_ID,
+              format: 'pdf',
+              source: 'crm_telegram',
+            }),
+          });
+          incrementArchivedReportsMetric(recommendationId);
+        } catch {}
+      }
+
+      addMessage('Informe enviado por Telegram al paciente y dejado listo en trazabilidad del caso.', 'agent');
+    } catch (err: any) {
+      addMessage(`No se pudo enviar por Telegram: ${err?.message || 'error no identificado'}`, 'agent');
+    } finally {
+      clearAgentProgress();
+      setSending(false);
     }
   });
 
@@ -3516,6 +3659,7 @@ import Layout from '../layouts/Layout.astro';
     if (!historialContent) return;
     if (!selectedPatientId) {
       currentPatientTelegramLinkState = null;
+      updateExerciseTelegramButton();
       historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">&#xe889;</span><p>Selecciona un paciente para ver su historial</p></div>`;
       return;
     }
@@ -3535,6 +3679,7 @@ import Layout from '../layouts/Layout.astro';
       const telegramLink = telegramLinkResp?.data || null;
       const telegramLinkError = telegramLinkResp?.error || '';
       currentPatientTelegramLinkState = telegramLink;
+      updateExerciseTelegramButton();
       const displayName = patient?.nombre_completo || selectedPatientName || `Paciente #${selectedPatientId}`;
       syncAssistantPatientBriefFromData(selectedPatientId, patient, notes, recommendations);
 
@@ -8252,26 +8397,30 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .btn-pdf,
-  .assistant-rail .btn-chat {
+  .assistant-rail .btn-chat,
+  .assistant-rail .btn-telegram {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     color: #475569;
   }
 
-  .assistant-rail .btn-pdf.is-pending {
+  .assistant-rail .btn-pdf.is-pending,
+  .assistant-rail .btn-telegram.is-pending {
     background: #eef4f7;
     border: 1px dashed #9fb6c7;
     color: #456176;
   }
 
-  .assistant-rail .btn-pdf.is-available {
+  .assistant-rail .btn-pdf.is-available,
+  .assistant-rail .btn-telegram.is-available {
     background: #ffffff;
     border-style: solid;
     color: #334155;
   }
 
   .assistant-rail .btn-pdf:hover,
-  .assistant-rail .btn-chat:hover {
+  .assistant-rail .btn-chat:hover,
+  .assistant-rail .btn-telegram:hover {
     background: #f8fafc !important;
     border-color: #cbd5e1 !important;
     color: #334155 !important;
@@ -9319,7 +9468,7 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .assistant-action-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.18fr);
     gap: 0.55rem;
   }
 
@@ -9776,7 +9925,7 @@ import Layout from '../layouts/Layout.astro';
 
   html[data-assistant-mode='desktop'] .assistant-rail .assistant-action-grid,
   html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.16fr) !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.16fr) !important;
     gap: 0.55rem !important;
   }
 
@@ -9938,3 +10087,4 @@ import Layout from '../layouts/Layout.astro';
     font-size: 0.92rem !important;
   }
 </style>
+
