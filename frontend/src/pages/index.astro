@@ -351,8 +351,17 @@ import Layout from '../layouts/Layout.astro';
 
         <!-- === PAGE: CITAS === -->
         <div class="page-section" data-page="citas">
-          <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xebcc;</span> Agenda</h1>
+          <div class="page-header-row agenda-header-row">
+            <div class="agenda-header-copy">
+              <h1 class="page-title"><span class="material-symbols-rounded">&#xebcc;</span> Agenda</h1>
+              <div class="agenda-sync-status" id="agendaSyncStatus" aria-live="polite">
+                <span class="status-chip pendiente" id="agendaSyncChip">Comprobando</span>
+                <div class="agenda-sync-copy">
+                  <strong id="agendaSyncTitle">Sync Google Calendar</strong>
+                  <p id="agendaSyncMeta">Esperando estado del sincronizador...</p>
+                </div>
+              </div>
+            </div>
             <div class="week-nav-bar">
               <button class="btn-ghost btn-icon" id="prevWeek" title="Semana anterior"><span class="material-symbols-rounded">&#xe5cb;</span></button>
               <span id="weekLabel" class="week-label">Cargando...</span>
@@ -1051,6 +1060,9 @@ import Layout from '../layouts/Layout.astro';
   const assistantModeButtons = document.querySelectorAll('[data-assistant-mode]') as NodeListOf<HTMLButtonElement>;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
+  const agendaSyncChip = document.getElementById('agendaSyncChip') as HTMLElement | null;
+  const agendaSyncTitle = document.getElementById('agendaSyncTitle') as HTMLElement | null;
+  const agendaSyncMeta = document.getElementById('agendaSyncMeta') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
   const addPatientBtn = document.getElementById('addPatientBtn') as HTMLButtonElement | null;
   const patientModal = document.getElementById('patientModal') as HTMLElement | null;
@@ -1164,6 +1176,18 @@ import Layout from '../layouts/Layout.astro';
   const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '—'; } };
+  const fmtRelativeSyncAge = (iso: string | null | undefined) => {
+    if (!iso) return 'sin ejecuciones recientes';
+    const ts = new Date(iso).getTime();
+    if (Number.isNaN(ts)) return 'fecha no disponible';
+    const diffMinutes = Math.max(0, Math.round((Date.now() - ts) / 60000));
+    if (diffMinutes < 1) return 'hace menos de 1 min';
+    if (diffMinutes < 60) return `hace ${diffMinutes} min`;
+    const hours = Math.round(diffMinutes / 60);
+    if (hours < 24) return `hace ${hours} h`;
+    const days = Math.round(hours / 24);
+    return `hace ${days} d`;
+  };
   const isTodayDate = (d: string) => {
     try {
       const target = new Date(d);
@@ -3450,6 +3474,68 @@ import Layout from '../layouts/Layout.astro';
 
   let agendaWeekStart: Date = getWeekMonday(new Date());
 
+  const renderAgendaSyncStatus = (syncStatus: any = null, liveSummary: any = null) => {
+    if (!agendaSyncChip || !agendaSyncTitle || !agendaSyncMeta) return;
+
+    if (!syncStatus && !liveSummary) {
+      agendaSyncChip.textContent = 'Sin datos';
+      agendaSyncChip.className = 'status-chip caducado';
+      agendaSyncTitle.textContent = 'Sync Google Calendar';
+      agendaSyncMeta.textContent = 'Todavia no hay estado del sincronizador.';
+      return;
+    }
+
+    const uiStatus = String(syncStatus?.ui_status || '').trim();
+    const summary = syncStatus?.summary || liveSummary || null;
+    const lastSuccessAt = syncStatus?.last_success_at || null;
+    const updated = Number(summary?.updated || 0);
+    const cancelled = Number(summary?.cancelled || 0);
+    const persisted = Number(summary?.persisted || 0);
+    const fetched = Number(summary?.fetched || 0);
+    const trigger = String(syncStatus?.trigger || '').trim();
+
+    let chipLabel = 'Sin datos';
+    let chipClass = 'caducado';
+    let title = 'Sync Google Calendar';
+    let meta = 'Todavia no hay estado del sincronizador.';
+
+    if (uiStatus === 'syncing') {
+      chipLabel = 'Sincronizando';
+      chipClass = 'pendiente';
+      title = 'W6 sincronizando agenda';
+      meta = 'El sincronizador background esta reconciliando Google Calendar ahora mismo.';
+    } else if (uiStatus === 'healthy') {
+      chipLabel = 'Al dia';
+      chipClass = 'aprobado';
+      title = 'W6 al dia';
+      meta = `${fmtRelativeSyncAge(lastSuccessAt)} · ${persisted} nuevas · ${updated} actualizadas · ${cancelled} canceladas`;
+    } else if (uiStatus === 'stale') {
+      chipLabel = 'Con retraso';
+      chipClass = 'caducado';
+      title = 'W6 con retraso';
+      meta = `${fmtRelativeSyncAge(lastSuccessAt)} · ultima lectura ${fetched} evento(s)`;
+    } else if (uiStatus === 'error') {
+      chipLabel = 'Error';
+      chipClass = 'rechazado';
+      title = 'W6 con error';
+      meta = syncStatus?.error ? String(syncStatus.error) : 'El sincronizador devolvio un error.';
+    } else if (summary?.enabled) {
+      chipLabel = 'Solo vista';
+      chipClass = 'pendiente';
+      title = 'Sin heartbeat de W6';
+      meta = `La agenda se reconcilio al abrir esta vista · ${persisted} nuevas · ${updated} actualizadas · ${cancelled} canceladas`;
+    }
+
+    if (trigger && ['healthy', 'stale', 'error'].includes(uiStatus)) {
+      title += trigger === 'background' ? '' : ` (${trigger})`;
+    }
+
+    agendaSyncChip.textContent = chipLabel;
+    agendaSyncChip.className = `status-chip ${chipClass}`;
+    agendaSyncTitle.textContent = title;
+    agendaSyncMeta.textContent = meta;
+  };
+
   const renderAgendaCalendar = (citas: any[], weekStart: Date) => {
     const cal = document.getElementById('agendaCalendar');
     if (!cal) return;
@@ -3569,10 +3655,14 @@ import Layout from '../layouts/Layout.astro';
     const hasta = hastaDate.toISOString();
 
     try {
-      const payload = await fetchJson(
-        `${BACKEND_BASE}/api/profesional/appointments?fisioterapeuta_id=${PROF_ID}&limit=100&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`
-      );
+      const [payload, syncPayload] = await Promise.all([
+        fetchJson(
+          `${BACKEND_BASE}/api/profesional/appointments?fisioterapeuta_id=${PROF_ID}&limit=100&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`
+        ),
+        fetchJson(`${BACKEND_BASE}/api/profesional/appointments/sync-calendar/status`).catch(() => ({ data: null })),
+      ]);
       const citas = payload.data || [];
+      renderAgendaSyncStatus(syncPayload?.data || null, payload?.calendar_sync || null);
       renderDashboardCitas(citas);
       const todayCount = citas.filter((c: any) => isTodayDate(c.inicio_en || '')).length;
       const metricEl = document.getElementById('metricSesiones');
@@ -3604,6 +3694,7 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
     } catch {
+      renderAgendaSyncStatus({ ui_status: 'error', error: 'No se pudo consultar el estado del sync de Google Calendar.' }, null);
       if (cal) cal.innerHTML = '<div class="agenda-cal-loading">Error al cargar la agenda</div>';
       setTableState(citasBody, 6, 'cloud_off', 'Error al cargar citas');
       renderDashboardCitas([], 'error');
@@ -6670,6 +6761,45 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.5rem;
   }
 
+  .agenda-header-row {
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
+
+  .agenda-header-copy {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .agenda-sync-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.78rem;
+    border-radius: 0.95rem;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.82);
+    min-width: min(100%, 420px);
+  }
+
+  .agenda-sync-copy {
+    display: grid;
+    gap: 0.08rem;
+  }
+
+  .agenda-sync-copy strong {
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    line-height: 1.25;
+  }
+
+  .agenda-sync-copy p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    line-height: 1.4;
+  }
+
   .page-tools {
     display: flex;
     align-items: center;
@@ -9142,6 +9272,11 @@ import Layout from '../layouts/Layout.astro';
     .command-grid,
     .hero-signal-grid {
       grid-template-columns: 1fr;
+    }
+
+    .agenda-sync-status {
+      width: 100%;
+      min-width: 0;
     }
   }
 

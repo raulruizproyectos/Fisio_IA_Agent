@@ -44,6 +44,20 @@ const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
 const GOOGLE_CALENDAR_TIMEZONE = process.env.GOOGLE_CALENDAR_TIMEZONE?.trim() || 'Europe/Madrid';
 const GOOGLE_CALENDAR_REQUIRED = String(process.env.GOOGLE_CALENDAR_REQUIRED || 'false').toLowerCase() === 'true';
 const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events';
+const CALENDAR_BACKGROUND_SYNC_STALE_MS = 6 * 60 * 1000;
+const calendarBackgroundSyncState = {
+  status: 'idle',
+  running: false,
+  source: 'w6_calendar_sync',
+  trigger: null,
+  last_run_at: null,
+  last_success_at: null,
+  last_error_at: null,
+  error: null,
+  summary: null,
+  window: null,
+  professional_id: null,
+};
 
 function rejectVideoFeatureIfDisabled(res) {
   if (VIDEO_WORKFLOWS_ENABLED) return false;
@@ -90,6 +104,74 @@ function toIsoDateOnly(value) {
 
 function calendarIntegrationEnabled() {
   return Boolean(GOOGLE_CALENDAR_ID && GOOGLE_CLIENT_EMAIL && GOOGLE_PRIVATE_KEY);
+}
+
+function buildCalendarBackgroundSyncStatus() {
+  const now = Date.now();
+  const lastSuccessAt = calendarBackgroundSyncState.last_success_at ? new Date(calendarBackgroundSyncState.last_success_at).getTime() : null;
+  const ageMs = Number.isFinite(lastSuccessAt) ? Math.max(0, now - lastSuccessAt) : null;
+  let uiStatus = 'idle';
+
+  if (calendarBackgroundSyncState.running) {
+    uiStatus = 'syncing';
+  } else if (calendarBackgroundSyncState.status === 'error') {
+    uiStatus = 'error';
+  } else if (lastSuccessAt) {
+    uiStatus = ageMs !== null && ageMs <= CALENDAR_BACKGROUND_SYNC_STALE_MS ? 'healthy' : 'stale';
+  }
+
+  return {
+    enabled: calendarIntegrationEnabled(),
+    source: calendarBackgroundSyncState.source,
+    trigger: calendarBackgroundSyncState.trigger,
+    status: calendarBackgroundSyncState.status,
+    ui_status: uiStatus,
+    running: calendarBackgroundSyncState.running,
+    last_run_at: calendarBackgroundSyncState.last_run_at,
+    last_success_at: calendarBackgroundSyncState.last_success_at,
+    last_error_at: calendarBackgroundSyncState.last_error_at,
+    age_ms: ageMs,
+    error: calendarBackgroundSyncState.error,
+    summary: calendarBackgroundSyncState.summary,
+    window: calendarBackgroundSyncState.window,
+    professional_id: calendarBackgroundSyncState.professional_id,
+    stale_after_ms: CALENDAR_BACKGROUND_SYNC_STALE_MS,
+  };
+}
+
+function markCalendarBackgroundSyncStart({ professionalId, fromAt, toAt, trigger = 'background' }) {
+  calendarBackgroundSyncState.status = 'syncing';
+  calendarBackgroundSyncState.running = true;
+  calendarBackgroundSyncState.trigger = trigger;
+  calendarBackgroundSyncState.last_run_at = new Date().toISOString();
+  calendarBackgroundSyncState.error = null;
+  calendarBackgroundSyncState.window = { desde: fromAt, hasta: toAt };
+  calendarBackgroundSyncState.professional_id = professionalId || null;
+}
+
+function markCalendarBackgroundSyncSuccess({ professionalId, fromAt, toAt, trigger = 'background', summary = null }) {
+  const nowIso = new Date().toISOString();
+  calendarBackgroundSyncState.status = 'ok';
+  calendarBackgroundSyncState.running = false;
+  calendarBackgroundSyncState.trigger = trigger;
+  calendarBackgroundSyncState.last_run_at = nowIso;
+  calendarBackgroundSyncState.last_success_at = nowIso;
+  calendarBackgroundSyncState.error = null;
+  calendarBackgroundSyncState.summary = summary;
+  calendarBackgroundSyncState.window = { desde: fromAt, hasta: toAt };
+  calendarBackgroundSyncState.professional_id = professionalId || null;
+}
+
+function markCalendarBackgroundSyncError({ professionalId, fromAt, toAt, trigger = 'background', error = null }) {
+  const nowIso = new Date().toISOString();
+  calendarBackgroundSyncState.status = 'error';
+  calendarBackgroundSyncState.running = false;
+  calendarBackgroundSyncState.trigger = trigger;
+  calendarBackgroundSyncState.last_run_at = nowIso;
+  calendarBackgroundSyncState.last_error_at = nowIso;
+  calendarBackgroundSyncState.error = error ? String(error.message || error) : 'unknown_error';
+  calendarBackgroundSyncState.window = { desde: fromAt, hasta: toAt };
+  calendarBackgroundSyncState.professional_id = professionalId || null;
 }
 
 function buildCalendarSyncResult(partial = {}) {
@@ -978,7 +1060,15 @@ router.get('/appointments', async (req, res, next) => {
   }
 });
 
+router.get('/appointments/sync-calendar/status', async (_req, res) => {
+  res.json({ data: buildCalendarBackgroundSyncStatus() });
+});
+
 router.post('/appointments/sync-calendar', async (req, res, next) => {
+  let professionalId = null;
+  let fromAt = null;
+  let toAt = null;
+  let trigger = 'background';
   try {
     const professionalIdRaw =
       pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id') ||
@@ -1009,16 +1099,19 @@ router.post('/appointments/sync-calendar', async (req, res, next) => {
       return res.status(400).json({ error: 'Formato de fecha invalido en hasta/to' });
     }
 
-    const fromAt = parsedFrom || new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString();
-    const toAt = parsedTo || new Date(Date.now() + lookaheadDays * 24 * 60 * 60 * 1000).toISOString();
+    fromAt = parsedFrom || new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString();
+    toAt = parsedTo || new Date(Date.now() + lookaheadDays * 24 * 60 * 60 * 1000).toISOString();
+    trigger = String(pickValue(req.body, 'trigger', 'source') || pickValue(req.query, 'trigger', 'source') || 'background').trim() || 'background';
 
-    const professionalId = professionalIdRaw
+    professionalId = professionalIdRaw
       ? await resolveCrmProfessionalId(professionalIdRaw)
       : await getDefaultCrmProfessionalId();
 
     if (!professionalId) {
       return res.status(400).json({ error: 'No se pudo resolver el profesional para sincronizar agenda' });
     }
+
+    markCalendarBackgroundSyncStart({ professionalId, fromAt, toAt, trigger });
 
     const [{ data, error }, calendarEvents] = await Promise.all([
       supabase
@@ -1073,6 +1166,14 @@ router.post('/appointments/sync-calendar', async (req, res, next) => {
       toAt,
     });
 
+    markCalendarBackgroundSyncSuccess({
+      professionalId,
+      fromAt,
+      toAt,
+      trigger,
+      summary: reconciled.calendar_sync,
+    });
+
     res.json({
       data: {
         professional_id: professionalId,
@@ -1081,8 +1182,10 @@ router.post('/appointments/sync-calendar', async (req, res, next) => {
         appointments_considered: reconciled.rows.length,
       },
       calendar_sync: reconciled.calendar_sync,
+      sync_status: buildCalendarBackgroundSyncStatus(),
     });
   } catch (err) {
+    markCalendarBackgroundSyncError({ professionalId, fromAt, toAt, trigger, error: err });
     if (
       isMissingTableError(err, 'crm_citas') ||
       isMissingTableError(err, 'crm_pacientes') ||
