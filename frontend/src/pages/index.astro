@@ -9244,14 +9244,17 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.55rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-launch-btn,
   html[data-assistant-mode='compact'] .assistant-launch-btn {
     display: inline-flex !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-fab,
   html[data-assistant-mode='compact'] .assistant-fab {
     display: none !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail,
   html[data-assistant-mode='compact'] .assistant-rail {
     top: 0 !important;
     right: 0 !important;
@@ -9259,7 +9262,7 @@ import Layout from '../layouts/Layout.astro';
     left: 0 !important;
     width: 100vw !important;
     max-width: 100vw !important;
-    padding: 0.9rem !important;
+    padding: 0.95rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -9270,53 +9273,68 @@ import Layout from '../layouts/Layout.astro';
     transition: opacity 0.18s ease !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail.open,
   html[data-assistant-mode='compact'] .assistant-rail.open {
     opacity: 1 !important;
     pointer-events: auto !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail-backdrop,
   html[data-assistant-mode='compact'] .assistant-rail-backdrop {
     inset: 0 !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail-card,
   html[data-assistant-mode='compact'] .assistant-rail-card {
-    width: min(760px, calc(100vw - 1.8rem)) !important;
-    max-width: min(760px, calc(100vw - 1.8rem)) !important;
+    margin: 0 !important;
+    border-radius: 1.3rem !important;
+    border: 1px solid #dce8ee !important;
+    box-shadow: 0 30px 88px -38px rgba(15, 23, 42, 0.42) !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail-card {
+    width: min(980px, calc(100vw - 2rem)) !important;
+    max-width: min(980px, calc(100vw - 2rem)) !important;
+    height: min(900px, calc(100dvh - 2rem)) !important;
+    max-height: calc(100dvh - 2rem) !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail-card {
+    width: min(780px, calc(100vw - 1.8rem)) !important;
+    max-width: min(780px, calc(100vw - 1.8rem)) !important;
     height: min(860px, calc(100dvh - 1.8rem)) !important;
     max-height: calc(100dvh - 1.8rem) !important;
-    margin: 0 !important;
-    border-radius: 1.25rem !important;
-    border: 1px solid #dce8ee !important;
-    box-shadow: 0 28px 80px -34px rgba(15, 23, 42, 0.42) !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-module-header,
   html[data-assistant-mode='compact'] .assistant-rail .assistant-module-header {
-    padding: 0.84rem 0.92rem !important;
+    padding: 0.88rem 0.96rem !important;
   }
 
-  html[data-assistant-mode='compact'] .assistant-rail .assistant-rail-copy h2 {
-    font-size: 1.08rem !important;
-  }
-
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-toolbar,
   html[data-assistant-mode='compact'] .assistant-rail .assistant-toolbar {
     padding: 0.76rem 0.92rem !important;
     gap: 0.55rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .patient-selector,
   html[data-assistant-mode='compact'] .assistant-rail .patient-selector {
     min-height: 3rem !important;
     padding: 0.4rem 0.7rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .patient-selector select,
   html[data-assistant-mode='compact'] .assistant-rail .patient-selector select {
     font-size: 0.9rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-surface,
   html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface {
     grid-template-rows: minmax(0, 1fr) auto !important;
-    padding: 0.68rem !important;
+    padding: 0.7rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
   html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll {
     min-height: 0 !important;
     overflow-y: auto !important;
@@ -9324,9 +9342,16 @@ import Layout from '../layouts/Layout.astro';
     padding-bottom: 0.28rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
   html[data-assistant-mode='compact'] .assistant-rail .chat-log {
     gap: 0.58rem !important;
     padding-bottom: 0 !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-shortcuts {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.55rem !important;
   }
 
   html[data-assistant-mode='compact'] .assistant-rail .assistant-shortcuts {
@@ -9335,13 +9360,21 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.55rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail.assistant-has-patient .assistant-shortcuts,
   html[data-assistant-mode='compact'] .assistant-rail.assistant-has-patient .assistant-shortcuts,
+  html[data-assistant-mode='desktop'] .assistant-rail.assistant-has-report .assistant-shortcuts,
+  html[data-assistant-mode='desktop'] .assistant-rail.assistant-has-report .assistant-flow-card,
+  html[data-assistant-mode='desktop'] .assistant-rail.assistant-has-report .assistant-patient-brief,
   html[data-assistant-mode='compact'] .assistant-rail.assistant-has-report .assistant-shortcuts,
   html[data-assistant-mode='compact'] .assistant-rail.assistant-has-report .assistant-flow-card,
   html[data-assistant-mode='compact'] .assistant-rail.assistant-has-report .assistant-patient-brief {
     display: none !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .msg-body,
+  html[data-assistant-mode='desktop'] .assistant-rail .exercise-note-compact,
+  html[data-assistant-mode='desktop'] .assistant-rail .exercise-summary-compact,
+  html[data-assistant-mode='desktop'] .assistant-rail .exercise-report-meta,
   html[data-assistant-mode='compact'] .assistant-rail .msg-body,
   html[data-assistant-mode='compact'] .assistant-rail .exercise-note-compact,
   html[data-assistant-mode='compact'] .assistant-rail .exercise-summary-compact,
@@ -9350,29 +9383,35 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1.48 !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .exercise-report-head strong,
   html[data-assistant-mode='compact'] .assistant-rail .exercise-report-head strong {
     font-size: 0.98rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-action-grid,
   html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.16fr) !important;
     gap: 0.55rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .btn-action,
   html[data-assistant-mode='compact'] .assistant-rail .btn-action {
     min-height: 2.85rem !important;
     font-size: 0.84rem !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-input-area,
   html[data-assistant-mode='compact'] .assistant-rail .ai-input-area {
     margin-top: auto !important;
     padding: 0.7rem 0.78rem calc(0.82rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-disclaimer,
   html[data-assistant-mode='compact'] .assistant-rail .assistant-disclaimer {
     display: none !important;
   }
 
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-textarea-wrapper textarea,
   html[data-assistant-mode='compact'] .assistant-rail .ai-textarea-wrapper textarea {
     min-height: 4.6rem !important;
     height: 4.6rem !important;
@@ -9468,8 +9507,8 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.48rem !important;
   }
 
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-shortcuts,
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+  html[data-assistant-mode='mobile'] .assistant-shortcuts,
+  html[data-assistant-mode='mobile'] .assistant-action-grid {
     grid-template-columns: 1fr !important;
   }
 
