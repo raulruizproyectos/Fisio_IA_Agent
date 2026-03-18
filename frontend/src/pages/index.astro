@@ -9044,8 +9044,8 @@ import Layout from '../layouts/Layout.astro';
     }
 
     .assistant-rail {
-      width: min(430px, calc(100vw - 0.35rem));
-      padding: 0.3rem 0.2rem 0.3rem 0.3rem !important;
+      width: min(390px, calc(100vw - 0.2rem));
+      padding: 0.2rem !important;
     }
   }
 
@@ -9055,18 +9055,40 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1180px), (max-height: 860px) {
     .assistant-rail {
-      width: min(420px, calc(100vw - 0.15rem));
-      padding: 0.15rem !important;
+      top: 0;
+      width: min(360px, 100vw);
+      padding: 0 !important;
+    }
+
+    .assistant-rail-backdrop {
+      inset: 0;
+    }
+
+    .assistant-rail-card {
+      border-radius: 0 !important;
+      border-right: none !important;
+      border-bottom: none !important;
+      height: 100dvh;
+    }
+
+    .assistant-rail .assistant-module-header {
+      padding: 0.7rem 0.8rem;
+    }
+
+    .assistant-rail .assistant-toolbar {
+      padding: 0.65rem;
+      gap: 0.5rem;
     }
 
     .assistant-rail .assistant-dialog-surface {
-      padding: 0.55rem;
+      padding: 0.5rem;
     }
 
     .assistant-rail .assistant-dialog-scroll {
-      gap: 0.5rem;
+      gap: 0.45rem;
+      padding-bottom: 0.35rem;
     }
 
     .assistant-rail .assistant-shortcuts {
@@ -9077,31 +9099,88 @@ import Layout from '../layouts/Layout.astro';
       grid-template-columns: 1fr;
     }
 
+    .assistant-rail .ai-input-area {
+      padding: 0.55rem 0.6rem calc(0.78rem + env(safe-area-inset-bottom, 0px));
+    }
+
     .assistant-rail .ai-textarea-wrapper textarea {
-      min-height: 4.8rem !important;
-      height: 4.8rem !important;
-      max-height: 8rem !important;
+      min-height: 4.2rem !important;
+      height: 4.2rem !important;
+      max-height: 7rem !important;
+    }
+
+    .assistant-rail .exercise-report-compact {
+      padding: 0.65rem;
+      gap: 0.5rem;
+    }
+
+    .assistant-rail .exercise-report-head strong {
+      font-size: 0.88rem;
+    }
+
+    .assistant-rail .exercise-note-compact,
+    .assistant-rail .exercise-summary-compact,
+    .assistant-rail .exercise-report-meta {
+      font-size: 0.76rem;
+      line-height: 1.42;
     }
   }
 
   @media (max-width: 768px) {
     .assistant-rail {
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
       width: 100vw;
       padding: 0 !important;
+      transform: translateY(100%);
     }
 
-    .assistant-rail .assistant-dialog-surface {
-      padding: 0.45rem;
+    .assistant-rail.open {
+      transform: translateY(0);
     }
 
-    .assistant-rail .ai-input-area {
-      padding: 0.6rem 0.65rem calc(0.76rem + env(safe-area-inset-bottom, 0px));
+    .assistant-rail-backdrop {
+      inset: 0;
     }
 
     .assistant-rail-card {
-      border-radius: 1rem 1rem 0 0 !important;
+      border-radius: 0 !important;
       border-right: none !important;
       border-bottom: none !important;
+      height: 100dvh;
+    }
+
+    .assistant-rail .assistant-module-header {
+      padding: 0.65rem 0.7rem;
+    }
+
+    .assistant-rail .assistant-rail-copy h2 {
+      font-size: 0.86rem;
+    }
+
+    .assistant-rail .assistant-toolbar {
+      padding: 0.55rem 0.6rem;
+    }
+
+    .assistant-rail .assistant-dialog-surface {
+      padding: 0.4rem;
+    }
+
+    .assistant-rail .ai-input-area {
+      padding: 0.55rem 0.6rem calc(0.78rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .assistant-rail .btn-action {
+      min-height: 2.7rem;
+      font-size: 0.8rem;
+    }
+
+    .assistant-rail .ai-textarea-wrapper textarea {
+      min-height: 4rem !important;
+      height: 4rem !important;
+      max-height: 6.4rem !important;
     }
 
     .assistant-fab {
