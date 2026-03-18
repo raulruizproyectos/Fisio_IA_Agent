@@ -7116,7 +7116,7 @@ import Layout from '../layouts/Layout.astro';
       flex: 1;
     }
     .assistant-launch-btn span:last-child {
-      display: none;
+      display: inline;
     }
     .user-name {
       display: none;
@@ -8237,7 +8237,26 @@ import Layout from '../layouts/Layout.astro';
     }
 
     .assistant-launch-btn {
-      display: inline-flex;
+      display: inline-flex !important;
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 95;
+      padding: 0.72rem 1rem;
+      border-radius: 999px;
+      border-color: rgba(13, 148, 136, 0.28);
+      background: linear-gradient(135deg, rgba(13, 148, 136, 0.96), rgba(14, 165, 233, 0.92));
+      color: #ffffff;
+      box-shadow: 0 20px 38px -24px rgba(15, 23, 42, 0.45);
+    }
+
+    .assistant-launch-btn .material-symbols-rounded,
+    .assistant-launch-btn span {
+      color: inherit;
+    }
+
+    .assistant-launch-btn[aria-expanded='true'] {
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.98), rgba(3, 105, 161, 0.94));
     }
 
     .assistant-rail {
