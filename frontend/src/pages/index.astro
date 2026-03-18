@@ -924,14 +924,12 @@ import Layout from '../layouts/Layout.astro';
                   <div class="assistant-shortcuts" id="assistantShortcuts">
                     <button type="button" class="assistant-chip" data-assistant-mode="new-plan" data-assistant-prompt="Dolor lumbar con progresion de 3 semanas y foco en adherencia."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
                     <button type="button" class="assistant-chip" data-assistant-mode="next-session" data-assistant-prompt="Que revisar en la proxima sesion y que progresion valorar."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
-                    <button type="button" class="assistant-chip" data-assistant-mode="patient-message" data-assistant-prompt="Explica el plan al paciente con tono claro y motivador."><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
                   </div>
 
                   <div class="assistant-mode-switch" id="assistantModeSwitch" aria-label="Modo de trabajo del copilot">
                     <button type="button" class="assistant-mode-chip is-active" data-assistant-mode="new-plan" aria-pressed="true"><span class="material-symbols-rounded">electric_bolt</span> Nuevo plan</button>
                     <button type="button" class="assistant-mode-chip" data-assistant-mode="update-plan" aria-pressed="false"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
                     <button type="button" class="assistant-mode-chip" data-assistant-mode="next-session" aria-pressed="false"><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
-                    <button type="button" class="assistant-mode-chip" data-assistant-mode="patient-message" aria-pressed="false"><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
                   </div>
 
                   <div class="assistant-mode-card" id="assistantModeCard" aria-live="polite">
@@ -1255,7 +1253,7 @@ import Layout from '../layouts/Layout.astro';
   let assistantPatientBriefCache: Record<string, any> = {};
   let currentAssistantPatientBrief: any = null;
   let assistantPatientBriefRequestToken = 0;
-  type AssistantWorkMode = 'new-plan' | 'update-plan' | 'next-session' | 'patient-message';
+  type AssistantWorkMode = 'new-plan' | 'update-plan' | 'next-session';
   const assistantModeConfig: Record<AssistantWorkMode, {
     placeholder: string;
     primaryLabel: string;
@@ -1303,18 +1301,6 @@ import Layout from '../layouts/Layout.astro';
       outputLabel: 'Salida: checklist de sesion',
       requirementLabel: 'Requiere: paciente con historial',
       tip: 'Util para entrar a consulta con foco y decidir progresiones o regresiones rapidas.',
-    },
-    'patient-message': {
-      placeholder: 'Indica el tono o el mensaje que quieres enviar al paciente...',
-      primaryLabel: 'Generar mensaje',
-      primaryBusyLabel: 'Redactando...',
-      primaryIcon: 'chat',
-      action: 'chat',
-      title: 'Mensaje listo para el paciente',
-      summary: 'Redacta una explicacion clara y profesional del plan para mejorar adherencia y seguimiento.',
-      outputLabel: 'Salida: mensaje editable',
-      requirementLabel: 'Requiere: paciente con contexto',
-      tip: 'Usalo para explicar el plan, reforzar la adherencia o aclarar siguientes pasos.',
     },
   };
   let activeAssistantMode: AssistantWorkMode = 'new-plan';
@@ -1386,7 +1372,7 @@ import Layout from '../layouts/Layout.astro';
     };
   };
 
-  const buildAssistantBriefPrompt = (action: 'update-plan' | 'next-session' | 'patient-message') => {
+  const buildAssistantBriefPrompt = (action: 'update-plan' | 'next-session') => {
     if (!currentAssistantPatientBrief) return '';
     const brief = currentAssistantPatientBrief;
     const contextLines = [
@@ -1405,9 +1391,7 @@ import Layout from '../layouts/Layout.astro';
 
     const task = action === 'next-session'
       ? 'Con este contexto, resume el objetivo de la siguiente sesion, que revisar en consulta y que progresion o regresion valorar.'
-      : action === 'patient-message'
-        ? 'Con este contexto, redacta un mensaje claro, cercano y profesional para explicar el plan al paciente, con foco en adherencia y senales de alarma.'
-        : 'Con este contexto, actualiza el plan de ejercicios domiciliarios con progresion segura, objetivo clinico, red flags y criterio de seguimiento.';
+      : 'Con este contexto, actualiza el plan de ejercicios domiciliarios con progresion segura, objetivo clinico, red flags y criterio de seguimiento.';
 
     return contextLines.join('\n') + '\n\n' + task;
   };
@@ -1489,9 +1473,6 @@ import Layout from '../layouts/Layout.astro';
     }
     if (mode === 'next-session') {
       return 'Resume que revisar en consulta y que progresion o regresion valorar.';
-    }
-    if (mode === 'patient-message') {
-      return 'Redacta un mensaje claro para explicar el plan y reforzar la adherencia.';
     }
     return '';
   };
@@ -1703,7 +1684,6 @@ import Layout from '../layouts/Layout.astro';
       <div class="assistant-brief-actions">
         <button type="button" class="assistant-chip" data-assistant-brief-action="update-plan"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
         <button type="button" class="assistant-chip" data-assistant-brief-action="next-session"><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
-        <button type="button" class="assistant-chip" data-assistant-brief-action="patient-message"><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
       </div>
     `;
   };
@@ -1848,13 +1828,17 @@ import Layout from '../layouts/Layout.astro';
     renderExerciseOpsMetric();
   };
 
+  let activeSection = 'dashboard';
+
   const navigateTo = (section: string) => {
+    activeSection = section;
     navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === section));
     pages.forEach(p => {
       const isActive = (p as HTMLElement).dataset.page === section;
       p.classList.toggle('active', isActive);
     });
     if (pageLoaders[section]) pageLoaders[section]();
+    syncAgendaAutoRefresh();
   };
   navItems.forEach(n => n.addEventListener('click', (e: Event) => { e.preventDefault(); navigateTo(n.getAttribute('data-section') || 'dashboard'); }));
 
@@ -2133,18 +2117,14 @@ import Layout from '../layouts/Layout.astro';
     const actionBtn = target?.closest('[data-assistant-brief-action]') as HTMLButtonElement | null;
     if (!actionBtn || !input) return;
 
-    const action = String(actionBtn.getAttribute('data-assistant-brief-action') || '') as 'update-plan' | 'next-session' | 'patient-message';
+    const action = String(actionBtn.getAttribute('data-assistant-brief-action') || '') as 'update-plan' | 'next-session';
     const prompt = buildAssistantBriefPrompt(action);
     if (!prompt) {
       addMessage('Selecciona un paciente con historial para preparar un prompt clinico guiado.', 'agent');
       return;
     }
 
-    const nextMode = action === 'update-plan'
-      ? 'update-plan'
-      : action === 'next-session'
-        ? 'next-session'
-        : 'patient-message';
+    const nextMode = action === 'update-plan' ? 'update-plan' : 'next-session';
 
     openAssistantRail();
     setAssistantMode(nextMode, { focus: true });
@@ -3374,6 +3354,28 @@ import Layout from '../layouts/Layout.astro';
     }
   };
 
+  let agendaAutoRefreshHandle: number | null = null;
+  const syncAgendaAutoRefresh = () => {
+    if (agendaAutoRefreshHandle) {
+      window.clearInterval(agendaAutoRefreshHandle);
+      agendaAutoRefreshHandle = null;
+    }
+
+    if (!['dashboard', 'citas'].includes(activeSection)) return;
+
+    agendaAutoRefreshHandle = window.setInterval(() => {
+      if (document.hidden) return;
+      loadCitas();
+    }, 45000);
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    if (['dashboard', 'citas'].includes(activeSection)) {
+      loadCitas();
+    }
+  });
+
   pageLoaders['citas'] = loadCitas;
   document.getElementById('refreshCitas')?.addEventListener('click', loadCitas);
   document.getElementById('prevWeek')?.addEventListener('click', () => {
@@ -3391,6 +3393,7 @@ import Layout from '../layouts/Layout.astro';
     loadCitas();
   });
   loadCitas();
+  syncAgendaAutoRefresh();
 
   const historyNoteComposerHtml = `
     <form class="history-note-form" data-role="history-note-form">

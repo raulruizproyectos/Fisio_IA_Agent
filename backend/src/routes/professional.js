@@ -485,7 +485,72 @@ router.get('/intakes/pending', async (req, res, next) => {
   }
 });
 
-async function fetchCalendarAppointments(timeMin, timeMax) {
+function normalizeCalendarPatientName(summary = '') {
+  return String(summary || '')
+    .replace(/^cita fisioterapia\s*[-:]\s*/i, '')
+    .trim();
+}
+
+function normalizeCalendarEvent(rawEvent) {
+  const eventId = String(rawEvent?.google_calendar_event_id || rawEvent?.id || '').trim();
+  if (!eventId) return null;
+
+  const startRaw = rawEvent?.inicio_en || rawEvent?.start?.dateTime || rawEvent?.start?.date || null;
+  const endRaw = rawEvent?.fin_en || rawEvent?.end?.dateTime || rawEvent?.end?.date || null;
+  const startAt = parseIsoTimestamp(startRaw);
+  const endAt = parseIsoTimestamp(endRaw);
+
+  if (!startAt) return null;
+
+  return {
+    google_calendar_event_id: eventId,
+    summary: String(rawEvent?.summary || '').trim(),
+    inicio_en: startAt,
+    fin_en: endAt,
+    description: rawEvent?.description ? String(rawEvent.description) : null,
+    status: String(rawEvent?.status || '').trim() || 'confirmed',
+  };
+}
+
+async function fetchCalendarAppointmentsDirect(timeMin, timeMax) {
+  const calendarClient = getGoogleCalendarClient();
+  if (!calendarClient) return [];
+
+  const response = await calendarClient.events.list({
+    calendarId: GOOGLE_CALENDAR_ID,
+    timeMin,
+    timeMax,
+    singleEvents: true,
+    orderBy: 'startTime',
+    showDeleted: false,
+    maxResults: 2500,
+  });
+
+  return (response.data?.items || [])
+    .map(normalizeCalendarEvent)
+    .filter(Boolean)
+    .filter((event) => (event.summary || '').toLowerCase().includes('cita fisioterapia'));
+}
+
+async function fetchCalendarEventById(eventId) {
+  if (!eventId || !calendarIntegrationEnabled()) return null;
+  const calendarClient = getGoogleCalendarClient();
+  if (!calendarClient) return null;
+
+  try {
+    const response = await calendarClient.events.get({
+      calendarId: GOOGLE_CALENDAR_ID,
+      eventId,
+    });
+    return normalizeCalendarEvent(response.data);
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 404) return null;
+    throw error;
+  }
+}
+
+async function fetchCalendarAppointmentsViaW5(timeMin, timeMax) {
   try {
     const res = await fetch(W5_CALENDAR_READER_URL, {
       method: 'POST',
@@ -495,10 +560,127 @@ async function fetchCalendarAppointments(timeMin, timeMax) {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data.events) ? data.events : [];
+    return (Array.isArray(data.events) ? data.events : []).map(normalizeCalendarEvent).filter(Boolean);
   } catch {
     return [];
   }
+}
+
+async function fetchCalendarAppointments(timeMin, timeMax) {
+  if (calendarIntegrationEnabled()) {
+    try {
+      return await fetchCalendarAppointmentsDirect(timeMin, timeMax);
+    } catch {
+      // Fall back to W5 reader if direct Calendar listing is temporarily unavailable.
+    }
+  }
+  return fetchCalendarAppointmentsViaW5(timeMin, timeMax);
+}
+
+function buildCalendarSyntheticAppointment(event, professionalId) {
+  return {
+    id: `cal_${event.google_calendar_event_id}`,
+    google_calendar_event_id: event.google_calendar_event_id,
+    inicio_en: event.inicio_en,
+    fin_en: event.fin_en,
+    estado: 'confirmada',
+    canal_origen: 'manual',
+    motivo: event.description || null,
+    nombre_paciente: normalizeCalendarPatientName(event.summary) || null,
+    paciente_id: null,
+    fisioterapeuta_id: professionalId,
+  };
+}
+
+function isAppointmentInsideWindow(appointment, fromAt, toAt) {
+  const startTime = new Date(appointment?.inicio_en || '').getTime();
+  if (Number.isNaN(startTime)) return false;
+  if (fromAt && startTime < new Date(fromAt).getTime()) return false;
+  if (toAt && startTime > new Date(toAt).getTime()) return false;
+  return true;
+}
+
+async function reconcileAppointmentsWithCalendar({
+  professionalId,
+  rows,
+  calendarEvents,
+  fromAt,
+  toAt,
+}) {
+  const summary = {
+    enabled: true,
+    source: calendarIntegrationEnabled() ? 'google_api' : 'w5_reader',
+    fetched: calendarEvents.length,
+    updated: 0,
+    cancelled: 0,
+    synthetic: 0,
+    restored: 0,
+  };
+
+  const calendarById = new Map(
+    calendarEvents
+      .filter((event) => event?.google_calendar_event_id)
+      .map((event) => [event.google_calendar_event_id, event])
+  );
+
+  const rowById = new Map(rows.map((row) => [row.id, { ...row }]));
+
+  for (const row of rowById.values()) {
+    const calendarEventId = row.google_calendar_event_id;
+    if (!calendarEventId) continue;
+
+    let calendarEvent = calendarById.get(calendarEventId) || null;
+    if (!calendarEvent && calendarIntegrationEnabled()) {
+      calendarEvent = await fetchCalendarEventById(calendarEventId);
+    }
+
+    if (!calendarEvent || calendarEvent.status === 'cancelled') {
+      if (!['cancelada', 'completada', 'no_show'].includes(row.estado)) {
+        const { error } = await supabase
+          .from('crm_citas')
+          .update({ estado: 'cancelada' })
+          .eq('id', row.id);
+        if (error) throw error;
+        row.estado = 'cancelada';
+        summary.cancelled += 1;
+      }
+      continue;
+    }
+
+    const desired = {};
+    if (row.inicio_en !== calendarEvent.inicio_en) desired.inicio_en = calendarEvent.inicio_en;
+    if ((row.fin_en || null) !== (calendarEvent.fin_en || null)) desired.fin_en = calendarEvent.fin_en;
+    if ((row.motivo || null) !== (calendarEvent.description || null)) desired.motivo = calendarEvent.description || null;
+    if (row.estado === 'cancelada') desired.estado = 'confirmada';
+
+    if (Object.keys(desired).length) {
+      const { error } = await supabase
+        .from('crm_citas')
+        .update(desired)
+        .eq('id', row.id);
+      if (error) throw error;
+      Object.assign(row, desired);
+      summary.updated += 1;
+      if (desired.estado === 'confirmada') summary.restored += 1;
+    }
+  }
+
+  const knownCalendarIds = new Set(
+    [...rowById.values()].map((row) => row.google_calendar_event_id).filter(Boolean)
+  );
+
+  const calendarOnlyRows = calendarEvents
+    .filter((event) => event.status !== 'cancelled')
+    .filter((event) => !knownCalendarIds.has(event.google_calendar_event_id))
+    .map((event) => buildCalendarSyntheticAppointment(event, professionalId));
+
+  summary.synthetic = calendarOnlyRows.length;
+
+  const merged = [...rowById.values(), ...calendarOnlyRows]
+    .filter((appointment) => isAppointmentInsideWindow(appointment, fromAt, toAt))
+    .sort((a, b) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+
+  return { rows: merged, calendar_sync: summary };
 }
 
 router.get('/appointments', async (req, res, next) => {
@@ -544,10 +726,11 @@ router.get('/appointments', async (req, res, next) => {
     if (fromAt) query = query.gte('inicio_en', fromAt);
     if (toAt) query = query.lte('inicio_en', toAt);
 
+    const shouldCalendarReconcile = !patientId && !statusFilter && fromAt && toAt;
+
     const [{ data, error }, calendarEvents] = await Promise.all([
       query,
-      // Only fetch from Calendar when no patient filter and a date range is given
-      (!patientId && !statusFilter && fromAt && toAt)
+      shouldCalendarReconcile
         ? fetchCalendarAppointments(fromAt, toAt)
         : Promise.resolve([]),
     ]);
@@ -559,33 +742,51 @@ router.get('/appointments', async (req, res, next) => {
       throw error;
     }
 
-    const supabaseRows = (data || []).map(normalizeAppointmentRow);
-    const supabaseCalIds = new Set(supabaseRows.map(r => r.google_calendar_event_id).filter(Boolean));
+    let supabaseRows = (data || []).map(normalizeAppointmentRow);
+    let calendarSyncSummary = null;
 
-    // Calendar events not yet in Supabase → synthetic rows for display
-    const calendarOnly = calendarEvents
-      .filter(ev => !supabaseCalIds.has(ev.google_calendar_event_id))
-      .map(ev => {
-        const nameFromSummary = (ev.summary || '').replace(/^cita fisioterapia\s*[-–]\s*/i, '').trim();
-        return {
-          id: `cal_${ev.google_calendar_event_id}`,
-          google_calendar_event_id: ev.google_calendar_event_id,
-          inicio_en: ev.inicio_en,
-          fin_en: ev.fin_en,
-          estado: 'pendiente',
-          canal_origen: 'calendar',
-          motivo: ev.description || null,
-          nombre_paciente: nameFromSummary || null,
-          paciente_id: null,
-          fisioterapeuta_id: professionalId,
-        };
+    if (shouldCalendarReconcile) {
+      const calendarEventIds = calendarEvents
+        .map((event) => event?.google_calendar_event_id)
+        .filter(Boolean);
+
+      if (calendarEventIds.length) {
+        const existingIds = new Set(supabaseRows.map((row) => row.id));
+        const { data: linkedRows, error: linkedRowsError } = await supabase
+          .from('crm_citas')
+          .select(APPOINTMENT_SELECT)
+          .eq('fisioterapeuta_id', professionalId)
+          .in('google_calendar_event_id', calendarEventIds);
+
+        if (linkedRowsError) {
+          if (isMissingTableError(linkedRowsError, 'crm_citas')) {
+            return res.status(400).json({ error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.' });
+          }
+          throw linkedRowsError;
+        }
+
+        for (const row of linkedRows || []) {
+          if (existingIds.has(row.id)) continue;
+          supabaseRows.push(normalizeAppointmentRow(row));
+        }
+      }
+
+      const reconciled = await reconcileAppointmentsWithCalendar({
+        professionalId,
+        rows: supabaseRows,
+        calendarEvents,
+        fromAt,
+        toAt,
       });
+      supabaseRows = reconciled.rows;
+      calendarSyncSummary = reconciled.calendar_sync;
+    } else {
+      supabaseRows = [...supabaseRows].sort(
+        (a, b) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime()
+      );
+    }
 
-    const merged = [...supabaseRows, ...calendarOnly].sort(
-      (a, b) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime()
-    );
-
-    res.json({ data: merged });
+    res.json({ data: supabaseRows, calendar_sync: calendarSyncSummary });
   } catch (err) {
     if (
       isMissingTableError(err, 'crm_citas') ||
