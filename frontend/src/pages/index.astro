@@ -911,7 +911,17 @@ import Layout from '../layouts/Layout.astro';
                   </div>
                 </div>
 
-                <div class="assistant-shortcuts">
+                <div class="assistant-flow-card" id="assistantFlowCard" aria-live="polite">
+                  <div class="assistant-flow-head">
+                    <span class="assistant-brief-kicker">Flujo guiado</span>
+                    <strong id="assistantFlowTitle">Plan listo para historial y PDF</strong>
+                  </div>
+                  <div class="assistant-flow-steps" id="assistantFlowSteps"></div>
+                  <p class="assistant-flow-hint" id="assistantFlowHint">Selecciona un paciente para empezar el flujo guiado.</p>
+                  <p class="assistant-flow-draft" id="assistantFlowDraft"></p>
+                </div>
+
+                <div class="assistant-shortcuts" id="assistantShortcuts">
                   <button type="button" class="assistant-chip" data-assistant-prompt="Genera un plan inicial para dolor lumbar con progresion de 3 semanas."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
                   <button type="button" class="assistant-chip" data-assistant-prompt="Resume el objetivo de la siguiente sesion y que revisar en consulta."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
                   <button type="button" class="assistant-chip" data-assistant-prompt="Redacta un mensaje claro para explicar el plan al paciente."><span class="material-symbols-rounded">chat</span> Mensaje paciente</button>
@@ -977,6 +987,11 @@ import Layout from '../layouts/Layout.astro';
   const assistantPatientLabel = document.getElementById('assistantPatientLabel') as HTMLElement | null;
   const assistantPatientMeta = document.getElementById('assistantPatientMeta') as HTMLElement | null;
   const assistantPatientBrief = document.getElementById('assistantPatientBrief') as HTMLElement | null;
+  const assistantFlowCard = document.getElementById('assistantFlowCard') as HTMLElement | null;
+  const assistantFlowSteps = document.getElementById('assistantFlowSteps') as HTMLElement | null;
+  const assistantFlowHint = document.getElementById('assistantFlowHint') as HTMLElement | null;
+  const assistantFlowDraft = document.getElementById('assistantFlowDraft') as HTMLElement | null;
+  const assistantFlowTitle = document.getElementById('assistantFlowTitle') as HTMLElement | null;
   const assistantShortcuts = document.getElementById('assistantShortcuts') as HTMLElement | null;
   const inputArea = document.querySelector('.ai-input-area') as HTMLElement | null;
   const dashCitasBody = document.getElementById('dashCitasBody') as HTMLElement | null;
@@ -1304,6 +1319,79 @@ import Layout from '../layouts/Layout.astro';
     return contextLines.join('\n') + '\n\n' + task;
   };
 
+  const getAssistantDraftSummary = () => {
+    const draft = String(input?.value || '').replace(/\s+/g, ' ').trim();
+    if (!draft) return '';
+    return draft.length <= 96 ? draft : draft.slice(0, 95).trim() + '...';
+  };
+
+  const hasExerciseReportReady = () => {
+    if (!lastExerciseReportPayload) return false;
+    const reportPatientId = String(lastExerciseReportPayload?.patient_id || '').trim();
+    if (!reportPatientId || !selectedPatientId) return Boolean(lastExerciseReportPayload);
+    return reportPatientId === selectedPatientId;
+  };
+
+  const renderAssistantFlowCard = () => {
+    if (!assistantFlowCard || !assistantFlowSteps || !assistantFlowHint || !assistantFlowDraft || !assistantFlowTitle) return;
+
+    const hasPatient = Boolean(selectedPatientId);
+    const hasGoal = String(input?.value || '').trim().length >= 12;
+    const hasPlan = hasExerciseReportReady();
+    const patientName = selectedPatientName || currentAssistantPatientBrief?.patientName || 'Paciente activo';
+
+    const steps = [
+      {
+        label: 'Paciente',
+        state: hasPatient ? 'done' : 'current',
+        meta: hasPatient ? patientName : 'Selecciona uno'
+      },
+      {
+        label: 'Objetivo',
+        state: hasGoal ? 'done' : (hasPatient ? 'current' : 'pending'),
+        meta: hasGoal ? 'Contexto cargado' : 'Describe dolor o meta'
+      },
+      {
+        label: 'Plan IA',
+        state: hasPlan ? 'done' : (hasPatient && hasGoal ? 'current' : 'pending'),
+        meta: hasPlan ? 'Propuesta generada' : 'Pulsa Generar plan'
+      },
+      {
+        label: 'PDF e historial',
+        state: hasPlan ? 'done' : 'pending',
+        meta: hasPlan ? 'Listo para exportar' : 'Se activa tras generar'
+      }
+    ];
+
+    assistantFlowSteps.innerHTML = steps.map((step) => {
+      return '<article class="assistant-flow-step is-' + escapeAttr(step.state) + '">' +
+        '<span class="assistant-flow-step-dot"></span>' +
+        '<div>' +
+          '<strong>' + escapeHtml(step.label) + '</strong>' +
+          '<small>' + escapeHtml(step.meta) + '</small>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+
+    if (!hasPatient) {
+      assistantFlowTitle.textContent = 'Empezamos vinculando el caso al historial correcto';
+      assistantFlowHint.textContent = 'Selecciona un paciente para que plan, PDF y seguimiento queden unidos al caso clinico.';
+    } else if (!hasGoal) {
+      assistantFlowTitle.textContent = 'El caso ya esta listo para recibir un objetivo clinico';
+      assistantFlowHint.textContent = 'Describe dolor, restriccion funcional o meta terapeutica para orientar el plan.';
+    } else if (!hasPlan) {
+      assistantFlowTitle.textContent = 'Buen briefing: ahora toca pedir la propuesta del agente';
+      assistantFlowHint.textContent = 'Genera el plan para revisar ejercicios, ajustar el mensaje al paciente y habilitar el PDF.';
+    } else {
+      assistantFlowTitle.textContent = 'Plan generado: ya puedes cerrar el flujo';
+      assistantFlowHint.textContent = 'Revisa la propuesta, exporta el PDF y deja trazabilidad en historial sin salir del copilot.';
+    }
+
+    const draftSummary = getAssistantDraftSummary();
+    assistantFlowDraft.textContent = draftSummary
+      ? 'Objetivo actual: ' + draftSummary
+      : 'Sin objetivo redactado todavia.';
+  };
   const renderAssistantPatientBrief = (brief: any = null, options: { loading?: boolean; error?: boolean } = {}) => {
     if (!assistantPatientBrief) return;
     const loading = Boolean(options.loading);
@@ -1452,11 +1540,18 @@ import Layout from '../layouts/Layout.astro';
     selectedPatientId = nextId || null;
     updateAssistantPatientSelectorState();
 
+    const activeReportPatientId = String(lastExerciseReportPayload?.patient_id || '').trim();
+    if (!nextId || (activeReportPatientId && activeReportPatientId !== nextId)) {
+      lastExerciseReportPayload = null;
+      updateExercisePdfButton();
+    }
+
     if (!nextId) {
       selectedPatientName = '';
       currentAssistantPatientBrief = null;
       renderAssistantPatientContext();
       renderAssistantPatientBrief(null);
+      renderAssistantFlowCard();
       return;
     }
 
@@ -1471,6 +1566,7 @@ import Layout from '../layouts/Layout.astro';
     } else {
       renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { loading: true });
     }
+    renderAssistantFlowCard();
   }
 
   const renderExerciseOpsMetric = () => {
@@ -1741,9 +1837,10 @@ import Layout from '../layouts/Layout.astro';
   };
 
   updateExercisePdfButton();
+  renderAssistantFlowCard();
 
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
-  input?.addEventListener('input', resizeAgentInput);
+  input?.addEventListener('input', () => { resizeAgentInput(); renderAssistantFlowCard(); });
   window.requestAnimationFrame(resizeAgentInput);
 
   assistantShortcuts?.addEventListener('click', (event: Event) => {
@@ -2022,6 +2119,8 @@ import Layout from '../layouts/Layout.astro';
   const addExerciseReport = (payload: any) => {
     if (!log) return;
     lastExerciseReportPayload = payload;
+    updateExercisePdfButton();
+    renderAssistantFlowCard();
     const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
     const coverage = payload?.image_coverage || {};
     const engineObs = payload?.engine_observability || {};
@@ -8642,6 +8741,96 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+
+  .assistant-flow-card {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.78rem 0.82rem;
+    border: 1px solid #dce8ee;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #fbfeff 0%, #f4fafc 100%);
+  }
+
+  .assistant-flow-head {
+    display: grid;
+    gap: 0.18rem;
+  }
+
+  .assistant-flow-head strong {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #10233d;
+  }
+
+  .assistant-flow-steps {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .assistant-flow-step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.58rem;
+    align-items: start;
+    padding: 0.56rem 0.6rem;
+    border-radius: 0.85rem;
+    border: 1px solid #dce8ee;
+    background: #ffffff;
+  }
+
+  .assistant-flow-step strong {
+    display: block;
+    font-size: 0.82rem;
+    color: #10233d;
+  }
+
+  .assistant-flow-step small {
+    display: block;
+    margin-top: 0.12rem;
+    color: #5f7488;
+    line-height: 1.4;
+  }
+
+  .assistant-flow-step-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    border: 2px solid #94a3b8;
+    margin-top: 0.1rem;
+    background: #ffffff;
+  }
+
+  .assistant-flow-step.is-current {
+    border-color: #7dd3cf;
+    background: #f0fdfa;
+  }
+
+  .assistant-flow-step.is-current .assistant-flow-step-dot {
+    border-color: #0d9488;
+    background: #99f6e4;
+  }
+
+  .assistant-flow-step.is-done {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+  }
+
+  .assistant-flow-step.is-done .assistant-flow-step-dot {
+    border-color: #16a34a;
+    background: #22c55e;
+  }
+
+  .assistant-flow-hint,
+  .assistant-flow-draft {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #5f7488;
+  }
+
+  .assistant-flow-draft {
+    color: #21445a;
   }
 
   .assistant-rail .chat-log {
