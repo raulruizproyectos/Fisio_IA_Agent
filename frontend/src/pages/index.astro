@@ -1635,7 +1635,23 @@ import Layout from '../layouts/Layout.astro';
   // === SIDEBAR TOGGLE (responsive) ===
   const sidebarBackdrop = document.getElementById('sidebarBackdrop') as HTMLElement | null;
   const isMobile = () => window.innerWidth <= 768;
-  const isCompactAssistantViewport = () => true;
+  const isLaptopViewport = () => window.innerWidth <= 1366 || window.innerHeight <= 860;
+  const getAssistantViewportMode = () => (isMobile() ? 'mobile' : isLaptopViewport() ? 'compact' : 'desktop');
+
+  const syncResponsiveViewportState = () => {
+    const root = document.documentElement;
+    const viewportMode = isMobile() ? 'mobile' : isLaptopViewport() ? 'laptop' : 'desktop';
+    const assistantMode = getAssistantViewportMode();
+
+    root.dataset.viewportMode = viewportMode;
+    root.dataset.assistantMode = assistantMode;
+
+    sidebar?.classList.toggle('collapsed', viewportMode === 'laptop');
+
+    if (viewportMode === 'desktop') {
+      closeSidebar();
+    }
+  };
 
   const syncOverlayBodyLock = () => {
     const sidebarOpen = Boolean(sidebar?.classList.contains('open'));
@@ -1739,7 +1755,9 @@ import Layout from '../layouts/Layout.astro';
   navItems.forEach(n => n.addEventListener('click', () => { if (isMobile()) closeSidebar(); }));
 
   // Clean up on resize
+  syncResponsiveViewportState();
   window.addEventListener('resize', () => {
+    syncResponsiveViewportState();
     if (!isMobile()) closeSidebar();
     syncOverlayBodyLock();
   });
@@ -9188,3 +9206,267 @@ import Layout from '../layouts/Layout.astro';
       bottom: 0.75rem;
     }
   }</style>
+<style is:global id="adaptive-responsive-override">
+  html[data-viewport-mode='laptop'] .sidebar {
+    width: 78px !important;
+    min-width: 78px !important;
+    padding-left: 0.45rem !important;
+    padding-right: 0.45rem !important;
+  }
+
+  html[data-viewport-mode='laptop'] .sidebar-brand {
+    justify-content: center !important;
+    padding-left: 0.2rem !important;
+    padding-right: 0.2rem !important;
+  }
+
+  html[data-viewport-mode='laptop'] .sidebar .brand-text,
+  html[data-viewport-mode='laptop'] .sidebar .nav-label,
+  html[data-viewport-mode='laptop'] .sidebar .badge,
+  html[data-viewport-mode='laptop'] .sidebar .sidebar-section-label {
+    display: none !important;
+  }
+
+  html[data-viewport-mode='laptop'] .sidebar .nav-item {
+    justify-content: center !important;
+    padding-left: 0.45rem !important;
+    padding-right: 0.45rem !important;
+  }
+
+  html[data-viewport-mode='laptop'] .content {
+    padding: 0.95rem 1rem !important;
+  }
+
+  html[data-viewport-mode='laptop'] .topbar {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    gap: 0.55rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-launch-btn {
+    display: none !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-fab {
+    display: inline-flex !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    width: min(340px, 100vw) !important;
+    max-width: 100vw !important;
+    padding: 0 !important;
+    transform: translateX(100%) !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail.open {
+    transform: translateX(0) !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail-backdrop {
+    inset: 0 !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail-card {
+    height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-module-header {
+    padding: 0.58rem 0.68rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-rail-copy h2 {
+    font-size: 0.82rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-toolbar {
+    padding: 0.5rem 0.58rem !important;
+    gap: 0.42rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .patient-selector {
+    min-height: 1.8rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .patient-selector select {
+    font-size: 0.76rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface {
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    padding: 0.42rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    gap: 0.4rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log {
+    gap: 0.4rem !important;
+    padding-bottom: 0 !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .msg-body {
+    font-size: 0.8rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-compact {
+    padding: 0.58rem !important;
+    gap: 0.42rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-head strong {
+    font-size: 0.84rem !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-pill,
+  html[data-assistant-mode='compact'] .assistant-rail .exercise-note-compact,
+  html[data-assistant-mode='compact'] .assistant-rail .exercise-summary-compact,
+  html[data-assistant-mode='compact'] .assistant-rail .exercise-report-meta {
+    font-size: 0.74rem !important;
+    line-height: 1.38 !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .ai-input-area {
+    margin-top: auto !important;
+    padding: 0.5rem 0.58rem calc(0.72rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-disclaimer {
+    display: none !important;
+  }
+
+  html[data-assistant-mode='compact'] .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 3.8rem !important;
+    height: 3.8rem !important;
+    max-height: 5.8rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .sidebar {
+    width: min(82vw, 280px) !important;
+    min-width: 0 !important;
+    transform: translateX(-100%) !important;
+  }
+
+  html[data-assistant-mode='mobile'] .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-launch-btn {
+    display: none !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-fab {
+    display: inline-flex !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 0 !important;
+    transform: translateY(100%) !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail.open {
+    transform: translateY(0) !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail-backdrop {
+    inset: 0 !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail-card {
+    height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-module-header {
+    padding: 0.56rem 0.62rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-rail-copy h2 {
+    font-size: 0.8rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-toolbar {
+    padding: 0.48rem 0.55rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    padding: 0.36rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    gap: 0.34rem !important;
+    padding-bottom: 0.2rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
+    gap: 0.35rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .msg-body {
+    font-size: 0.78rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-compact {
+    padding: 0.52rem !important;
+    gap: 0.34rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-head strong {
+    font-size: 0.8rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-pill,
+  html[data-assistant-mode='mobile'] .assistant-rail .exercise-note-compact,
+  html[data-assistant-mode='mobile'] .assistant-rail .exercise-summary-compact,
+  html[data-assistant-mode='mobile'] .assistant-rail .exercise-report-meta {
+    font-size: 0.72rem !important;
+    line-height: 1.34 !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.42rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .btn-action {
+    min-height: 2.55rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area {
+    margin-top: auto !important;
+    padding: 0.48rem 0.55rem calc(0.84rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-disclaimer {
+    display: none !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 3.6rem !important;
+    height: 3.6rem !important;
+    max-height: 5.2rem !important;
+  }
+</style>
