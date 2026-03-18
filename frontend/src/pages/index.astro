@@ -1732,7 +1732,7 @@ import Layout from '../layouts/Layout.astro';
   const resizeAgentInput = () => {
     if (!input) return;
     input.style.height = 'auto';
-    const maxPx = Math.min(Math.round(window.innerHeight * 0.08), 72);
+    const maxPx = Math.min(Math.max(Math.round(window.innerHeight * 0.18), 112), 160);
     input.style.height = `${Math.min(input.scrollHeight, maxPx)}px`;
   };
 
@@ -7560,14 +7560,23 @@ import Layout from '../layouts/Layout.astro';
     flex-direction: column;
     background: #f8fafc;
     color: #475569;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    gap: 0.75rem;
+    padding: 0.8rem 0.75rem 0.9rem;
   }
 
   .assistant-rail .chat-log {
-    flex: 1;
-    min-height: 0;
+    flex: 0 1 auto;
+    min-height: 6.25rem;
+    max-height: min(30vh, 16rem);
     overflow-y: auto;
-    padding: 0.75rem;
-    background: #f8fafc;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #d8e5ed;
+    border-radius: 1rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
     gap: 0.7rem;
   }
 
@@ -7720,11 +7729,16 @@ import Layout from '../layouts/Layout.astro';
     background: #ffffff;
     border-top: 1px solid #f1f5f9;
     box-shadow: 0 -1px 4px -2px rgba(15, 23, 42, 0.04);
-    padding: 0.45rem 0.75rem 0.4rem;
+    padding: 0.65rem 0.75rem 0.55rem;
     min-width: 0;
     max-height: none;
     overflow: visible;
     gap: 0.35rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    border-radius: 1rem 1rem 0 0;
+    margin-top: auto;
   }
 
   .assistant-rail .assistant-action-grid {
@@ -7744,7 +7758,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .ai-textarea-wrapper {
-    background: #ffffff;
+    background: #fcfeff;
     border: 1px solid #d7e4ec;
     border-radius: 0.8rem;
     box-shadow: 0 10px 24px -24px rgba(15, 23, 42, 0.22);
@@ -7760,31 +7774,34 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-rail .ai-textarea-wrapper textarea {
     width: 100%;
-    min-height: 2.7rem;
-    height: 2.7rem;
-    max-height: 4.2rem;
+    min-height: 4.15rem;
+    height: 4.15rem;
+    max-height: 9rem;
     border: none;
     background: transparent;
-    color: #334155;
-    line-height: 1.38;
-    padding: 0.62rem 0.75rem;
+    color: #10233d;
+    -webkit-text-fill-color: #10233d;
+    caret-color: #0d9488;
+    line-height: 1.52;
+    padding: 0.82rem 0.88rem;
     resize: none;
     outline: none;
     overflow-y: auto;
-    font-size: 0.81rem;
+    font-size: 0.9rem;
+    font-weight: 500;
   }
 
   .assistant-rail .ai-textarea-wrapper textarea::placeholder {
-    color: #8ba0b3;
+    color: #6f8599;
     opacity: 1;
   }
 
   .assistant-rail .assistant-disclaimer {
     margin: 0;
     text-align: center;
-    font-size: 0.58rem;
-    line-height: 1.35;
-    color: #8aa0b2;
+    font-size: 0.65rem;
+    line-height: 1.4;
+    color: #6f8599;
   }
 
   /* --- Action buttons --- */
@@ -8082,7 +8099,7 @@ import Layout from '../layouts/Layout.astro';
     border: 1px solid #d8e5ed;
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.82);
-    color: #5f7488;
+    color: #4f6478;
     font-size: 0.84rem;
     line-height: 1.45;
   }
@@ -8116,7 +8133,7 @@ import Layout from '../layouts/Layout.astro';
 
   .assistant-patient-brief-empty p {
     margin: 0;
-    color: #5f7488;
+    color: #4f6478;
     font-size: 0.82rem;
     line-height: 1.45;
   }
@@ -8277,7 +8294,21 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .ai-input-area {
-    padding: 0.45rem 0.75rem 0.4rem !important;
+    flex-shrink: 0;
+    margin-top: 0;
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+    box-shadow: 0 -1px 4px -2px rgba(15, 23, 42, 0.04);
+    padding: 0.65rem 0.75rem 0.55rem;
+    min-width: 0;
+    max-height: none;
+    overflow: visible;
+    gap: 0.35rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    border-radius: 1rem 1rem 0 0;
+    margin-top: auto;
   }
 
   .assistant-rail .assistant-composer-shell {
@@ -8285,14 +8316,28 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .assistant-rail .ai-textarea-wrapper textarea {
-    min-height: 2.7rem !important;
-    height: 2.7rem !important;
-    max-height: 4.2rem !important;
-    line-height: 1.38 !important;
-    padding: 0.62rem 0.75rem !important;
-    font-size: 0.81rem !important;
+    width: 100%;
+    min-height: 4.15rem;
+    height: 4.15rem;
+    max-height: 9rem;
+    border: none;
+    background: transparent;
+    color: #10233d;
+    -webkit-text-fill-color: #10233d;
+    caret-color: #0d9488;
+    line-height: 1.52;
+    padding: 0.82rem 0.88rem;
+    resize: none;
+    outline: none;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    font-weight: 500;
   }
 
   .assistant-rail .assistant-disclaimer {
-    font-size: 0.58rem !important;
+    margin: 0;
+    text-align: center;
+    font-size: 0.65rem;
+    line-height: 1.4;
+    color: #6f8599;
   }</style>
