@@ -1,4 +1,11 @@
-## Estado actual (2026-03-18, Sesion 105) - Agenda con observabilidad lista, bloqueada por credenciales de Google Calendar en backend.
+## Estado actual (2026-03-19, Sesion 106) - Calendar sync DESBLOQUEADO via W5/n8n OAuth2.
+
+### Completado sesion 106
+- [x] Backend refactorizado: calendarIntegrationEnabled() ahora soporta modo W5 (sin Service Account).
+- [x] GOOGLE_CALENDAR_ID=raul.ruiz.diaz.bcn@gmail.com publicada en EasyPanel.
+- [x] Redeploy de fisio-backend exitoso (commit `6165b7b`).
+- [x] Endpoint sync-calendar/status devuelve `enabled: true, mode: "w5"` en produccion.
+- [x] GitHub sincronizado en `6165b7b`.
 
 ### Completado sesion 105
 - [x] W6 Calendar Sync existe y esta activo en n8n cada 2 minutos.
@@ -6,24 +13,13 @@
 - [x] La agenda del CRM ya muestra el estado del sync y su frescura.
 - [x] GitHub queda sincronizado en `c651966`.
 
-### Diagnostico confirmado
-- El backend desplegado sigue devolviendo `enabled: false` para Google Calendar.
-- Por eso la agenda todavia no puede ser espejo real del calendario del profesional.
-- El bloqueo actual no es n8n ni frontend: es configuracion pendiente en EasyPanel del backend.
-
-### Acciones requeridas antes de la proxima implementacion
-1. Publicar en EasyPanel del backend:
-   - `GOOGLE_CALENDAR_ID`
-   - `GOOGLE_CLIENT_EMAIL`
-   - `GOOGLE_PRIVATE_KEY`
-   - opcional: `GOOGLE_CALENDAR_REQUIRED=true`
-2. **Redeploy de `fisio-backend` en EasyPanel**.
-3. Verificar en produccion que `/api/profesional/appointments/sync-calendar/status` devuelve:
-   - `enabled: true`
-   - `last_success_at` con valor real
+### Diagnostico resuelto (sesion 106)
+- El backend ahora devuelve `enabled: true, mode: "w5"` para Google Calendar.
+- El sync de calendario usa W5 (n8n OAuth2) como fuente en lugar de JWT/Service Account.
+- La agenda puede ser espejo real del calendario del profesional.
 
 ### Siguiente paso exacto
-1. Espejo real del calendario clinico.
+1. Espejo real del calendario clinico (verificar reconciliacion con W5).
 2. Bloqueos / no disponibilidad desde Google Calendar.
 3. Envio real por Telegram desde el copilot.
 4. Observabilidad ampliada en agenda con ultimo sync, proximo ciclo y errores recientes.
