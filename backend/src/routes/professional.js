@@ -64,7 +64,7 @@ const calendarBackgroundSyncState = {
 function rejectVideoFeatureIfDisabled(res) {
   if (VIDEO_WORKFLOWS_ENABLED) return false;
   res.status(410).json({
-    error: 'La funcionalidad de video está desactivada en este entorno.',
+    error: 'La funcionalidad de video estÃƒÆ’Ã‚Â¡ desactivada en este entorno.',
     feature: 'video_workflows',
     status: 'disabled',
   });
@@ -725,7 +725,7 @@ function extractCalendarDescriptionField(description = '', label = '') {
 function normalizeComparableName(value = '') {
   return String(value || '')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}+/gu, '')
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim();
@@ -1100,6 +1100,10 @@ async function reconcileAppointmentsWithCalendar({
         row.estado = 'cancelada';
         summary.cancelled += 1;
       }
+      Object.assign(row, attachCalendarSyncMeta(row, {
+        calendar_sync_state: 'crm_only',
+        calendar_origin: 'crm',
+      }));
       continue;
     }
 
