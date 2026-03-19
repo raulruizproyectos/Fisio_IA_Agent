@@ -1,3 +1,31 @@
+## Sesion 109 - 2026-03-19
+
+### Objetivo
+Cerrar la agenda Calendar <-> CRM en produccion, dejar el espejo honesto en UI/API y actualizar toda la continuidad documental para retomar sin perdida de contexto.
+
+### Trabajo realizado
+- [x] Rebase y publicacion de `main` completados para los cambios de agenda (`2dfbb6f`).
+- [x] `professional.js` desplegado con `calendar_sync_state`, `check-availability`, `busy_events` y `next_expected_at`.
+- [x] `index.astro` desplegado con columna `Espejo`, facts del sync y labels saneados (`62729ec`).
+- [x] W5 remoto activo con salida `busy_events` + `events`.
+- [x] Redeploy de `fisio-backend` y `fisio-frontend` en EasyPanel.
+- [x] Fix final del espejo: una cita cancelada o sin evento activo deja de salir como `linked` y pasa a `crm_only` (`1dc252f`).
+- [x] Nuevo checkpoint operativo creado para la proxima sesion.
+
+### Verificacion
+- [x] `node --check backend/src/routes/professional.js` OK.
+- [x] `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`.
+- [x] `POST /api/profesional/appointments/check-availability` vivo en produccion (respuesta `400` con payload vacio, no `404`).
+- [x] `GET /api/profesional/appointments/sync-calendar/status` devuelve `next_expected_at` en produccion.
+- [x] Frontend productivo sirve `Espejo` y `agendaSyncFacts` sin mojibake.
+- [x] API productiva de citas devuelve `crm_only` para las citas canceladas cuyo evento ya no esta activo en Calendar.
+
+### Punto exacto de continuidad
+1. Localizar o crear un `busy_event` activo/no cancelado y repetir `POST /api/profesional/appointments/check-availability` para cerrar un caso vivo `available=false`.
+2. Decidir si la no disponibilidad debe representarse tambien en la parrilla semanal del frontend.
+3. Cuando agenda quede cerrada al 100%, retomar Telegram/copilot y validacion E2E multicanal.
+
+---
 ## Sesion 108 - 2026-03-19
 
 ### Objetivo

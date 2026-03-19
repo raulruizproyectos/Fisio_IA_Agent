@@ -1,18 +1,33 @@
 # Fisio_IA_Agent
 
-CRM + agentes para centros de fisioterapia: gestiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de pacientes, citas y recomendaciones de ejercicios desde Telegram y CRM web, orquestado con n8n y Supabase.
+CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recomendaciones de ejercicios desde Telegram y CRM web, orquestado con n8n y Supabase.
 
 ## Alcance activo (pivot)
-- CRM web para operaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n clÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nica.
+- CRM web para operacion clinica y administrativa.
 - Agente de citas: Telegram + n8n + Google Calendar + Supabase.
 - Bot de pacientes: solicitudes de cita por texto libre, comando `/cita` y nota de voz transcrita.
-
 - Agente IA de ejercicios: Telegram + CRM + n8n/OpenAI + Supabase + Storage.
-- Source of truth ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºnico: Supabase del proyecto `Fisio_IA_Agent`.
+- Source of truth unico: Supabase del proyecto `Fisio_IA_Agent`.
 
 ## En pausa
-- GeneraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­deo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
+- Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
+## Checkpoint actual (Sesion 109 - 2026-03-19)
+- Estado de GitHub: `main` al dia con el cierre operativo de agenda y la documentacion de continuidad.
+- Estado de produccion:
+  - `fisio-backend` desplegado con `calendar_sync_state`, `check-availability` y `sync-calendar/status` ampliado con `next_expected_at`.
+  - `fisio-frontend` desplegado con columna `Espejo`, facts del sync y labels saneados.
+  - W5 remoto devuelve `busy_events` y `events`; W6 sigue marcando heartbeat visible en CRM.
+  - las citas canceladas o sin evento activo ya no salen como `linked`: ahora se exponen como `crm_only`.
+- Verificaciones cerradas:
+  - `POST /api/profesional/appointments/check-availability` responde en produccion.
+  - `GET /api/profesional/appointments/sync-calendar/status` devuelve `next_expected_at`.
+  - el frontend productivo ya sirve `Espejo` y `agendaSyncFacts` sin mojibake.
+- Siguiente paso exacto:
+  - localizar o crear un `busy_event` real/no cancelado para demostrar un caso vivo `available=false`.
+  - decidir si la UI debe pintar tambien bloqueos/no disponibilidad dentro de la parrilla semanal.
+  - retomar Telegram/copilot cuando agenda quede cerrada al 100%.
+- Checkpoint operativo recomendado: `docs/checkpoint_20260319_agenda_sync_closure.md`
 ## Checkpoint actual (Sesion 108 - 2026-03-19)
 - Commit exacto para retomar: pendiente de commit local (repo con mejoras de agenda y docs)
 - Estado de GitHub: este tramo sigue local; W5 remoto ya esta actualizado en n8n
@@ -227,16 +242,16 @@ node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<u
 ```
 
 ## Continuidad
-- Estado detallado por sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n: `CHANGELOG.md`
+- Estado detallado por sesion: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
-- Checkpoint operativo actual: `docs/checkpoint_20260318_google_calendar_gate.md`
+- Checkpoint operativo actual: `docs/checkpoint_20260319_agenda_sync_closure.md`
+- Checkpoint operativo anterior: `docs/checkpoint_20260318_google_calendar_gate.md`
 - Checkpoint operativo: `docs/checkpoint_20260317_frontend_copilot_handoff.md`
-- AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis PROET: `docs/proet/platform_analysis_20260304.md`
+- Analisis PROET: `docs/proet/platform_analysis_20260304.md`
 - Norma n8n obligatoria: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
-- Playbook de importaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n y smoke test n8n: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`
+- Playbook de importacion y smoke test n8n: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`
 - Norma de robustez y errores: `docs/NORMA_ROBUSTEZ_Y_ERRORES.md`
-
 
 
 

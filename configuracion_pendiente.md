@@ -1,3 +1,26 @@
+## Estado actual (2026-03-19, Sesion 109) - Agenda Calendar/CRM cerrada en produccion y continuidad lista.
+
+### Completado sesion 109
+- [x] `main` sincronizado en GitHub con los cambios operativos de agenda (`2dfbb6f`, `62729ec`, `1dc252f`) y este cierre documental.
+- [x] `fisio-backend` redeployado en EasyPanel con `POST /api/profesional/appointments/check-availability`.
+- [x] `fisio-frontend` redeployado en EasyPanel con columna `Espejo` y facts del sync.
+- [x] `GET /api/profesional/appointments/sync-calendar/status` devuelve `next_expected_at` en produccion.
+- [x] HTML productivo sin mojibake en labels de agenda.
+- [x] Citas CRM canceladas cuyo evento ya no existe o esta cancelado en Calendar pasan a `crm_only`.
+- [x] Nuevo checkpoint operativo creado en `docs/checkpoint_20260319_agenda_sync_closure.md`.
+
+### Siguiente paso exacto
+1. Crear o localizar un `busy_event` activo/no cancelado en Google Calendar.
+2. Repetir `POST /api/profesional/appointments/check-availability` sobre ese hueco y confirmar `available=false`.
+3. Si interesa UX, mostrar el bloqueo directamente en la parrilla de agenda.
+4. Continuar con Telegram/copilot y validacion E2E multicanal.
+
+### Riesgos o bloqueos conocidos
+- En la ventana probada no habia `busy_events` activos; por eso el caso vivo negativo sigue pendiente.
+- La carpeta sincronizada `G:` sigue siendo mala referencia para validacion frontend; mantener `scripts/frontend-local-build.ps1` como via segura.
+- W5 puede devolver cero eventos aunque existan citas CRM historicas canceladas; el espejo ya no se falsea por eso.
+
+---
 ## Estado actual (2026-03-19, Sesion 108) - Frontend validado en copia aislada y bloqueos Google Calendar preparados.
 
 ### Completado sesion 108

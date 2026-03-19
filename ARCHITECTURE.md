@@ -10,7 +10,7 @@ El sistema evoluciona a una plataforma de operacion para centros de fisioterapia
 Estado de alcance:
 
 - En foco: CRM + Telegram + n8n + Supabase + Google Calendar + OpenAI.
-- Fuera de alcance: generaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de video (eliminada de frontend y flujos n8n activos).
+- Fuera de alcance: generacion de video (eliminada de frontend y flujos n8n activos).
 
 Principios de producto reforzados (benchmark funcional del mercado):
 
@@ -19,18 +19,14 @@ Principios de producto reforzados (benchmark funcional del mercado):
 - Interoperabilidad basada en datos estructurados y trazabilidad.
 - IA confiable: recomendaciones prudentes, auditables y con gobernanza de datos.
 
-Checkpoint de producto actual (2026-03-11, Sesion 92):
+Checkpoint de producto actual (2026-03-19, Sesion 109):
 
-- El Copilot lateral del CRM toma ahora una referencia visual externa real (`frontend/stitch.zip`) y se estructura como consola clinica limpia: selector arriba, chat central y acciones/input abajo.
-- El backend ya soporta invitacion Telegram del paciente desde CRM y targeting del bot fisio via `crm_perfiles`.
-- El triage clinico del agente n8n ya esta validado tanto en dry_run como en un chat real vinculado.
-- `@FisioIA_Agent_bot` queda reservado al fisioterapeuta; el bot de pacientes para agenda sera un bot nuevo y aislado.
-- El workflow canonico de agenda de pacientes es `n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json` y ya encapsula Calendar + backend en W1.
-- La publicacion remota dentro de la carpeta `Fisio_IA_Agent` no puede completarse por API publica con este token; requiere placeholder o movimiento manual en UI.
-- El bot de pacientes ya crea citas reales en crm_citas desde Telegram por texto y por payload voice_transcript.
-- En produccion, Google Calendar sigue inactivo desde backend (calendar_sync.enabled=false) y la rama nativa de audio Telegram sigue bloqueada hasta publicar OPENAI_API_KEY.
-- El repo ya incorpora una correccion para que la resolucion de pacientes legacy no siga creando duplicados en crm_pacientes al entrar por fallback de citas.
-
+- La agenda productiva ya opera como espejo visible Calendar <-> CRM y muestra estados por cita en el frontend.
+- El backend expone `calendar_sync_state` (`crm_only`, `linked`, `backfilled`, `calendar_only`) y `POST /api/profesional/appointments/check-availability` para dry-run seguro.
+- W5 sigue siendo la ruta de lectura activa de Google Calendar via n8n OAuth2, sin requerir Service Account.
+- W6 mantiene heartbeat visible en CRM y `GET /api/profesional/appointments/sync-calendar/status` ya expone `expected_interval_ms` y `next_expected_at`.
+- Las citas CRM cuyo evento ya no existe o esta cancelado en Calendar dejan de presentarse como `linked` y pasan a `crm_only`, evitando falsos positivos de espejo.
+- Queda pendiente una validacion viva de `available=false` con un `busy_event` realmente activo; en la ventana probada no habia bloqueos reales no cancelados.
 ## 2) Component Map
 
 | Componente | Rol | Entradas | Salidas |
@@ -51,6 +47,18 @@ Checkpoint de producto actual (2026-03-11, Sesion 92):
 - La generacion final del PDF se mantiene en backend para compartir exactamente el mismo documento entre CRM y Telegram.
 - El frontend solo presenta el resultado y dispara acciones, sin decidir logica clinica ni exponer detalles internos como n8n al usuario final.
 
+## 2.2) Contrato de agenda Calendar <-> CRM
+
+- Read path: `GET /api/profesional/appointments` toma `crm_citas`, reconcilia con W5/direct Calendar y devuelve una lista fusionada para la agenda.
+- Estados de espejo por cita:
+  - `crm_only`: existe en CRM pero no hay evento activo equivalente en Calendar. Incluye citas historicas cuyo evento ya fue cancelado o desaparecio.
+  - `linked`: existe una cita CRM enlazada a un evento activo de Google Calendar.
+  - `backfilled`: el evento existia en Calendar, se persistio en CRM y queda ya enlazado.
+  - `calendar_only`: bloque detectado en Calendar sin correspondencia persistida en CRM.
+- Observabilidad: `GET /api/profesional/appointments/sync-calendar/status` expone `ui_status`, `last_success_at`, `last_error_at`, `expected_interval_ms` y `next_expected_at`.
+- Write path: la creacion/edicion usa `resolveAppointmentAvailability()` y cruza conflictos locales CRM con bloques ocupados de Calendar.
+- Dry-run: `POST /api/profesional/appointments/check-availability` permite validar disponibilidad sin escrituras.
+- Operacion real a fecha de cierre: W5 devuelve la vista activa de Calendar; si no hay `busy_events` activos, la agenda puede quedar solo con citas CRM historicas/canceladas correctamente marcadas como `crm_only`.
 ## 3) Trust Boundaries & Secrets
 
 ### Boundaries
@@ -391,7 +399,6 @@ Telegram (intents base):
 Condicion de continuidad:
 
 - Mantener el flujo centrado en informe clÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nico de ejercicios (sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­ntomas -> selecciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n -> imÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡genes/pautas -> entrega CRM/Telegram).
-
 
 
 
