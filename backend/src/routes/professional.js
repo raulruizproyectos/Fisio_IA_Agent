@@ -102,8 +102,18 @@ function toIsoDateOnly(value) {
   return date.toISOString().slice(0, 10);
 }
 
-function calendarIntegrationEnabled() {
+function calendarDirectEnabled() {
   return Boolean(GOOGLE_CALENDAR_ID && GOOGLE_CLIENT_EMAIL && GOOGLE_PRIVATE_KEY);
+}
+
+function calendarW5Enabled() {
+  return Boolean(W5_CALENDAR_READER_URL);
+}
+
+// Returns true when Calendar sync is available via ANY method (direct JWT or W5/n8n OAuth2)
+function calendarIntegrationEnabled() {
+  if (!GOOGLE_CALENDAR_ID) return false;
+  return calendarDirectEnabled() || calendarW5Enabled();
 }
 
 function buildCalendarBackgroundSyncStatus() {
@@ -120,8 +130,12 @@ function buildCalendarBackgroundSyncStatus() {
     uiStatus = ageMs !== null && ageMs <= CALENDAR_BACKGROUND_SYNC_STALE_MS ? 'healthy' : 'stale';
   }
 
+  const mode = calendarDirectEnabled() ? 'direct' : calendarW5Enabled() ? 'w5' : 'none';
+
   return {
     enabled: calendarIntegrationEnabled(),
+    mode,
+    calendar_id: GOOGLE_CALENDAR_ID || null,
     source: calendarBackgroundSyncState.source,
     trigger: calendarBackgroundSyncState.trigger,
     status: calendarBackgroundSyncState.status,
@@ -186,7 +200,7 @@ function buildCalendarSyncResult(partial = {}) {
 }
 
 function getGoogleCalendarClient() {
-  if (!calendarIntegrationEnabled()) return null;
+  if (!calendarDirectEnabled()) return null;
   const auth = new google.auth.JWT({
     email: GOOGLE_CLIENT_EMAIL,
     key: GOOGLE_PRIVATE_KEY,
@@ -810,14 +824,17 @@ async function fetchCalendarAppointmentsViaW5(timeMin, timeMax) {
 }
 
 async function fetchCalendarAppointments(timeMin, timeMax) {
-  if (calendarIntegrationEnabled()) {
+  if (calendarDirectEnabled()) {
     try {
       return await fetchCalendarAppointmentsDirect(timeMin, timeMax);
     } catch {
       // Fall back to W5 reader if direct Calendar listing is temporarily unavailable.
     }
   }
-  return fetchCalendarAppointmentsViaW5(timeMin, timeMax);
+  if (calendarW5Enabled()) {
+    return fetchCalendarAppointmentsViaW5(timeMin, timeMax);
+  }
+  return [];
 }
 
 function buildCalendarSyntheticAppointment(event, professionalId) {
@@ -852,7 +869,7 @@ async function reconcileAppointmentsWithCalendar({
 }) {
   const summary = {
     enabled: true,
-    source: calendarIntegrationEnabled() ? 'google_api' : 'w5_reader',
+    source: calendarDirectEnabled() ? 'google_api' : 'w5_reader',
     fetched: calendarEvents.length,
     updated: 0,
     cancelled: 0,
