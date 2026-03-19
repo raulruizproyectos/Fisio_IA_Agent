@@ -46,18 +46,17 @@ Declaro conocer que esta revocación no tendrá efectos retroactivos sobre los t
   otro: (paciente) => `DOCUMENTO DE CONSENTIMIENTO\n\nPaciente: ${paciente}`,
 };
 
-// GET /api/documentos?paciente_id=X
+// GET /api/documentos?paciente_id=X  (sin paciente_id devuelve todos)
 router.get('/', async (req, res, next) => {
   try {
     const { paciente_id } = req.query;
-    if (!paciente_id) return res.status(400).json({ error: 'paciente_id requerido' });
-
-    const { data, error } = await supabase
+    let query = supabase
       .from('crm_documentos')
-      .select(DOC_SELECT)
-      .eq('paciente_id', paciente_id)
+      .select(`${DOC_SELECT}, crm_pacientes(nombre, apellidos)`)
       .order('created_at', { ascending: false });
+    if (paciente_id) query = query.eq('paciente_id', paciente_id);
 
+    const { data, error } = await query;
     if (error) throw error;
     res.json({ data: data || [] });
   } catch (err) { next(err); }
@@ -134,13 +133,23 @@ router.get('/:id/pdf', async (req, res, next) => {
     const pac = doc.crm_pacientes || {};
     const pacNombre = [pac.nombre, pac.apellidos].filter(Boolean).join(' ');
 
+    const clinicNombre = req.query.cn || 'Clínica de Fisioterapia';
+    const clinicNif = req.query.cnif || '';
+    const clinicDir = req.query.cdir || '';
+    const clinicTel = req.query.ctel || '';
+    const clinicEmail = req.query.cemail || '';
+
     const pdf = new PDFDocument({ size: 'A4', margin: 60 });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${doc.tipo}_${pacNombre.replace(/ /g, '_')}.pdf"`);
     pdf.pipe(res);
 
     // Header
-    pdf.fontSize(16).font('Helvetica-Bold').text('Clínica de Fisioterapia', { align: 'center' });
+    pdf.fontSize(16).font('Helvetica-Bold').text(clinicNombre, { align: 'center' });
+    if (clinicNif) { pdf.fontSize(9).font('Helvetica').text(`NIF: ${clinicNif}`, { align: 'center' }); }
+    if (clinicDir) { pdf.fontSize(9).font('Helvetica').text(clinicDir, { align: 'center' }); }
+    if (clinicTel) { pdf.fontSize(9).font('Helvetica').text(`Tel: ${clinicTel}`, { align: 'center' }); }
+    if (clinicEmail) { pdf.fontSize(9).font('Helvetica').text(clinicEmail, { align: 'center' }); }
     pdf.moveDown(0.3);
     pdf.fontSize(13).font('Helvetica-Bold').text(doc.titulo, { align: 'center' });
     pdf.moveDown(0.5);

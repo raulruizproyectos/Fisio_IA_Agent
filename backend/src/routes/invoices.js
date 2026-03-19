@@ -137,6 +137,15 @@ router.get('/:id/pdf', async (req, res, next) => {
     const pac = factura.crm_pacientes || {};
     const pacNombre = [pac.nombre, pac.apellidos].filter(Boolean).join(' ');
 
+    // Allow clinic data override via query params (set from frontend config)
+    const clinic = {
+      nombre: req.query.cn || CLINIC.nombre,
+      nif: req.query.cnif || CLINIC.nif,
+      direccion: req.query.cdir || CLINIC.direccion,
+      telefono: req.query.ctel || CLINIC.telefono,
+      email: req.query.cemail || CLINIC.email,
+    };
+
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -144,11 +153,11 @@ router.get('/:id/pdf', async (req, res, next) => {
     doc.pipe(res);
 
     // Header
-    doc.fontSize(20).font('Helvetica-Bold').text(CLINIC.nombre, 50, 50);
-    if (CLINIC.nif) doc.fontSize(9).font('Helvetica').text(`NIF: ${CLINIC.nif}`, 50, 75);
-    if (CLINIC.direccion) doc.text(CLINIC.direccion, 50, 87);
-    if (CLINIC.telefono) doc.text(`Tel: ${CLINIC.telefono}`, 50, 99);
-    if (CLINIC.email) doc.text(CLINIC.email, 50, 111);
+    doc.fontSize(20).font('Helvetica-Bold').text(clinic.nombre, 50, 50);
+    if (clinic.nif) doc.fontSize(9).font('Helvetica').text(`NIF: ${clinic.nif}`, 50, 75);
+    if (clinic.direccion) doc.text(clinic.direccion, 50, 87);
+    if (clinic.telefono) doc.text(`Tel: ${clinic.telefono}`, 50, 99);
+    if (clinic.email) doc.text(clinic.email, 50, 111);
 
     // Invoice number & date
     doc.fontSize(14).font('Helvetica-Bold').text(`Factura ${factura.numero}`, 350, 50, { align: 'right' });

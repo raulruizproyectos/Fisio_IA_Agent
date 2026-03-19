@@ -8,59 +8,63 @@ import Layout from '../layouts/Layout.astro';
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <div class="brand-icon-wrapper">
-          <span class="brand-icon material-symbols-rounded">&#xf109;</span>
+          <span class="brand-icon material-symbols-rounded">medical_services</span>
         </div>
         <span class="brand-text">Fisio IA Agent</span>
       </div>
 
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-section="dashboard">
-          <span class="material-symbols-rounded">&#xe88a;</span>
+          <span class="material-symbols-rounded">home</span>
           <span class="nav-label">Inicio</span>
         </a>
         <a href="#" class="nav-item" data-section="pacientes">
-          <span class="material-symbols-rounded">&#xe7ef;</span>
+          <span class="material-symbols-rounded">group</span>
           <span class="nav-label">Pacientes</span>
         </a>
         <a href="#" class="nav-item" data-section="citas">
-          <span class="material-symbols-rounded">&#xe935;</span>
+          <span class="material-symbols-rounded">calendar_today</span>
           <span class="nav-label">Agenda</span>
         </a>
         <a href="#" class="nav-item" data-section="plantillas">
-          <span class="material-symbols-rounded">&#xf0e3;</span>
+          <span class="material-symbols-rounded">prescriptions</span>
           <span class="nav-label">Plantillas</span>
         </a>
         <a href="#" class="nav-item" data-section="pagos">
-          <span class="material-symbols-rounded">&#xef63;</span>
+          <span class="material-symbols-rounded">payments</span>
           <span class="nav-label">Pagos</span>
         </a>
         <a href="#" class="nav-item" data-section="gestoria">
-          <span class="material-symbols-rounded">&#xe84f;</span>
+          <span class="material-symbols-rounded">account_balance</span>
           <span class="nav-label">Gestor&iacute;a</span>
         </a>
         <a href="#" class="nav-item" data-section="facturas">
-          <span class="material-symbols-rounded">&#xef6b;</span>
+          <span class="material-symbols-rounded">receipt_long</span>
           <span class="nav-label">Facturaci&oacute;n</span>
         </a>
         <a href="#" class="nav-item" data-section="bonos">
-          <span class="material-symbols-rounded">&#xe638;</span>
+          <span class="material-symbols-rounded">confirmation_number</span>
           <span class="nav-label">Bonos</span>
+        </a>
+        <a href="#" class="nav-item" data-section="documentos">
+          <span class="material-symbols-rounded">description</span>
+          <span class="nav-label">Documentos</span>
         </a>
       </nav>
 
       <div class="sidebar-bottom">
         <div class="sidebar-section-label">Comunicaci&oacute;n</div>
         <a href="#" class="nav-item has-badge" data-section="intakes">
-          <span class="material-symbols-rounded">&#xf187;</span>
+          <span class="material-symbols-rounded">forward_to_inbox</span>
           <span class="nav-label">Mensajes Intake</span>
           <span class="badge" id="intakeBadge">0</span>
         </a>
         <a href="#" class="nav-item" data-section="historial">
-          <span class="material-symbols-rounded">&#xe2c8;</span>
+          <span class="material-symbols-rounded">folder_open</span>
           <span class="nav-label">Historial</span>
         </a>
         <a href="#" class="nav-item" data-section="config">
-          <span class="material-symbols-rounded">&#xe8b8;</span>
+          <span class="material-symbols-rounded">settings</span>
           <span class="nav-label">Ajustes</span>
         </a>
       </div>
@@ -72,7 +76,7 @@ import Layout from '../layouts/Layout.astro';
       <!-- HEADER -->
       <header class="topbar">
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="Men&uacute;">
-          <span class="material-symbols-rounded">&#xe5d2;</span>
+          <span class="material-symbols-rounded">menu</span>
         </button>
         <div class="search-box">
           <span class="material-symbols-rounded search-icon">search</span>
@@ -81,11 +85,11 @@ import Layout from '../layouts/Layout.astro';
         </div>
         <div class="topbar-right">
           <button class="assistant-launch-btn" id="assistantRailToggle" type="button" aria-label="Abrir copilot cl&iacute;nico" aria-controls="assistantRail" aria-expanded="false">
-            <span class="material-symbols-rounded">&#xf7cf;</span>
+            <span class="material-symbols-rounded">right_panel_open</span>
             <span>Copilot</span>
           </button>
           <button class="icon-btn topbar-notif-btn" aria-label="Notificaciones" id="notifBtn">
-            <span class="material-symbols-rounded">&#xe7f4;</span>
+            <span class="material-symbols-rounded">notifications</span>
             <span class="dot-indicator"></span>
           </button>
           <div class="user-pill">
@@ -240,12 +244,12 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PACIENTES === -->
         <div class="page-section" data-page="pacientes">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xe7ef;</span> Pacientes</h1>
-            <button class="btn-primary" id="addPatientBtn"><span class="material-symbols-rounded">&#xea4d;</span> Nuevo paciente</button>
+            <h1 class="page-title"><span class="material-symbols-rounded">group</span> Pacientes</h1>
+            <button class="btn-primary" id="addPatientBtn"><span class="material-symbols-rounded">person_add</span> Nuevo paciente</button>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Lista de pacientes</h2><button class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">&#xe5d5;</span> Actualizar</button></header>
-            <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Email</th><th>Fecha nac.</th><th>Registro</th><th>Acciones</th></tr></thead><tbody id="pacientesBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">&#xe88b;</span><p>Cargando pacientes...</p></div></td></tr></tbody></table></div>
+            <header class="card-header"><h2>Lista de pacientes</h2><button class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+            <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Email</th><th>Fecha nac.</th><th>Registro</th><th>Acciones</th></tr></thead><tbody id="pacientesBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pacientes...</p></div></td></tr></tbody></table></div>
           </section>
         </div>
 
@@ -258,7 +262,7 @@ import Layout from '../layouts/Layout.astro';
                 <p>Registra un paciente nuevo y dejalo listo para historial, chat clínico y plantillas.</p>
               </div>
               <button type="button" class="modal-close" id="closePatientModalBtn" aria-label="Cerrar formulario de paciente">
-                <span class="material-symbols-rounded">&#xe5cd;</span>
+                <span class="material-symbols-rounded">close</span>
               </button>
             </div>
 
@@ -287,7 +291,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-actions">
                 <button type="button" class="btn-ghost" id="patientModalDismiss">Cancelar</button>
                 <button type="submit" class="btn-primary" id="patientSubmitBtn">
-                  <span class="material-symbols-rounded">&#xe161;</span>
+                  <span class="material-symbols-rounded">save</span>
                   Guardar paciente
                 </button>
               </div>
@@ -298,7 +302,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PLANTILLAS === -->
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xe02f;</span> Plantillas Terapéuticas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terapéuticas</h1>
             <div class="page-tools">
               <label class="inline-field">
                 <span>Paciente destino</span>
@@ -306,7 +310,7 @@ import Layout from '../layouts/Layout.astro';
                   <option value="">Selecciona paciente</option>
                 </select>
               </label>
-              <button class="btn-ghost" id="refreshTemplates"><span class="material-symbols-rounded">&#xe5d5;</span> Actualizar</button>
+              <button class="btn-ghost" id="refreshTemplates"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
             </div>
           </div>
           <section class="card table-card">
@@ -327,7 +331,7 @@ import Layout from '../layouts/Layout.astro';
                   <tr class="empty-row">
                     <td colspan="6">
                       <div class="empty-state">
-                        <span class="material-symbols-rounded">&#xe88b;</span>
+                        <span class="material-symbols-rounded">hourglass_empty</span>
                         <p>Cargando plantillas...</p>
                       </div>
                     </td>
@@ -341,11 +345,11 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: INTAKES === -->
         <div class="page-section" data-page="intakes">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xe85d;</span> Intakes Pendientes</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">assignment</span> Intakes Pendientes</h1>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Mensajes de ingesta por revisar</h2><button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">&#xe5d5;</span> Actualizar</button></header>
-            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Fuente</th><th>Mensaje</th><th>Alertas</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="intakesFullBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">&#xe88b;</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
+            <header class="card-header"><h2>Mensajes de ingesta por revisar</h2><button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Fuente</th><th>Mensaje</th><th>Alertas</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="intakesFullBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
           </section>
         </div>
 
@@ -363,16 +367,16 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </div>
             <div class="week-nav-bar">
-              <button class="btn-ghost btn-icon" id="prevWeek" title="Semana anterior"><span class="material-symbols-rounded">&#xe5cb;</span></button>
+              <button class="btn-ghost btn-icon" id="prevWeek" title="Semana anterior"><span class="material-symbols-rounded">chevron_left</span></button>
               <span id="weekLabel" class="week-label">Cargando...</span>
-              <button class="btn-ghost btn-icon" id="nextWeek" title="Semana siguiente"><span class="material-symbols-rounded">&#xe5cc;</span></button>
+              <button class="btn-ghost btn-icon" id="nextWeek" title="Semana siguiente"><span class="material-symbols-rounded">chevron_right</span></button>
               <button class="btn-ghost" id="thisWeek">Hoy</button>
-              <button class="btn-ghost btn-icon" id="refreshCitas" title="Actualizar"><span class="material-symbols-rounded">&#xe5d5;</span></button>
+              <button class="btn-ghost btn-icon" id="refreshCitas" title="Actualizar"><span class="material-symbols-rounded">refresh</span></button>
             </div>
           </div>
           <section class="card agenda-cal-card">
             <div id="agendaCalendar" class="agenda-calendar">
-              <div class="agenda-cal-loading"><span class="material-symbols-rounded">&#xe627;</span> Cargando...</div>
+              <div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>
             </div>
           </section>
           <section class="card table-card">
@@ -382,7 +386,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="table-wrap">
               <table>
                 <thead><tr><th>Paciente</th><th>Día</th><th>Hora</th><th>Motivo</th><th>Canal</th><th>Estado</th></tr></thead>
-                <tbody id="citasBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">&#xe88b;</span><p>Cargando agenda...</p></div></td></tr></tbody>
+                <tbody id="citasBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando agenda...</p></div></td></tr></tbody>
               </table>
             </div>
           </section>
@@ -391,20 +395,20 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: HISTORIAL === -->
         <div class="page-section" data-page="historial">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xe889;</span> Historial</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">history</span> Historial</h1>
           </div>
           <section class="card">
-            <header class="card-header"><h2>Notas de seguimiento</h2><button class="btn-ghost" id="refreshHistorial"><span class="material-symbols-rounded">&#xe5d5;</span> Actualizar</button></header>
-            <div id="historialContent" class="section-body"><div class="empty-state"><span class="material-symbols-rounded">&#xe889;</span><p>Selecciona un paciente para ver su historial</p></div></div>
+            <header class="card-header"><h2>Notas de seguimiento</h2><button class="btn-ghost" id="refreshHistorial"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+            <div id="historialContent" class="section-body"><div class="empty-state"><span class="material-symbols-rounded">history</span><p>Selecciona un paciente para ver su historial</p></div></div>
           </section>
         </div>
 
         <!-- === PAGE: PAGOS === -->
         <div class="page-section" data-page="pagos">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xef63;</span> Pagos</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Pagos</h1>
             <button class="btn-primary" id="addPagoBtn">
-              <span class="material-symbols-rounded">&#xeb86;</span> Registrar pago
+              <span class="material-symbols-rounded">add_card</span> Registrar pago
             </button>
           </div>
 
@@ -442,7 +446,7 @@ import Layout from '../layouts/Layout.astro';
                   </tr>
                 </thead>
                 <tbody id="pagosBody">
-                  <tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">&#xe88b;</span><p>Cargando pagos...</p></div></td></tr>
+                  <tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pagos...</p></div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -456,7 +460,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-title-group">
                 <h2 id="pagoModalTitle">Registrar pago</h2>
               </div>
-              <button type="button" class="modal-close" id="closePagoModalBtn" aria-label="Cerrar"><span class="material-symbols-rounded">&#xe5cd;</span></button>
+              <button type="button" class="modal-close" id="closePagoModalBtn" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
             </div>
             <form id="pagoForm" class="patient-form">
               <input type="hidden" id="pagoEditId" value="" />
@@ -491,7 +495,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-actions">
                 <button type="button" class="btn-ghost" id="pagoModalDismiss">Cancelar</button>
                 <button type="submit" class="btn-primary" id="pagoSubmitBtn">
-                  <span class="material-symbols-rounded">&#xe5ca;</span> Guardar
+                  <span class="material-symbols-rounded">check</span> Guardar
                 </button>
               </div>
             </form>
@@ -501,7 +505,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: GESTORIA === -->
         <div class="page-section" data-page="gestoria">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xe84f;</span> Gestor&iacute;a</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</h1>
             <div class="pagos-filters-row">
               <select id="gestoriaAnioFilter" title="A&ntilde;o"></select>
             </div>
@@ -521,7 +525,7 @@ import Layout from '../layouts/Layout.astro';
               <table class="gestoria-table">
                 <thead id="gestoriaHead"></thead>
                 <tbody id="gestoriaBody">
-                  <tr class="empty-row"><td colspan="16"><div class="empty-state"><span class="material-symbols-rounded">&#xe88b;</span><p>Cargando datos...</p></div></td></tr>
+                  <tr class="empty-row"><td colspan="16"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando datos...</p></div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -551,7 +555,7 @@ import Layout from '../layouts/Layout.astro';
                   <tr><th>Fecha</th><th>Paciente</th><th>M&eacute;todo</th><th class="text-right">Importe</th></tr>
                 </thead>
                 <tbody id="gestoriaMesBody">
-                  <tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">&#xebcc;</span><p>Selecciona un mes</p></div></td></tr>
+                  <tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">calendar_month</span><p>Selecciona un mes</p></div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -561,9 +565,9 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: FICHA PACIENTE (detalle) === -->
         <div class="page-section" data-page="ficha-paciente">
           <div class="page-header-row">
-            <button class="btn-ghost" id="fichaBackBtn"><span class="material-symbols-rounded">&#xe5c4;</span> Volver</button>
-            <h1 class="page-title" id="fichaTitulo"><span class="material-symbols-rounded">&#xe7fd;</span> Ficha de paciente</h1>
-            <button class="btn-primary btn-sm" id="fichaEditToggle"><span class="material-symbols-rounded">&#xe3c9;</span> Editar datos</button>
+            <button class="btn-ghost" id="fichaBackBtn"><span class="material-symbols-rounded">arrow_back</span> Volver</button>
+            <h1 class="page-title" id="fichaTitulo"><span class="material-symbols-rounded">person</span> Ficha de paciente</h1>
+            <button class="btn-primary btn-sm" id="fichaEditToggle"><span class="material-symbols-rounded">edit</span> Editar datos</button>
           </div>
 
           <!-- Tabs -->
@@ -597,7 +601,7 @@ import Layout from '../layouts/Layout.astro';
                 <label class="field field-full"><span>Observaciones</span><textarea name="observaciones" rows="2"></textarea></label>
                 <div class="ficha-form-actions">
                   <button type="button" class="btn-ghost" id="fichaCancelEdit">Cancelar</button>
-                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">&#xe161;</span> Guardar</button>
+                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar</button>
                 </div>
               </form>
             </section>
@@ -608,7 +612,7 @@ import Layout from '../layouts/Layout.astro';
             <section class="card">
               <header class="card-header">
                 <h2>Notas de evoluci&oacute;n</h2>
-                <button class="btn-primary btn-sm" id="fichaAddNota"><span class="material-symbols-rounded">&#xe145;</span> Nueva nota</button>
+                <button class="btn-primary btn-sm" id="fichaAddNota"><span class="material-symbols-rounded">add</span> Nueva nota</button>
               </header>
               <div id="fichaNotasTimeline" class="ficha-timeline">
                 <p class="empty-inline">Sin notas cl&iacute;nicas registradas</p>
@@ -640,7 +644,7 @@ import Layout from '../layouts/Layout.astro';
                 <label class="field field-full"><span>Pruebas realizadas</span><textarea name="pruebas_realizadas" rows="2" placeholder="Tests, mediciones, etc."></textarea></label>
                 <div class="ficha-form-actions">
                   <button type="button" class="btn-ghost" id="fichaNotaCancel">Cancelar</button>
-                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">&#xe161;</span> Guardar nota</button>
+                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar nota</button>
                 </div>
               </form>
             </section>
@@ -652,7 +656,7 @@ import Layout from '../layouts/Layout.astro';
               <header class="card-header"><h2>Historial de citas</h2></header>
               <div class="table-wrap">
                 <table><thead><tr><th>Fecha</th><th>Estado</th><th>Motivo</th></tr></thead>
-                <tbody id="fichaCitasBody"><tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">&#xe616;</span><p>Sin citas registradas</p></div></td></tr></tbody></table>
+                <tbody id="fichaCitasBody"><tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p></div></td></tr></tbody></table>
               </div>
             </section>
           </div>
@@ -663,7 +667,7 @@ import Layout from '../layouts/Layout.astro';
               <header class="card-header"><h2>Historial de pagos</h2></header>
               <div class="table-wrap">
                 <table><thead><tr><th>Fecha</th><th>Importe</th><th>M&eacute;todo</th><th>Concepto</th></tr></thead>
-                <tbody id="fichaPagosBody"><tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">&#xef63;</span><p>Sin pagos registrados</p></div></td></tr></tbody></table>
+                <tbody id="fichaPagosBody"><tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p></div></td></tr></tbody></table>
               </div>
               <div class="ficha-pagos-total" id="fichaPagosTotal"></div>
             </section>
@@ -695,7 +699,7 @@ import Layout from '../layouts/Layout.astro';
                 <p class="modal-eyebrow">FIRMA DIGITAL</p>
                 <h2 id="firmaModalTitle">Consentimiento Informado</h2>
               </div>
-              <button type="button" class="modal-close" id="firmaModalClose"><span class="material-symbols-rounded">&#xe5cd;</span></button>
+              <button type="button" class="modal-close" id="firmaModalClose"><span class="material-symbols-rounded">close</span></button>
             </div>
             <!-- Document content preview -->
             <div id="firmaDocContenido" class="firma-doc-contenido"></div>
@@ -706,14 +710,14 @@ import Layout from '../layouts/Layout.astro';
                 <canvas id="firmaCanvas" width="600" height="160"></canvas>
               </div>
               <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
-                <button type="button" class="btn-ghost btn-sm" id="firmaClearBtn"><span class="material-symbols-rounded">&#xef58;</span> Borrar</button>
+                <button type="button" class="btn-ghost btn-sm" id="firmaClearBtn"><span class="material-symbols-rounded">restart_alt</span> Borrar</button>
                 <span id="firmaStatus" class="firma-status-hint">Sin firma</span>
               </div>
             </div>
             <p class="form-feedback" id="firmaFeedback" hidden></p>
             <div class="modal-actions">
               <button type="button" class="btn-ghost" id="firmaModalDismiss">Cancelar</button>
-              <button type="button" class="btn-primary" id="firmaGuardarBtn"><span class="material-symbols-rounded">&#xe746;</span> Guardar firma y generar PDF</button>
+              <button type="button" class="btn-primary" id="firmaGuardarBtn"><span class="material-symbols-rounded">draw</span> Guardar firma y generar PDF</button>
             </div>
           </div>
         </div>
@@ -721,8 +725,8 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: BONOS === -->
         <div class="page-section" data-page="bonos">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xe638;</span> Bonos de sesiones</h1>
-            <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">&#xe145;</span> Nuevo bono</button>
+            <h1 class="page-title"><span class="material-symbols-rounded">confirmation_number</span> Bonos de sesiones</h1>
+            <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">add</span> Nuevo bono</button>
           </div>
           <section class="card table-card">
             <header class="card-header">
@@ -734,12 +738,12 @@ import Layout from '../layouts/Layout.astro';
                   <option value="agotado">Agotados</option>
                   <option value="anulado">Anulados</option>
                 </select>
-                <button class="btn-ghost btn-sm" id="refreshBonos"><span class="material-symbols-rounded">&#xe5d5;</span></button>
+                <button class="btn-ghost btn-sm" id="refreshBonos"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
             <div class="table-wrap">
               <table><thead><tr><th>Paciente</th><th>Bono</th><th>Sesiones</th><th>Precio</th><th>Inicio</th><th>Caducidad</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody id="bonosBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">&#xe638;</span><p>Sin bonos registrados</p></div></td></tr></tbody></table>
+              <tbody id="bonosBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">confirmation_number</span><p>Sin bonos registrados</p></div></td></tr></tbody></table>
             </div>
           </section>
 
@@ -751,7 +755,7 @@ import Layout from '../layouts/Layout.astro';
                   <p class="modal-eyebrow">BONOS</p>
                   <h2 id="bonoModalTitle">Nuevo bono</h2>
                 </div>
-                <button type="button" class="modal-close" id="bonoModalClose"><span class="material-symbols-rounded">&#xe5cd;</span></button>
+                <button type="button" class="modal-close" id="bonoModalClose"><span class="material-symbols-rounded">close</span></button>
               </div>
               <form id="bonoForm" class="form-grid">
                 <input type="hidden" id="bonoEditId" />
@@ -781,7 +785,7 @@ import Layout from '../layouts/Layout.astro';
                 <p class="form-feedback" id="bonoFeedback" hidden></p>
                 <div class="modal-actions" style="grid-column:1/-1">
                   <button type="button" class="btn-ghost" id="bonoModalDismiss">Cancelar</button>
-                  <button type="submit" class="btn-primary" id="bonoSubmitBtn"><span class="material-symbols-rounded">&#xe161;</span> Guardar</button>
+                  <button type="submit" class="btn-primary" id="bonoSubmitBtn"><span class="material-symbols-rounded">save</span> Guardar</button>
                 </div>
               </form>
             </div>
@@ -791,8 +795,8 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: FACTURACION === -->
         <div class="page-section" data-page="facturas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xef6b;</span> Facturaci&oacute;n</h1>
-            <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">&#xe145;</span> Nueva factura</button>
+            <h1 class="page-title"><span class="material-symbols-rounded">receipt_long</span> Facturaci&oacute;n</h1>
+            <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">add</span> Nueva factura</button>
           </div>
 
           <section class="card table-card">
@@ -800,12 +804,12 @@ import Layout from '../layouts/Layout.astro';
               <h2>Facturas emitidas</h2>
               <div class="pagos-filters-row">
                 <select id="facturasAnioFilter" title="A&ntilde;o"></select>
-                <button class="btn-ghost btn-sm" id="refreshFacturas"><span class="material-symbols-rounded">&#xe5d5;</span></button>
+                <button class="btn-ghost btn-sm" id="refreshFacturas"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
             <div class="table-wrap">
               <table><thead><tr><th>N&uacute;mero</th><th>Fecha</th><th>Paciente</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody id="facturasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">&#xef6b;</span><p>Sin facturas emitidas</p></div></td></tr></tbody></table>
+              <tbody id="facturasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">receipt_long</span><p>Sin facturas emitidas</p></div></td></tr></tbody></table>
             </div>
           </section>
 
@@ -818,7 +822,7 @@ import Layout from '../layouts/Layout.astro';
                   <h2>Generar factura</h2>
                   <p>Selecciona un paciente para facturar sus pagos pendientes.</p>
                 </div>
-                <button type="button" class="modal-close" id="facturaModalClose" aria-label="Cerrar"><span class="material-symbols-rounded">&#xe5cd;</span></button>
+                <button type="button" class="modal-close" id="facturaModalClose" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
               </div>
               <form id="facturaForm">
                 <div class="form-grid">
@@ -843,19 +847,63 @@ import Layout from '../layouts/Layout.astro';
                 <p class="form-feedback" id="facturaFeedback" hidden></p>
                 <div class="modal-actions">
                   <button type="button" class="btn-ghost" id="facturaModalDismiss">Cancelar</button>
-                  <button type="submit" class="btn-primary" id="facturaSubmitBtn"><span class="material-symbols-rounded">&#xe8b0;</span> Generar factura</button>
+                  <button type="submit" class="btn-primary" id="facturaSubmitBtn"><span class="material-symbols-rounded">receipt</span> Generar factura</button>
                 </div>
               </form>
             </div>
           </div>
         </div>
 
+        <!-- === PAGE: DOCUMENTOS === -->
+        <div class="page-section" data-page="documentos">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">description</span> Documentos y Consentimientos</h1>
+            <div class="page-tools">
+              <select id="documentosEstadoFilter" title="Estado">
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente firma</option>
+                <option value="firmado">Firmados</option>
+              </select>
+              <button class="btn-ghost" id="refreshDocumentos"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
+            </div>
+          </div>
+          <section class="card table-card">
+            <header class="card-header"><h2>Consentimientos y firmas digitales</h2></header>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Paciente</th><th>Tipo</th><th>T&iacute;tulo</th><th>Estado</th><th>Fecha firma</th><th>Acciones</th></tr></thead>
+                <tbody id="documentosBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando documentos...</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
         <!-- === PAGE: CONFIG === -->
         <div class="page-section" data-page="config">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">&#xe8b8;</span> Configuración</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Configuraci&oacute;n</h1>
           </div>
           <div class="config-grid">
+            <section class="card" style="grid-column:1/-1">
+              <header class="card-header">
+                <h2>Datos de la cl&iacute;nica</h2>
+                <span style="font-size:0.78rem;color:var(--text-muted)">Usados en facturas PDF y consentimientos</span>
+              </header>
+              <form id="clinicConfigForm" class="section-body">
+                <div class="form-grid">
+                  <label class="field field-full"><span>Nombre de la cl&iacute;nica *</span><input id="cfgClinicNombre" type="text" placeholder="Cl&iacute;nica de Fisioterapia" /></label>
+                  <label class="field"><span>NIF / CIF</span><input id="cfgClinicNif" type="text" placeholder="B12345678" /></label>
+                  <label class="field"><span>Tel&eacute;fono</span><input id="cfgClinicTelefono" type="text" placeholder="+34 600 000 000" /></label>
+                  <label class="field field-full"><span>Direcci&oacute;n</span><input id="cfgClinicDireccion" type="text" placeholder="Calle Mayor 1, 08001 Barcelona" /></label>
+                  <label class="field"><span>Email</span><input id="cfgClinicEmail" type="email" placeholder="clinica@ejemplo.com" /></label>
+                  <label class="field"><span>Web (opcional)</span><input id="cfgClinicWeb" type="text" placeholder="www.miclinica.com" /></label>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar datos</button>
+                  <span id="clinicConfigFeedback" style="font-size:0.82rem;color:var(--color-success,#16a34a)" hidden></span>
+                </div>
+              </form>
+            </section>
             <section class="card">
               <header class="card-header"><h2>Conexiones</h2></header>
               <div class="section-body">
@@ -866,7 +914,7 @@ import Layout from '../layouts/Layout.astro';
             <section class="card">
               <header class="card-header"><h2>Proyecto</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Versión</span><span class="config-value">0.0.1</span></div>
+                <div class="config-item"><span class="config-label">Versi&oacute;n</span><span class="config-value">1.0.0</span></div>
                 <div class="config-item"><span class="config-label">Stack</span><span class="config-value">Astro + Express + Supabase + n8n</span></div>
                 <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub &#x2197;</a></div>
               </div>
@@ -890,7 +938,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div class="assistant-rail-tools">
               <button type="button" class="assistant-rail-close" id="assistantRailClose" aria-label="Cerrar copilot">
-                <span class="material-symbols-rounded">&#xe5cd;</span>
+                <span class="material-symbols-rounded">close</span>
               </button>
             </div>
           </header>
@@ -899,7 +947,7 @@ import Layout from '../layouts/Layout.astro';
             <section class="assistant-console" aria-label="Consola clinica">
               <div class="assistant-toolbar">
                 <div class="patient-selector assistant-console-selector">
-                  <span class="material-symbols-rounded">&#xe7fd;</span>
+                  <span class="material-symbols-rounded">person</span>
                   <select id="chatPatientSelect" aria-label="Paciente del informe">
                     <option value="">Selecciona paciente para informe...</option>
                   </select>
@@ -1002,6 +1050,28 @@ import Layout from '../layouts/Layout.astro';
     ? 'http://localhost:3001'
     : 'https://fisio-backend.b5xbaf.easypanel.host';
   const PROF_ID = '4a194ec4-3580-4246-9452-0852b589fd63';
+
+  // === CLINIC CONFIG (localStorage) ===
+  const CLINIC_CONFIG_KEY = 'fisio_clinic_config';
+  const getClinicConfig = () => {
+    try {
+      return JSON.parse(localStorage.getItem(CLINIC_CONFIG_KEY) || '{}');
+    } catch { return {}; }
+  };
+  const saveClinicConfig = (cfg: Record<string, string>) => {
+    localStorage.setItem(CLINIC_CONFIG_KEY, JSON.stringify(cfg));
+  };
+  const buildClinicParams = () => {
+    const c = getClinicConfig();
+    const p = new URLSearchParams();
+    if (c.nombre) p.set('cn', c.nombre);
+    if (c.nif) p.set('cnif', c.nif);
+    if (c.direccion) p.set('cdir', c.direccion);
+    if (c.telefono) p.set('ctel', c.telefono);
+    if (c.email) p.set('cemail', c.email);
+    const str = p.toString();
+    return str ? `?${str}` : '';
+  };
 
   // === DOM REFS ===
   const form = document.getElementById('agentForm') as HTMLFormElement | null;
@@ -2070,7 +2140,7 @@ import Layout from '../layouts/Layout.astro';
     const article = document.createElement('article');
     article.className = `msg ${type}`;
     if (type === 'agent') {
-      article.innerHTML = `<div class="msg-avatar"><span class="material-symbols-rounded">&#xea4a;</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>${escapeHtml(text)}</p></div>`;
+      article.innerHTML = `<div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div><div class="msg-body"><span class="msg-sender">Agente IA</span><p>${escapeHtml(text)}</p></div>`;
     } else {
       article.innerHTML = `<div class="msg-body user-msg"><p>${escapeHtml(text)}</p></div>`;
     }
@@ -2246,7 +2316,7 @@ import Layout from '../layouts/Layout.astro';
     if (sendBtn) {
       if (busy && context === 'chat') {
         sendBtn.classList.add('is-loading');
-        sendBtn.innerHTML = '<span class="material-symbols-rounded">&#xea5e;</span>';
+        sendBtn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>';
       } else {
         sendBtn.classList.remove('is-loading');
         sendBtn.innerHTML = sendBtnDefaultHtml;
@@ -2273,7 +2343,7 @@ import Layout from '../layouts/Layout.astro';
       progress = document.createElement('article');
       progress.id = 'agentProgressMsg';
       progress.className = 'msg agent msg-progress';
-      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">&#xe627;</span></div><div class="msg-body"><span class="msg-sender">Asistente clínico</span><p></p></div>';
+      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clínico</span><p></p></div>';
       log.appendChild(progress);
     }
     const p = progress.querySelector('p');
@@ -2610,7 +2680,7 @@ import Layout from '../layouts/Layout.astro';
       metaBits.push('revisar alertas');
     }
 
-    let html = '<div class="msg-avatar"><span class="material-symbols-rounded">&#xea4a;</span></div>';
+    let html = '<div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div>';
     html += '<div class="msg-body"><span class="msg-sender">Agente IA</span>';
     html += '<div class="exercise-report exercise-report-compact">';
     html += '<div class="exercise-report-head">';
@@ -3270,7 +3340,7 @@ import Layout from '../layouts/Layout.astro';
     const previousLabel = patientSubmitBtn?.innerHTML || '';
     if (patientSubmitBtn) {
       patientSubmitBtn.disabled = true;
-      patientSubmitBtn.innerHTML = '<span class="material-symbols-rounded">&#xe627;</span> Guardando...';
+      patientSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...';
     }
     setPatientFormFeedback('Creando ficha del paciente...', 'success');
 
@@ -3437,22 +3507,37 @@ import Layout from '../layouts/Layout.astro';
       setListState(dashCitasBody, 'event_available', 'Sin citas agendadas por ahora.');
       return;
     }
-    dashCitasBody.innerHTML = citas.slice(0, 6).map((cita: any) => {
+
+    const todayStr = new Date().toDateString();
+    const todayCitas = citas.filter((c: any) => c.inicio_en && new Date(c.inicio_en).toDateString() === todayStr);
+    const upcomingCitas = citas.filter((c: any) => !c.inicio_en || new Date(c.inicio_en).toDateString() !== todayStr).slice(0, 4);
+
+    const renderItem = (cita: any, isToday: boolean) => {
       const stateClass = String(cita.estado || 'pendiente')
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9_ -]/g, '')
-        .trim()
-        .replace(/\s+/g, '_') || 'pendiente';
-      return `<article class="clean-list-item">
+        .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_ -]/g, '').trim().replace(/\s+/g, '_') || 'pendiente';
+      const hora = cita.inicio_en ? new Date(cita.inicio_en).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '';
+      return `<article class="clean-list-item${isToday ? ' cita-today' : ''}">
+        <div class="dash-cita-hora">${isToday && hora ? `<span class="cita-hora-badge">${hora}</span>` : ''}</div>
         <div class="clean-list-main">
           <p class="clean-list-title">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</p>
-          <p class="clean-list-meta">${escapeHtml(fmtDate(cita.inicio_en || ''))} | ${escapeHtml(cita.motivo || 'Sin motivo')}</p>
+          <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Sin motivo') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' · ' + escapeHtml(cita.motivo) : '')}</p>
         </div>
         <span class="status-chip ${stateClass}">${escapeHtml(cita.estado || 'pendiente')}</span>
       </article>`;
-    }).join('');
+    };
+
+    let html = '';
+    if (todayCitas.length) {
+      html += `<div class="dash-section-label">HOY — ${todayCitas.length} cita${todayCitas.length > 1 ? 's' : ''}</div>`;
+      html += todayCitas.map((c: any) => renderItem(c, true)).join('');
+    } else {
+      html += `<div class="dash-section-label dash-section-label-muted">Sin citas hoy</div>`;
+    }
+    if (upcomingCitas.length) {
+      html += `<div class="dash-section-label" style="margin-top:8px">Pr&oacute;ximas</div>`;
+      html += upcomingCitas.map((c: any) => renderItem(c, false)).join('');
+    }
+    dashCitasBody.innerHTML = html;
   };
 
   // === AGENDA SEMANAL ===
@@ -3638,7 +3723,7 @@ import Layout from '../layouts/Layout.astro';
   // === LOAD CITAS ===
   const loadCitas = async () => {
     const cal = document.getElementById('agendaCalendar');
-    if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">&#xe627;</span> Cargando...</div>';
+    if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>';
     if (citasBody) setTableState(citasBody, 6, 'sync', 'Cargando agenda...', true);
     setListState(dashCitasBody, 'sync', 'Actualizando agenda...', true);
 
@@ -3752,7 +3837,7 @@ import Layout from '../layouts/Layout.astro';
       <p class="history-note-feedback" data-role="history-note-feedback" hidden></p>
       <div class="history-note-actions">
         <button type="submit" class="btn-primary btn-history-note">
-          <span class="material-symbols-rounded">&#xe89c;</span>
+          <span class="material-symbols-rounded">note_add</span>
           Guardar seguimiento
         </button>
       </div>
@@ -3868,7 +3953,7 @@ import Layout from '../layouts/Layout.astro';
       historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">&#xe889;</span><p>Selecciona un paciente para ver su historial</p></div>`;
       return;
     }
-    historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">&#xe627;</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
+    historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
 
     try {
       const [patientResp, historyResp, recommendationsResp, telegramLinkResp] = await Promise.all([
@@ -3976,7 +4061,7 @@ import Layout from '../layouts/Layout.astro';
     } catch {
       pendingHistoryAnchor = null;
       currentPatientTelegramLinkState = null;
-      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">&#xe2be;</span><p>No se pudo cargar el historial del paciente seleccionado.</p></div>`;
+      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>No se pudo cargar el historial del paciente seleccionado.</p></div>`;
     }
   };
   pageLoaders['historial'] = loadHistorial;
@@ -4014,7 +4099,7 @@ import Layout from '../layouts/Layout.astro';
 
     const previousLabel = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<span class="material-symbols-rounded">&#xe627;</span> Preparando...';
+    btn.innerHTML = '<span class="material-symbols-rounded">sync</span> Preparando...';
 
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`, {
@@ -4070,7 +4155,7 @@ import Layout from '../layouts/Layout.astro';
     const previousLabel = submitBtn?.innerHTML || '';
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="material-symbols-rounded">&#xe627;</span> Guardando...';
+      submitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...';
     }
     setHistoryNoteFeedback(formEl, 'Guardando nota de seguimiento...', 'success');
 
@@ -4281,7 +4366,7 @@ import Layout from '../layouts/Layout.astro';
     if (!importe || importe <= 0) { setPagoFeedback('Introduce un importe.'); pagoImporteInput?.focus(); return; }
 
     const prev = pagoSubmitBtn?.innerHTML || '';
-    if (pagoSubmitBtn) { pagoSubmitBtn.disabled = true; pagoSubmitBtn.innerHTML = '<span class="material-symbols-rounded">&#xe627;</span> Guardando...'; }
+    if (pagoSubmitBtn) { pagoSubmitBtn.disabled = true; pagoSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...'; }
 
     const editId = pagoEditId?.value;
 
@@ -4362,7 +4447,7 @@ import Layout from '../layouts/Layout.astro';
       renderFichaCitas(payload.citas);
       renderFichaPagos(payload.pagos);
       renderFichaNotas(payload.notas);
-      if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">&#xe7fd;</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
+      if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
     } catch (err: any) {
       if (fichaDatosView) fichaDatosView.innerHTML = `<p class="empty-inline">Error al cargar ficha: ${escapeHtml(err?.message || '')}</p>`;
     }
@@ -4435,7 +4520,7 @@ import Layout from '../layouts/Layout.astro';
   const renderFichaCitas = (citas: any[]) => {
     if (!fichaCitasBody) return;
     if (!citas.length) {
-      fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">&#xe616;</span><p>Sin citas registradas</p></div></td></tr>';
+      fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p></div></td></tr>';
       return;
     }
     fichaCitasBody.innerHTML = citas.map((c: any) => {
@@ -4448,7 +4533,7 @@ import Layout from '../layouts/Layout.astro';
   const renderFichaPagos = (pagos: any[]) => {
     if (!fichaPagosBody) return;
     if (!pagos.length) {
-      fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">&#xef63;</span><p>Sin pagos registrados</p></div></td></tr>';
+      fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p></div></td></tr>';
       if (fichaPagosTotal) fichaPagosTotal.textContent = '';
       return;
     }
@@ -4655,7 +4740,7 @@ import Layout from '../layouts/Layout.astro';
           <td>${Number(f.importe_iva).toFixed(2)} €</td>
           <td><strong>${Number(f.importe_total).toFixed(2)} €</strong></td>
           <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
-          <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf" target="_blank" class="btn-sm btn-outline">PDF</a></td>
+          <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a></td>
         </tr>`;
       }).join('');
     } catch {
@@ -4722,7 +4807,7 @@ import Layout from '../layouts/Layout.astro';
     const pacienteId = facturaPacienteSelect?.value;
     if (!pacienteId) { setFacturaFeedback('Selecciona un paciente'); return; }
     const prev = facturaSubmitBtn?.innerHTML || '';
-    if (facturaSubmitBtn) { facturaSubmitBtn.disabled = true; facturaSubmitBtn.innerHTML = '<span class="material-symbols-rounded">&#xe627;</span> Generando...'; }
+    if (facturaSubmitBtn) { facturaSubmitBtn.disabled = true; facturaSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Generando...'; }
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/facturas`, {
         method: 'POST',
@@ -4737,7 +4822,7 @@ import Layout from '../layouts/Layout.astro';
       await loadFacturas();
       // Open PDF in new tab
       if (payload.data?.id) {
-        window.open(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf`, '_blank');
+        window.open(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf${buildClinicParams()}`, '_blank');
       }
     } catch (err: any) {
       setFacturaFeedback(`Error: ${err?.message || 'no se pudo generar'}`);
@@ -4850,7 +4935,7 @@ import Layout from '../layouts/Layout.astro';
     };
     if (!body.paciente_id) { setBonoFeedback('Selecciona un paciente'); return; }
     const prev = bonoSubmitBtn?.innerHTML || '';
-    if (bonoSubmitBtn) { bonoSubmitBtn.disabled = true; bonoSubmitBtn.innerHTML = '<span class="material-symbols-rounded">&#xe627;</span> Guardando...'; }
+    if (bonoSubmitBtn) { bonoSubmitBtn.disabled = true; bonoSubmitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...'; }
     try {
       if (id) {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -4994,7 +5079,7 @@ import Layout from '../layouts/Layout.astro';
     const firmaB64 = firmaCanvas.toDataURL('image/png');
     const btn = document.getElementById('firmaGuardarBtn') as HTMLButtonElement;
     const prev = btn?.innerHTML || '';
-    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">&#xe627;</span> Guardando...'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...'; }
     try {
       await fetchJson(`${BACKEND_BASE}/api/documentos/${firmaDocId}/firmar`, {
         method: 'POST',
@@ -5003,7 +5088,7 @@ import Layout from '../layouts/Layout.astro';
       });
       closeFirmaModal();
       // Open PDF
-      window.open(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf`, '_blank');
+      window.open(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf${buildClinicParams()}`, '_blank');
       // Reload docs list
       if (fichaPatientId) {
         const docsPayload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
@@ -5037,7 +5122,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="ficha-doc-meta"><span class="status-chip ${estadoClass}">${d.estado}</span>${escapeHtml(fechaFirma)}</div>
         </div>
         <div class="ficha-doc-actions">
-          <a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf" target="_blank" class="btn-sm btn-outline">PDF</a>
+          <a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>
           <button class="btn-sm btn-outline" data-action="delete-doc" data-doc-id="${d.id}" style="color:#ef4444">Eliminar</button>
         </div>
       </div>`;
@@ -5215,7 +5300,83 @@ import Layout from '../layouts/Layout.astro';
   pageLoaders['gestoria'] = async () => { await origLoadGestoria(); await loadGestoriaMes(); };
   // ===================== END GESTORIA =====================
 
+  // === DOCUMENTOS (consentimientos globales) ===
+  const documentosBody = document.getElementById('documentosBody') as HTMLElement | null;
+  const documentosEstadoFilter = document.getElementById('documentosEstadoFilter') as HTMLSelectElement | null;
+
+  const TIPO_LABELS: Record<string, string> = {
+    consentimiento_informado: 'Consentimiento',
+    lopd: 'LOPD/RGPD',
+    revocacion: 'Revocación',
+    otro: 'Otro',
+  };
+
+  const loadDocumentos = async () => {
+    if (!documentosBody) return;
+    setTableState(documentosBody, 6, 'sync', 'Cargando documentos...', true);
+    try {
+      const estado = documentosEstadoFilter?.value || '';
+      const url = `${BACKEND_BASE}/api/documentos${estado ? `?estado=${estado}` : ''}`;
+      const payload = await fetchJson(url);
+      const docs = payload.data || [];
+      if (!docs.length) {
+        setTableState(documentosBody, 6, 'description', 'Sin documentos registrados');
+        return;
+      }
+      documentosBody.innerHTML = docs.map((d: any) => {
+        const pac = d.crm_pacientes;
+        const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : '—';
+        const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || '—';
+        const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
+        const fechaFirma = d.fecha_firma
+          ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '—';
+        return `<tr>
+          <td class="td-patient">${escapeHtml(pacNombre)}</td>
+          <td>${escapeHtml(tipoLabel)}</td>
+          <td>${escapeHtml(d.titulo || '—')}</td>
+          <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
+          <td>${fechaFirma}</td>
+          <td style="display:flex;gap:6px;align-items:center">
+            ${d.estado === 'firmado' ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : '<span style="color:var(--text-muted);font-size:0.8rem">Sin firma</span>'}
+            <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
+          </td>
+        </tr>`;
+      }).join('');
+    } catch { setTableState(documentosBody, 6, 'cloud_off', 'Error al cargar documentos'); }
+  };
+  pageLoaders['documentos'] = loadDocumentos;
+  documentosEstadoFilter?.addEventListener('change', loadDocumentos);
+  document.getElementById('refreshDocumentos')?.addEventListener('click', loadDocumentos);
+
+  documentosBody?.addEventListener('click', async (e: Event) => {
+    const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
+    if (!btn) return;
+    const docId = btn.getAttribute('data-doc-id');
+    if (!docId || !confirm('¿Eliminar este documento?')) return;
+    try {
+      await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
+      await loadDocumentos();
+    } catch { alert('Error al eliminar el documento.'); }
+  });
+
   const loadConfig = async () => {
+    // Populate clinic form from localStorage
+    const cfg = getClinicConfig();
+    const fields: Record<string, string> = {
+      cfgClinicNombre: cfg.nombre || '',
+      cfgClinicNif: cfg.nif || '',
+      cfgClinicTelefono: cfg.telefono || '',
+      cfgClinicDireccion: cfg.direccion || '',
+      cfgClinicEmail: cfg.email || '',
+      cfgClinicWeb: cfg.web || '',
+    };
+    Object.entries(fields).forEach(([id, val]) => {
+      const el = document.getElementById(id) as HTMLInputElement | null;
+      if (el) el.value = val;
+    });
+
+    // Connections check
     const cfgBackend = document.getElementById('cfgBackend');
     const cfgBackendStatus = document.getElementById('cfgBackendStatus');
     const cfgAgent = document.getElementById('cfgAgent');
@@ -5234,6 +5395,22 @@ import Layout from '../layouts/Layout.astro';
     } catch { if (cfgAgentStatus) { cfgAgentStatus.textContent = 'Offline'; cfgAgentStatus.className = 'status-chip rechazado'; } }
   };
   pageLoaders['config'] = loadConfig;
+
+  // Clinic config form save
+  document.getElementById('clinicConfigForm')?.addEventListener('submit', (e: Event) => {
+    e.preventDefault();
+    const get = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() || '';
+    saveClinicConfig({
+      nombre: get('cfgClinicNombre'),
+      nif: get('cfgClinicNif'),
+      telefono: get('cfgClinicTelefono'),
+      direccion: get('cfgClinicDireccion'),
+      email: get('cfgClinicEmail'),
+      web: get('cfgClinicWeb'),
+    });
+    const fb = document.getElementById('clinicConfigFeedback');
+    if (fb) { fb.textContent = '✓ Datos guardados correctamente'; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 3000); }
+  });
 
   renderAssistantPatientContext();
   fetchPatientCatalog()
@@ -6573,17 +6750,36 @@ import Layout from '../layouts/Layout.astro';
   .clean-list-item {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--border);
     transition: background var(--transition);
   }
-  .clean-list-item:last-child {
-    border-bottom: none;
+  .clean-list-item:last-child { border-bottom: none; }
+  .clean-list-item:hover { background: var(--bg-card-hover); }
+  .clean-list-item.cita-today { background: rgba(13,148,136,0.04); }
+  .dash-cita-hora { min-width: 44px; }
+  .cita-hora-badge {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-primary, #0d9488);
+    background: rgba(13,148,136,0.1);
+    border-radius: 6px;
+    padding: 2px 6px;
+    white-space: nowrap;
   }
-  .clean-list-item:hover {
-    background: var(--bg-card-hover);
+  .dash-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-primary, #0d9488);
+    padding: 6px 1.25rem 2px;
+    background: rgba(13,148,136,0.04);
   }
+  .dash-section-label-muted { color: var(--text-muted); background: transparent; }
   .clean-list-main {
     min-width: 0;
     display: grid;
