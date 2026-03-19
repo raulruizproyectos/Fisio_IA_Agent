@@ -13,23 +13,22 @@ CRM + agentes para centros de fisioterapia: gestiÃƒÆ’Ã†â€™Ãƒâ€
 ## En pausa
 - GeneraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­deo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 105 - 2026-03-18)
-- Commit exacto para retomar: `c651966`
+## Checkpoint actual (Sesion 106 - 2026-03-19)
+- Commit exacto para retomar: `7a86b7f`
 - Estado de GitHub: `origin/main` sincronizado con este checkpoint.
 - Estado real del producto a cierre de sesion:
-  - la agenda ya muestra observabilidad del sincronizador W6 dentro del CRM
-  - el workflow background `W6 Calendar Sync` existe y sigue activo en n8n
-  - el backend desplegado sigue con Google Calendar desactivado en runtime (`enabled: false`)
-  - por eso la agenda todavia no es espejo real del calendario del profesional
-- Diagnostico verificado en produccion:
-  - `GET /api/profesional/appointments/sync-calendar/status` devuelve `enabled: false`, `status: idle`, `last_success_at: null`
-  - el bloqueo real esta en variables faltantes de EasyPanel para backend, no en la UI
+  - Calendar sync DESBLOQUEADO: `enabled: true, mode: "w5"` verificado en produccion
+  - el backend usa W5 (n8n OAuth2) como fuente de Calendar, sin necesitar Service Account
+  - la agenda del CRM muestra observabilidad del sincronizador W6
+  - sync manual verificado E2E: `source: w5_reader`, `appointments_considered: 4`
+  - `GOOGLE_CALENDAR_ID=raul.ruiz.diaz.bcn@gmail.com` publicada en EasyPanel
+  - redeploy de `fisio-backend` exitoso
 - Siguiente paso exacto de la proxima sesion:
-  - publicar en EasyPanel del backend `GOOGLE_CALENDAR_ID`, `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY` y opcionalmente `GOOGLE_CALENDAR_REQUIRED=true`
-  - redeploy de `fisio-backend`
-  - en cuanto eso este activo, seguir con espejo real del calendario clinico y bloqueos / no disponibilidad desde Google
-  - despues continuar con envio real por Telegram desde el copilot y observabilidad ampliada de agenda
-- Checkpoint operativo actual: `docs/checkpoint_20260318_google_calendar_gate.md`
+  - verificar reconciliacion real de citas Calendar <-> CRM en la UI del frontend
+  - implementar bloqueos / no disponibilidad desde Google Calendar
+  - envio real por Telegram desde el copilot
+  - observabilidad ampliada de agenda (ultimo sync, proximo ciclo, errores recientes)
+- Checkpoint operativo actual: `docs/checkpoint_20260319_calendar_sync_unblocked.md`
 
 ## Checkpoint actual (Sesion 92 - 2026-03-11)
 - La arquitectura vigente queda fijada como hibrida:
@@ -81,9 +80,9 @@ CRM + agentes para centros de fisioterapia: gestiÃƒÆ’Ã†â€™Ãƒâ€
   - `POST /api/telegram/incoming?dry_run=true` validado con 6 casos reales de routing
   - entrega real del triage Telegram validada en chat vinculado
   - GET /api/telegram/link-code/:patientId validado en backend publico
-  - alta real de citas Telegram validada en crm_citas`r
-  - voz nativa pendiente de OPENAI_API_KEY`r
-  - sync a Google Calendar pendiente de credenciales backend
+  - alta real de citas Telegram validada en crm_citas
+  - voz nativa pendiente de OPENAI_API_KEY
+  - sync a Google Calendar ACTIVO via W5/n8n OAuth2 (`enabled: true, mode: "w5"`)
 
 ## Endpoints backend principales
 - `POST /api/telegram/incoming`
@@ -100,6 +99,8 @@ CRM + agentes para centros de fisioterapia: gestiÃƒÆ’Ã†â€™Ãƒâ€
 - `POST /api/profesional/program-templates/clone`
 - `GET /api/profesional/patients/:patientId/history`
 - `POST /api/profesional/notes`
+- `GET /api/profesional/appointments/sync-calendar/status`
+- `POST /api/profesional/appointments/sync-calendar`
 
 ## W2 asÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­ncrono (polling CRM)
 - El CRM puede lanzar el informe de ejercicios en segundo plano con `POST /api/exercises/recommend/async`.

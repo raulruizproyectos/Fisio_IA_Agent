@@ -1,4 +1,44 @@
-## Sesion 105 - 2026-03-18
+## Sesion 106 - 2026-03-19
+
+### Objetivo
+Desbloquear la sincronizacion real con Google Calendar y verificar el pipeline E2E Calendar-CRM.
+
+### Trabajo realizado
+
+**Desbloqueo Calendar sin Service Account (commit `6165b7b`)**
+- [x] Refactorizado `professional.js`: nuevo `calendarDirectEnabled()` (JWT) y `calendarW5Enabled()` (n8n OAuth2).
+- [x] `calendarIntegrationEnabled()` ahora retorna `true` con solo `GOOGLE_CALENDAR_ID` + W5 (sin necesitar `GOOGLE_CLIENT_EMAIL` ni `GOOGLE_PRIVATE_KEY`).
+- [x] `getGoogleCalendarClient()` gated correctamente en `calendarDirectEnabled()`.
+- [x] `fetchCalendarAppointments()` usa W5 como fuente primaria cuando no hay Service Account.
+- [x] `buildCalendarBackgroundSyncStatus()` incluye campos `mode` ('direct'|'w5'|'none') y `calendar_id` para observabilidad.
+- [x] `reconcileAppointmentsWithCalendar()` diferencia `source: 'google_api'` vs `'w5_reader'` correctamente.
+
+**Configuracion EasyPanel**
+- [x] `GOOGLE_CALENDAR_ID=raul.ruiz.diaz.bcn@gmail.com` publicada en EasyPanel `fisio-backend`.
+- [x] Redeploy exitoso de `fisio-backend` en EasyPanel.
+- [x] `calendarId` extraido del workflow W1 de n8n (OAuth2 personal del profesional).
+
+**Verificacion E2E en produccion**
+- [x] `GET /api/profesional/appointments/sync-calendar/status` devuelve `enabled: true`, `mode: "w5"`.
+- [x] `POST /api/profesional/appointments/sync-calendar` ejecutado manualmente: `source: w5_reader`, `status: ok`, `ui_status: healthy`, `appointments_considered: 4`.
+- [x] `GET /api/health` devuelve `status: ok`.
+- [x] GitHub sincronizado en `7a86b7f`.
+
+### Estado al cierre
+- Frontend: OK, agenda con observabilidad de sync visible.
+- Backend: OK en codigo y produccion, Calendar habilitado via W5 (`enabled: true, mode: "w5"`).
+- n8n: OK, W5 Calendar Reader y W6 Calendar Sync activos.
+- GitHub: OK, todo sincronizado.
+
+### Siguiente paso exacto
+1. Verificar reconciliacion real de citas Calendar ↔ CRM en el frontend.
+2. Bloqueos / no disponibilidad desde Google Calendar.
+3. Envio real por Telegram desde el copilot.
+4. Observabilidad ampliada en agenda (ultimo sync, proximo ciclo, errores recientes).
+
+---
+
+
 
 ### Objetivo
 Dejar la agenda preparada para sincronizacion background real con Google Calendar, anadir observabilidad visible en CRM y cerrar el punto exacto antes del desbloqueo final de EasyPanel.
