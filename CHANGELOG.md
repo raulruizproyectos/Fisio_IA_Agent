@@ -1,3 +1,63 @@
+## Sesion 108 - 2026-03-19
+
+### Objetivo
+Cerrar la validacion del frontend fuera de la carpeta sincronizada y preparar bloqueos/no disponibilidad desde Google Calendar con un camino seguro de verificacion.
+
+### Trabajo realizado
+- [x] Validado frontend en copia local aislada con `scripts/frontend-local-build.ps1`.
+- [x] `npm run check` OK en `C:\Temp\Fisio_IA_Agent_frontend_local` (`0 errors`, `0 warnings`, `11 hints`).
+- [x] Refactor backend: separacion entre citas gestionadas y `busy_events` de Google Calendar.
+- [x] Nuevo endpoint local `POST /api/profesional/appointments/check-availability` para dry-run de disponibilidad sin escrituras.
+- [x] Workflow versionado `n8n/Fisio_IA_Agent/production/w5-calendar-reader.json` ampliado con `busy_events`.
+- [x] Workflow W5 publicado en la instancia viva de n8n y activado.
+- [x] Webhook W5 verificado: responde con `busy_events` y `events`.
+
+### Verificacion
+- [x] `node --check backend/src/routes/professional.js` OK.
+- [x] `ConvertFrom-Json` OK sobre `n8n/Fisio_IA_Agent/production/w5-calendar-reader.json`.
+- [x] `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`.
+- [x] `npm run check` OK en la copia local aislada.
+
+### Estado al cierre
+- Frontend: validado, sin bloqueo tecnico del cambio.
+- n8n/W5: remoto ya preparado para exponer eventos ocupados.
+- Backend: cambio implementado localmente, pendiente de publicar/redeploy para activar el bloqueo real en CRM.
+
+### Siguiente paso exacto
+1. Publicar/redeploy del backend.
+2. Ejecutar `POST /api/profesional/appointments/check-availability` contra un hueco ocupado y confirmar `available=false` / `409` en la ruta de creacion.
+3. Decidir si llevamos la no disponibilidad tambien a una capa visible de la agenda.
+
+---
+## Sesion 107 - 2026-03-19
+
+### Objetivo
+Hacer visible en la agenda la reconciliacion real Calendar <-> CRM y ampliar la observabilidad del sincronizador W6.
+
+### Trabajo realizado
+- [x] Backend: nuevo metadata layer de agenda por cita con `calendar_sync_state` (`crm_only`, `linked`, `backfilled`, `calendar_only`).
+- [x] Backend: `buildCalendarBackgroundSyncStatus()` ahora expone tambien `expected_interval_ms` y `next_expected_at`.
+- [x] Frontend agenda: nuevo bloque de facts del sync (fuente, ultimo ciclo, proximo ciclo, ultimo error).
+- [x] Frontend agenda: nueva columna `Espejo` para distinguir `Solo CRM`, `CRM + Calendar`, `Backfill` y `Solo Calendar`.
+- [x] Frontend agenda: pista visual adicional cuando una cita queda `Solo Calendar` pendiente de enlazar con ficha CRM.
+
+### Verificacion
+- [x] `node --check backend/src/routes/professional.js` OK.
+- [ ] `npm run check` y `npm run build` no ejecutables en este host: falta `frontend/node_modules/.bin/astro`.
+- [ ] Intento de reparar dependencias con `npm install` bloqueado por timeout en este workspace sincronizado.
+
+### Estado al cierre
+- Backend: OK a nivel de parseo y contrato.
+- Frontend: cambio implementado, pendiente validacion con Astro en un host/copia local sana.
+- Git: working tree local con cambios en `backend/src/routes/professional.js` y `frontend/src/pages/index.astro`.
+
+### Siguiente paso exacto
+1. Reparar o reinstalar dependencias del frontend en copia local aislada / no sincronizada.
+2. Ejecutar `npm run check` y `npm run build`.
+3. Validar en UI los casos `Solo Calendar`, `Backfill` y `CRM + Calendar`.
+4. Retomar el siguiente bloque funcional: no disponibilidad / bloqueos desde Google Calendar.
+
+---
 ## Sesion 106 - 2026-03-19
 
 ### Objetivo

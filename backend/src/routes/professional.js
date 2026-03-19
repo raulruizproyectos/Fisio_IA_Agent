@@ -46,6 +46,7 @@ const GOOGLE_CALENDAR_REQUIRED = String(process.env.GOOGLE_CALENDAR_REQUIRED || 
 const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events';
 const W6_CALENDAR_WRITER_URL = process.env.W6_CALENDAR_WRITER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w6/calendar-write';
 const CALENDAR_BACKGROUND_SYNC_STALE_MS = 6 * 60 * 1000;
+const CALENDAR_BACKGROUND_SYNC_INTERVAL_MS = 2 * 60 * 1000;
 const calendarBackgroundSyncState = {
   status: 'idle',
   running: false,
@@ -77,12 +78,22 @@ function parseIsoTimestamp(rawValue) {
   return date.toISOString();
 }
 
-function normalizeAppointmentRow(row) {
-  const fullName = [row?.crm_pacientes?.nombre, row?.crm_pacientes?.apellidos].filter(Boolean).join(' ').trim();
+function attachCalendarSyncMeta(row, overrides = {}) {
+  const baseState = row?.google_calendar_event_id ? 'linked' : 'crm_only';
+  const baseOrigin = baseState === 'crm_only' ? 'crm' : 'google_calendar';
   return {
     ...row,
-    nombre_paciente: fullName || null,
+    calendar_sync_state: overrides.calendar_sync_state || baseState,
+    calendar_origin: overrides.calendar_origin || baseOrigin,
   };
+}
+
+function normalizeAppointmentRow(row) {
+  const fullName = [row?.crm_pacientes?.nombre, row?.crm_pacientes?.apellidos].filter(Boolean).join(' ').trim();
+  return attachCalendarSyncMeta({
+    ...row,
+    nombre_paciente: fullName || null,
+  });
 }
 
 function splitFullName(fullName = '') {
@@ -123,8 +134,14 @@ function calendarIntegrationEnabled() {
 
 function buildCalendarBackgroundSyncStatus() {
   const now = Date.now();
+  const lastRunAt = calendarBackgroundSyncState.last_run_at ? new Date(calendarBackgroundSyncState.last_run_at).getTime() : null;
   const lastSuccessAt = calendarBackgroundSyncState.last_success_at ? new Date(calendarBackgroundSyncState.last_success_at).getTime() : null;
+  const lastErrorAt = calendarBackgroundSyncState.last_error_at ? new Date(calendarBackgroundSyncState.last_error_at).getTime() : null;
   const ageMs = Number.isFinite(lastSuccessAt) ? Math.max(0, now - lastSuccessAt) : null;
+  const lastErrorAgeMs = Number.isFinite(lastErrorAt) ? Math.max(0, now - lastErrorAt) : null;
+  const nextExpectedAt = Number.isFinite(lastRunAt)
+    ? new Date(lastRunAt + CALENDAR_BACKGROUND_SYNC_INTERVAL_MS).toISOString()
+    : null;
   let uiStatus = 'idle';
 
   if (calendarBackgroundSyncState.running) {
@@ -150,11 +167,14 @@ function buildCalendarBackgroundSyncStatus() {
     last_success_at: calendarBackgroundSyncState.last_success_at,
     last_error_at: calendarBackgroundSyncState.last_error_at,
     age_ms: ageMs,
+    last_error_age_ms: lastErrorAgeMs,
     error: calendarBackgroundSyncState.error,
     summary: calendarBackgroundSyncState.summary,
     window: calendarBackgroundSyncState.window,
     professional_id: calendarBackgroundSyncState.professional_id,
     stale_after_ms: CALENDAR_BACKGROUND_SYNC_STALE_MS,
+    expected_interval_ms: CALENDAR_BACKGROUND_SYNC_INTERVAL_MS,
+    next_expected_at: nextExpectedAt,
   };
 }
 
@@ -661,6 +681,17 @@ function normalizeCalendarPatientName(summary = '') {
     .trim();
 }
 
+function isManagedCalendarAppointment(event) {
+  return Boolean(String(event?.summary || '').trim().toLowerCase().includes('cita fisioterapia'));
+}
+
+function isCalendarBusyEvent(event) {
+  if (!event?.inicio_en) return false;
+  if (String(event?.status || '').trim().toLowerCase() === 'cancelled') return false;
+  if (String(event?.transparency || '').trim().toLowerCase() === 'transparent') return false;
+  return true;
+}
+
 function normalizeCalendarEvent(rawEvent) {
   const eventId = String(rawEvent?.google_calendar_event_id || rawEvent?.id || '').trim();
   if (!eventId) return null;
@@ -679,6 +710,7 @@ function normalizeCalendarEvent(rawEvent) {
     fin_en: endAt,
     description: rawEvent?.description ? String(rawEvent.description) : null,
     status: String(rawEvent?.status || '').trim() || 'confirmed',
+    transparency: String(rawEvent?.transparency || '').trim() || null,
   };
 }
 
@@ -788,7 +820,11 @@ async function persistCalendarBackfillAppointment({ event, professionalId }) {
     .select(APPOINTMENT_SELECT)
     .single();
 
-  if (!error && data) return normalizeAppointmentRow(data);
+  if (!error && data) {
+    return attachCalendarSyncMeta(normalizeAppointmentRow(data), {
+      calendar_sync_state: 'backfilled',
+    });
+  }
 
   if (error?.code === '23505') {
     const { data: existing, error: existingError } = await supabase
@@ -798,14 +834,18 @@ async function persistCalendarBackfillAppointment({ event, professionalId }) {
       .maybeSingle();
 
     if (existingError) throw existingError;
-    return existing ? normalizeAppointmentRow(existing) : null;
+    return existing
+      ? attachCalendarSyncMeta(normalizeAppointmentRow(existing), {
+        calendar_sync_state: 'backfilled',
+      })
+      : null;
   }
 
   if (error) throw error;
   return null;
 }
 
-async function fetchCalendarAppointmentsDirect(timeMin, timeMax) {
+async function fetchCalendarEventsDirect(timeMin, timeMax) {
   const calendarClient = getGoogleCalendarClient();
   if (!calendarClient) return [];
 
@@ -822,7 +862,12 @@ async function fetchCalendarAppointmentsDirect(timeMin, timeMax) {
   return (response.data?.items || [])
     .map(normalizeCalendarEvent)
     .filter(Boolean)
-    .filter((event) => (event.summary || '').toLowerCase().includes('cita fisioterapia'));
+    .filter((event) => Boolean(event?.inicio_en));
+}
+
+async function fetchCalendarAppointmentsDirect(timeMin, timeMax) {
+  const events = await fetchCalendarEventsDirect(timeMin, timeMax);
+  return events.filter(isManagedCalendarAppointment);
 }
 
 async function fetchCalendarEventById(eventId) {
@@ -843,7 +888,11 @@ async function fetchCalendarEventById(eventId) {
   }
 }
 
-async function fetchCalendarAppointmentsViaW5(timeMin, timeMax) {
+function normalizeCalendarEventCollection(rawEvents = []) {
+  return (Array.isArray(rawEvents) ? rawEvents : []).map(normalizeCalendarEvent).filter(Boolean);
+}
+
+async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
   try {
     const res = await fetch(W5_CALENDAR_READER_URL, {
       method: 'POST',
@@ -851,12 +900,22 @@ async function fetchCalendarAppointmentsViaW5(timeMin, timeMax) {
       body: JSON.stringify({ time_min: timeMin, time_max: timeMax }),
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (Array.isArray(data.events) ? data.events : []).map(normalizeCalendarEvent).filter(Boolean);
+    if (!res.ok) return null;
+    return await res.json();
   } catch {
-    return [];
+    return null;
   }
+}
+
+async function fetchCalendarAppointmentsViaW5(timeMin, timeMax) {
+  const data = await fetchCalendarReaderPayloadViaW5(timeMin, timeMax);
+  return normalizeCalendarEventCollection(data?.events).filter(isManagedCalendarAppointment);
+}
+
+async function fetchCalendarBusyEventsViaW5(timeMin, timeMax) {
+  const data = await fetchCalendarReaderPayloadViaW5(timeMin, timeMax);
+  const rawBusyEvents = Array.isArray(data?.busy_events) ? data.busy_events : data?.events;
+  return normalizeCalendarEventCollection(rawBusyEvents).filter(isCalendarBusyEvent);
 }
 
 async function fetchCalendarAppointments(timeMin, timeMax) {
@@ -873,8 +932,106 @@ async function fetchCalendarAppointments(timeMin, timeMax) {
   return [];
 }
 
-function buildCalendarSyntheticAppointment(event, professionalId) {
+async function fetchCalendarBusyEvents(timeMin, timeMax) {
+  if (calendarDirectEnabled()) {
+    try {
+      const events = await fetchCalendarEventsDirect(timeMin, timeMax);
+      return events.filter(isCalendarBusyEvent);
+    } catch {
+      // Fall back to W5 reader if direct Calendar listing is temporarily unavailable.
+    }
+  }
+  if (calendarW5Enabled()) {
+    return fetchCalendarBusyEventsViaW5(timeMin, timeMax);
+  }
+  return [];
+}
+
+function buildCalendarBusyConflict(event) {
   return {
+    source: 'google_calendar',
+    google_calendar_event_id: event.google_calendar_event_id,
+    inicio_en: event.inicio_en,
+    fin_en: event.fin_en,
+    summary: event.summary || null,
+    description: event.description || null,
+    conflict_type: isManagedCalendarAppointment(event) ? 'managed_appointment' : 'external_busy',
+  };
+}
+
+async function findCalendarBusyConflicts({ startAt, endAt, excludeEventId = null }) {
+  if (!calendarIntegrationEnabled()) return [];
+  const events = await fetchCalendarBusyEvents(startAt, endAt);
+  const startMs = new Date(startAt).getTime();
+  const endMs = new Date(endAt).getTime();
+
+  return events
+    .filter((event) => event?.google_calendar_event_id !== excludeEventId)
+    .filter((event) => {
+      const eventStartMs = new Date(event?.inicio_en || '').getTime();
+      const eventEndMs = new Date(event?.fin_en || event?.inicio_en || '').getTime();
+      if (Number.isNaN(eventStartMs) || Number.isNaN(eventEndMs)) return false;
+      return eventStartMs < endMs && eventEndMs > startMs;
+    })
+    .map(buildCalendarBusyConflict);
+}
+
+function buildAppointmentConflictPayload(localConflicts = [], calendarConflicts = []) {
+  const merged = [
+    ...localConflicts.map((conflict) => ({ ...conflict, source: 'crm' })),
+    ...calendarConflicts,
+  ];
+
+  let error = 'Conflicto de agenda: ya existe una cita activa en ese rango horario';
+  if (calendarConflicts.length && localConflicts.length) {
+    error = 'Conflicto de agenda: el rango coincide con citas CRM y con bloques ocupados de Google Calendar';
+  } else if (calendarConflicts.length) {
+    error = 'Conflicto de agenda: el rango horario esta ocupado en Google Calendar';
+  }
+
+  return {
+    available: false,
+    error,
+    status_code: 409,
+    conflicts: merged,
+    local_conflicts: localConflicts,
+    calendar_conflicts: calendarConflicts,
+  };
+}
+
+async function resolveAppointmentAvailability({
+  professionalId,
+  startAt,
+  endAt,
+  excludeId = null,
+  excludeEventId = null,
+}) {
+  const localConflicts = await findAppointmentConflicts({
+    professionalId,
+    startAt,
+    endAt,
+    excludeId,
+  });
+  const calendarConflicts = await findCalendarBusyConflicts({
+    startAt,
+    endAt,
+    excludeEventId,
+  });
+
+  if (!localConflicts.length && !calendarConflicts.length) {
+    return {
+      available: true,
+      conflicts: [],
+      local_conflicts: [],
+      calendar_conflicts: [],
+    };
+  }
+
+  return buildAppointmentConflictPayload(localConflicts, calendarConflicts);
+}
+
+function buildCalendarSyntheticAppointment(event, professionalId) {
+  return attachCalendarSyncMeta({
     id: `cal_${event.google_calendar_event_id}`,
     google_calendar_event_id: event.google_calendar_event_id,
     inicio_en: event.inicio_en,
@@ -885,7 +1042,9 @@ function buildCalendarSyntheticAppointment(event, professionalId) {
     nombre_paciente: normalizeCalendarPatientName(event.summary) || null,
     paciente_id: null,
     fisioterapeuta_id: professionalId,
-  };
+  }, {
+    calendar_sync_state: 'calendar_only',
+  });
 }
 
 function isAppointmentInsideWindow(appointment, fromAt, toAt) {
@@ -1252,6 +1411,50 @@ router.post('/appointments/sync-calendar', async (req, res, next) => {
   }
 });
 
+router.post('/appointments/check-availability', async (req, res, next) => {
+  try {
+    const professionalIdRaw = pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
+    const startAt = parseIsoTimestamp(pickValue(req.body, 'inicio_en', 'start_at', 'slot_start'));
+    const endAt = parseIsoTimestamp(pickValue(req.body, 'fin_en', 'end_at', 'slot_end'));
+    const excludeId = pickValue(req.body, 'exclude_appointment_id', 'appointment_id', 'exclude_id');
+    const excludeEventId = pickValue(req.body, 'google_calendar_event_id', 'calendar_event_id', 'exclude_event_id');
+
+    if (!professionalIdRaw || !startAt || !endAt) {
+      return res.status(400).json({
+        error: 'fisioterapeuta_id, inicio_en/start_at y fin_en/end_at son obligatorios',
+      });
+    }
+
+    const professionalId = await resolveCrmProfessionalId(professionalIdRaw);
+    if (!professionalId) {
+      return res.status(400).json({ error: 'No se pudo resolver fisioterapeuta_id al modelo CRM (crm_perfiles)' });
+    }
+
+    if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
+      return res.status(400).json({ error: 'fin_en/end_at debe ser posterior a inicio_en/start_at' });
+    }
+
+    const availability = await resolveAppointmentAvailability({
+      professionalId,
+      startAt,
+      endAt,
+      excludeId: excludeId || null,
+      excludeEventId: excludeEventId || null,
+    });
+
+    res.json({
+      data: {
+        professional_id: professionalId,
+        inicio_en: startAt,
+        fin_en: endAt,
+        ...availability,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/appointments', async (req, res, next) => {
   try {
     const slot = req.body?.slot || {};
@@ -1294,18 +1497,15 @@ router.post('/appointments', async (req, res, next) => {
       return res.status(400).json({ error: `canal_origen/source invalido. Usa: ${APPOINTMENT_ALLOWED_CHANNELS.join(', ')}` });
     }
 
-    const conflicts = await findAppointmentConflicts({
+    const availability = await resolveAppointmentAvailability({
       professionalId,
       startAt,
       endAt,
+      excludeEventId: googleCalendarEventId || null,
     });
 
-    if (conflicts.length) {
-      return res.status(409).json({
-        error: 'Conflicto de agenda: ya existe una cita activa en ese rango horario',
-        status_code: 409,
-        conflicts,
-      });
+    if (!availability.available) {
+      return res.status(409).json(availability);
     }
 
     let effectiveCalendarEventId = googleCalendarEventId || null;
@@ -1430,18 +1630,18 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
     const effectiveStatus = nextStatus || current.estado;
     const shouldCheckConflicts = APPOINTMENT_ACTIVE_STATUSES.includes(effectiveStatus);
     if (shouldCheckConflicts) {
-      const conflicts = await findAppointmentConflicts({
+      const availability = await resolveAppointmentAvailability({
         professionalId: current.fisioterapeuta_id,
         startAt: nextStartAt,
         endAt: nextEndAt,
         excludeId: current.id,
+        excludeEventId: nextCalendarEventId !== null
+          ? (nextCalendarEventId || null)
+          : (current.google_calendar_event_id || null),
       });
 
-      if (conflicts.length) {
-        return res.status(409).json({
-          error: 'Conflicto de agenda: ya existe una cita activa en ese rango horario',
-          conflicts,
-        });
+      if (!availability.available) {
+        return res.status(409).json(availability);
       }
     }
 

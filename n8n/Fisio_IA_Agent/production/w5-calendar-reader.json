@@ -79,7 +79,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const events = $input.all();\nconst fisioEvents = events\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime)\n  .map(ev => ({\n    google_calendar_event_id: ev.id,\n    summary: ev.summary || '',\n    inicio_en: ev.start.dateTime,\n    fin_en: ev.end?.dateTime || null,\n    description: ev.description || null,\n    status: ev.status || 'confirmed'\n  }));\nreturn [{ json: { events: fisioEvents, total: fisioEvents.length } }];"
+        "jsCode": "const events = $input.all()\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime);\nconst normalize = (ev) => ({\n  google_calendar_event_id: ev.id,\n  summary: ev.summary || '',\n  inicio_en: ev.start.dateTime,\n  fin_en: ev.end?.dateTime || null,\n  description: ev.description || null,\n  status: ev.status || 'confirmed',\n  transparency: ev.transparency || null\n});\nconst busyEvents = events\n  .filter(ev => (ev.status || '').toLowerCase() !== 'cancelled')\n  .filter(ev => (ev.transparency || '').toLowerCase() !== 'transparent')\n  .map(normalize);\nconst fisioEvents = busyEvents\n  .filter(ev => (ev.summary || '').toLowerCase().includes('cita fisioterapia'));\nreturn [{ json: { events: fisioEvents, busy_events: busyEvents, total: fisioEvents.length, busy_total: busyEvents.length } }];"
       }
     },
     {
@@ -254,7 +254,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const events = $input.all();\nconst fisioEvents = events\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime)\n  .map(ev => ({\n    google_calendar_event_id: ev.id,\n    summary: ev.summary || '',\n    inicio_en: ev.start.dateTime,\n    fin_en: ev.end?.dateTime || null,\n    description: ev.description || null,\n    status: ev.status || 'confirmed'\n  }));\nreturn [{ json: { events: fisioEvents, total: fisioEvents.length } }];"
+          "jsCode": "const events = $input.all()\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime);\nconst normalize = (ev) => ({\n  google_calendar_event_id: ev.id,\n  summary: ev.summary || '',\n  inicio_en: ev.start.dateTime,\n  fin_en: ev.end?.dateTime || null,\n  description: ev.description || null,\n  status: ev.status || 'confirmed',\n  transparency: ev.transparency || null\n});\nconst busyEvents = events\n  .filter(ev => (ev.status || '').toLowerCase() !== 'cancelled')\n  .filter(ev => (ev.transparency || '').toLowerCase() !== 'transparent')\n  .map(normalize);\nconst fisioEvents = busyEvents\n  .filter(ev => (ev.summary || '').toLowerCase().includes('cita fisioterapia'));\nreturn [{ json: { events: fisioEvents, busy_events: busyEvents, total: fisioEvents.length, busy_total: busyEvents.length } }];"
         }
       },
       {

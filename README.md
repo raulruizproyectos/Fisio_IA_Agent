@@ -13,6 +13,35 @@ CRM + agentes para centros de fisioterapia: gestiÃƒÆ’Ã†â€™Ãƒâ€
 ## En pausa
 - GeneraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­deo: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
+## Checkpoint actual (Sesion 108 - 2026-03-19)
+- Commit exacto para retomar: pendiente de commit local (repo con mejoras de agenda y docs)
+- Estado de GitHub: este tramo sigue local; W5 remoto ya esta actualizado en n8n
+- Estado real del producto en este tramo:
+  - frontend validado fuera de `G:` con `scripts/frontend-local-build.ps1` y `npm run check` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`
+  - W5 Calendar Reader remoto ya devuelve `busy_events` ademas de `events`
+  - backend local distingue citas gestionadas vs bloques ocupados de Google Calendar
+  - nuevo endpoint local `POST /api/profesional/appointments/check-availability` para dry-run seguro
+- Siguiente paso exacto de la proxima sesion:
+  - publicar/redeploy del backend con el nuevo bloqueo por Google Calendar
+  - validar `409` real con `POST /api/profesional/appointments/check-availability`
+  - llevar el estado de bloqueo/no disponibilidad a la UI de agenda si queremos hacerlo visible
+- Checkpoint operativo actual: documentado en `CHANGELOG.md` + `configuracion_pendiente.md`
+
+## Checkpoint actual (Sesion 107 - 2026-03-19)
+- Commit exacto para retomar: pendiente de commit local (working tree con cambios en agenda)
+- Estado de GitHub: sin publicar aun este tramo local
+- Estado real del producto en este tramo:
+  - el backend de agenda devuelve metadata de reconciliacion por cita: `crm_only`, `linked`, `backfilled`, `calendar_only`
+  - la UI de agenda muestra columna `Espejo` para verificar Calendar <-> CRM y facts del sincronizador (fuente, ultimo ciclo, proximo ciclo, ultimo error)
+  - backend validado: `node --check backend/src/routes/professional.js` OK
+  - validacion frontend bloqueada en este host: falta `frontend/node_modules/.bin/astro` y `npm install` queda colgado por timeout
+- Siguiente paso exacto de la proxima sesion:
+  - reparar dependencias del frontend en copia local aislada o ruta no sincronizada
+  - ejecutar `npm run check` y `npm run build` del frontend
+  - validar en UI casos reales `Solo Calendar`, `Backfill` y `CRM + Calendar`
+  - seguir con bloqueos / no disponibilidad desde Google Calendar
+- Checkpoint operativo actual: documentado en `CHANGELOG.md` + `configuracion_pendiente.md`
+
 ## Checkpoint actual (Sesion 106 - 2026-03-19)
 - Commit exacto para retomar: `7a86b7f`
 - Estado de GitHub: `origin/main` sincronizado con este checkpoint.

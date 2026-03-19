@@ -1,4 +1,4 @@
-﻿---
+---
 import Layout from '../layouts/Layout.astro';
 ---
 
@@ -181,7 +181,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">receipt_long</span></div><div class="metric-data"><span class="metric-value" id="metricSesionesMes">0</span><span class="metric-label">Sesiones este mes</span></div></div>
             </section>
 
-            <!-- Gráfico ingresos mensuales -->
+            <!-- GrÃ¡fico ingresos mensuales -->
             <section class="card widget-card" style="margin-bottom:0">
               <header class="card-header">
                 <h2>Ingresos mensuales</h2>
@@ -270,7 +270,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-title-group">
                 <p class="modal-eyebrow">CRM</p>
                 <h2 id="patientModalTitle">Alta de paciente</h2>
-                <p>Registra un paciente nuevo y dejalo listo para historial, chat clínico y plantillas.</p>
+                <p>Registra un paciente nuevo y dejalo listo para historial, chat clÃ­nico y plantillas.</p>
               </div>
               <button type="button" class="modal-close" id="closePatientModalBtn" aria-label="Cerrar formulario de paciente">
                 <span class="material-symbols-rounded">close</span>
@@ -313,7 +313,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PLANTILLAS === -->
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terapéuticas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas TerapÃ©uticas</h1>
             <div class="page-tools">
               <label class="inline-field">
                 <span>Paciente destino</span>
@@ -325,17 +325,17 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Plantillas más reútilizadas</h2></header>
+            <header class="card-header"><h2>Plantillas mÃ¡s reÃºtilizadas</h2></header>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Título</th>
+                    <th>TÃ­tulo</th>
                     <th>Usos</th>
                     <th>Ejercicios</th>
-                    <th>Último uso</th>
+                    <th>Ãšltimo uso</th>
                     <th>Origen</th>
-                    <th>Acción</th>
+                    <th>AcciÃ³n</th>
                   </tr>
                 </thead>
                 <tbody id="templatesBody">
@@ -374,6 +374,7 @@ import Layout from '../layouts/Layout.astro';
                 <div class="agenda-sync-copy">
                   <strong id="agendaSyncTitle">Sync Google Calendar</strong>
                   <p id="agendaSyncMeta">Esperando estado del sincronizador...</p>
+                  <div class="agenda-sync-facts" id="agendaSyncFacts" hidden></div>
                 </div>
               </div>
             </div>
@@ -397,8 +398,8 @@ import Layout from '../layouts/Layout.astro';
             </header>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Paciente</th><th>Día</th><th>Hora</th><th>Motivo</th><th>Canal</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody id="citasBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando agenda...</p></div></td></tr></tbody>
+                <thead><tr><th>Paciente</th><th>DÃ­a</th><th>Hora</th><th>Motivo</th><th>Canal</th><th>Espejo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="citasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando agenda...</p></div></td></tr></tbody>
               </table>
             </div>
           </section>
@@ -660,7 +661,7 @@ import Layout from '../layouts/Layout.astro';
             </section>
           </div>
 
-          <!-- Tab: Notas clínicas -->
+          <!-- Tab: Notas clÃ­nicas -->
           <div class="ficha-panel" data-ficha-panel="notas">
             <section class="card">
               <header class="card-header">
@@ -734,7 +735,7 @@ import Layout from '../layouts/Layout.astro';
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
                   <button class="btn-sm btn-outline" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
                   <button class="btn-sm btn-outline" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
-                  <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocación</button>
+                  <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ RevocaciÃ³n</button>
                 </div>
               </header>
               <div id="fichaDocsList" class="ficha-docs-list">
@@ -758,7 +759,7 @@ import Layout from '../layouts/Layout.astro';
             <div id="firmaDocContenido" class="firma-doc-contenido"></div>
             <!-- Signature pad -->
             <div class="firma-pad-section">
-              <p class="firma-pad-label">Firma del paciente <span class="firma-pad-hint">(dibuja tu firma con el ratón o dedo)</span></p>
+              <p class="firma-pad-label">Firma del paciente <span class="firma-pad-hint">(dibuja tu firma con el ratÃ³n o dedo)</span></p>
               <div class="firma-pad-wrap">
                 <canvas id="firmaCanvas" width="600" height="160"></canvas>
               </div>
@@ -823,7 +824,7 @@ import Layout from '../layouts/Layout.astro';
                 <label class="field"><span>N&uacute;mero de sesiones</span>
                   <input id="bonoSesiones" type="number" min="1" max="100" value="10" required />
                 </label>
-                <label class="field"><span>Precio total (€)</span>
+                <label class="field"><span>Precio total (â‚¬)</span>
                   <input id="bonoPrecio" type="number" min="0" step="0.01" placeholder="0.00" required />
                 </label>
                 <label class="field"><span>Fecha inicio</span>
@@ -960,8 +961,8 @@ import Layout from '../layouts/Layout.astro';
             <section class="card">
               <header class="card-header"><h2>Conexiones</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">—</span><span class="status-chip" id="cfgBackendStatus">—</span></div>
-                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">—</span><span class="status-chip" id="cfgAgentStatus">—</span></div>
+                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">â€”</span><span class="status-chip" id="cfgBackendStatus">â€”</span></div>
+                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">â€”</span><span class="status-chip" id="cfgAgentStatus">â€”</span></div>
               </div>
             </section>
             <section class="card">
@@ -1186,6 +1187,7 @@ import Layout from '../layouts/Layout.astro';
   const agendaSyncChip = document.getElementById('agendaSyncChip') as HTMLElement | null;
   const agendaSyncTitle = document.getElementById('agendaSyncTitle') as HTMLElement | null;
   const agendaSyncMeta = document.getElementById('agendaSyncMeta') as HTMLElement | null;
+  const agendaSyncFacts = document.getElementById('agendaSyncFacts') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
   const addPatientBtn = document.getElementById('addPatientBtn') as HTMLButtonElement | null;
   const patientModal = document.getElementById('patientModal') as HTMLElement | null;
@@ -1298,7 +1300,7 @@ import Layout from '../layouts/Layout.astro';
   };
   const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '—'; } };
+  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'â€”'; } };
   const fmtRelativeSyncAge = (iso: string | null | undefined) => {
     if (!iso) return 'sin ejecuciones recientes';
     const ts = new Date(iso).getTime();
@@ -1499,7 +1501,7 @@ import Layout from '../layouts/Layout.astro';
     const displayName = selected?.nombre_completo || selectedPatientName || `Paciente ${selectedPatientId}`;
     assistantPatientLabel.textContent = displayName;
     assistantPatientMeta.textContent = selected?.email
-      ? `Informe y conversación vinculados a ${selected.email}.`
+      ? `Informe y conversaciÃ³n vinculados a ${selected.email}.`
       : 'Informe, PDF y seguimiento vinculados al historial del paciente.';
   };
 
@@ -2200,7 +2202,7 @@ import Layout from '../layouts/Layout.astro';
     log.appendChild(article);
     scrollAssistantRailToBottom();
   };
-  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexión'; };
+  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexiÃ³n'; };
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
@@ -2396,7 +2398,7 @@ import Layout from '../layouts/Layout.astro';
       progress = document.createElement('article');
       progress.id = 'agentProgressMsg';
       progress.className = 'msg agent msg-progress';
-      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clínico</span><p></p></div>';
+      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clÃ­nico</span><p></p></div>';
       log.appendChild(progress);
     }
     const p = progress.querySelector('p');
@@ -2738,7 +2740,7 @@ import Layout from '../layouts/Layout.astro';
     html += '<div class="exercise-report exercise-report-compact">';
     html += '<div class="exercise-report-head">';
     html += '<strong>Plan listo para revisar</strong>';
-    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' · '))}</span>`;
+    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' Â· '))}</span>`;
     html += '</div>';
     if (payload?.red_flags?.present) {
       html += '<div class="exercise-alert"><span class="material-symbols-rounded">&#xe002;</span> Revisa alertas antes de prescribir el programa.</div>';
@@ -2952,7 +2954,7 @@ import Layout from '../layouts/Layout.astro';
     }
     syncChatPatientSelection(activePatientId);
     addMessage(`Solicitar recomendacion para: ${visibleText}`, 'user');
-    upsertAgentProgress('Preparando solicitud clínica...');
+    upsertAgentProgress('Preparando solicitud clÃ­nica...');
     setSending(true, 'exercise');
     try {
       let payload: any = null;
@@ -2969,7 +2971,7 @@ import Layout from '../layouts/Layout.astro';
           payload = await pollExerciseRecommendationJob(String(job?.job_id || ''), 90, 1500);
         } catch (asyncErr: any) {
           if (!shouldFallbackToSyncExerciseRequest(asyncErr)) throw asyncErr;
-          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por vía directa...');
+          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por vÃ­a directa...');
           const directResponse = await requestExerciseRecommendation(text, 2);
           payload = directResponse.payload;
           retriesUsed = directResponse.retriesUsed;
@@ -2979,7 +2981,7 @@ import Layout from '../layouts/Layout.astro';
       renderExerciseOpsMetric();
 
       if (!payload.ok) {
-        addMessage(`Error: ${payload.error || 'No se pudo generar recomendación'}`, 'agent');
+        addMessage(`Error: ${payload.error || 'No se pudo generar recomendaciÃ³n'}`, 'agent');
         return;
       }
 
@@ -2988,17 +2990,17 @@ import Layout from '../layouts/Layout.astro';
       addExerciseReport(payload);
       updateExercisePdfButton();
       if (retriesUsed > 0) {
-        addMessage(`Motor IA respondió tras ${retriesUsed} reintento(s).`, 'agent');
+        addMessage(`Motor IA respondiÃ³ tras ${retriesUsed} reintento(s).`, 'agent');
       }
       setAgentStatus(true);
       updateExercisePdfButton();
     } catch (err: any) {
       clearAgentProgress();
       if (err?.code === 'async_poll_timeout') {
-        addMessage('El informe sigue generándose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
+        addMessage('El informe sigue generÃ¡ndose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
       } else if (isTimeoutError(err)) {
         pendingExerciseRecommendationJobId = null;
-        addMessage('El agente de ejercicios tarda más de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
+        addMessage('El agente de ejercicios tarda mÃ¡s de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
       } else {
         pendingExerciseRecommendationJobId = null;
         addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
@@ -3203,7 +3205,7 @@ import Layout from '../layouts/Layout.astro';
 
       const elIngresos = document.getElementById('metricIngresosMes');
       const elSesiones = document.getElementById('metricSesionesMes');
-      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} €`;
+      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} â‚¬`;
       if (elSesiones) elSesiones.textContent = String(sesionesMes);
 
       // Draw chart
@@ -3269,7 +3271,7 @@ import Layout from '../layouts/Layout.astro';
       ctx.textAlign = 'right';
       for (let v = 0; v <= maxVal; v += Math.ceil(maxVal / 4)) {
         const y = pad.top + chartH - (v / maxVal) * chartH;
-        ctx.fillText(`${v}€`, pad.left - 6, y + 4);
+        ctx.fillText(`${v}â‚¬`, pad.left - 6, y + 4);
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 0.5;
         ctx.beginPath();
@@ -3279,7 +3281,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
     } catch {
-      // silently fail — dashboard still usable
+      // silently fail â€” dashboard still usable
     }
   };
 
@@ -3297,8 +3299,8 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(pts.length);
       if (!pts.length) { setTableState(pacientesBody, 5, 'person_off', 'Sin pacientes registrados'); return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
-        const patientName = p.nombre_completo || '—';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'—')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'—'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
+        const patientName = p.nombre_completo || 'â€”';
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'â€”')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'â€”'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
       }).join('');
     } catch {
       setTableState(pacientesBody, 5, 'cloud_off', 'Error al cargar pacientes');
@@ -3463,7 +3465,7 @@ import Layout from '../layouts/Layout.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
       const templates = payload.data || [];
       if (!templates.length) {
-        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todavía.');
+        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todavÃ­a.');
         return;
       }
       templatesBody.innerHTML = templates.map((tpl: any) => {
@@ -3474,8 +3476,8 @@ import Layout from '../layouts/Layout.astro';
           <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
           <td>${tpl.usage_count || 0}</td>
           <td>${tpl.exercises_count || 0}</td>
-          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : '—'}</td>
-          <td>${escapeHtml(tpl.source_patient_name || '—')}</td>
+          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : 'â€”'}</td>
+          <td>${escapeHtml(tpl.source_patient_name || 'â€”')}</td>
           <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
         </tr>`;
       }).join('');
@@ -3533,9 +3535,9 @@ import Layout from '../layouts/Layout.astro';
       const intakes = payload.data || [];
       if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin intakes pendientes'); return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
-        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">âš  Sí</span>` : '<span class="status-chip aprobado">No</span>';
+        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">Ã¢Å¡Â  SÃ­</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'—')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'â€”')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
     } catch {
       setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar intakes');
@@ -3573,7 +3575,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="dash-cita-hora">${isToday && hora ? `<span class="cita-hora-badge">${hora}</span>` : ''}</div>
         <div class="clean-list-main">
           <p class="clean-list-title">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</p>
-          <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Sin motivo') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' · ' + escapeHtml(cita.motivo) : '')}</p>
+          <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Sin motivo') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' Â· ' + escapeHtml(cita.motivo) : '')}</p>
         </div>
         <span class="status-chip ${stateClass}">${escapeHtml(cita.estado || 'pendiente')}</span>
       </article>`;
@@ -3581,7 +3583,7 @@ import Layout from '../layouts/Layout.astro';
 
     let html = '';
     if (todayCitas.length) {
-      html += `<div class="dash-section-label">HOY — ${todayCitas.length} cita${todayCitas.length > 1 ? 's' : ''}</div>`;
+      html += `<div class="dash-section-label">HOY â€” ${todayCitas.length} cita${todayCitas.length > 1 ? 's' : ''}</div>`;
       html += todayCitas.map((c: any) => renderItem(c, true)).join('');
     } else {
       html += `<div class="dash-section-label dash-section-label-muted">Sin citas hoy</div>`;
@@ -3612,14 +3614,26 @@ import Layout from '../layouts/Layout.astro';
 
   let agendaWeekStart: Date = getWeekMonday(new Date());
 
+  const getAgendaMirrorMeta = (cita: any) => {
+    const state = String(cita?.calendar_sync_state || '').trim();
+    const origin = String(cita?.calendar_origin || '').trim();
+    if (state === 'calendar_only') return { label: 'Solo Calendar', chipClass: 'pendiente', note: 'Bloque detectado en Google Calendar sin enlace todavia con una ficha del CRM.' };
+    if (state === 'backfilled') return { label: 'Backfill', chipClass: 'pendiente', note: 'La cita se recupero desde Google Calendar y ya tiene correspondencia en CRM.' };
+    if (state === 'crm_only') return { label: 'Solo CRM', chipClass: 'caducado', note: 'La cita existe en CRM pero todavia no aparece enlazada en Google Calendar.' };
+    if (state === 'linked' || origin === 'calendar' || origin === 'crm') return { label: 'CRM + Calendar', chipClass: 'aprobado', note: 'La cita esta enlazada entre CRM y Google Calendar.' };
+    return { label: 'Sin traza', chipClass: 'caducado', note: 'No hay metadata suficiente para determinar el estado de espejo con Google Calendar.' };
+  };
+
   const renderAgendaSyncStatus = (syncStatus: any = null, liveSummary: any = null) => {
-    if (!agendaSyncChip || !agendaSyncTitle || !agendaSyncMeta) return;
+    if (!agendaSyncChip || !agendaSyncTitle || !agendaSyncMeta || !agendaSyncFacts) return;
 
     if (!syncStatus && !liveSummary) {
       agendaSyncChip.textContent = 'Sin datos';
       agendaSyncChip.className = 'status-chip caducado';
       agendaSyncTitle.textContent = 'Sync Google Calendar';
       agendaSyncMeta.textContent = 'Todavia no hay estado del sincronizador.';
+      agendaSyncFacts.hidden = true;
+      agendaSyncFacts.innerHTML = '';
       return;
     }
 
@@ -3668,10 +3682,18 @@ import Layout from '../layouts/Layout.astro';
       title += trigger === 'background' ? '' : ` (${trigger})`;
     }
 
+    const facts: Array<{ label: string; value: string }> = [];
+    if (summary?.enabled !== undefined) facts.push({ label: 'Lectura', value: summary?.enabled ? 'Calendar activo' : 'Calendar desactivado' });
+    if (lastSuccessAt) facts.push({ label: 'Ultimo ciclo', value: fmtRelativeSyncAge(lastSuccessAt) });
+    if (syncStatus?.next_expected_at) facts.push({ label: 'Proximo', value: fmtRelativeSyncAge(syncStatus.next_expected_at) });
+    if (syncStatus?.error) facts.push({ label: 'Ultimo error', value: String(syncStatus.error) });
+
     agendaSyncChip.textContent = chipLabel;
     agendaSyncChip.className = `status-chip ${chipClass}`;
     agendaSyncTitle.textContent = title;
     agendaSyncMeta.textContent = meta;
+    agendaSyncFacts.hidden = facts.length === 0;
+    agendaSyncFacts.innerHTML = facts.map((fact) => `<span class="agenda-sync-fact"><strong>${escapeHtml(fact.label)}:</strong> ${escapeHtml(fact.value)}</span>`).join('');
   };
 
   const renderAgendaCalendar = (citas: any[], weekStart: Date) => {
@@ -3685,7 +3707,7 @@ import Layout from '../layouts/Layout.astro';
       return d;
     });
 
-    // Map day×hour → appointments
+    // Map dayÃ—hour â†’ appointments
     const apptMap = new Map<string, any[]>();
     for (const cita of citas) {
       const start = new Date(cita.inicio_en);
@@ -3699,7 +3721,7 @@ import Layout from '../layouts/Layout.astro';
       apptMap.get(key)!.push(cita);
     }
 
-    // Status colors (inline — Astro scoped styles don't apply to dynamic innerHTML)
+    // Status colors (inline â€” Astro scoped styles don't apply to dynamic innerHTML)
     const STATUS: Record<string, { bg: string; color: string; border: string }> = {
       confirmada: { bg: '#d1fae5', color: '#065f46', border: '#10b981' },
       pendiente:  { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
@@ -3710,7 +3732,7 @@ import Layout from '../layouts/Layout.astro';
     const DEF = STATUS.pendiente;
     const todayStr = new Date().toDateString();
 
-    // Table layout — works regardless of Astro style scoping
+    // Table layout â€” works regardless of Astro style scoping
     const thBase = 'padding:10px 8px;text-align:center;border-bottom:2px solid #e2e8f0;font-size:0.8rem;font-weight:700;white-space:nowrap;';
     let html = `<div style="overflow-x:auto;width:100%;">
 <table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
@@ -3739,7 +3761,7 @@ import Layout from '../layouts/Layout.astro';
       const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
       // Lunch break separator
       if (prevHour !== null && hour - prevHour > 1) {
-        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 – 15:00</td></tr>`;
+        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 â€“ 15:00</td></tr>`;
       }
 
       const timeLabel = `${String(hour).padStart(2,'0')}:00`;
@@ -3757,7 +3779,7 @@ import Layout from '../layouts/Layout.astro';
           const firstName = (a.nombre_paciente || 'Paciente').split(' ')[0];
           const timeStr = fmtHourOnly(a.inicio_en);
           const motivo = a.motivo ? a.motivo.slice(0, 22) : '';
-          const tip = escapeAttr(`${a.nombre_paciente || ''} ${a.motivo ? '– ' + a.motivo : ''}`);
+          const tip = escapeAttr(`${a.nombre_paciente || ''} ${a.motivo ? 'â€“ ' + a.motivo : ''}`);
           const calPatId = escapeAttr(a.paciente_id || '');
           const calPatName = escapeAttr(a.nombre_paciente || 'Paciente');
           html += `<div data-cal-appt-patient="${calPatId}" data-cal-appt-name="${calPatName}" style="background:${c.bg};color:${c.color};border-left:3px solid ${c.border};border-radius:4px;padding:3px 5px 4px;margin-bottom:2px;font-size:0.71rem;overflow:hidden;cursor:pointer;line-height:1.3;" title="${tip}">
@@ -3779,14 +3801,14 @@ import Layout from '../layouts/Layout.astro';
   const loadCitas = async () => {
     const cal = document.getElementById('agendaCalendar');
     if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>';
-    if (citasBody) setTableState(citasBody, 7, 'sync', 'Cargando agenda...', true);
+    if (citasBody) setTableState(citasBody, 8, 'sync', 'Cargando agenda...', true);
     setListState(dashCitasBody, 'sync', 'Actualizando agenda...', true);
 
     const weekLabelEl = document.getElementById('weekLabel');
     if (weekLabelEl) {
       const weekEnd = new Date(agendaWeekStart);
       weekEnd.setDate(agendaWeekStart.getDate() + 4);
-      weekLabelEl.textContent = `${agendaWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} – ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+      weekLabelEl.textContent = `${agendaWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} â€“ ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
     }
 
     const desde = new Date(agendaWeekStart).toISOString();
@@ -3815,7 +3837,7 @@ import Layout from '../layouts/Layout.astro';
 
       if (!citasBody) return;
       if (!citas.length) {
-        setTableState(citasBody, 7, 'event_busy', 'No hay citas esta semana.');
+        setTableState(citasBody, 8, 'event_busy', 'No hay citas esta semana.');
         return;
       }
       const sorted = [...citas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
@@ -3823,7 +3845,8 @@ import Layout from '../layouts/Layout.astro';
         const start = new Date(cita.inicio_en);
         const dayStr = fmtDayFull(start);
         const hourStr = fmtHourOnly(cita.inicio_en);
-        const canal = cita.canal_origen === 'telegram' ? 'Telegram' : cita.canal_origen === 'crm_web' ? 'CRM Web' : cita.canal_origen || '—';
+        const canal = cita.canal_origen === 'telegram' ? 'Telegram' : cita.canal_origen === 'crm_web' ? 'CRM Web' : cita.canal_origen || 'â€”';
+        const mirror = getAgendaMirrorMeta(cita);
         const estado = cita.estado || 'pendiente';
         const apptId = escapeAttr(cita.id);
         const patId = escapeAttr(cita.paciente_id || '');
@@ -3835,11 +3858,12 @@ import Layout from '../layouts/Layout.astro';
         if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded" style="font-size:15px">person_off</span></button>`);
         actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded" style="font-size:15px">person</span></button>`);
         return `<tr>
-          <td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente')}</td>
+          <td class="td-patient">${escapeHtml(cita.nombre_paciente || 'Paciente')}${mirror.label === 'Solo Calendar' ? '<div class="agenda-table-note">Pendiente de enlace con ficha CRM.</div>' : ''}</td>
           <td>${escapeHtml(dayStr)}</td>
           <td>${escapeHtml(hourStr)}</td>
           <td>${escapeHtml(cita.motivo || '—')}</td>
           <td>${escapeHtml(canal)}</td>
+          <td><span class="status-chip ${mirror.chipClass}" title="${escapeAttr(mirror.note)}">${escapeHtml(mirror.label)}</span></td>
           <td><span class="status-chip ${estado}">${escapeHtml(estado)}</span></td>
           <td class="td-actions">${actions.join('')}</td>
         </tr>`;
@@ -3847,7 +3871,7 @@ import Layout from '../layouts/Layout.astro';
     } catch {
       renderAgendaSyncStatus({ ui_status: 'error', error: 'No se pudo consultar el estado del sync de Google Calendar.' }, null);
       if (cal) cal.innerHTML = '<div class="agenda-cal-loading">Error al cargar la agenda</div>';
-      setTableState(citasBody, 7, 'cloud_off', 'Error al cargar citas');
+      setTableState(citasBody, 8, 'cloud_off', 'Error al cargar citas');
       renderDashboardCitas([], 'error');
     }
   };
@@ -4409,11 +4433,11 @@ import Layout from '../layouts/Layout.astro';
     if (!pagoPacienteSelect) return;
     if (!patientCatalog.length) await fetchPatientCatalog();
     const current = pagoPacienteSelect.value;
-    // Only CRM patients — legacy IDs don't exist in crm_pacientes (FK constraint)
+    // Only CRM patients â€” legacy IDs don't exist in crm_pacientes (FK constraint)
     const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
     pagoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
       crmPts.map((p: any) =>
-        `<option value="${p.id}">${escapeHtml(p.nombre_completo || '—')}</option>`
+        `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'â€”')}</option>`
       ).join('');
     if (current) pagoPacienteSelect.value = current;
   };
@@ -4490,12 +4514,12 @@ import Layout from '../layouts/Layout.astro';
       if (!pagos.length) { setTableState(pagosBody, 5, 'credit_card_off', 'Sin pagos en este periodo'); return; }
 
       pagosBody.innerHTML = pagos.map((p: any) => {
-        const pName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : '—';
+        const pName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'â€”';
         const chip = p.metodo_pago === 'efectivo'
           ? '<span class="pagos-chip pagos-chip-cash">Efectivo</span>'
           : '<span class="pagos-chip pagos-chip-card">Tarjeta</span>';
         return `<tr>
-          <td>${p.fecha ? new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) : '—'}</td>
+          <td>${p.fecha ? new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) : 'â€”'}</td>
           <td class="td-patient">${escapeHtml(pName)}</td>
           <td>${chip}</td>
           <td class="text-right"><strong>${fmtMoney(Number(p.importe))}</strong></td>
@@ -4516,7 +4540,7 @@ import Layout from '../layouts/Layout.astro';
     const btn = (event.target as HTMLElement).closest('button[data-action="delete-pago"]') as HTMLButtonElement | null;
     if (!btn) return;
     const pagoId = btn.getAttribute('data-pago-id');
-    if (!pagoId || !confirm('¿Eliminar este pago?')) return;
+    if (!pagoId || !confirm('Â¿Eliminar este pago?')) return;
     try {
       await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
       await loadPagos();
@@ -4629,12 +4653,12 @@ import Layout from '../layouts/Layout.astro';
       fichaField('Nombre', p.nombre),
       fichaField('Apellidos', p.apellidos),
       fichaField('Email', p.email),
-      fichaField('Teléfono', p.telefono),
+      fichaField('TelÃ©fono', p.telefono),
       fichaField('DNI/NIF', p.dni),
       fichaField('Fecha nac.', p.fecha_nacimiento ? fmtDate(p.fecha_nacimiento) : ''),
-      fichaField('Dirección', p.direccion),
-      fichaField('Profesión', p.profesion),
-      fichaField('Médico derivador', p.medico_derivador),
+      fichaField('DirecciÃ³n', p.direccion),
+      fichaField('ProfesiÃ³n', p.profesion),
+      fichaField('MÃ©dico derivador', p.medico_derivador),
       fichaField('Aseguradora', p.aseguradora),
       fichaField('Alergias', p.alergias, true),
       fichaField('Antecedentes', p.antecedentes, true),
@@ -4692,7 +4716,7 @@ import Layout from '../layouts/Layout.astro';
     }
     fichaCitasBody.innerHTML = citas.map((c: any) => {
       const estado = c.estado || 'pendiente';
-      return `<tr><td>${c.fecha_hora ? fmtDate(c.fecha_hora) : '—'}</td><td><span class="status-chip ${estado}">${estado}</span></td><td>${escapeHtml(c.motivo || '—')}</td></tr>`;
+      return `<tr><td>${c.fecha_hora ? fmtDate(c.fecha_hora) : 'â€”'}</td><td><span class="status-chip ${estado}">${estado}</span></td><td>${escapeHtml(c.motivo || 'â€”')}</td></tr>`;
     }).join('');
   };
 
@@ -4706,25 +4730,25 @@ import Layout from '../layouts/Layout.astro';
     }
     fichaPagosBody.innerHTML = pagos.map((p: any) => {
       const metodoClass = p.metodo_pago === 'tarjeta' ? 'pagos-stat-card' : 'pagos-stat-cash';
-      return `<tr><td>${fmtDate(p.fecha)}</td><td><strong>${Number(p.importe).toFixed(2)} €</strong></td><td><span class="${metodoClass}" style="font-weight:600">${p.metodo_pago}</span></td><td>${escapeHtml(p.concepto || '—')}</td></tr>`;
+      return `<tr><td>${fmtDate(p.fecha)}</td><td><strong>${Number(p.importe).toFixed(2)} â‚¬</strong></td><td><span class="${metodoClass}" style="font-weight:600">${p.metodo_pago}</span></td><td>${escapeHtml(p.concepto || 'â€”')}</td></tr>`;
     }).join('');
     const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
-    if (fichaPagosTotal) fichaPagosTotal.textContent = `Total: ${total.toFixed(2)} €`;
+    if (fichaPagosTotal) fichaPagosTotal.textContent = `Total: ${total.toFixed(2)} â‚¬`;
   };
 
-  // Render notas clínicas (timeline)
+  // Render notas clÃ­nicas (timeline)
   const evaClass = (v: number) => v <= 3 ? 'eva-low' : v <= 6 ? 'eva-mid' : 'eva-high';
   const zonaLabels: Record<string, string> = {
     cervical: 'Cervical', espalda: 'Espalda', hombro_brazo: 'Hombro/Brazo',
     codo_mano: 'Codo/Mano', cadera: 'Cadera', rodilla: 'Rodilla',
     tobillo_pie: 'Tobillo/Pie', abdomen_core: 'Abdomen/Core',
-    suelo_pelvico: 'Suelo pélvico', general: 'General',
+    suelo_pelvico: 'Suelo pÃ©lvico', general: 'General',
   };
 
   const renderFichaNotas = (notas: any[]) => {
     if (!fichaNotasTimeline) return;
     if (!notas.length) {
-      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clínicas registradas</p>';
+      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clÃ­nicas registradas</p>';
       return;
     }
     fichaNotasTimeline.innerHTML = notas.map((n: any) => {
@@ -4755,7 +4779,7 @@ import Layout from '../layouts/Layout.astro';
     if (notaIdInput) notaIdInput.value = '';
     const fechaInput = fichaNotaForm.querySelector('[name="fecha"]') as HTMLInputElement;
     if (fechaInput) fechaInput.value = new Date().toISOString().slice(0, 10);
-    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clínica';
+    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clÃ­nica';
     fichaNotaFormCard.hidden = false;
     fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
@@ -4807,7 +4831,7 @@ import Layout from '../layouts/Layout.astro';
     if (!notaId || !fichaPatientId) return;
 
     if (action === 'delete-nota') {
-      if (!confirm('¿Eliminar esta nota clínica?')) return;
+      if (!confirm('Â¿Eliminar esta nota clÃ­nica?')) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
         const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
@@ -4832,7 +4856,7 @@ import Layout from '../layouts/Layout.astro';
       fill('dolor_eva', nota.dolor_eva != null ? String(nota.dolor_eva) : '');
       fill('nota', nota.nota);
       fill('pruebas_realizadas', nota.pruebas_realizadas);
-      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota clínica';
+      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota clÃ­nica';
       fichaNotaFormCard.hidden = false;
       fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -4897,15 +4921,15 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
       facturasBody.innerHTML = facturas.map((f: any) => {
-        const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : '—';
+        const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : 'â€”';
         const estadoClass = f.estado === 'anulada' ? 'cancelada' : f.estado === 'pagada' ? 'confirmada' : 'pendiente';
         return `<tr>
           <td><strong>${escapeHtml(f.numero)}</strong></td>
           <td>${fmtDate(f.fecha)}</td>
           <td class="td-patient">${escapeHtml(pName)}</td>
-          <td>${Number(f.importe_bruto).toFixed(2)} €</td>
-          <td>${Number(f.importe_iva).toFixed(2)} €</td>
-          <td><strong>${Number(f.importe_total).toFixed(2)} €</strong></td>
+          <td>${Number(f.importe_bruto).toFixed(2)} â‚¬</td>
+          <td>${Number(f.importe_iva).toFixed(2)} â‚¬</td>
+          <td><strong>${Number(f.importe_total).toFixed(2)} â‚¬</strong></td>
           <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
           <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a></td>
         </tr>`;
@@ -4928,7 +4952,7 @@ import Layout from '../layouts/Layout.astro';
       if (!patientCatalog.length) await fetchPatientCatalog();
       const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
       facturaPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
-        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '—')}</option>`).join('');
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'â€”')}</option>`).join('');
     }
     facturaModal?.classList.add('open');
     facturaModal?.setAttribute('aria-hidden', 'false');
@@ -4957,9 +4981,9 @@ import Layout from '../layouts/Layout.astro';
       }
       const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
       facturaPreview.innerHTML = `
-        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) — Base: ${total.toFixed(2)} €</p>
-        <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Método</th><th>Importe</th></tr></thead><tbody>
-        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesión')}</td><td>${p.metodo_pago}</td><td>${Number(p.importe).toFixed(2)} €</td></tr>`).join('')}
+        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) â€” Base: ${total.toFixed(2)} â‚¬</p>
+        <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>MÃ©todo</th><th>Importe</th></tr></thead><tbody>
+        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'SesiÃ³n')}</td><td>${p.metodo_pago}</td><td>${Number(p.importe).toFixed(2)} â‚¬</td></tr>`).join('')}
         </tbody></table></div>`;
       facturaPreview.hidden = false;
     } catch {
@@ -5025,10 +5049,10 @@ import Layout from '../layouts/Layout.astro';
       const bonos = payload.data || [];
       if (!bonos.length) { setTableState(bonosBody, 8, 'confirmation_number', 'Sin bonos'); return; }
       bonosBody.innerHTML = bonos.map((b: any) => {
-        const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : '—';
+        const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : 'â€”';
         const restantes = b.sesiones_total - b.sesiones_usadas;
         const pct = Math.round((b.sesiones_usadas / b.sesiones_total) * 100);
-        const estadoClass = b.estado; // activo/agotado/caducado/anulado — CSS defines .status-chip.activo etc.
+        const estadoClass = b.estado; // activo/agotado/caducado/anulado â€” CSS defines .status-chip.activo etc.
         return `<tr data-bono="${escapeAttr(JSON.stringify(b))}">
           <td class="td-patient">${escapeHtml(pName)}</td>
           <td>${escapeHtml(b.nombre)}</td>
@@ -5038,15 +5062,15 @@ import Layout from '../layouts/Layout.astro';
               <div class="bono-bar"><div class="bono-bar-fill" style="width:${pct}%"></div></div>
             </div>
           </td>
-          <td>${Number(b.precio).toFixed(2)} €</td>
-          <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : '—'}</td>
-          <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : '—'}</td>
+          <td>${Number(b.precio).toFixed(2)} â‚¬</td>
+          <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'â€”'}</td>
+          <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : 'â€”'}</td>
           <td><span class="status-chip ${estadoClass}">${b.estado}</span></td>
           <td>
             <div class="table-actions">
-              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesión</button>` : ''}
+              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesiÃ³n</button>` : ''}
               <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
-              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-bono" data-bono-id="${b.id}">✕</button>
+              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-bono" data-bono-id="${b.id}">âœ•</button>
             </div>
           </td>
         </tr>`;
@@ -5065,7 +5089,7 @@ import Layout from '../layouts/Layout.astro';
     const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
     if (bonoPacienteSelect) {
       bonoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
-        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '—')}</option>`).join('');
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'â€”')}</option>`).join('');
     }
     const fechaInicio = document.getElementById('bonoFechaInicio') as HTMLInputElement;
     if (fechaInicio && !editData) fechaInicio.value = new Date().toISOString().slice(0, 10);
@@ -5136,7 +5160,7 @@ import Layout from '../layouts/Layout.astro';
       } catch {}
     }
     if (action === 'delete-bono') {
-      if (!confirm('¿Eliminar este bono?')) return;
+      if (!confirm('Â¿Eliminar este bono?')) return;
       try { await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' }); await loadBonos(); }
       catch (err: any) { alert(`Error: ${err?.message}`); }
     }
@@ -5182,11 +5206,11 @@ import Layout from '../layouts/Layout.astro';
     };
 
     firmaCanvas.onmousedown = (e) => { firmaDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-    firmaCanvas.onmousemove = (e) => { if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = '✓ Firma capturada'; };
+    firmaCanvas.onmousemove = (e) => { if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = 'âœ“ Firma capturada'; };
     firmaCanvas.onmouseup = () => { firmaDrawing = false; };
     firmaCanvas.onmouseleave = () => { firmaDrawing = false; };
     firmaCanvas.ontouchstart = (e) => { e.preventDefault(); firmaDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-    firmaCanvas.ontouchmove = (e) => { e.preventDefault(); if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = '✓ Firma capturada'; };
+    firmaCanvas.ontouchmove = (e) => { e.preventDefault(); if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = 'âœ“ Firma capturada'; };
     firmaCanvas.ontouchend = () => { firmaDrawing = false; };
   };
 
@@ -5276,12 +5300,12 @@ import Layout from '../layouts/Layout.astro';
     const tipoLabel: Record<string, string> = {
       consentimiento_informado: 'Consentimiento Informado',
       lopd: 'LOPD / RGPD',
-      revocacion: 'Revocación',
+      revocacion: 'RevocaciÃ³n',
       otro: 'Documento',
     };
     el.innerHTML = docs.map((d: any) => {
       const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
-      const fechaFirma = d.fecha_firma ? ` · Firmado ${fmtDate(d.fecha_firma)}` : '';
+      const fechaFirma = d.fecha_firma ? ` Â· Firmado ${fmtDate(d.fecha_firma)}` : '';
       return `<div class="ficha-doc-card">
         <span class="material-symbols-rounded ficha-doc-icon">description</span>
         <div class="ficha-doc-info">
@@ -5298,7 +5322,7 @@ import Layout from '../layouts/Layout.astro';
     // Delete docs
     el.querySelectorAll('button[data-action="delete-doc"]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('¿Eliminar este documento?')) return;
+        if (!confirm('Â¿Eliminar este documento?')) return;
         const docId = (btn as HTMLElement).getAttribute('data-doc-id');
         if (!docId) return;
         try {
@@ -5312,7 +5336,7 @@ import Layout from '../layouts/Layout.astro';
     });
   };
 
-  // Load docs when ficha opens — patch openFichaPaciente to also load docs
+  // Load docs when ficha opens â€” patch openFichaPaciente to also load docs
   const _origOpenFicha = openFichaPaciente;
   // Override: we extend after docs tab loads
   document.querySelector('[data-ficha-tab="documentos"]')?.addEventListener('click', async () => {
@@ -5385,7 +5409,7 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
 
-      // Totals row (facturación total del mes)
+      // Totals row (facturaciÃ³n total del mes)
       const totalCells = MESES_CORTOS.map((_: string, i: number) => {
         const md = totales_mes[String(i + 1)];
         const val = md ? md.total : 0;
@@ -5474,7 +5498,7 @@ import Layout from '../layouts/Layout.astro';
   const TIPO_LABELS: Record<string, string> = {
     consentimiento_informado: 'Consentimiento',
     lopd: 'LOPD/RGPD',
-    revocacion: 'Revocación',
+    revocacion: 'RevocaciÃ³n',
     otro: 'Otro',
   };
 
@@ -5492,16 +5516,16 @@ import Layout from '../layouts/Layout.astro';
       }
       documentosBody.innerHTML = docs.map((d: any) => {
         const pac = d.crm_pacientes;
-        const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : '—';
-        const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || '—';
+        const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : 'â€”';
+        const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'â€”';
         const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
         const fechaFirma = d.fecha_firma
           ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-          : '—';
+          : 'â€”';
         return `<tr>
           <td class="td-patient">${escapeHtml(pacNombre)}</td>
           <td>${escapeHtml(tipoLabel)}</td>
-          <td>${escapeHtml(d.titulo || '—')}</td>
+          <td>${escapeHtml(d.titulo || 'â€”')}</td>
           <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
           <td>${fechaFirma}</td>
           <td style="display:flex;gap:6px;align-items:center">
@@ -5520,7 +5544,7 @@ import Layout from '../layouts/Layout.astro';
     const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
     if (!btn) return;
     const docId = btn.getAttribute('data-doc-id');
-    if (!docId || !confirm('¿Eliminar este documento?')) return;
+    if (!docId || !confirm('Â¿Eliminar este documento?')) return;
     try {
       await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
       await loadDocumentos();
@@ -5576,7 +5600,7 @@ import Layout from '../layouts/Layout.astro';
       web: get('cfgClinicWeb'),
     });
     const fb = document.getElementById('clinicConfigFeedback');
-    if (fb) { fb.textContent = '✓ Datos guardados correctamente'; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 3000); }
+    if (fb) { fb.textContent = 'âœ“ Datos guardados correctamente'; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 3000); }
   });
 
   renderAssistantPatientContext();
@@ -6537,6 +6561,7 @@ import Layout from '../layouts/Layout.astro';
   .btn-xs { padding: 2px 6px; font-size: 0.72rem; min-height: unset; line-height: 1.3; border-radius: 4px; }
   .btn-danger-ghost:hover { color: #be123c; background: #fff1f2; }
   .td-actions { white-space: nowrap; display: flex; gap: 2px; align-items: center; }
+  .agenda-table-note { margin-top: 0.18rem; font-size: 0.69rem; color: var(--text-muted); line-height: 1.35; }
 
   /* === CENTRAL AI MODULE === */
   .ai-clinical-module {
@@ -7165,6 +7190,29 @@ import Layout from '../layouts/Layout.astro';
     font-size: 0.74rem;
     line-height: 1.4;
   }
+  .agenda-sync-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+  }
+
+  .agenda-sync-fact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .agenda-sync-fact strong {
+    color: var(--text-primary);
+    font-size: 0.68rem;
+  }
 
   .page-tools {
     display: flex;
@@ -7412,7 +7460,7 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-primary);
     min-height: 1.4em;
   }
-  .ficha-dato-value:empty::after { content: '—'; color: var(--text-muted); }
+  .ficha-dato-value:empty::after { content: 'â€”'; color: var(--text-muted); }
   .ficha-dato-full { grid-column: 1 / -1; }
 
   .ficha-form-actions {
@@ -8518,10 +8566,10 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 </style><style is:global>
-  /* ═══════════════════════════════════════════════
-     ASSISTANT RAIL — Premium Redesign v2
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ASSISTANT RAIL â€” Premium Redesign v2
      Clean, compact, professional
-     ═══════════════════════════════════════════════ */
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
   /* --- Container --- */
   .assistant-rail {

@@ -1,3 +1,44 @@
+## Estado actual (2026-03-19, Sesion 108) - Frontend validado en copia aislada y bloqueos Google Calendar preparados.
+
+### Completado sesion 108
+- [x] `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`.
+- [x] `npm run check` OK en la copia local aislada (`0 errors`, `0 warnings`, `11 hints`).
+- [x] W5 remoto publicado en n8n con salida `busy_events` ademas de `events`.
+- [x] Backend local preparado para bloquear huecos ocupados de Google Calendar.
+- [x] Nuevo endpoint seguro `POST /api/profesional/appointments/check-availability` para validar conflictos sin crear citas.
+
+### Siguiente paso exacto
+1. Publicar/redeploy del backend con estos cambios.
+2. Validar `409` real con `POST /api/profesional/appointments/check-availability` sobre un hueco ocupado.
+3. Si la verificacion es correcta, reflejar bloqueos/no disponibilidad tambien en la UI de agenda.
+
+### Riesgos o bloqueos conocidos
+- El backend productivo aun no incorpora este tramo local hasta publicar/redeploy.
+- Sin redeploy backend, el W5 remoto ya devuelve `busy_events` pero el CRM aun no los usa para bloquear nuevas citas.
+
+---
+
+## Estado actual (2026-03-19, Sesion 107) - Agenda con reconciliacion visible Calendar <-> CRM y observabilidad ampliada.
+
+### Completado sesion 107
+- [x] Backend de agenda enriquecido con `calendar_sync_state` por cita (`crm_only`, `linked`, `backfilled`, `calendar_only`).
+- [x] Estado del sincronizador ampliado con `next_expected_at` y `expected_interval_ms`.
+- [x] Frontend de agenda muestra facts de sync (fuente, ultimo ciclo, proximo ciclo, ultimo error) y columna `Espejo`.
+- [x] `node --check backend/src/routes/professional.js` OK.
+- [ ] `npm run check` / `npm run build` del frontend pendientes: `astro` no existe en `.bin` y `npm install` se queda colgado en este host.
+
+### Siguiente paso exacto
+1. Reparar dependencias del frontend en copia local aislada o ruta no sincronizada.
+2. Ejecutar `npm run check` y `npm run build` del frontend.
+3. Validar en UI citas reales con estados `Solo Calendar`, `Backfill` y `CRM + Calendar`.
+4. Continuar con bloqueos / no disponibilidad desde Google Calendar.
+
+### Riesgos o bloqueos conocidos
+- La validacion visual final de agenda queda bloqueada por el host local, no por error confirmado del cambio.
+- Mientras no haya `astro` operativo en este workspace, cualquier ajuste frontend nuevo seguira sin build local fiable.
+
+---
+
 ## Estado actual (2026-03-19, Sesion 106) - Calendar sync DESBLOQUEADO via W5/n8n OAuth2.
 
 ### Completado sesion 106
