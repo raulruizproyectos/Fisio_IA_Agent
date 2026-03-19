@@ -1,0 +1,216 @@
+{
+  "name": "Fisio_IA_Agent / W6 Calendar Writer",
+  "description": "Webhook que permite al backend crear, actualizar y eliminar eventos en Google Calendar usando OAuth2 de n8n.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "W6Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fisio/w6/calendar-write",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "fisio-w6-calendar-write"
+    },
+    {
+      "id": "W6Parse",
+      "name": "Parse Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "jsCode": "const body = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst action = body.action || 'create';\nconst eventId = body.event_id || body.google_calendar_event_id || null;\nconst summary = body.summary || 'Cita fisioterapia';\nconst description = body.description || '';\nconst startDateTime = body.start || body.inicio_en || null;\nconst endDateTime = body.end || body.fin_en || null;\nconst calendarId = body.calendar_id || 'raul.ruiz.diaz.bcn@gmail.com';\n\nif (!startDateTime && action !== 'cancel') {\n  return [{ json: { error: 'start/inicio_en es obligatorio', action, ok: false } }];\n}\n\nreturn [{ json: { action, eventId, summary, description, startDateTime, endDateTime, calendarId, ok: true } }];"
+      }
+    },
+    {
+      "id": "W6Router",
+      "name": "Route by Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [680, 300],
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "outputKey": "create",
+              "conditions": {
+                "options": { "version": 2, "combinator": "and" },
+                "conditions": [
+                  { "leftValue": "={{ $json.action }}", "rightValue": "create", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "update",
+              "conditions": {
+                "options": { "version": 2, "combinator": "and" },
+                "conditions": [
+                  { "leftValue": "={{ $json.action }}", "rightValue": "update", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "cancel",
+              "conditions": {
+                "options": { "version": 2, "combinator": "and" },
+                "conditions": [
+                  { "leftValue": "={{ $json.action }}", "rightValue": "cancel", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              },
+              "renameOutput": true
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      }
+    },
+    {
+      "id": "W6Create",
+      "name": "Create Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [920, 160],
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarId }}",
+          "mode": "id"
+        },
+        "start": "={{ $json.startDateTime }}",
+        "end": "={{ $json.endDateTime }}",
+        "additionalFields": {
+          "summary": "={{ $json.summary }}",
+          "description": "={{ $json.description }}"
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UzAG7J2e9rs78F4r",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "id": "W6Update",
+      "name": "Update Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [920, 300],
+      "parameters": {
+        "resource": "event",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $json.eventId }}",
+        "updateFields": {
+          "start": "={{ $json.startDateTime }}",
+          "end": "={{ $json.endDateTime }}",
+          "summary": "={{ $json.summary }}",
+          "description": "={{ $json.description }}"
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UzAG7J2e9rs78F4r",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "id": "W6Delete",
+      "name": "Delete Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [920, 440],
+      "parameters": {
+        "resource": "event",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $json.eventId }}"
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UzAG7J2e9rs78F4r",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "id": "W6FormatOk",
+      "name": "Format OK",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 240],
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst eventId = item.id || item.eventId || null;\nreturn [{ json: { ok: true, event_id: eventId, action: 'done' } }];"
+      }
+    },
+    {
+      "id": "W6Respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1380, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Parse Request", "type": "main", "index": 0 }]]
+    },
+    "Parse Request": {
+      "main": [[{ "node": "Route by Action", "type": "main", "index": 0 }]]
+    },
+    "Route by Action": {
+      "main": [
+        [{ "node": "Create Event", "type": "main", "index": 0 }],
+        [{ "node": "Update Event", "type": "main", "index": 0 }],
+        [{ "node": "Delete Event", "type": "main", "index": 0 }],
+        [{ "node": "Respond", "type": "main", "index": 0 }]
+      ]
+    },
+    "Create Event": {
+      "main": [[{ "node": "Format OK", "type": "main", "index": 0 }]]
+    },
+    "Update Event": {
+      "main": [[{ "node": "Format OK", "type": "main", "index": 0 }]]
+    },
+    "Delete Event": {
+      "main": [[{ "node": "Format OK", "type": "main", "index": 0 }]]
+    },
+    "Format OK": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null
+}

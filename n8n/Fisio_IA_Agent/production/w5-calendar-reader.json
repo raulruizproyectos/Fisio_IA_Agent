@@ -79,7 +79,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const events = $input.all();\nconst fisioEvents = events\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime)\n  .filter(ev => (ev.summary || '').toLowerCase().includes('cita fisioterapia'))\n  .map(ev => ({\n    google_calendar_event_id: ev.id,\n    summary: ev.summary || '',\n    inicio_en: ev.start.dateTime,\n    fin_en: ev.end?.dateTime || null,\n    description: ev.description || null\n  }));\nreturn [{ json: { events: fisioEvents, total: fisioEvents.length } }];"
+        "jsCode": "const events = $input.all();\nconst fisioEvents = events\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime)\n  .map(ev => ({\n    google_calendar_event_id: ev.id,\n    summary: ev.summary || '',\n    inicio_en: ev.start.dateTime,\n    fin_en: ev.end?.dateTime || null,\n    description: ev.description || null,\n    status: ev.status || 'confirmed'\n  }));\nreturn [{ json: { events: fisioEvents, total: fisioEvents.length } }];"
       }
     },
     {
@@ -254,7 +254,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const events = $input.all();\nconst fisioEvents = events\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime)\n  .filter(ev => (ev.summary || '').toLowerCase().includes('cita fisioterapia'))\n  .map(ev => ({\n    google_calendar_event_id: ev.id,\n    summary: ev.summary || '',\n    inicio_en: ev.start.dateTime,\n    fin_en: ev.end?.dateTime || null,\n    description: ev.description || null\n  }));\nreturn [{ json: { events: fisioEvents, total: fisioEvents.length } }];"
+          "jsCode": "const events = $input.all();\nconst fisioEvents = events\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && ev.start?.dateTime)\n  .map(ev => ({\n    google_calendar_event_id: ev.id,\n    summary: ev.summary || '',\n    inicio_en: ev.start.dateTime,\n    fin_en: ev.end?.dateTime || null,\n    description: ev.description || null,\n    status: ev.status || 'confirmed'\n  }));\nreturn [{ json: { events: fisioEvents, total: fisioEvents.length } }];"
         }
       },
       {

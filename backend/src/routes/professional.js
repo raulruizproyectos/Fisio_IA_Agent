@@ -44,6 +44,7 @@ const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
 const GOOGLE_CALENDAR_TIMEZONE = process.env.GOOGLE_CALENDAR_TIMEZONE?.trim() || 'Europe/Madrid';
 const GOOGLE_CALENDAR_REQUIRED = String(process.env.GOOGLE_CALENDAR_REQUIRED || 'false').toLowerCase() === 'true';
 const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events';
+const W6_CALENDAR_WRITER_URL = process.env.W6_CALENDAR_WRITER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w6/calendar-write';
 const CALENDAR_BACKGROUND_SYNC_STALE_MS = 6 * 60 * 1000;
 const calendarBackgroundSyncState = {
   status: 'idle',
@@ -110,10 +111,14 @@ function calendarW5Enabled() {
   return Boolean(W5_CALENDAR_READER_URL);
 }
 
-// Returns true when Calendar sync is available via ANY method (direct JWT or W5/n8n OAuth2)
+function calendarW6Enabled() {
+  return Boolean(W6_CALENDAR_WRITER_URL);
+}
+
+// Returns true when Calendar sync is available via ANY method (direct JWT, W5/n8n OAuth2 read, W6/n8n OAuth2 write)
 function calendarIntegrationEnabled() {
   if (!GOOGLE_CALENDAR_ID) return false;
-  return calendarDirectEnabled() || calendarW5Enabled();
+  return calendarDirectEnabled() || calendarW5Enabled() || calendarW6Enabled();
 }
 
 function buildCalendarBackgroundSyncStatus() {
@@ -300,6 +305,40 @@ function getCalendarErrorMessage(error) {
   return status ? `google_calendar_${status}: ${message}` : String(message);
 }
 
+async function syncAppointmentViaW6({ action, eventId, payload }) {
+  if (!calendarW6Enabled()) {
+    return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
+  }
+  try {
+    const body = {
+      action,
+      event_id: eventId || undefined,
+      calendar_id: GOOGLE_CALENDAR_ID,
+      summary: payload?.summary || 'Cita fisioterapia',
+      description: payload?.description || '',
+      start: payload?.start?.dateTime || null,
+      end: payload?.end?.dateTime || null,
+    };
+    const res = await fetch(W6_CALENDAR_WRITER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) {
+      return buildCalendarSyncResult({ status: 'error', action, event_id: eventId || null, error: `W6 responded ${res.status}` });
+    }
+    const data = await res.json();
+    return buildCalendarSyncResult({
+      status: data?.ok ? 'synced' : 'error',
+      action,
+      event_id: data?.event_id || eventId || null,
+    });
+  } catch (error) {
+    return buildCalendarSyncResult({ status: 'error', action, event_id: eventId || null, error: String(error?.message || error) });
+  }
+}
+
 async function syncAppointmentToGoogleCalendar({
   action,
   eventId,
@@ -309,66 +348,63 @@ async function syncAppointmentToGoogleCalendar({
     return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
   }
 
+  // Try direct mode (Service Account JWT) first
   const calendarClient = getGoogleCalendarClient();
-  if (!calendarClient) {
-    return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
-  }
-
-  try {
-    if (action === 'create') {
-      const created = await calendarClient.events.insert({
-        calendarId: GOOGLE_CALENDAR_ID,
-        requestBody: payload,
-        sendUpdates: 'none',
-      });
-      return buildCalendarSyncResult({
-        status: 'synced',
-        action,
-        event_id: created.data?.id || null,
-      });
-    }
-
-    if (action === 'update' && eventId) {
-      await calendarClient.events.patch({
-        calendarId: GOOGLE_CALENDAR_ID,
-        eventId,
-        requestBody: payload,
-        sendUpdates: 'none',
-      });
-      return buildCalendarSyncResult({
-        status: 'synced',
-        action,
-        event_id: eventId,
-      });
-    }
-
-    if (action === 'cancel' && eventId) {
-      try {
-        await calendarClient.events.delete({
+  if (calendarClient) {
+    try {
+      if (action === 'create') {
+        const created = await calendarClient.events.insert({
           calendarId: GOOGLE_CALENDAR_ID,
-          eventId,
+          requestBody: payload,
           sendUpdates: 'none',
         });
-      } catch (error) {
-        const status = error?.response?.status;
-        if (status !== 404) throw error;
+        return buildCalendarSyncResult({
+          status: 'synced',
+          action,
+          event_id: created.data?.id || null,
+        });
       }
-      return buildCalendarSyncResult({
-        status: 'synced',
-        action,
-        event_id: eventId,
-      });
-    }
 
-    return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
-  } catch (error) {
-    return buildCalendarSyncResult({
-      status: 'error',
-      action,
-      event_id: eventId || null,
-      error: getCalendarErrorMessage(error),
-    });
+      if (action === 'update' && eventId) {
+        await calendarClient.events.patch({
+          calendarId: GOOGLE_CALENDAR_ID,
+          eventId,
+          requestBody: payload,
+          sendUpdates: 'none',
+        });
+        return buildCalendarSyncResult({
+          status: 'synced',
+          action,
+          event_id: eventId,
+        });
+      }
+
+      if (action === 'cancel' && eventId) {
+        try {
+          await calendarClient.events.delete({
+            calendarId: GOOGLE_CALENDAR_ID,
+            eventId,
+            sendUpdates: 'none',
+          });
+        } catch (error) {
+          const status = error?.response?.status;
+          if (status !== 404) throw error;
+        }
+        return buildCalendarSyncResult({
+          status: 'synced',
+          action,
+          event_id: eventId,
+        });
+      }
+
+      return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
+    } catch (error) {
+      // Fall through to W6 if direct mode fails
+    }
   }
+
+  // Fallback: use W6 (n8n OAuth2 writer)
+  return syncAppointmentViaW6({ action, eventId, payload });
 }
 
 async function resolveCrmPatientId(rawPatientId) {
