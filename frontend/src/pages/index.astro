@@ -177,8 +177,19 @@ import Layout from '../layouts/Layout.astro';
             <section class="metrics-row clinical-metrics">
               <div class="metric-card"><div class="metric-icon" style="background: rgba(15, 118, 110, 0.1); color: var(--accent);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">&mdash;</span><span class="metric-label">Pacientes activos</span></div></div>
               <div class="metric-card"><div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">&mdash;</span><span class="metric-label">Citas hoy</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><span class="material-symbols-rounded">description</span></div><div class="metric-data"><span class="metric-value" id="metricInformes">0</span><span class="metric-label">Planes archivados</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">monitoring</span></div><div class="metric-data"><span class="metric-value" id="metricEngineOps">0/0</span><span class="metric-label">Timeouts / reintentos IA</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(22, 163, 74, 0.1); color: #16a34a;"><span class="material-symbols-rounded">euro</span></div><div class="metric-data"><span class="metric-value" id="metricIngresosMes">0 &euro;</span><span class="metric-label">Ingresos este mes</span></div></div>
+              <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">receipt_long</span></div><div class="metric-data"><span class="metric-value" id="metricSesionesMes">0</span><span class="metric-label">Sesiones este mes</span></div></div>
+            </section>
+
+            <!-- Gráfico ingresos mensuales -->
+            <section class="card widget-card" style="margin-bottom:0">
+              <header class="card-header">
+                <h2>Ingresos mensuales</h2>
+                <span style="font-size:0.8rem;color:var(--text-muted)" id="dashChartYear"></span>
+              </header>
+              <div style="padding:0 1rem 1rem">
+                <canvas id="dashIncomeChart" height="150"></canvas>
+              </div>
             </section>
 
             <section class="dashboard-ops-grid">
