@@ -64,7 +64,7 @@ const calendarBackgroundSyncState = {
 function rejectVideoFeatureIfDisabled(res) {
   if (VIDEO_WORKFLOWS_ENABLED) return false;
   res.status(410).json({
-    error: 'La funcionalidad de video estÃƒÆ’Ã‚Â¡ desactivada en este entorno.',
+    error: 'La funcionalidad de video esta desactivada en este entorno.',
     feature: 'video_workflows',
     status: 'disabled',
   });
@@ -1061,6 +1061,7 @@ async function reconcileAppointmentsWithCalendar({
   professionalId,
   rows,
   calendarEvents,
+  busyEvents = [],
   fromAt,
   toAt,
 }) {
@@ -1068,6 +1069,7 @@ async function reconcileAppointmentsWithCalendar({
     enabled: true,
     source: calendarDirectEnabled() ? 'google_api' : 'w5_reader',
     fetched: calendarEvents.length,
+    busy_fetched: busyEvents.length,
     updated: 0,
     cancelled: 0,
     synthetic: 0,
@@ -1149,11 +1151,20 @@ async function reconcileAppointmentsWithCalendar({
     }
 
     calendarOnlyRows.push(buildCalendarSyntheticAppointment(event, professionalId));
+    knownCalendarIds.add(event.google_calendar_event_id);
   }
 
-  summary.synthetic = calendarOnlyRows.length;
+  const busyOnlyRows = [];
+  for (const event of busyEvents) {
+    if (!event || event.status === 'cancelled') continue;
+    if (knownCalendarIds.has(event.google_calendar_event_id)) continue;
+    busyOnlyRows.push(buildCalendarSyntheticAppointment(event, professionalId));
+    knownCalendarIds.add(event.google_calendar_event_id);
+  }
 
-  const merged = [...rowById.values(), ...calendarOnlyRows]
+  summary.synthetic = calendarOnlyRows.length + busyOnlyRows.length;
+
+  const merged = [...rowById.values(), ...calendarOnlyRows, ...busyOnlyRows]
     .filter((appointment) => isAppointmentInsideWindow(appointment, fromAt, toAt))
     .sort((a, b) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
 
@@ -1205,10 +1216,13 @@ router.get('/appointments', async (req, res, next) => {
 
     const shouldCalendarReconcile = !patientId && !statusFilter && fromAt && toAt;
 
-    const [{ data, error }, calendarEvents] = await Promise.all([
+    const [{ data, error }, calendarEvents, busyEvents] = await Promise.all([
       query,
       shouldCalendarReconcile
         ? fetchCalendarAppointments(fromAt, toAt)
+        : Promise.resolve([]),
+      shouldCalendarReconcile
+        ? fetchCalendarBusyEvents(fromAt, toAt)
         : Promise.resolve([]),
     ]);
 
@@ -1252,6 +1266,7 @@ router.get('/appointments', async (req, res, next) => {
         professionalId,
         rows: supabaseRows,
         calendarEvents,
+        busyEvents,
         fromAt,
         toAt,
       });
