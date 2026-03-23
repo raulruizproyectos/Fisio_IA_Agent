@@ -67,7 +67,8 @@
           "id": "UzAG7J2e9rs78F4r",
           "name": "Google Calendar account"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "W5Format",

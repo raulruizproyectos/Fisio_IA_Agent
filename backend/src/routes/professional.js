@@ -901,7 +901,9 @@ async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
-    return await res.json();
+    const text = await res.text();
+    if (!text || !text.trim()) return { events: [], busy_events: [] };
+    return JSON.parse(text);
   } catch {
     return null;
   }
