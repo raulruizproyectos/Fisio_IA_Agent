@@ -61,12 +61,14 @@ const APPOINTMENT_ACTIVE_STATUSES = ['pendiente', 'confirmada', 'reprogramada'];
 const APPOINTMENT_ALLOWED_CHANNELS = ['telegram', 'crm_web', 'manual', 'n8n'];
 const VIDEO_WORKFLOWS_ENABLED = process.env.ENABLE_VIDEO_WORKFLOWS === 'true';
 const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID?.trim() || '';
-const GOOGLE_HOLIDAY_CALENDAR_ID = process.env.GOOGLE_HOLIDAY_CALENDAR_ID?.trim() || '';
+const GOOGLE_HOLIDAY_CALENDAR_ID = process.env.GOOGLE_HOLIDAY_CALENDAR_ID?.trim() || 'es.spain#holiday@group.v.calendar.google.com';
 const GOOGLE_CALENDAR_READ_IDS = parseCalendarIdList(
-  process.env.GOOGLE_CALENDAR_READ_IDS,
   GOOGLE_CALENDAR_ID,
   GOOGLE_HOLIDAY_CALENDAR_ID,
 );
+const GOOGLE_HOLIDAY_CALENDAR_ICS_URL = GOOGLE_HOLIDAY_CALENDAR_ID
+  ? `https://calendar.google.com/calendar/ical/${encodeURIComponent(GOOGLE_HOLIDAY_CALENDAR_ID)}/public/basic.ics`
+  : '';
 const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL?.trim() || '';
 const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\n/g, '\n') || '';
 const GOOGLE_CALENDAR_TIMEZONE = process.env.GOOGLE_CALENDAR_TIMEZONE?.trim() || 'Europe/Madrid';
@@ -717,7 +719,8 @@ function isManagedCalendarAppointment(event) {
 function isCalendarBusyEvent(event) {
   if (!event?.inicio_en) return false;
   if (String(event?.status || '').trim().toLowerCase() === 'cancelled') return false;
-  if (String(event?.transparency || '').trim().toLowerCase() === 'transparent') return false;
+  const isTransparent = String(event?.transparency || '').trim().toLowerCase() === 'transparent';
+  if (isTransparent && !event?.all_day) return false;
   return true;
 }
 
@@ -944,6 +947,104 @@ function normalizeCalendarEventCollection(rawEvents = []) {
   return (Array.isArray(rawEvents) ? rawEvents : []).map(normalizeCalendarEvent).filter(Boolean);
 }
 
+function unfoldIcsContent(icsText = '') {
+  return String(icsText || '')
+    .replace(/\r\n[ \t]/g, '')
+    .replace(/\r\n/g, '\n');
+}
+
+function extractIcsField(block = '', fieldName = '') {
+  const safeFieldName = String(fieldName || '').trim();
+  if (!block || !safeFieldName) return null;
+  const match = block.match(new RegExp(`^${safeFieldName}(?:;[^:]+)?:([^\n]+)$`, 'm'));
+  return match?.[1]?.trim() || null;
+}
+
+function unescapeIcsText(value = '') {
+  return String(value || '')
+    .replace(/\\n/gi, '\n')
+    .replace(/\\,/g, ',')
+    .replace(/\\;/g, ';')
+    .trim();
+}
+
+function parseIcsDateValue(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) return null;
+
+  const dateOnlyMatch = rawValue.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch;
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day))).toISOString();
+  }
+
+  const dateTimeMatch = rawValue.match(/^(\d{8})T(\d{6})Z$/);
+  if (dateTimeMatch) {
+    const [, datePart, timePart] = dateTimeMatch;
+    const year = Number(datePart.slice(0, 4));
+    const month = Number(datePart.slice(4, 6));
+    const day = Number(datePart.slice(6, 8));
+    const hour = Number(timePart.slice(0, 2));
+    const minute = Number(timePart.slice(2, 4));
+    const second = Number(timePart.slice(4, 6));
+    return new Date(Date.UTC(year, month - 1, day, hour, minute, second)).toISOString();
+  }
+
+  return parseIsoTimestamp(rawValue);
+}
+
+async function fetchHolidayCalendarBusyEvents(timeMin, timeMax) {
+  if (!GOOGLE_HOLIDAY_CALENDAR_ICS_URL) return [];
+
+  try {
+    const response = await fetch(GOOGLE_HOLIDAY_CALENDAR_ICS_URL, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) return [];
+
+    const rawIcs = await response.text();
+    const unfolded = unfoldIcsContent(rawIcs);
+    const eventBlocks = unfolded
+      .split('BEGIN:VEVENT')
+      .slice(1)
+      .map((block) => block.split('END:VEVENT')[0] || '');
+    const fromMs = new Date(timeMin).getTime();
+    const toMs = new Date(timeMax).getTime();
+
+    return eventBlocks
+      .map((block) => {
+        const uid = extractIcsField(block, 'UID');
+        const startRaw = extractIcsField(block, 'DTSTART');
+        const endRaw = extractIcsField(block, 'DTEND');
+        const summary = unescapeIcsText(extractIcsField(block, 'SUMMARY') || 'Festivo');
+        const description = unescapeIcsText(extractIcsField(block, 'DESCRIPTION') || 'Dia festivo');
+        const startAt = parseIcsDateValue(startRaw);
+        const endAt = parseIcsDateValue(endRaw) || startAt;
+        if (!uid || !startAt || !endAt) return null;
+
+        const startMs = new Date(startAt).getTime();
+        const endMs = new Date(endAt).getTime();
+        if (Number.isNaN(startMs) || Number.isNaN(endMs)) return null;
+        if (startMs >= toMs || endMs <= fromMs) return null;
+
+        return {
+          google_calendar_event_id: uid,
+          calendar_id: GOOGLE_HOLIDAY_CALENDAR_ID,
+          summary,
+          inicio_en: startAt,
+          fin_en: endAt,
+          description,
+          status: 'confirmed',
+          transparency: 'transparent',
+          all_day: true,
+        };
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
   try {
     const res = await fetch(W5_CALENDAR_READER_URL, {
@@ -992,18 +1093,32 @@ async function fetchCalendarAppointments(timeMin, timeMax) {
 }
 
 async function fetchCalendarBusyEvents(timeMin, timeMax) {
+  let busyEvents = [];
+
   if (calendarDirectEnabled()) {
     try {
       const events = await fetchCalendarEventsDirect(timeMin, timeMax);
-      return events.filter(isCalendarBusyEvent);
+      busyEvents = events.filter(isCalendarBusyEvent);
     } catch {
       // Fall back to W5 reader if direct Calendar listing is temporarily unavailable.
     }
   }
-  if (calendarW5Enabled()) {
-    return fetchCalendarBusyEventsViaW5(timeMin, timeMax);
+
+  if (!busyEvents.length && calendarW5Enabled()) {
+    busyEvents = await fetchCalendarBusyEventsViaW5(timeMin, timeMax);
   }
-  return [];
+
+  const holidayEvents = await fetchHolidayCalendarBusyEvents(timeMin, timeMax);
+  const seen = new Set();
+
+  return normalizeCalendarEventCollection([...busyEvents, ...holidayEvents])
+    .filter(isCalendarBusyEvent)
+    .filter((event) => {
+      const key = `${event.google_calendar_event_id}::${event.calendar_id || ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 function buildCalendarBusyConflict(event) {
