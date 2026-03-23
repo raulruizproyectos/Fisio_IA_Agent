@@ -1105,8 +1105,8 @@ async function reconcileAppointmentsWithCalendar({
         summary.cancelled += 1;
       }
       Object.assign(row, attachCalendarSyncMeta(row, {
-        calendar_sync_state: 'crm_only',
-        calendar_origin: 'crm',
+        calendar_sync_state: 'calendar_cancelled',
+        calendar_origin: 'google_calendar',
       }));
       continue;
     }
@@ -1165,6 +1165,7 @@ async function reconcileAppointmentsWithCalendar({
   summary.synthetic = calendarOnlyRows.length + busyOnlyRows.length;
 
   const merged = [...rowById.values(), ...calendarOnlyRows, ...busyOnlyRows]
+    .filter((appointment) => String(appointment?.calendar_sync_state || '').trim() !== 'calendar_cancelled')
     .filter((appointment) => isAppointmentInsideWindow(appointment, fromAt, toAt))
     .sort((a, b) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
 
@@ -2381,3 +2382,4 @@ router.post('/video-jobs/:jobId/send', async (req, res, next) => {
   }
 });
 export default router;
+
