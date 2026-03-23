@@ -18,6 +18,28 @@ function isMissingTableError(error, tableName) {
   return msg.includes(`Could not find the table 'public.${tableName}'`);
 }
 
+function parseCalendarIdList(...rawValues) {
+  const seen = new Set();
+  const ids = [];
+
+  for (const rawValue of rawValues) {
+    const chunks = Array.isArray(rawValue) ? rawValue : [rawValue];
+    for (const chunk of chunks) {
+      const parts = String(chunk || '')
+        .split(/[\n,;]+/)
+        .map((value) => value.trim())
+        .filter(Boolean);
+      for (const part of parts) {
+        if (seen.has(part)) continue;
+        seen.add(part);
+        ids.push(part);
+      }
+    }
+  }
+
+  return ids;
+}
+
 const APPOINTMENT_SELECT = `
   id,
   paciente_id,
@@ -39,8 +61,14 @@ const APPOINTMENT_ACTIVE_STATUSES = ['pendiente', 'confirmada', 'reprogramada'];
 const APPOINTMENT_ALLOWED_CHANNELS = ['telegram', 'crm_web', 'manual', 'n8n'];
 const VIDEO_WORKFLOWS_ENABLED = process.env.ENABLE_VIDEO_WORKFLOWS === 'true';
 const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID?.trim() || '';
+const GOOGLE_HOLIDAY_CALENDAR_ID = process.env.GOOGLE_HOLIDAY_CALENDAR_ID?.trim() || '';
+const GOOGLE_CALENDAR_READ_IDS = parseCalendarIdList(
+  process.env.GOOGLE_CALENDAR_READ_IDS,
+  GOOGLE_CALENDAR_ID,
+  GOOGLE_HOLIDAY_CALENDAR_ID,
+);
 const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL?.trim() || '';
-const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '';
+const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\n/g, '\n') || '';
 const GOOGLE_CALENDAR_TIMEZONE = process.env.GOOGLE_CALENDAR_TIMEZONE?.trim() || 'Europe/Madrid';
 const GOOGLE_CALENDAR_REQUIRED = String(process.env.GOOGLE_CALENDAR_REQUIRED || 'false').toLowerCase() === 'true';
 const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events';
@@ -158,6 +186,7 @@ function buildCalendarBackgroundSyncStatus() {
     enabled: calendarIntegrationEnabled(),
     mode,
     calendar_id: GOOGLE_CALENDAR_ID || null,
+    calendar_ids: GOOGLE_CALENDAR_READ_IDS,
     source: calendarBackgroundSyncState.source,
     trigger: calendarBackgroundSyncState.trigger,
     status: calendarBackgroundSyncState.status,
@@ -703,14 +732,18 @@ function normalizeCalendarEvent(rawEvent) {
 
   if (!startAt) return null;
 
+  const allDay = Boolean(rawEvent?.all_day) || Boolean(rawEvent?.start?.date && !rawEvent?.start?.dateTime);
+
   return {
     google_calendar_event_id: eventId,
+    calendar_id: rawEvent?.calendar_id ? String(rawEvent.calendar_id).trim() : null,
     summary: String(rawEvent?.summary || '').trim(),
     inicio_en: startAt,
     fin_en: endAt,
     description: rawEvent?.description ? String(rawEvent.description) : null,
     status: String(rawEvent?.status || '').trim() || 'confirmed',
     transparency: String(rawEvent?.transparency || '').trim() || null,
+    all_day: allDay,
   };
 }
 
@@ -849,21 +882,31 @@ async function fetchCalendarEventsDirect(timeMin, timeMax) {
   const calendarClient = getGoogleCalendarClient();
   if (!calendarClient) return [];
 
-  const response = await calendarClient.events.list({
-    calendarId: GOOGLE_CALENDAR_ID,
-    timeMin,
-    timeMax,
-    singleEvents: true,
-    orderBy: 'startTime',
-    showDeleted: false,
-    maxResults: 2500,
-  });
+  const calendarIds = GOOGLE_CALENDAR_READ_IDS.length ? GOOGLE_CALENDAR_READ_IDS : [GOOGLE_CALENDAR_ID].filter(Boolean);
+  const responses = await Promise.all(calendarIds.map(async (calendarId) => {
+    const response = await calendarClient.events.list({
+      calendarId,
+      timeMin,
+      timeMax,
+      singleEvents: true,
+      orderBy: 'startTime',
+      showDeleted: false,
+      maxResults: 2500,
+    });
 
-  return (response.data?.items || [])
+    return (response.data?.items || []).map((item) => ({
+      ...item,
+      calendar_id: calendarId,
+    }));
+  }));
+
+  return responses
+    .flat()
     .map(normalizeCalendarEvent)
     .filter(Boolean)
     .filter((event) => Boolean(event?.inicio_en));
 }
+
 
 async function fetchCalendarAppointmentsDirect(timeMin, timeMax) {
   const events = await fetchCalendarEventsDirect(timeMin, timeMax);
@@ -875,18 +918,27 @@ async function fetchCalendarEventById(eventId) {
   const calendarClient = getGoogleCalendarClient();
   if (!calendarClient) return null;
 
-  try {
-    const response = await calendarClient.events.get({
-      calendarId: GOOGLE_CALENDAR_ID,
-      eventId,
-    });
-    return normalizeCalendarEvent(response.data);
-  } catch (error) {
-    const status = error?.response?.status;
-    if (status === 404) return null;
-    throw error;
+  const calendarIds = parseCalendarIdList(GOOGLE_CALENDAR_ID, GOOGLE_CALENDAR_READ_IDS);
+  for (const calendarId of calendarIds) {
+    try {
+      const response = await calendarClient.events.get({
+        calendarId,
+        eventId,
+      });
+      return normalizeCalendarEvent({
+        ...response.data,
+        calendar_id: calendarId,
+      });
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 404) continue;
+      throw error;
+    }
   }
+
+  return null;
 }
+
 
 function normalizeCalendarEventCollection(rawEvents = []) {
   return (Array.isArray(rawEvents) ? rawEvents : []).map(normalizeCalendarEvent).filter(Boolean);
@@ -897,7 +949,12 @@ async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
     const res = await fetch(W5_CALENDAR_READER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ time_min: timeMin, time_max: timeMax }),
+      body: JSON.stringify({
+        time_min: timeMin,
+        time_max: timeMax,
+        calendar_id: GOOGLE_CALENDAR_ID,
+        calendar_ids: GOOGLE_CALENDAR_READ_IDS,
+      }),
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
@@ -1044,6 +1101,8 @@ function buildCalendarSyntheticAppointment(event, professionalId) {
     nombre_paciente: normalizeCalendarPatientName(event.summary) || null,
     paciente_id: null,
     fisioterapeuta_id: professionalId,
+    calendar_id: event.calendar_id || null,
+    all_day: Boolean(event.all_day),
   }, {
     calendar_sync_state: 'calendar_only',
   });

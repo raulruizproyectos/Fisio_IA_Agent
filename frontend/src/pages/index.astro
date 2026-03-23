@@ -3617,6 +3617,8 @@ import Layout from '../layouts/Layout.astro';
   const isCalendarOnlyAppointment = (cita: any) =>
     String(cita?.calendar_sync_state || '').trim() === 'calendar_only';
 
+  const isAllDayAppointment = (cita: any) => Boolean(cita?.all_day);
+
   const getAgendaMirrorMeta = (cita: any) => {
     const state = String(cita?.calendar_sync_state || '').trim();
     const origin = String(cita?.calendar_origin || '').trim();
@@ -3712,10 +3714,16 @@ import Layout from '../layouts/Layout.astro';
 
     // Map dayÃƒâ€”hour Ã¢â€ â€™ appointments
     const apptMap = new Map<string, any[]>();
+    const allDayMap = new Map<number, any[]>();
     for (const cita of citas) {
       const start = new Date(cita.inicio_en);
       const dayIdx = weekDays.findIndex(d => d.toDateString() === start.toDateString());
       if (dayIdx < 0) continue;
+      if (isAllDayAppointment(cita)) {
+        if (!allDayMap.has(dayIdx)) allDayMap.set(dayIdx, []);
+        allDayMap.get(dayIdx)!.push(cita);
+        continue;
+      }
       const hour = start.getHours();
       const slotHour = HOUR_SLOTS.find(h => hour >= h && hour < h + 1);
       if (slotHour === undefined) continue;
@@ -3749,9 +3757,15 @@ import Layout from '../layouts/Layout.astro';
       const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short' });
       const bg = isToday ? '#eff6ff' : '#f8fafc';
       const col = isToday ? '#2563eb' : '#334155';
-      html += `<th style="${thBase}background:${bg};color:${col};text-transform:capitalize;">
+      const allDayClosures = allDayMap.get(i) || [];
+      const allDayHtml = allDayClosures.map((cita: any) => {
+        const label = cita.nombre_paciente || cita.motivo || 'Cerrado';
+        return `<div title="${escapeAttr(label)}" style="margin-top:4px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:999px;padding:2px 6px;font-size:0.62rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(label)}</div>`;
+      }).join('');
+      html += `<th style="${thBase}background:${bg};color:${col};text-transform:capitalize;vertical-align:top;">
         <span style="display:block;font-size:0.7rem;font-weight:500;opacity:0.7;">${escapeHtml(dayName)}</span>
         <span style="display:block;font-size:1.1rem;font-weight:700;">${dayNum}</span>
+        ${allDayHtml}
       </th>`;
     }
     html += '</tr></thead><tbody>';
@@ -3839,7 +3853,7 @@ import Layout from '../layouts/Layout.astro';
       const citas = payload.data || [];
       renderAgendaSyncStatus(syncPayload?.data || null, payload?.calendar_sync || null);
       renderDashboardCitas(citas);
-      const todayCount = citas.filter((c: any) => isTodayDate(c.inicio_en || '')).length;
+      const todayCount = citas.filter((c: any) => !isAllDayAppointment(c) && isTodayDate(c.inicio_en || '')).length;
       const metricEl = document.getElementById('metricSesiones');
       if (metricEl) metricEl.textContent = String(todayCount);
 
@@ -3857,7 +3871,7 @@ import Layout from '../layouts/Layout.astro';
       citasBody.innerHTML = sorted.map((cita: any) => {
         const start = new Date(cita.inicio_en);
         const dayStr = fmtDayFull(start);
-        const hourStr = fmtHourOnly(cita.inicio_en);
+        const hourStr = isAllDayAppointment(cita) ? 'Todo el d?a' : fmtHourOnly(cita.inicio_en);
         const calendarOnly = isCalendarOnlyAppointment(cita);
         const canal = calendarOnly
           ? 'Google Calendar'
