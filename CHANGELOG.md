@@ -1,3 +1,40 @@
+## Sesion 110 - 2026-03-23
+
+### Objetivo
+Validar el caso vivo `available=false` de check-availability, importar W6 Calendar Writer en n8n y corregir bugs de robustez en W5/backend.
+
+### Trabajo realizado
+- [x] Diagnosticado y confirmado: `POST /api/profesional/appointments/check-availability` devuelve `available=false` con `source:crm` para conflictos CRM reales (commit `5a64b2e`).
+- [x] Confirmado: `available=true` en hueco libre funciona correctamente en produccion.
+- [x] Fix backend: `fetchCalendarReaderPayloadViaW5` ahora devuelve `{events:[],busy_events:[]}` en lugar de crashear con `JSON.parse` cuando W5 responde con cuerpo vacio (0 eventos).
+- [x] Fix W5 n8n JSON: `alwaysOutputData:true` en nodo `Get Calendar Events` para que `Format Response` y `Respond` siempre se ejecuten aunque Calendar devuelva 0 eventos.
+- [x] Importado y activado `Fisio_IA_Agent / W6 Calendar Writer` (id: `d1r1Vn1uRNwp36p5`) en n8n via API. Switch node v3.2 incompatible con la instancia, rediseñado con IF v2.2.
+- [x] Diagnosticado: W5 y W6 Calendar Sync llevan fallando con 0 nodos ejecutados desde antes de esta sesion (problema sistemico de n8n pre-existente, no introducido aqui).
+- [x] Identificado: API key de n8n invalidada tras el deploy del usuario. Pendiente nueva key.
+- [x] Commit `5a64b2e` pusheado a GitHub.
+
+### Verificacion
+- [x] `POST /api/profesional/appointments/check-availability` → `available:false` con `source:crm` confirmado en produccion.
+- [x] `POST /api/profesional/appointments/check-availability` → `available:true` en hueco libre confirmado en produccion.
+- [x] `node --check backend/src/routes/professional.js` OK.
+- [x] W6 Calendar Writer activo en n8n (`active:True`).
+- [ ] W5 ejecutando nodos: pendiente verificar con nueva API key y evento real en Calendar.
+- [ ] W6 Calendar Writer creando eventos en Calendar: pendiente credencial OAuth2 y evento real.
+
+### Estado al cierre
+- Backend: fixes deployados y en produccion.
+- n8n: 10 workflows Fisio activos (incluido W6 Calendar Writer nuevo). API key invalidada por deploy.
+- Caso `available=false` con fuente Calendar: pendiente crear evento real en Google Calendar y verificar con nueva API key.
+
+### Punto exacto de continuidad
+1. Obtener nueva API key de n8n (Settings → API → Create API key) y anotarla en `.env.local`.
+2. Verificar ejecuciones de W5 y W6 Calendar Writer con la nueva key.
+3. Crear evento de prueba en Google Calendar (`raul.ruiz.diaz.bcn@gmail.com`) para un hueco futuro.
+4. Llamar `POST /api/profesional/appointments/check-availability` sobre ese hueco y confirmar `available=false` con `source:google_calendar`.
+5. Una vez cerrado el caso Calendar, decidir si se muestra la no-disponibilidad en la parrilla de agenda.
+6. Retomar roadmap item #9: Reserva online publica.
+
+---
 ## Sesion 109 - 2026-03-19
 
 ### Objetivo

@@ -1,3 +1,36 @@
+## Estado actual (2026-03-23, Sesion 110) - check-availability CRM validado, W6 Writer importado, API key n8n invalidada.
+
+### Completado sesion 110
+- [x] `available=false` con conflicto CRM validado en produccion (`POST /api/profesional/appointments/check-availability`).
+- [x] `available=true` en hueco libre validado en produccion.
+- [x] Fix backend `fetchCalendarReaderPayloadViaW5`: cuerpo vacio → `{events:[],busy_events:[]}` (commit `5a64b2e`).
+- [x] Fix W5 n8n JSON: `alwaysOutputData:true` en `Get Calendar Events` (commit `5a64b2e`).
+- [x] W6 Calendar Writer importado y activo en n8n (id: `d1r1Vn1uRNwp36p5`, IF v2.2).
+- [x] Deploy n8n realizado por el usuario → API key invalidada.
+
+### Siguiente paso exacto
+1. Obtener nueva API key de n8n: Settings → API → Create API key → guardar en `.env.local` como `N8N_API_KEY=<nueva_key>`.
+2. Verificar con nueva key que W5 y W6 Writer ejecutan nodos correctamente.
+3. Crear evento de prueba en Google Calendar (`raul.ruiz.diaz.bcn@gmail.com`) para un hueco futuro (ej. manana 10:00-11:00).
+4. Llamar `POST https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments/check-availability` con `fisioterapeuta_id: 6dae4ef6-b6b3-4cb0-91d9-0320d10db255` sobre ese hueco y confirmar `available=false` con `source:google_calendar` en `calendar_conflicts`.
+5. Decidir si mostrar bloqueos Calendar en la parrilla semanal de agenda.
+6. Una vez cerrado: retomar roadmap item #9 - Reserva online publica.
+
+### IDs utiles para las pruebas
+- `fisioterapeuta_id` resuelto en produccion: `6dae4ef6-b6b3-4cb0-91d9-0320d10db255`
+- `DEFAULT_PROFESSIONAL_ID` en backend: `4a194ec4-3580-4246-9452-0852b589fd63`
+- Calendario Google: `raul.ruiz.diaz.bcn@gmail.com`
+- W5 webhook URL: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events`
+- W6 Writer webhook URL: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w6/calendar-write`
+- n8n API base: `https://n8n-n8n.b5xbaf.easypanel.host/api/v1`
+- API key: INVALIDADA - obtener nueva desde Settings → API
+
+### Riesgos o bloqueos conocidos
+- La API key de n8n fue invalidada por el deploy. Sin ella no se pueden inspeccionar ejecuciones.
+- W5 y W6 Writer responden HTTP 200 con cuerpo vacio (0 nodos ejecutados). Puede ser problema de OAuth2 credencial Google Calendar que necesita reautorizacion tras el deploy, o problem de registro de webhook en n8n.
+- Si la credencial OAuth2 de Google Calendar caducó, hay que reautorizarla en n8n: Credentials → Google Calendar account → Reconnect.
+
+---
 ## Estado actual (2026-03-19, Sesion 109) - Agenda Calendar/CRM cerrada en produccion y continuidad lista.
 
 ### Completado sesion 109
