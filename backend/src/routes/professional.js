@@ -77,6 +77,14 @@ const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || 'ht
 const W6_CALENDAR_WRITER_URL = process.env.W6_CALENDAR_WRITER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w6/calendar-write';
 const CALENDAR_BACKGROUND_SYNC_STALE_MS = 6 * 60 * 1000;
 const CALENDAR_BACKGROUND_SYNC_INTERVAL_MS = 2 * 60 * 1000;
+const PUBLIC_BOOKING_TIMEZONE = GOOGLE_CALENDAR_TIMEZONE;
+const PUBLIC_BOOKING_SLOT_MINUTES = Math.min(180, Math.max(15, Number.parseInt(String(process.env.PUBLIC_BOOKING_SLOT_MINUTES || '60'), 10) || 60));
+const PUBLIC_BOOKING_MAX_DAYS_AHEAD = Math.min(120, Math.max(7, Number.parseInt(String(process.env.PUBLIC_BOOKING_MAX_DAYS_AHEAD || '45'), 10) || 45));
+const PUBLIC_BOOKING_CLINIC_NAME = process.env.PUBLIC_BOOKING_CLINIC_NAME?.trim() || 'Fisio IA Agent';
+const PUBLIC_BOOKING_LOCATION = process.env.PUBLIC_BOOKING_LOCATION?.trim() || 'Terrassa, Barcelona';
+const PUBLIC_BOOKING_CONTACT_PHONE = process.env.PUBLIC_BOOKING_CONTACT_PHONE?.trim() || '';
+const PUBLIC_BOOKING_CONTACT_EMAIL = process.env.PUBLIC_BOOKING_CONTACT_EMAIL?.trim() || '';
+const PUBLIC_BOOKING_WINDOWS = parsePublicBookingWindows(process.env.PUBLIC_BOOKING_WINDOWS);
 const calendarBackgroundSyncState = {
   status: 'idle',
   running: false,
@@ -142,6 +150,127 @@ function toIsoDateOnly(value) {
   const date = new Date(String(value));
   if (Number.isNaN(date.getTime())) return null;
   return date.toISOString().slice(0, 10);
+}
+
+function parseClockToMinutes(rawValue) {
+  const match = String(rawValue || '').trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function formatMinutesAsClock(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+function parsePublicBookingWindows(rawValue = '') {
+  const parsed = String(rawValue || '')
+    .split(/[;,]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const [startRaw, endRaw] = entry.split('-').map((value) => value.trim());
+      const startMinutes = parseClockToMinutes(startRaw);
+      const endMinutes = parseClockToMinutes(endRaw);
+      if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) return null;
+      return { startMinutes, endMinutes };
+    })
+    .filter(Boolean);
+
+  if (parsed.length) return parsed;
+
+  return [
+    { startMinutes: 9 * 60, endMinutes: 13 * 60 },
+    { startMinutes: 15 * 60, endMinutes: 19 * 60 },
+  ];
+}
+
+function getDatePartsInTimeZone(date, timeZone = PUBLIC_BOOKING_TIMEZONE) {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  });
+
+  const values = {};
+  for (const part of formatter.formatToParts(date)) {
+    if (part.type === 'literal') continue;
+    values[part.type] = part.value;
+  }
+
+  return {
+    year: Number(values.year || 0),
+    month: Number(values.month || 0),
+    day: Number(values.day || 0),
+    hour: Number(values.hour || 0),
+    minute: Number(values.minute || 0),
+    second: Number(values.second || 0),
+  };
+}
+
+function getDateOnlyInTimeZone(date = new Date(), timeZone = PUBLIC_BOOKING_TIMEZONE) {
+  const parts = getDatePartsInTimeZone(date, timeZone);
+  return `${String(parts.year).padStart(4, '0')}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+}
+
+function addDaysToDateOnly(dateOnly, days) {
+  const [year, month, day] = String(dateOnly || '').split('-').map(Number);
+  if (!year || !month || !day) return null;
+  const next = new Date(Date.UTC(year, month - 1, day + days, 12, 0, 0));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, '0')}-${String(next.getUTCDate()).padStart(2, '0')}`;
+}
+
+function parsePublicBookingDateOnly(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  const [year, month, day] = raw.split('-').map(Number);
+  const candidate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  if (Number.isNaN(candidate.getTime())) return null;
+  if (candidate.getUTCFullYear() != year || candidate.getUTCMonth() + 1 != month || candidate.getUTCDate() != day) return null;
+  return raw;
+}
+
+function zonedDateTimeToUtcIso(dateOnly, clock, timeZone = PUBLIC_BOOKING_TIMEZONE) {
+  const safeDate = parsePublicBookingDateOnly(dateOnly);
+  const totalMinutes = parseClockToMinutes(clock);
+  if (!safeDate || totalMinutes === null) return null;
+
+  const [year, month, day] = safeDate.split('-').map(Number);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+  const zonedParts = getDatePartsInTimeZone(utcGuess, timeZone);
+  const desiredUtcMs = Date.UTC(year, month - 1, day, hours, minutes, 0);
+  const zonedUtcMs = Date.UTC(
+    zonedParts.year,
+    zonedParts.month - 1,
+    zonedParts.day,
+    zonedParts.hour,
+    zonedParts.minute,
+    zonedParts.second,
+  );
+
+  return new Date(utcGuess.getTime() + (desiredUtcMs - zonedUtcMs)).toISOString();
+}
+
+function normalizeComparableEmail(value = '') {
+  return String(value || '').trim().toLowerCase();
+}
+
+function buildPublicBookingNote(reason = '') {
+  const trimmed = String(reason || '').trim();
+  if (!trimmed) return 'Reserva online publica';
+  return `Reserva online publica: ${trimmed}`;
 }
 
 function calendarDirectEnabled() {
@@ -666,6 +795,169 @@ async function findAppointmentConflicts({ professionalId, startAt, endAt, exclud
   const { data, error } = await query;
   if (error) throw error;
   return data || [];
+}
+
+async function resolvePublicBookingProfessionalProfile(rawProfessionalId = null) {
+  const professionalId = rawProfessionalId
+    ? await resolveCrmProfessionalId(rawProfessionalId)
+    : await getDefaultCrmProfessionalId();
+
+  if (!professionalId) return null;
+
+  const { data, error } = await supabase
+    .from('crm_perfiles')
+    .select('id, nombre_completo, email, activo')
+    .eq('id', professionalId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data || data.activo === false) return null;
+
+  return {
+    id: data.id,
+    nombre_completo: data.nombre_completo || 'Fisioterapeuta',
+    email: data.email || null,
+  };
+}
+
+async function ensureCrmPatientAssignment({ professionalId, patientId }) {
+  try {
+    const payload = {
+      fisioterapeuta_id: professionalId,
+      paciente_id: patientId,
+      estado: 'activa',
+      desasignado_en: null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('crm_asignaciones_fisio_paciente')
+      .upsert(payload, { onConflict: 'fisioterapeuta_id,paciente_id' });
+
+    if (error && !isMissingTableError(error, 'crm_asignaciones_fisio_paciente')) {
+      throw error;
+    }
+  } catch (error) {
+    if (!isMissingTableError(error, 'crm_asignaciones_fisio_paciente')) throw error;
+  }
+}
+
+async function findOrCreatePublicBookingPatient({ professionalId, fullName, email, phone, reason = '' }) {
+  const normalizedEmail = normalizeComparableEmail(email);
+  const normalizedPhone = String(phone || '').trim();
+  const compactPhone = normalizeComparablePhone(normalizedPhone);
+  const { nombre, apellidos } = splitFullName(fullName);
+  let existingPatient = null;
+
+  if (normalizedEmail) {
+    const { data, error } = await supabase
+      .from('crm_pacientes')
+      .select('id, email, telefono')
+      .eq('email', normalizedEmail)
+      .eq('activo', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (data?.id) existingPatient = data;
+  }
+
+  if (!existingPatient && compactPhone) {
+    const { data, error } = await supabase
+      .from('crm_pacientes')
+      .select('id, email, telefono')
+      .eq('activo', true)
+      .not('telefono', 'is', null)
+      .limit(200);
+
+    if (error) throw error;
+    existingPatient = (data || []).find((row) => normalizeComparablePhone(row?.telefono) === compactPhone) || null;
+  }
+
+  if (existingPatient?.id) {
+    const patch = {};
+    if (normalizedEmail && !normalizeComparableEmail(existingPatient.email)) patch.email = normalizedEmail;
+    if (normalizedPhone && !normalizeComparablePhone(existingPatient.telefono)) patch.telefono = normalizedPhone;
+    if (Object.keys(patch).length) {
+      patch.updated_at = new Date().toISOString();
+      const { error } = await supabase
+        .from('crm_pacientes')
+        .update(patch)
+        .eq('id', existingPatient.id);
+      if (error) throw error;
+    }
+
+    await ensureCrmPatientAssignment({ professionalId, patientId: existingPatient.id });
+    return existingPatient.id;
+  }
+
+  const insertPayload = {
+    nombre,
+    apellidos,
+    telefono: normalizedPhone || null,
+    email: normalizedEmail || null,
+    observaciones: buildPublicBookingNote(reason),
+    activo: true,
+    created_by_profile_id: professionalId,
+  };
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('crm_pacientes')
+    .insert(insertPayload)
+    .select('id')
+    .single();
+
+  if (insertError) throw insertError;
+
+  await ensureCrmPatientAssignment({ professionalId, patientId: inserted.id });
+  return inserted.id;
+}
+
+function getPublicBookingBounds() {
+  const today = getDateOnlyInTimeZone(new Date(), PUBLIC_BOOKING_TIMEZONE);
+  const maxDate = addDaysToDateOnly(today, PUBLIC_BOOKING_MAX_DAYS_AHEAD);
+  return { today, maxDate };
+}
+
+function isWeekendDateInTimeZone(dateOnly, timeZone = PUBLIC_BOOKING_TIMEZONE) {
+  const sampleIso = zonedDateTimeToUtcIso(dateOnly, '12:00', timeZone);
+  if (!sampleIso) return true;
+  const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone }).format(new Date(sampleIso));
+  return weekday === 'Sat' || weekday === 'Sun';
+}
+
+async function buildPublicBookingSlots({ professionalId, dateOnly, durationMinutes = PUBLIC_BOOKING_SLOT_MINUTES }) {
+  if (!parsePublicBookingDateOnly(dateOnly)) return [];
+  if (isWeekendDateInTimeZone(dateOnly, PUBLIC_BOOKING_TIMEZONE)) return [];
+
+  const slots = [];
+
+  for (const window of PUBLIC_BOOKING_WINDOWS) {
+    for (let cursor = window.startMinutes; cursor + durationMinutes <= window.endMinutes; cursor += durationMinutes) {
+      const startClock = formatMinutesAsClock(cursor);
+      const endClock = formatMinutesAsClock(cursor + durationMinutes);
+      const startAt = zonedDateTimeToUtcIso(dateOnly, startClock, PUBLIC_BOOKING_TIMEZONE);
+      const endAt = zonedDateTimeToUtcIso(dateOnly, endClock, PUBLIC_BOOKING_TIMEZONE);
+      if (!startAt || !endAt) continue;
+
+      const availability = await resolveAppointmentAvailability({
+        professionalId,
+        startAt,
+        endAt,
+      });
+
+      if (!availability.available) continue;
+
+      slots.push({
+        start_at: startAt,
+        end_at: endAt,
+        start_local: startClock,
+        end_local: endClock,
+      });
+    }
+  }
+
+  return slots;
 }
 
 router.get('/intakes/pending', async (req, res, next) => {
@@ -1476,6 +1768,203 @@ router.get('/appointments', async (req, res, next) => {
 
 router.get('/appointments/sync-calendar/status', async (_req, res) => {
   res.json({ data: buildCalendarBackgroundSyncStatus() });
+});
+
+router.get('/public-booking/config', async (req, res, next) => {
+  try {
+    const professional = await resolvePublicBookingProfessionalProfile(
+      pickValue(req.query, 'fisioterapeuta_id', 'professional_id', 'profesional_id')
+    );
+
+    if (!professional) {
+      return res.status(404).json({ error: 'No hay profesional disponible para reserva online' });
+    }
+
+    const bounds = getPublicBookingBounds();
+
+    res.json({
+      data: {
+        clinic: {
+          name: PUBLIC_BOOKING_CLINIC_NAME,
+          location: PUBLIC_BOOKING_LOCATION,
+          phone: PUBLIC_BOOKING_CONTACT_PHONE || null,
+          email: PUBLIC_BOOKING_CONTACT_EMAIL || null,
+        },
+        professional,
+        booking: {
+          time_zone: PUBLIC_BOOKING_TIMEZONE,
+          slot_minutes: PUBLIC_BOOKING_SLOT_MINUTES,
+          min_date: bounds.today,
+          max_date: bounds.maxDate,
+          windows: PUBLIC_BOOKING_WINDOWS.map((window) => ({
+            start: formatMinutesAsClock(window.startMinutes),
+            end: formatMinutesAsClock(window.endMinutes),
+          })),
+        },
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/public-booking/slots', async (req, res, next) => {
+  try {
+    const dateOnly = parsePublicBookingDateOnly(pickValue(req.query, 'fecha', 'date'));
+    if (!dateOnly) {
+      return res.status(400).json({ error: 'fecha/date debe tener formato YYYY-MM-DD' });
+    }
+
+    const bounds = getPublicBookingBounds();
+    if (dateOnly < bounds.today || dateOnly > bounds.maxDate) {
+      return res.status(400).json({ error: `La fecha debe estar entre ${bounds.today} y ${bounds.maxDate}` });
+    }
+
+    const professional = await resolvePublicBookingProfessionalProfile(
+      pickValue(req.query, 'fisioterapeuta_id', 'professional_id', 'profesional_id')
+    );
+
+    if (!professional) {
+      return res.status(404).json({ error: 'No hay profesional disponible para reserva online' });
+    }
+
+    const durationRaw = Number.parseInt(String(pickValue(req.query, 'duracion_minutos', 'duration_minutes') || PUBLIC_BOOKING_SLOT_MINUTES), 10);
+    const durationMinutes = Number.isFinite(durationRaw)
+      ? Math.min(180, Math.max(15, durationRaw))
+      : PUBLIC_BOOKING_SLOT_MINUTES;
+
+    const slots = await buildPublicBookingSlots({
+      professionalId: professional.id,
+      dateOnly,
+      durationMinutes,
+    });
+
+    res.json({
+      data: {
+        professional_id: professional.id,
+        date: dateOnly,
+        time_zone: PUBLIC_BOOKING_TIMEZONE,
+        slot_minutes: durationMinutes,
+        closed: slots.length === 0,
+        slots,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/public-booking/appointments', async (req, res, next) => {
+  try {
+    const professional = await resolvePublicBookingProfessionalProfile(
+      pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id')
+    );
+
+    if (!professional) {
+      return res.status(404).json({ error: 'No hay profesional disponible para reserva online' });
+    }
+
+    const patientName = pickValue(req.body, 'nombre_completo', 'full_name', 'patient_name');
+    const patientEmail = pickValue(req.body, 'email', 'patient_email');
+    const patientPhone = pickValue(req.body, 'telefono', 'phone', 'patient_phone');
+    const reason = String(pickValue(req.body, 'motivo', 'reason', 'notes') || '').trim();
+    const startAt = parseIsoTimestamp(pickValue(req.body, 'inicio_en', 'start_at', 'slot_start'));
+    const endAt = parseIsoTimestamp(pickValue(req.body, 'fin_en', 'end_at', 'slot_end'));
+
+    if (!patientName || !startAt || !endAt) {
+      return res.status(400).json({
+        error: 'nombre_completo/full_name, inicio_en/start_at y fin_en/end_at son obligatorios',
+      });
+    }
+
+    if (!patientEmail && !patientPhone) {
+      return res.status(400).json({ error: 'Debes enviar al menos email o telefono' });
+    }
+
+    if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
+      return res.status(400).json({ error: 'fin_en/end_at debe ser posterior a inicio_en/start_at' });
+    }
+
+    const availability = await resolveAppointmentAvailability({
+      professionalId: professional.id,
+      startAt,
+      endAt,
+    });
+
+    if (!availability.available) {
+      return res.status(409).json(availability);
+    }
+
+    const patientId = await findOrCreatePublicBookingPatient({
+      professionalId: professional.id,
+      fullName: patientName,
+      email: patientEmail,
+      phone: patientPhone,
+      reason,
+    });
+
+    let effectiveCalendarEventId = null;
+    let calendarSync = buildCalendarSyncResult({ status: 'skipped', action: 'create', event_id: null });
+    if (calendarIntegrationEnabled()) {
+      const context = await fetchCalendarContext({ patientId, professionalId: professional.id });
+      const calendarEventPayload = buildCalendarEventPayload({
+        patientName: context.patientName,
+        patientPhone: context.patientPhone,
+        professionalName: context.professionalName,
+        startAt,
+        endAt,
+        reason,
+        appointmentId: null,
+      });
+      calendarSync = await syncAppointmentToGoogleCalendar({
+        action: 'create',
+        eventId: null,
+        payload: calendarEventPayload,
+      });
+      if (calendarSync.status === 'synced' && calendarSync.event_id) {
+        effectiveCalendarEventId = calendarSync.event_id;
+      }
+      if (GOOGLE_CALENDAR_REQUIRED && calendarSync.status === 'error') {
+        return res.status(502).json({
+          error: 'No se pudo crear evento en Google Calendar',
+          calendar_sync: calendarSync,
+        });
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('crm_citas')
+      .insert({
+        paciente_id: patientId,
+        fisioterapeuta_id: professional.id,
+        inicio_en: startAt,
+        fin_en: endAt,
+        estado: 'pendiente',
+        canal_origen: 'crm_web',
+        motivo: reason || 'Reserva online publica',
+        google_calendar_event_id: effectiveCalendarEventId,
+      })
+      .select(APPOINTMENT_SELECT)
+      .single();
+
+    if (error) {
+      if (isMissingTableError(error, 'crm_citas')) {
+        return res.status(400).json({ error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.' });
+      }
+      throw error;
+    }
+
+    res.status(201).json({
+      data: normalizeAppointmentRow(data),
+      calendar_sync: calendarSync,
+      booking: {
+        professional_name: professional.nombre_completo,
+        time_zone: PUBLIC_BOOKING_TIMEZONE,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.post('/appointments/sync-calendar', async (req, res, next) => {

@@ -1,0 +1,837 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Reserva online | Fisio IA Agent" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
+  <main class="booking-shell">
+    <section class="booking-hero">
+      <div class="booking-hero-copy">
+        <span class="booking-kicker">Reserva online</span>
+        <h1>Una reserva clara, rapida y sin friccion.</h1>
+        <p id="clinicLead">Selecciona un dia, elige un hueco disponible y deja tus datos para confirmar la cita.</p>
+      </div>
+
+      <div class="booking-hero-card">
+        <div class="booking-clinic-line">
+          <span class="material-symbols-rounded">calendar_today</span>
+          <div>
+            <strong id="clinicName">Fisio IA Agent</strong>
+            <p id="clinicLocation">Terrassa, Barcelona</p>
+          </div>
+        </div>
+        <div class="booking-clinic-line">
+          <span class="material-symbols-rounded">person</span>
+          <div>
+            <strong id="professionalName">Cargando profesional...</strong>
+            <p id="professionalMeta">Agenda sincronizada con Google Calendar</p>
+          </div>
+        </div>
+        <div class="booking-clinic-line" id="clinicContactRow" hidden>
+          <span class="material-symbols-rounded">call</span>
+          <div>
+            <strong>Contacto</strong>
+            <p id="clinicContact"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="booking-rhythm">
+        <article>
+          <span>1</span>
+          <div>
+            <strong>Elige el dia</strong>
+            <p>Solo veras fechas dentro de la ventana abierta para reservas.</p>
+          </div>
+        </article>
+        <article>
+          <span>2</span>
+          <div>
+            <strong>Selecciona un hueco real</strong>
+            <p>Los huecos se cruzan con la agenda activa y sus bloqueos reales.</p>
+          </div>
+        </article>
+        <article>
+          <span>3</span>
+          <div>
+            <strong>Confirma tus datos</strong>
+            <p>Registramos la cita y la dejamos reflejada en el CRM y en Calendar.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="booking-panel">
+      <div class="booking-panel-head">
+        <div>
+          <span class="booking-kicker">Paso a paso</span>
+          <h2>Reservar cita</h2>
+        </div>
+        <div class="booking-badge" id="bookingTimezone">Europe/Madrid</div>
+      </div>
+
+      <div class="booking-grid">
+        <label class="booking-field booking-field-date">
+          <span>Dia</span>
+          <input id="bookingDate" type="date" />
+        </label>
+
+        <div class="booking-field booking-field-slots">
+          <div class="booking-field-head">
+            <span>Huecos disponibles</span>
+            <small id="bookingWindowHint">Cargando horarios...</small>
+          </div>
+          <div id="slotsState" class="booking-inline-note">Selecciona un dia para ver horas disponibles.</div>
+          <div id="slotsGrid" class="slots-grid"></div>
+        </div>
+
+        <form id="bookingForm" class="booking-form">
+          <div class="booking-form-grid">
+            <label class="booking-field">
+              <span>Nombre y apellidos</span>
+              <input id="patientNameInput" type="text" placeholder="Ej. Laura Gomez" required />
+            </label>
+            <label class="booking-field">
+              <span>Telefono</span>
+              <input id="patientPhoneInput" type="tel" placeholder="600 123 123" />
+            </label>
+            <label class="booking-field booking-field-wide">
+              <span>Email</span>
+              <input id="patientEmailInput" type="email" placeholder="tu@email.com" />
+            </label>
+            <label class="booking-field booking-field-wide">
+              <span>Motivo de la consulta</span>
+              <textarea id="bookingReasonInput" rows="4" placeholder="Cuanto mejor expliques la dolencia o el objetivo de la cita, mejor preparado queda el caso."></textarea>
+            </label>
+          </div>
+
+          <div class="booking-summary" id="bookingSummary">
+            <strong>Sin hueco seleccionado</strong>
+            <p>Elige primero una fecha y una hora para continuar.</p>
+          </div>
+
+          <p id="bookingFeedback" class="booking-feedback" hidden></p>
+
+          <div class="booking-actions">
+            <button id="bookingSubmitBtn" class="booking-submit" type="submit" disabled>Confirmar reserva</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="bookingSuccess" class="booking-success" hidden>
+      <span class="booking-kicker">Reserva registrada</span>
+      <h2>Cita creada correctamente</h2>
+      <p id="bookingSuccessText">Tu hueco ha quedado guardado. Si necesitas cambiarlo, contacta con la clinica.</p>
+      <button id="bookingResetBtn" type="button" class="booking-reset">Reservar otra cita</button>
+    </section>
+  </main>
+
+  <script is:inline>
+    (() => {
+      const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3001'
+        : 'https://fisio-backend.b5xbaf.easypanel.host';
+
+      const params = new URLSearchParams(window.location.search);
+      const professionalId = params.get('professional_id') || params.get('profesional_id') || '';
+
+      const clinicNameEl = document.getElementById('clinicName');
+      const clinicLocationEl = document.getElementById('clinicLocation');
+      const clinicLeadEl = document.getElementById('clinicLead');
+      const professionalNameEl = document.getElementById('professionalName');
+      const professionalMetaEl = document.getElementById('professionalMeta');
+      const clinicContactRowEl = document.getElementById('clinicContactRow');
+      const clinicContactEl = document.getElementById('clinicContact');
+      const timezoneEl = document.getElementById('bookingTimezone');
+      const dateInput = document.getElementById('bookingDate');
+      const windowHintEl = document.getElementById('bookingWindowHint');
+      const slotsStateEl = document.getElementById('slotsState');
+      const slotsGridEl = document.getElementById('slotsGrid');
+      const bookingForm = document.getElementById('bookingForm');
+      const patientNameInput = document.getElementById('patientNameInput');
+      const patientPhoneInput = document.getElementById('patientPhoneInput');
+      const patientEmailInput = document.getElementById('patientEmailInput');
+      const reasonInput = document.getElementById('bookingReasonInput');
+      const summaryEl = document.getElementById('bookingSummary');
+      const feedbackEl = document.getElementById('bookingFeedback');
+      const submitBtn = document.getElementById('bookingSubmitBtn');
+      const successEl = document.getElementById('bookingSuccess');
+      const successTextEl = document.getElementById('bookingSuccessText');
+      const resetBtn = document.getElementById('bookingResetBtn');
+
+      let bookingConfig = null;
+      let selectedSlot = null;
+      let currentSlots = [];
+
+      const setFeedback = (text = '', state = 'error') => {
+        if (!feedbackEl) return;
+        if (!text) {
+          feedbackEl.hidden = true;
+          feedbackEl.textContent = '';
+          feedbackEl.removeAttribute('data-state');
+          return;
+        }
+        feedbackEl.hidden = false;
+        feedbackEl.textContent = text;
+        feedbackEl.setAttribute('data-state', state);
+      };
+
+      const escapeHtml = (value) => String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+      const buildUrl = (path, extra = {}) => {
+        const url = new URL(BACKEND_BASE + path);
+        if (professionalId) url.searchParams.set('professional_id', professionalId);
+        Object.entries(extra).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+        });
+        return url.toString();
+      };
+
+      const fetchJson = async (url, options = {}) => {
+        const response = await fetch(url, options);
+        const rawText = await response.text();
+        const payload = rawText ? JSON.parse(rawText) : {};
+        if (!response.ok) {
+          const error = new Error(payload?.error || payload?.message || `HTTP ${response.status}`);
+          error.payload = payload;
+          throw error;
+        }
+        return payload;
+      };
+
+      const setSummary = (slot = null) => {
+        if (!summaryEl) return;
+        if (!slot) {
+          summaryEl.innerHTML = '<strong>Sin hueco seleccionado</strong><p>Elige primero una fecha y una hora para continuar.</p>';
+          return;
+        }
+        summaryEl.innerHTML = `
+          <strong>${escapeHtml(slot.date_label || '')} ? ${escapeHtml(slot.start_local)} - ${escapeHtml(slot.end_local)}</strong>
+          <p>Tu reserva se registrara para ${escapeHtml(bookingConfig?.professional?.nombre_completo || 'el profesional')} en horario ${escapeHtml(bookingConfig?.booking?.time_zone || 'Europe/Madrid')}.</p>
+        `;
+      };
+
+      const updateSubmitState = () => {
+        const hasContact = Boolean(String(patientPhoneInput?.value || '').trim() || String(patientEmailInput?.value || '').trim());
+        const ready = Boolean(selectedSlot && String(patientNameInput?.value || '').trim() && hasContact);
+        if (submitBtn) submitBtn.disabled = !ready;
+      };
+
+      const renderSlots = (slots = [], dateValue = '') => {
+        currentSlots = Array.isArray(slots) ? slots : [];
+        if (slotsGridEl) slotsGridEl.innerHTML = '';
+        if (!slotsStateEl) return;
+
+        if (!dateValue) {
+          slotsStateEl.textContent = 'Selecciona un dia para ver horas disponibles.';
+          slotsStateEl.hidden = false;
+          setSummary(null);
+          selectedSlot = null;
+          updateSubmitState();
+          return;
+        }
+
+        if (!currentSlots.length) {
+          slotsStateEl.textContent = 'No quedan huecos en ese dia. Prueba otra fecha.';
+          slotsStateEl.hidden = false;
+          setSummary(null);
+          selectedSlot = null;
+          updateSubmitState();
+          return;
+        }
+
+        slotsStateEl.hidden = true;
+        const dateLabel = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(`${dateValue}T12:00:00`));
+        currentSlots.forEach((slot, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'slot-pill';
+          button.innerHTML = `<strong>${escapeHtml(slot.start_local)}</strong><span>${escapeHtml(slot.end_local)}</span>`;
+          button.addEventListener('click', () => {
+            selectedSlot = { ...slot, date_label: dateLabel };
+            slotsGridEl.querySelectorAll('.slot-pill').forEach((node) => node.classList.remove('is-selected'));
+            button.classList.add('is-selected');
+            setSummary(selectedSlot);
+            setFeedback();
+            updateSubmitState();
+          });
+          if (index === 0 && !selectedSlot) {
+            selectedSlot = { ...slot, date_label: dateLabel };
+            button.classList.add('is-selected');
+            setSummary(selectedSlot);
+          }
+          slotsGridEl.appendChild(button);
+        });
+        updateSubmitState();
+      };
+
+      const loadConfig = async () => {
+        const payload = await fetchJson(buildUrl('/api/profesional/public-booking/config'));
+        bookingConfig = payload?.data || null;
+        if (!bookingConfig) throw new Error('No se pudo cargar la configuracion de reserva online.');
+
+        if (clinicNameEl) clinicNameEl.textContent = bookingConfig.clinic?.name || 'Fisio IA Agent';
+        if (clinicLocationEl) clinicLocationEl.textContent = bookingConfig.clinic?.location || '';
+        if (clinicLeadEl) clinicLeadEl.textContent = `Reserva online con ${bookingConfig.professional?.nombre_completo || 'tu fisioterapeuta'} y huecos reales sincronizados con la agenda activa.`;
+        if (professionalNameEl) professionalNameEl.textContent = bookingConfig.professional?.nombre_completo || 'Fisioterapeuta';
+        if (professionalMetaEl) professionalMetaEl.textContent = bookingConfig.professional?.email || 'Agenda sincronizada con Google Calendar';
+        if (timezoneEl) timezoneEl.textContent = bookingConfig.booking?.time_zone || 'Europe/Madrid';
+        if (dateInput) {
+          dateInput.min = bookingConfig.booking?.min_date || '';
+          dateInput.max = bookingConfig.booking?.max_date || '';
+          dateInput.value = bookingConfig.booking?.min_date || '';
+        }
+
+        const contactLines = [bookingConfig.clinic?.phone, bookingConfig.clinic?.email].filter(Boolean);
+        if (clinicContactRowEl && clinicContactEl && contactLines.length) {
+          clinicContactRowEl.hidden = false;
+          clinicContactEl.textContent = contactLines.join(' ? ');
+        }
+
+        const windowsText = Array.isArray(bookingConfig.booking?.windows)
+          ? bookingConfig.booking.windows.map((window) => `${window.start}-${window.end}`).join(' ? ')
+          : '09:00-13:00 ? 15:00-19:00';
+        if (windowHintEl) windowHintEl.textContent = `${windowsText} ? bloques de ${bookingConfig.booking?.slot_minutes || 60} min`;
+      };
+
+      const loadSlots = async () => {
+        const dateValue = dateInput?.value || '';
+        selectedSlot = null;
+        setSummary(null);
+        updateSubmitState();
+        if (slotsStateEl) {
+          slotsStateEl.hidden = false;
+          slotsStateEl.textContent = 'Consultando huecos disponibles...';
+        }
+        if (slotsGridEl) slotsGridEl.innerHTML = '';
+        setFeedback();
+
+        if (!dateValue) {
+          renderSlots([], '');
+          return;
+        }
+
+        try {
+          const payload = await fetchJson(buildUrl('/api/profesional/public-booking/slots', { date: dateValue }));
+          renderSlots(payload?.data?.slots || [], dateValue);
+        } catch (error) {
+          renderSlots([], dateValue);
+          setFeedback(error.message || 'No se pudieron cargar los huecos.', 'error');
+        }
+      };
+
+      dateInput?.addEventListener('change', loadSlots);
+      patientNameInput?.addEventListener('input', updateSubmitState);
+      patientPhoneInput?.addEventListener('input', updateSubmitState);
+      patientEmailInput?.addEventListener('input', updateSubmitState);
+
+      bookingForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!selectedSlot) {
+          setFeedback('Selecciona antes un hueco disponible.', 'error');
+          return;
+        }
+
+        if (submitBtn) submitBtn.disabled = true;
+        setFeedback('Registrando reserva...', 'success');
+
+        try {
+          const payload = {
+            professional_id: professionalId || bookingConfig?.professional?.id || '',
+            full_name: patientNameInput?.value?.trim() || '',
+            phone: patientPhoneInput?.value?.trim() || '',
+            email: patientEmailInput?.value?.trim() || '',
+            reason: reasonInput?.value?.trim() || '',
+            start_at: selectedSlot.start_at,
+            end_at: selectedSlot.end_at,
+          };
+
+          const response = await fetchJson(buildUrl('/api/profesional/public-booking/appointments'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          if (bookingForm) bookingForm.hidden = true;
+          if (successEl) successEl.hidden = false;
+          if (successTextEl) {
+            successTextEl.textContent = `Tu cita para ${selectedSlot.date_label || 'la fecha elegida'} a las ${selectedSlot.start_local} ha quedado registrada con ${response?.booking?.professional_name || bookingConfig?.professional?.nombre_completo || 'la clinica'}.`;
+          }
+          if (slotsGridEl) slotsGridEl.innerHTML = '';
+          if (slotsStateEl) {
+            slotsStateEl.hidden = true;
+            slotsStateEl.textContent = '';
+          }
+        } catch (error) {
+          const payload = error?.payload || {};
+          if (payload?.available === false) {
+            setFeedback('Ese hueco acaba de ocuparse. Te muestro los horarios actualizados.', 'error');
+            await loadSlots();
+          } else {
+            setFeedback(error.message || 'No se pudo registrar la reserva.', 'error');
+          }
+          updateSubmitState();
+        } finally {
+          if (submitBtn && !successEl?.hidden) {
+            submitBtn.disabled = true;
+          } else {
+            updateSubmitState();
+          }
+        }
+      });
+
+      resetBtn?.addEventListener('click', async () => {
+        if (bookingForm) bookingForm.hidden = false;
+        if (successEl) successEl.hidden = true;
+        bookingForm?.reset();
+        selectedSlot = null;
+        setSummary(null);
+        updateSubmitState();
+        await loadSlots();
+      });
+
+      (async () => {
+        try {
+          await loadConfig();
+          await loadSlots();
+        } catch (error) {
+          setFeedback(error.message || 'No se pudo cargar la reserva online.', 'error');
+          if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta disponible ahora mismo.';
+        }
+      })();
+    })();
+  </script>
+
+  <style>
+    :root {
+      --booking-bg: linear-gradient(180deg, #f7f4ec 0%, #edf4f2 100%);
+      --booking-surface: rgba(255, 252, 246, 0.88);
+      --booking-border: rgba(15, 91, 88, 0.12);
+      --booking-ink: #123c39;
+      --booking-muted: #5b7472;
+      --booking-accent: #0f766e;
+      --booking-accent-soft: #d7f1ec;
+      --booking-highlight: #f2c66d;
+      --booking-danger: #b42318;
+      --booking-shadow: 0 30px 80px rgba(13, 46, 43, 0.12);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--booking-bg);
+      color: var(--booking-ink);
+      font-family: 'Manrope', sans-serif;
+    }
+
+    .booking-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(320px, 0.92fr) minmax(320px, 1.08fr);
+      gap: clamp(1.25rem, 2vw, 2.5rem);
+      padding: clamp(1.25rem, 2vw, 2rem);
+      align-items: stretch;
+    }
+
+    .booking-hero,
+    .booking-panel,
+    .booking-success {
+      position: relative;
+      border: 1px solid var(--booking-border);
+      border-radius: 32px;
+      background: var(--booking-surface);
+      box-shadow: var(--booking-shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .booking-hero {
+      padding: clamp(1.5rem, 3vw, 3rem);
+      display: grid;
+      gap: 1.5rem;
+      align-content: start;
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.18), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(242, 198, 109, 0.24), transparent 28%),
+        rgba(255, 252, 246, 0.9);
+    }
+
+    .booking-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.76rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--booking-accent);
+      font-weight: 800;
+    }
+
+    .booking-hero h1,
+    .booking-panel h2,
+    .booking-success h2 {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.96;
+    }
+
+    .booking-hero h1 {
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      max-width: 10ch;
+    }
+
+    .booking-hero p,
+    .booking-rhythm p,
+    .booking-clinic-line p,
+    .booking-summary p,
+    .booking-success p,
+    .booking-inline-note,
+    .booking-feedback,
+    .booking-field small {
+      margin: 0;
+      color: var(--booking-muted);
+      line-height: 1.6;
+    }
+
+    .booking-hero-card {
+      display: grid;
+      gap: 1rem;
+      padding: 1.15rem;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(15, 118, 110, 0.1);
+    }
+
+    .booking-clinic-line {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 0.9rem;
+      align-items: center;
+    }
+
+    .booking-clinic-line .material-symbols-rounded {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--booking-accent) 10%, white);
+      color: var(--booking-accent);
+      font-size: 1.2rem;
+    }
+
+    .booking-clinic-line strong,
+    .booking-rhythm strong,
+    .booking-summary strong,
+    .slot-pill strong {
+      display: block;
+      color: var(--booking-ink);
+    }
+
+    .booking-rhythm {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .booking-rhythm article {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 0.9rem;
+      align-items: start;
+      padding: 0.7rem 0;
+      border-top: 1px solid rgba(18, 60, 57, 0.08);
+    }
+
+    .booking-rhythm article:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .booking-rhythm span {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--booking-ink);
+      color: #f8f5ef;
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .booking-panel,
+    .booking-success {
+      padding: clamp(1.35rem, 2.5vw, 2.4rem);
+    }
+
+    .booking-panel-head {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1.5rem;
+    }
+
+    .booking-panel h2,
+    .booking-success h2 {
+      font-size: clamp(2rem, 3vw, 3rem);
+    }
+
+    .booking-badge {
+      padding: 0.65rem 0.9rem;
+      border-radius: 999px;
+      background: var(--booking-accent-soft);
+      color: var(--booking-accent);
+      font-size: 0.82rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .booking-grid {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .booking-field {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .booking-field > span,
+    .booking-field-head span {
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: color-mix(in srgb, var(--booking-ink) 82%, white);
+    }
+
+    .booking-field input,
+    .booking-field textarea {
+      width: 100%;
+      border: 1px solid rgba(18, 60, 57, 0.12);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.78);
+      padding: 0.9rem 1rem;
+      font: inherit;
+      color: var(--booking-ink);
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .booking-field input:focus,
+    .booking-field textarea:focus {
+      border-color: rgba(15, 118, 110, 0.5);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .booking-field-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+    }
+
+    .booking-field-head small {
+      font-size: 0.8rem;
+      color: var(--booking-muted);
+    }
+
+    .booking-inline-note {
+      padding: 0.9rem 1rem;
+      border-radius: 16px;
+      background: rgba(18, 60, 57, 0.04);
+      border: 1px dashed rgba(18, 60, 57, 0.14);
+      font-size: 0.96rem;
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .slot-pill {
+      border: 1px solid rgba(18, 60, 57, 0.12);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.84);
+      color: var(--booking-ink);
+      padding: 0.95rem 1rem;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .slot-pill span {
+      display: block;
+      margin-top: 0.25rem;
+      color: var(--booking-muted);
+      font-size: 0.86rem;
+    }
+
+    .slot-pill:hover,
+    .slot-pill:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(15, 118, 110, 0.3);
+      box-shadow: 0 16px 32px rgba(18, 60, 57, 0.08);
+      outline: none;
+    }
+
+    .slot-pill.is-selected {
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(242, 198, 109, 0.18));
+      border-color: rgba(15, 118, 110, 0.45);
+    }
+
+    .booking-form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .booking-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .booking-field-wide {
+      grid-column: 1 / -1;
+    }
+
+    .booking-summary {
+      padding: 1rem 1.05rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(242, 198, 109, 0.14));
+      border: 1px solid rgba(15, 118, 110, 0.12);
+    }
+
+    .booking-feedback {
+      padding: 0.85rem 1rem;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      border: 1px solid transparent;
+    }
+
+    .booking-feedback[data-state='error'] {
+      background: rgba(180, 35, 24, 0.08);
+      color: var(--booking-danger);
+      border-color: rgba(180, 35, 24, 0.14);
+    }
+
+    .booking-feedback[data-state='success'] {
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--booking-accent);
+      border-color: rgba(15, 118, 110, 0.14);
+    }
+
+    .booking-actions {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .booking-submit,
+    .booking-reset {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 1rem 1.35rem;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease;
+    }
+
+    .booking-submit {
+      background: linear-gradient(135deg, var(--booking-accent), #0b5f59);
+      color: #f8f5ef;
+      box-shadow: 0 18px 28px rgba(15, 118, 110, 0.24);
+    }
+
+    .booking-submit:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .booking-submit:not(:disabled):hover,
+    .booking-reset:hover {
+      transform: translateY(-2px);
+    }
+
+    .booking-reset {
+      background: rgba(18, 60, 57, 0.08);
+      color: var(--booking-ink);
+    }
+
+    .booking-success {
+      display: grid;
+      align-content: center;
+      gap: 1rem;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(242, 198, 109, 0.18), transparent 28%),
+        rgba(255, 252, 246, 0.9);
+    }
+
+    @media (max-width: 1080px) {
+      .booking-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-hero h1 {
+        max-width: 12ch;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .booking-shell {
+        padding: 1rem;
+      }
+
+      .booking-hero,
+      .booking-panel,
+      .booking-success {
+        border-radius: 24px;
+      }
+
+      .booking-panel-head,
+      .booking-field-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .booking-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .slots-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .booking-hero h1,
+      .booking-panel h2,
+      .booking-success h2 {
+        letter-spacing: -0.05em;
+      }
+
+      .slots-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-submit,
+      .booking-reset {
+        width: 100%;
+      }
+    }
+  </style>
+</Layout>
