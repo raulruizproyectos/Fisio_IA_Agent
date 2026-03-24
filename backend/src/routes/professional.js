@@ -1339,7 +1339,13 @@ async function reconcileAppointmentsWithCalendar({
   summary.synthetic = calendarOnlyRows.length + busyOnlyRows.length;
 
   const merged = [...rowById.values(), ...calendarOnlyRows, ...busyOnlyRows]
-    .filter((appointment) => String(appointment?.calendar_sync_state || '').trim() !== 'calendar_cancelled')
+    .filter((appointment) => {
+      const syncState = String(appointment?.calendar_sync_state || '').trim();
+      const status = String(appointment?.estado || '').trim().toLowerCase();
+      if (syncState === 'calendar_cancelled') return false;
+      if (syncState === 'crm_only' && ['cancelada', 'completada', 'no_show'].includes(status)) return false;
+      return true;
+    })
     .filter((appointment) => isAppointmentInsideWindow(appointment, fromAt, toAt))
     .sort((a, b) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
 
