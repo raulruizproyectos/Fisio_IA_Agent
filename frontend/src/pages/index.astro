@@ -108,9 +108,9 @@ import Layout from '../layouts/Layout.astro';
             <section class="hero-section cockpit-hero">
               <div class="hero-panel-main">
                 <div class="hero-heading-stack">
-                  <span class="hero-eyebrow">Cockpit clinico inteligente</span>
-                  <h1 class="hero-title">Opera la clinica desde una sola vista</h1>
-                  <p class="hero-subtitle">Agenda, intake, seguimiento y agente de ejercicios en un cockpit pensado para fisioterapeutas que necesitan decidir y actuar rapido.</p>
+                  <span class="hero-eyebrow">Clinic OS para fisioterapia</span>
+                  <h1 class="hero-title">La clinica se mueve desde aqui</h1>
+                  <p class="hero-subtitle" id="dashboardLiveSummary">Cargando agenda, intake, sincronizacion y captacion...</p>
                 </div>
                 <div class="hero-actions hero-action-row">
                   <button class="btn-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
@@ -118,57 +118,68 @@ import Layout from '../layouts/Layout.astro';
                   <button class="btn-ghost" id="heroNewPatientShortcutBtn" type="button"><span class="material-symbols-rounded">add</span> Alta express</button>
                 </div>
                 <div class="hero-signal-grid">
-                  <article class="signal-card">
-                    <span class="signal-kicker">Agenda online</span>
-                    <strong class="signal-value">Prepara la sesion desde la home.</strong>
-                    <p>Mueve citas, detecta huecos y salta al paciente sin perder el contexto clinico.</p>
+                  <article class="signal-card signal-card-live" id="dashboardNextSessionCard">
+                    <div class="signal-live-head">
+                      <span class="signal-kicker">Proxima sesion</span>
+                      <span class="status-chip pendiente" id="dashboardNextSessionStatus">Agenda</span>
+                    </div>
+                    <strong class="signal-value" id="dashboardNextSessionTitle">Cargando agenda...</strong>
+                    <p id="dashboardNextSessionMeta">Estamos leyendo las citas para calcular la siguiente accion clinica.</p>
+                    <button class="btn-link-inline" id="dashboardNextSessionBtn" type="button"><span class="material-symbols-rounded">event_available</span> Abrir agenda</button>
                   </article>
-                  <article class="signal-card">
-                    <span class="signal-kicker">Intake a decision</span>
-                    <strong class="signal-value">Convierte mensajes en siguiente accion.</strong>
-                    <p>La bandeja deja de ser solo lectura y pasa a ser triage operativo.</p>
+                  <article class="signal-card signal-card-live">
+                    <div class="signal-live-head">
+                      <span class="signal-kicker">Triage operativo</span>
+                      <span class="status-chip pendiente" id="dashboardIntakeStatus">Intake</span>
+                    </div>
+                    <strong class="signal-value" id="dashboardIntakeTitle">Bandeja en revision</strong>
+                    <p id="dashboardIntakeMeta">Actualizando mensajes de pacientes desde Telegram y formulario web.</p>
+                    <button class="btn-link-inline" type="button" data-dashboard-nav="intakes"><span class="material-symbols-rounded">forward_to_inbox</span> Abrir bandeja</button>
                   </article>
-                  <article class="signal-card">
-                    <span class="signal-kicker">Agente de ejercicios</span>
-                    <strong class="signal-value">Nuestro diferencial no es el chat, es el flujo.</strong>
-                    <p>Genera, archiva, exporta y da continuidad al plan dentro del historial real del paciente.</p>
+                  <article class="signal-card signal-card-live">
+                    <div class="signal-live-head">
+                      <span class="signal-kicker">Google Calendar</span>
+                      <span class="status-chip pendiente" id="dashboardSyncChip">Comprobando</span>
+                    </div>
+                    <strong class="signal-value" id="dashboardSyncTitle">Sincronizacion de agenda</strong>
+                    <p id="dashboardSyncMeta">Esperando estado del lector y escritor de calendar.</p>
+                    <div class="agenda-sync-facts dashboard-sync-facts" id="dashboardSyncFacts" hidden></div>
                   </article>
-                  <article class="signal-card">
-                    <span class="signal-kicker">Automatizacion</span>
-                    <strong class="signal-value">n8n + backend + Supabase trabajando juntos.</strong>
-                    <p>W1, W2, W3, Telegram y PDF ya forman parte del producto y deben verse asi.</p>
+                  <article class="signal-card signal-card-live signal-card-booking">
+                    <div class="signal-live-head">
+                      <span class="signal-kicker">Reserva online</span>
+                      <span class="status-chip aprobado">Activa</span>
+                    </div>
+                    <strong class="signal-value">Captacion abierta todo el dia</strong>
+                    <p id="dashboardBookingMeta">Preparando enlace publico para compartir por web, WhatsApp o como apoyo del canal Telegram.</p>
+                    <div class="signal-card-actions">
+                      <button class="btn-link-inline" id="dashboardBookingOpenBtn" type="button"><span class="material-symbols-rounded">open_in_new</span> Abrir reserva</button>
+                      <button class="btn-link-inline" id="dashboardBookingCopyBtn" type="button"><span class="material-symbols-rounded">content_copy</span> Copiar enlace</button>
+                    </div>
+                    <span id="dashboardBookingFeedback" class="form-feedback" hidden></span>
                   </article>
                 </div>
               </div>
               <div class="hero-panel-side">
                 <article class="cockpit-side-card cockpit-side-card-agent">
-                  <span class="cockpit-side-kicker">Motor IA de ejercicios</span>
-                  <h2 class="cockpit-side-title">El copilot tiene que cerrar trabajo real</h2>
-                  <p>Selecciona paciente, pide el objetivo clinico, genera el plan y dejalo listo para PDF e historial. Ese es el salto de producto que tenemos que ganar.</p>
+                  <span class="cockpit-side-kicker">Agente de ejercicios</span>
+                  <h2 class="cockpit-side-title">El motor IA tiene que dejar la sesion clinica cerrada</h2>
+                  <p>Selecciona paciente, define el objetivo, genera el plan y dejalo unido a historial, PDF y continuidad por Telegram. Ese es el diferencial de producto que tenemos que defender.</p>
                   <div class="cockpit-side-actions">
-                    <button class="btn-ghost" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">right_panel_open</span> Abrir copilot</button>
+                    <button class="btn-ghost" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">right_panel_open</span> Abrir agente</button>
                     <button class="btn-ghost" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Ver historial</button>
                   </div>
                 </article>
-                <article class="cockpit-side-card">
-                  <span class="cockpit-side-kicker">Flujos prioritarios</span>
-                  <div class="ops-list">
-                    <div class="ops-item">
-                      <span>W1 Agenda</span>
-                      <strong>Cita, disponibilidad y preparacion de sesion desde CRM.</strong>
-                    </div>
-                    <div class="ops-item">
-                      <span>W2 Ejercicios</span>
-                      <strong>Recomendacion guiada conectada a Supabase y exportacion PDF.</strong>
-                    </div>
-                    <div class="ops-item">
-                      <span>W3 CRM trigger</span>
-                      <strong>Camino asincrono preparado para escalar la carga clinica.</strong>
-                    </div>
-                    <div class="ops-item">
-                      <span>Telegram</span>
-                      <strong>Seguimiento y continuidad fuera de consulta.</strong>
-                    </div>
+                <article class="cockpit-side-card priorities-side-card">
+                  <span class="cockpit-side-kicker">Prioridades del dia</span>
+                  <div class="priority-list" id="dashboardPriorityList">
+                    <article class="priority-item priority-item-loading">
+                      <div class="priority-copy">
+                        <span>Cargando</span>
+                        <strong>Preparando prioridades operativas</strong>
+                        <p>Estamos leyendo agenda, intake y sincronizacion.</p>
+                      </div>
+                    </article>
                   </div>
                 </article>
               </div>
@@ -193,17 +204,30 @@ import Layout from '../layouts/Layout.astro';
             </section>
 
             <section class="dashboard-ops-grid">
-              <article class="cockpit-block">
+              <article class="cockpit-block cockpit-block-lanes">
                 <header class="cockpit-block-head">
                   <div class="cockpit-block-copy">
-                    <span class="hero-eyebrow">Arquitectura operativa</span>
-                    <h2>Malla real del producto</h2>
+                    <span class="hero-eyebrow">Canales activos</span>
+                    <h2>Entradas y continuidad del producto</h2>
                   </div>
                 </header>
-                <div class="workflow-stack">
-                  <div class="workflow-row"><span class="workflow-tag">n8n</span><p>Orquesta agenda, Telegram, intake y activacion del agente.</p></div>
-                  <div class="workflow-row"><span class="workflow-tag">Backend</span><p>Expone CRM, historial, PDF, citas, pagos y puntos de integracion.</p></div>
-                  <div class="workflow-row"><span class="workflow-tag">Supabase</span><p>Persistencia, jobs y funciones que convierten el agente de ejercicios en una capacidad de producto.</p></div>
+                <div class="workflow-stack workflow-stack-lanes">
+                  <button type="button" class="workflow-lane" data-dashboard-nav="intakes">
+                    <span class="workflow-tag">Telegram</span>
+                    <p>Reserva, mensajes y triage entrando al CRM como conversacion operativa.</p>
+                  </button>
+                  <button type="button" class="workflow-lane" data-dashboard-action="open-booking-page">
+                    <span class="workflow-tag">Reserva web</span>
+                    <p>Pagina publica lista para captar pacientes nuevos sin salir del ecosistema.</p>
+                  </button>
+                  <button type="button" class="workflow-lane" data-dashboard-action="open-copilot">
+                    <span class="workflow-tag">Ejercicios</span>
+                    <p>Plan IA conectado a historial, exportacion PDF y seguimiento real.</p>
+                  </button>
+                  <button type="button" class="workflow-lane" data-dashboard-nav="documentos">
+                    <span class="workflow-tag">Documentos</span>
+                    <p>Consentimientos, firma y continuidad administrativa integrados en el caso.</p>
+                  </button>
                 </div>
               </article>
               <article class="cockpit-block">
@@ -214,11 +238,12 @@ import Layout from '../layouts/Layout.astro';
                   </div>
                 </header>
                 <div class="command-grid">
-                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-kicker">Admision</span><strong>Alta guiada de paciente</strong><p>Registra y deja todo listo para historial, chat y seguimiento.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-kicker">Agenda</span><strong>Crear o mover cita</strong><p>Salta a la agenda sin pasar por menus intermedios.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-kicker">Triage</span><strong>Vaciar bandeja entrante</strong><p>Convierte mensajes pendientes en respuesta o siguiente accion clinica.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-kicker">Ejercicios</span><strong>Abrir motor IA</strong><p>Pide el programa, revisa el plan y dejalo listo para exportacion.</p></button>
-                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-kicker">Captacion</span><strong>Abrir reserva online</strong><p>Lanza la pagina publica de citas y compartela sin salir del CRM.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-kicker">Admision</span><strong>Alta guiada de paciente</strong><p>Registra una nueva ficha y dejala lista para historial, agenda y seguimiento.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-kicker">Agenda</span><strong>Crear o mover cita</strong><p>Opera la semana clinica, revisa bloqueos y salta al caso correcto.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-kicker">Telegram</span><strong>Revisar reservas y mensajes</strong><p>Convierte conversaciones entrantes en siguiente accion clinica o administrativa.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-kicker">Ejercicios</span><strong>Abrir agente de ejercicios</strong><p>Genera el plan, afina el objetivo y dejalo listo para PDF e historial.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-kicker">Documentos</span><strong>Gestionar consentimientos</strong><p>Accede a firma, documentos pendientes y trazabilidad del caso.</p></button>
+                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-kicker">Captacion</span><strong>Abrir reserva online</strong><p>Comparte la pagina publica y llena huecos de agenda desde el CRM.</p></button>
                 </div>
               </article>
             </section>
@@ -1201,6 +1226,23 @@ import Layout from '../layouts/Layout.astro';
   const heroNewPatientShortcutBtn = document.getElementById('heroNewPatientShortcutBtn') as HTMLButtonElement | null;
   const dashboardNavButtons = document.querySelectorAll('[data-dashboard-nav]') as NodeListOf<HTMLElement>;
   const dashboardActionButtons = document.querySelectorAll('[data-dashboard-action]') as NodeListOf<HTMLElement>;
+  const dashboardLiveSummary = document.getElementById('dashboardLiveSummary') as HTMLElement | null;
+  const dashboardNextSessionTitle = document.getElementById('dashboardNextSessionTitle') as HTMLElement | null;
+  const dashboardNextSessionMeta = document.getElementById('dashboardNextSessionMeta') as HTMLElement | null;
+  const dashboardNextSessionStatus = document.getElementById('dashboardNextSessionStatus') as HTMLElement | null;
+  const dashboardNextSessionBtn = document.getElementById('dashboardNextSessionBtn') as HTMLButtonElement | null;
+  const dashboardIntakeTitle = document.getElementById('dashboardIntakeTitle') as HTMLElement | null;
+  const dashboardIntakeMeta = document.getElementById('dashboardIntakeMeta') as HTMLElement | null;
+  const dashboardIntakeStatus = document.getElementById('dashboardIntakeStatus') as HTMLElement | null;
+  const dashboardSyncChip = document.getElementById('dashboardSyncChip') as HTMLElement | null;
+  const dashboardSyncTitle = document.getElementById('dashboardSyncTitle') as HTMLElement | null;
+  const dashboardSyncMeta = document.getElementById('dashboardSyncMeta') as HTMLElement | null;
+  const dashboardSyncFacts = document.getElementById('dashboardSyncFacts') as HTMLElement | null;
+  const dashboardPriorityList = document.getElementById('dashboardPriorityList') as HTMLElement | null;
+  const dashboardBookingOpenBtn = document.getElementById('dashboardBookingOpenBtn') as HTMLButtonElement | null;
+  const dashboardBookingCopyBtn = document.getElementById('dashboardBookingCopyBtn') as HTMLButtonElement | null;
+  const dashboardBookingMeta = document.getElementById('dashboardBookingMeta') as HTMLElement | null;
+  const dashboardBookingFeedback = document.getElementById('dashboardBookingFeedback') as HTMLElement | null;
   const assistantPromptButtons = document.querySelectorAll('[data-assistant-prompt]') as NodeListOf<HTMLButtonElement>;
   const assistantModeButtons = document.querySelectorAll('[data-assistant-mode]') as NodeListOf<HTMLButtonElement>;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
@@ -1235,6 +1277,23 @@ import Layout from '../layouts/Layout.astro';
   const appointmentReasonInput = document.getElementById('appointmentReasonInput') as HTMLTextAreaElement | null;
   const appointmentFormFeedback = document.getElementById('appointmentFormFeedback') as HTMLElement | null;
   const appointmentSubmitBtn = document.getElementById('appointmentSubmitBtn') as HTMLButtonElement | null;
+
+  const dashboardRuntime = {
+    agendaState: 'loading' as 'loading' | 'ready' | 'error',
+    intakeState: 'loading' as 'loading' | 'ready' | 'error',
+    weekAppointments: [] as any[],
+    todayAppointments: [] as any[],
+    nextAppointment: null as any | null,
+    pendingIntakes: [] as any[],
+    syncUi: null as null | {
+      uiStatus: string;
+      chipLabel: string;
+      chipClass: string;
+      title: string;
+      meta: string;
+      facts: Array<{ label: string; value: string }>;
+    },
+  };
 
   // === HELPERS ===
   const MOJIBAKE_RE = /(?:\u00C3|\u00C2|\u00E2|\u00F0|\u00D0|\u00D1|\uFFFD|\u0153|\u0152|\u0161|\u0178|\u00EF\u00BF\u00BD)/;
@@ -2175,6 +2234,40 @@ import Layout from '../layouts/Layout.astro';
         openPatientModal();
       }
     });
+  });
+  dashboardNextSessionBtn?.addEventListener('click', () => {
+    const next = dashboardRuntime.nextAppointment;
+    const patientId = String(next?.paciente_id || '').trim();
+    const patientName = String(next?.nombre_paciente || '').trim();
+    if (patientId) {
+      openPatientHistory(patientId, patientName || 'Paciente');
+      return;
+    }
+    navigateTo('citas');
+  });
+  dashboardPriorityList?.addEventListener('click', (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    const button = target?.closest('button[data-priority-nav], button[data-priority-action]') as HTMLButtonElement | null;
+    if (!button) return;
+    const nav = button.getAttribute('data-priority-nav');
+    const action = button.getAttribute('data-priority-action');
+    if (nav) {
+      navigateTo(nav);
+      if (isMobile()) closeSidebar();
+      return;
+    }
+    if (action === 'open-booking-page') {
+      window.open(buildPublicBookingUrl(), '_blank', 'noopener');
+      return;
+    }
+    if (action === 'open-copilot') {
+      openAssistantRail();
+      input?.focus();
+      return;
+    }
+    if (action === 'open-agenda') {
+      navigateTo('citas');
+    }
   });
   assistantPromptButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -3176,12 +3269,263 @@ import Layout from '../layouts/Layout.astro';
   checkHealth();
 
   // === LOAD INTAKES (dashboard) ===
+  const getDashboardFirstName = (value: unknown) => {
+    const label = String(value || 'Paciente').trim();
+    if (!label) return 'Paciente';
+    return label.split(/\s+/)[0] || label;
+  };
+
+  const getDashboardActiveAppointments = (citas: any[] = []) => {
+    return citas
+      .filter((cita: any) => {
+        if (!cita?.inicio_en) return false;
+        if (isAllDayAppointment(cita)) return false;
+        if (isCalendarOnlyAppointment(cita)) return false;
+        const status = String(cita?.estado || '').trim().toLowerCase();
+        return !['cancelada', 'completada', 'no_show', 'calendar_cancelled'].includes(status);
+      })
+      .sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+  };
+
+  const setDashboardChip = (chipEl: HTMLElement | null, label: string, chipClass: string) => {
+    if (!chipEl) return;
+    chipEl.textContent = label;
+    chipEl.className = `status-chip ${chipClass}`;
+  };
+
+  const applySyncStatusView = (
+    chipEl: HTMLElement | null,
+    titleEl: HTMLElement | null,
+    metaEl: HTMLElement | null,
+    factsEl: HTMLElement | null,
+    payload: { chipLabel: string; chipClass: string; title: string; meta: string; facts: Array<{ label: string; value: string }> },
+  ) => {
+    if (!chipEl || !titleEl || !metaEl || !factsEl) return;
+    chipEl.textContent = payload.chipLabel;
+    chipEl.className = `status-chip ${payload.chipClass}`;
+    titleEl.textContent = payload.title;
+    metaEl.textContent = payload.meta;
+    factsEl.hidden = payload.facts.length === 0;
+    factsEl.innerHTML = payload.facts
+      .map((fact) => `<span class="agenda-sync-fact"><strong>${escapeHtml(fact.label)}:</strong> ${escapeHtml(fact.value)}</span>`)
+      .join('');
+  };
+
+  let dashboardBookingFeedbackTimeout: number | null = null;
+  const setDashboardBookingFeedback = (text = '', state: 'success' | 'error' = 'success') => {
+    if (!dashboardBookingFeedback) return;
+    if (dashboardBookingFeedbackTimeout) {
+      window.clearTimeout(dashboardBookingFeedbackTimeout);
+      dashboardBookingFeedbackTimeout = null;
+    }
+    if (!text) {
+      dashboardBookingFeedback.hidden = true;
+      dashboardBookingFeedback.textContent = '';
+      dashboardBookingFeedback.removeAttribute('data-state');
+      return;
+    }
+    dashboardBookingFeedback.hidden = false;
+    dashboardBookingFeedback.textContent = text;
+    dashboardBookingFeedback.setAttribute('data-state', state);
+    dashboardBookingFeedbackTimeout = window.setTimeout(() => {
+      dashboardBookingFeedback.hidden = true;
+      dashboardBookingFeedback.textContent = '';
+      dashboardBookingFeedback.removeAttribute('data-state');
+      dashboardBookingFeedbackTimeout = null;
+    }, 3200);
+  };
+
+  const syncDashboardBookingMeta = () => {
+    if (!dashboardBookingMeta) return;
+    try {
+      const bookingUrl = buildPublicBookingUrl();
+      const parsed = new URL(bookingUrl);
+      dashboardBookingMeta.textContent = `Publicada en ${parsed.host}${parsed.pathname}. Compartela por web o como derivacion rapida desde Telegram.`;
+    } catch {
+      dashboardBookingMeta.textContent = 'Comparte la pagina publica para captar nuevas altas y completar huecos de agenda.';
+    }
+  };
+
+  const renderDashboardLiveSummary = () => {
+    if (!dashboardLiveSummary) return;
+    const todayCount = dashboardRuntime.todayAppointments.length;
+    const intakeCount = dashboardRuntime.pendingIntakes.length;
+    const syncLabel = dashboardRuntime.syncUi?.chipLabel || 'Sync en revision';
+    const next = dashboardRuntime.nextAppointment;
+
+    if (dashboardRuntime.agendaState === 'error') {
+      dashboardLiveSummary.textContent = 'La cabina mantiene accesos clinicos activos, pero la agenda no ha podido refrescarse todavia.';
+      return;
+    }
+
+    if (next) {
+      const hour = fmtHourOnly(next.inicio_en || '');
+      dashboardLiveSummary.textContent = `${todayCount} cita${todayCount === 1 ? '' : 's'} hoy. Proxima sesion ${hour} con ${getDashboardFirstName(next.nombre_paciente)}. ${intakeCount ? `${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} pendientes en Telegram/web.` : 'Bandeja de entrada al dia.'} ${syncLabel}.`;
+      return;
+    }
+
+    if (todayCount > 0) {
+      dashboardLiveSummary.textContent = `${todayCount} cita${todayCount === 1 ? '' : 's'} hoy y sin una siguiente sesion clara para preparar. ${intakeCount ? `${intakeCount} paciente${intakeCount === 1 ? '' : 's'} esperan respuesta.` : 'Puedes aprovechar para revisar documentos, copilot o captacion.'}`;
+      return;
+    }
+
+    dashboardLiveSummary.textContent = intakeCount
+      ? `Sin citas activas inmediatas. Tienes ${intakeCount} conversacion${intakeCount === 1 ? '' : 'es'} pendientes y la reserva online lista para captar nuevos huecos.`
+      : 'Sin citas activas inmediatas. Usa la reserva online, Telegram y el agente de ejercicios como palancas reales de captacion y continuidad.';
+  };
+
+  const renderDashboardNextSessionCard = () => {
+    if (!dashboardNextSessionTitle || !dashboardNextSessionMeta || !dashboardNextSessionStatus) return;
+    const next = dashboardRuntime.nextAppointment;
+
+    if (dashboardRuntime.agendaState === 'error') {
+      setDashboardChip(dashboardNextSessionStatus, 'Error', 'rechazado');
+      dashboardNextSessionTitle.textContent = 'La agenda necesita refresco';
+      dashboardNextSessionMeta.textContent = 'No hemos podido calcular la siguiente sesion desde el CRM.';
+      if (dashboardNextSessionBtn) {
+        dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Ver agenda';
+      }
+      return;
+    }
+
+    if (!next) {
+      setDashboardChip(dashboardNextSessionStatus, 'Libre', 'aprobado');
+      dashboardNextSessionTitle.textContent = 'Sin proxima sesion cargada';
+      dashboardNextSessionMeta.textContent = 'Buen momento para revisar intake, abrir captacion o preparar seguimiento.';
+      if (dashboardNextSessionBtn) {
+        dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Abrir agenda';
+      }
+      return;
+    }
+
+    const sameDay = isTodayDate(next.inicio_en || '');
+    const hour = fmtHourOnly(next.inicio_en || '');
+    const label = next.nombre_paciente || 'Paciente';
+    const reason = String(next.motivo || '').trim();
+    setDashboardChip(dashboardNextSessionStatus, sameDay ? 'Hoy' : 'Proxima', sameDay ? 'confirmada' : 'pendiente');
+    dashboardNextSessionTitle.textContent = label;
+    dashboardNextSessionMeta.textContent = `${sameDay ? hour : `${fmtDate(next.inicio_en || '')} | ${hour}`}${reason ? ` | ${reason}` : ''}`;
+    if (dashboardNextSessionBtn) {
+      dashboardNextSessionBtn.innerHTML = String(next.paciente_id || '').trim()
+        ? '<span class="material-symbols-rounded">person</span> Abrir ficha'
+        : '<span class="material-symbols-rounded">calendar_today</span> Ver agenda';
+    }
+  };
+
+  const renderDashboardIntakeCard = () => {
+    if (!dashboardIntakeTitle || !dashboardIntakeMeta || !dashboardIntakeStatus) return;
+
+    if (dashboardRuntime.intakeState === 'error') {
+      setDashboardChip(dashboardIntakeStatus, 'Error', 'rechazado');
+      dashboardIntakeTitle.textContent = 'No se pudo actualizar intake';
+      dashboardIntakeMeta.textContent = 'La bandeja sigue accesible, pero el resumen rapido no se ha podido refrescar.';
+      return;
+    }
+
+    const count = dashboardRuntime.pendingIntakes.length;
+    if (!count) {
+      setDashboardChip(dashboardIntakeStatus, 'Al dia', 'aprobado');
+      dashboardIntakeTitle.textContent = 'Bandeja en orden';
+      dashboardIntakeMeta.textContent = 'Sin pacientes pendientes desde Telegram o formulario web.';
+      return;
+    }
+
+    const first = dashboardRuntime.pendingIntakes[0] || {};
+    const source = String(first.fuente || first.canal || '').toLowerCase().includes('telegram') ? 'Telegram' : 'Web';
+    const patientName = getDashboardFirstName(resolvePatientName(first));
+    const createdAt = fmtDate(first.creado_en || first.created_at || '');
+    setDashboardChip(dashboardIntakeStatus, `${count} en cola`, 'pendiente');
+    dashboardIntakeTitle.textContent = `${count} paciente${count === 1 ? '' : 's'} esperan triage`;
+    dashboardIntakeMeta.textContent = `${patientName} via ${source}${createdAt ? ` | ${createdAt}` : ''}`;
+  };
+
+  const renderDashboardPriorityList = () => {
+    if (!dashboardPriorityList) return;
+    const priorities: Array<{ label: string; title: string; body: string; tone: string; actionLabel: string; nav?: string; action?: string }> = [];
+    const next = dashboardRuntime.nextAppointment;
+    const intakeCount = dashboardRuntime.pendingIntakes.length;
+    const syncUiStatus = dashboardRuntime.syncUi?.uiStatus || '';
+
+    if (intakeCount > 0) {
+      priorities.push({
+        label: 'Triage',
+        title: `Revisar ${intakeCount} entrada${intakeCount === 1 ? '' : 's'} pendientes`,
+        body: 'Telegram y el formulario web estan trayendo pacientes que necesitan respuesta o conversion a cita.',
+        tone: 'warning',
+        actionLabel: 'Abrir intake',
+        nav: 'intakes',
+      });
+    }
+
+    if (next) {
+      priorities.push({
+        label: 'Proxima sesion',
+        title: `${getDashboardFirstName(next.nombre_paciente)} ${fmtHourOnly(next.inicio_en || '')}`,
+        body: next.motivo ? String(next.motivo) : 'Prepara el caso, revisa historial y deja listo el siguiente movimiento clinico.',
+        tone: 'accent',
+        actionLabel: String(next.paciente_id || '').trim() ? 'Abrir agente' : 'Ver agenda',
+        action: String(next.paciente_id || '').trim() ? 'open-copilot' : 'open-agenda',
+      });
+    }
+
+    if (['error', 'stale'].includes(syncUiStatus)) {
+      priorities.push({
+        label: 'Calendar',
+        title: dashboardRuntime.syncUi?.title || 'Revisar sincronizacion',
+        body: dashboardRuntime.syncUi?.meta || 'Google Calendar necesita atencion para mantener disponibilidad y bloqueos al dia.',
+        tone: 'danger',
+        actionLabel: 'Abrir agenda',
+        nav: 'citas',
+      });
+    }
+
+    if (!dashboardRuntime.todayAppointments.length) {
+      priorities.push({
+        label: 'Captacion',
+        title: 'Empujar reserva web y canal Telegram',
+        body: 'Sin carga clinica inmediata: buen momento para compartir la pagina publica y responder conversaciones entrantes.',
+        tone: 'ready',
+        actionLabel: 'Abrir reserva',
+        action: 'open-booking-page',
+      });
+    }
+
+    if (!priorities.length) {
+      priorities.push({
+        label: 'Continuidad',
+        title: 'La cabina esta estabilizada',
+        body: 'Aprovecha para revisar historial, documentos o dejar un plan de ejercicios listo para el siguiente paciente.',
+        tone: 'ready',
+        actionLabel: 'Abrir agente',
+        action: 'open-copilot',
+      });
+    }
+
+    dashboardPriorityList.innerHTML = priorities.slice(0, 4).map((item) => {
+      const actionAttrs = item.nav
+        ? `data-priority-nav="${escapeAttr(item.nav)}"`
+        : `data-priority-action="${escapeAttr(item.action || '')}"`;
+      return `<article class="priority-item priority-tone-${escapeAttr(item.tone)}"><div class="priority-copy"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.body)}</p></div><button type="button" class="btn-ghost btn-xs" ${actionAttrs}>${escapeHtml(item.actionLabel)}</button></article>`;
+    }).join('');
+  };
+
+  const syncDashboardCommandCenter = () => {
+    syncDashboardBookingMeta();
+    renderDashboardNextSessionCard();
+    renderDashboardIntakeCard();
+    renderDashboardPriorityList();
+    renderDashboardLiveSummary();
+  };
+
   const loadIntakes = async () => {
     if (!intakeBody) return;
     setListState(intakeBody, 'sync', 'Actualizando bandeja de intakes...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
       const intakes = payload.data || payload || [];
+      dashboardRuntime.pendingIntakes = intakes;
+      dashboardRuntime.intakeState = 'ready';
+      syncDashboardCommandCenter();
       const badge = document.getElementById('intakeBadge');
       if (badge) badge.textContent = String(intakes.length);
       if (!intakes.length) {
@@ -3205,6 +3549,9 @@ import Layout from '../layouts/Layout.astro';
         </article>`;
       }).join('');
     } catch {
+      dashboardRuntime.pendingIntakes = [];
+      dashboardRuntime.intakeState = 'error';
+      syncDashboardCommandCenter();
       setListState(intakeBody, 'cloud_off', 'No se pudieron cargar los intakes');
     }
   };
@@ -3584,9 +3931,23 @@ import Layout from '../layouts/Layout.astro';
   const renderDashboardCitas = (citas: any[], mode: 'ready' | 'error' = 'ready') => {
     if (!dashCitasBody) return;
     if (mode === 'error') {
+      dashboardRuntime.agendaState = 'error';
+      dashboardRuntime.weekAppointments = [];
+      dashboardRuntime.todayAppointments = [];
+      dashboardRuntime.nextAppointment = null;
+      syncDashboardCommandCenter();
       setListState(dashCitasBody, 'cloud_off', 'No se pudo cargar la agenda.');
       return;
     }
+
+    const activeAppointments = getDashboardActiveAppointments(citas);
+    const now = Date.now();
+    dashboardRuntime.agendaState = 'ready';
+    dashboardRuntime.weekAppointments = activeAppointments;
+    dashboardRuntime.todayAppointments = activeAppointments.filter((c: any) => isTodayDate(c.inicio_en || ''));
+    dashboardRuntime.nextAppointment = activeAppointments.find((c: any) => new Date(c.inicio_en).getTime() >= now) || activeAppointments[0] || null;
+    syncDashboardCommandCenter();
+
     if (!citas.length) {
       setListState(dashCitasBody, 'event_available', 'Sin citas agendadas por ahora.');
       return;
@@ -3659,18 +4020,6 @@ import Layout from '../layouts/Layout.astro';
   };
 
   const renderAgendaSyncStatus = (syncStatus: any = null, liveSummary: any = null) => {
-    if (!agendaSyncChip || !agendaSyncTitle || !agendaSyncMeta || !agendaSyncFacts) return;
-
-    if (!syncStatus && !liveSummary) {
-      agendaSyncChip.textContent = 'Sin datos';
-      agendaSyncChip.className = 'status-chip caducado';
-      agendaSyncTitle.textContent = 'Sync Google Calendar';
-      agendaSyncMeta.textContent = 'Todavia no hay estado del sincronizador.';
-      agendaSyncFacts.hidden = true;
-      agendaSyncFacts.innerHTML = '';
-      return;
-    }
-
     const uiStatus = String(syncStatus?.ui_status || '').trim();
     const summary = syncStatus?.summary || liveSummary || null;
     const lastSuccessAt = syncStatus?.last_success_at || null;
@@ -3722,12 +4071,11 @@ import Layout from '../layouts/Layout.astro';
     if (syncStatus?.next_expected_at) facts.push({ label: 'Proximo', value: fmtRelativeSyncAge(syncStatus.next_expected_at) });
     if (syncStatus?.error) facts.push({ label: 'Ultimo error', value: String(syncStatus.error) });
 
-    agendaSyncChip.textContent = chipLabel;
-    agendaSyncChip.className = `status-chip ${chipClass}`;
-    agendaSyncTitle.textContent = title;
-    agendaSyncMeta.textContent = meta;
-    agendaSyncFacts.hidden = facts.length === 0;
-    agendaSyncFacts.innerHTML = facts.map((fact) => `<span class="agenda-sync-fact"><strong>${escapeHtml(fact.label)}:</strong> ${escapeHtml(fact.value)}</span>`).join('');
+    const viewModel = { uiStatus, chipLabel, chipClass, title, meta, facts };
+    dashboardRuntime.syncUi = viewModel;
+    applySyncStatusView(agendaSyncChip, agendaSyncTitle, agendaSyncMeta, agendaSyncFacts, viewModel);
+    applySyncStatusView(dashboardSyncChip, dashboardSyncTitle, dashboardSyncMeta, dashboardSyncFacts, viewModel);
+    syncDashboardCommandCenter();
   };
 
   const renderAgendaCalendar = (citas: any[], weekStart: Date) => {
@@ -4174,7 +4522,9 @@ import Layout from '../layouts/Layout.astro';
   };
 
   const syncBookingLinkUi = () => {
-    if (bookingUrlInput) bookingUrlInput.value = buildPublicBookingUrl();
+    const publicBookingUrl = buildPublicBookingUrl();
+    if (bookingUrlInput) bookingUrlInput.value = publicBookingUrl;
+    syncDashboardBookingMeta();
   };
 
   const renderPatientTelegramLinkBlock = (linkState: any, errorMessage = '') => {
@@ -5716,6 +6066,19 @@ import Layout from '../layouts/Layout.astro';
       setBookingLinkFeedback(copied ? 'Enlace copiado al portapapeles.' : 'No pude copiar el enlace en este navegador.', copied ? 'success' : 'error');
     } catch {
       setBookingLinkFeedback('No pude copiar el enlace en este navegador.', 'error');
+    }
+  });
+  dashboardBookingOpenBtn?.addEventListener('click', () => {
+    syncBookingLinkUi();
+    window.open(buildPublicBookingUrl(), '_blank', 'noopener');
+  });
+  dashboardBookingCopyBtn?.addEventListener('click', async () => {
+    try {
+      syncBookingLinkUi();
+      const copied = await copyTextToClipboard(buildPublicBookingUrl());
+      setDashboardBookingFeedback(copied ? 'Enlace copiado.' : 'No pude copiar el enlace en este navegador.', copied ? 'success' : 'error');
+    } catch {
+      setDashboardBookingFeedback('No pude copiar el enlace en este navegador.', 'error');
     }
   });
 
@@ -9835,6 +10198,144 @@ import Layout from '../layouts/Layout.astro';
     background: #ffffff;
   }
 
+  .signal-card-live {
+    min-height: 220px;
+    justify-content: space-between;
+    gap: 0.72rem;
+  }
+
+  .signal-live-head,
+  .signal-card-actions {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .signal-card-actions {
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  .signal-card-live .signal-value {
+    font-size: 1.05rem;
+  }
+
+  .signal-card-live .btn-link-inline {
+    align-self: flex-start;
+  }
+
+  .signal-card-booking {
+    background:
+      radial-gradient(circle at top right, rgba(13, 148, 136, 0.13), transparent 44%),
+      linear-gradient(180deg, #ffffff 0%, #f0fbf7 100%);
+    border-color: #b9dfd4;
+  }
+
+  .dashboard-sync-facts {
+    margin-top: auto;
+  }
+
+  .priority-list {
+    display: grid;
+    gap: 0.72rem;
+  }
+
+  .priority-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #d9e6ed;
+    border-radius: 0.95rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f6fafb 100%);
+  }
+
+  .priority-copy {
+    display: grid;
+    gap: 0.22rem;
+  }
+
+  .priority-copy span {
+    color: #6d8297;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .priority-copy strong {
+    color: #10233d;
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+
+  .priority-copy p {
+    margin: 0;
+    color: #647b90;
+    line-height: 1.5;
+  }
+
+  .priority-item .btn-ghost {
+    flex-shrink: 0;
+  }
+
+  .priority-tone-warning {
+    border-color: #efd9aa;
+    background: linear-gradient(180deg, #fffaf0 0%, #fff5df 100%);
+  }
+
+  .priority-tone-danger {
+    border-color: #f2c6cc;
+    background: linear-gradient(180deg, #fff7f7 0%, #fff1f2 100%);
+  }
+
+  .priority-tone-accent {
+    border-color: #b9dfd4;
+    background: linear-gradient(180deg, #f8fffd 0%, #eefaf6 100%);
+  }
+
+  .priority-tone-ready {
+    border-color: #cee6db;
+    background: linear-gradient(180deg, #fbfffc 0%, #f1fbf5 100%);
+  }
+
+  .workflow-stack-lanes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .workflow-lane {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    font: inherit;
+    cursor: pointer;
+    gap: 0.35rem;
+    padding: 1rem;
+    border: 1px solid #d9e6ed;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f6fafb 100%);
+    text-align: left;
+    transition: transform 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out;
+  }
+
+  .workflow-lane:hover {
+    transform: translateY(-1px);
+    border-color: #b8d4df;
+    box-shadow: 0 18px 30px -24px rgba(15, 23, 42, 0.24);
+  }
+
+  .workflow-lane p {
+    margin: 0;
+    color: #647b90;
+    line-height: 1.55;
+  }
+
   @media (max-width: 1180px) {
     .cockpit-hero,
     .command-grid,
@@ -9845,6 +10346,14 @@ import Layout from '../layouts/Layout.astro';
     .agenda-sync-status {
       width: 100%;
       min-width: 0;
+    }
+
+    .workflow-stack-lanes {
+      grid-template-columns: 1fr;
+    }
+
+    .priority-item {
+      flex-direction: column;
     }
   }
 
