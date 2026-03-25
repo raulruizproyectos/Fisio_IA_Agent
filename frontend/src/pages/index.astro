@@ -655,6 +655,43 @@ import Layout from '../layouts/Layout.astro';
             <button class="btn-primary btn-sm" id="fichaEditToggle"><span class="material-symbols-rounded">edit</span> Editar datos</button>
           </div>
 
+          <section class="ficha-hero-shell">
+            <div class="ficha-hero-main">
+              <span class="ficha-hero-kicker">Caso clinico</span>
+              <div class="ficha-hero-copy">
+                <h2 id="fichaHeroName">Paciente no cargado</h2>
+                <p id="fichaHeroSummary">Selecciona un paciente para ver un resumen ejecutivo del caso, continuidad clinica y proximas acciones.</p>
+              </div>
+              <div class="ficha-hero-actions">
+                <button class="btn-primary" type="button" id="fichaHeroCopilotBtn"><span class="material-symbols-rounded">psychology</span> Abrir agente</button>
+                <button class="btn-secondary" type="button" id="fichaHeroAgendaBtn"><span class="material-symbols-rounded">calendar_today</span> Ir a agenda</button>
+                <button class="btn-ghost" type="button" id="fichaHeroDocsBtn"><span class="material-symbols-rounded">description</span> Ver documentos</button>
+              </div>
+            </div>
+            <div class="ficha-hero-grid">
+              <article class="ficha-hero-card">
+                <span class="ficha-hero-card-label">Ultima sesion</span>
+                <strong id="fichaHeroLastSession">Sin citas registradas</strong>
+                <p id="fichaHeroLastSessionMeta">Todavia no hay actividad clinica registrada.</p>
+              </article>
+              <article class="ficha-hero-card">
+                <span class="ficha-hero-card-label">Notas y seguimiento</span>
+                <strong id="fichaHeroNotesCount">0 notas</strong>
+                <p id="fichaHeroLatestNote">La linea temporal del caso aparecera aqui.</p>
+              </article>
+              <article class="ficha-hero-card">
+                <span class="ficha-hero-card-label">Actividad economica</span>
+                <strong id="fichaHeroPaymentsTotal">0,00 EUR</strong>
+                <p id="fichaHeroPaymentsMeta">Sin pagos registrados todavia.</p>
+              </article>
+              <article class="ficha-hero-card ficha-hero-card-accent">
+                <span class="ficha-hero-card-label">Continuidad</span>
+                <strong id="fichaHeroContinuity">Caso listo para revisar</strong>
+                <p id="fichaHeroContinuityMeta">Usa el agente, documentos y agenda desde esta misma vista.</p>
+              </article>
+            </div>
+          </section>
+
           <!-- Tabs -->
           <div class="ficha-tabs">
             <button class="ficha-tab active" data-ficha-tab="datos">Datos personales</button>
@@ -5176,6 +5213,19 @@ import Layout from '../layouts/Layout.astro';
   let fichaPatientId: string | null = null;
   let fichaData: any = null;
   const fichaTitulo = document.getElementById('fichaTitulo');
+  const fichaHeroName = document.getElementById('fichaHeroName');
+  const fichaHeroSummary = document.getElementById('fichaHeroSummary');
+  const fichaHeroLastSession = document.getElementById('fichaHeroLastSession');
+  const fichaHeroLastSessionMeta = document.getElementById('fichaHeroLastSessionMeta');
+  const fichaHeroNotesCount = document.getElementById('fichaHeroNotesCount');
+  const fichaHeroLatestNote = document.getElementById('fichaHeroLatestNote');
+  const fichaHeroPaymentsTotal = document.getElementById('fichaHeroPaymentsTotal');
+  const fichaHeroPaymentsMeta = document.getElementById('fichaHeroPaymentsMeta');
+  const fichaHeroContinuity = document.getElementById('fichaHeroContinuity');
+  const fichaHeroContinuityMeta = document.getElementById('fichaHeroContinuityMeta');
+  const fichaHeroCopilotBtn = document.getElementById('fichaHeroCopilotBtn') as HTMLButtonElement | null;
+  const fichaHeroAgendaBtn = document.getElementById('fichaHeroAgendaBtn') as HTMLButtonElement | null;
+  const fichaHeroDocsBtn = document.getElementById('fichaHeroDocsBtn') as HTMLButtonElement | null;
   const fichaDatosView = document.getElementById('fichaDatosView');
   const fichaDatosForm = document.getElementById('fichaDatosForm') as HTMLFormElement | null;
   const fichaEditToggle = document.getElementById('fichaEditToggle');
@@ -5189,6 +5239,81 @@ import Layout from '../layouts/Layout.astro';
   const fichaNotaFormTitle = document.getElementById('fichaNotaFormTitle');
   const fichaAddNota = document.getElementById('fichaAddNota');
   const fichaNotaCancel = document.getElementById('fichaNotaCancel');
+
+  const getPatientFullName = (patient: any) =>
+    [patient?.nombre, patient?.apellidos].map((value: any) => String(value || '').trim()).filter(Boolean).join(' ') || patient?.nombre_completo || 'Paciente';
+
+  const getPatientAgeLabel = (birthDate: string | null | undefined) => {
+    if (!birthDate) return '';
+    const birth = new Date(birthDate);
+    if (Number.isNaN(birth.getTime())) return '';
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age -= 1;
+    return age > 0 ? `${age} anos` : '';
+  };
+
+  const getFichaLatestAppointment = (citas: any[] = []) =>
+    [...citas]
+      .filter((cita: any) => cita?.fecha_hora)
+      .sort((a: any, b: any) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime())[0] || null;
+
+  const renderFichaHero = (payload: any) => {
+    const patient = payload?.paciente || {};
+    const citas = Array.isArray(payload?.citas) ? payload.citas : [];
+    const pagos = Array.isArray(payload?.pagos) ? payload.pagos : [];
+    const notas = Array.isArray(payload?.notas) ? payload.notas : [];
+    const patientName = getPatientFullName(patient);
+    const ageLabel = getPatientAgeLabel(patient?.fecha_nacimiento);
+    const latestAppointment = getFichaLatestAppointment(citas);
+    const latestNote = notas[0] || null;
+    const totalPayments = pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
+    const continuityLabel = latestNote
+      ? 'Caso con seguimiento activo'
+      : citas.length
+        ? 'Caso listo para reactivar'
+        : 'Primera valoracion pendiente';
+    const continuityMeta = latestNote
+      ? 'Tienes contexto clinico para iterar con el agente, documentar y programar la siguiente sesion.'
+      : citas.length
+        ? 'Conviene revisar historial, agendar siguiente paso y consolidar documentos del caso.'
+        : 'Buen momento para capturar antecedentes, objetivo clinico y primer plan de ejercicios.';
+
+    if (fichaHeroName) fichaHeroName.textContent = patientName;
+    if (fichaHeroSummary) {
+      const bits = [patient?.email || '', patient?.telefono || '', ageLabel].filter(Boolean);
+      fichaHeroSummary.textContent = bits.length
+        ? bits.join(' | ')
+        : 'Completa datos, continuidad clinica y proximas acciones desde una sola vista.';
+    }
+    if (fichaHeroLastSession) fichaHeroLastSession.textContent = latestAppointment?.fecha_hora ? fmtDate(latestAppointment.fecha_hora) : 'Sin citas registradas';
+    if (fichaHeroLastSessionMeta) fichaHeroLastSessionMeta.textContent = latestAppointment?.motivo || 'Todavia no hay actividad clinica registrada.';
+    if (fichaHeroNotesCount) fichaHeroNotesCount.textContent = `${notas.length} nota${notas.length === 1 ? '' : 's'}`;
+    if (fichaHeroLatestNote) fichaHeroLatestNote.textContent = latestNote?.nota ? trimAgentBriefText(latestNote.nota, 140) : 'La linea temporal del caso aparecera aqui cuando empieces a registrar seguimiento.';
+    if (fichaHeroPaymentsTotal) fichaHeroPaymentsTotal.textContent = `${totalPayments.toFixed(2)} EUR`;
+    if (fichaHeroPaymentsMeta) fichaHeroPaymentsMeta.textContent = pagos.length ? `${pagos.length} pago${pagos.length === 1 ? '' : 's'} registrado${pagos.length === 1 ? '' : 's'} en el caso.` : 'Sin pagos registrados todavia.';
+    if (fichaHeroContinuity) fichaHeroContinuity.textContent = continuityLabel;
+    if (fichaHeroContinuityMeta) fichaHeroContinuityMeta.textContent = continuityMeta;
+  };
+
+  fichaHeroCopilotBtn?.addEventListener('click', () => {
+    if (fichaPatientId) {
+      syncChatPatientSelection(fichaPatientId, fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}));
+    }
+    openAssistantRail();
+  });
+
+  fichaHeroAgendaBtn?.addEventListener('click', () => {
+    navigateTo('citas');
+  });
+
+  fichaHeroDocsBtn?.addEventListener('click', () => {
+    document.querySelectorAll('.ficha-tab').forEach((tab) => tab.classList.remove('active'));
+    document.querySelectorAll('.ficha-panel').forEach((panel) => panel.classList.remove('active'));
+    document.querySelector('[data-ficha-tab="documentos"]')?.classList.add('active');
+    document.querySelector('[data-ficha-panel="documentos"]')?.classList.add('active');
+  });
 
   // Tab switching
   document.querySelectorAll('.ficha-tab').forEach(tab => {
@@ -5220,6 +5345,9 @@ import Layout from '../layouts/Layout.astro';
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`);
       fichaData = payload;
+      selectedPatientId = patientId;
+      selectedPatientName = getPatientFullName(payload.paciente);
+      renderFichaHero(payload);
       renderFichaDatos(payload.paciente);
       renderFichaCitas(payload.citas);
       renderFichaPagos(payload.pagos);
@@ -12780,5 +12908,182 @@ import Layout from '../layouts/Layout.astro';
     max-height: 6.8rem !important;
     font-size: 0.92rem !important;
   }
+
+  /* === FINAL HERO FIX + FICHA PACIENTE V1 === */
+  .hero-panel-main .hero-title {
+    color: #f5efe6 !important;
+  }
+
+  .hero-panel-main .hero-subtitle {
+    color: rgba(234, 241, 246, 0.9) !important;
+  }
+
+  .hero-panel-main .btn-secondary,
+  .hero-panel-main .btn-ghost,
+  .hero-panel-main .btn-link-inline,
+  .clinical-hero-band span {
+    color: #f8fbfd !important;
+  }
+
+  .ficha-hero-shell {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.15rem;
+  }
+
+  .ficha-hero-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.2rem 1.3rem;
+    border: 1px solid rgba(208, 194, 170, 0.5);
+    border-radius: 1.4rem;
+    background: linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(245, 237, 226, 0.94));
+    box-shadow: 0 24px 42px -34px rgba(41, 33, 24, 0.18);
+  }
+
+  .ficha-hero-kicker,
+  .ficha-hero-card-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a6731;
+  }
+
+  .ficha-hero-copy {
+    display: grid;
+    gap: 0.4rem;
+    max-width: 46rem;
+  }
+
+  .ficha-hero-copy h2 {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: clamp(1.8rem, 2.8vw, 2.5rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+    color: #16283b;
+  }
+
+  .ficha-hero-copy p {
+    margin: 0;
+    color: #5f6f7f;
+    line-height: 1.55;
+  }
+
+  .ficha-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .ficha-hero-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.95rem;
+  }
+
+  .ficha-hero-card {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 10rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(208, 194, 170, 0.46);
+    border-radius: 1.15rem;
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(245, 237, 226, 0.94));
+    box-shadow: 0 20px 34px -30px rgba(41, 33, 24, 0.16);
+  }
+
+  .ficha-hero-card strong {
+    font-size: 1.18rem;
+    line-height: 1.15;
+    color: #1a3044;
+  }
+
+  .ficha-hero-card p {
+    margin: 0;
+    color: #627282;
+    line-height: 1.55;
+  }
+
+  .ficha-hero-card-accent {
+    background: linear-gradient(145deg, #173d59 0%, #1f5661 100%);
+    border-color: rgba(149, 183, 199, 0.26);
+  }
+
+  .ficha-hero-card-accent .ficha-hero-card-label {
+    color: #d9c186;
+  }
+
+  .ficha-hero-card-accent strong,
+  .ficha-hero-card-accent p {
+    color: #f7fafc;
+  }
+
+  .page-section[data-page='ficha-paciente'] .page-header-row {
+    margin-bottom: 1rem;
+  }
+
+  .page-section[data-page='ficha-paciente'] .card {
+    border: 1px solid rgba(208, 194, 170, 0.46);
+    border-radius: 1.3rem;
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(246, 239, 228, 0.94));
+    box-shadow: 0 20px 34px -30px rgba(41, 33, 24, 0.16);
+  }
+
+  .ficha-tabs {
+    gap: 0.65rem;
+    padding: 0.35rem;
+    border-radius: 1rem;
+    background: rgba(255, 251, 245, 0.82);
+    border: 1px solid rgba(208, 194, 170, 0.42);
+    margin-bottom: 1rem;
+  }
+
+  .ficha-tab {
+    border-radius: 999px;
+    padding-inline: 1rem;
+  }
+
+  .ficha-tab.active {
+    background: linear-gradient(135deg, #173d59, #1e5863);
+    color: #fffdfa;
+    border-bottom-color: transparent;
+  }
+
+  @media (max-width: 1180px) {
+    .ficha-hero-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .ficha-hero-main {
+      padding: 1rem;
+    }
+
+    .ficha-hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ficha-hero-actions {
+      width: 100%;
+    }
+
+    .ficha-hero-actions .btn-primary,
+    .ficha-hero-actions .btn-secondary,
+    .ficha-hero-actions .btn-ghost {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+  }
+
 </style>
 
