@@ -4,7 +4,32 @@ import PDFDocument from 'pdfkit';
 
 const router = Router();
 
+const DOCUMENTS_TABLE = 'crm_documentos';
 const DOC_SELECT = 'id, paciente_id, tipo, titulo, estado, fecha_firma, created_at, updated_at';
+
+const isMissingDocumentsTableError = (error) => {
+  const message = String(error?.message || '').toLowerCase();
+  const code = String(error?.code || '').toUpperCase();
+  return code === 'PGRST205' || (message.includes('crm_documentos') && (message.includes('schema cache') || message.includes('could not find the table')));
+};
+
+const documentsUnavailableMessage = 'Modulo documentos no disponible: falta tabla crm_documentos. Ejecuta database/migrations/010_crm_documentos.sql en Supabase.';
+
+const respondDocumentsUnavailable = (res, { write = false } = {}) => {
+  if (write) {
+    return res.status(503).json({
+      error: documentsUnavailableMessage,
+      missing_table: DOCUMENTS_TABLE,
+    });
+  }
+
+  return res.json({
+    data: [],
+    unavailable: true,
+    error: documentsUnavailableMessage,
+    missing_table: DOCUMENTS_TABLE,
+  });
+};
 
 const PLANTILLAS = {
   consentimiento_informado: (paciente) => `CONSENTIMIENTO INFORMADO DE INTERVENCIÓN FISIOTERÁPICA
@@ -51,13 +76,16 @@ router.get('/', async (req, res, next) => {
   try {
     const { paciente_id } = req.query;
     let query = supabase
-      .from('crm_documentos')
+      .from(DOCUMENTS_TABLE)
       .select(`${DOC_SELECT}, crm_pacientes(nombre, apellidos)`)
       .order('created_at', { ascending: false });
     if (paciente_id) query = query.eq('paciente_id', paciente_id);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      if (isMissingDocumentsTableError(error)) return respondDocumentsUnavailable(res);
+      throw error;
+    }
     res.json({ data: data || [] });
   } catch (err) { next(err); }
 });
@@ -86,12 +114,15 @@ router.post('/', async (req, res, next) => {
     };
 
     const { data, error } = await supabase
-      .from('crm_documentos')
+      .from(DOCUMENTS_TABLE)
       .insert({ paciente_id, tipo, titulo: titulos[tipo] || 'Documento', contenido })
       .select(DOC_SELECT)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (isMissingDocumentsTableError(error)) return respondDocumentsUnavailable(res, { write: true });
+      throw error;
+    }
     res.status(201).json({ data, contenido });
   } catch (err) { next(err); }
 });
@@ -103,7 +134,7 @@ router.post('/:id/firmar', async (req, res, next) => {
     if (!firma_base64) return res.status(400).json({ error: 'firma_base64 requerida' });
 
     const { data, error } = await supabase
-      .from('crm_documentos')
+      .from(DOCUMENTS_TABLE)
       .update({
         firma_base64,
         estado: 'firmado',
@@ -114,7 +145,10 @@ router.post('/:id/firmar', async (req, res, next) => {
       .select('*, crm_pacientes(nombre, apellidos, dni)')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (isMissingDocumentsTableError(error)) return respondDocumentsUnavailable(res, { write: true });
+      throw error;
+    }
     res.json({ data });
   } catch (err) { next(err); }
 });
@@ -123,12 +157,16 @@ router.post('/:id/firmar', async (req, res, next) => {
 router.get('/:id/pdf', async (req, res, next) => {
   try {
     const { data: doc, error } = await supabase
-      .from('crm_documentos')
+      .from(DOCUMENTS_TABLE)
       .select('*, crm_pacientes(nombre, apellidos, dni)')
       .eq('id', req.params.id)
       .single();
 
-    if (error || !doc) return res.status(404).json({ error: 'Documento no encontrado' });
+    if (error) {
+      if (isMissingDocumentsTableError(error)) return respondDocumentsUnavailable(res, { write: true });
+      return res.status(404).json({ error: 'Documento no encontrado' });
+    }
+    if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
 
     const pac = doc.crm_pacientes || {};
     const pacNombre = [pac.nombre, pac.apellidos].filter(Boolean).join(' ');
@@ -203,8 +241,11 @@ router.get('/:id/pdf', async (req, res, next) => {
 // DELETE /api/documentos/:id
 router.delete('/:id', async (req, res, next) => {
   try {
-    const { error } = await supabase.from('crm_documentos').delete().eq('id', req.params.id);
-    if (error) throw error;
+    const { error } = await supabase.from(DOCUMENTS_TABLE).delete().eq('id', req.params.id);
+    if (error) {
+      if (isMissingDocumentsTableError(error)) return respondDocumentsUnavailable(res, { write: true });
+      throw error;
+    }
     res.json({ ok: true });
   } catch (err) { next(err); }
 });
