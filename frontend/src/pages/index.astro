@@ -11286,6 +11286,304 @@ import Layout from '../layouts/Layout.astro';
     background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   }
 
+
+  /* === FINAL VISUAL POLISH V3 === */
+  .hero-title,
+  .cockpit-side-title,
+  .cockpit-block h2,
+  .assistant-rail-copy h2,
+  .assistant-mode-card-head strong,
+  .assistant-delivery-head strong,
+  .assistant-diagnostic-head strong {
+    font-family: var(--font-ui);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  .hero-panel-main {
+    min-height: 470px;
+    border: 1px solid rgba(148, 178, 198, 0.26);
+    background:
+      radial-gradient(circle at top right, rgba(115, 168, 197, 0.18), transparent 30%),
+      radial-gradient(circle at left 76%, rgba(23, 107, 99, 0.14), transparent 34%),
+      linear-gradient(145deg, #17344c 0%, #214b67 54%, #1d4f62 100%);
+    box-shadow: 0 38px 72px -48px rgba(17, 28, 40, 0.54);
+  }
+
+  .hero-panel-main::before {
+    content: '';
+    position: absolute;
+    inset: auto -10% -16% auto;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(225, 201, 139, 0.18), rgba(225, 201, 139, 0));
+    pointer-events: none;
+  }
+
+  .hero-panel-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.34), rgba(0,0,0,0));
+    pointer-events: none;
+  }
+
+  .hero-panel-main > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-panel-main .hero-eyebrow,
+  .hero-panel-main .signal-kicker {
+    color: #cce7df;
+  }
+
+  .hero-panel-main .hero-title {
+    max-width: 12ch;
+    font-size: clamp(2.3rem, 4vw, 3.7rem);
+    line-height: 0.94;
+    color: #f4f0e8;
+  }
+
+  .hero-panel-main .hero-subtitle {
+    max-width: 48rem;
+    color: rgba(235, 242, 247, 0.9);
+    font-size: clamp(0.96rem, 1.1vw, 1.04rem);
+  }
+
+  .clinical-hero-band span {
+    background: rgba(248, 250, 252, 0.12);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #edf4f8;
+    box-shadow: none;
+  }
+
+  .clinical-hero-band .material-symbols-rounded {
+    color: #e1c98b;
+  }
+
+  .hero-panel-main .btn-primary {
+    background: linear-gradient(135deg, #f2efe7, #ddd5c7);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #17344c;
+    box-shadow: 0 20px 36px -28px rgba(8, 17, 27, 0.52);
+  }
+
+  .hero-panel-main .btn-primary:hover {
+    background: linear-gradient(135deg, #faf7f0, #e8e0d0);
+    color: #10283c;
+  }
+
+  .hero-panel-main .btn-secondary,
+  .hero-panel-main .btn-ghost,
+  .hero-panel-main .btn-link-inline {
+    background: rgba(248, 250, 252, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #f7fafc;
+    box-shadow: none;
+  }
+
+  .hero-panel-main .btn-secondary:hover,
+  .hero-panel-main .btn-ghost:hover,
+  .hero-panel-main .btn-link-inline:hover {
+    background: rgba(248, 250, 252, 0.14);
+    border-color: rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+  }
+
+  .hero-panel-main .signal-card {
+    background: linear-gradient(180deg, rgba(247, 250, 252, 0.11), rgba(247, 250, 252, 0.07));
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: none;
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-panel-main .signal-card .signal-value,
+  .hero-panel-main .signal-card .agenda-sync-fact strong {
+    color: #ffffff;
+  }
+
+  .hero-panel-main .signal-card p,
+  .hero-panel-main .signal-card .agenda-sync-fact {
+    color: rgba(233, 241, 246, 0.88);
+  }
+
+  .hero-panel-main .agenda-sync-fact {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .cockpit-side-card-agent,
+  .priorities-side-card,
+  .cockpit-block-lanes,
+  .cockpit-block:not(.cockpit-block-lanes),
+  .card.widget-card,
+  .clinical-metrics .metric-card {
+    border-color: rgba(208, 194, 170, 0.5);
+    box-shadow: 0 22px 42px -34px rgba(41, 33, 24, 0.2);
+  }
+
+  .cockpit-side-card-agent,
+  .priorities-side-card,
+  .cockpit-block-lanes,
+  .cockpit-block:not(.cockpit-block-lanes),
+  .command-tile,
+  .dashboard-bottom-row .widget-card:first-child,
+  .dashboard-bottom-row .widget-card:last-child,
+  .clinical-metrics .metric-card {
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(244, 236, 224, 0.94));
+  }
+
+  .cockpit-side-card-agent .cockpit-side-title {
+    max-width: none;
+    font-size: clamp(1.4rem, 1.9vw, 1.9rem);
+    line-height: 1.02;
+    color: #17293a;
+  }
+
+  .cockpit-side-card-agent p,
+  .priorities-side-card .priority-copy p,
+  .workflow-lane p,
+  .command-tile p,
+  .signal-card p,
+  .clinical-metrics .metric-label {
+    color: #617080;
+  }
+
+  .priorities-side-card .cockpit-side-kicker,
+  .priorities-side-card .priority-copy span,
+  .cockpit-side-card-agent .cockpit-side-kicker,
+  .cockpit-block-lanes .hero-eyebrow,
+  .cockpit-block-lanes .workflow-tag {
+    color: #8a6731;
+  }
+
+  .priorities-side-card .priority-item,
+  .cockpit-block-lanes .workflow-lane {
+    background: rgba(255, 253, 248, 0.92);
+    border-color: rgba(208, 194, 170, 0.44);
+  }
+
+  .priorities-side-card .priority-copy strong,
+  .priorities-side-card .btn-ghost,
+  .cockpit-block-lanes h2,
+  .cockpit-block-lanes .workflow-lane,
+  .command-tile strong,
+  .signal-value,
+  .clinical-metrics .metric-value {
+    color: #1d3144;
+  }
+
+  .priorities-side-card .btn-ghost,
+  .cockpit-side-card-agent .btn-ghost,
+  .cockpit-block-lanes .workflow-lane,
+  .command-tile,
+  .btn-secondary {
+    background: rgba(255, 253, 248, 0.9);
+    border-color: rgba(208, 194, 170, 0.46);
+    color: #264055;
+  }
+
+  .priorities-side-card .btn-ghost:hover,
+  .cockpit-side-card-agent .btn-ghost:hover,
+  .cockpit-block-lanes .workflow-lane:hover,
+  .command-tile:hover,
+  .btn-secondary:hover {
+    background: #fffdfa;
+    border-color: rgba(166, 124, 57, 0.34);
+    color: #182536;
+  }
+
+  .assistant-rail-copy h2 {
+    font-size: 1.08rem;
+    line-height: 1.12;
+    color: #182536;
+  }
+
+  .assistant-eyebrow,
+  .assistant-brief-kicker {
+    color: #8a6731;
+  }
+
+  .assistant-connected-badge,
+  .assistant-mode-pill,
+  .assistant-delivery-pill.is-ready,
+  .assistant-brief-pill {
+    background: rgba(23, 107, 99, 0.1);
+    color: #12544e;
+  }
+
+  .assistant-mode-pill.is-soft,
+  .assistant-delivery-pill,
+  .assistant-delivery-pill.is-soft {
+    background: rgba(166, 124, 57, 0.1);
+    color: #755726;
+  }
+
+  .assistant-rail-card,
+  .assistant-module-header,
+  .assistant-rail .assistant-toolbar,
+  .assistant-rail .assistant-dialog-surface,
+  .assistant-rail .ai-input-area,
+  .assistant-rail .chat-log,
+  .assistant-patient-brief,
+  .assistant-mode-card,
+  .assistant-delivery-card,
+  .assistant-brief-item,
+  .assistant-diagnostic-card,
+  .assistant-intake-field,
+  .assistant-rail .ai-textarea-wrapper,
+  .assistant-rail .msg.agent .msg-body,
+  .assistant-rail .exercise-card,
+  .assistant-rail .exercise-note,
+  .assistant-rail .exercise-summary,
+  .assistant-rail .exercise-patient-msg,
+  .assistant-rail .msg-progress .msg-body {
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(245, 237, 226, 0.94));
+    border-color: rgba(208, 194, 170, 0.46);
+    color: #425365;
+  }
+
+  .assistant-rail .msg.user .msg-body,
+  .assistant-rail .msg-body.user-msg {
+    background: linear-gradient(135deg, #173d59, #1f5a5a);
+    color: #fffdfa;
+    box-shadow: 0 16px 28px -22px rgba(22, 44, 61, 0.38);
+  }
+
+  .assistant-rail .btn-pdf,
+  .assistant-rail .btn-chat,
+  .assistant-rail .btn-telegram,
+  .assistant-chip,
+  .btn-link-inline,
+  .assistant-mode-chip,
+  .assistant-rail .patient-selector {
+    background: rgba(255, 253, 248, 0.92);
+    border-color: rgba(208, 194, 170, 0.48);
+    color: #264055;
+  }
+
+  .assistant-mode-chip.is-active,
+  .assistant-rail .btn-generate,
+  .assistant-rail .btn-send-compact {
+    background: linear-gradient(135deg, #173d59, #1e5863);
+    border-color: #1e5863;
+    color: #fffdfa;
+  }
+
+  .assistant-rail .btn-generate:hover,
+  .assistant-rail .btn-send-compact:hover,
+  .assistant-mode-chip.is-active:hover {
+    background: linear-gradient(135deg, #14344c, #194b54) !important;
+    border-color: #194b54 !important;
+  }
+
   @media (max-width: 1320px) {
     .clinical-metrics,
     .dashboard-ops-grid,
