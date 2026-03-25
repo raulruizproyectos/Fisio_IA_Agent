@@ -692,17 +692,60 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </section>
 
-          <!-- Tabs -->
-          <div class="ficha-tabs">
-            <button class="ficha-tab active" data-ficha-tab="datos">Datos personales</button>
-            <button class="ficha-tab" data-ficha-tab="notas">Notas cl&iacute;nicas</button>
-            <button class="ficha-tab" data-ficha-tab="citas">Historial citas</button>
-            <button class="ficha-tab" data-ficha-tab="pagos">Historial pagos</button>
-            <button class="ficha-tab" data-ficha-tab="documentos">Documentos</button>
-          </div>
+          <section class="ficha-case-shell">
+            <div class="ficha-case-main">
+              <!-- Tabs -->
+              <div class="ficha-tabs">
+                <button class="ficha-tab active" data-ficha-tab="resumen">Resumen de caso</button>
+                <button class="ficha-tab" data-ficha-tab="datos">Datos personales</button>
+                <button class="ficha-tab" data-ficha-tab="notas">Notas cl&iacute;nicas</button>
+                <button class="ficha-tab" data-ficha-tab="citas">Historial citas</button>
+                <button class="ficha-tab" data-ficha-tab="pagos">Historial pagos</button>
+                <button class="ficha-tab" data-ficha-tab="documentos">Documentos</button>
+              </div>
+
+              <div class="ficha-panel active" data-ficha-panel="resumen">
+                <div class="ficha-overview-layout">
+                  <section class="card ficha-overview-card ficha-overview-hero">
+                    <header class="ficha-section-head">
+                      <div>
+                        <span class="ficha-section-kicker">Pulso del caso</span>
+                        <h2>Lo importante, sin abrir diez pantallas</h2>
+                      </div>
+                    </header>
+                    <div class="ficha-overview-stats" id="fichaOverviewStats">
+                      <p class="empty-inline">El resumen ejecutivo del caso aparecera aqui.</p>
+                    </div>
+                  </section>
+
+                  <section class="card ficha-overview-card">
+                    <header class="ficha-section-head">
+                      <div>
+                        <span class="ficha-section-kicker">Actividad reciente</span>
+                        <h2>Timeline clinica y operativa</h2>
+                      </div>
+                    </header>
+                    <div class="ficha-overview-stream" id="fichaOverviewStream">
+                      <p class="empty-inline">La actividad reciente del caso aparecera aqui.</p>
+                    </div>
+                  </section>
+
+                  <section class="card ficha-overview-card">
+                    <header class="ficha-section-head">
+                      <div>
+                        <span class="ficha-section-kicker">Siguientes decisiones</span>
+                        <h2>Que conviene cerrar ahora</h2>
+                      </div>
+                    </header>
+                    <div class="ficha-decision-list" id="fichaDecisionList">
+                      <p class="empty-inline">Todavia no hay decisiones sugeridas para este caso.</p>
+                    </div>
+                  </section>
+                </div>
+              </div>
 
           <!-- Tab: Datos personales -->
-          <div class="ficha-panel active" data-ficha-panel="datos">
+          <div class="ficha-panel" data-ficha-panel="datos">
             <section class="card">
               <div class="ficha-datos-grid" id="fichaDatosView">
                 <!-- Rendered by JS -->
@@ -811,6 +854,33 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </section>
           </div>
+            </div>
+            <aside class="ficha-case-rail">
+              <section class="card ficha-rail-card ficha-rail-card-accent">
+                <span class="ficha-rail-label">Siguiente mejor paso</span>
+                <strong id="fichaRailNextTitle">Selecciona un paciente</strong>
+                <p id="fichaRailNextMeta">La ficha te sugerira la siguiente accion clinica u operativa segun el estado real del caso.</p>
+                <div class="ficha-rail-actions">
+                  <button class="btn-primary" type="button" id="fichaRailPrimaryBtn"><span class="material-symbols-rounded">arrow_forward</span> Continuar</button>
+                  <button class="btn-secondary" type="button" id="fichaRailTelegramBtn"><span class="material-symbols-rounded">send</span> Telegram</button>
+                </div>
+              </section>
+
+              <section class="card ficha-rail-card">
+                <span class="ficha-rail-label">Canales del paciente</span>
+                <div class="ficha-rail-stack" id="fichaRailChannels">
+                  <p class="empty-inline">Email, telefono y continuidad apareceran aqui.</p>
+                </div>
+              </section>
+
+              <section class="card ficha-rail-card">
+                <span class="ficha-rail-label">Checklist operativo</span>
+                <div class="ficha-checklist" id="fichaRailChecklist">
+                  <p class="empty-inline">La checklist del caso aparecera aqui.</p>
+                </div>
+              </section>
+            </aside>
+          </section>
         </div>
 
         <!-- Modal firma digital -->
@@ -5239,6 +5309,15 @@ import Layout from '../layouts/Layout.astro';
   const fichaNotaFormTitle = document.getElementById('fichaNotaFormTitle');
   const fichaAddNota = document.getElementById('fichaAddNota');
   const fichaNotaCancel = document.getElementById('fichaNotaCancel');
+  const fichaOverviewStats = document.getElementById('fichaOverviewStats');
+  const fichaOverviewStream = document.getElementById('fichaOverviewStream');
+  const fichaDecisionList = document.getElementById('fichaDecisionList');
+  const fichaRailNextTitle = document.getElementById('fichaRailNextTitle');
+  const fichaRailNextMeta = document.getElementById('fichaRailNextMeta');
+  const fichaRailPrimaryBtn = document.getElementById('fichaRailPrimaryBtn') as HTMLButtonElement | null;
+  const fichaRailTelegramBtn = document.getElementById('fichaRailTelegramBtn') as HTMLButtonElement | null;
+  const fichaRailChannels = document.getElementById('fichaRailChannels');
+  const fichaRailChecklist = document.getElementById('fichaRailChecklist');
 
   const getPatientFullName = (patient: any) =>
     [patient?.nombre, patient?.apellidos].map((value: any) => String(value || '').trim()).filter(Boolean).join(' ') || patient?.nombre_completo || 'Paciente';
@@ -5258,6 +5337,173 @@ import Layout from '../layouts/Layout.astro';
     [...citas]
       .filter((cita: any) => cita?.fecha_hora)
       .sort((a: any, b: any) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime())[0] || null;
+
+  const activateFichaTab = (tabName: string) => {
+    document.querySelectorAll('.ficha-tab').forEach((tab) => {
+      tab.classList.toggle('active', tab.getAttribute('data-ficha-tab') === tabName);
+    });
+    document.querySelectorAll('.ficha-panel').forEach((panel) => {
+      panel.classList.toggle('active', panel.getAttribute('data-ficha-panel') === tabName);
+    });
+  };
+
+  const buildFichaActivityItems = (citas: any[] = [], notas: any[] = []) => {
+    const citaItems = citas
+      .filter((cita: any) => cita?.fecha_hora)
+      .map((cita: any) => ({
+        type: 'cita',
+        date: cita.fecha_hora,
+        label: cita.estado ? `Cita ${String(cita.estado).toLowerCase()}` : 'Cita registrada',
+        title: cita.motivo || 'Sesion clinica',
+        meta: cita.fecha_hora ? fmtDate(cita.fecha_hora) : 'Fecha no disponible',
+      }));
+
+    const notaItems = notas
+      .filter((nota: any) => nota?.fecha)
+      .map((nota: any) => ({
+        type: 'nota',
+        date: nota.fecha,
+        label: nota?.dolor_eva != null ? `EVA ${nota.dolor_eva}/10` : 'Nota clinica',
+        title: trimAgentBriefText(nota.nota || 'Seguimiento clinico', 88),
+        meta: nota.fecha ? fmtDate(nota.fecha) : 'Fecha no disponible',
+      }));
+
+    return [...citaItems, ...notaItems]
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 6);
+  };
+
+  const renderFichaWorkspace = (payload: any) => {
+    const patient = payload?.paciente || {};
+    const citas = Array.isArray(payload?.citas) ? payload.citas : [];
+    const pagos = Array.isArray(payload?.pagos) ? payload.pagos : [];
+    const notas = Array.isArray(payload?.notas) ? payload.notas : [];
+    const latestAppointment = getFichaLatestAppointment(citas);
+    const latestNote = notas[0] || null;
+    const totalPayments = pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
+    const latestEva = latestNote?.dolor_eva != null ? Number(latestNote.dolor_eva) : null;
+    const patientName = getPatientFullName(patient);
+    const activityItems = buildFichaActivityItems(citas, notas);
+
+    if (fichaOverviewStats) {
+      fichaOverviewStats.innerHTML = `
+        <article class="ficha-overview-stat">
+          <span>Estado del caso</span>
+          <strong>${escapeHtml(latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoracion')}</strong>
+          <p>${escapeHtml(latestNote ? 'Ya hay criterio clinico registrado para iterar con el agente.' : citas.length ? 'Conviene cerrar seguimiento y plan para dar continuidad.' : 'Todavia no hay una primera sesion cerrada en CRM.')}</p>
+        </article>
+        <article class="ficha-overview-stat">
+          <span>Sesiones</span>
+          <strong>${citas.length}</strong>
+          <p>${escapeHtml(latestAppointment?.fecha_hora ? `Ultima: ${fmtDate(latestAppointment.fecha_hora)}` : 'Sin citas registradas todavia.')}</p>
+        </article>
+        <article class="ficha-overview-stat">
+          <span>Seguimiento</span>
+          <strong>${notas.length} nota${notas.length === 1 ? '' : 's'}</strong>
+          <p>${escapeHtml(latestEva != null ? `Dolor actual reportado: EVA ${latestEva}/10.` : 'Aun no hay una evolucion clinica documentada.')}</p>
+        </article>
+        <article class="ficha-overview-stat">
+          <span>Actividad economica</span>
+          <strong>${totalPayments.toFixed(2)} EUR</strong>
+          <p>${escapeHtml(pagos.length ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay pagos asociados al caso.')}</p>
+        </article>`;
+    }
+
+    if (fichaOverviewStream) {
+      fichaOverviewStream.innerHTML = activityItems.length
+        ? activityItems.map((item: any) => `
+          <article class="ficha-stream-item ficha-stream-item-${item.type}">
+            <div class="ficha-stream-icon"><span class="material-symbols-rounded">${item.type === 'nota' ? 'clinical_notes' : 'calendar_month'}</span></div>
+            <div class="ficha-stream-copy">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${escapeHtml(item.title)}</strong>
+              <p>${escapeHtml(item.meta)}</p>
+            </div>
+          </article>`).join('')
+        : '<p class="empty-inline">La actividad reciente del caso aparecera aqui cuando registres citas o notas.</p>';
+    }
+
+    const decisions = [
+      !citas.length ? { tone: 'urgent', title: 'Programar la primera sesion', body: 'Todavia no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
+      citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoracion y evolucion', body: 'Ya existe actividad en agenda, pero falta una nota clinica que deje criterio terapeutico y siguiente paso.' } : null,
+      latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'Revisar dolor alto y ajustar plan', body: 'El ultimo registro deja un EVA elevado. Conviene preparar sesion y progresion con criterio clinico.' } : null,
+      !pagos.length ? { tone: 'soft', title: 'Cerrar cobro o bono asociado', body: 'No hay actividad economica vinculada al caso. Conviene dejarlo resuelto desde CRM.' } : null,
+      patient?.telefono ? { tone: 'ready', title: 'Preparar continuidad por Telegram', body: 'El paciente ya tiene telefono. Puedes generar o regenerar la invitacion desde su historial.' } : { tone: 'soft', title: 'Completar telefono para continuidad', body: 'El canal Telegram sigue siendo diferencial, pero antes conviene guardar un telefono valido.' },
+    ].filter(Boolean).slice(0, 4) as Array<{ tone: string; title: string; body: string }>;
+
+    if (fichaDecisionList) {
+      fichaDecisionList.innerHTML = decisions.length
+        ? decisions.map((item) => `
+          <article class="ficha-decision-card tone-${item.tone}">
+            <strong>${escapeHtml(item.title)}</strong>
+            <p>${escapeHtml(item.body)}</p>
+          </article>`).join('')
+        : '<p class="empty-inline">Todavia no hay decisiones sugeridas para este caso.</p>';
+    }
+
+    let primaryAction: 'agenda' | 'notas' | 'agente' = 'agente';
+    let primaryLabel = 'Abrir agente';
+    let nextTitle = 'Cerrar continuidad clinica';
+    let nextMeta = 'El caso ya tiene contexto suficiente para preparar siguiente sesion, actualizar plan o dejar PDF listo.';
+
+    if (!citas.length) {
+      primaryAction = 'agenda';
+      primaryLabel = 'Ir a agenda';
+      nextTitle = 'Programar la primera sesion';
+      nextMeta = 'Sin agenda no hay caso vivo. Conviene bloquear cita y dejar el alta operativa resuelta.';
+    } else if (!notas.length) {
+      primaryAction = 'notas';
+      primaryLabel = 'Abrir notas';
+      nextTitle = 'Cerrar criterio terapeutico';
+      nextMeta = 'Ya hay movimiento en agenda, pero falta dejar una nota clinica que convierta la sesion en seguimiento real.';
+    } else if (latestEva != null && latestEva >= 7) {
+      primaryAction = 'agente';
+      primaryLabel = 'Preparar sesion';
+      nextTitle = 'Revisar dolor alto y ajustar plan';
+      nextMeta = 'El ultimo seguimiento deja dolor elevado. Conviene entrar con una propuesta clara para la siguiente sesion.';
+    }
+
+    if (fichaRailNextTitle) fichaRailNextTitle.textContent = nextTitle;
+    if (fichaRailNextMeta) fichaRailNextMeta.textContent = nextMeta;
+    if (fichaRailPrimaryBtn) {
+      fichaRailPrimaryBtn.dataset.caseAction = primaryAction;
+      fichaRailPrimaryBtn.innerHTML = `<span class="material-symbols-rounded">${primaryAction === 'agenda' ? 'calendar_today' : primaryAction === 'notas' ? 'clinical_notes' : 'psychology'}</span> ${primaryLabel}`;
+    }
+    if (fichaRailTelegramBtn) fichaRailTelegramBtn.disabled = !Boolean(fichaPatientId);
+
+    if (fichaRailChannels) {
+      fichaRailChannels.innerHTML = `
+        <article class="ficha-channel-item">
+          <span class="material-symbols-rounded">mail</span>
+          <div><strong>Email</strong><p>${escapeHtml(patient?.email || 'Sin email registrado')}</p></div>
+        </article>
+        <article class="ficha-channel-item">
+          <span class="material-symbols-rounded">call</span>
+          <div><strong>Telefono</strong><p>${escapeHtml(patient?.telefono || 'Sin telefono registrado')}</p></div>
+        </article>
+        <article class="ficha-channel-item">
+          <span class="material-symbols-rounded">send</span>
+          <div><strong>Telegram</strong><p>${escapeHtml(patient?.telefono ? `Listo para preparar invitacion de ${patientName}.` : 'Completa telefono y luego genera la invitacion desde historial.')}</p></div>
+        </article>`;
+    }
+
+    if (fichaRailChecklist) {
+      const checks = [
+        { done: Boolean(patient?.email || patient?.telefono), title: 'Contacto localizado', body: patient?.email || patient?.telefono ? 'El caso ya tiene una via de contacto guardada.' : 'Falta email o telefono para continuidad.' },
+        { done: Boolean(citas.length), title: 'Agenda registrada', body: citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay citas asociadas al paciente.' },
+        { done: Boolean(notas.length), title: 'Seguimiento documentado', body: notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} clinica${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Conviene registrar la primera nota de evolucion.' },
+        { done: Boolean(pagos.length), title: 'Cobro vinculado', body: pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
+      ];
+      fichaRailChecklist.innerHTML = checks.map((item) => `
+        <article class="ficha-check-item ${item.done ? 'is-done' : 'is-pending'}">
+          <span class="ficha-check-dot"></span>
+          <div class="ficha-check-copy">
+            <strong>${escapeHtml(item.title)}</strong>
+            <p>${escapeHtml(item.body)}</p>
+          </div>
+        </article>`).join('');
+    }
+  };
 
   const renderFichaHero = (payload: any) => {
     const patient = payload?.paciente || {};
@@ -5309,20 +5555,35 @@ import Layout from '../layouts/Layout.astro';
   });
 
   fichaHeroDocsBtn?.addEventListener('click', () => {
-    document.querySelectorAll('.ficha-tab').forEach((tab) => tab.classList.remove('active'));
-    document.querySelectorAll('.ficha-panel').forEach((panel) => panel.classList.remove('active'));
-    document.querySelector('[data-ficha-tab="documentos"]')?.classList.add('active');
-    document.querySelector('[data-ficha-panel="documentos"]')?.classList.add('active');
+    activateFichaTab('documentos');
+  });
+
+  fichaRailPrimaryBtn?.addEventListener('click', () => {
+    const action = (fichaRailPrimaryBtn.dataset.caseAction || 'agente') as 'agenda' | 'notas' | 'agente';
+    if (action === 'agenda') {
+      navigateTo('citas');
+      return;
+    }
+    if (action === 'notas') {
+      activateFichaTab('notas');
+      return;
+    }
+    if (fichaPatientId) {
+      syncChatPatientSelection(fichaPatientId, fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}));
+    }
+    openAssistantRail();
+  });
+
+  fichaRailTelegramBtn?.addEventListener('click', () => {
+    if (!fichaPatientId) return;
+    pendingHistoryAnchor = 'telegram';
+    openPatientHistory(fichaPatientId, selectedPatientName || getPatientFullName(fichaData?.paciente || {}));
   });
 
   // Tab switching
-  document.querySelectorAll('.ficha-tab').forEach(tab => {
+  document.querySelectorAll('.ficha-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.ficha-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.ficha-panel').forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      const panel = document.querySelector(`[data-ficha-panel="${tab.getAttribute('data-ficha-tab')}"]`);
-      panel?.classList.add('active');
+      activateFichaTab(tab.getAttribute('data-ficha-tab') || 'resumen');
     });
   });
 
@@ -5332,10 +5593,7 @@ import Layout from '../layouts/Layout.astro';
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelector('[data-page="ficha-paciente"]')?.classList.add('active');
     // Reset to first tab
-    document.querySelectorAll('.ficha-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.ficha-panel').forEach(p => p.classList.remove('active'));
-    document.querySelector('[data-ficha-tab="datos"]')?.classList.add('active');
-    document.querySelector('[data-ficha-panel="datos"]')?.classList.add('active');
+    activateFichaTab('resumen');
     // Hide edit form, show view
     if (fichaDatosForm) fichaDatosForm.hidden = true;
     if (fichaDatosView) fichaDatosView.hidden = false;
@@ -5348,6 +5606,7 @@ import Layout from '../layouts/Layout.astro';
       selectedPatientId = patientId;
       selectedPatientName = getPatientFullName(payload.paciente);
       renderFichaHero(payload);
+      renderFichaWorkspace(payload);
       renderFichaDatos(payload.paciente);
       renderFichaCitas(payload.citas);
       renderFichaPagos(payload.pagos);
@@ -5526,9 +5785,10 @@ import Layout from '../layouts/Layout.astro';
         });
       }
       if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
-      // Reload notas
       const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
       if (fichaData) fichaData.notas = notasPayload.data || [];
+      renderFichaHero(fichaData || {});
+      renderFichaWorkspace(fichaData || {});
       renderFichaNotas(fichaData?.notas || []);
     } catch (err: any) {
       alert(`Error: ${err?.message || 'no se pudo guardar la nota'}`);
@@ -5550,6 +5810,8 @@ import Layout from '../layouts/Layout.astro';
         await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
         const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
         if (fichaData) fichaData.notas = notasPayload.data || [];
+        renderFichaHero(fichaData || {});
+        renderFichaWorkspace(fichaData || {});
         renderFichaNotas(fichaData?.notas || []);
       } catch (err: any) {
         alert(`Error: ${err?.message}`);
@@ -9339,6 +9601,276 @@ import Layout from '../layouts/Layout.astro';
       min-height: 40px;
     }
   }
+
+  .ficha-case-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.72fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .ficha-case-main {
+    min-width: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ficha-case-rail {
+    display: grid;
+    gap: 1rem;
+    align-self: start;
+    position: sticky;
+    top: 1.15rem;
+  }
+
+  .ficha-overview-layout {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ficha-overview-card,
+  .ficha-rail-card {
+    padding: 1.05rem 1.1rem;
+  }
+
+  .ficha-overview-hero {
+    background: linear-gradient(180deg, rgba(255, 251, 244, 0.99), rgba(248, 242, 232, 0.95));
+  }
+
+  .ficha-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .ficha-section-kicker,
+  .ficha-rail-label {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a6731;
+  }
+
+  .ficha-section-head h2 {
+    margin: 0.18rem 0 0;
+    font-family: var(--font-ui);
+    font-size: 1.14rem;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: #182a3d;
+  }
+
+  .ficha-overview-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .ficha-overview-stat {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.95rem 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(208, 194, 170, 0.44);
+    background: linear-gradient(180deg, rgba(255, 255, 252, 0.94), rgba(249, 244, 236, 0.9));
+  }
+
+  .ficha-overview-stat span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8d7245;
+  }
+
+  .ficha-overview-stat strong {
+    color: #17283b;
+    font-size: 1.14rem;
+    line-height: 1.1;
+  }
+
+  .ficha-overview-stat p {
+    margin: 0;
+    color: #5f6f80;
+    line-height: 1.5;
+  }
+
+  .ficha-overview-stream,
+  .ficha-decision-list,
+  .ficha-rail-stack,
+  .ficha-checklist {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .ficha-stream-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    align-items: start;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(208, 194, 170, 0.34);
+  }
+
+  .ficha-stream-item:first-child {
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .ficha-stream-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(208, 194, 170, 0.42);
+    background: rgba(255, 249, 241, 0.94);
+    color: #8a6731;
+  }
+
+  .ficha-stream-icon .material-symbols-rounded {
+    font-size: 1.1rem;
+  }
+
+  .ficha-stream-copy {
+    display: grid;
+    gap: 0.18rem;
+  }
+
+  .ficha-stream-copy span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8d7245;
+  }
+
+  .ficha-stream-copy strong {
+    color: #182a3d;
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .ficha-stream-copy p,
+  .ficha-decision-card p,
+  .ficha-rail-card p,
+  .ficha-check-copy p,
+  .ficha-channel-item p {
+    margin: 0;
+    color: #627385;
+    line-height: 1.55;
+  }
+
+  .ficha-decision-card,
+  .ficha-channel-item,
+  .ficha-check-item {
+    display: grid;
+    gap: 0.22rem;
+    padding: 0.9rem 0.95rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(208, 194, 170, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 253, 0.96), rgba(249, 244, 236, 0.9));
+  }
+
+  .ficha-decision-card strong,
+  .ficha-rail-card strong,
+  .ficha-channel-item strong,
+  .ficha-check-copy strong {
+    color: #17283b;
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .ficha-decision-card.tone-urgent {
+    border-color: rgba(194, 87, 79, 0.24);
+    background: linear-gradient(180deg, rgba(255, 248, 246, 0.98), rgba(255, 241, 237, 0.94));
+  }
+
+  .ficha-decision-card.tone-alert {
+    border-color: rgba(206, 146, 59, 0.28);
+    background: linear-gradient(180deg, rgba(255, 251, 240, 0.98), rgba(255, 246, 224, 0.95));
+  }
+
+  .ficha-decision-card.tone-ready {
+    border-color: rgba(101, 159, 132, 0.28);
+    background: linear-gradient(180deg, rgba(248, 255, 251, 0.98), rgba(239, 251, 244, 0.95));
+  }
+
+  .ficha-rail-card-accent {
+    background: linear-gradient(180deg, rgba(255, 252, 246, 0.99), rgba(244, 235, 220, 0.96));
+  }
+
+  .ficha-rail-card strong {
+    font-size: 1.14rem;
+    line-height: 1.15;
+  }
+
+  .ficha-rail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.15rem;
+  }
+
+  .ficha-channel-item,
+  .ficha-check-item {
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+
+  .ficha-channel-item .material-symbols-rounded {
+    color: #8a6731;
+    font-size: 1.1rem;
+    margin-top: 0.05rem;
+  }
+
+  .ficha-check-dot {
+    width: 0.78rem;
+    height: 0.78rem;
+    margin-top: 0.38rem;
+    border-radius: 999px;
+    background: #d7c7ad;
+    box-shadow: 0 0 0 0.22rem rgba(215, 199, 173, 0.26);
+  }
+
+  .ficha-check-item.is-done .ficha-check-dot {
+    background: #2f7b57;
+    box-shadow: 0 0 0 0.22rem rgba(47, 123, 87, 0.18);
+  }
+
+  @media (max-width: 1280px) {
+    .ficha-case-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .ficha-case-rail {
+      position: static;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .ficha-overview-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .ficha-case-rail {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .ficha-overview-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+
 </style><style is:global>
   /* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
      ASSISTANT RAIL Ã¢â‚¬â€ Premium Redesign v2
