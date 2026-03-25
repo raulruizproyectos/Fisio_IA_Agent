@@ -108,14 +108,19 @@ import Layout from '../layouts/Layout.astro';
             <section class="hero-section cockpit-hero">
               <div class="hero-panel-main">
                 <div class="hero-heading-stack">
-                  <span class="hero-eyebrow">Clinic OS para fisioterapia</span>
-                  <h1 class="hero-title">La clinica se mueve desde aqui</h1>
+                  <span class="hero-eyebrow">Luxury Clinical OS</span>
+                  <h1 class="hero-title">Cabina clinica de precision para fisioterapia</h1>
                   <p class="hero-subtitle" id="dashboardLiveSummary">Cargando agenda, intake, sincronizacion y captacion...</p>
                 </div>
                 <div class="hero-actions hero-action-row">
                   <button class="btn-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
                   <button class="btn-secondary" id="heroAgendaShortcutBtn" type="button"><span class="material-symbols-rounded">calendar_today</span> Abrir agenda</button>
                   <button class="btn-ghost" id="heroNewPatientShortcutBtn" type="button"><span class="material-symbols-rounded">add</span> Alta express</button>
+                </div>
+                <div class="clinical-hero-band" aria-label="Pilares del cockpit clinico">
+                  <span><span class="material-symbols-rounded">verified</span> Agenda y sincronizacion bajo control</span>
+                  <span><span class="material-symbols-rounded">send</span> Telegram sigue siendo canal nativo de reserva</span>
+                  <span><span class="material-symbols-rounded">description</span> Ejercicios, PDF e historial en un mismo flujo</span>
                 </div>
                 <div class="hero-signal-grid">
                   <article class="signal-card signal-card-live" id="dashboardNextSessionCard">
@@ -163,8 +168,8 @@ import Layout from '../layouts/Layout.astro';
               <div class="hero-panel-side">
                 <article class="cockpit-side-card cockpit-side-card-agent">
                   <span class="cockpit-side-kicker">Agente de ejercicios</span>
-                  <h2 class="cockpit-side-title">El motor IA tiene que dejar la sesion clinica cerrada</h2>
-                  <p>Selecciona paciente, define el objetivo, genera el plan y dejalo unido a historial, PDF y continuidad por Telegram. Ese es el diferencial de producto que tenemos que defender.</p>
+                  <h2 class="cockpit-side-title">El agente debe cerrar criterio terapeutico, entrega y continuidad</h2>
+                  <p>Selecciona paciente, estructura el caso, genera el plan y dejalo unido a historial, PDF y continuidad por Telegram. Ese es el diferencial de producto premium que debemos defender.</p>
                   <div class="cockpit-side-actions">
                     <button class="btn-ghost" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">right_panel_open</span> Abrir agente</button>
                     <button class="btn-ghost" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Ver historial</button>
@@ -1023,13 +1028,13 @@ import Layout from '../layouts/Layout.astro';
           <header class="module-header assistant-module-header">
             <div class="assistant-rail-copy">
               <div class="assistant-rail-header-row">
-                <span class="assistant-eyebrow">COPILOT CL&Iacute;NICO</span>
+                <span class="assistant-eyebrow">LABORATORIO TERAP&Eacute;UTICO</span>
                 <div class="assistant-connected-badge">
                   <span class="status-dot connected pulse-dot" id="agentDot"></span>
                   <span class="status-text" id="agentStatusText">CONECTADO</span>
                 </div>
               </div>
-              <h2>Motor de ejercicios IA</h2>
+              <h2>Agente clinico de ejercicios</h2>
             </div>
             <div class="assistant-rail-tools">
               <button type="button" class="assistant-rail-close" id="assistantRailClose" aria-label="Cerrar copilot">
@@ -1096,6 +1101,65 @@ import Layout from '../layouts/Layout.astro';
                     </div>
                     <p class="assistant-mode-tip" id="assistantModeTip">Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.</p>
                   </div>
+
+                  <section class="assistant-diagnostic-card" id="assistantDiagnosticCard" aria-live="polite">
+                    <div class="assistant-diagnostic-head">
+                      <span class="assistant-brief-kicker">Ficha estructurada</span>
+                      <strong>Convierte el briefing libre en criterio clinico legible para la IA</strong>
+                    </div>
+                    <div class="assistant-diagnostic-grid">
+                      <label class="assistant-intake-field">
+                        <span>Area afectada</span>
+                        <select id="assistantAreaInput">
+                          <option value="">Selecciona zona</option>
+                          <option value="Cervical">Cervical</option>
+                          <option value="Hombro">Hombro</option>
+                          <option value="Lumbar">Lumbar</option>
+                          <option value="Cadera">Cadera</option>
+                          <option value="Rodilla">Rodilla</option>
+                          <option value="Tobillo/Pie">Tobillo / pie</option>
+                          <option value="General">General</option>
+                        </select>
+                      </label>
+                      <label class="assistant-intake-field">
+                        <span>Tipo de caso</span>
+                        <select id="assistantInjuryTypeInput">
+                          <option value="">Selecciona caso</option>
+                          <option value="Dolor mecanico">Dolor mecanico</option>
+                          <option value="Postoperatorio">Postoperatorio</option>
+                          <option value="Sobrecarga">Sobrecarga</option>
+                          <option value="Recuperacion deportiva">Recuperacion deportiva</option>
+                          <option value="Limitacion funcional">Limitacion funcional</option>
+                          <option value="Prevencion / mantenimiento">Prevencion / mantenimiento</option>
+                        </select>
+                      </label>
+                      <label class="assistant-intake-field">
+                        <span>Duracion sintomas</span>
+                        <input id="assistantDurationInput" type="text" placeholder="Ej. 3 semanas" />
+                      </label>
+                      <label class="assistant-intake-field">
+                        <span>Dolor actual</span>
+                        <select id="assistantPainLevelInput">
+                          <option value="">Escala 0-10</option>
+                          <option value="1/10">1/10</option>
+                          <option value="2/10">2/10</option>
+                          <option value="3/10">3/10</option>
+                          <option value="4/10">4/10</option>
+                          <option value="5/10">5/10</option>
+                          <option value="6/10">6/10</option>
+                          <option value="7/10">7/10</option>
+                          <option value="8/10">8/10</option>
+                          <option value="9/10">9/10</option>
+                          <option value="10/10">10/10</option>
+                        </select>
+                      </label>
+                      <label class="assistant-intake-field assistant-intake-field-wide">
+                        <span>Objetivo clinico</span>
+                        <input id="assistantObjectiveInput" type="text" placeholder="Ej. bajar dolor, recuperar movilidad y volver a correr" />
+                      </label>
+                    </div>
+                    <p class="assistant-diagnostic-summary" id="assistantDiagnosticSummary">Sin ficha estructurada todavia. Completa 2 o 3 campos y el agente trabajara con una entrada mas clinica.</p>
+                  </section>
 
                   <div class="assistant-delivery-card" id="assistantDeliveryCard" aria-live="polite" hidden>
                     <div class="assistant-delivery-head">
@@ -1210,6 +1274,12 @@ import Layout from '../layouts/Layout.astro';
   const assistantModeOutput = document.getElementById('assistantModeOutput') as HTMLElement | null;
   const assistantModeRequirement = document.getElementById('assistantModeRequirement') as HTMLElement | null;
   const assistantModeTip = document.getElementById('assistantModeTip') as HTMLElement | null;
+  const assistantAreaInput = document.getElementById('assistantAreaInput') as HTMLSelectElement | null;
+  const assistantInjuryTypeInput = document.getElementById('assistantInjuryTypeInput') as HTMLSelectElement | null;
+  const assistantDurationInput = document.getElementById('assistantDurationInput') as HTMLInputElement | null;
+  const assistantPainLevelInput = document.getElementById('assistantPainLevelInput') as HTMLSelectElement | null;
+  const assistantObjectiveInput = document.getElementById('assistantObjectiveInput') as HTMLInputElement | null;
+  const assistantDiagnosticSummary = document.getElementById('assistantDiagnosticSummary') as HTMLElement | null;
   const assistantDeliveryCard = document.getElementById('assistantDeliveryCard') as HTMLElement | null;
   const assistantDeliveryStatus = document.getElementById('assistantDeliveryStatus') as HTMLElement | null;
   const assistantDeliverySummary = document.getElementById('assistantDeliverySummary') as HTMLElement | null;
@@ -1595,6 +1665,40 @@ import Layout from '../layouts/Layout.astro';
     return normalized.length <= maxLength ? normalized : normalized.slice(0, maxLength - 1).trim() + '...';
   };
 
+  const getAssistantDiagnosticEntries = () => {
+    const entries = [
+      { label: 'Area afectada', value: String(assistantAreaInput?.value || '').trim() },
+      { label: 'Tipo de caso', value: String(assistantInjuryTypeInput?.value || '').trim() },
+      { label: 'Duracion', value: String(assistantDurationInput?.value || '').trim() },
+      { label: 'Dolor actual', value: String(assistantPainLevelInput?.value || '').trim() },
+      { label: 'Objetivo clinico', value: String(assistantObjectiveInput?.value || '').trim() },
+    ];
+    return entries.filter((entry) => entry.value);
+  };
+
+  const hasAssistantDiagnosticData = () => getAssistantDiagnosticEntries().length > 0;
+
+  const getAssistantDiagnosticSummaryText = (maxLength = 150) => {
+    const summary = getAssistantDiagnosticEntries()
+      .map((entry) => `${entry.label.toLowerCase()}: ${entry.value}`)
+      .join(' | ');
+    return trimAgentBriefText(summary, maxLength);
+  };
+
+  const buildAssistantDiagnosticPrompt = () => {
+    const entries = getAssistantDiagnosticEntries();
+    if (!entries.length) return '';
+    return entries.map((entry) => `${entry.label}: ${entry.value}`).join('\n');
+  };
+
+  const renderAssistantDiagnosticSummary = () => {
+    if (!assistantDiagnosticSummary) return;
+    const summary = getAssistantDiagnosticSummaryText(220);
+    assistantDiagnosticSummary.textContent = summary
+      ? `Ficha lista para IA: ${summary}`
+      : 'Sin ficha estructurada todavia. Completa 2 o 3 campos y el agente trabajara con una entrada mas clinica.';
+  };
+
   const buildAssistantPatientBrief = (patient: any, notes: any[] = [], recommendations: any[] = []) => {
     const latestNote = Array.isArray(notes) && notes.length ? notes[0] : null;
     const latestRecommendation = Array.isArray(recommendations) && recommendations.length ? recommendations[0] : null;
@@ -1682,7 +1786,7 @@ import Layout from '../layouts/Layout.astro';
     const modeConfig = getActiveAssistantModeConfig();
     const hasPatient = Boolean(selectedPatientId);
     const hasPlan = hasExerciseReportReady();
-    const hasDraft = Boolean(String(input?.value || '').trim());
+    const hasDraft = Boolean(String(input?.value || '').trim()) || hasAssistantDiagnosticData();
     const patientLabel = selectedPatientName || currentAssistantPatientBrief?.patientName || 'Paciente activo';
 
     assistantModeTitle.textContent = modeConfig.title;
@@ -1743,6 +1847,7 @@ import Layout from '../layouts/Layout.astro';
     renderAssistantModeCard();
     renderAssistantFlowCard();
     resizeAgentInput();
+    renderAssistantDiagnosticSummary();
     if (options.focus && input) {
       input.focus();
       input.setSelectionRange(input.value.length, input.value.length);
@@ -1751,18 +1856,21 @@ import Layout from '../layouts/Layout.astro';
 
   const buildAssistantModeRequest = (rawText: string) => {
     const text = String(rawText || '').trim();
+    const diagnosticPrompt = buildAssistantDiagnosticPrompt();
+    const diagnosticSummary = getAssistantDiagnosticSummaryText(160);
     const modeConfig = getActiveAssistantModeConfig();
     const contextualPrompt = activeAssistantMode === 'new-plan' ? '' : buildAssistantBriefPrompt(activeAssistantMode);
 
     if (modeConfig.action === 'exercise') {
-      if (!text) return null;
-      const requestText = activeAssistantMode === 'update-plan'
+      if (!text && !diagnosticPrompt) return null;
+      let requestText = activeAssistantMode === 'update-plan'
         ? appendAssistantInstruction(contextualPrompt, text, 'Cambio solicitado')
         : text;
-      const visibleText = text;
+      requestText = appendAssistantInstruction(requestText, diagnosticPrompt, 'Ficha estructurada');
+      const visibleText = trimAgentBriefText([text, diagnosticSummary].filter(Boolean).join(' | '), 150) || diagnosticSummary || text;
       return {
         action: 'exercise' as const,
-        requestText,
+        requestText: requestText || diagnosticPrompt,
         visibleText,
       };
     }
@@ -1772,8 +1880,9 @@ import Layout from '../layouts/Layout.astro';
     }
 
     const draftText = text || getAssistantModeDraft(activeAssistantMode);
-    const requestText = appendAssistantInstruction(contextualPrompt, draftText, 'Solicitud');
-    const visibleText = draftText;
+    let requestText = appendAssistantInstruction(contextualPrompt, draftText, 'Solicitud');
+    requestText = appendAssistantInstruction(requestText, diagnosticPrompt, 'Ficha estructurada');
+    const visibleText = trimAgentBriefText([draftText, diagnosticSummary].filter(Boolean).join(' | '), 150) || draftText;
     return {
       action: 'chat' as const,
       requestText,
@@ -1783,8 +1892,10 @@ import Layout from '../layouts/Layout.astro';
 
   const getAssistantDraftSummary = () => {
     const draft = String(input?.value || '').replace(/\s+/g, ' ').trim();
-    if (!draft) return '';
-    return draft.length <= 96 ? draft : draft.slice(0, 95).trim() + '...';
+    const diagnosticSummary = getAssistantDiagnosticSummaryText(110);
+    if (draft && diagnosticSummary) return trimAgentBriefText(`${draft} | ${diagnosticSummary}`, 110);
+    if (draft) return draft.length <= 96 ? draft : draft.slice(0, 95).trim() + '...';
+    return diagnosticSummary;
   };
 
   const hasExerciseReportReady = () => {
@@ -1799,7 +1910,7 @@ import Layout from '../layouts/Layout.astro';
     renderAssistantModeCard();
 
     const hasPatient = Boolean(selectedPatientId);
-    const hasGoal = String(input?.value || '').trim().length >= 12;
+    const hasGoal = Boolean(getAssistantDraftSummary());
     const hasPlan = hasExerciseReportReady();
     const patientName = selectedPatientName || currentAssistantPatientBrief?.patientName || 'Paciente activo';
     const draftSummary = getAssistantDraftSummary();
@@ -2545,10 +2656,16 @@ import Layout from '../layouts/Layout.astro';
   renderAssistantModeSwitch();
   renderAssistantModeCard();
   renderAssistantFlowCard();
+  renderAssistantDiagnosticSummary();
 
   input?.addEventListener('keydown', (e: KeyboardEvent) => { if(e.ctrlKey && e.key==='Enter'){e.preventDefault();form?.requestSubmit();} });
-  input?.addEventListener('input', () => { resizeAgentInput(); renderAssistantModeCard(); renderAssistantFlowCard(); });
+  input?.addEventListener('input', () => { resizeAgentInput(); renderAssistantModeCard(); renderAssistantFlowCard(); renderAssistantDiagnosticSummary(); });
   window.requestAnimationFrame(resizeAgentInput);
+
+  [assistantAreaInput, assistantInjuryTypeInput, assistantDurationInput, assistantPainLevelInput, assistantObjectiveInput].forEach((field) => {
+    field?.addEventListener('input', () => { renderAssistantDiagnosticSummary(); renderAssistantModeCard(); renderAssistantFlowCard(); });
+    field?.addEventListener('change', () => { renderAssistantDiagnosticSummary(); renderAssistantModeCard(); renderAssistantFlowCard(); });
+  });
 
   assistantShortcuts?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
@@ -4550,11 +4667,18 @@ import Layout from '../layouts/Layout.astro';
     }
 
     if (normalizedStatus === 'pending') {
+      if (deepLink) {
+        actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-open-link" data-open-url="${escapeAttr(deepLink)}">Abrir bot</button>`);
+      }
       actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-copy-command" data-copy-value="${escapeAttr(startCommand)}">Copiar /start</button>`);
       if (deepLink) {
         actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-copy-link" data-copy-value="${escapeAttr(deepLink)}">Copiar enlace</button>`);
       }
       actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-regenerate">Regenerar codigo</button>');
+    }
+
+    if (normalizedStatus === 'linked' && deepLink) {
+      actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-open-link" data-open-url="${escapeAttr(deepLink)}">Abrir bot</button>`);
     }
 
     const hint = normalizedStatus === 'linked'
@@ -4715,6 +4839,17 @@ import Layout from '../layouts/Layout.astro';
 
     const action = btn.getAttribute('data-action') || '';
     const patientName = selectedPatientName || currentPatientTelegramLinkState?.patient_name || 'el paciente seleccionado';
+
+    if (action === 'telegram-open-link') {
+      const openUrl = btn.getAttribute('data-open-url') || '';
+      if (!openUrl) {
+        addMessage('No hay un enlace Telegram disponible para abrir.', 'agent');
+        return;
+      }
+      window.open(openUrl, '_blank', 'noopener');
+      addMessage(`Abriendo Telegram para ${patientName}.`, 'agent');
+      return;
+    }
 
     if (action === 'telegram-copy-command' || action === 'telegram-copy-link') {
       const copyValue = btn.getAttribute('data-copy-value') || '';
@@ -10367,6 +10502,430 @@ import Layout from '../layouts/Layout.astro';
     grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.85fr);
   }
 
+  /* === LUXURY CLINICAL OVERRIDES V2 === */
+  .hero-title,
+  .cockpit-side-title,
+  .cockpit-block h2,
+  .assistant-rail-copy h2,
+  .assistant-mode-card-head strong,
+  .assistant-delivery-head strong,
+  .assistant-diagnostic-head strong {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .clinical-hero-band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.15rem;
+  }
+
+  .clinical-hero-band span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    min-height: 2.2rem;
+    padding: 0.45rem 0.82rem;
+    border-radius: 999px;
+    border: 1px solid rgba(166, 124, 57, 0.22);
+    background: rgba(255, 252, 246, 0.92);
+    color: #425365;
+    font-size: 0.78rem;
+    font-weight: 700;
+    box-shadow: 0 10px 24px -24px rgba(22, 34, 49, 0.35);
+  }
+
+  .clinical-hero-band .material-symbols-rounded {
+    font-size: 0.95rem;
+    color: var(--premium);
+  }
+
+  .hero-panel-main {
+    min-height: 470px;
+    border: 1px solid rgba(203, 189, 167, 0.58);
+    background:
+      radial-gradient(circle at top left, rgba(166, 124, 57, 0.13), transparent 28%),
+      radial-gradient(circle at right 20%, rgba(23, 107, 99, 0.08), transparent 26%),
+      linear-gradient(145deg, rgba(255, 250, 242, 0.98), rgba(247, 239, 228, 0.95));
+    box-shadow: 0 36px 70px -52px rgba(40, 35, 28, 0.42);
+  }
+
+  .hero-panel-main::before {
+    inset: auto -8% -18% auto;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(166, 124, 57, 0.16), rgba(166, 124, 57, 0));
+  }
+
+  .hero-panel-main::after {
+    background-image:
+      linear-gradient(rgba(166, 124, 57, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(23, 107, 99, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.24), rgba(0,0,0,0));
+  }
+
+  .hero-panel-main .hero-eyebrow,
+  .hero-panel-main .signal-kicker,
+  .priorities-side-card .cockpit-side-kicker,
+  .cockpit-block-lanes .hero-eyebrow,
+  .cockpit-block-lanes .workflow-tag,
+  .cockpit-side-card-agent .cockpit-side-kicker {
+    color: var(--accent);
+  }
+
+  .hero-panel-main .hero-title {
+    max-width: 11ch;
+    color: #182536;
+    line-height: 0.9;
+    text-wrap: balance;
+  }
+
+  .hero-panel-main .hero-subtitle {
+    color: #5d6b79;
+    max-width: 52rem;
+  }
+
+  .hero-panel-main .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #0f5f58);
+    color: #f9f6f0;
+    box-shadow: 0 22px 38px -30px rgba(23, 107, 99, 0.72);
+  }
+
+  .hero-panel-main .btn-secondary,
+  .hero-panel-main .btn-ghost,
+  .hero-panel-main .btn-link-inline {
+    background: rgba(255, 252, 246, 0.78);
+    border: 1px solid rgba(203, 189, 167, 0.62);
+    color: #2c4154;
+  }
+
+  .hero-panel-main .btn-secondary:hover,
+  .hero-panel-main .btn-ghost:hover,
+  .hero-panel-main .btn-link-inline:hover {
+    background: #fffdfa;
+    border-color: rgba(166, 124, 57, 0.36);
+    color: #182536;
+  }
+
+  .hero-panel-main .signal-card {
+    background: linear-gradient(180deg, rgba(255, 254, 250, 0.88), rgba(251, 245, 236, 0.84));
+    border: 1px solid rgba(203, 189, 167, 0.52);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 20px 32px -30px rgba(40, 35, 28, 0.28);
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-panel-main .signal-card .signal-value,
+  .hero-panel-main .signal-card .agenda-sync-fact strong,
+  .hero-panel-main .signal-card p,
+  .hero-panel-main .signal-card .agenda-sync-fact {
+    color: #223245;
+  }
+
+  .hero-panel-main .agenda-sync-fact {
+    background: rgba(255, 251, 244, 0.9);
+    border: 1px solid rgba(203, 189, 167, 0.46);
+  }
+
+  .cockpit-side-card-agent,
+  .priorities-side-card,
+  .cockpit-block-lanes,
+  .cockpit-block:not(.cockpit-block-lanes),
+  .card.widget-card,
+  .clinical-metrics .metric-card {
+    border-color: rgba(203, 189, 167, 0.5);
+    box-shadow: 0 22px 42px -34px rgba(40, 35, 28, 0.25);
+  }
+
+  .cockpit-side-card-agent {
+    background: linear-gradient(160deg, #fffdf8 0%, #f7efe2 100%);
+  }
+
+  .cockpit-side-card-agent .cockpit-side-title,
+  .priorities-side-card .cockpit-side-title,
+  .cockpit-block h2 {
+    color: #182536;
+  }
+
+  .cockpit-side-card-agent p,
+  .priorities-side-card .priority-copy p,
+  .workflow-lane p,
+  .command-tile p {
+    color: #5d6b79;
+  }
+
+  .priorities-side-card {
+    background: linear-gradient(180deg, rgba(254, 252, 247, 0.98), rgba(245, 238, 226, 0.95));
+  }
+
+  .priorities-side-card .priority-item {
+    background: rgba(255, 253, 248, 0.92);
+    border-color: rgba(203, 189, 167, 0.46);
+  }
+
+  .priorities-side-card .priority-copy span {
+    color: var(--premium);
+  }
+
+  .priorities-side-card .priority-copy strong,
+  .cockpit-block-lanes h2,
+  .cockpit-block-lanes .workflow-lane {
+    color: #1b2b3d;
+  }
+
+  .priorities-side-card .btn-ghost,
+  .cockpit-side-card-agent .btn-ghost,
+  .cockpit-block-lanes .workflow-lane,
+  .command-tile,
+  .btn-secondary {
+    border-color: rgba(203, 189, 167, 0.46);
+  }
+
+  .cockpit-block-lanes {
+    background: linear-gradient(180deg, rgba(249, 245, 237, 0.98), rgba(243, 236, 225, 0.96));
+  }
+
+  .cockpit-block-lanes .workflow-lane {
+    background: rgba(255, 253, 249, 0.94);
+  }
+
+  .cockpit-block-lanes .workflow-lane:hover,
+  .command-tile:hover {
+    border-color: rgba(166, 124, 57, 0.36);
+    box-shadow: 0 22px 32px -30px rgba(40, 35, 28, 0.22);
+  }
+
+  .command-tile,
+  .card.widget-card,
+  .clinical-metrics .metric-card,
+  .dashboard-bottom-row .widget-card:first-child,
+  .dashboard-bottom-row .widget-card:last-child {
+    background: linear-gradient(180deg, rgba(255, 254, 250, 0.96), rgba(246, 239, 228, 0.9));
+  }
+
+  .command-tile strong,
+  .signal-value,
+  .clinical-metrics .metric-value {
+    color: #172434;
+  }
+
+  .clinical-metrics .metric-label,
+  .signal-card p {
+    color: #667586;
+  }
+
+  .assistant-rail-card {
+    border: 1px solid rgba(203, 189, 167, 0.55);
+    background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(247, 240, 230, 0.96));
+    box-shadow: 0 34px 64px -42px rgba(40, 35, 28, 0.34);
+  }
+
+  .assistant-module-header,
+  .assistant-rail .assistant-toolbar,
+  .assistant-rail .ai-input-area {
+    background: rgba(255, 252, 247, 0.92);
+    border-color: rgba(203, 189, 167, 0.48);
+  }
+
+  .assistant-rail-copy h2 {
+    color: #182536;
+    font-size: 1.55rem;
+  }
+
+  .assistant-rail-copy p,
+  .assistant-mode-copy,
+  .assistant-mode-tip,
+  .assistant-delivery-summary,
+  .assistant-diagnostic-summary,
+  .assistant-patient-brief-empty p,
+  .assistant-brief-item small,
+  .assistant-brief-item span,
+  .assistant-disclaimer {
+    color: #617080;
+  }
+
+  .assistant-eyebrow,
+  .assistant-brief-kicker {
+    color: var(--premium);
+  }
+
+  .assistant-connected-badge,
+  .assistant-mode-pill,
+  .assistant-delivery-pill.is-ready,
+  .assistant-brief-pill {
+    background: rgba(23, 107, 99, 0.1);
+    color: #12544e;
+  }
+
+  .assistant-mode-pill.is-soft,
+  .assistant-delivery-pill,
+  .assistant-delivery-pill.is-soft {
+    background: rgba(166, 124, 57, 0.1);
+    color: #755726;
+  }
+
+  .assistant-delivery-pill.is-warning {
+    background: rgba(191, 138, 49, 0.14);
+    color: #8a6321;
+  }
+
+  .assistant-rail .assistant-dialog-surface {
+    background: linear-gradient(180deg, rgba(249, 244, 237, 0.82), rgba(244, 238, 229, 0.72));
+  }
+
+  .assistant-rail .chat-log,
+  .assistant-patient-brief,
+  .assistant-mode-card,
+  .assistant-delivery-card,
+  .assistant-brief-item,
+  .assistant-rail .ai-textarea-wrapper,
+  .assistant-diagnostic-card,
+  .assistant-intake-field {
+    border-color: rgba(203, 189, 167, 0.46);
+    background: rgba(255, 253, 248, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 18px 28px -30px rgba(40, 35, 28, 0.18);
+  }
+
+  .assistant-mode-card.is-ready,
+  .assistant-delivery-card.is-ready,
+  .assistant-diagnostic-card.is-ready {
+    border-color: rgba(23, 107, 99, 0.34);
+  }
+
+  .assistant-mode-card.is-blocked,
+  .assistant-delivery-card.is-blocked {
+    border-color: rgba(191, 138, 49, 0.28);
+  }
+
+  .assistant-diagnostic-card {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0.96rem 1rem;
+    border-radius: 1.1rem;
+  }
+
+  .assistant-diagnostic-head {
+    display: grid;
+    gap: 0.22rem;
+  }
+
+  .assistant-diagnostic-head strong {
+    color: #182536;
+    font-size: 1.04rem;
+    line-height: 1.2;
+  }
+
+  .assistant-diagnostic-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .assistant-intake-field {
+    display: grid;
+    gap: 0.38rem;
+    padding: 0.72rem 0.8rem;
+    border-radius: 0.95rem;
+  }
+
+  .assistant-intake-field-wide {
+    grid-column: 1 / -1;
+  }
+
+  .assistant-intake-field span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7a6540;
+  }
+
+  .assistant-intake-field input,
+  .assistant-intake-field select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1d3042;
+    outline: none;
+  }
+
+  .assistant-intake-field input::placeholder {
+    color: #8c97a3;
+  }
+
+  .assistant-diagnostic-summary {
+    margin: 0;
+    border-top: 1px solid rgba(203, 189, 167, 0.42);
+    padding-top: 0.78rem;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  .assistant-rail .patient-selector,
+  .assistant-rail .btn-pdf,
+  .assistant-rail .btn-chat,
+  .assistant-rail .btn-telegram,
+  .assistant-chip,
+  .btn-link-inline,
+  .assistant-mode-chip {
+    background: rgba(255, 253, 248, 0.92);
+    border-color: rgba(203, 189, 167, 0.5);
+    color: #264055;
+  }
+
+  .assistant-rail .patient-selector:focus-within,
+  .assistant-rail .ai-textarea-wrapper:focus-within,
+  .assistant-intake-field:focus-within {
+    border-color: rgba(23, 107, 99, 0.36);
+    box-shadow: 0 0 0 4px rgba(23, 107, 99, 0.08);
+    background: rgba(255, 255, 255, 0.98);
+  }
+
+  .assistant-rail .btn-generate,
+  .assistant-mode-chip.is-active,
+  .assistant-rail .btn-send-compact {
+    background: linear-gradient(135deg, var(--accent), #0f5f58);
+    border-color: #0f5f58;
+    color: #fbf8f2;
+    box-shadow: 0 16px 30px -24px rgba(23, 107, 99, 0.6);
+  }
+
+  .assistant-rail .btn-generate:hover,
+  .assistant-rail .btn-send-compact:hover,
+  .assistant-mode-chip.is-active:hover {
+    background: linear-gradient(135deg, #12544e, #0e4a45) !important;
+    border-color: #0e4a45 !important;
+  }
+
+  .assistant-rail .msg.agent .msg-body,
+  .assistant-rail .exercise-card,
+  .assistant-rail .exercise-note,
+  .assistant-rail .exercise-summary,
+  .assistant-rail .exercise-patient-msg,
+  .assistant-rail .msg-progress .msg-body {
+    background: rgba(255, 253, 248, 0.96);
+    border-color: rgba(203, 189, 167, 0.48);
+    color: #425365;
+  }
+
+  .assistant-rail .msg.user .msg-body,
+  .assistant-rail .msg-body.user-msg {
+    background: linear-gradient(135deg, #1b5c57, #234a67);
+    color: #fffdf9;
+    box-shadow: 0 18px 28px -22px rgba(35, 74, 103, 0.42);
+  }
+
+  .assistant-rail .exercise-alert {
+    background: rgba(250, 240, 231, 0.94);
+    border-color: rgba(191, 138, 49, 0.36);
+    color: #8a6321;
+  }
+
   .hero-panel-main {
     position: relative;
     padding: clamp(1.35rem, 2vw, 1.9rem);
@@ -10741,7 +11300,8 @@ import Layout from '../layouts/Layout.astro';
     .hero-signal-grid,
     .clinical-metrics,
     .dashboard-ops-grid,
-    .dashboard-bottom-row {
+    .dashboard-bottom-row,
+    .assistant-diagnostic-grid {
       grid-template-columns: 1fr;
     }
 

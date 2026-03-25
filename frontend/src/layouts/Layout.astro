@@ -36,7 +36,7 @@ const { title, description = 'Plataforma inteligente de prescripciÃ³n y seguim
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
   <body>
@@ -234,64 +234,68 @@ const { title, description = 'Plataforma inteligente de prescripciÃ³n y seguim
 
   :root {
     /* === BACKGROUNDS === */
-    --bg-base: #f0f4f8;
-    --bg-card: #ffffff;
-    --bg-card-hover: #f8fafc;
-    --bg-elevated: #ffffff;
-    --bg-surface: #f7f9fc;
+    --bg-base: #f6f1e8;
+    --bg-card: #fffdfa;
+    --bg-card-hover: #faf5ed;
+    --bg-elevated: #fffefc;
+    --bg-surface: #f3eee5;
 
     /* === BRAND / ACCENT === */
-    --accent: #0d9488;
-    --accent-hover: #0f766e;
-    --accent-soft: rgba(13, 148, 136, 0.09);
-    --accent-glow: rgba(13, 148, 136, 0.22);
+    --accent: #176b63;
+    --accent-hover: #12544e;
+    --accent-soft: rgba(23, 107, 99, 0.1);
+    --accent-glow: rgba(23, 107, 99, 0.2);
+    --premium: #a67c39;
+    --premium-soft: rgba(166, 124, 57, 0.12);
 
     /* === TYPOGRAPHY === */
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
+    --text-primary: #162231;
+    --text-secondary: #526071;
+    --text-muted: #7e8a98;
+    --font-ui: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+    --font-display: 'Cormorant Garamond', Georgia, serif;
 
     /* === BORDERS === */
-    --border: #e2e8f0;
-    --border-light: #f1f5f9;
-    --border-strong: #cbd5e1;
+    --border: #ddd3c3;
+    --border-light: #eee6d9;
+    --border-strong: #cbbda7;
 
     /* === SEMANTIC COLORS === */
-    --danger: #ef4444;
-    --danger-soft: rgba(239, 68, 68, 0.08);
-    --warning: #f59e0b;
-    --warning-soft: rgba(245, 158, 11, 0.08);
-    --success: #10b981;
-    --success-soft: rgba(16, 185, 129, 0.08);
-    --info: #6366f1;
-    --info-soft: rgba(99, 102, 241, 0.08);
+    --danger: #dc4f52;
+    --danger-soft: rgba(220, 79, 82, 0.08);
+    --warning: #bf8a31;
+    --warning-soft: rgba(191, 138, 49, 0.12);
+    --success: #21916e;
+    --success-soft: rgba(33, 145, 110, 0.1);
+    --info: #456b99;
+    --info-soft: rgba(69, 107, 153, 0.1);
 
-    /* === RADIUS â€” slightly more rounded for premium feel === */
+    /* === RADIUS === */
     --radius-xs: 6px;
     --radius-sm: 10px;
     --radius-md: 14px;
     --radius-lg: 18px;
     --radius-xl: 24px;
 
-    /* === SHADOWS â€” more depth === */
-    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
-    --shadow-sm: 0 1px 4px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.05);
-    --shadow-lg: 0 10px 28px rgba(15, 23, 42, 0.10), 0 4px 8px rgba(15, 23, 42, 0.06);
-    --shadow-xl: 0 20px 48px rgba(15, 23, 42, 0.13), 0 8px 16px rgba(15, 23, 42, 0.08);
+    /* === SHADOWS === */
+    --shadow-xs: 0 1px 2px rgba(22, 34, 49, 0.04);
+    --shadow-sm: 0 10px 24px rgba(42, 42, 42, 0.05), 0 2px 6px rgba(22, 34, 49, 0.04);
+    --shadow-md: 0 18px 38px rgba(42, 42, 42, 0.08), 0 4px 12px rgba(22, 34, 49, 0.05);
+    --shadow-lg: 0 24px 56px rgba(42, 42, 42, 0.11), 0 8px 18px rgba(22, 34, 49, 0.06);
+    --shadow-xl: 0 36px 74px rgba(42, 42, 42, 0.14), 0 10px 24px rgba(22, 34, 49, 0.08);
 
     /* === GLASS === */
-    --glass: rgba(255, 255, 255, 0.94);
-    --glass-border: rgba(226, 232, 240, 0.8);
+    --glass: rgba(255, 251, 245, 0.88);
+    --glass-border: rgba(203, 189, 167, 0.55);
 
-    /* === SIDEBAR â€” dark gradient === */
-    --sidebar-bg: #0c1a2e;
-    --sidebar-bg2: #0f2240;
-    --sidebar-border: rgba(255, 255, 255, 0.05);
-    --sidebar-text: #94a3b8;
-    --sidebar-text-hover: #e2e8f0;
-    --sidebar-active-bg: rgba(13, 148, 136, 0.18);
-    --sidebar-active-color: #5eead4;
+    /* === SIDEBAR === */
+    --sidebar-bg: #162331;
+    --sidebar-bg2: #101924;
+    --sidebar-border: rgba(166, 124, 57, 0.16);
+    --sidebar-text: #b8c7d8;
+    --sidebar-text-hover: #f5f7fa;
+    --sidebar-active-bg: linear-gradient(135deg, rgba(23, 107, 99, 0.34), rgba(166, 124, 57, 0.2));
+    --sidebar-active-color: #f4f1eb;
 
     /* === TRANSITIONS === */
     --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -304,7 +308,7 @@ const { title, description = 'Plataforma inteligente de prescripciÃ³n y seguim
   }
 
   html {
-    font-family: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+    font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* Fluid base font: 14px on small screens, 15px on desktop, 16px on large */
@@ -314,13 +318,23 @@ const { title, description = 'Plataforma inteligente de prescripciÃ³n y seguim
 
   body {
     min-height: 100vh;
-    background: var(--bg-base);
+    background:
+      radial-gradient(circle at top left, rgba(166, 124, 57, 0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(23, 107, 99, 0.06), transparent 24%),
+      linear-gradient(180deg, #f8f3eb 0%, var(--bg-base) 48%, #f2ebe2 100%);
     color: var(--text-primary);
     line-height: 1.5;
   }
 
-  h1, h2, h3, h4, .brand-text, .page-title {
-    font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  h1, h2, h3, h4, .page-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.06;
+  }
+
+  .brand-text {
+    font-family: var(--font-ui);
     letter-spacing: -0.02em;
     line-height: 1.2;
   }
