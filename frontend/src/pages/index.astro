@@ -218,6 +218,7 @@ import Layout from '../layouts/Layout.astro';
                   <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-kicker">Agenda</span><strong>Crear o mover cita</strong><p>Salta a la agenda sin pasar por menus intermedios.</p></button>
                   <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-kicker">Triage</span><strong>Vaciar bandeja entrante</strong><p>Convierte mensajes pendientes en respuesta o siguiente accion clinica.</p></button>
                   <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-kicker">Ejercicios</span><strong>Abrir motor IA</strong><p>Pide el programa, revisa el plan y dejalo listo para exportacion.</p></button>
+                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-kicker">Captacion</span><strong>Abrir reserva online</strong><p>Lanza la pagina publica de citas y compartela sin salir del CRM.</p></button>
                 </div>
               </article>
             </section>
@@ -966,6 +967,21 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </section>
             <section class="card">
+              <header class="card-header"><h2>Reserva online</h2></header>
+              <div class="section-body booking-link-card">
+                <p class="booking-link-hint">Comparte esta pagina publica para que el paciente reserve usando la disponibilidad real del calendario activo.</p>
+                <label class="booking-link-stack" for="cfgBookingUrl">
+                  <span class="config-label">URL publica</span>
+                  <input id="cfgBookingUrl" class="booking-link-input" type="text" readonly />
+                </label>
+                <div class="booking-link-actions">
+                  <button type="button" class="btn-secondary" id="cfgBookingOpenBtn"><span class="material-symbols-rounded">open_in_new</span> Abrir pagina</button>
+                  <button type="button" class="btn-ghost" id="cfgBookingCopyBtn"><span class="material-symbols-rounded">content_copy</span> Copiar enlace</button>
+                </div>
+                <span id="cfgBookingFeedback" class="form-feedback" hidden></span>
+              </div>
+            </section>
+            <section class="card">
               <header class="card-header"><h2>Proyecto</h2></header>
               <div class="section-body">
                 <div class="config-item"><span class="config-label">Versi&oacute;n</span><span class="config-value">1.0.0</span></div>
@@ -1115,6 +1131,11 @@ import Layout from '../layouts/Layout.astro';
   const saveClinicConfig = (cfg: Record<string, string>) => {
     localStorage.setItem(CLINIC_CONFIG_KEY, JSON.stringify(cfg));
   };
+  const buildPublicBookingUrl = () => {
+    const url = new URL('/reserva', window.location.origin);
+    url.searchParams.set('professional_id', PROF_ID);
+    return url.toString();
+  };
   const buildClinicParams = () => {
     const c = getClinicConfig();
     const p = new URLSearchParams();
@@ -1203,6 +1224,10 @@ import Layout from '../layouts/Layout.astro';
   const searchBox = document.querySelector('.search-box') as HTMLElement | null;
   const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
   const searchResults = document.getElementById('searchResults') as HTMLElement | null;
+  const bookingUrlInput = document.getElementById('cfgBookingUrl') as HTMLInputElement | null;
+  const bookingOpenBtn = document.getElementById('cfgBookingOpenBtn') as HTMLButtonElement | null;
+  const bookingCopyBtn = document.getElementById('cfgBookingCopyBtn') as HTMLButtonElement | null;
+  const bookingFeedback = document.getElementById('cfgBookingFeedback') as HTMLElement | null;
   const appointmentForm = document.getElementById('appointmentForm') as HTMLFormElement | null;
   const appointmentPatientSelect = document.getElementById('appointmentPatientSelect') as HTMLSelectElement | null;
   const appointmentStartInput = document.getElementById('appointmentStartInput') as HTMLInputElement | null;
@@ -2137,6 +2162,10 @@ import Layout from '../layouts/Layout.astro';
     button.addEventListener('click', (event: Event) => {
       event.preventDefault();
       const action = (button as HTMLElement).dataset.dashboardAction;
+      if (action === 'open-booking-page') {
+        window.open(buildPublicBookingUrl(), '_blank', 'noopener');
+        return;
+      }
       if (action === 'open-copilot') {
         openAssistantRail();
         input?.focus();
@@ -4120,6 +4149,34 @@ import Layout from '../layouts/Layout.astro';
     return copied;
   };
 
+  let bookingFeedbackTimeout: number | null = null;
+  const setBookingLinkFeedback = (text = '', state: 'success' | 'error' = 'success') => {
+    if (!bookingFeedback) return;
+    if (bookingFeedbackTimeout) {
+      window.clearTimeout(bookingFeedbackTimeout);
+      bookingFeedbackTimeout = null;
+    }
+    if (!text) {
+      bookingFeedback.hidden = true;
+      bookingFeedback.textContent = '';
+      bookingFeedback.removeAttribute('data-state');
+      return;
+    }
+    bookingFeedback.hidden = false;
+    bookingFeedback.textContent = text;
+    bookingFeedback.setAttribute('data-state', state);
+    bookingFeedbackTimeout = window.setTimeout(() => {
+      bookingFeedback.hidden = true;
+      bookingFeedback.textContent = '';
+      bookingFeedback.removeAttribute('data-state');
+      bookingFeedbackTimeout = null;
+    }, 3200);
+  };
+
+  const syncBookingLinkUi = () => {
+    if (bookingUrlInput) bookingUrlInput.value = buildPublicBookingUrl();
+  };
+
   const renderPatientTelegramLinkBlock = (linkState: any, errorMessage = '') => {
     if (errorMessage) {
       return `
@@ -5610,6 +5667,8 @@ import Layout from '../layouts/Layout.astro';
       const el = document.getElementById(id) as HTMLInputElement | null;
       if (el) el.value = val;
     });
+    syncBookingLinkUi();
+    setBookingLinkFeedback();
 
     // Connections check
     const cfgBackend = document.getElementById('cfgBackend');
@@ -5645,6 +5704,19 @@ import Layout from '../layouts/Layout.astro';
     });
     const fb = document.getElementById('clinicConfigFeedback');
     if (fb) { fb.textContent = 'Ã¢Å“â€œ Datos guardados correctamente'; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 3000); }
+  });
+  bookingOpenBtn?.addEventListener('click', () => {
+    syncBookingLinkUi();
+    window.open(buildPublicBookingUrl(), '_blank', 'noopener');
+  });
+  bookingCopyBtn?.addEventListener('click', async () => {
+    try {
+      syncBookingLinkUi();
+      const copied = await copyTextToClipboard(buildPublicBookingUrl());
+      setBookingLinkFeedback(copied ? 'Enlace copiado al portapapeles.' : 'No pude copiar el enlace en este navegador.', copied ? 'success' : 'error');
+    } catch {
+      setBookingLinkFeedback('No pude copiar el enlace en este navegador.', 'error');
+    }
   });
 
   renderAssistantPatientContext();
@@ -7700,6 +7772,38 @@ import Layout from '../layouts/Layout.astro';
     text-decoration: underline;
   }
 
+  .booking-link-card {
+    display: grid;
+    gap: 0.95rem;
+  }
+  .booking-link-hint {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  .booking-link-stack {
+    display: grid;
+    gap: 0.48rem;
+  }
+  .booking-link-input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.82rem 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 0.95rem;
+    background: linear-gradient(180deg, #f9fcfd 0%, #f2f8fa 100%);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.92rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .booking-link-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
   .btn-primary {
     background: linear-gradient(135deg, #0d9488 0%, #0ea5e9 100%);
     color: #fff;
@@ -9369,6 +9473,12 @@ import Layout from '../layouts/Layout.astro';
     transform: translateY(-1px);
     border-color: #b8d4df;
     box-shadow: 0 18px 30px -24px rgba(15, 23, 42, 0.24);
+  }
+  .command-tile-accent {
+    border-color: #b9dfd4;
+    background:
+      radial-gradient(circle at top right, rgba(13, 148, 136, 0.12), transparent 42%),
+      linear-gradient(180deg, #ffffff 0%, #f0fbf7 100%);
   }
 
   .ops-list,
