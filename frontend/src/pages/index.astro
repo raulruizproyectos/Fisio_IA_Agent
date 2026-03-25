@@ -109,7 +109,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="hero-panel-main">
                 <div class="hero-heading-stack">
                   <span class="hero-eyebrow">Luxury Clinical OS</span>
-                  <h1 class="hero-title">Cabina clinica de precision para fisioterapia</h1>
+                  <h1 class="hero-title">Cabina clinica</h1>
                   <p class="hero-subtitle" id="dashboardLiveSummary">Cargando agenda, intake, sincronizacion y captacion...</p>
                 </div>
                 <div class="hero-actions hero-action-row">
@@ -12910,12 +12910,33 @@ import Layout from '../layouts/Layout.astro';
   }
 
   /* === FINAL HERO FIX + FICHA PACIENTE V1 === */
+  .cockpit-hero {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.45fr) minmax(20rem, 0.85fr) !important;
+    align-items: start !important;
+    gap: 1.1rem !important;
+  }
+
+  .hero-panel-side {
+    align-self: start !important;
+    justify-content: flex-start !important;
+  }
+
+  .hero-panel-main {
+    min-height: auto !important;
+  }
+
   .hero-panel-main .hero-title {
     color: #f5efe6 !important;
+    max-width: none !important;
+    white-space: nowrap;
+    font-size: clamp(2.1rem, 3.4vw, 3rem) !important;
+    line-height: 0.96 !important;
   }
 
   .hero-panel-main .hero-subtitle {
     color: rgba(234, 241, 246, 0.9) !important;
+    max-width: 46rem !important;
   }
 
   .hero-panel-main .btn-secondary,
@@ -13061,6 +13082,17 @@ import Layout from '../layouts/Layout.astro';
   @media (max-width: 1180px) {
     .ficha-hero-grid {
       grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 1180px) {
+    .cockpit-hero {
+      grid-template-columns: 1fr !important;
+    }
+
+    .hero-panel-main .hero-title {
+      white-space: normal;
+      max-width: 12ch !important;
     }
   }
 
