@@ -1,3 +1,40 @@
+## Sesion 111 - 2026-03-26
+
+### Objetivo
+Cerrar el frente de robustez CRM tras el incidente de `crm_bonos`, dejar la UI honesta ante migraciones faltantes, validar todo fuera de `G:` y actualizar la documentacion para retomar sin perdida de contexto.
+
+### Trabajo realizado
+- [x] Fix critico backend: `bonos` degrada con seguridad si falta `crm_bonos`.
+- [x] Hardening frontend `bonos`: aviso visible y bloqueo de crear/refrescar/filtrar/operar cuando el modulo no esta disponible.
+- [x] Nuevo readiness backend: `GET /api/health/readiness` con deteccion de tablas CRM y migraciones pendientes.
+- [x] UI de configuracion conectada a readiness para mostrar estado real de DB.
+- [x] Hardening backend/frontend de `facturas` cuando falta `crm_facturas`.
+- [x] Hardening backend/frontend de `pagos` cuando falta `crm_pagos`.
+- [x] Hardening backend `notas-clinicas` cuando falta `crm_notas_clinicas`.
+- [x] `GET /api/pacientes/:id/ficha` ahora expone `module_availability` para citas, pagos y notas cuando faltan tablas CRM.
+- [x] Ficha del paciente endurecida en frontend: aviso de disponibilidad parcial, secciones honestas y bloqueo de `Nueva nota` si el modulo clinico no esta disponible.
+- [x] Limpieza adicional de `index.astro` y cierre de warnings/hints residuales.
+- [x] Documentacion de continuidad actualizada (`README`, `CHANGELOG`, checkpoints de `docs/`).
+
+### Verificacion
+- [x] `node --check backend/src/routes/patients.js` OK.
+- [x] `scripts/backend-local-validate.ps1` OK en `C:\Temp\Fisio_IA_Agent_backend_local`.
+- [x] `scripts/frontend-local-build.ps1` OK en `C:\Temp\Fisio_IA_Agent_frontend_local`.
+- [x] `npm run check` OK en `C:\Temp\Fisio_IA_Agent_frontend_local` (`0 errors`, `0 warnings`, `0 hints`).
+
+### Estado al cierre
+- Codigo local estable y validado.
+- `main` listo para publicar con endurecimiento defensivo de CRM y documentacion de handoff actualizada.
+- Riesgo restante no es de codigo sino de operacion: migraciones pendientes en Supabase.
+
+### Punto exacto de continuidad
+1. Desplegar backend actualizado.
+2. Ejecutar `database/migrations/011_crm_bonos.sql`.
+3. Consultar `GET /api/health/readiness` y aplicar las pendientes reales (`007`, `008`, `009`, `schema_vnext`) segun el entorno.
+4. Verificar en produccion `GET /api/bonos`, `GET /api/facturas`, `GET /api/pagos` y `GET /api/pacientes/:id/ficha`.
+5. Confirmar en frontend que bonos/facturas/pagos/ficha muestran indisponibilidad honesta antes de migrar y funcionalidad completa despues.
+
+---
 ## Sesion 110 - 2026-03-23
 
 ### Objetivo

@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
@@ -13,6 +13,7 @@ import remindersRouter from './routes/reminders.js';
 import invoicesRouter from './routes/invoices.js';
 import documentsRouter from './routes/documents.js';
 import bonosRouter from './routes/bonos.js';
+import { buildReadinessReport, getReadinessStatusCode } from './lib/readiness.js';
 
 // Configuracion
 const app = express();
@@ -66,6 +67,11 @@ app.get('/api/health', (req, res) => {
     service: 'fisio-ia-agent-api',
     timestamp: new Date().toISOString(),
   });
+});
+
+app.get('/api/health/readiness', async (_req, res) => {
+  const report = await buildReadinessReport({ supabase, env: process.env });
+  res.status(getReadinessStatusCode(report)).json(report);
 });
 
 // Rutas

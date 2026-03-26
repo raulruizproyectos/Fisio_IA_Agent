@@ -3,10 +3,35 @@ import { supabase } from '../index.js';
 import PDFDocument from 'pdfkit';
 
 const router = Router();
+const INVOICES_TABLE = 'crm_facturas';
 
-// Clinic details (hardcoded — could move to config table later)
+const isMissingInvoicesTableError = (error) => {
+  const message = String(error?.message || '').toLowerCase();
+  const code = String(error?.code || '').toUpperCase();
+  return code === 'PGRST205' || (message.includes(INVOICES_TABLE) && (message.includes('schema cache') || message.includes('could not find the table')));
+};
+
+const invoicesUnavailableMessage = 'Modulo facturacion no disponible: falta tabla crm_facturas. Ejecuta database/migrations/009_crm_facturas.sql en Supabase.';
+
+const respondInvoicesUnavailable = (res, { write = false } = {}) => {
+  if (write) {
+    return res.status(503).json({
+      error: invoicesUnavailableMessage,
+      missing_table: INVOICES_TABLE,
+    });
+  }
+
+  return res.json({
+    data: [],
+    unavailable: true,
+    error: invoicesUnavailableMessage,
+    missing_table: INVOICES_TABLE,
+  });
+};
+
+// Clinic details (hardcoded - could move to config table later)
 const CLINIC = {
-  nombre: 'Clínica de Fisioterapia',
+  nombre: 'Clinica de Fisioterapia',
   nif: '',
   direccion: '',
   telefono: '',
@@ -15,12 +40,14 @@ const CLINIC = {
 
 // Generate next invoice number: FACT-YYYY-NNNN
 async function nextInvoiceNumber(year) {
-  const { data } = await supabase
-    .from('crm_facturas')
+  const { data, error } = await supabase
+    .from(INVOICES_TABLE)
     .select('numero')
     .like('numero', `FACT-${year}-%`)
     .order('numero', { ascending: false })
     .limit(1);
+
+  if (error) throw error;
 
   if (data?.length) {
     const last = parseInt(data[0].numero.split('-')[2], 10) || 0;
@@ -29,12 +56,12 @@ async function nextInvoiceNumber(year) {
   return `FACT-${year}-0001`;
 }
 
-// GET /api/facturas — list invoices with filters
+// GET /api/facturas - list invoices with filters
 router.get('/', async (req, res, next) => {
   try {
     const { anio, mes, paciente_id } = req.query;
     let query = supabase
-      .from('crm_facturas')
+      .from(INVOICES_TABLE)
       .select('id, numero, paciente_id, fecha, importe_total, iva_pct, importe_iva, importe_bruto, estado, created_at, crm_pacientes(nombre, apellidos)')
       .order('fecha', { ascending: false })
       .limit(200);
@@ -51,20 +78,22 @@ router.get('/', async (req, res, next) => {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res);
+      throw error;
+    }
     res.json({ data: data || [] });
   } catch (err) {
     next(err);
   }
 });
 
-// POST /api/facturas — create invoice from payment(s)
+// POST /api/facturas - create invoice from payment(s)
 router.post('/', async (req, res, next) => {
   try {
     const { paciente_id, pago_ids, iva_pct = 21, notas } = req.body;
     if (!paciente_id) return res.status(400).json({ error: 'paciente_id requerido' });
 
-    // Get patient
     const { data: paciente } = await supabase
       .from('crm_pacientes')
       .select('id, nombre, apellidos, dni, direccion, email, telefono')
@@ -73,7 +102,6 @@ router.post('/', async (req, res, next) => {
 
     if (!paciente) return res.status(404).json({ error: 'Paciente no encontrado' });
 
-    // Get payments to invoice
     let pagosQuery = supabase
       .from('crm_pagos')
       .select('id, fecha, importe, metodo_pago, concepto')
@@ -93,16 +121,22 @@ router.post('/', async (req, res, next) => {
     const importe_total = importe_bruto + importe_iva;
 
     const year = new Date().getFullYear();
-    const numero = await nextInvoiceNumber(year);
+    let numero;
+    try {
+      numero = await nextInvoiceNumber(year);
+    } catch (error) {
+      if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res, { write: true });
+      throw error;
+    }
 
     const { data: factura, error } = await supabase
-      .from('crm_facturas')
+      .from(INVOICES_TABLE)
       .insert({
         numero,
         paciente_id,
         fecha: new Date().toISOString().slice(0, 10),
-        lineas: pagos.map(p => ({
-          concepto: p.concepto || 'Sesión de fisioterapia',
+        lineas: pagos.map((p) => ({
+          concepto: p.concepto || 'Sesion de fisioterapia',
           fecha: p.fecha,
           importe: Number(p.importe),
         })),
@@ -116,28 +150,34 @@ router.post('/', async (req, res, next) => {
       .select('*')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res, { write: true });
+      throw error;
+    }
     res.status(201).json({ data: { ...factura, paciente } });
   } catch (err) {
     next(err);
   }
 });
 
-// GET /api/facturas/:id/pdf — generate and download PDF
+// GET /api/facturas/:id/pdf - generate and download PDF
 router.get('/:id/pdf', async (req, res, next) => {
   try {
     const { data: factura, error } = await supabase
-      .from('crm_facturas')
+      .from(INVOICES_TABLE)
       .select('*, crm_pacientes(nombre, apellidos, dni, direccion, email, telefono)')
       .eq('id', req.params.id)
       .single();
 
-    if (error || !factura) return res.status(404).json({ error: 'Factura no encontrada' });
+    if (error) {
+      if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res, { write: true });
+      return res.status(404).json({ error: 'Factura no encontrada' });
+    }
+    if (!factura) return res.status(404).json({ error: 'Factura no encontrada' });
 
     const pac = factura.crm_pacientes || {};
     const pacNombre = [pac.nombre, pac.apellidos].filter(Boolean).join(' ');
 
-    // Allow clinic data override via query params (set from frontend config)
     const clinic = {
       nombre: req.query.cn || CLINIC.nombre,
       nif: req.query.cnif || CLINIC.nif,
@@ -152,18 +192,15 @@ router.get('/:id/pdf', async (req, res, next) => {
     res.setHeader('Content-Disposition', `inline; filename="${factura.numero}.pdf"`);
     doc.pipe(res);
 
-    // Header
     doc.fontSize(20).font('Helvetica-Bold').text(clinic.nombre, 50, 50);
     if (clinic.nif) doc.fontSize(9).font('Helvetica').text(`NIF: ${clinic.nif}`, 50, 75);
     if (clinic.direccion) doc.text(clinic.direccion, 50, 87);
     if (clinic.telefono) doc.text(`Tel: ${clinic.telefono}`, 50, 99);
     if (clinic.email) doc.text(clinic.email, 50, 111);
 
-    // Invoice number & date
     doc.fontSize(14).font('Helvetica-Bold').text(`Factura ${factura.numero}`, 350, 50, { align: 'right' });
     doc.fontSize(10).font('Helvetica').text(`Fecha: ${factura.fecha}`, 350, 70, { align: 'right' });
 
-    // Patient
     const yPac = 140;
     doc.fontSize(11).font('Helvetica-Bold').text('Datos del paciente:', 50, yPac);
     doc.fontSize(10).font('Helvetica');
@@ -173,7 +210,6 @@ router.get('/:id/pdf', async (req, res, next) => {
     if (pac.direccion) { doc.text(pac.direccion, 50, yp); yp += 14; }
     if (pac.email) { doc.text(pac.email, 50, yp); yp += 14; }
 
-    // Line items table
     const yTable = yp + 20;
     doc.fontSize(10).font('Helvetica-Bold');
     doc.text('Concepto', 50, yTable);
@@ -185,27 +221,25 @@ router.get('/:id/pdf', async (req, res, next) => {
     let yLine = yTable + 22;
     const lineas = factura.lineas || [];
     for (const linea of lineas) {
-      doc.text(linea.concepto || 'Sesión', 50, yLine, { width: 260 });
+      doc.text(linea.concepto || 'Sesion', 50, yLine, { width: 260 });
       doc.text(linea.fecha || '', 320, yLine);
-      doc.text(`${Number(linea.importe).toFixed(2)} €`, 430, yLine, { align: 'right', width: 100 });
+      doc.text(`${Number(linea.importe).toFixed(2)} EUR`, 430, yLine, { align: 'right', width: 100 });
       yLine += 18;
     }
 
-    // Totals
     doc.moveTo(350, yLine + 5).lineTo(545, yLine + 5).stroke('#cccccc');
     yLine += 14;
     doc.font('Helvetica');
     doc.text('Base imponible:', 350, yLine);
-    doc.text(`${Number(factura.importe_bruto).toFixed(2)} €`, 430, yLine, { align: 'right', width: 100 });
+    doc.text(`${Number(factura.importe_bruto).toFixed(2)} EUR`, 430, yLine, { align: 'right', width: 100 });
     yLine += 16;
     doc.text(`IVA (${factura.iva_pct}%):`, 350, yLine);
-    doc.text(`${Number(factura.importe_iva).toFixed(2)} €`, 430, yLine, { align: 'right', width: 100 });
+    doc.text(`${Number(factura.importe_iva).toFixed(2)} EUR`, 430, yLine, { align: 'right', width: 100 });
     yLine += 18;
     doc.font('Helvetica-Bold').fontSize(12);
     doc.text('TOTAL:', 350, yLine);
-    doc.text(`${Number(factura.importe_total).toFixed(2)} €`, 430, yLine, { align: 'right', width: 100 });
+    doc.text(`${Number(factura.importe_total).toFixed(2)} EUR`, 430, yLine, { align: 'right', width: 100 });
 
-    // Footer
     if (factura.notas) {
       yLine += 40;
       doc.fontSize(9).font('Helvetica').text(`Notas: ${factura.notas}`, 50, yLine, { width: 490 });

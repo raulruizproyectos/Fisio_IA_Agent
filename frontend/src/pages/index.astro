@@ -197,7 +197,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">receipt_long</span></div><div class="metric-data"><span class="metric-value" id="metricSesionesMes">0</span><span class="metric-label">Sesiones este mes</span></div></div>
             </section>
 
-            <!-- GrÃƒÂ¡fico ingresos mensuales -->
+            <!-- Gr�fico ingresos mensuales -->
             <section class="card widget-card" style="margin-bottom:0">
               <header class="card-header">
                 <h2>Ingresos mensuales</h2>
@@ -301,7 +301,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-title-group">
                 <p class="modal-eyebrow">CRM</p>
                 <h2 id="patientModalTitle">Alta de paciente</h2>
-                <p>Registra un paciente nuevo y dejalo listo para historial, chat clÃƒÂ­nico y plantillas.</p>
+                <p>Registra un paciente nuevo y dejalo listo para historial, chat cl�nico y plantillas.</p>
               </div>
               <button type="button" class="modal-close" id="closePatientModalBtn" aria-label="Cerrar formulario de paciente">
                 <span class="material-symbols-rounded">close</span>
@@ -344,7 +344,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PLANTILLAS === -->
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas TerapÃƒÂ©uticas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terap�uticas</h1>
             <div class="page-tools">
               <label class="inline-field">
                 <span>Paciente destino</span>
@@ -356,17 +356,17 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Plantillas mÃƒÂ¡s reÃƒÂºtilizadas</h2></header>
+            <header class="card-header"><h2>Plantillas m�s reutilizadas</h2></header>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>TÃƒÂ­tulo</th>
+                    <th>T�tulo</th>
                     <th>Usos</th>
                     <th>Ejercicios</th>
-                    <th>ÃƒÅ¡ltimo uso</th>
+                    <th>�ltimo uso</th>
                     <th>Origen</th>
-                    <th>AcciÃƒÂ³n</th>
+                    <th>Acci�n</th>
                   </tr>
                 </thead>
                 <tbody id="templatesBody">
@@ -517,6 +517,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
 
+          <p class="form-feedback" id="pagosAvailabilityNotice" hidden></p>
           <!-- Tabla de pagos -->
           <section class="card table-card">
             <div class="table-wrap">
@@ -704,6 +705,8 @@ import Layout from '../layouts/Layout.astro';
                 <button class="ficha-tab" data-ficha-tab="documentos">Documentos</button>
               </div>
 
+              <p class="form-feedback" id="fichaAvailabilityNotice" hidden></p>
+
               <div class="ficha-panel active" data-ficha-panel="resumen">
                 <div class="ficha-overview-layout">
                   <section class="card ficha-overview-card ficha-overview-hero">
@@ -772,13 +775,14 @@ import Layout from '../layouts/Layout.astro';
             </section>
           </div>
 
-          <!-- Tab: Notas clÃƒÂ­nicas -->
+          <!-- Tab: Notas cl�nicas -->
           <div class="ficha-panel" data-ficha-panel="notas">
             <section class="card">
               <header class="card-header">
                 <h2>Notas de evoluci&oacute;n</h2>
                 <button class="btn-primary btn-sm" id="fichaAddNota"><span class="material-symbols-rounded">add</span> Nueva nota</button>
               </header>
+              <div class="ficha-list-summary" id="fichaNotasSummary"></div>
               <div id="fichaNotasTimeline" class="ficha-timeline">
                 <p class="empty-inline">Sin notas cl&iacute;nicas registradas</p>
               </div>
@@ -819,6 +823,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="ficha-panel" data-ficha-panel="citas">
             <section class="card">
               <header class="card-header"><h2>Historial de citas</h2></header>
+              <div class="ficha-list-summary" id="fichaCitasSummary"></div>
               <div class="table-wrap">
                 <table><thead><tr><th>Fecha</th><th>Estado</th><th>Motivo</th></tr></thead>
                 <tbody id="fichaCitasBody"><tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p></div></td></tr></tbody></table>
@@ -830,6 +835,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="ficha-panel" data-ficha-panel="pagos">
             <section class="card">
               <header class="card-header"><h2>Historial de pagos</h2></header>
+              <div class="ficha-list-summary" id="fichaPagosSummary"></div>
               <div class="table-wrap">
                 <table><thead><tr><th>Fecha</th><th>Importe</th><th>M&eacute;todo</th><th>Concepto</th></tr></thead>
                 <tbody id="fichaPagosBody"><tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p></div></td></tr></tbody></table>
@@ -846,9 +852,10 @@ import Layout from '../layouts/Layout.astro';
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
                   <button class="btn-sm btn-outline" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
                   <button class="btn-sm btn-outline" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
-                  <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ RevocaciÃƒÂ³n</button>
+                  <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocaci�n</button>
                 </div>
               </header>
+              <div class="ficha-list-summary" id="fichaDocsSummary"></div>
               <div id="fichaDocsList" class="ficha-docs-list">
                 <p class="empty-inline">Sin documentos registrados</p>
               </div>
@@ -897,7 +904,7 @@ import Layout from '../layouts/Layout.astro';
             <div id="firmaDocContenido" class="firma-doc-contenido"></div>
             <!-- Signature pad -->
             <div class="firma-pad-section">
-              <p class="firma-pad-label">Firma del paciente <span class="firma-pad-hint">(dibuja tu firma con el ratÃƒÂ³n o dedo)</span></p>
+              <p class="firma-pad-label">Firma del paciente <span class="firma-pad-hint">(dibuja tu firma con el rat�n o dedo)</span></p>
               <div class="firma-pad-wrap">
                 <canvas id="firmaCanvas" width="600" height="160"></canvas>
               </div>
@@ -933,6 +940,7 @@ import Layout from '../layouts/Layout.astro';
                 <button class="btn-ghost btn-sm" id="refreshBonos"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
+            <p class="form-feedback" id="bonosAvailabilityNotice" hidden></p>
             <div class="table-wrap">
               <table><thead><tr><th>Paciente</th><th>Bono</th><th>Sesiones</th><th>Precio</th><th>Inicio</th><th>Caducidad</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody id="bonosBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">confirmation_number</span><p>Sin bonos registrados</p></div></td></tr></tbody></table>
@@ -962,7 +970,7 @@ import Layout from '../layouts/Layout.astro';
                 <label class="field"><span>N&uacute;mero de sesiones</span>
                   <input id="bonoSesiones" type="number" min="1" max="100" value="10" required />
                 </label>
-                <label class="field"><span>Precio total (Ã¢â€šÂ¬)</span>
+                <label class="field"><span>Precio total (�)</span>
                   <input id="bonoPrecio" type="number" min="0" step="0.01" placeholder="0.00" required />
                 </label>
                 <label class="field"><span>Fecha inicio</span>
@@ -999,6 +1007,7 @@ import Layout from '../layouts/Layout.astro';
                 <button class="btn-ghost btn-sm" id="refreshFacturas"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
+            <p class="form-feedback" id="facturaAvailabilityNotice" hidden></p>
             <div class="table-wrap">
               <table><thead><tr><th>N&uacute;mero</th><th>Fecha</th><th>Paciente</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody id="facturasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">receipt_long</span><p>Sin facturas emitidas</p></div></td></tr></tbody></table>
@@ -1099,8 +1108,10 @@ import Layout from '../layouts/Layout.astro';
             <section class="card">
               <header class="card-header"><h2>Conexiones</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">Ã¢â‚¬â€</span><span class="status-chip" id="cfgBackendStatus">Ã¢â‚¬â€</span></div>
-                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">Ã¢â‚¬â€</span><span class="status-chip" id="cfgAgentStatus">Ã¢â‚¬â€</span></div>
+                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">�</span><span class="status-chip" id="cfgBackendStatus">�</span></div>
+                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">�</span><span class="status-chip" id="cfgAgentStatus">�</span></div>
+                <div class="config-item"><span class="config-label">Readiness DB</span><span class="config-value" id="cfgReadiness">Comprobando...</span><span class="status-chip pendiente" id="cfgReadinessStatus">Comprobando</span></div>
+                <p class="form-feedback config-readiness-detail" id="cfgReadinessDetail" hidden></p>
               </div>
             </section>
             <section class="card">
@@ -1561,7 +1572,7 @@ import Layout from '../layouts/Layout.astro';
   };
   const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'Ã¢â‚¬â€'; } };
+  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '�'; } };
   const fmtRelativeSyncAge = (iso: string | null | undefined) => {
     if (!iso) return 'sin ejecuciones recientes';
     const ts = new Date(iso).getTime();
@@ -1762,7 +1773,7 @@ import Layout from '../layouts/Layout.astro';
     const displayName = selected?.nombre_completo || selectedPatientName || `Paciente ${selectedPatientId}`;
     assistantPatientLabel.textContent = displayName;
     assistantPatientMeta.textContent = selected?.email
-      ? `Informe y conversaciÃƒÂ³n vinculados a ${selected.email}.`
+      ? `Informe y conversaci�n vinculados a ${selected.email}.`
       : 'Informe, PDF y seguimiento vinculados al historial del paciente.';
   };
 
@@ -2542,7 +2553,7 @@ import Layout from '../layouts/Layout.astro';
     log.appendChild(article);
     scrollAssistantRailToBottom();
   };
-  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexiÃƒÂ³n'; };
+  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexi�n'; };
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
@@ -2738,7 +2749,7 @@ import Layout from '../layouts/Layout.astro';
       progress = document.createElement('article');
       progress.id = 'agentProgressMsg';
       progress.className = 'msg agent msg-progress';
-      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clÃƒÂ­nico</span><p></p></div>';
+      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente cl�nico</span><p></p></div>';
       log.appendChild(progress);
     }
     const p = progress.querySelector('p');
@@ -3086,7 +3097,7 @@ import Layout from '../layouts/Layout.astro';
     html += '<div class="exercise-report exercise-report-compact">';
     html += '<div class="exercise-report-head">';
     html += '<strong>Plan listo para revisar</strong>';
-    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' Ã‚Â· '))}</span>`;
+    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' � '))}</span>`;
     html += '</div>';
     if (payload?.red_flags?.present) {
       html += '<div class="exercise-alert"><span class="material-symbols-rounded">&#xe002;</span> Revisa alertas antes de prescribir el programa.</div>';
@@ -3300,7 +3311,7 @@ import Layout from '../layouts/Layout.astro';
     }
     syncChatPatientSelection(activePatientId);
     addMessage(`Solicitar recomendacion para: ${visibleText}`, 'user');
-    upsertAgentProgress('Preparando solicitud clÃƒÂ­nica...');
+    upsertAgentProgress('Preparando solicitud cl�nica...');
     setSending(true, 'exercise');
     try {
       let payload: any = null;
@@ -3317,7 +3328,7 @@ import Layout from '../layouts/Layout.astro';
           payload = await pollExerciseRecommendationJob(String(job?.job_id || ''), 90, 1500);
         } catch (asyncErr: any) {
           if (!shouldFallbackToSyncExerciseRequest(asyncErr)) throw asyncErr;
-          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por vÃƒÂ­a directa...');
+          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por v�a directa...');
           const directResponse = await requestExerciseRecommendation(text, 2);
           payload = directResponse.payload;
           retriesUsed = directResponse.retriesUsed;
@@ -3327,7 +3338,7 @@ import Layout from '../layouts/Layout.astro';
       renderExerciseOpsMetric();
 
       if (!payload.ok) {
-        addMessage(`Error: ${payload.error || 'No se pudo generar recomendaciÃƒÂ³n'}`, 'agent');
+        addMessage(`Error: ${payload.error || 'No se pudo generar recomendaci�n'}`, 'agent');
         return;
       }
 
@@ -3336,17 +3347,17 @@ import Layout from '../layouts/Layout.astro';
       addExerciseReport(payload);
       updateExercisePdfButton();
       if (retriesUsed > 0) {
-        addMessage(`Motor IA respondiÃƒÂ³ tras ${retriesUsed} reintento(s).`, 'agent');
+        addMessage(`Motor IA respondi� tras ${retriesUsed} reintento(s).`, 'agent');
       }
       setAgentStatus(true);
       updateExercisePdfButton();
     } catch (err: any) {
       clearAgentProgress();
       if (err?.code === 'async_poll_timeout') {
-        addMessage('El informe sigue generÃƒÂ¡ndose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
+        addMessage('El informe sigue gener�ndose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
       } else if (isTimeoutError(err)) {
         pendingExerciseRecommendationJobId = null;
-        addMessage('El agente de ejercicios tarda mÃƒÂ¡s de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
+        addMessage('El agente de ejercicios tarda m�s de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
       } else {
         pendingExerciseRecommendationJobId = null;
         addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
@@ -3791,8 +3802,6 @@ import Layout from '../layouts/Layout.astro';
   });
 
   // === DASHBOARD KPIs + CHART ===
-  let dashChartInstance: any = null;
-
   const loadDashboardKPIs = async () => {
     try {
       const now = new Date();
@@ -3805,7 +3814,7 @@ import Layout from '../layouts/Layout.astro';
 
       const elIngresos = document.getElementById('metricIngresosMes');
       const elSesiones = document.getElementById('metricSesionesMes');
-      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} Ã¢â€šÂ¬`;
+      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} �`;
       if (elSesiones) elSesiones.textContent = String(sesionesMes);
 
       // Draw chart
@@ -3871,7 +3880,7 @@ import Layout from '../layouts/Layout.astro';
       ctx.textAlign = 'right';
       for (let v = 0; v <= maxVal; v += Math.ceil(maxVal / 4)) {
         const y = pad.top + chartH - (v / maxVal) * chartH;
-        ctx.fillText(`${v}Ã¢â€šÂ¬`, pad.left - 6, y + 4);
+        ctx.fillText(`${v}�`, pad.left - 6, y + 4);
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 0.5;
         ctx.beginPath();
@@ -3881,7 +3890,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
     } catch {
-      // silently fail Ã¢â‚¬â€ dashboard still usable
+      // silently fail � dashboard still usable
     }
   };
 
@@ -3899,8 +3908,8 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(pts.length);
       if (!pts.length) { setTableState(pacientesBody, 5, 'person_off', 'Sin pacientes registrados'); return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
-        const patientName = p.nombre_completo || 'Ã¢â‚¬â€';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'Ã¢â‚¬â€')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'Ã¢â‚¬â€'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
+        const patientName = p.nombre_completo || '�';
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'�')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'�'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
       }).join('');
     } catch {
       setTableState(pacientesBody, 5, 'cloud_off', 'Error al cargar pacientes');
@@ -4065,7 +4074,7 @@ import Layout from '../layouts/Layout.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
       const templates = payload.data || [];
       if (!templates.length) {
-        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todavÃƒÂ­a.');
+        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todav�a.');
         return;
       }
       templatesBody.innerHTML = templates.map((tpl: any) => {
@@ -4076,8 +4085,8 @@ import Layout from '../layouts/Layout.astro';
           <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
           <td>${tpl.usage_count || 0}</td>
           <td>${tpl.exercises_count || 0}</td>
-          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : 'Ã¢â‚¬â€'}</td>
-          <td>${escapeHtml(tpl.source_patient_name || 'Ã¢â‚¬â€')}</td>
+          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : '�'}</td>
+          <td>${escapeHtml(tpl.source_patient_name || '�')}</td>
           <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
         </tr>`;
       }).join('');
@@ -4135,9 +4144,9 @@ import Layout from '../layouts/Layout.astro';
       const intakes = payload.data || [];
       if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin intakes pendientes'); return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
-        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">ÃƒÂ¢Ã…Â¡Ã‚Â  SÃƒÂ­</span>` : '<span class="status-chip aprobado">No</span>';
+        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">&#9888; S�</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'Ã¢â‚¬â€')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'�')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
     } catch {
       setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar intakes');
@@ -4189,7 +4198,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="dash-cita-hora">${isToday && hora ? `<span class="cita-hora-badge">${hora}</span>` : ''}</div>
         <div class="clean-list-main">
           <p class="clean-list-title">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</p>
-          <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Sin motivo') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' Ã‚Â· ' + escapeHtml(cita.motivo) : '')}</p>
+          <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Sin motivo') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' � ' + escapeHtml(cita.motivo) : '')}</p>
         </div>
         <span class="status-chip ${stateClass}">${escapeHtml(cita.estado || 'pendiente')}</span>
       </article>`;
@@ -4197,7 +4206,7 @@ import Layout from '../layouts/Layout.astro';
 
     let html = '';
     if (todayCitas.length) {
-      html += `<div class="dash-section-label">HOY Ã¢â‚¬â€ ${todayCitas.length} cita${todayCitas.length > 1 ? 's' : ''}</div>`;
+      html += `<div class="dash-section-label">HOY � ${todayCitas.length} cita${todayCitas.length > 1 ? 's' : ''}</div>`;
       html += todayCitas.map((c: any) => renderItem(c, true)).join('');
     } else {
       html += `<div class="dash-section-label dash-section-label-muted">Sin citas hoy</div>`;
@@ -4221,8 +4230,6 @@ import Layout from '../layouts/Layout.astro';
   const fmtHourOnly = (iso: string) => {
     try { return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }); } catch { return ''; }
   };
-  const fmtDayShortName = (d: Date) =>
-    d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', timeZone: 'Europe/Madrid' });
   const fmtDayFull = (d: Date) =>
     d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Madrid' });
 
@@ -4313,7 +4320,7 @@ import Layout from '../layouts/Layout.astro';
       return d;
     });
 
-    // Map dayÃƒâ€”hour Ã¢â€ â€™ appointments
+    // Map day�hour ? appointments
     const apptMap = new Map<string, any[]>();
     const allDayMap = new Map<number, any[]>();
     for (const cita of citas) {
@@ -4333,7 +4340,7 @@ import Layout from '../layouts/Layout.astro';
       apptMap.get(key)!.push(cita);
     }
 
-    // Status colors (inline Ã¢â‚¬â€ Astro scoped styles don't apply to dynamic innerHTML)
+    // Status colors (inline � Astro scoped styles don't apply to dynamic innerHTML)
     const STATUS: Record<string, { bg: string; color: string; border: string }> = {
       confirmada: { bg: '#d1fae5', color: '#065f46', border: '#10b981' },
       pendiente:  { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
@@ -4344,7 +4351,7 @@ import Layout from '../layouts/Layout.astro';
     const DEF = STATUS.pendiente;
     const todayStr = new Date().toDateString();
 
-    // Table layout Ã¢â‚¬â€ works regardless of Astro style scoping
+    // Table layout � works regardless of Astro style scoping
     const thBase = 'padding:10px 8px;text-align:center;border-bottom:2px solid #e2e8f0;font-size:0.8rem;font-weight:700;white-space:nowrap;';
     let html = `<div style="overflow-x:auto;width:100%;">
 <table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
@@ -4353,7 +4360,6 @@ import Layout from '../layouts/Layout.astro';
 
     for (let i = 0; i < 5; i++) {
       const isToday = weekDays[i].toDateString() === todayStr;
-      const label = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
       const dayNum = weekDays[i].toLocaleDateString('es-ES', { day: 'numeric' });
       const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short' });
       const bg = isToday ? '#eff6ff' : '#f8fafc';
@@ -4372,14 +4378,12 @@ import Layout from '../layouts/Layout.astro';
     html += '</tr></thead><tbody>';
 
     // Separator row between morning and afternoon
-    let prevSlotWasBreak = false;
-
     for (let si = 0; si < HOUR_SLOTS.length; si++) {
       const hour = HOUR_SLOTS[si];
       const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
       // Lunch break separator
       if (prevHour !== null && hour - prevHour > 1) {
-        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 Ã¢â‚¬â€œ 15:00</td></tr>`;
+        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 � 15:00</td></tr>`;
       }
 
       const timeLabel = `${String(hour).padStart(2,'0')}:00`;
@@ -4709,16 +4713,7 @@ import Layout from '../layouts/Layout.astro';
       return true;
     }
 
-    const temp = document.createElement('textarea');
-    temp.value = value;
-    temp.setAttribute('readonly', 'true');
-    temp.style.position = 'absolute';
-    temp.style.left = '-9999px';
-    document.body.appendChild(temp);
-    temp.select();
-    const copied = document.execCommand('copy');
-    document.body.removeChild(temp);
-    return copied;
+    return false;
   };
 
   let bookingFeedbackTimeout: number | null = null;
@@ -5089,6 +5084,9 @@ import Layout from '../layouts/Layout.astro';
   const pagoImporteInput = document.getElementById('pagoImporteInput') as HTMLInputElement | null;
   const pagoNotasInput = document.getElementById('pagoNotasInput') as HTMLInputElement | null;
   const pagoFormFeedback = document.getElementById('pagoFormFeedback') as HTMLElement | null;
+  const addPagoBtn = document.getElementById('addPagoBtn') as HTMLButtonElement | null;
+  const pagosAvailabilityNotice = document.getElementById('pagosAvailabilityNotice') as HTMLElement | null;
+  let pagosUnavailableMessage = '';
   const pagoSubmitBtn = document.getElementById('pagoSubmitBtn') as HTMLButtonElement | null;
   const pagoModalTitle = document.getElementById('pagoModalTitle');
 
@@ -5112,6 +5110,28 @@ import Layout from '../layouts/Layout.astro';
     pagoFormFeedback.hidden = false; pagoFormFeedback.textContent = text; pagoFormFeedback.setAttribute('data-state', state);
   };
 
+  const syncPagosAvailabilityUi = () => {
+    const unavailable = Boolean(pagosUnavailableMessage);
+    if (addPagoBtn) {
+      addPagoBtn.disabled = unavailable;
+      addPagoBtn.title = unavailable ? pagosUnavailableMessage : '';
+    }
+    if (pagosAnioFilter) {
+      pagosAnioFilter.disabled = unavailable;
+      pagosAnioFilter.title = unavailable ? pagosUnavailableMessage : 'A�o';
+    }
+    if (pagosMesFilter) {
+      pagosMesFilter.disabled = unavailable;
+      pagosMesFilter.title = unavailable ? pagosUnavailableMessage : 'Mes';
+    }
+    if (pagosAvailabilityNotice) {
+      pagosAvailabilityNotice.hidden = !unavailable;
+      pagosAvailabilityNotice.textContent = unavailable ? pagosUnavailableMessage : '';
+      if (unavailable) pagosAvailabilityNotice.setAttribute('data-state', 'error');
+      else pagosAvailabilityNotice.removeAttribute('data-state');
+    }
+  };
+
   const getSelectedMetodo = () => {
     const checked = pagoForm?.querySelector('input[name="metodo_pago"]:checked') as HTMLInputElement | null;
     return checked?.value || 'efectivo';
@@ -5126,16 +5146,17 @@ import Layout from '../layouts/Layout.astro';
     if (!pagoPacienteSelect) return;
     if (!patientCatalog.length) await fetchPatientCatalog();
     const current = pagoPacienteSelect.value;
-    // Only CRM patients Ã¢â‚¬â€ legacy IDs don't exist in crm_pacientes (FK constraint)
+    // Only CRM patients � legacy IDs don't exist in crm_pacientes (FK constraint)
     const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
     pagoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
       crmPts.map((p: any) =>
-        `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'Ã¢â‚¬â€')}</option>`
+        `<option value="${p.id}">${escapeHtml(p.nombre_completo || '�')}</option>`
       ).join('');
     if (current) pagoPacienteSelect.value = current;
   };
 
   const openPagoModal = async (editData?: any) => {
+    if (pagosUnavailableMessage) { setPagoFeedback(pagosUnavailableMessage); return; }
     pagoForm?.reset();
     setPagoFeedback();
     if (pagoEditId) pagoEditId.value = '';
@@ -5166,7 +5187,7 @@ import Layout from '../layouts/Layout.astro';
     document.body.classList.remove('has-modal-open');
   };
 
-  document.getElementById('addPagoBtn')?.addEventListener('click', () => openPagoModal());
+  addPagoBtn?.addEventListener('click', () => openPagoModal());
   document.getElementById('closePagoModalBtn')?.addEventListener('click', closePagoModal);
   document.getElementById('pagoModalDismiss')?.addEventListener('click', closePagoModal);
 
@@ -5174,52 +5195,39 @@ import Layout from '../layouts/Layout.astro';
 
   const loadPagos = async () => {
     if (!pagosBody) return;
+    pagosUnavailableMessage = '';
+    syncPagosAvailabilityUi();
     setTableState(pagosBody, 5, 'sync', 'Cargando pagos...', true);
-
     const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
     const mes = pagosMesFilter?.value || '';
-    const params = new URLSearchParams({ anio });
-    if (mes) params.set('mes', mes);
-
     try {
-      const [listPayload, resumenPayload] = await Promise.all([
-        fetchJson(`${BACKEND_BASE}/api/pagos?${params.toString()}`),
-        fetchJson(`${BACKEND_BASE}/api/pagos/resumen?anio=${anio}`),
-      ]);
-
-      const pagos = listPayload?.data || [];
-      const resumen = resumenPayload?.resumen || [];
-
-      // Summary stats
-      if (mes) {
-        const d = resumen.find((r: any) => r.mes === Number(mes)) || { total: 0, sesiones: 0, efectivo: 0, tarjeta: 0 };
-        document.getElementById('pagosTotalImporte')!.textContent = fmtMoney(d.total);
-        document.getElementById('pagosTotalSesiones')!.textContent = String(d.sesiones);
-        document.getElementById('pagosTotalEfectivo')!.textContent = fmtMoney(d.efectivo);
-        document.getElementById('pagosTotalTarjeta')!.textContent = fmtMoney(d.tarjeta);
-      } else {
-        document.getElementById('pagosTotalImporte')!.textContent = fmtMoney(resumenPayload?.total_anual || 0);
-        document.getElementById('pagosTotalSesiones')!.textContent = String(resumenPayload?.total_sesiones || 0);
-        document.getElementById('pagosTotalEfectivo')!.textContent = fmtMoney(resumen.reduce((s: number, r: any) => s + (r.efectivo || 0), 0));
-        document.getElementById('pagosTotalTarjeta')!.textContent = fmtMoney(resumen.reduce((s: number, r: any) => s + (r.tarjeta || 0), 0));
+      const query = new URLSearchParams({ anio });
+      if (mes) query.set('mes', mes);
+      const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?${query.toString()}`);
+      if (payload.unavailable) {
+        pagosUnavailableMessage = payload.error || 'Modulo pagos no disponible';
+        syncPagosAvailabilityUi();
+        setTableState(pagosBody, 5, 'warning', pagosUnavailableMessage);
+        return;
       }
-
+      const pagos = payload.data || [];
       if (!pagos.length) { setTableState(pagosBody, 5, 'credit_card_off', 'Sin pagos en este periodo'); return; }
-
       pagosBody.innerHTML = pagos.map((p: any) => {
-        const pName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Ã¢â‚¬â€';
-        const chip = p.metodo_pago === 'efectivo'
-          ? '<span class="pagos-chip pagos-chip-cash">Efectivo</span>'
-          : '<span class="pagos-chip pagos-chip-card">Tarjeta</span>';
-        return `<tr>
-          <td>${p.fecha ? new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) : 'Ã¢â‚¬â€'}</td>
-          <td class="td-patient">${escapeHtml(pName)}</td>
-          <td>${chip}</td>
-          <td class="text-right"><strong>${fmtMoney(Number(p.importe))}</strong></td>
-          <td><button class="btn-sm btn-outline btn-danger-outline" data-action="delete-pago" data-pago-id="${p.id}" title="Eliminar">&times;</button></td>
+        const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
+        const metodoClass = p.metodo_pago === 'efectivo' ? 'pagos-chip-cash' : 'pagos-chip-card';
+        return `<tr data-pago='${escapeAttr(JSON.stringify(p))}'>
+          <td>${fmtDate(p.fecha)}</td>
+          <td class="td-patient">${escapeHtml(patientName)}</td>
+          <td><span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
+          <td class="text-right">${Number(p.importe || 0).toFixed(2)} EUR</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
+              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-pago" data-pago-id="${p.id}">Eliminar</button>
+            </div>
+          </td>
         </tr>`;
       }).join('');
-
     } catch {
       setTableState(pagosBody, 5, 'cloud_off', 'Error al cargar pagos');
     }
@@ -5230,20 +5238,40 @@ import Layout from '../layouts/Layout.astro';
   pagosMesFilter?.addEventListener('change', loadPagos);
 
   pagosBody?.addEventListener('click', async (event: Event) => {
-    const btn = (event.target as HTMLElement).closest('button[data-action="delete-pago"]') as HTMLButtonElement | null;
+    if (pagosUnavailableMessage) { alert(pagosUnavailableMessage); return; }
+    const btn = (event.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
     if (!btn) return;
+    const action = btn.getAttribute('data-action');
     const pagoId = btn.getAttribute('data-pago-id');
-    if (!pagoId || !confirm('Ã‚Â¿Eliminar este pago?')) return;
-    try {
-      await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
-      await loadPagos();
-    } catch (err: any) {
-      alert('Error: ' + (err?.message || 'desconocido'));
+    if (!pagoId) return;
+
+    if (action === 'edit-pago') {
+      const row = btn.closest('tr');
+      const raw = row?.getAttribute('data-pago');
+      if (!raw) return;
+      try {
+        const pago = JSON.parse(raw);
+        await openPagoModal(pago);
+      } catch {
+        alert('No pude cargar el pago seleccionado.');
+      }
+      return;
+    }
+
+    if (action === 'delete-pago') {
+      if (!confirm('�Eliminar este pago?')) return;
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
+        await loadPagos();
+      } catch (err: any) {
+        alert('Error: ' + (err?.message || 'desconocido'));
+      }
     }
   });
 
   pagoForm?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
+    if (pagosUnavailableMessage) { setPagoFeedback(pagosUnavailableMessage); return; }
     const pacienteId = pagoPacienteSelect?.value || '';
     if (!pacienteId) { setPagoFeedback('Selecciona un paciente.'); pagoPacienteSelect?.focus(); return; }
     const importe = Number(pagoImporteInput?.value);
@@ -5305,11 +5333,13 @@ import Layout from '../layouts/Layout.astro';
   const fichaPagosTotal = document.getElementById('fichaPagosTotal');
   const fichaCitasSummary = document.getElementById('fichaCitasSummary');
   const fichaPagosSummary = document.getElementById('fichaPagosSummary');
+  const fichaNotasSummary = document.getElementById('fichaNotasSummary');
+  const fichaDocsSummary = document.getElementById('fichaDocsSummary');
   const fichaNotasTimeline = document.getElementById('fichaNotasTimeline');
   const fichaNotaFormCard = document.getElementById('fichaNotaFormCard');
   const fichaNotaForm = document.getElementById('fichaNotaForm') as HTMLFormElement | null;
   const fichaNotaFormTitle = document.getElementById('fichaNotaFormTitle');
-  const fichaAddNota = document.getElementById('fichaAddNota');
+  const fichaAddNota = document.getElementById('fichaAddNota') as HTMLButtonElement | null;
   const fichaNotaCancel = document.getElementById('fichaNotaCancel');
   const fichaOverviewStats = document.getElementById('fichaOverviewStats');
   const fichaOverviewStream = document.getElementById('fichaOverviewStream');
@@ -5320,6 +5350,8 @@ import Layout from '../layouts/Layout.astro';
   const fichaRailTelegramBtn = document.getElementById('fichaRailTelegramBtn') as HTMLButtonElement | null;
   const fichaRailChannels = document.getElementById('fichaRailChannels');
   const fichaRailChecklist = document.getElementById('fichaRailChecklist');
+  const fichaAvailabilityNotice = document.getElementById('fichaAvailabilityNotice') as HTMLElement | null;
+  let fichaModuleAvailability = new Map<string, any>();
 
   const getPatientFullName = (patient: any) =>
     [patient?.nombre, patient?.apellidos].map((value: any) => String(value || '').trim()).filter(Boolean).join(' ') || patient?.nombre_completo || 'Paciente';
@@ -5339,6 +5371,37 @@ import Layout from '../layouts/Layout.astro';
     [...citas]
       .filter((cita: any) => cita?.fecha_hora)
       .sort((a: any, b: any) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime())[0] || null;
+
+  const getFichaModuleAvailability = (key: string) => fichaModuleAvailability.get(key) || null;
+  const isFichaModuleUnavailable = (key: string) => Boolean(getFichaModuleAvailability(key));
+  const getFichaModuleMessage = (key: string, fallback: string) => getFichaModuleAvailability(key)?.message || fallback;
+  const renderFichaUnavailableRow = (icon: string, colspan: number, message: string) => `
+    <tr class="empty-row"><td colspan="${colspan}"><div class="empty-state"><span class="material-symbols-rounded">${icon}</span><p>${escapeHtml(message)}</p></div></td></tr>`;
+  const renderFichaUnavailableInline = (message: string) => `<p class="empty-inline">${escapeHtml(message)}</p>`;
+  const syncFichaAvailabilityUi = (modules: any[] = []) => {
+    fichaModuleAvailability = new Map(
+      (Array.isArray(modules) ? modules : [])
+        .filter((item: any) => item?.key)
+        .map((item: any) => [String(item.key), item]),
+    );
+
+    const unavailableModules = Array.from(fichaModuleAvailability.values());
+    if (fichaAvailabilityNotice) {
+      fichaAvailabilityNotice.hidden = !unavailableModules.length;
+      fichaAvailabilityNotice.textContent = unavailableModules.length
+        ? `Algunas secciones de la ficha no estan disponibles: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}. Revisa Configuracion > Conexiones y ejecuta las migraciones pendientes.`
+        : '';
+      if (unavailableModules.length) fichaAvailabilityNotice.setAttribute('data-state', 'error');
+      else fichaAvailabilityNotice.removeAttribute('data-state');
+    }
+
+    const notasUnavailable = getFichaModuleAvailability('notas');
+    if (fichaAddNota) {
+      fichaAddNota.disabled = Boolean(notasUnavailable);
+      fichaAddNota.title = notasUnavailable?.message || '';
+    }
+    if (notasUnavailable && fichaNotaFormCard) fichaNotaFormCard.hidden = true;
+  };
 
   const activateFichaTab = (tabName: string) => {
     document.querySelectorAll('.ficha-tab').forEach((tab) => {
@@ -5380,34 +5443,38 @@ import Layout from '../layouts/Layout.astro';
     const citas = Array.isArray(payload?.citas) ? payload.citas : [];
     const pagos = Array.isArray(payload?.pagos) ? payload.pagos : [];
     const notas = Array.isArray(payload?.notas) ? payload.notas : [];
-    const latestAppointment = getFichaLatestAppointment(citas);
-    const latestNote = notas[0] || null;
-    const totalPayments = pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
+    const citasUnavailable = isFichaModuleUnavailable('citas');
+    const pagosUnavailable = isFichaModuleUnavailable('pagos');
+    const notasUnavailable = isFichaModuleUnavailable('notas');
+    const latestAppointment = citasUnavailable ? null : getFichaLatestAppointment(citas);
+    const latestNote = notasUnavailable ? null : (notas[0] || null);
+    const totalPayments = pagosUnavailable ? 0 : pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
     const latestEva = latestNote?.dolor_eva != null ? Number(latestNote.dolor_eva) : null;
     const patientName = getPatientFullName(patient);
-    const activityItems = buildFichaActivityItems(citas, notas);
+    const activityItems = buildFichaActivityItems(citasUnavailable ? [] : citas, notasUnavailable ? [] : notas);
+    const unavailableModules = Array.from(fichaModuleAvailability.values());
 
     if (fichaOverviewStats) {
       fichaOverviewStats.innerHTML = `
         <article class="ficha-overview-stat">
           <span>Estado del caso</span>
-          <strong>${escapeHtml(latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoracion')}</strong>
-          <p>${escapeHtml(latestNote ? 'Ya hay criterio clinico registrado para iterar con el agente.' : citas.length ? 'Conviene cerrar seguimiento y plan para dar continuidad.' : 'Todavia no hay una primera sesion cerrada en CRM.')}</p>
+          <strong>${unavailableModules.length ? 'Vista parcial' : latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoracion'}</strong>
+          <p>${escapeHtml(unavailableModules.length ? 'Hay modulos pendientes de migracion. Usa esta vista como referencia parcial hasta recuperar la integridad del CRM.' : latestNote ? 'Ya hay criterio clinico registrado para iterar con el agente.' : citas.length ? 'Conviene cerrar seguimiento y plan para dar continuidad.' : 'Todavia no hay una primera sesion cerrada en CRM.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Sesiones</span>
-          <strong>${citas.length}</strong>
-          <p>${escapeHtml(latestAppointment?.fecha_hora ? `Ultima: ${fmtDate(latestAppointment.fecha_hora)}` : 'Sin citas registradas todavia.')}</p>
+          <strong>${citasUnavailable ? 'No disponible' : citas.length}</strong>
+          <p>${escapeHtml(citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : latestAppointment?.fecha_hora ? `Ultima: ${fmtDate(latestAppointment.fecha_hora)}` : 'Sin citas registradas todavia.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Seguimiento</span>
-          <strong>${notas.length} nota${notas.length === 1 ? '' : 's'}</strong>
-          <p>${escapeHtml(latestEva != null ? `Dolor actual reportado: EVA ${latestEva}/10.` : 'Aun no hay una evolucion clinica documentada.')}</p>
+          <strong>${notasUnavailable ? 'No disponible' : `${notas.length} nota${notas.length === 1 ? '' : 's'}`}</strong>
+          <p>${escapeHtml(notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : latestEva != null ? `Dolor actual reportado: EVA ${latestEva}/10.` : 'Aun no hay una evolucion clinica documentada.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Actividad economica</span>
-          <strong>${totalPayments.toFixed(2)} EUR</strong>
-          <p>${escapeHtml(pagos.length ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay pagos asociados al caso.')}</p>
+          <strong>${pagosUnavailable ? 'No disponible' : `${totalPayments.toFixed(2)} EUR`}</strong>
+          <p>${escapeHtml(pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay pagos asociados al caso.')}</p>
         </article>`;
     }
 
@@ -5422,14 +5489,17 @@ import Layout from '../layouts/Layout.astro';
               <p>${escapeHtml(item.meta)}</p>
             </div>
           </article>`).join('')
-        : '<p class="empty-inline">La actividad reciente del caso aparecera aqui cuando registres citas o notas.</p>';
+        : unavailableModules.length
+          ? '<p class="empty-inline">La timeline se muestra en modo parcial hasta recuperar los modulos pendientes.</p>'
+          : '<p class="empty-inline">La actividad reciente del caso aparecera aqui cuando registres citas o notas.</p>';
     }
 
     const decisions = [
-      !citas.length ? { tone: 'urgent', title: 'Programar la primera sesion', body: 'Todavia no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
-      citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoracion y evolucion', body: 'Ya existe actividad en agenda, pero falta una nota clinica que deje criterio terapeutico y siguiente paso.' } : null,
-      latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'Revisar dolor alto y ajustar plan', body: 'El ultimo registro deja un EVA elevado. Conviene preparar sesion y progresion con criterio clinico.' } : null,
-      !pagos.length ? { tone: 'soft', title: 'Cerrar cobro o bono asociado', body: 'No hay actividad economica vinculada al caso. Conviene dejarlo resuelto desde CRM.' } : null,
+      unavailableModules.length ? { tone: 'alert', title: 'Revisar migraciones pendientes', body: `La ficha esta operativa en modo parcial. Falta recuperar: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.` } : null,
+      !citasUnavailable && !citas.length ? { tone: 'urgent', title: 'Programar la primera sesion', body: 'Todavia no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
+      !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoracion y evolucion', body: 'Ya existe actividad en agenda, pero falta una nota clinica que deje criterio terapeutico y siguiente paso.' } : null,
+      !notasUnavailable && latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'Revisar dolor alto y ajustar plan', body: 'El ultimo registro deja un EVA elevado. Conviene preparar sesion y progresion con criterio clinico.' } : null,
+      !pagosUnavailable && !pagos.length ? { tone: 'soft', title: 'Cerrar cobro o bono asociado', body: 'No hay actividad economica vinculada al caso. Conviene dejarlo resuelto desde CRM.' } : null,
       patient?.telefono ? { tone: 'ready', title: 'Preparar continuidad por Telegram', body: 'El paciente ya tiene telefono. Puedes generar o regenerar la invitacion desde su historial.' } : { tone: 'soft', title: 'Completar telefono para continuidad', body: 'El canal Telegram sigue siendo diferencial, pero antes conviene guardar un telefono valido.' },
     ].filter(Boolean).slice(0, 4) as Array<{ tone: string; title: string; body: string }>;
 
@@ -5445,20 +5515,22 @@ import Layout from '../layouts/Layout.astro';
 
     let primaryAction: 'agenda' | 'notas' | 'agente' = 'agente';
     let primaryLabel = 'Abrir agente';
-    let nextTitle = 'Cerrar continuidad clinica';
-    let nextMeta = 'El caso ya tiene contexto suficiente para preparar siguiente sesion, actualizar plan o dejar PDF listo.';
+    let nextTitle = unavailableModules.length ? 'Recuperar integridad del CRM' : 'Cerrar continuidad clinica';
+    let nextMeta = unavailableModules.length
+      ? 'Hay modulos de la ficha pendientes de migracion. Revisa readiness antes de tomar decisiones basadas en ausencia de datos.'
+      : 'El caso ya tiene contexto suficiente para preparar siguiente sesion, actualizar plan o dejar PDF listo.';
 
-    if (!citas.length) {
+    if (!citasUnavailable && !citas.length) {
       primaryAction = 'agenda';
       primaryLabel = 'Ir a agenda';
       nextTitle = 'Programar la primera sesion';
       nextMeta = 'Sin agenda no hay caso vivo. Conviene bloquear cita y dejar el alta operativa resuelta.';
-    } else if (!notas.length) {
+    } else if (!notasUnavailable && citas.length && !notas.length) {
       primaryAction = 'notas';
       primaryLabel = 'Abrir notas';
       nextTitle = 'Cerrar criterio terapeutico';
       nextMeta = 'Ya hay movimiento en agenda, pero falta dejar una nota clinica que convierta la sesion en seguimiento real.';
-    } else if (latestEva != null && latestEva >= 7) {
+    } else if (!notasUnavailable && latestEva != null && latestEva >= 7) {
       primaryAction = 'agente';
       primaryLabel = 'Preparar sesion';
       nextTitle = 'Revisar dolor alto y ajustar plan';
@@ -5492,9 +5564,9 @@ import Layout from '../layouts/Layout.astro';
     if (fichaRailChecklist) {
       const checks = [
         { done: Boolean(patient?.email || patient?.telefono), title: 'Contacto localizado', body: patient?.email || patient?.telefono ? 'El caso ya tiene una via de contacto guardada.' : 'Falta email o telefono para continuidad.' },
-        { done: Boolean(citas.length), title: 'Agenda registrada', body: citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay citas asociadas al paciente.' },
-        { done: Boolean(notas.length), title: 'Seguimiento documentado', body: notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} clinica${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Conviene registrar la primera nota de evolucion.' },
-        { done: Boolean(pagos.length), title: 'Cobro vinculado', body: pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
+        { done: !citasUnavailable && Boolean(citas.length), title: 'Agenda registrada', body: citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay citas asociadas al paciente.' },
+        { done: !notasUnavailable && Boolean(notas.length), title: 'Seguimiento documentado', body: notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} clinica${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Conviene registrar la primera nota de evolucion.' },
+        { done: !pagosUnavailable && Boolean(pagos.length), title: 'Cobro vinculado', body: pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
       ];
       fichaRailChecklist.innerHTML = checks.map((item) => `
         <article class="ficha-check-item ${item.done ? 'is-done' : 'is-pending'}">
@@ -5512,11 +5584,14 @@ import Layout from '../layouts/Layout.astro';
     const citas = Array.isArray(payload?.citas) ? payload.citas : [];
     const pagos = Array.isArray(payload?.pagos) ? payload.pagos : [];
     const notas = Array.isArray(payload?.notas) ? payload.notas : [];
+    const citasUnavailable = isFichaModuleUnavailable('citas');
+    const pagosUnavailable = isFichaModuleUnavailable('pagos');
+    const notasUnavailable = isFichaModuleUnavailable('notas');
     const patientName = getPatientFullName(patient);
     const ageLabel = getPatientAgeLabel(patient?.fecha_nacimiento);
-    const latestAppointment = getFichaLatestAppointment(citas);
-    const latestNote = notas[0] || null;
-    const totalPayments = pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
+    const latestAppointment = citasUnavailable ? null : getFichaLatestAppointment(citas);
+    const latestNote = notasUnavailable ? null : (notas[0] || null);
+    const totalPayments = pagosUnavailable ? 0 : pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
     const continuityLabel = latestNote
       ? 'Caso con seguimiento activo'
       : citas.length
@@ -5535,14 +5610,14 @@ import Layout from '../layouts/Layout.astro';
         ? bits.join(' | ')
         : 'Completa datos, continuidad clinica y proximas acciones desde una sola vista.';
     }
-    if (fichaHeroLastSession) fichaHeroLastSession.textContent = latestAppointment?.fecha_hora ? fmtDate(latestAppointment.fecha_hora) : 'Sin citas registradas';
-    if (fichaHeroLastSessionMeta) fichaHeroLastSessionMeta.textContent = latestAppointment?.motivo || 'Todavia no hay actividad clinica registrada.';
-    if (fichaHeroNotesCount) fichaHeroNotesCount.textContent = `${notas.length} nota${notas.length === 1 ? '' : 's'}`;
-    if (fichaHeroLatestNote) fichaHeroLatestNote.textContent = latestNote?.nota ? trimAgentBriefText(latestNote.nota, 140) : 'La linea temporal del caso aparecera aqui cuando empieces a registrar seguimiento.';
-    if (fichaHeroPaymentsTotal) fichaHeroPaymentsTotal.textContent = `${totalPayments.toFixed(2)} EUR`;
-    if (fichaHeroPaymentsMeta) fichaHeroPaymentsMeta.textContent = pagos.length ? `${pagos.length} pago${pagos.length === 1 ? '' : 's'} registrado${pagos.length === 1 ? '' : 's'} en el caso.` : 'Sin pagos registrados todavia.';
-    if (fichaHeroContinuity) fichaHeroContinuity.textContent = continuityLabel;
-    if (fichaHeroContinuityMeta) fichaHeroContinuityMeta.textContent = continuityMeta;
+    if (fichaHeroLastSession) fichaHeroLastSession.textContent = citasUnavailable ? 'Historial no disponible' : latestAppointment?.fecha_hora ? fmtDate(latestAppointment.fecha_hora) : 'Sin citas registradas';
+    if (fichaHeroLastSessionMeta) fichaHeroLastSessionMeta.textContent = citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : latestAppointment?.motivo || 'Todavia no hay actividad clinica registrada.';
+    if (fichaHeroNotesCount) fichaHeroNotesCount.textContent = notasUnavailable ? 'Modulo no disponible' : `${notas.length} nota${notas.length === 1 ? '' : 's'}`;
+    if (fichaHeroLatestNote) fichaHeroLatestNote.textContent = notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : latestNote?.nota ? trimAgentBriefText(latestNote.nota, 140) : 'La linea temporal del caso aparecera aqui cuando empieces a registrar seguimiento.';
+    if (fichaHeroPaymentsTotal) fichaHeroPaymentsTotal.textContent = pagosUnavailable ? 'Modulo no disponible' : `${totalPayments.toFixed(2)} EUR`;
+    if (fichaHeroPaymentsMeta) fichaHeroPaymentsMeta.textContent = pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} pago${pagos.length === 1 ? '' : 's'} registrado${pagos.length === 1 ? '' : 's'} en el caso.` : 'Sin pagos registrados todavia.';
+    if (fichaHeroContinuity) fichaHeroContinuity.textContent = fichaModuleAvailability.size ? 'Vista parcial del caso' : continuityLabel;
+    if (fichaHeroContinuityMeta) fichaHeroContinuityMeta.textContent = fichaModuleAvailability.size ? 'Hay modulos del CRM pendientes de migracion. La ficha sigue disponible, pero con datos parciales.' : continuityMeta;
   };
 
   fichaHeroCopilotBtn?.addEventListener('click', () => {
@@ -5591,6 +5666,7 @@ import Layout from '../layouts/Layout.astro';
 
   const openFichaPaciente = async (patientId: string) => {
     fichaPatientId = patientId;
+    syncFichaAvailabilityUi([]);
     // Switch to ficha page
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelector('[data-page="ficha-paciente"]')?.classList.add('active');
@@ -5607,6 +5683,7 @@ import Layout from '../layouts/Layout.astro';
       fichaData = payload;
       selectedPatientId = patientId;
       selectedPatientName = getPatientFullName(payload.paciente);
+      syncFichaAvailabilityUi(payload?.module_availability || []);
       renderFichaHero(payload);
       renderFichaWorkspace(payload);
       renderFichaDatos(payload.paciente);
@@ -5615,6 +5692,7 @@ import Layout from '../layouts/Layout.astro';
       renderFichaNotas(payload.notas);
       if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
     } catch (err: any) {
+      syncFichaAvailabilityUi([]);
       if (fichaDatosView) fichaDatosView.innerHTML = `<p class="empty-inline">Error al cargar ficha: ${escapeHtml(err?.message || '')}</p>`;
     }
   };
@@ -5700,13 +5778,22 @@ import Layout from '../layouts/Layout.astro';
   // Render citas
   const renderFichaCitas = (citas: any[]) => {
     if (!fichaCitasBody) return;
+    const citasUnavailable = isFichaModuleUnavailable('citas');
     if (fichaCitasSummary) {
-      const nextCita = [...citas]
-        .filter((c: any) => c?.fecha_hora)
-        .sort((a: any, b: any) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())[0] || null;
-      fichaCitasSummary.innerHTML = `
-        <span class="ficha-summary-chip"><strong>${citas.length}</strong> sesion${citas.length === 1 ? '' : 'es'}</span>
-        <span class="ficha-summary-chip">${escapeHtml(nextCita?.fecha_hora ? `Ultima o proxima: ${fmtDate(nextCita.fecha_hora)}` : 'Sin agenda registrada')}</span>`;
+      if (citasUnavailable) {
+        fichaCitasSummary.innerHTML = `<span class="ficha-summary-chip">Modulo no disponible</span>`;
+      } else {
+        const nextCita = [...citas]
+          .filter((c: any) => c?.fecha_hora)
+          .sort((a: any, b: any) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())[0] || null;
+        fichaCitasSummary.innerHTML = `
+          <span class="ficha-summary-chip"><strong>${citas.length}</strong> sesion${citas.length === 1 ? '' : 'es'}</span>
+          <span class="ficha-summary-chip">${escapeHtml(nextCita?.fecha_hora ? `Ultima o proxima: ${fmtDate(nextCita.fecha_hora)}` : 'Sin agenda registrada')}</span>`;
+      }
+    }
+    if (citasUnavailable) {
+      fichaCitasBody.innerHTML = renderFichaUnavailableRow('cloud_off', 3, getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.'));
+      return;
     }
     if (!citas.length) {
       fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p></div></td></tr>';
@@ -5731,14 +5818,22 @@ import Layout from '../layouts/Layout.astro';
   // Render pagos
   const renderFichaPagos = (pagos: any[]) => {
     if (!fichaPagosBody) return;
+    const pagosUnavailable = isFichaModuleUnavailable('pagos');
     const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
     const tarjeta = pagos.filter((p: any) => p.metodo_pago === 'tarjeta').length;
     const efectivo = pagos.filter((p: any) => p.metodo_pago === 'efectivo').length;
     if (fichaPagosSummary) {
-      fichaPagosSummary.innerHTML = `
+      fichaPagosSummary.innerHTML = pagosUnavailable
+        ? `<span class="ficha-summary-chip">Modulo no disponible</span>`
+        : `
         <span class="ficha-summary-chip"><strong>${pagos.length}</strong> cobro${pagos.length === 1 ? '' : 's'}</span>
         <span class="ficha-summary-chip">${tarjeta} tarjeta</span>
         <span class="ficha-summary-chip">${efectivo} efectivo</span>`;
+    }
+    if (pagosUnavailable) {
+      fichaPagosBody.innerHTML = renderFichaUnavailableRow('cloud_off', 4, getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.'));
+      if (fichaPagosTotal) fichaPagosTotal.textContent = '';
+      return;
     }
     if (!pagos.length) {
       fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p></div></td></tr>';
@@ -5760,34 +5855,52 @@ import Layout from '../layouts/Layout.astro';
     if (fichaPagosTotal) fichaPagosTotal.textContent = `Total: ${total.toFixed(2)} EUR`;
   };
 
-  // Render notas clÃƒÂ­nicas (timeline)
+  // Render notas cl�nicas (timeline)
   const evaClass = (v: number) => v <= 3 ? 'eva-low' : v <= 6 ? 'eva-mid' : 'eva-high';
   const zonaLabels: Record<string, string> = {
     cervical: 'Cervical', espalda: 'Espalda', hombro_brazo: 'Hombro/Brazo',
     codo_mano: 'Codo/Mano', cadera: 'Cadera', rodilla: 'Rodilla',
     tobillo_pie: 'Tobillo/Pie', abdomen_core: 'Abdomen/Core',
-    suelo_pelvico: 'Suelo pÃƒÂ©lvico', general: 'General',
+    suelo_pelvico: 'Suelo p�lvico', general: 'General',
   };
 
   const renderFichaNotas = (notas: any[]) => {
     if (!fichaNotasTimeline) return;
-    if (!notas.length) {
-      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clÃƒÂ­nicas registradas</p>';
+    const notasUnavailable = isFichaModuleUnavailable('notas');
+    const notasOrdenadas = [...notas].sort((a: any, b: any) => new Date(b.fecha || '').getTime() - new Date(a.fecha || '').getTime());
+    const latestNote = notasOrdenadas[0] || null;
+    const highPainCount = notasOrdenadas.filter((n: any) => Number(n?.dolor_eva || 0) >= 7).length;
+    if (fichaNotasSummary) {
+      fichaNotasSummary.innerHTML = notasUnavailable
+        ? `<span class="ficha-summary-chip">Modulo no disponible</span>`
+        : `
+        <span class="ficha-summary-chip"><strong>${notasOrdenadas.length}</strong> nota${notasOrdenadas.length === 1 ? '' : 's'}</span>
+        <span class="ficha-summary-chip">${escapeHtml(latestNote?.fecha ? `Ultima: ${fmtDate(latestNote.fecha)}` : 'Sin seguimiento')}</span>
+        <span class="ficha-summary-chip">${highPainCount} EVA alto</span>`;
+    }
+    if (notasUnavailable) {
+      fichaNotasTimeline.innerHTML = renderFichaUnavailableInline(getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.'));
       return;
     }
-    fichaNotasTimeline.innerHTML = notas.map((n: any) => {
+    if (!notasOrdenadas.length) {
+      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clinicas registradas</p>';
+      return;
+    }
+    fichaNotasTimeline.innerHTML = notasOrdenadas.map((n: any) => {
       const zonaLabel = zonaLabels[n.zona_corporal] || n.zona_corporal || '';
       const evaHtml = n.dolor_eva != null ? `<span class="ficha-nota-eva ${evaClass(n.dolor_eva)}">EVA ${n.dolor_eva}/10</span>` : '';
       const zonaHtml = zonaLabel ? `<span class="ficha-nota-zona">${escapeHtml(zonaLabel)}</span>` : '';
-      const pruebasHtml = n.pruebas_realizadas ? `<div class="ficha-nota-pruebas">Pruebas: ${escapeHtml(n.pruebas_realizadas)}</div>` : '';
+      const pruebasHtml = n.pruebas_realizadas ? `<div class="ficha-nota-pruebas"><strong>Pruebas</strong><p>${escapeHtml(n.pruebas_realizadas)}</p></div>` : '';
       return `<div class="ficha-nota-card">
         <div class="ficha-nota-actions">
           <button title="Editar" data-action="edit-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded" style="font-size:1.1rem">edit</span></button>
           <button title="Eliminar" data-action="delete-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded" style="font-size:1.1rem">delete</span></button>
         </div>
         <div class="ficha-nota-header">
-          <span class="ficha-nota-date">${fmtDate(n.fecha)}</span>
-          ${zonaHtml}${evaHtml}
+          <div class="ficha-nota-headline">
+            <span class="ficha-nota-date">${fmtDate(n.fecha)}</span>
+            <div class="ficha-nota-chips">${zonaHtml}${evaHtml}</div>
+          </div>
         </div>
         <div class="ficha-nota-text">${escapeHtml(n.nota)}</div>
         ${pruebasHtml}
@@ -5803,7 +5916,7 @@ import Layout from '../layouts/Layout.astro';
     if (notaIdInput) notaIdInput.value = '';
     const fechaInput = fichaNotaForm.querySelector('[name="fecha"]') as HTMLInputElement;
     if (fechaInput) fechaInput.value = new Date().toISOString().slice(0, 10);
-    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clÃƒÂ­nica';
+    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota cl�nica';
     fichaNotaFormCard.hidden = false;
     fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
@@ -5856,7 +5969,7 @@ import Layout from '../layouts/Layout.astro';
     if (!notaId || !fichaPatientId) return;
 
     if (action === 'delete-nota') {
-      if (!confirm('Ã‚Â¿Eliminar esta nota clÃƒÂ­nica?')) return;
+      if (!confirm('�Eliminar esta nota cl�nica?')) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
         const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
@@ -5883,7 +5996,7 @@ import Layout from '../layouts/Layout.astro';
       fill('dolor_eva', nota.dolor_eva != null ? String(nota.dolor_eva) : '');
       fill('nota', nota.nota);
       fill('pruebas_realizadas', nota.pruebas_realizadas);
-      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota clÃƒÂ­nica';
+      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota cl�nica';
       fichaNotaFormCard.hidden = false;
       fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -5917,6 +6030,10 @@ import Layout from '../layouts/Layout.astro';
   const facturaPreview = document.getElementById('facturaPreview');
   const facturaFeedback = document.getElementById('facturaFeedback') as HTMLElement | null;
   const facturaSubmitBtn = document.getElementById('facturaSubmitBtn') as HTMLButtonElement | null;
+  const nuevaFacturaBtn = document.getElementById('nuevaFacturaBtn') as HTMLButtonElement | null;
+  const refreshFacturasBtn = document.getElementById('refreshFacturas') as HTMLButtonElement | null;
+  const facturaAvailabilityNotice = document.getElementById('facturaAvailabilityNotice') as HTMLElement | null;
+  let facturasUnavailableMessage = '';
 
   // Populate year filter
   (() => {
@@ -5936,27 +6053,57 @@ import Layout from '../layouts/Layout.astro';
     facturaFeedback.textContent = text;
   };
 
+  const syncFacturasAvailabilityUi = () => {
+    const unavailable = Boolean(facturasUnavailableMessage);
+    if (nuevaFacturaBtn) {
+      nuevaFacturaBtn.disabled = unavailable;
+      nuevaFacturaBtn.title = unavailable ? facturasUnavailableMessage : '';
+    }
+    if (refreshFacturasBtn) {
+      refreshFacturasBtn.disabled = unavailable;
+      refreshFacturasBtn.title = unavailable ? facturasUnavailableMessage : 'Actualizar facturas';
+    }
+    if (facturasAnioFilter) {
+      facturasAnioFilter.disabled = unavailable;
+      facturasAnioFilter.title = unavailable ? facturasUnavailableMessage : 'A�o';
+    }
+    if (facturaAvailabilityNotice) {
+      facturaAvailabilityNotice.hidden = !unavailable;
+      facturaAvailabilityNotice.textContent = unavailable ? facturasUnavailableMessage : '';
+      if (unavailable) facturaAvailabilityNotice.setAttribute('data-state', 'error');
+      else facturaAvailabilityNotice.removeAttribute('data-state');
+    }
+  };
+
   const loadFacturas = async () => {
     if (!facturasBody) return;
+    facturasUnavailableMessage = '';
+    syncFacturasAvailabilityUi();
     setTableState(facturasBody, 8, 'sync', 'Cargando facturas...', true);
     try {
       const anio = facturasAnioFilter?.value || new Date().getFullYear();
       const payload = await fetchJson(`${BACKEND_BASE}/api/facturas?anio=${anio}`);
+      if (payload.unavailable) {
+        facturasUnavailableMessage = payload.error || 'Modulo facturacion no disponible';
+        syncFacturasAvailabilityUi();
+        setTableState(facturasBody, 8, 'warning', facturasUnavailableMessage);
+        return;
+      }
       const facturas = payload.data || [];
       if (!facturas.length) {
         setTableState(facturasBody, 8, 'receipt_long', 'Sin facturas emitidas');
         return;
       }
       facturasBody.innerHTML = facturas.map((f: any) => {
-        const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : 'Ã¢â‚¬â€';
+        const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : '�';
         const estadoClass = f.estado === 'anulada' ? 'cancelada' : f.estado === 'pagada' ? 'confirmada' : 'pendiente';
         return `<tr>
           <td><strong>${escapeHtml(f.numero)}</strong></td>
           <td>${fmtDate(f.fecha)}</td>
           <td class="td-patient">${escapeHtml(pName)}</td>
-          <td>${Number(f.importe_bruto).toFixed(2)} Ã¢â€šÂ¬</td>
-          <td>${Number(f.importe_iva).toFixed(2)} Ã¢â€šÂ¬</td>
-          <td><strong>${Number(f.importe_total).toFixed(2)} Ã¢â€šÂ¬</strong></td>
+          <td>${Number(f.importe_bruto).toFixed(2)} �</td>
+          <td>${Number(f.importe_iva).toFixed(2)} �</td>
+          <td><strong>${Number(f.importe_total).toFixed(2)} �</strong></td>
           <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
           <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a></td>
         </tr>`;
@@ -5967,10 +6114,11 @@ import Layout from '../layouts/Layout.astro';
   };
   pageLoaders['facturas'] = loadFacturas;
   facturasAnioFilter?.addEventListener('change', loadFacturas);
-  document.getElementById('refreshFacturas')?.addEventListener('click', loadFacturas);
+  refreshFacturasBtn?.addEventListener('click', loadFacturas);
 
   // Modal
   const openFacturaModal = async () => {
+    if (facturasUnavailableMessage) { setFacturaFeedback(facturasUnavailableMessage); return; }
     facturaForm?.reset();
     setFacturaFeedback();
     if (facturaPreview) facturaPreview.hidden = true;
@@ -5979,7 +6127,7 @@ import Layout from '../layouts/Layout.astro';
       if (!patientCatalog.length) await fetchPatientCatalog();
       const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
       facturaPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
-        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'Ã¢â‚¬â€')}</option>`).join('');
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '�')}</option>`).join('');
     }
     facturaModal?.classList.add('open');
     facturaModal?.setAttribute('aria-hidden', 'false');
@@ -5989,7 +6137,7 @@ import Layout from '../layouts/Layout.astro';
     facturaModal?.setAttribute('aria-hidden', 'true');
   };
 
-  document.getElementById('nuevaFacturaBtn')?.addEventListener('click', openFacturaModal);
+  nuevaFacturaBtn?.addEventListener('click', openFacturaModal);
   document.getElementById('facturaModalClose')?.addEventListener('click', closeFacturaModal);
   document.getElementById('facturaModalDismiss')?.addEventListener('click', closeFacturaModal);
 
@@ -6008,9 +6156,9 @@ import Layout from '../layouts/Layout.astro';
       }
       const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
       facturaPreview.innerHTML = `
-        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) Ã¢â‚¬â€ Base: ${total.toFixed(2)} Ã¢â€šÂ¬</p>
-        <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>MÃƒÂ©todo</th><th>Importe</th></tr></thead><tbody>
-        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'SesiÃƒÂ³n')}</td><td>${p.metodo_pago}</td><td>${Number(p.importe).toFixed(2)} Ã¢â€šÂ¬</td></tr>`).join('')}
+        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) � Base: ${total.toFixed(2)} �</p>
+        <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>M�todo</th><th>Importe</th></tr></thead><tbody>
+        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesi�n')}</td><td>${p.metodo_pago}</td><td>${Number(p.importe).toFixed(2)} �</td></tr>`).join('')}
         </tbody></table></div>`;
       facturaPreview.hidden = false;
     } catch {
@@ -6022,6 +6170,7 @@ import Layout from '../layouts/Layout.astro';
   // Submit
   facturaForm?.addEventListener('submit', async (e: Event) => {
     e.preventDefault();
+    if (facturasUnavailableMessage) { setFacturaFeedback(facturasUnavailableMessage); return; }
     const pacienteId = facturaPacienteSelect?.value;
     if (!pacienteId) { setFacturaFeedback('Selecciona un paciente'); return; }
     const prev = facturaSubmitBtn?.innerHTML || '';
@@ -6052,13 +6201,40 @@ import Layout from '../layouts/Layout.astro';
   // ===================== BONOS =====================
   const bonosBody = document.getElementById('bonosBody') as HTMLElement | null;
   const bonosEstadoFilter = document.getElementById('bonosEstadoFilter') as HTMLSelectElement | null;
+  const nuevoBonoBtn = document.getElementById('nuevoBonoBtn') as HTMLButtonElement | null;
+  const refreshBonosBtn = document.getElementById('refreshBonos') as HTMLButtonElement | null;
   const bonoModal = document.getElementById('bonoModal');
   const bonoForm = document.getElementById('bonoForm') as HTMLFormElement | null;
   const bonoPacienteSelect = document.getElementById('bonoPacienteSelect') as HTMLSelectElement | null;
   const bonoFeedback = document.getElementById('bonoFeedback') as HTMLElement | null;
+  const bonosAvailabilityNotice = document.getElementById('bonosAvailabilityNotice') as HTMLElement | null;
   const bonoSubmitBtn = document.getElementById('bonoSubmitBtn') as HTMLButtonElement | null;
   const bonoEditId = document.getElementById('bonoEditId') as HTMLInputElement | null;
   const bonoModalTitle = document.getElementById('bonoModalTitle');
+  let bonosUnavailableMessage = '';
+
+  const syncBonosAvailabilityUi = () => {
+    const unavailable = Boolean(bonosUnavailableMessage);
+    if (nuevoBonoBtn) {
+      nuevoBonoBtn.disabled = unavailable;
+      nuevoBonoBtn.title = unavailable ? bonosUnavailableMessage : '';
+    }
+    if (refreshBonosBtn) {
+      refreshBonosBtn.disabled = unavailable;
+      refreshBonosBtn.title = unavailable ? bonosUnavailableMessage : 'Actualizar bonos';
+    }
+    if (bonosEstadoFilter) {
+      bonosEstadoFilter.disabled = unavailable;
+      bonosEstadoFilter.title = unavailable ? bonosUnavailableMessage : 'Estado';
+    }
+    if (bonosAvailabilityNotice) {
+      bonosAvailabilityNotice.hidden = !unavailable;
+      bonosAvailabilityNotice.textContent = unavailable ? bonosUnavailableMessage : '';
+      if (unavailable) bonosAvailabilityNotice.setAttribute('data-state', 'error');
+      else bonosAvailabilityNotice.removeAttribute('data-state');
+    }
+  };
+
 
   const setBonoFeedback = (t?: string) => {
     if (!bonoFeedback) return;
@@ -6068,18 +6244,26 @@ import Layout from '../layouts/Layout.astro';
 
   const loadBonos = async () => {
     if (!bonosBody) return;
+    bonosUnavailableMessage = '';
+    syncBonosAvailabilityUi();
     setTableState(bonosBody, 8, 'sync', 'Cargando bonos...', true);
     try {
       const estado = bonosEstadoFilter?.value || '';
       const url = `${BACKEND_BASE}/api/bonos${estado ? `?estado=${estado}` : ''}`;
       const payload = await fetchJson(url);
+      if (payload.unavailable) {
+        bonosUnavailableMessage = payload.error || 'Modulo bonos no disponible';
+        syncBonosAvailabilityUi();
+        setTableState(bonosBody, 8, 'warning', bonosUnavailableMessage);
+        return;
+      }
       const bonos = payload.data || [];
       if (!bonos.length) { setTableState(bonosBody, 8, 'confirmation_number', 'Sin bonos'); return; }
       bonosBody.innerHTML = bonos.map((b: any) => {
-        const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : 'Ã¢â‚¬â€';
+        const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : '�';
         const restantes = b.sesiones_total - b.sesiones_usadas;
         const pct = Math.round((b.sesiones_usadas / b.sesiones_total) * 100);
-        const estadoClass = b.estado; // activo/agotado/caducado/anulado Ã¢â‚¬â€ CSS defines .status-chip.activo etc.
+        const estadoClass = b.estado; // activo/agotado/caducado/anulado � CSS defines .status-chip.activo etc.
         return `<tr data-bono="${escapeAttr(JSON.stringify(b))}">
           <td class="td-patient">${escapeHtml(pName)}</td>
           <td>${escapeHtml(b.nombre)}</td>
@@ -6089,15 +6273,15 @@ import Layout from '../layouts/Layout.astro';
               <div class="bono-bar"><div class="bono-bar-fill" style="width:${pct}%"></div></div>
             </div>
           </td>
-          <td>${Number(b.precio).toFixed(2)} Ã¢â€šÂ¬</td>
-          <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'Ã¢â‚¬â€'}</td>
-          <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : 'Ã¢â‚¬â€'}</td>
+          <td>${Number(b.precio).toFixed(2)} �</td>
+          <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : '�'}</td>
+          <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : '�'}</td>
           <td><span class="status-chip ${estadoClass}">${b.estado}</span></td>
           <td>
             <div class="table-actions">
-              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesiÃƒÂ³n</button>` : ''}
+              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesi�n</button>` : ''}
               <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
-              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-bono" data-bono-id="${b.id}">Ã¢Å“â€¢</button>
+              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-bono" data-bono-id="${b.id}"><span class="material-symbols-rounded" style="font-size:1rem">delete</span></button>
             </div>
           </td>
         </tr>`;
@@ -6106,9 +6290,10 @@ import Layout from '../layouts/Layout.astro';
   };
   pageLoaders['bonos'] = loadBonos;
   bonosEstadoFilter?.addEventListener('change', loadBonos);
-  document.getElementById('refreshBonos')?.addEventListener('click', loadBonos);
+  refreshBonosBtn?.addEventListener('click', loadBonos);
 
   const openBonoModal = async (editData?: any) => {
+    if (bonosUnavailableMessage) { setBonoFeedback(bonosUnavailableMessage); return; }
     bonoForm?.reset();
     setBonoFeedback();
     if (bonoEditId) bonoEditId.value = '';
@@ -6116,7 +6301,7 @@ import Layout from '../layouts/Layout.astro';
     const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
     if (bonoPacienteSelect) {
       bonoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
-        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'Ã¢â‚¬â€')}</option>`).join('');
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '�')}</option>`).join('');
     }
     const fechaInicio = document.getElementById('bonoFechaInicio') as HTMLInputElement;
     if (fechaInicio && !editData) fechaInicio.value = new Date().toISOString().slice(0, 10);
@@ -6135,12 +6320,13 @@ import Layout from '../layouts/Layout.astro';
   };
   const closeBonoModal = () => { bonoModal?.classList.remove('open'); bonoModal?.setAttribute('aria-hidden', 'true'); };
 
-  document.getElementById('nuevoBonoBtn')?.addEventListener('click', () => openBonoModal());
+  nuevoBonoBtn?.addEventListener('click', () => openBonoModal());
   document.getElementById('bonoModalClose')?.addEventListener('click', closeBonoModal);
   document.getElementById('bonoModalDismiss')?.addEventListener('click', closeBonoModal);
 
   bonoForm?.addEventListener('submit', async (e: Event) => {
     e.preventDefault();
+    if (bonosUnavailableMessage) { setBonoFeedback(bonosUnavailableMessage); return; }
     const id = bonoEditId?.value;
     const body: any = {
       paciente_id: bonoPacienteSelect?.value,
@@ -6172,6 +6358,7 @@ import Layout from '../layouts/Layout.astro';
     const action = btn.getAttribute('data-action');
     const bonoId = btn.getAttribute('data-bono-id');
     if (!bonoId) return;
+    if (bonosUnavailableMessage) { alert(bonosUnavailableMessage); return; }
 
     if (action === 'usar-bono') {
       try {
@@ -6187,7 +6374,7 @@ import Layout from '../layouts/Layout.astro';
       } catch {}
     }
     if (action === 'delete-bono') {
-      if (!confirm('Ã‚Â¿Eliminar este bono?')) return;
+      if (!confirm('�Eliminar este bono?')) return;
       try { await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' }); await loadBonos(); }
       catch (err: any) { alert(`Error: ${err?.message}`); }
     }
@@ -6233,11 +6420,11 @@ import Layout from '../layouts/Layout.astro';
     };
 
     firmaCanvas.onmousedown = (e) => { firmaDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-    firmaCanvas.onmousemove = (e) => { if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = 'Ã¢Å“â€œ Firma capturada'; };
+    firmaCanvas.onmousemove = (e) => { if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = 'Firma capturada'; };
     firmaCanvas.onmouseup = () => { firmaDrawing = false; };
     firmaCanvas.onmouseleave = () => { firmaDrawing = false; };
     firmaCanvas.ontouchstart = (e) => { e.preventDefault(); firmaDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-    firmaCanvas.ontouchmove = (e) => { e.preventDefault(); if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = 'Ã¢Å“â€œ Firma capturada'; };
+    firmaCanvas.ontouchmove = (e) => { e.preventDefault(); if (!firmaDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHasSig = true; if (firmaStatus) firmaStatus.textContent = 'Firma capturada'; };
     firmaCanvas.ontouchend = () => { firmaDrawing = false; };
   };
 
@@ -6323,33 +6510,45 @@ import Layout from '../layouts/Layout.astro';
   const renderFichaDocumentos = (docs: any[]) => {
     const el = document.getElementById('fichaDocsList');
     if (!el) return;
+    const firmados = docs.filter((doc: any) => doc?.estado === 'firmado').length;
+    const pendientes = docs.filter((doc: any) => doc?.estado !== 'firmado').length;
+    if (fichaDocsSummary) {
+      fichaDocsSummary.innerHTML = `
+        <span class="ficha-summary-chip"><strong>${docs.length}</strong> documento${docs.length === 1 ? '' : 's'}</span>
+        <span class="ficha-summary-chip">${firmados} firmado${firmados === 1 ? '' : 's'}</span>
+        <span class="ficha-summary-chip">${pendientes} pendiente${pendientes === 1 ? '' : 's'}</span>`;
+    }
     if (!docs.length) { el.innerHTML = '<p class="empty-inline">Sin documentos registrados</p>'; return; }
     const tipoLabel: Record<string, string> = {
       consentimiento_informado: 'Consentimiento Informado',
       lopd: 'LOPD / RGPD',
-      revocacion: 'RevocaciÃƒÂ³n',
+      revocacion: 'Revocaci�n',
       otro: 'Documento',
     };
     el.innerHTML = docs.map((d: any) => {
       const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
-      const fechaFirma = d.fecha_firma ? ` Ã‚Â· Firmado ${fmtDate(d.fecha_firma)}` : '';
-      return `<div class="ficha-doc-card">
-        <span class="material-symbols-rounded ficha-doc-icon">description</span>
-        <div class="ficha-doc-info">
-          <div class="ficha-doc-title">${escapeHtml(tipoLabel[d.tipo] || d.tipo)}</div>
-          <div class="ficha-doc-meta"><span class="status-chip ${estadoClass}">${d.estado}</span>${escapeHtml(fechaFirma)}</div>
+      const fechaFirma = d.fecha_firma ? `Firmado ${fmtDate(d.fecha_firma)}` : 'Pendiente de firma';
+      return `<article class="ficha-doc-card ficha-doc-card-${d.estado === 'firmado' ? 'signed' : 'pending'}">
+        <div class="ficha-doc-main">
+          <span class="material-symbols-rounded ficha-doc-icon">description</span>
+          <div class="ficha-doc-info">
+            <div class="ficha-doc-title-row">
+              <div class="ficha-doc-title">${escapeHtml(tipoLabel[d.tipo] || d.tipo)}</div>
+              <span class="status-chip ${estadoClass}">${escapeHtml(d.estado || 'pendiente')}</span>
+            </div>
+            <div class="ficha-doc-meta">${escapeHtml(fechaFirma)}</div>
+          </div>
         </div>
         <div class="ficha-doc-actions">
           <a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>
           <button class="btn-sm btn-outline" data-action="delete-doc" data-doc-id="${d.id}" style="color:#ef4444">Eliminar</button>
         </div>
-      </div>`;
+      </article>`;
     }).join('');
 
-    // Delete docs
     el.querySelectorAll('button[data-action="delete-doc"]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Ã‚Â¿Eliminar este documento?')) return;
+        if (!confirm('�Eliminar este documento?')) return;
         const docId = (btn as HTMLElement).getAttribute('data-doc-id');
         if (!docId) return;
         try {
@@ -6363,9 +6562,7 @@ import Layout from '../layouts/Layout.astro';
     });
   };
 
-  // Load docs when ficha opens Ã¢â‚¬â€ patch openFichaPaciente to also load docs
-  const _origOpenFicha = openFichaPaciente;
-  // Override: we extend after docs tab loads
+  // Load docs when ficha opens
   document.querySelector('[data-ficha-tab="documentos"]')?.addEventListener('click', async () => {
     if (!fichaPatientId) return;
     const pl = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
@@ -6436,7 +6633,7 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
 
-      // Totals row (facturaciÃƒÂ³n total del mes)
+      // Totals row (facturaci�n total del mes)
       const totalCells = MESES_CORTOS.map((_: string, i: number) => {
         const md = totales_mes[String(i + 1)];
         const val = md ? md.total : 0;
@@ -6525,7 +6722,7 @@ import Layout from '../layouts/Layout.astro';
   const TIPO_LABELS: Record<string, string> = {
     consentimiento_informado: 'Consentimiento',
     lopd: 'LOPD/RGPD',
-    revocacion: 'RevocaciÃƒÂ³n',
+    revocacion: 'Revocaci�n',
     otro: 'Otro',
   };
 
@@ -6543,16 +6740,16 @@ import Layout from '../layouts/Layout.astro';
       }
       documentosBody.innerHTML = docs.map((d: any) => {
         const pac = d.crm_pacientes;
-        const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : 'Ã¢â‚¬â€';
-        const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Ã¢â‚¬â€';
+        const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : '�';
+        const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || '�';
         const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
         const fechaFirma = d.fecha_firma
           ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-          : 'Ã¢â‚¬â€';
+          : '�';
         return `<tr>
           <td class="td-patient">${escapeHtml(pacNombre)}</td>
           <td>${escapeHtml(tipoLabel)}</td>
-          <td>${escapeHtml(d.titulo || 'Ã¢â‚¬â€')}</td>
+          <td>${escapeHtml(d.titulo || '�')}</td>
           <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
           <td>${fechaFirma}</td>
           <td style="display:flex;gap:6px;align-items:center">
@@ -6571,7 +6768,7 @@ import Layout from '../layouts/Layout.astro';
     const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
     if (!btn) return;
     const docId = btn.getAttribute('data-doc-id');
-    if (!docId || !confirm('Ã‚Â¿Eliminar este documento?')) return;
+    if (!docId || !confirm('�Eliminar este documento?')) return;
     try {
       await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
       await loadDocumentos();
@@ -6601,6 +6798,9 @@ import Layout from '../layouts/Layout.astro';
     const cfgBackendStatus = document.getElementById('cfgBackendStatus');
     const cfgAgent = document.getElementById('cfgAgent');
     const cfgAgentStatus = document.getElementById('cfgAgentStatus');
+    const cfgReadiness = document.getElementById('cfgReadiness');
+    const cfgReadinessStatus = document.getElementById('cfgReadinessStatus');
+    const cfgReadinessDetail = document.getElementById('cfgReadinessDetail');
     if (cfgBackend) cfgBackend.textContent = BACKEND_BASE;
     try {
       const r = await fetch(`${BACKEND_BASE}/api/health`, {signal: AbortSignal.timeout(5000)});
@@ -6613,6 +6813,55 @@ import Layout from '../layouts/Layout.astro';
       const ok = r.ok && !data.n8n_unreachable;
       if (cfgAgentStatus) { cfgAgentStatus.textContent = ok ? (data.fallback_used ? 'Fallback' : 'OK') : 'Error'; cfgAgentStatus.className = `status-chip ${ok ? 'aprobado' : 'rechazado'}`; }
     } catch { if (cfgAgentStatus) { cfgAgentStatus.textContent = 'Offline'; cfgAgentStatus.className = 'status-chip rechazado'; } }
+    if (cfgReadiness) cfgReadiness.textContent = 'Comprobando modulos...';
+    if (cfgReadinessStatus) { cfgReadinessStatus.textContent = 'Comprobando'; cfgReadinessStatus.className = 'status-chip pendiente'; }
+    if (cfgReadinessDetail) {
+      cfgReadinessDetail.hidden = true;
+      cfgReadinessDetail.textContent = '';
+      cfgReadinessDetail.removeAttribute('data-state');
+    }
+    try {
+      const r = await fetch(`${BACKEND_BASE}/api/health/readiness`, { signal: AbortSignal.timeout(8000) });
+      const data = await r.json();
+      const summary = data.summary || {};
+      const missingTables = Array.isArray(data.missing_tables) ? data.missing_tables : [];
+      const readinessStatus = data.status || (r.ok ? 'ok' : 'error');
+      const chipClass = readinessStatus === 'ok' ? 'aprobado' : readinessStatus === 'degraded' ? 'pendiente' : 'rechazado';
+      const chipLabel = readinessStatus === 'ok' ? 'OK' : readinessStatus === 'degraded' ? 'Degradado' : 'Error';
+      if (cfgReadinessStatus) {
+        cfgReadinessStatus.textContent = chipLabel;
+        cfgReadinessStatus.className = `status-chip ${chipClass}`;
+      }
+      if (cfgReadiness) {
+        if (readinessStatus === 'ok') {
+          cfgReadiness.textContent = `${summary.ok_checks || 0}/${summary.total_checks || 0} checks listos`;
+        } else if (readinessStatus === 'degraded') {
+          cfgReadiness.textContent = `${summary.ok_checks || 0}/${summary.total_checks || 0} checks listos | ${summary.optional_missing || missingTables.length} pendiente(s)`;
+        } else {
+          cfgReadiness.textContent = data.message || 'Readiness no disponible';
+        }
+      }
+      if (cfgReadinessDetail && missingTables.length) {
+        cfgReadinessDetail.hidden = false;
+        if (readinessStatus === 'error') cfgReadinessDetail.setAttribute('data-state', 'error');
+        cfgReadinessDetail.textContent = `Migraciones pendientes: ${missingTables.map((item: any) => `${item.label} -> ${item.migration}`).join(' | ')}`;
+      } else if (cfgReadinessDetail && readinessStatus !== 'ok' && data.message) {
+        cfgReadinessDetail.hidden = false;
+        if (readinessStatus === 'error') cfgReadinessDetail.setAttribute('data-state', 'error');
+        cfgReadinessDetail.textContent = String(data.message);
+      }
+    } catch {
+      if (cfgReadiness) cfgReadiness.textContent = 'No pude comprobar el readiness';
+      if (cfgReadinessStatus) {
+        cfgReadinessStatus.textContent = 'Offline';
+        cfgReadinessStatus.className = 'status-chip rechazado';
+      }
+      if (cfgReadinessDetail) {
+        cfgReadinessDetail.hidden = false;
+        cfgReadinessDetail.setAttribute('data-state', 'error');
+        cfgReadinessDetail.textContent = 'No se pudo consultar /api/health/readiness.';
+      }
+    }
   };
   pageLoaders['config'] = loadConfig;
 
@@ -6629,7 +6878,7 @@ import Layout from '../layouts/Layout.astro';
       web: get('cfgClinicWeb'),
     });
     const fb = document.getElementById('clinicConfigFeedback');
-    if (fb) { fb.textContent = 'Ã¢Å“â€œ Datos guardados correctamente'; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 3000); }
+    if (fb) { fb.textContent = 'Datos guardados correctamente'; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 3000); }
   });
   bookingOpenBtn?.addEventListener('click', () => {
     syncBookingLinkUi();
@@ -8438,20 +8687,45 @@ import Layout from '../layouts/Layout.astro';
   }
   .firma-pad-wrap canvas { display: block; width: 100%; height: 160px; }
   .firma-status-hint { font-size: 0.8rem; color: var(--text-muted); align-self: center; }
-  .ficha-docs-list { padding: 0.5rem 1rem 1rem; }
+  .ficha-docs-list { padding: 0.5rem 1rem 1rem; display: grid; gap: 0.85rem; }
   .ficha-doc-card {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border);
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(208, 194, 170, 0.34);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(255, 255, 252, 0.98), rgba(248, 243, 235, 0.92));
+    box-shadow: 0 18px 28px -28px rgba(41, 33, 24, 0.14);
   }
-  .ficha-doc-card:last-child { border-bottom: none; }
-  .ficha-doc-icon { font-size: 1.6rem; color: var(--accent); }
-  .ficha-doc-info { flex: 1; }
-  .ficha-doc-title { font-weight: 600; font-size: 0.92rem; }
-  .ficha-doc-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem; }
-  .ficha-doc-actions { display: flex; gap: 0.4rem; }
+  .ficha-doc-card-signed {
+    border-color: rgba(86, 141, 115, 0.3);
+    background: linear-gradient(180deg, rgba(249, 255, 251, 0.98), rgba(241, 250, 245, 0.94));
+  }
+  .ficha-doc-main { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
+  .ficha-doc-icon {
+    font-size: 1.35rem;
+    color: #8a6731;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(208, 194, 170, 0.38);
+    background: rgba(255, 249, 241, 0.92);
+  }
+  .ficha-doc-info { flex: 1; min-width: 0; }
+  .ficha-doc-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .ficha-doc-title { font-weight: 700; font-size: 0.95rem; color: #17283b; }
+  .ficha-doc-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.16rem; }
+  .ficha-doc-actions { display: flex; gap: 0.45rem; flex-wrap: wrap; }
 
   /* === FACTURACION === */
   .factura-preview {
@@ -8545,7 +8819,7 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-primary);
     min-height: 1.4em;
   }
-  .ficha-dato-value:empty::after { content: 'Ã¢â‚¬â€'; color: var(--text-muted); }
+  .ficha-dato-value:empty::after { content: '�'; color: var(--text-muted); }
   .ficha-dato-full { grid-column: 1 / -1; }
 
   .ficha-form-actions {
@@ -8562,11 +8836,14 @@ import Layout from '../layouts/Layout.astro';
   }
   .ficha-nota-card {
     border-left: 3px solid var(--accent);
-    padding: 0.8rem 1rem;
+    padding: 0.95rem 1rem;
     margin-bottom: 1rem;
-    background: var(--bg-surface);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: linear-gradient(180deg, rgba(255, 255, 252, 0.98), rgba(248, 243, 235, 0.92));
+    border-radius: 0 1rem 1rem 0;
+    border: 1px solid rgba(208, 194, 170, 0.34);
+    border-left-width: 3px;
     position: relative;
+    box-shadow: 0 18px 28px -28px rgba(41, 33, 24, 0.14);
   }
   .ficha-nota-header {
     display: flex;
@@ -8574,6 +8851,15 @@ import Layout from '../layouts/Layout.astro';
     gap: 0.8rem;
     margin-bottom: 0.4rem;
     flex-wrap: wrap;
+  }
+  .ficha-nota-headline {
+    display: grid;
+    gap: 0.38rem;
+  }
+  .ficha-nota-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
   }
   .ficha-nota-date {
     font-weight: 700;
@@ -8604,10 +8890,23 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1.5;
   }
   .ficha-nota-pruebas {
-    margin-top: 0.4rem;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid rgba(208, 194, 170, 0.3);
     font-size: 0.82rem;
     color: var(--text-muted);
-    font-style: italic;
+  }
+  .ficha-nota-pruebas strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: #7d6237;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .ficha-nota-pruebas p {
+    margin: 0;
+    line-height: 1.5;
   }
   .ficha-nota-actions {
     position: absolute;
@@ -8772,6 +9071,9 @@ import Layout from '../layouts/Layout.astro';
   }
   .config-link:hover {
     text-decoration: underline;
+  }
+  .config-readiness-detail {
+    margin-top: 0.2rem;
   }
 
   .booking-link-card {
@@ -9990,10 +10292,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
 </style><style is:global>
-  /* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-     ASSISTANT RAIL Ã¢â‚¬â€ Premium Redesign v2
+  /* -----------------------------------------------
+     ASSISTANT RAIL � Premium Redesign v2
      Clean, compact, professional
-     Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+     ----------------------------------------------- */
 
   /* --- Container --- */
   .assistant-rail {
@@ -13768,4 +14070,16 @@ import Layout from '../layouts/Layout.astro';
   }
 
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
 

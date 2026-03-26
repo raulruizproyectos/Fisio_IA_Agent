@@ -12,22 +12,21 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 ## En pausa
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (Sesion 109 - 2026-03-19)
-- Estado de GitHub: `main` al dia con el cierre operativo de agenda y la documentacion de continuidad.
-- Estado de produccion:
-  - `fisio-backend` desplegado con `calendar_sync_state`, `check-availability` y `sync-calendar/status` ampliado con `next_expected_at`.
-  - `fisio-frontend` desplegado con columna `Espejo`, facts del sync y labels saneados.
-  - W5 remoto devuelve `busy_events` y `events`; W6 sigue marcando heartbeat visible en CRM.
-  - las citas canceladas o sin evento activo ya no salen como `linked`: ahora se exponen como `crm_only`.
-- Verificaciones cerradas:
-  - `POST /api/profesional/appointments/check-availability` responde en produccion.
-  - `GET /api/profesional/appointments/sync-calendar/status` devuelve `next_expected_at`.
-  - el frontend productivo ya sirve `Espejo` y `agendaSyncFacts` sin mojibake.
+## Checkpoint actual (2026-03-26)
+- Estado de GitHub: `origin/main` sincronizado con el cierre de robustez y continuidad documental de esta sesion.
+- Estado real del producto en este punto:
+  - backend endurecido para `bonos`, `facturas`, `pagos`, `notas-clinicas` y `pacientes/:id/ficha` cuando faltan tablas CRM en Supabase.
+  - nuevo endpoint `GET /api/health/readiness` para detectar migraciones pendientes antes de romper en produccion.
+  - frontend alineado con degradacion segura: avisos visibles, acciones bloqueadas y ficha del paciente en modo parcial cuando faltan modulos.
+  - validacion local cerrada fuera de `G:` usando `scripts/frontend-local-build.ps1` y `scripts/backend-local-validate.ps1`.
+- Riesgo operativo que sigue vivo:
+  - faltan migraciones por aplicar en produccion, empezando por `database/migrations/011_crm_bonos.sql`.
+  - si readiness marca pendientes `007`, `008`, `009` o `schema_vnext`, la UI seguira estable pero algunos modulos quedaran como no disponibles.
 - Siguiente paso exacto:
-  - localizar o crear un `busy_event` real/no cancelado para demostrar un caso vivo `available=false`.
-  - decidir si la UI debe pintar tambien bloqueos/no disponibilidad dentro de la parrilla semanal.
-  - retomar Telegram/copilot cuando agenda quede cerrada al 100%.
-- Checkpoint operativo recomendado: `docs/checkpoint_20260319_agenda_sync_closure.md`
+  - desplegar backend actualizado.
+  - ejecutar migraciones pendientes reales en Supabase.
+  - verificar en produccion `GET /api/health/readiness`, `GET /api/bonos`, `GET /api/facturas`, `GET /api/pagos` y `GET /api/pacientes/:id/ficha`.
+- Checkpoint operativo recomendado: `docs/checkpoint_20260326_full_validation_cleanup.md`
 ## Checkpoint actual (Sesion 108 - 2026-03-19)
 - Commit exacto para retomar: pendiente de commit local (repo con mejoras de agenda y docs)
 - Estado de GitHub: este tramo sigue local; W5 remoto ya esta actualizado en n8n
@@ -245,9 +244,9 @@ node .\scripts\w2-smoke-async.mjs --baseUrl=http://localhost:3001 --patientId=<u
 - Estado detallado por sesion: `CHANGELOG.md`
 - Checklist operativo para retomar: `configuracion_pendiente.md`
 - Arquitectura objetivo: `ARCHITECTURE.md`
-- Checkpoint operativo actual: `docs/checkpoint_20260319_agenda_sync_closure.md`
-- Checkpoint operativo anterior: `docs/checkpoint_20260318_google_calendar_gate.md`
-- Checkpoint operativo: `docs/checkpoint_20260317_frontend_copilot_handoff.md`
+- Checkpoint operativo actual: `docs/checkpoint_20260326_full_validation_cleanup.md`
+- Checkpoint operativo anterior: `docs/checkpoint_20260326_bonos_critical_fix.md`
+- Checkpoint operativo base anterior: `docs/checkpoint_20260325_session_closeout.md`
 - Analisis PROET: `docs/proet/platform_analysis_20260304.md`
 - Norma n8n obligatoria: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
 - Playbook de importacion y smoke test n8n: `docs/n8n/PLAYBOOK_IMPORTACION_Y_SMOKE_TEST.md`

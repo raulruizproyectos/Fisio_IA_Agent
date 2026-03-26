@@ -476,14 +476,6 @@ function buildCalendarEventPayload({
   };
 }
 
-function getCalendarErrorMessage(error) {
-  const status = error?.response?.status;
-  const message =
-    error?.response?.data?.error?.message ||
-    error?.message ||
-    'google_calendar_sync_failed';
-  return status ? `google_calendar_${status}: ${message}` : String(message);
-}
 
 async function syncAppointmentViaW6({ action, eventId, payload }) {
   if (!calendarW6Enabled()) {
@@ -578,7 +570,7 @@ async function syncAppointmentToGoogleCalendar({
       }
 
       return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
-    } catch (error) {
+    } catch {
       // Fall through to W6 if direct mode fails
     }
   }
@@ -3051,4 +3043,3 @@ router.post('/video-jobs/:jobId/send', async (req, res, next) => {
   }
 });
 export default router;
-

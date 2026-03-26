@@ -2,16 +2,41 @@ import { Router } from 'express';
 import { supabase } from '../index.js';
 
 const router = Router();
+const PAYMENTS_TABLE = 'crm_pagos';
 
 const PAGOS_SELECT = 'id, paciente_id, fecha, importe, metodo_pago, concepto, notas, created_at, updated_at, crm_pacientes(nombre, apellidos)';
 
-// GET /api/pagos — list payments with optional filters: mes, anio, paciente_id, metodo_pago
+const isMissingPaymentsTableError = (error) => {
+  const message = String(error?.message || '').toLowerCase();
+  const code = String(error?.code || '').toUpperCase();
+  return code === 'PGRST205' || (message.includes(PAYMENTS_TABLE) && (message.includes('schema cache') || message.includes('could not find the table')));
+};
+
+const paymentsUnavailableMessage = 'Modulo pagos no disponible: falta tabla crm_pagos. Ejecuta database/migrations/007_crm_pagos.sql en Supabase.';
+
+const respondPaymentsUnavailable = (res, { write = false } = {}) => {
+  if (write) {
+    return res.status(503).json({
+      error: paymentsUnavailableMessage,
+      missing_table: PAYMENTS_TABLE,
+    });
+  }
+
+  return res.json({
+    data: [],
+    unavailable: true,
+    error: paymentsUnavailableMessage,
+    missing_table: PAYMENTS_TABLE,
+  });
+};
+
+// GET /api/pagos - list payments with optional filters: mes, anio, paciente_id, metodo_pago
 router.get('/', async (req, res, next) => {
   try {
     const { mes, anio, paciente_id, metodo_pago } = req.query;
 
     let query = supabase
-      .from('crm_pagos')
+      .from(PAYMENTS_TABLE)
       .select(PAGOS_SELECT)
       .order('fecha', { ascending: false })
       .order('created_at', { ascending: false });
@@ -32,28 +57,34 @@ router.get('/', async (req, res, next) => {
     }
 
     const { data, error } = await query;
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
+      return res.status(500).json({ error: error.message });
+    }
 
-    res.json({ data });
+    res.json({ data: data || [] });
   } catch (err) {
     next(err);
   }
 });
 
-// GET /api/pagos/resumen — monthly summary for reports
+// GET /api/pagos/resumen - monthly summary for reports
 router.get('/resumen', async (req, res, next) => {
   try {
     const { anio } = req.query;
     const year = Number(anio) || new Date().getFullYear();
 
     const { data, error } = await supabase
-      .from('crm_pagos')
+      .from(PAYMENTS_TABLE)
       .select('fecha, importe, metodo_pago')
       .gte('fecha', `${year}-01-01`)
       .lt('fecha', `${year + 1}-01-01`)
       .order('fecha', { ascending: true });
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
+      return res.status(500).json({ error: error.message });
+    }
 
     const meses = {};
     for (let m = 1; m <= 12; m++) {
@@ -79,22 +110,24 @@ router.get('/resumen', async (req, res, next) => {
   }
 });
 
-// GET /api/pagos/gestoria — per-patient per-month breakdown for accounting
+// GET /api/pagos/gestoria - per-patient per-month breakdown for accounting
 router.get('/gestoria', async (req, res, next) => {
   try {
     const { anio } = req.query;
     const year = Number(anio) || new Date().getFullYear();
 
     const { data, error } = await supabase
-      .from('crm_pagos')
+      .from(PAYMENTS_TABLE)
       .select('fecha, importe, metodo_pago, paciente_id, crm_pacientes(nombre, apellidos)')
       .gte('fecha', `${year}-01-01`)
       .lt('fecha', `${year + 1}-01-01`)
       .order('fecha', { ascending: true });
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
+      return res.status(500).json({ error: error.message });
+    }
 
-    // Aggregate by patient + month
     const byPatient = {};
     const totalesMes = {};
     for (let m = 1; m <= 12; m++) totalesMes[m] = { sesiones: 0, efectivo: 0, tarjeta: 0, total: 0 };
@@ -142,7 +175,7 @@ router.get('/gestoria', async (req, res, next) => {
   }
 });
 
-// POST /api/pagos — create payment
+// POST /api/pagos - create payment
 router.post('/', async (req, res, next) => {
   try {
     const { paciente_id, fecha, importe, metodo_pago, concepto, notas } = req.body;
@@ -154,7 +187,7 @@ router.post('/', async (req, res, next) => {
     }
 
     const { data, error } = await supabase
-      .from('crm_pagos')
+      .from(PAYMENTS_TABLE)
       .insert({
         paciente_id,
         fecha: fecha || new Date().toISOString().slice(0, 10),
@@ -166,7 +199,10 @@ router.post('/', async (req, res, next) => {
       .select(PAGOS_SELECT)
       .single();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res, { write: true });
+      return res.status(500).json({ error: error.message });
+    }
 
     res.status(201).json({ data });
   } catch (err) {
@@ -174,7 +210,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// PATCH /api/pagos/:id — update payment
+// PATCH /api/pagos/:id - update payment
 router.patch('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -190,13 +226,16 @@ router.patch('/:id', async (req, res, next) => {
     updates.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
-      .from('crm_pagos')
+      .from(PAYMENTS_TABLE)
       .update(updates)
       .eq('id', id)
       .select(PAGOS_SELECT)
       .single();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res, { write: true });
+      return res.status(500).json({ error: error.message });
+    }
     if (!data) return res.status(404).json({ error: 'Pago no encontrado' });
 
     res.json({ data });
@@ -205,12 +244,15 @@ router.patch('/:id', async (req, res, next) => {
   }
 });
 
-// DELETE /api/pagos/:id — delete payment
+// DELETE /api/pagos/:id - delete payment
 router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase.from('crm_pagos').delete().eq('id', id);
-    if (error) return res.status(500).json({ error: error.message });
+    const { error } = await supabase.from(PAYMENTS_TABLE).delete().eq('id', id);
+    if (error) {
+      if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res, { write: true });
+      return res.status(500).json({ error: error.message });
+    }
     res.json({ ok: true });
   } catch (err) {
     next(err);

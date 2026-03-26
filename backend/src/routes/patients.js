@@ -14,6 +14,26 @@ function pickValue(obj, ...keys) {
 
 const CRM_FIELDS = 'id, nombre, apellidos, email, telefono, fecha_nacimiento, dni, direccion, profesion, medico_derivador, aseguradora, alergias, antecedentes, observaciones, activo, created_at, updated_at';
 
+const isMissingTableError = (result, table) => {
+  if (result?.status !== 'fulfilled' || !result?.value?.error) return false;
+  const error = result.value.error;
+  const message = String(error?.message || '').toLowerCase();
+  const code = String(error?.code || '').toUpperCase();
+  return code === 'PGRST205' || (message.includes(table.toLowerCase()) && (message.includes('schema cache') || message.includes('could not find the table')));
+};
+
+const getSectionAvailability = (result, { key, label, table, migration }) => {
+  if (!isMissingTableError(result, table)) return null;
+  return {
+    key,
+    label,
+    status: 'unavailable',
+    table,
+    migration,
+    message: `${label} no disponible: falta tabla ${table}. Ejecuta ${migration}.`,
+  };
+};
+
 router.get('/', async (req, res, next) => {
   try {
     const [legacyResult, crmResult] = await Promise.allSettled([
@@ -82,6 +102,12 @@ router.get('/:id/ficha', async (req, res, next) => {
     }
 
     const p = patientRes.value.data;
+    const moduleAvailability = [
+      getSectionAvailability(citasRes, { key: 'citas', label: 'Historial de citas', table: 'crm_citas', migration: 'database/schema_vnext.sql' }),
+      getSectionAvailability(pagosRes, { key: 'pagos', label: 'Historial de pagos', table: 'crm_pagos', migration: 'database/migrations/007_crm_pagos.sql' }),
+      getSectionAvailability(notasRes, { key: 'notas', label: 'Notas clinicas', table: 'crm_notas_clinicas', migration: 'database/migrations/008_ficha_paciente_enriquecida.sql' }),
+    ].filter(Boolean);
+
     res.json({
       paciente: {
         ...p,
@@ -90,6 +116,7 @@ router.get('/:id/ficha', async (req, res, next) => {
       citas: citasRes.status === 'fulfilled' && !citasRes.value.error ? citasRes.value.data : [],
       pagos: pagosRes.status === 'fulfilled' && !pagosRes.value.error ? pagosRes.value.data : [],
       notas: notasRes.status === 'fulfilled' && !notasRes.value.error ? notasRes.value.data : [],
+      module_availability: moduleAvailability,
     });
   } catch (err) {
     next(err);
