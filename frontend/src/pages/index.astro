@@ -108,9 +108,8 @@ import Layout from '../layouts/Layout.astro';
             <section class="hero-section cockpit-hero">
               <div class="hero-panel-main">
                 <div class="hero-heading-stack">
-                  <span class="hero-eyebrow">Luxury Clinical OS</span>
-                  <h1 class="hero-title">Cabina clinica</h1>
-                  <p class="hero-subtitle" id="dashboardLiveSummary">Cargando agenda, intake, sincronizacion y captacion...</p>
+                  <h1 class="hero-title">Panel de control</h1>
+                  <p class="hero-subtitle" id="dashboardLiveSummary">Cargando...</p>
                 </div>
                 <div class="hero-actions hero-action-row">
                   <button class="btn-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
@@ -118,9 +117,11 @@ import Layout from '../layouts/Layout.astro';
                   <button class="btn-ghost" id="heroNewPatientShortcutBtn" type="button"><span class="material-symbols-rounded">add</span> Alta express</button>
                 </div>
                 <div class="clinical-hero-band" aria-label="Pilares del cockpit clinico">
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="citas"><span class="material-symbols-rounded">verified</span> Agenda y sincronizacion bajo control</button>
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="intakes"><span class="material-symbols-rounded">send</span> Telegram sigue siendo canal nativo de reserva</button>
-                  <button type="button" class="hero-band-pill" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">description</span> Ejercicios, PDF e historial en un mismo flujo</button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="citas"><span class="material-symbols-rounded">calendar_today</span> Agenda</button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="intakes"><span class="material-symbols-rounded">send</span> Telegram</button>
+                  <button type="button" class="hero-band-pill" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span> Ejercicios IA</button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="pagos"><span class="material-symbols-rounded">euro</span> Pagos</button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="bonos"><span class="material-symbols-rounded">card_giftcard</span> Bonos</button>
                 </div>
                 <div class="hero-signal-grid">
                   <article class="signal-card signal-card-live" id="dashboardNextSessionCard">
@@ -129,7 +130,7 @@ import Layout from '../layouts/Layout.astro';
                       <span class="status-chip pendiente" id="dashboardNextSessionStatus">Agenda</span>
                     </div>
                     <strong class="signal-value" id="dashboardNextSessionTitle">Cargando agenda...</strong>
-                    <p id="dashboardNextSessionMeta">Estamos leyendo las citas para calcular la siguiente accion clinica.</p>
+                    <p id="dashboardNextSessionMeta">Cargando...</p>
                     <button class="btn-link-inline" id="dashboardNextSessionBtn" type="button"><span class="material-symbols-rounded">event_available</span> Abrir agenda</button>
                   </article>
                   <article class="signal-card signal-card-live">
@@ -155,8 +156,8 @@ import Layout from '../layouts/Layout.astro';
                       <span class="signal-kicker">Reserva online</span>
                       <span class="status-chip aprobado">Activa</span>
                     </div>
-                    <strong class="signal-value">Captacion abierta todo el dia</strong>
-                    <p id="dashboardBookingMeta">Preparando enlace publico para compartir por web, WhatsApp o como apoyo del canal Telegram.</p>
+                    <strong class="signal-value">Reserva online activa</strong>
+                    <p id="dashboardBookingMeta">Enlace publico disponible.</p>
                     <div class="signal-card-actions">
                       <button class="btn-link-inline" id="dashboardBookingOpenBtn" type="button"><span class="material-symbols-rounded">open_in_new</span> Abrir reserva</button>
                       <button class="btn-link-inline" id="dashboardBookingCopyBtn" type="button"><span class="material-symbols-rounded">content_copy</span> Copiar enlace</button>
@@ -168,21 +169,20 @@ import Layout from '../layouts/Layout.astro';
               <div class="hero-panel-side">
                 <article class="cockpit-side-card cockpit-side-card-agent">
                   <span class="cockpit-side-kicker">Agente de ejercicios</span>
-                  <h2 class="cockpit-side-title">El agente debe cerrar criterio terapeutico, entrega y continuidad</h2>
-                  <p>Selecciona paciente, estructura el caso, genera el plan y dejalo unido a historial, PDF y continuidad por Telegram. Ese es el diferencial de producto premium que debemos defender.</p>
+                  <h2 class="cockpit-side-title">Planes de tratamiento con IA</h2>
                   <div class="cockpit-side-actions">
-                    <button class="btn-ghost" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">right_panel_open</span> Abrir agente</button>
-                    <button class="btn-ghost" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Ver historial</button>
+                    <button class="btn-primary btn-sm" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span> Nuevo plan</button>
+                    <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Historial</button>
+                    <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="plantillas"><span class="material-symbols-rounded">assignment</span> Plantillas</button>
                   </div>
                 </article>
                 <article class="cockpit-side-card priorities-side-card">
-                  <span class="cockpit-side-kicker">Prioridades del dia</span>
+                  <span class="cockpit-side-kicker">Tareas pendientes</span>
                   <div class="priority-list" id="dashboardPriorityList">
                     <article class="priority-item priority-item-loading">
                       <div class="priority-copy">
                         <span>Cargando</span>
-                        <strong>Preparando prioridades operativas</strong>
-                        <p>Estamos leyendo agenda, intake y sincronizacion.</p>
+                        <strong>Calculando...</strong>
                       </div>
                     </article>
                   </div>
@@ -209,46 +209,19 @@ import Layout from '../layouts/Layout.astro';
             </section>
 
             <section class="dashboard-ops-grid">
-              <article class="cockpit-block cockpit-block-lanes">
-                <header class="cockpit-block-head">
-                  <div class="cockpit-block-copy">
-                    <span class="hero-eyebrow">Canales activos</span>
-                    <h2>Entradas y continuidad del producto</h2>
-                  </div>
-                </header>
-                <div class="workflow-stack workflow-stack-lanes">
-                  <button type="button" class="workflow-lane" data-dashboard-nav="intakes">
-                    <span class="workflow-tag">Telegram</span>
-                    <p>Reserva, mensajes y triage entrando al CRM como conversacion operativa.</p>
-                  </button>
-                  <button type="button" class="workflow-lane" data-dashboard-action="open-booking-page">
-                    <span class="workflow-tag">Reserva web</span>
-                    <p>Pagina publica lista para captar pacientes nuevos sin salir del ecosistema.</p>
-                  </button>
-                  <button type="button" class="workflow-lane" data-dashboard-action="open-copilot">
-                    <span class="workflow-tag">Ejercicios</span>
-                    <p>Plan IA conectado a historial, exportacion PDF y seguimiento real.</p>
-                  </button>
-                  <button type="button" class="workflow-lane" data-dashboard-nav="documentos">
-                    <span class="workflow-tag">Documentos</span>
-                    <p>Consentimientos, firma y continuidad administrativa integrados en el caso.</p>
-                  </button>
-                </div>
-              </article>
               <article class="cockpit-block">
                 <header class="cockpit-block-head">
                   <div class="cockpit-block-copy">
-                    <span class="hero-eyebrow">Accesos clinicos reales</span>
-                    <h2>Trabaja por flujo, no por menu</h2>
+                    <h2>Accesos rapidos</h2>
                   </div>
                 </header>
                 <div class="command-grid">
-                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-kicker">Admision</span><strong>Alta guiada de paciente</strong><p>Registra una nueva ficha y dejala lista para historial, agenda y seguimiento.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-kicker">Agenda</span><strong>Crear o mover cita</strong><p>Opera la semana clinica, revisa bloqueos y salta al caso correcto.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-kicker">Telegram</span><strong>Revisar reservas y mensajes</strong><p>Convierte conversaciones entrantes en siguiente accion clinica o administrativa.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-kicker">Ejercicios</span><strong>Abrir agente de ejercicios</strong><p>Genera el plan, afina el objetivo y dejalo listo para PDF e historial.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-kicker">Documentos</span><strong>Gestionar consentimientos</strong><p>Accede a firma, documentos pendientes y trazabilidad del caso.</p></button>
-                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-kicker">Captacion</span><strong>Abrir reserva online</strong><p>Comparte la pagina publica y llena huecos de agenda desde el CRM.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-kicker">Admision</span><strong>Alta de paciente</strong></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-kicker">Agenda</span><strong>Gestionar citas</strong></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-kicker">Telegram</span><strong>Mensajes entrantes</strong></button>
+                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-kicker">Ejercicios</span><strong>Generar plan IA</strong></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-kicker">Documentos</span><strong>Consentimientos</strong></button>
+                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-kicker">Captacion</span><strong>Reserva online</strong></button>
                 </div>
               </article>
             </section>
@@ -866,7 +839,7 @@ import Layout from '../layouts/Layout.astro';
               <section class="card ficha-rail-card ficha-rail-card-accent">
                 <span class="ficha-rail-label">Siguiente mejor paso</span>
                 <strong id="fichaRailNextTitle">Selecciona un paciente</strong>
-                <p id="fichaRailNextMeta">La ficha te sugerira la siguiente accion clinica u operativa segun el estado real del caso.</p>
+                <p id="fichaRailNextMeta">Cargando datos del paciente...</p>
                 <div class="ficha-rail-actions">
                   <button class="btn-primary" type="button" id="fichaRailPrimaryBtn"><span class="material-symbols-rounded">arrow_forward</span> Continuar</button>
                   <button class="btn-secondary" type="button" id="fichaRailTelegramBtn"><span class="material-symbols-rounded">send</span> Telegram</button>
@@ -3589,7 +3562,7 @@ import Layout from '../layouts/Layout.astro';
     const next = dashboardRuntime.nextAppointment;
 
     if (dashboardRuntime.agendaState === 'error') {
-      dashboardLiveSummary.textContent = 'La cabina mantiene accesos clinicos activos, pero la agenda no ha podido refrescarse todavia.';
+      dashboardLiveSummary.textContent = 'Error al cargar la agenda.';
       return;
     }
 
@@ -3600,13 +3573,13 @@ import Layout from '../layouts/Layout.astro';
     }
 
     if (todayCount > 0) {
-      dashboardLiveSummary.textContent = `${todayCount} cita${todayCount === 1 ? '' : 's'} hoy y sin una siguiente sesion clara para preparar. ${intakeCount ? `${intakeCount} paciente${intakeCount === 1 ? '' : 's'} esperan respuesta.` : 'Puedes aprovechar para revisar documentos, copilot o captacion.'}`;
+      dashboardLiveSummary.textContent = `${todayCount} cita${todayCount === 1 ? '' : 's'} hoy.${intakeCount ? ` ${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} pendiente${intakeCount === 1 ? '' : 's'}.` : ''}`;
       return;
     }
 
     dashboardLiveSummary.textContent = intakeCount
-      ? `Sin citas activas inmediatas. Tienes ${intakeCount} conversacion${intakeCount === 1 ? '' : 'es'} pendientes y la reserva online lista para captar nuevos huecos.`
-      : 'Sin citas activas inmediatas. Usa la reserva online, Telegram y el agente de ejercicios como palancas reales de captacion y continuidad.';
+      ? `Sin citas hoy. ${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} pendiente${intakeCount === 1 ? '' : 's'}.`
+      : 'Sin citas hoy.';
   };
 
   const renderDashboardNextSessionCard = () => {
@@ -3615,8 +3588,8 @@ import Layout from '../layouts/Layout.astro';
 
     if (dashboardRuntime.agendaState === 'error') {
       setDashboardChip(dashboardNextSessionStatus, 'Error', 'rechazado');
-      dashboardNextSessionTitle.textContent = 'La agenda necesita refresco';
-      dashboardNextSessionMeta.textContent = 'No hemos podido calcular la siguiente sesion desde el CRM.';
+      dashboardNextSessionTitle.textContent = 'Error de conexion';
+      dashboardNextSessionMeta.textContent = 'No se pudo cargar la agenda.';
       if (dashboardNextSessionBtn) {
         dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Ver agenda';
       }
@@ -3626,7 +3599,7 @@ import Layout from '../layouts/Layout.astro';
     if (!next) {
       setDashboardChip(dashboardNextSessionStatus, 'Libre', 'aprobado');
       dashboardNextSessionTitle.textContent = 'Sin proxima sesion cargada';
-      dashboardNextSessionMeta.textContent = 'Buen momento para revisar intake, abrir captacion o preparar seguimiento.';
+      dashboardNextSessionMeta.textContent = 'No hay citas programadas.';
       if (dashboardNextSessionBtn) {
         dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Abrir agenda';
       }
@@ -3684,8 +3657,8 @@ import Layout from '../layouts/Layout.astro';
     if (intakeCount > 0) {
       priorities.push({
         label: 'Triage',
-        title: `Revisar ${intakeCount} entrada${intakeCount === 1 ? '' : 's'} pendientes`,
-        body: 'Telegram y el formulario web estan trayendo pacientes que necesitan respuesta o conversion a cita.',
+        title: `${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} sin responder`,
+        body: `Telegram y formulario web.`,
         tone: 'warning',
         actionLabel: 'Abrir intake',
         nav: 'intakes',
@@ -3696,7 +3669,7 @@ import Layout from '../layouts/Layout.astro';
       priorities.push({
         label: 'Proxima sesion',
         title: `${getDashboardFirstName(next.nombre_paciente)} ${fmtHourOnly(next.inicio_en || '')}`,
-        body: next.motivo ? String(next.motivo) : 'Prepara el caso, revisa historial y deja listo el siguiente movimiento clinico.',
+        body: next.motivo ? String(next.motivo) : '',
         tone: 'accent',
         actionLabel: String(next.paciente_id || '').trim() ? 'Abrir agente' : 'Ver agenda',
         action: String(next.paciente_id || '').trim() ? 'open-copilot' : 'open-agenda',
@@ -3707,7 +3680,7 @@ import Layout from '../layouts/Layout.astro';
       priorities.push({
         label: 'Calendar',
         title: dashboardRuntime.syncUi?.title || 'Revisar sincronizacion',
-        body: dashboardRuntime.syncUi?.meta || 'Google Calendar necesita atencion para mantener disponibilidad y bloqueos al dia.',
+        body: dashboardRuntime.syncUi?.meta || 'Revisar conexion.',
         tone: 'danger',
         actionLabel: 'Abrir agenda',
         nav: 'citas',
@@ -3717,8 +3690,8 @@ import Layout from '../layouts/Layout.astro';
     if (!dashboardRuntime.todayAppointments.length) {
       priorities.push({
         label: 'Captacion',
-        title: 'Empujar reserva web y canal Telegram',
-        body: 'Sin carga clinica inmediata: buen momento para compartir la pagina publica y responder conversaciones entrantes.',
+        title: 'Sin citas hoy',
+        body: 'Comparte la reserva online.',
         tone: 'ready',
         actionLabel: 'Abrir reserva',
         action: 'open-booking-page',
@@ -3727,9 +3700,9 @@ import Layout from '../layouts/Layout.astro';
 
     if (!priorities.length) {
       priorities.push({
-        label: 'Continuidad',
-        title: 'La cabina esta estabilizada',
-        body: 'Aprovecha para revisar historial, documentos o dejar un plan de ejercicios listo para el siguiente paciente.',
+        label: 'Todo al dia',
+        title: 'Sin tareas pendientes',
+        body: '',
         tone: 'ready',
         actionLabel: 'Abrir agente',
         action: 'open-copilot',
@@ -5459,7 +5432,7 @@ import Layout from '../layouts/Layout.astro';
         <article class="ficha-overview-stat">
           <span>Estado del caso</span>
           <strong>${unavailableModules.length ? 'Vista parcial' : latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoracion'}</strong>
-          <p>${escapeHtml(unavailableModules.length ? 'Hay modulos pendientes de migracion. Usa esta vista como referencia parcial hasta recuperar la integridad del CRM.' : latestNote ? 'Ya hay criterio clinico registrado para iterar con el agente.' : citas.length ? 'Conviene cerrar seguimiento y plan para dar continuidad.' : 'Todavia no hay una primera sesion cerrada en CRM.')}</p>
+          <p>${escapeHtml(unavailableModules.length ? 'Algunos modulos requieren migracion.' : latestNote ? 'Hay notas clinicas registradas.' : citas.length ? 'Sin notas de seguimiento.' : 'Sin sesiones registradas.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Sesiones</span>
@@ -5498,9 +5471,9 @@ import Layout from '../layouts/Layout.astro';
       unavailableModules.length ? { tone: 'alert', title: 'Revisar migraciones pendientes', body: `La ficha esta operativa en modo parcial. Falta recuperar: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.` } : null,
       !citasUnavailable && !citas.length ? { tone: 'urgent', title: 'Programar la primera sesion', body: 'Todavia no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
       !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoracion y evolucion', body: 'Ya existe actividad en agenda, pero falta una nota clinica que deje criterio terapeutico y siguiente paso.' } : null,
-      !notasUnavailable && latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'Revisar dolor alto y ajustar plan', body: 'El ultimo registro deja un EVA elevado. Conviene preparar sesion y progresion con criterio clinico.' } : null,
-      !pagosUnavailable && !pagos.length ? { tone: 'soft', title: 'Cerrar cobro o bono asociado', body: 'No hay actividad economica vinculada al caso. Conviene dejarlo resuelto desde CRM.' } : null,
-      patient?.telefono ? { tone: 'ready', title: 'Preparar continuidad por Telegram', body: 'El paciente ya tiene telefono. Puedes generar o regenerar la invitacion desde su historial.' } : { tone: 'soft', title: 'Completar telefono para continuidad', body: 'El canal Telegram sigue siendo diferencial, pero antes conviene guardar un telefono valido.' },
+      !notasUnavailable && latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'EVA elevado', body: `Ultimo EVA: ${latestEva}/10.` } : null,
+      !pagosUnavailable && !pagos.length ? { tone: 'soft', title: 'Sin pagos registrados', body: '' } : null,
+      patient?.telefono ? { tone: 'ready', title: 'Telegram disponible', body: 'Telefono registrado.' } : { tone: 'soft', title: 'Sin telefono', body: 'Registra un telefono para habilitar Telegram.' },
     ].filter(Boolean).slice(0, 4) as Array<{ tone: string; title: string; body: string }>;
 
     if (fichaDecisionList) {
@@ -5524,7 +5497,7 @@ import Layout from '../layouts/Layout.astro';
       primaryAction = 'agenda';
       primaryLabel = 'Ir a agenda';
       nextTitle = 'Programar la primera sesion';
-      nextMeta = 'Sin agenda no hay caso vivo. Conviene bloquear cita y dejar el alta operativa resuelta.';
+      nextMeta = 'Sin citas programadas.';
     } else if (!notasUnavailable && citas.length && !notas.length) {
       primaryAction = 'notas';
       primaryLabel = 'Abrir notas';
@@ -5534,7 +5507,7 @@ import Layout from '../layouts/Layout.astro';
       primaryAction = 'agente';
       primaryLabel = 'Preparar sesion';
       nextTitle = 'Revisar dolor alto y ajustar plan';
-      nextMeta = 'El ultimo seguimiento deja dolor elevado. Conviene entrar con una propuesta clara para la siguiente sesion.';
+      nextMeta = `EVA elevado (${latestEva}/10). Revisar plan de tratamiento.`;
     }
 
     if (fichaRailNextTitle) fichaRailNextTitle.textContent = nextTitle;
@@ -5565,7 +5538,7 @@ import Layout from '../layouts/Layout.astro';
       const checks = [
         { done: Boolean(patient?.email || patient?.telefono), title: 'Contacto localizado', body: patient?.email || patient?.telefono ? 'El caso ya tiene una via de contacto guardada.' : 'Falta email o telefono para continuidad.' },
         { done: !citasUnavailable && Boolean(citas.length), title: 'Agenda registrada', body: citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay citas asociadas al paciente.' },
-        { done: !notasUnavailable && Boolean(notas.length), title: 'Seguimiento documentado', body: notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} clinica${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Conviene registrar la primera nota de evolucion.' },
+        { done: !notasUnavailable && Boolean(notas.length), title: 'Seguimiento documentado', body: notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Sin notas de evolucion.' },
         { done: !pagosUnavailable && Boolean(pagos.length), title: 'Cobro vinculado', body: pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
       ];
       fichaRailChecklist.innerHTML = checks.map((item) => `
@@ -5600,7 +5573,7 @@ import Layout from '../layouts/Layout.astro';
     const continuityMeta = latestNote
       ? 'Tienes contexto clinico para iterar con el agente, documentar y programar la siguiente sesion.'
       : citas.length
-        ? 'Conviene revisar historial, agendar siguiente paso y consolidar documentos del caso.'
+        ? 'Revisar historial y documentos del caso.'
         : 'Buen momento para capturar antecedentes, objetivo clinico y primer plan de ejercicios.';
 
     if (fichaHeroName) fichaHeroName.textContent = patientName;
