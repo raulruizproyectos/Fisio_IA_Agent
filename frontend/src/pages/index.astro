@@ -799,6 +799,18 @@ import Layout from '../layouts/Layout.astro';
                       <p class="empty-inline">Todavia no hay decisiones sugeridas para este caso.</p>
                     </div>
                   </section>
+
+                  <section class="card ficha-overview-card">
+                    <header class="ficha-section-head">
+                      <div>
+                        <span class="ficha-section-kicker">Plan domiciliario</span>
+                        <h2>Adherencia y entregas</h2>
+                      </div>
+                    </header>
+                    <div class="ficha-overview-stats" id="fichaPlanInsights">
+                      <p class="empty-inline">Cuando existan planes IA, veras aqui el estado del tratamiento, las entregas archivadas y el ultimo feedback del paciente.</p>
+                    </div>
+                  </section>
                 </div>
               </div>
 
@@ -5712,6 +5724,7 @@ import Layout from '../layouts/Layout.astro';
   const fichaOverviewStats = document.getElementById('fichaOverviewStats');
   const fichaOverviewStream = document.getElementById('fichaOverviewStream');
   const fichaDecisionList = document.getElementById('fichaDecisionList');
+  const fichaPlanInsights = document.getElementById('fichaPlanInsights');
   const fichaRailNextTitle = document.getElementById('fichaRailNextTitle');
   const fichaRailNextMeta = document.getElementById('fichaRailNextMeta');
   const fichaRailPrimaryBtn = document.getElementById('fichaRailPrimaryBtn') as HTMLButtonElement | null;
@@ -5780,7 +5793,71 @@ import Layout from '../layouts/Layout.astro';
     });
   };
 
-  const buildFichaActivityItems = (citas: any[] = [], notas: any[] = []) => {
+  const pickLatestIsoDate = (current: string | null, candidate: string | null) => {
+    if (!candidate) return current;
+    if (!current) return candidate;
+    return new Date(candidate).getTime() > new Date(current).getTime() ? candidate : current;
+  };
+
+  const getRecommendationExerciseCount = (recommendation: any) => {
+    const reportSnapshot = recommendation?.report_snapshot || {};
+    const reportExercises = Array.isArray(reportSnapshot?.exercises) ? reportSnapshot.exercises : [];
+    const itemExercises = Array.isArray(recommendation?.crm_recomendacion_items) ? recommendation.crm_recomendacion_items : [];
+    return reportExercises.length || itemExercises.length || 0;
+  };
+
+  const getRecommendationAdherenceMeta = (rawStatus: any) => {
+    const normalized = String(rawStatus || '').trim().toLowerCase();
+    if (!normalized) return { label: 'Sin feedback', tone: 'pendiente' };
+    if (/(alta|high|good|completa|complete|full)/.test(normalized)) return { label: 'Adherencia alta', tone: 'aprobado' };
+    if (/(media|moderada|medium|partial|parcial)/.test(normalized)) return { label: 'Adherencia media', tone: 'pendiente' };
+    if (/(baja|low|poor|fall|aband)/.test(normalized)) return { label: 'Adherencia baja', tone: 'rechazado' };
+    return { label: normalized.replace(/_/g, ' '), tone: 'pendiente' };
+  };
+
+  const summarizePatientRecommendations = (recommendations: any[] = []) => {
+    const safe = Array.isArray(recommendations) ? recommendations : [];
+    let latestFollowUp: any = null;
+    let latestArchivedReport: any = null;
+    let latestTouchAt: string | null = safe[0]?.created_at || null;
+    let totalExercises = 0;
+    let totalFollowUps = 0;
+    let totalArchivedReports = 0;
+
+    for (const recommendation of safe) {
+      totalExercises += getRecommendationExerciseCount(recommendation);
+      const followUps = Array.isArray(recommendation?.follow_ups) ? recommendation.follow_ups : [];
+      const archivedReports = Array.isArray(recommendation?.archived_reports) ? recommendation.archived_reports : [];
+      totalFollowUps += followUps.length;
+      totalArchivedReports += archivedReports.length;
+      for (const item of followUps) {
+        const at = item?.created_at || item?.fecha || null;
+        latestTouchAt = pickLatestIsoDate(latestTouchAt, at);
+      }
+      for (const item of followUps) {
+        const at = item?.created_at || item?.fecha || null;
+        if (!latestFollowUp || new Date(at || 0).getTime() > new Date((latestFollowUp?.created_at || latestFollowUp?.fecha || 0)).getTime()) latestFollowUp = item;
+      }
+      for (const item of archivedReports) {
+        const at = item?.archived_at || item?.created_at || null;
+        latestTouchAt = pickLatestIsoDate(latestTouchAt, at);
+        if (!latestArchivedReport || new Date(at || 0).getTime() > new Date((latestArchivedReport?.archived_at || latestArchivedReport?.created_at || 0)).getTime()) latestArchivedReport = item;
+      }
+    }
+
+    return {
+      totalPlans: safe.length,
+      totalExercises,
+      totalFollowUps,
+      totalArchivedReports,
+      latestRecommendation: safe[0] || null,
+      latestFollowUp,
+      latestArchivedReport,
+      latestTouchAt,
+    };
+  };
+
+  const buildFichaActivityItems = (citas: any[] = [], notas: any[] = [], recommendations: any[] = []) => {
     const citaItems = citas
       .filter((cita: any) => cita?.fecha_hora)
       .map((cita: any) => ({
@@ -5801,7 +5878,21 @@ import Layout from '../layouts/Layout.astro';
         meta: nota.fecha ? fmtDate(nota.fecha) : 'Fecha no disponible',
       }));
 
-    return [...citaItems, ...notaItems]
+    const recommendationItems = recommendations.flatMap((recommendation: any) => {
+      const items: any[] = [];
+      const exerciseCount = getRecommendationExerciseCount(recommendation);
+      const followUps = Array.isArray(recommendation?.follow_ups) ? recommendation.follow_ups : [];
+      const archivedReports = Array.isArray(recommendation?.archived_reports) ? recommendation.archived_reports : [];
+      const latestFollowUp = followUps.length ? [...followUps].sort((a: any, b: any) => new Date((b?.created_at || b?.fecha || 0)).getTime() - new Date((a?.created_at || a?.fecha || 0)).getTime())[0] : null;
+      const latestArchivedReport = archivedReports.length ? [...archivedReports].sort((a: any, b: any) => new Date((b?.archived_at || b?.created_at || 0)).getTime() - new Date((a?.archived_at || a?.created_at || 0)).getTime())[0] : null;
+      const adherenceMeta = getRecommendationAdherenceMeta(latestFollowUp?.adherence_status || null);
+      if (recommendation?.created_at) items.push({ type: 'plan', date: recommendation.created_at, label: 'Plan IA', title: recommendation?.symptom_summary || recommendation?.selection_rationale || 'Plan de ejercicios generado', meta: `${exerciseCount} ejercicios prescritos` });
+      if (latestArchivedReport?.archived_at || latestArchivedReport?.created_at) items.push({ type: 'delivery', date: latestArchivedReport?.archived_at || latestArchivedReport?.created_at, label: 'Entrega archivada', title: `Informe ${String(latestArchivedReport?.format || 'pdf').toUpperCase()}`, meta: latestArchivedReport?.source || 'Archivado en historial' });
+      if (latestFollowUp?.created_at || latestFollowUp?.fecha) items.push({ type: 'followup', date: latestFollowUp?.created_at || latestFollowUp?.fecha, label: adherenceMeta.label, title: trimAgentBriefText(latestFollowUp?.note_text || 'Seguimiento del plan registrado', 88), meta: latestFollowUp?.pain_scale !== null && latestFollowUp?.pain_scale !== undefined ? `Dolor ${latestFollowUp.pain_scale}/10` : 'Sin escala de dolor informada' });
+      return items;
+    });
+
+    return [...citaItems, ...notaItems, ...recommendationItems]
       .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 6);
   };
@@ -5811,6 +5902,7 @@ import Layout from '../layouts/Layout.astro';
     const citas = Array.isArray(payload?.citas) ? payload.citas : [];
     const pagos = Array.isArray(payload?.pagos) ? payload.pagos : [];
     const notas = Array.isArray(payload?.notas) ? payload.notas : [];
+    const recommendations = Array.isArray(payload?.recommendations) ? payload.recommendations : [];
     const citasUnavailable = isFichaModuleUnavailable('citas');
     const pagosUnavailable = isFichaModuleUnavailable('pagos');
     const notasUnavailable = isFichaModuleUnavailable('notas');
@@ -5819,7 +5911,11 @@ import Layout from '../layouts/Layout.astro';
     const totalPayments = pagosUnavailable ? 0 : pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
     const latestEva = latestNote?.dolor_eva != null ? Number(latestNote.dolor_eva) : null;
     const patientName = getPatientFullName(patient);
-    const activityItems = buildFichaActivityItems(citasUnavailable ? [] : citas, notasUnavailable ? [] : notas);
+    const recommendationSummary = summarizePatientRecommendations(recommendations);
+    const latestFollowUp = recommendationSummary.latestFollowUp;
+    const latestArchivedReport = recommendationSummary.latestArchivedReport;
+    const latestAdherence = getRecommendationAdherenceMeta(latestFollowUp?.adherence_status || null);
+    const activityItems = buildFichaActivityItems(citasUnavailable ? [] : citas, notasUnavailable ? [] : notas, recommendations);
     const unavailableModules = Array.from(fichaModuleAvailability.values());
 
     if (fichaOverviewStats) {
@@ -5850,7 +5946,7 @@ import Layout from '../layouts/Layout.astro';
       fichaOverviewStream.innerHTML = activityItems.length
         ? activityItems.map((item: any) => `
           <article class="ficha-stream-item ficha-stream-item-${item.type}">
-            <div class="ficha-stream-icon"><span class="material-symbols-rounded">${item.type === 'nota' ? 'clinical_notes' : 'calendar_month'}</span></div>
+            <div class="ficha-stream-icon"><span class="material-symbols-rounded">${item.type === 'nota' ? 'clinical_notes' : item.type === 'plan' ? 'assignment' : item.type === 'delivery' ? 'description' : item.type === 'followup' ? 'monitor_heart' : 'calendar_month'}</span></div>
             <div class="ficha-stream-copy">
               <span>${escapeHtml(item.label)}</span>
               <strong>${escapeHtml(item.title)}</strong>
@@ -5860,6 +5956,32 @@ import Layout from '../layouts/Layout.astro';
         : unavailableModules.length
           ? '<p class="empty-inline">La timeline se muestra en modo parcial hasta recuperar los modulos pendientes.</p>'
           : '<p class="empty-inline">La actividad reciente del caso aparecera aqui cuando registres citas o notas.</p>';
+    }
+
+    if (fichaPlanInsights) {
+      fichaPlanInsights.innerHTML = recommendationSummary.totalPlans
+        ? `
+          <article class="ficha-overview-stat">
+            <span>Planes</span>
+            <strong>${recommendationSummary.totalPlans}</strong>
+            <p>${recommendationSummary.totalExercises} ejercicios prescritos en total.</p>
+          </article>
+          <article class="ficha-overview-stat">
+            <span>Entregas</span>
+            <strong>${recommendationSummary.totalArchivedReports || 0}</strong>
+            <p>${latestArchivedReport?.archived_at ? `Ultima ${fmtDate(latestArchivedReport.archived_at)}` : 'Sin entrega archivada.'}</p>
+          </article>
+          <article class="ficha-overview-stat">
+            <span>Feedback</span>
+            <strong>${escapeHtml(latestAdherence.label)}</strong>
+            <p>${latestFollowUp?.pain_scale !== null && latestFollowUp?.pain_scale !== undefined ? `Dolor ${latestFollowUp.pain_scale}/10.` : 'Sin dolor reportado.'}</p>
+          </article>
+          <article class="ficha-overview-stat">
+            <span>Proximo paso</span>
+            <strong>${recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps ? 'Pedir feedback' : recommendationSummary.totalArchivedReports ? 'Mantener seguimiento' : 'Archivar entrega'}</strong>
+            <p>${recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps ? 'El plan ya se entrego, pero aun no hay respuesta del paciente.' : recommendationSummary.totalArchivedReports ? 'El caso ya tiene trazabilidad domiciliaria activa.' : 'Conviene dejar el informe o PDF archivado en historial.'}</p>
+          </article>`
+        : '<p class="empty-inline">Todavia no hay planes IA en este caso. Cuando generes uno, veras aqui entregas y adherencia.</p>';
     }
 
     const decisions = [
@@ -6057,7 +6179,11 @@ import Layout from '../layouts/Layout.astro';
 
     // Load data
     try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`);
+      const [payload, recommendationsResp] = await Promise.all([
+        fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`),
+        fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`).catch(() => ({ data: [] })),
+      ]);
+      payload.recommendations = Array.isArray(recommendationsResp?.data) ? recommendationsResp.data : [];
       fichaData = payload;
       selectedPatientId = patientId;
       selectedPatientName = getPatientFullName(payload.paciente);
