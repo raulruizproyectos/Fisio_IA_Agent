@@ -108,8 +108,14 @@ import Layout from '../layouts/Layout.astro';
             <section class="hero-section cockpit-hero">
               <div class="hero-panel-main">
                 <div class="hero-heading-stack">
-                  <h1 class="hero-title">Panel de control</h1>
+                  <span class="hero-eyebrow">Centro operativo del dia</span>
+                  <h1 class="hero-title">Centro clinico</h1>
                   <p class="hero-subtitle" id="dashboardLiveSummary">Cargando...</p>
+                  <div class="hero-runtime-strip" aria-label="Principios del trabajo diario">
+                    <span class="hero-runtime-chip">Agenda viva</span>
+                    <span class="hero-runtime-chip">Seguimiento trazable</span>
+                    <span class="hero-runtime-chip">Cobro y documentacion al dia</span>
+                  </div>
                 </div>
                 <div class="hero-actions hero-action-row">
                   <button class="btn-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
@@ -117,11 +123,11 @@ import Layout from '../layouts/Layout.astro';
                   <button class="btn-ghost" id="heroNewPatientShortcutBtn" type="button"><span class="material-symbols-rounded">add</span> Alta express</button>
                 </div>
                 <div class="clinical-hero-band" aria-label="Pilares del cockpit clinico">
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="citas"><span class="material-symbols-rounded">calendar_today</span> Agenda</button>
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="intakes"><span class="material-symbols-rounded">send</span> Telegram</button>
-                  <button type="button" class="hero-band-pill" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span> Ejercicios IA</button>
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="pagos"><span class="material-symbols-rounded">euro</span> Pagos</button>
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="bonos"><span class="material-symbols-rounded">card_giftcard</span> Bonos</button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="citas"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_today</span></span><span class="hero-band-label">Agenda</span></button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="intakes"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="hero-band-label">Telegram</span></button>
+                  <button type="button" class="hero-band-pill" data-dashboard-action="open-copilot"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="hero-band-label">Ejercicios IA</span></button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="pagos"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">euro</span></span><span class="hero-band-label">Pagos</span></button>
+                  <button type="button" class="hero-band-pill" data-dashboard-nav="bonos"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">card_giftcard</span></span><span class="hero-band-label">Bonos</span></button>
                 </div>
                 <div class="hero-signal-grid">
                   <article class="signal-card signal-card-live" id="dashboardNextSessionCard">
@@ -168,8 +174,9 @@ import Layout from '../layouts/Layout.astro';
               </div>
               <div class="hero-panel-side">
                 <article class="cockpit-side-card cockpit-side-card-agent">
-                  <span class="cockpit-side-kicker">Agente de ejercicios</span>
-                  <h2 class="cockpit-side-title">Planes de tratamiento con IA</h2>
+                  <span class="cockpit-side-kicker">Motor terapeutico</span>
+                  <h2 class="cockpit-side-title">Planes, entregas y seguimiento</h2>
+                  <p class="cockpit-side-copy">Genera ejercicios, registra cada envio y consulta en segundos que se le prescribio a cada paciente para casa.</p>
                   <div class="cockpit-side-actions">
                     <button class="btn-primary btn-sm" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span> Nuevo plan</button>
                     <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Historial</button>
@@ -177,7 +184,7 @@ import Layout from '../layouts/Layout.astro';
                   </div>
                 </article>
                 <article class="cockpit-side-card priorities-side-card">
-                  <span class="cockpit-side-kicker">Tareas pendientes</span>
+                  <span class="cockpit-side-kicker">Foco operativo</span>
                   <div class="priority-list" id="dashboardPriorityList">
                     <article class="priority-item priority-item-loading">
                       <div class="priority-copy">
@@ -197,7 +204,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">receipt_long</span></div><div class="metric-data"><span class="metric-value" id="metricSesionesMes">0</span><span class="metric-label">Sesiones este mes</span></div></div>
             </section>
 
-            <!-- Gr�fico ingresos mensuales -->
+            <!-- Grafico ingresos mensuales -->
             <section class="card widget-card" style="margin-bottom:0">
               <header class="card-header">
                 <h2>Ingresos mensuales</h2>
@@ -212,16 +219,17 @@ import Layout from '../layouts/Layout.astro';
               <article class="cockpit-block">
                 <header class="cockpit-block-head">
                   <div class="cockpit-block-copy">
-                    <h2>Accesos rapidos</h2>
+                    <h2>Flujos clave</h2>
+                    <p>Las acciones que mas se repiten en consulta, ordenadas para entrar, decidir y cerrar sin friccion.</p>
                   </div>
                 </header>
                 <div class="command-grid">
-                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-kicker">Admision</span><strong>Alta de paciente</strong></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-kicker">Agenda</span><strong>Gestionar citas</strong></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-kicker">Telegram</span><strong>Mensajes entrantes</strong></button>
-                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-kicker">Ejercicios</span><strong>Generar plan IA</strong></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-kicker">Documentos</span><strong>Consentimientos</strong></button>
-                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-kicker">Captacion</span><strong>Reserva online</strong></button>
+                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">person_add</span></span><span class="command-tile-kicker">Admision</span><strong>Alta de paciente</strong><p>Crea la ficha y deja el caso listo para agenda, seguimiento y documentos.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_month</span></span><span class="command-tile-kicker">Agenda</span><strong>Semana clinica</strong><p>Abre la semana, detecta huecos y mueve sesiones sin perder contexto del paciente.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="command-tile-kicker">Telegram</span><strong>Mensajes y triage</strong><p>Convierte mensajes y reservas en la siguiente accion clinica o administrativa.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="command-tile-kicker">Ejercicios</span><strong>Plan de ejercicios</strong><p>Prepara una propuesta terapeutica y archivala con PDF, historial y seguimiento.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">description</span></span><span class="command-tile-kicker">Documentos</span><strong>Documentacion clinica</strong><p>Centraliza firma, PDFs y consentimientos sin salir del CRM.</p></button>
+                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">open_in_new</span></span><span class="command-tile-kicker">Captacion</span><strong>Reserva online</strong><p>Comparte el enlace publico y llena huecos de agenda con una experiencia clara.</p></button>
                 </div>
               </article>
             </section>
@@ -274,7 +282,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-title-group">
                 <p class="modal-eyebrow">CRM</p>
                 <h2 id="patientModalTitle">Alta de paciente</h2>
-                <p>Registra un paciente nuevo y dejalo listo para historial, chat cl�nico y plantillas.</p>
+                <p>Registra un paciente nuevo y dejalo listo para historial, chat clÃƒÂ¯Ã‚Â¿Ã‚Â½nico y plantillas.</p>
               </div>
               <button type="button" class="modal-close" id="closePatientModalBtn" aria-label="Cerrar formulario de paciente">
                 <span class="material-symbols-rounded">close</span>
@@ -317,7 +325,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PLANTILLAS === -->
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas Terap�uticas</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Plantillas TerapÃƒÂ¯Ã‚Â¿Ã‚Â½uticas</h1>
             <div class="page-tools">
               <label class="inline-field">
                 <span>Paciente destino</span>
@@ -329,17 +337,17 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Plantillas m�s reutilizadas</h2></header>
+            <header class="card-header"><h2>Plantillas mÃƒÂ¯Ã‚Â¿Ã‚Â½s reutilizadas</h2></header>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>T�tulo</th>
+                    <th>TÃƒÂ¯Ã‚Â¿Ã‚Â½tulo</th>
                     <th>Usos</th>
                     <th>Ejercicios</th>
-                    <th>�ltimo uso</th>
+                    <th>ÃƒÂ¯Ã‚Â¿Ã‚Â½ltimo uso</th>
                     <th>Origen</th>
-                    <th>Acci�n</th>
+                    <th>AcciÃƒÂ¯Ã‚Â¿Ã‚Â½n</th>
                   </tr>
                 </thead>
                 <tbody id="templatesBody">
@@ -748,7 +756,7 @@ import Layout from '../layouts/Layout.astro';
             </section>
           </div>
 
-          <!-- Tab: Notas cl�nicas -->
+          <!-- Tab: Notas clÃƒÂ¯Ã‚Â¿Ã‚Â½nicas -->
           <div class="ficha-panel" data-ficha-panel="notas">
             <section class="card">
               <header class="card-header">
@@ -825,7 +833,7 @@ import Layout from '../layouts/Layout.astro';
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
                   <button class="btn-sm btn-outline" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
                   <button class="btn-sm btn-outline" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
-                  <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocaci�n</button>
+                  <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ RevocaciÃƒÂ¯Ã‚Â¿Ã‚Â½n</button>
                 </div>
               </header>
               <div class="ficha-list-summary" id="fichaDocsSummary"></div>
@@ -877,7 +885,7 @@ import Layout from '../layouts/Layout.astro';
             <div id="firmaDocContenido" class="firma-doc-contenido"></div>
             <!-- Signature pad -->
             <div class="firma-pad-section">
-              <p class="firma-pad-label">Firma del paciente <span class="firma-pad-hint">(dibuja tu firma con el rat�n o dedo)</span></p>
+              <p class="firma-pad-label">Firma del paciente <span class="firma-pad-hint">(dibuja tu firma con el ratÃƒÂ¯Ã‚Â¿Ã‚Â½n o dedo)</span></p>
               <div class="firma-pad-wrap">
                 <canvas id="firmaCanvas" width="600" height="160"></canvas>
               </div>
@@ -943,7 +951,7 @@ import Layout from '../layouts/Layout.astro';
                 <label class="field"><span>N&uacute;mero de sesiones</span>
                   <input id="bonoSesiones" type="number" min="1" max="100" value="10" required />
                 </label>
-                <label class="field"><span>Precio total (�)</span>
+                <label class="field"><span>Precio total (ÃƒÂ¯Ã‚Â¿Ã‚Â½)</span>
                   <input id="bonoPrecio" type="number" min="0" step="0.01" placeholder="0.00" required />
                 </label>
                 <label class="field"><span>Fecha inicio</span>
@@ -1081,8 +1089,8 @@ import Layout from '../layouts/Layout.astro';
             <section class="card">
               <header class="card-header"><h2>Conexiones</h2></header>
               <div class="section-body">
-                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">�</span><span class="status-chip" id="cfgBackendStatus">�</span></div>
-                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">�</span><span class="status-chip" id="cfgAgentStatus">�</span></div>
+                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">ÃƒÂ¯Ã‚Â¿Ã‚Â½</span><span class="status-chip" id="cfgBackendStatus">ÃƒÂ¯Ã‚Â¿Ã‚Â½</span></div>
+                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">ÃƒÂ¯Ã‚Â¿Ã‚Â½</span><span class="status-chip" id="cfgAgentStatus">ÃƒÂ¯Ã‚Â¿Ã‚Â½</span></div>
                 <div class="config-item"><span class="config-label">Readiness DB</span><span class="config-value" id="cfgReadiness">Comprobando...</span><span class="status-chip pendiente" id="cfgReadinessStatus">Comprobando</span></div>
                 <p class="form-feedback config-readiness-detail" id="cfgReadinessDetail" hidden></p>
               </div>
@@ -1545,7 +1553,7 @@ import Layout from '../layouts/Layout.astro';
   };
   const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return '�'; } };
+  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'ÃƒÂ¯Ã‚Â¿Ã‚Â½'; } };
   const fmtRelativeSyncAge = (iso: string | null | undefined) => {
     if (!iso) return 'sin ejecuciones recientes';
     const ts = new Date(iso).getTime();
@@ -1746,7 +1754,7 @@ import Layout from '../layouts/Layout.astro';
     const displayName = selected?.nombre_completo || selectedPatientName || `Paciente ${selectedPatientId}`;
     assistantPatientLabel.textContent = displayName;
     assistantPatientMeta.textContent = selected?.email
-      ? `Informe y conversaci�n vinculados a ${selected.email}.`
+      ? `Informe y conversaciÃƒÂ¯Ã‚Â¿Ã‚Â½n vinculados a ${selected.email}.`
       : 'Informe, PDF y seguimiento vinculados al historial del paciente.';
   };
 
@@ -2526,7 +2534,7 @@ import Layout from '../layouts/Layout.astro';
     log.appendChild(article);
     scrollAssistantRailToBottom();
   };
-  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexi�n'; };
+  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexiÃƒÂ¯Ã‚Â¿Ã‚Â½n'; };
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
@@ -2722,7 +2730,7 @@ import Layout from '../layouts/Layout.astro';
       progress = document.createElement('article');
       progress.id = 'agentProgressMsg';
       progress.className = 'msg agent msg-progress';
-      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente cl�nico</span><p></p></div>';
+      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clÃƒÂ¯Ã‚Â¿Ã‚Â½nico</span><p></p></div>';
       log.appendChild(progress);
     }
     const p = progress.querySelector('p');
@@ -3070,7 +3078,7 @@ import Layout from '../layouts/Layout.astro';
     html += '<div class="exercise-report exercise-report-compact">';
     html += '<div class="exercise-report-head">';
     html += '<strong>Plan listo para revisar</strong>';
-    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' � '))}</span>`;
+    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' ÃƒÂ¯Ã‚Â¿Ã‚Â½ '))}</span>`;
     html += '</div>';
     if (payload?.red_flags?.present) {
       html += '<div class="exercise-alert"><span class="material-symbols-rounded">&#xe002;</span> Revisa alertas antes de prescribir el programa.</div>';
@@ -3284,7 +3292,7 @@ import Layout from '../layouts/Layout.astro';
     }
     syncChatPatientSelection(activePatientId);
     addMessage(`Solicitar recomendacion para: ${visibleText}`, 'user');
-    upsertAgentProgress('Preparando solicitud cl�nica...');
+    upsertAgentProgress('Preparando solicitud clÃƒÂ¯Ã‚Â¿Ã‚Â½nica...');
     setSending(true, 'exercise');
     try {
       let payload: any = null;
@@ -3301,7 +3309,7 @@ import Layout from '../layouts/Layout.astro';
           payload = await pollExerciseRecommendationJob(String(job?.job_id || ''), 90, 1500);
         } catch (asyncErr: any) {
           if (!shouldFallbackToSyncExerciseRequest(asyncErr)) throw asyncErr;
-          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por v�a directa...');
+          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por vÃƒÂ¯Ã‚Â¿Ã‚Â½a directa...');
           const directResponse = await requestExerciseRecommendation(text, 2);
           payload = directResponse.payload;
           retriesUsed = directResponse.retriesUsed;
@@ -3311,7 +3319,7 @@ import Layout from '../layouts/Layout.astro';
       renderExerciseOpsMetric();
 
       if (!payload.ok) {
-        addMessage(`Error: ${payload.error || 'No se pudo generar recomendaci�n'}`, 'agent');
+        addMessage(`Error: ${payload.error || 'No se pudo generar recomendaciÃƒÂ¯Ã‚Â¿Ã‚Â½n'}`, 'agent');
         return;
       }
 
@@ -3320,17 +3328,17 @@ import Layout from '../layouts/Layout.astro';
       addExerciseReport(payload);
       updateExercisePdfButton();
       if (retriesUsed > 0) {
-        addMessage(`Motor IA respondi� tras ${retriesUsed} reintento(s).`, 'agent');
+        addMessage(`Motor IA respondiÃƒÂ¯Ã‚Â¿Ã‚Â½ tras ${retriesUsed} reintento(s).`, 'agent');
       }
       setAgentStatus(true);
       updateExercisePdfButton();
     } catch (err: any) {
       clearAgentProgress();
       if (err?.code === 'async_poll_timeout') {
-        addMessage('El informe sigue gener�ndose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
+        addMessage('El informe sigue generÃƒÂ¯Ã‚Â¿Ã‚Â½ndose en segundo plano. Pulsa de nuevo `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
       } else if (isTimeoutError(err)) {
         pendingExerciseRecommendationJobId = null;
-        addMessage('El agente de ejercicios tarda m�s de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
+        addMessage('El agente de ejercicios tarda mÃƒÂ¯Ã‚Â¿Ã‚Â½s de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
       } else {
         pendingExerciseRecommendationJobId = null;
         addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
@@ -3787,7 +3795,7 @@ import Layout from '../layouts/Layout.astro';
 
       const elIngresos = document.getElementById('metricIngresosMes');
       const elSesiones = document.getElementById('metricSesionesMes');
-      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} �`;
+      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} ÃƒÂ¯Ã‚Â¿Ã‚Â½`;
       if (elSesiones) elSesiones.textContent = String(sesionesMes);
 
       // Draw chart
@@ -3853,7 +3861,7 @@ import Layout from '../layouts/Layout.astro';
       ctx.textAlign = 'right';
       for (let v = 0; v <= maxVal; v += Math.ceil(maxVal / 4)) {
         const y = pad.top + chartH - (v / maxVal) * chartH;
-        ctx.fillText(`${v}�`, pad.left - 6, y + 4);
+        ctx.fillText(`${v}ÃƒÂ¯Ã‚Â¿Ã‚Â½`, pad.left - 6, y + 4);
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 0.5;
         ctx.beginPath();
@@ -3863,7 +3871,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
     } catch {
-      // silently fail � dashboard still usable
+      // silently fail ÃƒÂ¯Ã‚Â¿Ã‚Â½ dashboard still usable
     }
   };
 
@@ -3881,8 +3889,8 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(pts.length);
       if (!pts.length) { setTableState(pacientesBody, 5, 'person_off', 'Sin pacientes registrados'); return; }
       pacientesBody.innerHTML = pts.map((p: any) => {
-        const patientName = p.nombre_completo || '�';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'�')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'�'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
+        const patientName = p.nombre_completo || 'ÃƒÂ¯Ã‚Â¿Ã‚Â½';
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'ÃƒÂ¯Ã‚Â¿Ã‚Â½')}</td><td>${p.fecha_nacimiento?fmtDate(p.fecha_nacimiento):'ÃƒÂ¯Ã‚Â¿Ã‚Â½'}</td><td>${fmtDate(p.creado_en||'')}</td><td><div class="table-actions"><button class="btn-sm btn-outline" data-action="view-patient" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Ver</button><button class="btn-sm btn-outline" data-action="patient-telegram" data-patient-id="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
       }).join('');
     } catch {
       setTableState(pacientesBody, 5, 'cloud_off', 'Error al cargar pacientes');
@@ -4047,7 +4055,7 @@ import Layout from '../layouts/Layout.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=40`);
       const templates = payload.data || [];
       if (!templates.length) {
-        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todav�a.');
+        setTableState(templatesBody, 6, 'library_books', 'No hay plantillas disponibles todavÃƒÂ¯Ã‚Â¿Ã‚Â½a.');
         return;
       }
       templatesBody.innerHTML = templates.map((tpl: any) => {
@@ -4058,8 +4066,8 @@ import Layout from '../layouts/Layout.astro';
           <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
           <td>${tpl.usage_count || 0}</td>
           <td>${tpl.exercises_count || 0}</td>
-          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : '�'}</td>
-          <td>${escapeHtml(tpl.source_patient_name || '�')}</td>
+          <td>${tpl.last_used_at ? fmtDate(tpl.last_used_at) : 'ÃƒÂ¯Ã‚Â¿Ã‚Â½'}</td>
+          <td>${escapeHtml(tpl.source_patient_name || 'ÃƒÂ¯Ã‚Â¿Ã‚Â½')}</td>
           <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
         </tr>`;
       }).join('');
@@ -4117,9 +4125,9 @@ import Layout from '../layouts/Layout.astro';
       const intakes = payload.data || [];
       if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin intakes pendientes'); return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
-        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">&#9888; S�</span>` : '<span class="status-chip aprobado">No</span>';
+        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">&#9888; SÃƒÂ¯Ã‚Â¿Ã‚Â½</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'�')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
+        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'ÃƒÂ¯Ã‚Â¿Ã‚Â½')}</td><td>${escapeHtml((i.texto_mensaje||'').substring(0,80))}</td><td>${alertas}</td><td>${fmtDate(i.creado_en||'')}</td><td><span class="status-chip ${i.estado||'pendiente'}">${i.estado||'pendiente'}</span></td><td><button class="btn-sm btn-outline" data-action="view-history" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
     } catch {
       setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar intakes');
@@ -4171,7 +4179,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="dash-cita-hora">${isToday && hora ? `<span class="cita-hora-badge">${hora}</span>` : ''}</div>
         <div class="clean-list-main">
           <p class="clean-list-title">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</p>
-          <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Sin motivo') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' � ' + escapeHtml(cita.motivo) : '')}</p>
+          <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Sin motivo') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' ÃƒÂ¯Ã‚Â¿Ã‚Â½ ' + escapeHtml(cita.motivo) : '')}</p>
         </div>
         <span class="status-chip ${stateClass}">${escapeHtml(cita.estado || 'pendiente')}</span>
       </article>`;
@@ -4179,7 +4187,7 @@ import Layout from '../layouts/Layout.astro';
 
     let html = '';
     if (todayCitas.length) {
-      html += `<div class="dash-section-label">HOY � ${todayCitas.length} cita${todayCitas.length > 1 ? 's' : ''}</div>`;
+      html += `<div class="dash-section-label">HOY ÃƒÂ¯Ã‚Â¿Ã‚Â½ ${todayCitas.length} cita${todayCitas.length > 1 ? 's' : ''}</div>`;
       html += todayCitas.map((c: any) => renderItem(c, true)).join('');
     } else {
       html += `<div class="dash-section-label dash-section-label-muted">Sin citas hoy</div>`;
@@ -4293,7 +4301,7 @@ import Layout from '../layouts/Layout.astro';
       return d;
     });
 
-    // Map day�hour ? appointments
+    // Map dayÃƒÂ¯Ã‚Â¿Ã‚Â½hour ? appointments
     const apptMap = new Map<string, any[]>();
     const allDayMap = new Map<number, any[]>();
     for (const cita of citas) {
@@ -4313,7 +4321,7 @@ import Layout from '../layouts/Layout.astro';
       apptMap.get(key)!.push(cita);
     }
 
-    // Status colors (inline � Astro scoped styles don't apply to dynamic innerHTML)
+    // Status colors (inline ÃƒÂ¯Ã‚Â¿Ã‚Â½ Astro scoped styles don't apply to dynamic innerHTML)
     const STATUS: Record<string, { bg: string; color: string; border: string }> = {
       confirmada: { bg: '#d1fae5', color: '#065f46', border: '#10b981' },
       pendiente:  { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
@@ -4324,7 +4332,7 @@ import Layout from '../layouts/Layout.astro';
     const DEF = STATUS.pendiente;
     const todayStr = new Date().toDateString();
 
-    // Table layout � works regardless of Astro style scoping
+    // Table layout ÃƒÂ¯Ã‚Â¿Ã‚Â½ works regardless of Astro style scoping
     const thBase = 'padding:10px 8px;text-align:center;border-bottom:2px solid #e2e8f0;font-size:0.8rem;font-weight:700;white-space:nowrap;';
     let html = `<div style="overflow-x:auto;width:100%;">
 <table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
@@ -4356,7 +4364,7 @@ import Layout from '../layouts/Layout.astro';
       const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
       // Lunch break separator
       if (prevHour !== null && hour - prevHour > 1) {
-        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 � 15:00</td></tr>`;
+        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 ÃƒÂ¯Ã‚Â¿Ã‚Â½ 15:00</td></tr>`;
       }
 
       const timeLabel = `${String(hour).padStart(2,'0')}:00`;
@@ -4822,6 +4830,7 @@ import Layout from '../layouts/Layout.astro';
         ? `<div class="recommendation-list">${recommendations.map((rec: any) => {
           const report = rec?.report_snapshot || {};
           const followUps = Array.isArray(rec?.follow_ups) ? rec.follow_ups : [];
+          const archivedReports = Array.isArray(rec?.archived_reports) ? rec.archived_reports : [];
           const reportExercises = Array.isArray(report?.exercises) ? report.exercises : [];
           const itemExercises = Array.isArray(rec?.crm_recomendacion_items)
             ? rec.crm_recomendacion_items.map((item: any) => ({
@@ -4846,6 +4855,9 @@ import Layout from '../layouts/Layout.astro';
           const followUpsHtml = followUps.length
             ? `<ul class="detail-list">${followUps.slice(0, 5).map((fu: any) => `<li><strong>${fmtDate(fu?.created_at || '')}</strong><br>${escapeHtml(fu?.note_text || 'Seguimiento sin nota')}${fu?.pain_scale !== null && fu?.pain_scale !== undefined ? ` - Dolor ${escapeHtml(fu.pain_scale)}/10` : ''}</li>`).join('')}</ul>`
             : '<p class="detail-empty">Sin seguimiento registrado todavia.</p>';
+          const archivedReportsHtml = archivedReports.length
+            ? `<ul class="detail-list">${archivedReports.slice(0, 5).map((item: any) => `<li><strong>${fmtDate(item?.archived_at || '')}</strong><br>${escapeHtml((item?.format || 'pdf').toUpperCase())}${item?.source ? ` - ${escapeHtml(item.source)}` : ''}${item?.message_text ? ` - ${escapeHtml(item.message_text)}` : ''}</li>`).join('')}</ul>`
+            : '<p class="detail-empty">Sin entregas o archivados registrados todavia.</p>';
 
           return `
             <article class="recommendation-card">
@@ -4868,6 +4880,10 @@ import Layout from '../layouts/Layout.astro';
               <div class="recommendation-section">
                 <h5>Seguimiento (${followUps.length})</h5>
                 ${followUpsHtml}
+              </div>
+              <div class="recommendation-section">
+                <h5>Entregas y archivo (${archivedReports.length})</h5>
+                ${archivedReportsHtml}
               </div>
             </article>
           `;
@@ -5091,7 +5107,7 @@ import Layout from '../layouts/Layout.astro';
     }
     if (pagosAnioFilter) {
       pagosAnioFilter.disabled = unavailable;
-      pagosAnioFilter.title = unavailable ? pagosUnavailableMessage : 'A�o';
+      pagosAnioFilter.title = unavailable ? pagosUnavailableMessage : 'AÃƒÂ¯Ã‚Â¿Ã‚Â½o';
     }
     if (pagosMesFilter) {
       pagosMesFilter.disabled = unavailable;
@@ -5119,11 +5135,11 @@ import Layout from '../layouts/Layout.astro';
     if (!pagoPacienteSelect) return;
     if (!patientCatalog.length) await fetchPatientCatalog();
     const current = pagoPacienteSelect.value;
-    // Only CRM patients � legacy IDs don't exist in crm_pacientes (FK constraint)
+    // Only CRM patients ÃƒÂ¯Ã‚Â¿Ã‚Â½ legacy IDs don't exist in crm_pacientes (FK constraint)
     const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
     pagoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
       crmPts.map((p: any) =>
-        `<option value="${p.id}">${escapeHtml(p.nombre_completo || '�')}</option>`
+        `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'ÃƒÂ¯Ã‚Â¿Ã‚Â½')}</option>`
       ).join('');
     if (current) pagoPacienteSelect.value = current;
   };
@@ -5232,7 +5248,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     if (action === 'delete-pago') {
-      if (!confirm('�Eliminar este pago?')) return;
+      if (!confirm('ÃƒÂ¯Ã‚Â¿Ã‚Â½Eliminar este pago?')) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
         await loadPagos();
@@ -5828,13 +5844,13 @@ import Layout from '../layouts/Layout.astro';
     if (fichaPagosTotal) fichaPagosTotal.textContent = `Total: ${total.toFixed(2)} EUR`;
   };
 
-  // Render notas cl�nicas (timeline)
+  // Render notas clÃƒÂ¯Ã‚Â¿Ã‚Â½nicas (timeline)
   const evaClass = (v: number) => v <= 3 ? 'eva-low' : v <= 6 ? 'eva-mid' : 'eva-high';
   const zonaLabels: Record<string, string> = {
     cervical: 'Cervical', espalda: 'Espalda', hombro_brazo: 'Hombro/Brazo',
     codo_mano: 'Codo/Mano', cadera: 'Cadera', rodilla: 'Rodilla',
     tobillo_pie: 'Tobillo/Pie', abdomen_core: 'Abdomen/Core',
-    suelo_pelvico: 'Suelo p�lvico', general: 'General',
+    suelo_pelvico: 'Suelo pÃƒÂ¯Ã‚Â¿Ã‚Â½lvico', general: 'General',
   };
 
   const renderFichaNotas = (notas: any[]) => {
@@ -5889,7 +5905,7 @@ import Layout from '../layouts/Layout.astro';
     if (notaIdInput) notaIdInput.value = '';
     const fechaInput = fichaNotaForm.querySelector('[name="fecha"]') as HTMLInputElement;
     if (fechaInput) fechaInput.value = new Date().toISOString().slice(0, 10);
-    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota cl�nica';
+    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clÃƒÂ¯Ã‚Â¿Ã‚Â½nica';
     fichaNotaFormCard.hidden = false;
     fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
@@ -5942,7 +5958,7 @@ import Layout from '../layouts/Layout.astro';
     if (!notaId || !fichaPatientId) return;
 
     if (action === 'delete-nota') {
-      if (!confirm('�Eliminar esta nota cl�nica?')) return;
+      if (!confirm('ÃƒÂ¯Ã‚Â¿Ã‚Â½Eliminar esta nota clÃƒÂ¯Ã‚Â¿Ã‚Â½nica?')) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
         const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
@@ -5969,7 +5985,7 @@ import Layout from '../layouts/Layout.astro';
       fill('dolor_eva', nota.dolor_eva != null ? String(nota.dolor_eva) : '');
       fill('nota', nota.nota);
       fill('pruebas_realizadas', nota.pruebas_realizadas);
-      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota cl�nica';
+      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota clÃƒÂ¯Ã‚Â¿Ã‚Â½nica';
       fichaNotaFormCard.hidden = false;
       fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -6038,7 +6054,7 @@ import Layout from '../layouts/Layout.astro';
     }
     if (facturasAnioFilter) {
       facturasAnioFilter.disabled = unavailable;
-      facturasAnioFilter.title = unavailable ? facturasUnavailableMessage : 'A�o';
+      facturasAnioFilter.title = unavailable ? facturasUnavailableMessage : 'AÃƒÂ¯Ã‚Â¿Ã‚Â½o';
     }
     if (facturaAvailabilityNotice) {
       facturaAvailabilityNotice.hidden = !unavailable;
@@ -6068,15 +6084,15 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
       facturasBody.innerHTML = facturas.map((f: any) => {
-        const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : '�';
+        const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : 'ÃƒÂ¯Ã‚Â¿Ã‚Â½';
         const estadoClass = f.estado === 'anulada' ? 'cancelada' : f.estado === 'pagada' ? 'confirmada' : 'pendiente';
         return `<tr>
           <td><strong>${escapeHtml(f.numero)}</strong></td>
           <td>${fmtDate(f.fecha)}</td>
           <td class="td-patient">${escapeHtml(pName)}</td>
-          <td>${Number(f.importe_bruto).toFixed(2)} �</td>
-          <td>${Number(f.importe_iva).toFixed(2)} �</td>
-          <td><strong>${Number(f.importe_total).toFixed(2)} �</strong></td>
+          <td>${Number(f.importe_bruto).toFixed(2)} ÃƒÂ¯Ã‚Â¿Ã‚Â½</td>
+          <td>${Number(f.importe_iva).toFixed(2)} ÃƒÂ¯Ã‚Â¿Ã‚Â½</td>
+          <td><strong>${Number(f.importe_total).toFixed(2)} ÃƒÂ¯Ã‚Â¿Ã‚Â½</strong></td>
           <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
           <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a></td>
         </tr>`;
@@ -6100,7 +6116,7 @@ import Layout from '../layouts/Layout.astro';
       if (!patientCatalog.length) await fetchPatientCatalog();
       const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
       facturaPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
-        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '�')}</option>`).join('');
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'ÃƒÂ¯Ã‚Â¿Ã‚Â½')}</option>`).join('');
     }
     facturaModal?.classList.add('open');
     facturaModal?.setAttribute('aria-hidden', 'false');
@@ -6129,9 +6145,9 @@ import Layout from '../layouts/Layout.astro';
       }
       const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
       facturaPreview.innerHTML = `
-        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) � Base: ${total.toFixed(2)} �</p>
-        <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>M�todo</th><th>Importe</th></tr></thead><tbody>
-        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesi�n')}</td><td>${p.metodo_pago}</td><td>${Number(p.importe).toFixed(2)} �</td></tr>`).join('')}
+        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) ÃƒÂ¯Ã‚Â¿Ã‚Â½ Base: ${total.toFixed(2)} ÃƒÂ¯Ã‚Â¿Ã‚Â½</p>
+        <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>MÃƒÂ¯Ã‚Â¿Ã‚Â½todo</th><th>Importe</th></tr></thead><tbody>
+        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'SesiÃƒÂ¯Ã‚Â¿Ã‚Â½n')}</td><td>${p.metodo_pago}</td><td>${Number(p.importe).toFixed(2)} ÃƒÂ¯Ã‚Â¿Ã‚Â½</td></tr>`).join('')}
         </tbody></table></div>`;
       facturaPreview.hidden = false;
     } catch {
@@ -6233,10 +6249,10 @@ import Layout from '../layouts/Layout.astro';
       const bonos = payload.data || [];
       if (!bonos.length) { setTableState(bonosBody, 8, 'confirmation_number', 'Sin bonos'); return; }
       bonosBody.innerHTML = bonos.map((b: any) => {
-        const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : '�';
+        const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : 'ÃƒÂ¯Ã‚Â¿Ã‚Â½';
         const restantes = b.sesiones_total - b.sesiones_usadas;
         const pct = Math.round((b.sesiones_usadas / b.sesiones_total) * 100);
-        const estadoClass = b.estado; // activo/agotado/caducado/anulado � CSS defines .status-chip.activo etc.
+        const estadoClass = b.estado; // activo/agotado/caducado/anulado ÃƒÂ¯Ã‚Â¿Ã‚Â½ CSS defines .status-chip.activo etc.
         return `<tr data-bono="${escapeAttr(JSON.stringify(b))}">
           <td class="td-patient">${escapeHtml(pName)}</td>
           <td>${escapeHtml(b.nombre)}</td>
@@ -6246,13 +6262,13 @@ import Layout from '../layouts/Layout.astro';
               <div class="bono-bar"><div class="bono-bar-fill" style="width:${pct}%"></div></div>
             </div>
           </td>
-          <td>${Number(b.precio).toFixed(2)} �</td>
-          <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : '�'}</td>
-          <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : '�'}</td>
+          <td>${Number(b.precio).toFixed(2)} ÃƒÂ¯Ã‚Â¿Ã‚Â½</td>
+          <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'ÃƒÂ¯Ã‚Â¿Ã‚Â½'}</td>
+          <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : 'ÃƒÂ¯Ã‚Â¿Ã‚Â½'}</td>
           <td><span class="status-chip ${estadoClass}">${b.estado}</span></td>
           <td>
             <div class="table-actions">
-              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesi�n</button>` : ''}
+              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesiÃƒÂ¯Ã‚Â¿Ã‚Â½n</button>` : ''}
               <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
               <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-bono" data-bono-id="${b.id}"><span class="material-symbols-rounded" style="font-size:1rem">delete</span></button>
             </div>
@@ -6274,7 +6290,7 @@ import Layout from '../layouts/Layout.astro';
     const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
     if (bonoPacienteSelect) {
       bonoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
-        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || '�')}</option>`).join('');
+        crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'ÃƒÂ¯Ã‚Â¿Ã‚Â½')}</option>`).join('');
     }
     const fechaInicio = document.getElementById('bonoFechaInicio') as HTMLInputElement;
     if (fechaInicio && !editData) fechaInicio.value = new Date().toISOString().slice(0, 10);
@@ -6347,7 +6363,7 @@ import Layout from '../layouts/Layout.astro';
       } catch {}
     }
     if (action === 'delete-bono') {
-      if (!confirm('�Eliminar este bono?')) return;
+      if (!confirm('ÃƒÂ¯Ã‚Â¿Ã‚Â½Eliminar este bono?')) return;
       try { await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' }); await loadBonos(); }
       catch (err: any) { alert(`Error: ${err?.message}`); }
     }
@@ -6495,7 +6511,7 @@ import Layout from '../layouts/Layout.astro';
     const tipoLabel: Record<string, string> = {
       consentimiento_informado: 'Consentimiento Informado',
       lopd: 'LOPD / RGPD',
-      revocacion: 'Revocaci�n',
+      revocacion: 'RevocaciÃƒÂ¯Ã‚Â¿Ã‚Â½n',
       otro: 'Documento',
     };
     el.innerHTML = docs.map((d: any) => {
@@ -6521,7 +6537,7 @@ import Layout from '../layouts/Layout.astro';
 
     el.querySelectorAll('button[data-action="delete-doc"]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('�Eliminar este documento?')) return;
+        if (!confirm('ÃƒÂ¯Ã‚Â¿Ã‚Â½Eliminar este documento?')) return;
         const docId = (btn as HTMLElement).getAttribute('data-doc-id');
         if (!docId) return;
         try {
@@ -6606,7 +6622,7 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
 
-      // Totals row (facturaci�n total del mes)
+      // Totals row (facturaciÃƒÂ¯Ã‚Â¿Ã‚Â½n total del mes)
       const totalCells = MESES_CORTOS.map((_: string, i: number) => {
         const md = totales_mes[String(i + 1)];
         const val = md ? md.total : 0;
@@ -6695,7 +6711,7 @@ import Layout from '../layouts/Layout.astro';
   const TIPO_LABELS: Record<string, string> = {
     consentimiento_informado: 'Consentimiento',
     lopd: 'LOPD/RGPD',
-    revocacion: 'Revocaci�n',
+    revocacion: 'RevocaciÃƒÂ¯Ã‚Â¿Ã‚Â½n',
     otro: 'Otro',
   };
 
@@ -6713,16 +6729,16 @@ import Layout from '../layouts/Layout.astro';
       }
       documentosBody.innerHTML = docs.map((d: any) => {
         const pac = d.crm_pacientes;
-        const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : '�';
-        const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || '�';
+        const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : 'ÃƒÂ¯Ã‚Â¿Ã‚Â½';
+        const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'ÃƒÂ¯Ã‚Â¿Ã‚Â½';
         const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
         const fechaFirma = d.fecha_firma
           ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-          : '�';
+          : 'ÃƒÂ¯Ã‚Â¿Ã‚Â½';
         return `<tr>
           <td class="td-patient">${escapeHtml(pacNombre)}</td>
           <td>${escapeHtml(tipoLabel)}</td>
-          <td>${escapeHtml(d.titulo || '�')}</td>
+          <td>${escapeHtml(d.titulo || 'ÃƒÂ¯Ã‚Â¿Ã‚Â½')}</td>
           <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
           <td>${fechaFirma}</td>
           <td style="display:flex;gap:6px;align-items:center">
@@ -6741,7 +6757,7 @@ import Layout from '../layouts/Layout.astro';
     const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
     if (!btn) return;
     const docId = btn.getAttribute('data-doc-id');
-    if (!docId || !confirm('�Eliminar este documento?')) return;
+    if (!docId || !confirm('ÃƒÂ¯Ã‚Â¿Ã‚Â½Eliminar este documento?')) return;
     try {
       await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
       await loadDocumentos();
@@ -8792,7 +8808,7 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-primary);
     min-height: 1.4em;
   }
-  .ficha-dato-value:empty::after { content: '�'; color: var(--text-muted); }
+  .ficha-dato-value:empty::after { content: 'ÃƒÂ¯Ã‚Â¿Ã‚Â½'; color: var(--text-muted); }
   .ficha-dato-full { grid-column: 1 / -1; }
 
   .ficha-form-actions {
@@ -10263,10 +10279,9 @@ import Layout from '../layouts/Layout.astro';
       grid-template-columns: 1fr;
     }
   }
-
 </style><style is:global>
   /* -----------------------------------------------
-     ASSISTANT RAIL � Premium Redesign v2
+     ASSISTANT RAIL ÃƒÂ¯Ã‚Â¿Ã‚Â½ Premium Redesign v2
      Clean, compact, professional
      ----------------------------------------------- */
 
@@ -11575,7 +11590,6 @@ import Layout from '../layouts/Layout.astro';
     margin-top: 0.15rem;
   }
 
-  .clinical-hero-band span,
   .hero-band-pill {
     display: inline-flex;
     align-items: center;
@@ -11604,9 +11618,22 @@ import Layout from '../layouts/Layout.astro';
     transform: translateY(0);
   }
 
-  .clinical-hero-band .material-symbols-rounded {
+  .clinical-hero-band .material-symbols-rounded,
+  .hero-band-pill > .material-symbols-rounded {
     font-size: 0.95rem;
-    color: var(--premium);
+    color: var(--premium) !important;
+    min-height: auto;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1rem;
+    block-size: 1rem;
+    flex: 0 0 1rem;
+    opacity: 1 !important;
   }
 
   .hero-panel-main {
@@ -12422,13 +12449,6 @@ import Layout from '../layouts/Layout.astro';
     max-width: 48rem;
     color: rgba(235, 242, 247, 0.9);
     font-size: clamp(0.96rem, 1.1vw, 1.04rem);
-  }
-
-  .clinical-hero-band span {
-    background: rgba(248, 250, 252, 0.12);
-    border-color: rgba(255, 255, 255, 0.14);
-    color: #edf4f8;
-    box-shadow: none;
   }
 
   .clinical-hero-band .material-symbols-rounded {
@@ -13502,7 +13522,8 @@ import Layout from '../layouts/Layout.astro';
       right: 0.75rem;
       bottom: 0.75rem;
     }
-  }</style>
+  }
+</style>
 <style is:global id="adaptive-responsive-override">
   html[data-viewport-mode='laptop'] .sidebar.collapsed {
     width: 88px !important;
@@ -13848,6 +13869,364 @@ import Layout from '../layouts/Layout.astro';
     font-size: 0.92rem !important;
   }
 
+
+  /* === DASHBOARD REDESIGN STITCH V1 === */
+  .page-section[data-page='dashboard'] .dashboard-layout {
+    display: grid;
+    gap: 1.35rem;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-hero {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.42fr) minmax(20rem, 0.88fr) !important;
+    gap: 1.2rem !important;
+    align-items: stretch !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main {
+    min-height: 100% !important;
+    padding: clamp(1.3rem, 1.6vw, 1.8rem) !important;
+    border: 1px solid rgba(207, 190, 164, 0.54) !important;
+    border-radius: 1.7rem !important;
+    background:
+      radial-gradient(circle at top right, rgba(39, 181, 161, 0.16), transparent 24%),
+      radial-gradient(circle at left 85%, rgba(186, 151, 88, 0.16), transparent 28%),
+      linear-gradient(145deg, #fffdf8 0%, #f7f0e5 54%, #f0e7d8 100%) !important;
+    box-shadow: 0 30px 56px -34px rgba(39, 31, 23, 0.22) !important;
+    overflow: hidden;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(115deg, rgba(16, 63, 87, 0.96) 0%, rgba(20, 88, 96, 0.92) 46%, rgba(21, 107, 99, 0.84) 100%);
+    clip-path: polygon(0 0, 68% 0, 54% 100%, 0 100%);
+    pointer-events: none;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 26px 26px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0));
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-section[data-page='dashboard'] .hero-heading-stack {
+    display: grid;
+    gap: 0.45rem;
+    max-width: 42rem;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-eyebrow,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-kicker {
+    color: #cfe7e2 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+    max-width: 9.5ch !important;
+    color: #f8f5ef !important;
+    font-size: clamp(2.55rem, 4.2vw, 4.3rem) !important;
+    line-height: 0.92 !important;
+    letter-spacing: -0.06em !important;
+    text-wrap: balance;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
+    max-width: 36rem !important;
+    margin-top: 0.25rem;
+    color: rgba(236, 243, 244, 0.88) !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 0.25rem;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-primary {
+    background: linear-gradient(135deg, #fff7ea, #ead8b9) !important;
+    color: #183247 !important;
+    border: 1px solid rgba(255,255,255,0.34) !important;
+    box-shadow: 0 20px 38px -30px rgba(12, 22, 31, 0.46) !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-secondary,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-ghost,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-link-inline {
+    background: rgba(248, 251, 252, 0.12) !important;
+    color: #f8fbfd !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-hero-band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 0.15rem;
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.5rem;
+    padding: 0.58rem 0.92rem;
+    border-radius: 999px;
+    border: 1px solid rgba(203, 189, 161, 0.52);
+    background: rgba(255, 251, 245, 0.94);
+    color: #274055;
+    box-shadow: 0 16px 28px -24px rgba(27, 34, 39, 0.2);
+    transition: transform 0.16s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-pill:hover {
+    transform: translateY(-1px);
+    background: #ffffff;
+    border-color: rgba(141, 113, 57, 0.48);
+    box-shadow: 0 20px 30px -24px rgba(26, 33, 37, 0.24);
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-pill > .material-symbols-rounded,
+  .page-section[data-page='dashboard'] .clinical-hero-band .material-symbols-rounded {
+    color: #0f766e !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    inline-size: 1rem;
+    block-size: 1rem;
+    flex: 0 0 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-signal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.95rem;
+    margin-top: auto;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card {
+    min-height: 12.2rem;
+    border-radius: 1.28rem;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    background: linear-gradient(180deg, rgba(253, 255, 255, 0.12), rgba(248, 251, 252, 0.08)) !important;
+    backdrop-filter: blur(8px);
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .signal-value,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .agenda-sync-fact strong {
+    color: #ffffff !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card p,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .agenda-sync-fact {
+    color: rgba(240, 246, 248, 0.88) !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-side {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card {
+    border-radius: 1.55rem;
+    border: 1px solid rgba(208, 194, 170, 0.52);
+    box-shadow: 0 24px 40px -34px rgba(43, 34, 25, 0.18);
+    overflow: hidden;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card-agent {
+    background: linear-gradient(180deg, #fffdfa 0%, #f7efe2 100%) !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card-agent .cockpit-side-kicker {
+    color: #986f2d;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-title {
+    font-size: clamp(1.55rem, 2.1vw, 2.2rem) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.05em !important;
+    color: #163146 !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-copy {
+    margin: 0;
+    color: #5b6e7f;
+    line-height: 1.6;
+    max-width: 28rem;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card {
+    background: linear-gradient(160deg, #163247 0%, #173d4f 100%) !important;
+    border-color: rgba(101, 171, 192, 0.2) !important;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card .cockpit-side-kicker {
+    color: #99d5ca;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card .priority-item {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(191, 219, 234, 0.14);
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card .priority-copy span {
+    color: #9fdacb;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card .priority-copy strong {
+    color: #f8fbfd;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card .priority-copy p {
+    color: rgba(234, 242, 246, 0.82);
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-card {
+    min-height: 11.5rem;
+    padding: 1.15rem;
+    border-radius: 1.45rem;
+    border: 1px solid rgba(208, 194, 170, 0.46);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 229, 0.94));
+    box-shadow: 0 22px 34px -32px rgba(43, 34, 25, 0.18);
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-icon {
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-value {
+    font-size: clamp(2rem, 2.8vw, 2.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+    color: #193246;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-label {
+    color: #607181;
+    font-size: 0.92rem;
+  }
+
+  .page-section[data-page='dashboard'] .card.widget-card,
+  .page-section[data-page='dashboard'] .cockpit-block {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(208, 194, 170, 0.46);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 229, 0.94));
+    box-shadow: 0 22px 34px -32px rgba(43, 34, 25, 0.18);
+  }
+
+  .page-section[data-page='dashboard'] .dashboard-ops-grid,
+  .page-section[data-page='dashboard'] .dashboard-bottom-row {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .dashboard-ops-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page-section[data-page='dashboard'] .command-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.95rem;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile {
+    min-height: 11.8rem;
+    padding: 1rem 1.05rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(208, 194, 170, 0.42);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248, 243, 235, 0.92));
+    box-shadow: 0 20px 30px -26px rgba(43, 34, 25, 0.14);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile:hover {
+    transform: translateY(-2px);
+    border-color: rgba(154, 119, 56, 0.48);
+    box-shadow: 0 28px 40px -28px rgba(43, 34, 25, 0.18);
+  }
+
+  .page-section[data-page='dashboard'] .command-tile strong {
+    font-size: 1.08rem;
+    line-height: 1.12;
+    color: #1b3246;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile p {
+    margin: 0;
+    color: #667787;
+    line-height: 1.52;
+    font-size: 0.92rem;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile-accent {
+    background: linear-gradient(145deg, #183a4d 0%, #195967 100%);
+    border-color: rgba(122, 177, 193, 0.26);
+  }
+
+  .page-section[data-page='dashboard'] .command-tile-accent strong,
+  .page-section[data-page='dashboard'] .command-tile-accent p,
+  .page-section[data-page='dashboard'] .command-tile-accent .command-tile-kicker {
+    color: #f7fbfd;
+  }
+
+  .page-section[data-page='dashboard'] .dashboard-bottom-row {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+
+  @media (max-width: 1180px) {
+    .page-section[data-page='dashboard'] .cockpit-hero,
+    .page-section[data-page='dashboard'] .dashboard-bottom-row,
+    .page-section[data-page='dashboard'] .command-grid,
+    .page-section[data-page='dashboard'] .clinical-metrics {
+      grid-template-columns: 1fr !important;
+    }
+
+    .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+      max-width: 11ch !important;
+      white-space: normal;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .page-section[data-page='dashboard'] .hero-signal-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   /* === FINAL HERO FIX + FICHA PACIENTE V1 === */
   .cockpit-hero {
     display: grid !important;
@@ -13876,13 +14255,6 @@ import Layout from '../layouts/Layout.astro';
   .hero-panel-main .hero-subtitle {
     color: rgba(234, 241, 246, 0.9) !important;
     max-width: 46rem !important;
-  }
-
-  .hero-panel-main .btn-secondary,
-  .hero-panel-main .btn-ghost,
-  .hero-panel-main .btn-link-inline,
-  .clinical-hero-band span {
-    color: #f8fbfd !important;
   }
 
   .ficha-hero-shell {
@@ -14056,7 +14428,452 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+
+  /* === DASHBOARD PREMIUM V2 === */
+  .page-section[data-page='dashboard'] .dashboard-layout {
+    gap: clamp(1rem, 1.8vw, 1.55rem);
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-hero {
+    grid-template-columns: minmax(0, 1.52fr) minmax(21rem, 0.88fr) !important;
+    gap: 1.25rem !important;
+    align-items: stretch !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main,
+  .page-section[data-page='dashboard'] .hero-panel-side,
+  .page-section[data-page='dashboard'] .cockpit-side-card,
+  .page-section[data-page='dashboard'] .cockpit-block,
+  .page-section[data-page='dashboard'] .widget-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main {
+    padding: clamp(1.35rem, 1.85vw, 1.95rem) !important;
+    border-radius: 1.85rem !important;
+    border: 1px solid rgba(207, 188, 156, 0.38) !important;
+    background:
+      radial-gradient(circle at top right, rgba(255, 231, 189, 0.18), transparent 24%),
+      radial-gradient(circle at left bottom, rgba(81, 205, 174, 0.18), transparent 32%),
+      linear-gradient(135deg, #102a3b 0%, #16435a 52%, #0f766e 100%) !important;
+    box-shadow: 0 34px 74px -44px rgba(14, 24, 36, 0.78) !important;
+    min-height: 100% !important;
+    isolation: isolate;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main::before {
+    content: '';
+    position: absolute;
+    inset: auto -7% -28% auto;
+    width: 18rem;
+    height: 18rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 234, 201, 0.24), rgba(255, 234, 201, 0));
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.38), rgba(0,0,0,0));
+    pointer-events: none;
+    opacity: 0.46;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-section[data-page='dashboard'] .hero-heading-stack {
+    gap: 0.6rem;
+    max-width: 40rem;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-eyebrow {
+    color: #bde6d8 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+    max-width: 8ch !important;
+    white-space: normal !important;
+    color: #fcf7ef !important;
+    font-size: clamp(2.8rem, 4.7vw, 4.7rem) !important;
+    line-height: 0.88 !important;
+    letter-spacing: -0.075em !important;
+    text-wrap: balance;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
+    max-width: 34rem !important;
+    margin: 0;
+    color: rgba(236, 244, 245, 0.88) !important;
+    font-size: clamp(0.95rem, 1.05vw, 1.05rem) !important;
+    line-height: 1.6 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-runtime-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.1rem;
+  }
+
+  .page-section[data-page='dashboard'] .hero-runtime-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.36rem 0.72rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(247, 251, 252, 0.1);
+    color: #edf6f6;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .page-section[data-page='dashboard'] .hero-action-row {
+    gap: 0.72rem;
+    margin-top: 0.2rem;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-primary {
+    background: linear-gradient(135deg, #fff5e5 0%, #ead6b2 100%) !important;
+    color: #163045 !important;
+    border: 1px solid rgba(255,255,255,0.22) !important;
+    box-shadow: 0 22px 36px -28px rgba(11, 21, 31, 0.58) !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-primary .material-symbols-rounded {
+    color: #163045 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-secondary,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-ghost,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-link-inline {
+    background: rgba(247, 251, 252, 0.08) !important;
+    color: #f7fbfc !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-secondary:hover,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-ghost:hover,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-link-inline:hover {
+    background: rgba(247, 251, 252, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.26) !important;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-hero-band {
+    gap: 0.78rem;
+    margin-top: 0.15rem;
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-pill {
+    min-height: 3rem;
+    padding: 0.42rem 0.95rem 0.42rem 0.48rem;
+    border-radius: 999px;
+    border: 1px solid rgba(206, 191, 165, 0.42);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247, 240, 228, 0.92));
+    color: #173248;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    box-shadow: 0 18px 28px -24px rgba(16, 24, 32, 0.34);
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-pill:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(180deg, #ffffff, #fbf6ec);
+    border-color: rgba(148, 118, 67, 0.48);
+    box-shadow: 0 24px 34px -24px rgba(16, 24, 32, 0.38);
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    flex: 0 0 2rem;
+    border-radius: 0.85rem;
+    background: linear-gradient(180deg, #f2fcf9 0%, #dff3ec 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 12px 20px -18px rgba(15, 118, 110, 0.72);
+    transition: transform 0.18s ease, background 0.18s ease;
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-pill:hover .hero-band-icon {
+    transform: scale(1.04);
+    background: linear-gradient(180deg, #f7fdfb 0%, #d7f1ea 100%);
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-icon .material-symbols-rounded,
+  .page-section[data-page='dashboard'] .hero-band-pill > .material-symbols-rounded,
+  .page-section[data-page='dashboard'] .clinical-hero-band .material-symbols-rounded {
+    color: #0f766e !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    font-size: 1.04rem !important;
+    line-height: 1 !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    flex: 0 0 auto !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-band-label {
+    line-height: 1.1;
+  }
+
+  .page-section[data-page='dashboard'] .hero-signal-grid {
+    gap: 0.95rem;
+    margin-top: auto;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card {
+    min-height: 12.35rem;
+    padding: 1.05rem;
+    border-radius: 1.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: linear-gradient(180deg, rgba(252, 255, 255, 0.11), rgba(246, 250, 252, 0.08)) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-live-head {
+    align-items: flex-start;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .signal-value,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .agenda-sync-fact strong {
+    color: #ffffff !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card p,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .agenda-sync-fact {
+    color: rgba(237, 244, 246, 0.86) !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-side {
+    gap: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card {
+    padding: 1.2rem !important;
+    border-radius: 1.55rem !important;
+    border: 1px solid rgba(208, 194, 170, 0.46) !important;
+    box-shadow: 0 24px 42px -34px rgba(43, 34, 25, 0.2) !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card-agent {
+    background: linear-gradient(180deg, #fffdfa 0%, #f7efe2 100%) !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card-agent::after {
+    content: '';
+    position: absolute;
+    inset: auto -12% -18% auto;
+    width: 12rem;
+    height: 12rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(22, 107, 99, 0.1), rgba(22, 107, 99, 0));
+    pointer-events: none;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card-agent > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-title {
+    font-size: clamp(1.65rem, 2.15vw, 2.35rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.06em !important;
+    color: #163146 !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-copy {
+    color: #617384;
+    line-height: 1.62;
+    max-width: 26rem;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card {
+    background: linear-gradient(155deg, #123247 0%, #18465a 62%, #175b63 100%) !important;
+    border-color: rgba(121, 176, 190, 0.22) !important;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 24%);
+    pointer-events: none;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card .priority-item {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(194, 221, 230, 0.14);
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-card {
+    min-height: 10.75rem;
+    padding: 1.18rem;
+    border-radius: 1.45rem;
+    border: 1px solid rgba(208, 194, 170, 0.42);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248, 242, 232, 0.92));
+    box-shadow: 0 20px 34px -30px rgba(43, 34, 25, 0.18);
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-icon {
+    inline-size: 3.15rem;
+    block-size: 3.15rem;
+    border-radius: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-value {
+    color: #173146;
+    font-size: clamp(2rem, 2.8vw, 2.9rem);
+    letter-spacing: -0.07em;
+    line-height: 0.92;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-label {
+    color: #627383;
+    font-size: 0.92rem;
+  }
+
+  .page-section[data-page='dashboard'] .card.widget-card,
+  .page-section[data-page='dashboard'] .cockpit-block {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(208, 194, 170, 0.42);
+    background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(248, 242, 232, 0.93));
+    box-shadow: 0 22px 34px -30px rgba(43, 34, 25, 0.18);
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-block-head {
+    margin-bottom: 1rem;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-block-copy h2 {
+    font-size: clamp(1.45rem, 1.85vw, 1.95rem);
+    color: #183045;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-block-copy p {
+    margin: 0.28rem 0 0;
+    max-width: 42rem;
+    color: #667787;
+    line-height: 1.6;
+  }
+
+  .page-section[data-page='dashboard'] .command-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.95rem;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile {
+    min-height: 12.2rem;
+    padding: 1rem 1.05rem 1.1rem;
+    border-radius: 1.3rem;
+    border: 1px solid rgba(208, 194, 170, 0.4);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(249, 244, 236, 0.94));
+    box-shadow: 0 18px 30px -28px rgba(43, 34, 25, 0.14);
+  }
+
+  .page-section[data-page='dashboard'] .command-tile:hover {
+    transform: translateY(-3px);
+    border-color: rgba(148, 118, 67, 0.46);
+    box-shadow: 0 28px 44px -30px rgba(43, 34, 25, 0.18);
+  }
+
+  .page-section[data-page='dashboard'] .command-tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.55rem;
+    block-size: 2.55rem;
+    margin-bottom: 0.42rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(186, 205, 214, 0.55);
+    background: linear-gradient(180deg, #f3fbfe 0%, #e3eef4 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+  }
+
+  .page-section[data-page='dashboard'] .command-tile-icon .material-symbols-rounded {
+    color: #173d59 !important;
+    font-size: 1.15rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile strong {
+    color: #1b3246;
+    font-size: 1.08rem;
+    line-height: 1.14;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile p {
+    color: #667787;
+    font-size: 0.92rem;
+    line-height: 1.56;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile-accent {
+    background: linear-gradient(145deg, #14354a 0%, #175766 100%);
+    border-color: rgba(122, 177, 193, 0.24);
+  }
+
+  .page-section[data-page='dashboard'] .command-tile-accent .command-tile-icon {
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.1);
+  }
+
+  .page-section[data-page='dashboard'] .command-tile-accent .command-tile-icon .material-symbols-rounded,
+  .page-section[data-page='dashboard'] .command-tile-accent strong,
+  .page-section[data-page='dashboard'] .command-tile-accent p,
+  .page-section[data-page='dashboard'] .command-tile-accent .command-tile-kicker {
+    color: #f7fbfd !important;
+  }
+
+  .page-section[data-page='dashboard'] .dashboard-bottom-row {
+    grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  @media (max-width: 1220px) {
+    .page-section[data-page='dashboard'] .cockpit-hero,
+    .page-section[data-page='dashboard'] .dashboard-bottom-row,
+    .page-section[data-page='dashboard'] .command-grid,
+    .page-section[data-page='dashboard'] .clinical-metrics {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  @media (max-width: 840px) {
+    .page-section[data-page='dashboard'] .hero-signal-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+      max-width: 9.5ch !important;
+    }
+  }
 </style>
+
+
 
 
 

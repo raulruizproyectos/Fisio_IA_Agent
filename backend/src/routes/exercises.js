@@ -573,6 +573,7 @@ router.get('/recommendations/:patientId', async (req, res) => {
     const recommendationIds = (data || []).map((row) => row.id).filter(Boolean);
     const followUpsByRecommendation = new Map();
     const reportSnapshotByRecommendation = new Map();
+    const archivedReportsByRecommendation = new Map();
 
     if (recommendationIds.length > 0) {
       const { data: commRows, error: commErr } = await supabase
@@ -596,6 +597,20 @@ router.get('/recommendations/:patientId', async (req, res) => {
           continue;
         }
 
+        if (eventName === 'exercise_report_archived') {
+          const current = archivedReportsByRecommendation.get(recommendationId) || [];
+          current.push({
+            id: row?.id || null,
+            format: String(row?.payload?.format || 'pdf').trim().toLowerCase() || 'pdf',
+            source: String(row?.payload?.source || '').trim() || null,
+            archived_at: row?.payload?.archived_at || row?.occurred_at || row?.created_at || null,
+            message_text: row?.message_text || '',
+            status: row?.status || null,
+          });
+          archivedReportsByRecommendation.set(recommendationId, current);
+          continue;
+        }
+
         if (eventName === 'exercise_report_snapshot' && !reportSnapshotByRecommendation.has(recommendationId)) {
           reportSnapshotByRecommendation.set(recommendationId, row?.payload?.report || null);
         }
@@ -605,6 +620,7 @@ router.get('/recommendations/:patientId', async (req, res) => {
     const enriched = (data || []).map((row) => ({
       ...row,
       follow_ups: followUpsByRecommendation.get(row.id) || [],
+      archived_reports: archivedReportsByRecommendation.get(row.id) || [],
       report_snapshot: reportSnapshotByRecommendation.get(row.id) || null,
     }));
 
