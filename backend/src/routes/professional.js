@@ -2561,6 +2561,181 @@ router.get('/program-templates', async (req, res, next) => {
   }
 });
 
+router.get('/program-library', async (req, res, next) => {
+  try {
+    const professionalId = pickValue(req.query, 'profesional_id', 'professional_id');
+    if (!professionalId) {
+      return res.status(400).json({ error: 'profesional_id es obligatorio (o professional_id)' });
+    }
+
+    const limitRaw = Number.parseInt(String(req.query?.limit || '24'), 10);
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 60) : 24;
+    const fetchLimit = Math.min(Math.max(limit * 3, 36), 180);
+
+    const { data: recommendations, error: recommendationsError } = await supabase
+      .from('crm_recomendaciones')
+      .select(`
+        id, paciente_id, fisioterapeuta_id, estado, created_at,
+        symptom_summary, selection_rationale, escalation_recommend_medical_attention,
+        crm_recomendacion_items ( id )
+      `)
+
+      .eq('fisioterapeuta_id', professionalId)
+      .order('created_at', { ascending: false })
+      .limit(fetchLimit);
+
+    if (recommendationsError) {
+      if (isMissingTableError(recommendationsError, 'crm_recomendaciones')) {
+        return res.status(400).json({
+          error: 'Falta tabla crm_recomendaciones. Ejecuta las migraciones del motor de ejercicios.',
+        });
+      }
+      throw recommendationsError;
+    }
+
+    const safeRecommendations = recommendations || [];
+    if (!safeRecommendations.length) {
+      return res.json({
+        ok: true,
+        data: {
+          summary: {
+            visible_plans: 0,
+            visible_archived_reports: 0,
+            visible_patients: 0,
+          },
+          recent_plans: [],
+        },
+      });
+    }
+
+    const recommendationIds = safeRecommendations.map((row) => row.id).filter(Boolean);
+    const patientIds = [...new Set(safeRecommendations.map((row) => row.paciente_id).filter(Boolean))];
+
+    const [patientsResp, commResp] = await Promise.all([
+      patientIds.length
+        ? supabase
+            .from('crm_pacientes')
+            .select('id, nombre, apellidos, nombre_completo, email')
+            .in('id', patientIds)
+        : Promise.resolve({ data: [], error: null }),
+      recommendationIds.length
+        ? supabase
+            .from('crm_comunicaciones')
+            .select('id, recomendacion_id, message_text, payload, occurred_at, created_at, status')
+            .in('recomendacion_id', recommendationIds)
+            .order('occurred_at', { ascending: false })
+            .limit(800)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (patientsResp.error) {
+      if (isMissingTableError(patientsResp.error, 'crm_pacientes')) {
+        return res.status(400).json({
+          error: 'Falta tabla crm_pacientes. Ejecuta las migraciones del CRM clinico.',
+        });
+      }
+      throw patientsResp.error;
+    }
+
+    if (commResp.error) {
+      if (isMissingTableError(commResp.error, 'crm_comunicaciones')) {
+        return res.status(400).json({
+          error: 'Falta tabla crm_comunicaciones. Ejecuta las migraciones del CRM clinico.',
+        });
+      }
+      throw commResp.error;
+    }
+
+    const patientMetaById = new Map((patientsResp.data || []).map((row) => {
+      const fullName = row?.nombre_completo || [row?.nombre, row?.apellidos].filter(Boolean).join(' ').trim() || null;
+      return [row.id, {
+        name: fullName,
+        email: row?.email || null,
+      }];
+    }));
+
+    const archivedReportsByRecommendation = new Map();
+    for (const row of commResp.data || []) {
+      const recommendationId = row?.recomendacion_id;
+      if (!recommendationId) continue;
+
+      const eventName = String(row?.payload?.event || '').trim();
+      if (eventName !== 'exercise_report_archived') continue;
+
+      const archivedAt = row?.payload?.archived_at || row?.occurred_at || row?.created_at || null;
+      const current = archivedReportsByRecommendation.get(recommendationId) || {
+        count: 0,
+        last_archived_at: null,
+        last_format: null,
+        last_source: null,
+        last_message: null,
+      };
+
+      current.count += 1;
+      if (!current.last_archived_at || new Date(archivedAt || 0).getTime() > new Date(current.last_archived_at || 0).getTime()) {
+        current.last_archived_at = archivedAt;
+        current.last_format = String(row?.payload?.format || 'pdf').trim().toLowerCase() || 'pdf';
+        current.last_source = String(row?.payload?.source || '').trim() || null;
+        current.last_message = row?.message_text || null;
+      }
+
+      archivedReportsByRecommendation.set(recommendationId, current);
+    }
+
+    const recentPlans = safeRecommendations.slice(0, limit).map((row) => {
+      const patientMeta = patientMetaById.get(row.paciente_id) || {};
+      const archived = archivedReportsByRecommendation.get(row.id) || null;
+      const exercisesCount = Array.isArray(row?.crm_recomendacion_items) ? row.crm_recomendacion_items.length : 0;
+      const lastActivityAt = archived?.last_archived_at || row?.created_at || null;
+      const titleBase = String(row?.symptom_summary || row?.selection_rationale || '').trim();
+      return {
+        recommendation_id: row.id,
+        patient_id: row.paciente_id || null,
+        patient_name: patientMeta.name || null,
+        patient_email: patientMeta.email || null,
+        title: titleBase || 'Plan de ejercicios IA',
+        symptom_summary: row?.symptom_summary || '',
+        selection_rationale: row?.selection_rationale || '',
+        status: row?.estado || 'generada',
+        created_at: row?.created_at || null,
+        last_activity_at: lastActivityAt,
+        escalation_recommend_medical_attention: Boolean(row?.escalation_recommend_medical_attention),
+        exercises_count: exercisesCount,
+        archived_reports_count: archived?.count || 0,
+        latest_report_format: archived?.last_format || null,
+        latest_report_source: archived?.last_source || null,
+        latest_report_message: archived?.last_message || null,
+      };
+    });
+
+    const visiblePatientCount = new Set(recentPlans.map((item) => item.patient_id).filter(Boolean)).size;
+    const visibleArchivedReports = recentPlans.reduce((acc, item) => acc + (item.archived_reports_count || 0), 0);
+
+    res.json({
+      ok: true,
+      data: {
+        summary: {
+          visible_plans: recentPlans.length,
+          visible_archived_reports: visibleArchivedReports,
+          visible_patients: visiblePatientCount,
+        },
+        recent_plans: recentPlans,
+      },
+    });
+  } catch (err) {
+    if (
+      isMissingTableError(err, 'crm_recomendaciones') ||
+      isMissingTableError(err, 'crm_pacientes') ||
+      isMissingTableError(err, 'crm_comunicaciones')
+    ) {
+      return res.status(400).json({
+        error: 'Faltan tablas del historial de ejercicios (crm_recomendaciones / crm_pacientes / crm_comunicaciones).',
+      });
+    }
+    next(err);
+  }
+});
+
 router.post('/program-templates/clone', async (req, res, next) => {
   try {
     const sourcePlanId = pickValue(req.body, 'source_plan_id', 'plan_id');
@@ -3043,3 +3218,6 @@ router.post('/video-jobs/:jobId/send', async (req, res, next) => {
   }
 });
 export default router;
+
+
+
