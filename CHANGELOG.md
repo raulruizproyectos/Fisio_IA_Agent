@@ -1,3 +1,45 @@
+## Sesion 112 - 2026-03-30
+
+### Objetivo
+Despliegue, migraciones y limpieza de dashboard para cerrar funcionalidades pendientes y dejar la plataforma operativa.
+
+### Trabajo realizado
+- [x] Sincronizado workspace local con origin/main (5 commits de sesiones anteriores).
+- [x] Diagnosticado estado de produccion: backend ya desplegado con hardening, tabla `crm_bonos` faltante.
+- [x] Migración 011 ejecutada via Supabase Management API: tabla `crm_bonos` creada en produccion.
+- [x] Readiness verificado: 7/7 checks OK, 0 tablas faltantes.
+- [x] Dashboard limpiado: eliminado todo texto de "product pitch" / marketing copy.
+  - Hero: "Luxury Clinical OS / Cabina clínica" → "Panel de control".
+  - Panel lateral "Agente de ejercicios": pitch reemplazado por 3 botones directos (Nuevo plan, Historial, Plantillas).
+  - "Prioridades del día" → "Tareas pendientes" con textos factuales cortos.
+  - Pills descriptivos → chips cortos navegables (Agenda, Telegram, Ejercicios IA, Pagos, Bonos).
+  - Sección "Canales activos" (redundante) eliminada.
+  - "Accesos clínicos reales" → "Accesos rápidos" sin párrafos descriptivos.
+  - Todos los textos narrativos/coaching del dashboard y ficha paciente → datos factuales.
+- [x] Frontend validado: `astro build` + `astro check` OK (0 errores, 0 warnings).
+- [x] 2 commits pusheados a GitHub (`0cefd73`, `cad0071`).
+
+### Verificación producción
+- [x] `GET /api/bonos?estado=activo` → `{"data":[]}` ✅
+- [x] `GET /api/facturas?anio=2026` → `{"data":[]}` ✅
+- [x] `GET /api/pagos?anio=2026` → 4 pagos reales ✅
+- [x] `GET /api/documentos` → `{"data":[]}` ✅
+- [x] `GET /api/health/readiness` → 7/7 OK, 0 missing ✅
+
+### Estado al cierre
+- Backend desplegado y operativo con hardening completo.
+- Base de datos completa: 14 tablas CRM (incluida `crm_bonos` nueva).
+- Dashboard limpio sin texto decorativo, solo datos y acciones.
+- Frontend pendiente de redeploy en EasyPanel para reflejar cambios de dashboard.
+
+### Punto exacto de continuidad
+1. **Redeploy frontend** en EasyPanel para que los cambios de dashboard sean visibles en produccion.
+2. Verificar visualmente el dashboard limpio en produccion.
+3. Probar funcionalidades end-to-end: crear bono, crear factura, crear documento, firma digital.
+4. Continuar con **roadmap #9**: Reserva online publica (`reserva.astro` ya existe).
+5. Considerar limpieza de archivos no trackeados: `index.astro.bak`, `index.astro.bak2`, `patients.json`.
+
+---
 ## Sesion 111 - 2026-03-26
 
 ### Objetivo
