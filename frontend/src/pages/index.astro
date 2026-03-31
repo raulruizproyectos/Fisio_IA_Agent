@@ -4513,6 +4513,12 @@ import Layout from '../layouts/Layout.astro';
     return patientKeys.length || visibleAppointments.length;
   };
 
+  const getOperationalAgendaAppointments = (citas: any[] = []) =>
+    (Array.isArray(citas) ? citas : []).filter((cita: any) => !isCalendarOnlyAppointment(cita));
+
+  const getExternalAgendaBlocks = (citas: any[] = []) =>
+    (Array.isArray(citas) ? citas : []).filter((cita: any) => isCalendarOnlyAppointment(cita));
+
   const getAgendaMirrorMeta = (cita: any) => {
     const state = String(cita?.calendar_sync_state || '').trim();
     const origin = String(cita?.calendar_origin || '').trim();
@@ -4729,9 +4735,11 @@ import Layout from '../layouts/Layout.astro';
         fetchJson(`${BACKEND_BASE}/api/profesional/appointments/sync-calendar/status`).catch(() => ({ data: null })),
       ]);
       const citas = payload.data || [];
+      const operationalCitas = getOperationalAgendaAppointments(citas);
+      const externalBlocks = getExternalAgendaBlocks(citas);
       renderAgendaSyncStatus(syncPayload?.data || null, payload?.calendar_sync || null);
-      renderDashboardCitas(citas);
-      const todayCount = citas.filter((c: any) => !isAllDayAppointment(c) && isTodayDate(c.inicio_en || '')).length;
+      renderDashboardCitas(operationalCitas);
+      const todayCount = operationalCitas.filter((c: any) => !isAllDayAppointment(c) && isTodayDate(c.inicio_en || '')).length;
       const metricEl = document.getElementById('metricSesiones');
       if (metricEl) metricEl.textContent = String(todayCount);
 
@@ -4741,53 +4749,44 @@ import Layout from '../layouts/Layout.astro';
       if (countEl) countEl.textContent = String(getVisibleAgendaPatientCount(citas));
 
       if (!citasBody) return;
-      if (!citas.length) {
-        setTableState(citasBody, 8, 'event_busy', 'No hay citas esta semana.');
+      if (!operationalCitas.length) {
+        const externalMessage = externalBlocks.length
+          ? `No hay citas clinicas esta semana. Google Calendar aporta ${externalBlocks.length} bloqueo${externalBlocks.length === 1 ? '' : 's'} externo${externalBlocks.length === 1 ? '' : 's'} que solo se muestran en la rejilla semanal.`
+          : 'No hay citas esta semana.';
+        setTableState(citasBody, 8, 'event_busy', externalMessage);
         return;
       }
-      const sorted = [...citas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+      const sorted = [...operationalCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
       citasBody.innerHTML = sorted.map((cita: any) => {
         const start = new Date(cita.inicio_en);
         const dayStr = fmtDayFull(start);
-        const hourStr = isAllDayAppointment(cita) ? 'Todo el d?a' : fmtHourOnly(cita.inicio_en);
-        const calendarOnly = isCalendarOnlyAppointment(cita);
-        const canal = calendarOnly
-          ? 'Google Calendar'
-          : cita.canal_origen === 'telegram'
-            ? 'Telegram'
-            : cita.canal_origen === 'crm_web'
-              ? 'CRM Web'
-              : cita.canal_origen || '-';
+        const hourStr = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita.inicio_en);
+        const canal = cita.canal_origen === 'telegram'
+          ? 'Telegram'
+          : cita.canal_origen === 'crm_web'
+            ? 'CRM Web'
+            : cita.canal_origen || '-';
         const mirror = getAgendaMirrorMeta(cita);
         const estado = cita.estado || 'pendiente';
         const apptId = escapeAttr(cita.id);
         const patId = escapeAttr(cita.paciente_id || '');
-        const patientLabel = calendarOnly
-          ? (cita.nombre_paciente || 'Bloqueo agenda')
-          : (cita.nombre_paciente || 'Paciente');
+        const patientLabel = cita.nombre_paciente || 'Paciente';
         const patName = escapeAttr(patientLabel);
         const actions: string[] = [];
-        if (!calendarOnly) {
-          if (estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar">&#x2713;</button>`);
-          if (estado === 'confirmada' || estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded" style="font-size:15px">check_circle</span></button>`);
-          if (estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded" style="font-size:15px">close</span></button>`);
-          if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded" style="font-size:15px">person_off</span></button>`);
-          actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded" style="font-size:15px">person</span></button>`);
-        }
-        const statusLabel = calendarOnly ? 'bloqueado' : estado;
-        const statusClass = calendarOnly ? 'pendiente' : estado;
-        const actionCell = calendarOnly
-          ? '<span class="agenda-table-note">Solo lectura</span>'
-          : actions.join('');
+        if (estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar">&#x2713;</button>`);
+        if (estado === 'confirmada' || estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded" style="font-size:15px">check_circle</span></button>`);
+        if (estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded" style="font-size:15px">close</span></button>`);
+        if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded" style="font-size:15px">person_off</span></button>`);
+        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded" style="font-size:15px">person</span></button>`);
         return `<tr>
-          <td class="td-patient">${escapeHtml(patientLabel)}${mirror.label === 'Solo Calendar' ? '<div class="agenda-table-note">Bloqueo externo de Google Calendar. No se puede editar desde CRM.</div>' : ''}</td>
+          <td class="td-patient">${escapeHtml(patientLabel)}</td>
           <td>${escapeHtml(dayStr)}</td>
           <td>${escapeHtml(hourStr)}</td>
           <td>${escapeHtml(cita.motivo || '-')}</td>
           <td>${escapeHtml(canal)}</td>
           <td><span class="status-chip ${mirror.chipClass}" title="${escapeAttr(mirror.note)}">${escapeHtml(mirror.label)}</span></td>
-          <td><span class="status-chip ${statusClass}">${escapeHtml(statusLabel)}</span></td>
-          <td class="td-actions">${actionCell}</td>
+          <td><span class="status-chip ${estado}">${escapeHtml(estado)}</span></td>
+          <td class="td-actions">${actions.join('')}</td>
         </tr>`;
       }).join('');
     } catch {
