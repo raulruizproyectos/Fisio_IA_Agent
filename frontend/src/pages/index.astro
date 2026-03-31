@@ -779,6 +779,18 @@ import Layout from '../layouts/Layout.astro';
                   <section class="card ficha-overview-card">
                     <header class="ficha-section-head">
                       <div>
+                        <span class="ficha-section-kicker">Pulso terapeutico</span>
+                        <h2>Progreso del paciente</h2>
+                      </div>
+                    </header>
+                    <div class="ficha-progress-panel" id="fichaProgressPanel">
+                      <p class="empty-inline">Cuando haya dolor, adherencia o entregas registradas, veras aqui la lectura rapida del progreso clinico.</p>
+                    </div>
+                  </section>
+
+                  <section class="card ficha-overview-card">
+                    <header class="ficha-section-head">
+                      <div>
                         <span class="ficha-section-kicker">Movimiento reciente</span>
                         <h2>Clinica, agenda y decisiones</h2>
                       </div>
@@ -4491,6 +4503,16 @@ import Layout from '../layouts/Layout.astro';
 
   const isAllDayAppointment = (cita: any) => Boolean(cita?.all_day);
 
+  const getVisibleAgendaPatientCount = (citas: any[] = []) => {
+    const visibleAppointments = (Array.isArray(citas) ? citas : []).filter((cita: any) => !isAllDayAppointment(cita) && !isCalendarOnlyAppointment(cita));
+    const patientKeys = Array.from(new Set(
+      visibleAppointments
+        .map((cita: any) => String(cita?.paciente_id || cita?.nombre_paciente || '').trim())
+        .filter(Boolean),
+    ));
+    return patientKeys.length || visibleAppointments.length;
+  };
+
   const getAgendaMirrorMeta = (cita: any) => {
     const state = String(cita?.calendar_sync_state || '').trim();
     const origin = String(cita?.calendar_origin || '').trim();
@@ -4716,7 +4738,7 @@ import Layout from '../layouts/Layout.astro';
       renderAgendaCalendar(citas, agendaWeekStart);
 
       const countEl = document.getElementById('weekPatientCount');
-      if (countEl) countEl.textContent = citas.length ? String(citas.length) : '';
+      if (countEl) countEl.textContent = String(getVisibleAgendaPatientCount(citas));
 
       if (!citasBody) return;
       if (!citas.length) {
@@ -5869,6 +5891,7 @@ import Layout from '../layouts/Layout.astro';
   const fichaAddNota = document.getElementById('fichaAddNota') as HTMLButtonElement | null;
   const fichaNotaCancel = document.getElementById('fichaNotaCancel');
   const fichaOverviewStats = document.getElementById('fichaOverviewStats');
+  const fichaProgressPanel = document.getElementById('fichaProgressPanel');
   const fichaOverviewStream = document.getElementById('fichaOverviewStream');
   const fichaDecisionList = document.getElementById('fichaDecisionList');
   const fichaPlanInsights = document.getElementById('fichaPlanInsights');
@@ -6044,6 +6067,82 @@ import Layout from '../layouts/Layout.astro';
       .slice(0, 6);
   };
 
+  const buildFichaPainSeries = (notas: any[] = [], latestFollowUp: any = null) => {
+    const noteSeries = (Array.isArray(notas) ? notas : [])
+      .filter((nota: any) => nota?.fecha && nota?.dolor_eva !== null && nota?.dolor_eva !== undefined && nota?.dolor_eva !== '')
+      .map((nota: any) => ({ date: nota.fecha, value: Number(nota.dolor_eva), label: 'Nota clinica' }))
+      .filter((item: any) => item.date && Number.isFinite(item.value));
+
+    const followUpPain = latestFollowUp?.pain_scale;
+    const followUpSeries = (latestFollowUp?.created_at || latestFollowUp?.fecha) && followUpPain !== null && followUpPain !== undefined && followUpPain !== ''
+      ? [{ date: latestFollowUp?.created_at || latestFollowUp?.fecha, value: Number(followUpPain), label: 'Plan en casa' }]
+      : [];
+
+    return [...followUpSeries, ...noteSeries]
+      .filter((item: any) => item.date && Number.isFinite(item.value))
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 4);
+  };
+
+  const getFichaPainTrend = (series: any[] = []) => {
+    if (!series.length) {
+      return {
+        headline: 'Sin lectura EVA',
+        tone: 'soft',
+        summary: 'Aun no hay una escala de dolor registrada para medir evolucion.',
+        deltaLabel: 'Sin historico',
+      };
+    }
+
+    const latest = series[0];
+    const oldest = series[series.length - 1];
+    const delta = series.length > 1 ? latest.value - oldest.value : null;
+    const deltaLabel = delta === null ? '1 lectura' : `${delta > 0 ? '+' : ''}${delta} puntos`;
+
+    if (latest.value >= 7) {
+      return {
+        headline: 'Dolor alto',
+        tone: 'alert',
+        summary: `Ultima lectura EVA ${latest.value}/10. Conviene revisar carga, tecnica y siguiente sesion.`,
+        deltaLabel,
+      };
+    }
+
+    if (delta !== null && delta <= -2) {
+      return {
+        headline: 'Mejorando',
+        tone: 'ready',
+        summary: `El dolor baja ${Math.abs(delta)} puntos en las ultimas ${series.length} lecturas disponibles.`,
+        deltaLabel,
+      };
+    }
+
+    if (delta !== null && delta >= 2) {
+      return {
+        headline: 'Empeora',
+        tone: 'alert',
+        summary: `El dolor sube ${delta} puntos y conviene reajustar el plan o la carga terapeutica.`,
+        deltaLabel,
+      };
+    }
+
+    if (latest.value <= 3) {
+      return {
+        headline: 'Bajo control',
+        tone: 'ready',
+        summary: `Ultima lectura EVA ${latest.value}/10 con cuadro contenido y margen para progresar.`,
+        deltaLabel,
+      };
+    }
+
+    return {
+      headline: 'Estable',
+      tone: 'soft',
+      summary: delta === null ? `Ultima lectura EVA ${latest.value}/10.` : `La variacion reciente es ${delta > 0 ? '+' : ''}${delta} puntos sin cambios bruscos.`,
+      deltaLabel,
+    };
+  };
+
   const renderFichaWorkspace = (payload: any) => {
     const patient = payload?.paciente || {};
     const citas = Array.isArray(payload?.citas) ? payload.citas : [];
@@ -6064,6 +6163,63 @@ import Layout from '../layouts/Layout.astro';
     const latestAdherence = getRecommendationAdherenceMeta(latestFollowUp?.adherence_status || null);
     const activityItems = buildFichaActivityItems(citasUnavailable ? [] : citas, notasUnavailable ? [] : notas, recommendations);
     const unavailableModules = Array.from(fichaModuleAvailability.values());
+    const painSeries = buildFichaPainSeries(notasUnavailable ? [] : notas, latestFollowUp);
+    const latestPainSample = painSeries[0] || null;
+    const painTrend = getFichaPainTrend(painSeries);
+    const continuityLabel = recommendationSummary.totalPlans
+      ? recommendationSummary.totalFollowUps
+        ? 'Seguimiento domiciliario activo'
+        : recommendationSummary.totalArchivedReports
+          ? 'Plan entregado'
+          : 'Plan pendiente de entrega'
+      : latestAppointment
+        ? 'Seguimiento presencial'
+        : 'Sin continuidad activa';
+    const continuityMeta = recommendationSummary.totalPlans
+      ? recommendationSummary.totalFollowUps
+        ? `Ultimo feedback ${fmtDate(latestFollowUp?.created_at || latestFollowUp?.fecha || '')}`
+        : recommendationSummary.totalArchivedReports
+          ? 'Falta respuesta del paciente para medir adherencia y dolor.'
+          : 'Genera o archiva la entrega para activar trazabilidad del plan.'
+      : latestAppointment?.fecha_hora
+        ? `Ultima sesion ${fmtDate(latestAppointment.fecha_hora)}`
+        : 'Programa una sesion o un plan para activar continuidad.';
+
+    let progressNextTone = painTrend.tone;
+    let progressNextTitle = recommendationSummary.totalPlans
+      ? 'Mantener seguimiento del plan'
+      : 'Documentar el caso con mas detalle';
+    let progressNextMeta = recommendationSummary.totalPlans
+      ? 'El caso ya tiene continuidad domiciliaria. Mantiene trazabilidad y prepara el siguiente ajuste terapeutico.'
+      : 'Aun no hay plan domiciliario. Conviene apoyarse en notas y sesiones para decidir el siguiente paso.';
+
+    if (unavailableModules.length) {
+      progressNextTone = 'alert';
+      progressNextTitle = 'Recuperar integridad del CRM';
+      progressNextMeta = `La ficha esta en modo parcial. Falta recuperar: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.`;
+    } else if (recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports) {
+      progressNextTone = 'warm';
+      progressNextTitle = 'Archivar el documento del plan';
+      progressNextMeta = 'Ya existe un plan IA, pero aun no hay PDF o entrega archivada en el historial del paciente.';
+    } else if (recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps) {
+      progressNextTone = 'warm';
+      progressNextTitle = 'Pedir feedback domiciliario';
+      progressNextMeta = 'El plan ya se entrego. Falta registrar adherencia, dolor y respuesta funcional del paciente.';
+    } else if (painTrend.tone === 'alert') {
+      progressNextTone = 'alert';
+      progressNextTitle = 'Revalorar dolor y carga terapeutica';
+      progressNextMeta = latestPainSample ? `Ultima lectura registrada: EVA ${latestPainSample.value}/10.` : 'Conviene revisar la evolucion clinica antes de mantener el plan actual.';
+    } else if (!notasUnavailable && latestAppointment && !latestNote) {
+      progressNextTone = 'warm';
+      progressNextTitle = 'Registrar evolucion tras la ultima sesion';
+      progressNextMeta = 'Hay actividad asistencial, pero aun falta una nota clinica que deje criterio y respuesta terapeutica.';
+    } else if (recommendationSummary.totalPlans) {
+      progressNextTone = 'ready';
+      progressNextTitle = 'Preparar siguiente ajuste del plan';
+      progressNextMeta = recommendationSummary.totalFollowUps
+        ? 'Ya hay feedback del paciente. Usa dolor y adherencia para decidir si progresar, mantener o simplificar.'
+        : 'Mantiene el seguimiento activo y deja claro en ficha el siguiente objetivo terapeutico.';
+    }
 
     if (fichaOverviewStats) {
       fichaOverviewStats.innerHTML = `
@@ -6086,6 +6242,56 @@ import Layout from '../layouts/Layout.astro';
           <span>Actividad economica</span>
           <strong>${pagosUnavailable ? 'No disponible' : `${totalPayments.toFixed(2)} EUR`}</strong>
           <p>${escapeHtml(pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay pagos asociados al caso.')}</p>
+        </article>`;
+    }
+
+    if (fichaProgressPanel) {
+      const painHistoryHtml = painSeries.length
+        ? painSeries.map((item: any) => `
+          <article class="ficha-progress-point">
+            <span>${escapeHtml(item.label)}</span>
+            <strong>EVA ${escapeHtml(item.value)}/10</strong>
+            <p>${escapeHtml(fmtDate(item.date))}</p>
+          </article>`).join('')
+        : '<p class="empty-inline">Aun no hay lecturas de dolor suficientes para mostrar evolucion.</p>';
+
+      fichaProgressPanel.innerHTML = `
+        <div class="ficha-progress-hero tone-${painTrend.tone}">
+          <div class="ficha-progress-copy">
+            <span class="ficha-progress-eyebrow">Estado global</span>
+            <strong>${escapeHtml(painTrend.headline)}</strong>
+            <p>${escapeHtml(painTrend.summary)}</p>
+          </div>
+          <span class="ficha-progress-pill tone-${painTrend.tone}">${escapeHtml(painTrend.headline)}</span>
+        </div>
+        <div class="ficha-progress-metrics">
+          <article class="ficha-progress-metric">
+            <span>Dolor actual</span>
+            <strong>${latestPainSample ? `EVA ${escapeHtml(latestPainSample.value)}/10` : 'Sin dato'}</strong>
+            <p>${escapeHtml(latestPainSample ? fmtDate(latestPainSample.date) : 'Sin registro clinico reciente')}</p>
+          </article>
+          <article class="ficha-progress-metric">
+            <span>Adherencia</span>
+            <strong>${escapeHtml(recommendationSummary.totalPlans ? latestAdherence.label : 'Sin plan IA')}</strong>
+            <p>${escapeHtml(recommendationSummary.totalPlans ? (latestFollowUp?.created_at || latestFollowUp?.fecha ? `Ultimo feedback ${fmtDate(latestFollowUp?.created_at || latestFollowUp?.fecha)}` : 'Todavia sin respuesta del paciente') : 'Genera un plan para activar seguimiento domiciliario')}</p>
+          </article>
+          <article class="ficha-progress-metric">
+            <span>Continuidad</span>
+            <strong>${escapeHtml(continuityLabel)}</strong>
+            <p>${escapeHtml(continuityMeta)}</p>
+          </article>
+        </div>
+        <div class="ficha-progress-history">
+          <div class="ficha-progress-history-head">
+            <span class="ficha-progress-history-label">Evolucion reciente</span>
+            <strong>${escapeHtml(painTrend.deltaLabel)}</strong>
+          </div>
+          <div class="ficha-progress-points">${painHistoryHtml}</div>
+        </div>
+        <article class="ficha-progress-next tone-${progressNextTone}">
+          <span>Proximo paso clinico</span>
+          <strong>${escapeHtml(progressNextTitle)}</strong>
+          <p>${escapeHtml(progressNextMeta)}</p>
         </article>`;
     }
 
@@ -11292,9 +11498,159 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .ficha-overview-stream,
   .ficha-decision-list,
   .ficha-rail-stack,
-  .ficha-checklist {
+  .ficha-checklist,
+  .ficha-progress-panel {
     display: grid;
     gap: 0.75rem;
+  }
+
+  .ficha-progress-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.85rem;
+    align-items: start;
+    padding: 1rem 1.05rem;
+    border-radius: 1.2rem;
+    border: 1px solid rgba(208, 194, 170, 0.4);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.99), rgba(248, 242, 232, 0.94));
+  }
+
+  .ficha-progress-hero.tone-ready {
+    border-color: rgba(101, 159, 132, 0.28);
+    background: linear-gradient(180deg, rgba(248, 255, 251, 0.99), rgba(236, 249, 241, 0.95));
+  }
+
+  .ficha-progress-hero.tone-alert {
+    border-color: rgba(206, 146, 59, 0.3);
+    background: linear-gradient(180deg, rgba(255, 250, 241, 0.99), rgba(255, 243, 223, 0.95));
+  }
+
+  .ficha-progress-copy {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  .ficha-progress-eyebrow,
+  .ficha-progress-metric span,
+  .ficha-progress-history-label,
+  .ficha-progress-next span,
+  .ficha-progress-point span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8d7245;
+  }
+
+  .ficha-progress-copy strong {
+    color: #17283b;
+    font-size: clamp(1.18rem, 1.7vw, 1.48rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .ficha-progress-copy p,
+  .ficha-progress-metric p,
+  .ficha-progress-point p,
+  .ficha-progress-next p {
+    margin: 0;
+    color: #627385;
+    line-height: 1.55;
+  }
+
+  .ficha-progress-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(208, 194, 170, 0.42);
+    background: rgba(255, 255, 255, 0.78);
+    color: #8a6731;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .ficha-progress-pill.tone-ready {
+    color: #236142;
+    border-color: rgba(62, 133, 97, 0.22);
+    background: rgba(240, 251, 244, 0.95);
+  }
+
+  .ficha-progress-pill.tone-alert {
+    color: #97572a;
+    border-color: rgba(201, 141, 64, 0.24);
+    background: rgba(255, 248, 234, 0.95);
+  }
+
+  .ficha-progress-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .ficha-progress-metric,
+  .ficha-progress-point,
+  .ficha-progress-next {
+    display: grid;
+    gap: 0.24rem;
+    padding: 0.9rem 0.95rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(208, 194, 170, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 253, 0.96), rgba(249, 244, 236, 0.9));
+  }
+
+  .ficha-progress-metric strong,
+  .ficha-progress-point strong,
+  .ficha-progress-next strong {
+    color: #17283b;
+    font-size: 1.02rem;
+    line-height: 1.25;
+  }
+
+  .ficha-progress-history {
+    display: grid;
+    gap: 0.72rem;
+  }
+
+  .ficha-progress-history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .ficha-progress-history-head strong {
+    color: #17283b;
+    font-size: 0.94rem;
+  }
+
+  .ficha-progress-points {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.7rem;
+  }
+
+  .ficha-progress-point strong {
+    font-size: 1.14rem;
+  }
+
+  .ficha-progress-next.tone-ready {
+    border-color: rgba(101, 159, 132, 0.28);
+    background: linear-gradient(180deg, rgba(248, 255, 251, 0.98), rgba(239, 251, 244, 0.95));
+  }
+
+  .ficha-progress-next.tone-alert {
+    border-color: rgba(206, 146, 59, 0.28);
+    background: linear-gradient(180deg, rgba(255, 251, 240, 0.98), rgba(255, 246, 224, 0.95));
+  }
+
+  .ficha-progress-next.tone-warm {
+    border-color: rgba(194, 125, 79, 0.24);
+    background: linear-gradient(180deg, rgba(255, 248, 246, 0.98), rgba(255, 241, 237, 0.94));
   }
 
   .ficha-stream-item {
@@ -11447,8 +11803,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .ficha-overview-stats {
+    .ficha-overview-stats,
+    .ficha-progress-metrics {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .ficha-progress-hero {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -11459,8 +11822,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   @media (max-width: 720px) {
-    .ficha-overview-stats {
+    .ficha-overview-stats,
+    .ficha-progress-metrics,
+    .ficha-progress-points {
       grid-template-columns: 1fr;
+    }
+
+    .ficha-progress-history-head {
+      align-items: flex-start;
+      flex-direction: column;
     }
   }
 </style><style is:global>
