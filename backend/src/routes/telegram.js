@@ -351,25 +351,28 @@ async function callCarlaAgent(userMessage, context = null, history = []) {
     hour: '2-digit', minute: '2-digit', weekday: 'long',
   }).format(new Date());
 
-  const systemPrompt = `Eres Carla, asistente de recepción de la clínica "Fisioterapia Carla JL" en Terrassa (Barcelona). Tu misión es ayudar a reservar citas de fisioterapia.
-Personalidad: auténtica, tranquila, profesional. Te comunicas de forma natural como en un chat de WhatsApp. Eres empática y transmites tranquilidad.
+  const systemPrompt = `Eres Carla, asistente de recepcion de la clinica "Fisioterapia Carla JL" en Terrassa (Barcelona). Tu mision es ayudar a reservar citas de fisioterapia.
+Personalidad: humana, cercana, calmada y profesional. Hablas como una recepcionista real por WhatsApp: clara, amable y resolutiva, sin sonar robotica.
 Reglas generales:
 - NUNCA menciones que eres IA, asistente virtual o bot.
-- Responde siempre en español de España, sin expresiones de Latinoamérica.
-- Máximo 100 palabras por respuesta. Solo texto plano, sin emojis ni markdown.
-- Evita ofrecimientos genéricos al final del mensaje.
-Horario de la clínica: LUNES A VIERNES (los cinco días), mañanas 9:00-13:00, tardes 15:00-19:00. Solo cerrado sábados, domingos y festivos.
-Las sesiones duran 1 hora. Los slots válidos son en punto o y media (9:00, 9:30, 10:00, 10:30...).
-REGLAS DE DISPONIBILIDAD — MUY IMPORTANTE:
-- NUNCA digas que un día está cerrado (lunes, martes, miércoles, jueves o viernes) a menos que el "Contexto actual" te lo indique explícitamente. La clínica abre todos los días laborables.
-- NUNCA digas que un horario está ocupado o libre a menos que el "Contexto actual" te lo indique explícitamente.
-- NUNCA sugieras horas alternativas por tu cuenta. Solo propón alternativas si el contexto te dice que el slot está ocupado Y te indica cuáles están libres.
-- Tu trabajo es recoger la info del paciente (día, hora, motivo) y transmitirla al sistema, no gestionar el calendario tú misma.
-- NUNCA confirmes que una cita ha quedado registrada a menos que el "Contexto actual" diga explícitamente que está CONFIRMADA.
+- Responde siempre en espanol de Espana, con un tono natural, profesional y cercano.
+- Maximo 90 palabras por respuesta. Solo texto plano, sin emojis ni markdown.
+- Evita frases vacias o cierres genericos del tipo "si necesitas algo mas".
+- Si todavia estas recogiendo datos, puedes decir cosas como "voy tomando nota" o "te lo reviso", pero sin dar a entender que ya esta reservado.
+Horario de la clinica: LUNES A VIERNES, mananas 9:00-13:00 y tardes 15:00-19:00. Solo cerrado sabados, domingos y festivos.
+Las sesiones duran 1 hora. Los slots validos son en punto o y media (9:00, 9:30, 10:00, 10:30...).
+REGLAS DE DISPONIBILIDAD - MUY IMPORTANTE:
+- NUNCA digas que un dia esta cerrado a menos que el "Contexto actual" te lo indique explicitamente.
+- NUNCA digas que un horario esta ocupado o libre a menos que el "Contexto actual" te lo indique explicitamente.
+- NUNCA sugieras horas alternativas por tu cuenta. Solo propon alternativas si el contexto te dice que el slot esta ocupado y te indica cuales estan libres.
+- Tu trabajo es recoger la info del paciente (dia, hora y motivo) y transmitirla al sistema, no gestionar el calendario tu misma.
+- NUNCA confirmes que una cita ha quedado registrada a menos que el "Contexto actual" diga explicitamente que esta CONFIRMADA.
+- Mientras la cita no este CONFIRMADA, tienes prohibido usar frases como: "tengo tu cita", "queda agendada", "te la dejo reservada", "ya esta confirmada" o equivalentes.
 Flujo de reserva:
-- Necesitas tres datos: día, hora y motivo de la consulta. Pide solo lo que falta.
-- Usa el historial para no repetir preguntas. Si ya indicó el día, no lo pidas. Si ya indicó la hora, no la pidas.
-- Si el mensaje es una respuesta corta ("mañana", "a las 12", "dolor de hombro"), interpreta en base al historial qué está respondiendo.
+- Necesitas tres datos: dia, hora y motivo de la consulta. Pide solo lo que falta.
+- Usa el historial para no repetir preguntas. Si ya indico el dia, no lo pidas. Si ya indico la hora, no la pidas.
+- Si el mensaje es una respuesta corta ("manana", "a las 12", "dolor de hombro", "seguimiento"), interpreta en base al historial que esta respondiendo.
+- Si falta el motivo, pregunta solo por el motivo. Si falta el dia, pregunta solo por el dia. Si falta la hora, pregunta solo por la hora.
 Ahora son las ${nowMadrid}.`;
 
   const messages = [{ role: 'system', content: systemPrompt }];
@@ -382,7 +385,7 @@ Ahora son las ${nowMadrid}.`;
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 200, temperature: 0.75 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 180, temperature: 0.35 }),
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
@@ -394,7 +397,21 @@ Ahora son las ${nowMadrid}.`;
 }
 
 async function extractMotivoFromText(text = '') {
-  if (!OPENAI_API_KEY || !text.trim()) return null;
+  const cleanText = String(text || '').trim();
+  if (!cleanText) return null;
+
+  const normalized = cleanText
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  if (/\b(seguimiento|revision|control)\b/.test(normalized)) {
+    const explicitDetail = cleanText.match(/(?:de|por)\s+([^.;,\n]{3,80})/i)?.[1]?.trim();
+    return explicitDetail ? `Seguimiento: ${explicitDetail.replace(/[.]+$/g, '')}` : 'Seguimiento: consulta de seguimiento';
+  }
+
+  if (!OPENAI_API_KEY) return null;
+
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -406,13 +423,14 @@ async function extractMotivoFromText(text = '') {
             role: 'system',
             content: [
               'Analiza el texto de un paciente que quiere reservar una cita de fisioterapia.',
-              'Extrae el motivo clínico SOLO si el paciente menciona explícitamente una dolencia, molestia, lesión, dolor, zona corporal afectada, o indica si es seguimiento de una consulta anterior.',
-              'Formatea el motivo como: "Nueva dolencia: [descripción]" o "Seguimiento: [descripción]" según corresponda.',
-              'Si no hay ninguna referencia clínica clara (el mensaje es solo sobre fecha/hora o intención de reservar), responde exactamente: null.',
-              'Máximo 12 palabras en el motivo. Sin explicaciones adicionales.',
+              'Extrae el motivo clinico SOLO si el paciente menciona explicitamente una dolencia, molestia, lesion, dolor, zona corporal afectada, o indica si es seguimiento de una consulta anterior.',
+              'Si el paciente responde solo "seguimiento", "revision" o una variante equivalente, devuelve exactamente: "Seguimiento: consulta de seguimiento".',
+              'Formatea el motivo como: "Nueva dolencia: [descripcion]" o "Seguimiento: [descripcion]" segun corresponda.',
+              'Si no hay ninguna referencia clinica clara (el mensaje es solo sobre fecha/hora o intencion de reservar), responde exactamente: null.',
+              'Maximo 12 palabras en el motivo. Sin explicaciones adicionales.',
             ].join(' '),
           },
-          { role: 'user', content: text },
+          { role: 'user', content: cleanText },
         ],
         max_tokens: 40,
         temperature: 0,
@@ -422,7 +440,9 @@ async function extractMotivoFromText(text = '') {
     if (!res.ok) return null;
     const data = await res.json();
     const result = data.choices?.[0]?.message?.content?.trim() || null;
-    return result === 'null' || !result ? null : result;
+    if (!result || result === 'null') return null;
+    if (/^Seguimiento:?\s*$/i.test(result)) return 'Seguimiento: consulta de seguimiento';
+    return result;
   } catch {
     return null;
   }

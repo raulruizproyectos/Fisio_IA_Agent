@@ -5,7 +5,8 @@
       "parameters": {
         "path": "fisio/w1/appointment",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {},
+        "httpMethod": "POST"
       },
       "id": "WebhookW1Appointment",
       "name": "Webhook W1 Appointment",
@@ -92,119 +93,7 @@
     },
     {
       "parameters": {
-        "operation": "getAll",
-        "calendar": {
-          "__rl": true,
-          "value": "raul.ruiz.diaz.bcn@gmail.com",
-          "mode": "list",
-          "cachedResultName": "raul.ruiz.diaz.bcn@gmail.com"
-        },
-        "returnAll": false,
-        "limit": 10,
-        "options": {
-          "timeMin": "={{ $json.slot_start }}",
-          "timeMax": "={{ $json.slot_end }}",
-          "singleEvents": true,
-          "orderBy": "startTime",
-          "timeZone": "={{ $json.timezone || \"Europe/Madrid\" }}"
-        }
-      },
-      "id": "SearchCalendarConflicts",
-      "name": "Buscar Conflictos Calendar",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 2,
-      "position": [
-        960,
-        180
-      ],
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "UzAG7J2e9rs78F4r",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const events = $input.all();\nconst request = $('Normalize Request').first().json;\nconst conflictCount = events.filter((item) => item && item.json && item.json.id).length;\nreturn [{\n  json: {\n    ...request,\n    slot_available: conflictCount === 0,\n    conflict_count: conflictCount\n  }\n}];"
-      },
-      "id": "EvaluateAvailability",
-      "name": "Evaluate Availability",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1200,
-        180
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "slot-available",
-              "leftValue": "={{ $json.slot_available }}",
-              "rightValue": true,
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "SlotAvailable",
-      "name": "Slot Available?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        1440,
-        180
-      ]
-    },
-    {
-      "parameters": {
-        "calendar": {
-          "__rl": true,
-          "value": "raul.ruiz.diaz.bcn@gmail.com",
-          "mode": "list",
-          "cachedResultName": "raul.ruiz.diaz.bcn@gmail.com"
-        },
-        "start": "={{ $json.slot_start }}",
-        "end": "={{ $json.slot_end }}",
-        "summary": "={{ `Cita Telegram - ${$json.patient_label}` }}",
-        "additionalFields": {
-          "description": "={{ `Solicitud Telegram\nPaciente CRM: ${$json.patient_id}\nProfesional CRM: ${$json.professional_id}\nChat ID: ${$json.chat_id || \"\"}\nUsername: ${$json.username || \"\"}\nRequest ID: ${$json.request_id}\nMotivo: ${$json.message_text || \"\"}` }}",
-          "timeZone": "={{ $json.timezone || \"Europe/Madrid\" }}"
-        }
-      },
-      "id": "CreateCalendarEvent",
-      "name": "Crear Evento Calendar",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 2,
-      "position": [
-        1680,
-        80
-      ],
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "UzAG7J2e9rs78F4r",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const request = $('Evaluate Availability').first().json;\nconst event = $json || {};\nreturn [{\n  json: {\n    request_id: request.request_id,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    timezone: request.timezone || 'Europe/Madrid',\n    google_calendar_event_id: event.id || null,\n    calendar_html_link: event.htmlLink || null,\n    patient_label: request.patient_label,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"
+        "jsCode": "const request = $('Normalize Request').first().json;\nreturn [{\n  json: {\n    request_id: request.request_id,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    timezone: request.timezone || 'Europe/Madrid',\n    patient_label: request.patient_label,\n    patient_name: request.patient_name || null,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"
       },
       "id": "BuildBackendPayload",
       "name": "Build Backend Payload",
@@ -221,7 +110,7 @@
         "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"patient_id\": $json.patient_id,\n  \"professional_id\": $json.professional_id,\n  \"start_at\": $json.start_at,\n  \"end_at\": $json.end_at,\n  \"channel\": $json.channel || \"telegram\",\n  \"reason\": $json.reason,\n  \"request_id\": $json.request_id,\n  \"google_calendar_event_id\": $json.google_calendar_event_id\n}",
+        "jsonBody": "={\n  \"patient_id\": $json.patient_id,\n  \"professional_id\": $json.professional_id,\n  \"start_at\": $json.start_at,\n  \"end_at\": $json.end_at,\n  \"channel\": $json.channel || \"telegram\",\n  \"reason\": $json.reason,\n  \"request_id\": $json.request_id\n}",
         "options": {
           "ignoreResponseCode": true,
           "timeout": 15000
@@ -234,11 +123,12 @@
       "position": [
         2160,
         80
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
-        "jsCode": "const input = $json || {};\nconst payload = input.data || input;\nconst request = $('Build Backend Payload').first().json;\nconst appointmentId = payload.id || payload.appointment_id || null;\nconst statusCode = Number(input.statusCode || input.code || payload.statusCode || 0);\nconst backendError = payload.error || payload.message || input.message || null;\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      google_calendar_event_id: request.google_calendar_event_id || null,\n      message_to_patient_es: 'Cita registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409;\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    google_calendar_event_id: request.google_calendar_event_id || null,\n    cleanup_needed: Boolean(request.google_calendar_event_id),\n    backend_error: backendError || `backend_http_${statusCode || 'unknown'}`,\n    message_to_patient_es: becameBusy\n      ? 'Lo siento, ese horario acaba de dejar de estar disponible. Indica otra franja y lo reviso.'\n      : 'No pude registrar la cita automaticamente. Tu solicitud queda en revision manual y te confirmaremos por mensaje.'\n  }\n}];"
+        "jsCode": "const input = $json || {};\nconst rawBody = input.body || input;\nconst payload = rawBody.data || rawBody;\nconst request = $('Build Backend Payload').first().json;\nconst appointmentId = payload.id || payload.appointment_id || payload?.data?.id || null;\nconst statusCode = Number(input.status || input.statusCode || rawBody.status_code || rawBody.statusCode || payload.status_code || 0);\nconst backendError = payload.error || payload.message || rawBody.error || input.error || input.message || null;\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      message_to_patient_es: 'Perfecto, tu cita ha quedado registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409 || String(backendError || '').toLowerCase().includes('conflicto de agenda');\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    backend_error: backendError || `backend_http_${statusCode || 'unknown'}`,\n    message_to_patient_es: becameBusy\n      ? 'Ese horario ya no est? disponible. Dime otra franja y lo reviso contigo.'\n      : 'No he podido cerrar la reserva autom?ticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'\n  }\n}];"
       },
       "id": "BuildBackendResponse",
       "name": "Build Backend Response",
@@ -251,93 +141,7 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "cleanup-needed",
-              "leftValue": "={{ $json.cleanup_needed }}",
-              "rightValue": true,
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "NeedsCleanup",
-      "name": "Needs Cleanup?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        2640,
-        80
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "delete",
-        "calendar": {
-          "__rl": true,
-          "value": "raul.ruiz.diaz.bcn@gmail.com",
-          "mode": "list",
-          "cachedResultName": "raul.ruiz.diaz.bcn@gmail.com"
-        },
-        "eventId": "={{ $json.google_calendar_event_id }}"
-      },
-      "id": "DeleteCalendarEvent",
-      "name": "Eliminar Evento Calendar",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 2,
-      "position": [
-        2880,
-        20
-      ],
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "UzAG7J2e9rs78F4r",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const response = $('Build Backend Response').first().json;\nreturn [{\n  json: {\n    request_id: response.request_id || null,\n    status: response.status || 'error',\n    appointment_id: null,\n    message_to_patient_es: response.message_to_patient_es || 'No pude confirmar la cita automaticamente. Te contactaremos para validarla manualmente.'\n  }\n}];"
-      },
-      "id": "BuildCleanupResponse",
-      "name": "Build Cleanup Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3120,
-        20
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'slot_not_available',\n    appointment_id: null,\n    message_to_patient_es: 'Ese horario ya esta ocupado. Indica otra franja y te digo si esta disponible.'\n  }\n}];"
-      },
-      "id": "BuildBusyResponse",
-      "name": "Build Busy Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1680,
-        320
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para agendar tu cita, indica fecha y hora en formato YYYY-MM-DDTHH:mm (inicio y fin). Ejemplo: 2026-03-20T18:00 a 2026-03-20T18:45.'\n  }\n}];"
+        "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para reservar tu cita necesito fecha y hora completas. Por ejemplo: 2026-04-03T10:00 a 2026-04-03T11:00.'\n  }\n}];"
       },
       "id": "BuildNeedSlotResponse",
       "name": "Build Need Slot Response",
@@ -390,7 +194,7 @@
       "main": [
         [
           {
-            "node": "Buscar Conflictos Calendar",
+            "node": "Build Backend Payload",
             "type": "main",
             "index": 0
           }
@@ -398,57 +202,6 @@
         [
           {
             "node": "Build Need Slot Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar Conflictos Calendar": {
-      "main": [
-        [
-          {
-            "node": "Evaluate Availability",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Evaluate Availability": {
-      "main": [
-        [
-          {
-            "node": "Slot Available?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Slot Available?": {
-      "main": [
-        [
-          {
-            "node": "Crear Evento Calendar",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Build Busy Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Crear Evento Calendar": {
-      "main": [
-        [
-          {
-            "node": "Build Backend Payload",
             "type": "main",
             "index": 0
           }
@@ -478,57 +231,6 @@
       ]
     },
     "Build Backend Response": {
-      "main": [
-        [
-          {
-            "node": "Needs Cleanup?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Needs Cleanup?": {
-      "main": [
-        [
-          {
-            "node": "Eliminar Evento Calendar",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Respond W1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Eliminar Evento Calendar": {
-      "main": [
-        [
-          {
-            "node": "Build Cleanup Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Cleanup Response": {
-      "main": [
-        [
-          {
-            "node": "Respond W1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Busy Response": {
       "main": [
         [
           {
