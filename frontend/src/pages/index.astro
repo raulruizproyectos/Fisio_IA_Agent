@@ -1722,8 +1722,12 @@ import Layout from '../layouts/Layout.astro';
     row?.pacientes?.nombre_completo ||
     row?.paciente?.nombre_completo ||
     (row?.paciente_id ? `Paciente #${row.paciente_id}` : 'Paciente sin identificar');
-  const focusHistoryAnchor = (anchor: 'telegram') => {
-    const targetId = anchor === 'telegram' ? 'patientTelegramLinkBlock' : '';
+  const focusHistoryAnchor = (anchor: 'telegram' | 'recommendations') => {
+    const targetId = anchor === 'telegram'
+      ? 'patientTelegramLinkBlock'
+      : anchor === 'recommendations'
+        ? 'patientRecommendationsBlock'
+        : '';
     if (!targetId) return;
 
     window.requestAnimationFrame(() => {
@@ -1823,7 +1827,7 @@ import Layout from '../layouts/Layout.astro';
   };
   let activeAssistantMode: AssistantWorkMode = 'new-plan';
   let currentPatientTelegramLinkState: any = null;
-  let pendingHistoryAnchor: 'telegram' | null = null;
+  let pendingHistoryAnchor: 'telegram' | 'recommendations' | null = null;
   let lastExerciseReportPayload: any = null;
   let pendingExerciseRecommendationJobId: string | null = null;
   const exerciseOpsStats = {
@@ -4945,6 +4949,76 @@ import Layout from '../layouts/Layout.astro';
     feedbackEl.setAttribute('data-state', state);
   };
 
+  const recommendationFollowUpStateOptions = [
+    { value: 'generada', label: 'Generada' },
+    { value: 'enviada', label: 'Enviada al paciente' },
+    { value: 'requiere_revision', label: 'Requiere revision' },
+    { value: 'error', label: 'Error' },
+  ];
+
+  const recommendationFollowUpAdherenceOptions = [
+    { value: '', label: 'Sin clasificar' },
+    { value: 'alta', label: 'Alta' },
+    { value: 'media', label: 'Media' },
+    { value: 'baja', label: 'Baja' },
+  ];
+
+  const renderRecommendationFollowUpForm = (recommendation: any, latestFollowUp: any = null) => {
+    const recommendationId = String(recommendation?.id || '').trim();
+    if (!recommendationId) return '';
+
+    const currentState = String(recommendation?.estado || latestFollowUp?.estado_actual || 'generada').trim().toLowerCase();
+    const defaultAdherence = String(latestFollowUp?.adherence_status || '').trim().toLowerCase();
+    const defaultPain = latestFollowUp?.pain_scale !== null && latestFollowUp?.pain_scale !== undefined ? String(latestFollowUp.pain_scale) : '';
+    const defaultNote = String(latestFollowUp?.note_text || '').trim();
+    const lastTouch = latestFollowUp?.created_at || latestFollowUp?.fecha || null;
+    const adherenceMeta = getRecommendationAdherenceMeta(defaultAdherence);
+    const adherenceOptionsHtml = recommendationFollowUpAdherenceOptions.map((option) => `<option value="${escapeAttr(option.value)}"${option.value === defaultAdherence ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+    const stateOptionsHtml = recommendationFollowUpStateOptions.map((option) => `<option value="${escapeAttr(option.value)}"${option.value === currentState ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+
+    return `
+      <div class="recommendation-followup-shell">
+        <div class="recommendation-followup-summary">
+          <div>
+            <strong>${lastTouch ? 'Ultimo feedback registrado' : 'Seguimiento pendiente'}</strong>
+            <p>${lastTouch ? `Actualizado ${escapeHtml(fmtDate(lastTouch))}.` : 'Guarda adherencia, dolor y siguiente paso para que el caso tenga continuidad domiciliaria.'}</p>
+          </div>
+          <div class="recommendation-followup-chips">
+            <span class="status-chip ${escapeAttr(adherenceMeta.tone)}">${escapeHtml(adherenceMeta.label)}</span>
+            <span class="status-chip ${escapeAttr(currentState === 'enviada' ? 'aprobado' : currentState === 'requiere_revision' ? 'rechazado' : 'pendiente')}">${escapeHtml(currentState.replace(/_/g, ' '))}</span>
+          </div>
+        </div>
+        <form class="recommendation-followup-form" data-role="recommendation-followup-form" data-recommendation-id="${escapeAttr(recommendationId)}">
+          <div class="recommendation-followup-grid">
+            <label class="recommendation-followup-field">
+              <span>Adherencia</span>
+              <select name="adherence_status">${adherenceOptionsHtml}</select>
+            </label>
+            <label class="recommendation-followup-field">
+              <span>Dolor (0-10)</span>
+              <input name="pain_scale" type="number" min="0" max="10" step="1" value="${escapeAttr(defaultPain)}" placeholder="Ej. 3" />
+            </label>
+            <label class="recommendation-followup-field">
+              <span>Estado del plan</span>
+              <select name="recommendation_state">${stateOptionsHtml}</select>
+            </label>
+          </div>
+          <label class="recommendation-followup-field">
+            <span>Nota clinica rapida</span>
+            <textarea name="note_text" rows="3" placeholder="Ej.: mejor tolerancia, mantener progresion, revisar tecnica en proxima sesion.">${escapeHtml(defaultNote)}</textarea>
+          </label>
+          <p class="recommendation-followup-feedback" data-role="history-note-feedback" hidden></p>
+          <div class="recommendation-followup-actions">
+            <button type="submit" class="btn-secondary recommendation-followup-submit">
+              <span class="material-symbols-rounded">monitor_heart</span>
+              Guardar follow-up
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+  };
+
   const TELEGRAM_LINK_STATUS_META: Record<string, { label: string; chipClass: string }> = {
     linked: { label: 'Vinculado', chipClass: 'aprobado' },
     pending: { label: 'Codigo pendiente', chipClass: 'pendiente' },
@@ -5161,6 +5235,8 @@ import Layout from '../layouts/Layout.astro';
           const sortedArchivedReports = archivedReports.sort((a: any, b: any) => new Date(b?.archived_at || b?.created_at || 0).getTime() - new Date(a?.archived_at || a?.created_at || 0).getTime());
           const latestFollowUp = sortedFollowUps[0] || null;
           const latestArchivedReport = sortedArchivedReports[0] || null;
+          const latestFollowUpMeta = getRecommendationAdherenceMeta(latestFollowUp?.adherence_status || null);
+          const followUpFormHtml = renderRecommendationFollowUpForm(rec, latestFollowUp);
           const latestTouchAt = [
             rec?.created_at || null,
             latestFollowUp?.created_at || null,
@@ -5265,8 +5341,18 @@ import Layout from '../layouts/Layout.astro';
                 ${exercisesHtml}
               </div>
               <div class="recommendation-section">
-                <h5>Seguimiento (${sortedFollowUps.length})</h5>
+                <div class="recommendation-section-head">
+                  <h5>Seguimiento (${sortedFollowUps.length})</h5>
+                  <span class="status-chip ${escapeAttr(latestFollowUpMeta.tone)}">${escapeHtml(latestFollowUpMeta.label)}</span>
+                </div>
                 ${followUpsHtml}
+              </div>
+              <div class="recommendation-section recommendation-section-followup">
+                <div class="recommendation-section-head">
+                  <h5>Registrar feedback rapido</h5>
+                  <p>Actualiza adherencia, dolor y estado sin salir del historial.</p>
+                </div>
+                ${followUpFormHtml}
               </div>
               <div class="recommendation-section">
                 <h5>Entregas y archivo (${sortedArchivedReports.length})</h5>
@@ -5293,8 +5379,9 @@ import Layout from '../layouts/Layout.astro';
           <h3>Notas de seguimiento (${notes.length})</h3>
           ${notesHtml}
         </div>
-        <div class="detail-block">
+        <div class="detail-block" id="patientRecommendationsBlock">
           <h3>Informes y recomendaciones (${recommendations.length})</h3>
+          <p class="detail-caption">Cada plan conserva entregas, trazabilidad domiciliaria y feedback clinico del paciente.</p>
           ${recommendationsHtml}
         </div>
       `;
@@ -5390,7 +5477,67 @@ import Layout from '../layouts/Layout.astro';
   });
   historialContent?.addEventListener('submit', async (event: Event) => {
     const formEl = event.target as HTMLFormElement | null;
-    if (!formEl?.matches('form[data-role="history-note-form"]')) return;
+    if (!formEl) return;
+
+    if (formEl.matches('form[data-role="recommendation-followup-form"]')) {
+      event.preventDefault();
+      if (!selectedPatientId) {
+        addMessage('Selecciona un paciente antes de guardar seguimiento del plan.', 'agent');
+        return;
+      }
+
+      const recommendationId = formEl.getAttribute('data-recommendation-id') || '';
+      const noteInput = formEl.elements.namedItem('note_text') as HTMLTextAreaElement | null;
+      const adherenceInput = formEl.elements.namedItem('adherence_status') as HTMLSelectElement | null;
+      const painInput = formEl.elements.namedItem('pain_scale') as HTMLInputElement | null;
+      const stateInput = formEl.elements.namedItem('recommendation_state') as HTMLSelectElement | null;
+      const submitBtn = formEl.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+
+      const noteText = noteInput?.value.trim() || '';
+      const adherenceStatus = adherenceInput?.value || '';
+      const painValue = painInput?.value?.trim() || '';
+      const recommendationState = stateInput?.value || '';
+
+      if (!recommendationId || (!noteText && !adherenceStatus && !painValue && !recommendationState)) {
+        setHistoryNoteFeedback(formEl, 'Anade al menos una observacion, adherencia, dolor o estado para guardar el follow-up.');
+        noteInput?.focus();
+        return;
+      }
+
+      const previousLabel = submitBtn?.innerHTML || '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...';
+      }
+      setHistoryNoteFeedback(formEl, 'Guardando seguimiento del plan...', 'success');
+
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${recommendationId}/follow-up`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fisioterapeuta_id: PROF_ID,
+            note_text: noteText || null,
+            adherence_status: adherenceStatus || null,
+            pain_scale: painValue === '' ? null : Number(painValue),
+            recommendation_state: recommendationState || null,
+          }),
+        }, 15000);
+
+        addMessage(`Follow-up del plan guardado para ${selectedPatientName || 'el paciente seleccionado'}.`, 'agent');
+        pendingHistoryAnchor = 'recommendations';
+        await loadHistorial();
+      } catch (err: any) {
+        setHistoryNoteFeedback(formEl, `No se pudo guardar el follow-up: ${err?.message || 'error no identificado'}`);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = previousLabel;
+        }
+      }
+      return;
+    }
+
+    if (!formEl.matches('form[data-role="history-note-form"]')) return;
 
     event.preventDefault();
     if (!selectedPatientId) {
@@ -5440,7 +5587,7 @@ import Layout from '../layouts/Layout.astro';
   });
   historialContent?.addEventListener('keydown', (event: KeyboardEvent) => {
     const target = event.target as HTMLTextAreaElement | null;
-    if (!target || target.name !== 'texto_nota') return;
+    if (!target || !['texto_nota', 'note_text'].includes(target.name)) return;
     if (event.ctrlKey && event.key === 'Enter') {
       event.preventDefault();
       target.form?.requestSubmit();
@@ -5986,6 +6133,8 @@ import Layout from '../layouts/Layout.astro';
 
     const decisions = [
       unavailableModules.length ? { tone: 'alert', title: 'Revisar migraciones pendientes', body: `La ficha esta operativa en modo parcial. Falta recuperar: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.` } : null,
+      recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports ? { tone: 'warm', title: 'Archivar la entrega del plan', body: 'Ya existe un plan IA, pero aun no hay constancia de entrega o PDF archivado en el historial.' } : null,
+      recommendationSummary.totalPlans && !recommendationSummary.totalFollowUps ? { tone: 'ready', title: 'Registrar respuesta del paciente', body: 'El plan domiciliario ya existe. Falta dejar adherencia, dolor o ajustes para continuidad real.' } : null,
       !citasUnavailable && !citas.length ? { tone: 'urgent', title: 'Programar la primera sesion', body: 'Todavia no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
       !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoracion y evolucion', body: 'Ya existe actividad en agenda, pero falta una nota clinica que deje criterio terapeutico y siguiente paso.' } : null,
       !notasUnavailable && latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'EVA elevado', body: `Ultimo EVA: ${latestEva}/10.` } : null,
@@ -6003,7 +6152,7 @@ import Layout from '../layouts/Layout.astro';
         : '<p class="empty-inline">Todavia no hay decisiones sugeridas para este caso.</p>';
     }
 
-    let primaryAction: 'agenda' | 'notas' | 'agente' = 'agente';
+    let primaryAction: 'agenda' | 'notas' | 'agente' | 'historial' = 'agente';
     let primaryLabel = 'Abrir agente';
     let nextTitle = unavailableModules.length ? 'Recuperar integridad del CRM' : 'Cerrar continuidad clinica';
     let nextMeta = unavailableModules.length
@@ -6020,6 +6169,16 @@ import Layout from '../layouts/Layout.astro';
       primaryLabel = 'Abrir notas';
       nextTitle = 'Cerrar criterio terapeutico';
       nextMeta = 'Ya hay movimiento en agenda, pero falta dejar una nota clinica que convierta la sesion en seguimiento real.';
+    } else if (recommendationSummary.totalPlans && !recommendationSummary.totalFollowUps) {
+      primaryAction = 'historial';
+      primaryLabel = 'Registrar feedback';
+      nextTitle = 'Capturar adherencia del plan';
+      nextMeta = 'El paciente ya tiene plan domiciliario, pero aun no hay respuesta registrada en el historial.';
+    } else if (recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports) {
+      primaryAction = 'historial';
+      primaryLabel = 'Revisar entregas';
+      nextTitle = 'Archivar la entrega domiciliaria';
+      nextMeta = 'Hay un plan IA generado y conviene dejar trazabilidad del envio o PDF en el historial.';
     } else if (!notasUnavailable && latestEva != null && latestEva >= 7) {
       primaryAction = 'agente';
       primaryLabel = 'Preparar sesion';
@@ -6031,7 +6190,7 @@ import Layout from '../layouts/Layout.astro';
     if (fichaRailNextMeta) fichaRailNextMeta.textContent = nextMeta;
     if (fichaRailPrimaryBtn) {
       fichaRailPrimaryBtn.dataset.caseAction = primaryAction;
-      fichaRailPrimaryBtn.innerHTML = `<span class="material-symbols-rounded">${primaryAction === 'agenda' ? 'calendar_today' : primaryAction === 'notas' ? 'clinical_notes' : 'psychology'}</span> ${primaryLabel}`;
+      fichaRailPrimaryBtn.innerHTML = `<span class="material-symbols-rounded">${primaryAction === 'agenda' ? 'calendar_today' : primaryAction === 'notas' ? 'clinical_notes' : primaryAction === 'historial' ? 'history' : 'psychology'}</span> ${primaryLabel}`;
     }
     if (fichaRailTelegramBtn) fichaRailTelegramBtn.disabled = !Boolean(fichaPatientId);
 
@@ -6056,6 +6215,8 @@ import Layout from '../layouts/Layout.astro';
         { done: Boolean(patient?.email || patient?.telefono), title: 'Contacto localizado', body: patient?.email || patient?.telefono ? 'El caso ya tiene una via de contacto guardada.' : 'Falta email o telefono para continuidad.' },
         { done: !citasUnavailable && Boolean(citas.length), title: 'Agenda registrada', body: citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay citas asociadas al paciente.' },
         { done: !notasUnavailable && Boolean(notas.length), title: 'Seguimiento documentado', body: notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Sin notas de evolucion.' },
+        { done: Boolean(recommendationSummary.totalPlans), title: 'Plan domiciliario generado', body: recommendationSummary.totalPlans ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'} IA activo${recommendationSummary.totalPlans === 1 ? '' : 's'} en historial.` : 'Aun no hay plan domiciliario generado para este caso.' },
+        { done: Boolean(recommendationSummary.totalFollowUps), title: 'Feedback del plan', body: recommendationSummary.totalFollowUps ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con adherencia o dolor registrado.` : 'Falta registrar la respuesta del paciente al plan domiciliario.' },
         { done: !pagosUnavailable && Boolean(pagos.length), title: 'Cobro vinculado', body: pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
       ];
       fichaRailChecklist.innerHTML = checks.map((item) => `
@@ -6136,13 +6297,19 @@ import Layout from '../layouts/Layout.astro';
   });
 
   fichaRailPrimaryBtn?.addEventListener('click', () => {
-    const action = (fichaRailPrimaryBtn.dataset.caseAction || 'agente') as 'agenda' | 'notas' | 'agente';
+    const action = (fichaRailPrimaryBtn.dataset.caseAction || 'agente') as 'agenda' | 'notas' | 'agente' | 'historial';
     if (action === 'agenda') {
       navigateTo('citas');
       return;
     }
     if (action === 'notas') {
       activateFichaTab('notas');
+      return;
+    }
+    if (action === 'historial') {
+      if (!fichaPatientId) return;
+      pendingHistoryAnchor = 'recommendations';
+      openPatientHistory(fichaPatientId, selectedPatientName || getPatientFullName(fichaData?.paciente || {}));
       return;
     }
     if (fichaPatientId) {
@@ -9741,7 +9908,8 @@ import Layout from '../layouts/Layout.astro';
     border-color: var(--accent);
     box-shadow: 0 0 0 4px var(--accent-soft);
   }
-  .history-note-feedback {
+  .history-note-feedback,
+  .recommendation-followup-feedback {
     margin: 0;
     padding: 0.8rem 0.9rem;
     border-radius: 0.95rem;
@@ -9750,21 +9918,115 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-secondary);
     font-size: 0.84rem;
   }
-  .history-note-feedback[data-state="error"] {
+  .history-note-feedback[data-state="error"],
+  .recommendation-followup-feedback[data-state="error"] {
     border-color: rgba(239, 68, 68, 0.22);
     background: rgba(239, 68, 68, 0.08);
     color: #991b1b;
   }
-  .history-note-feedback[data-state="success"] {
+  .history-note-feedback[data-state="success"],
+  .recommendation-followup-feedback[data-state="success"] {
     border-color: rgba(16, 185, 129, 0.24);
     background: rgba(16, 185, 129, 0.1);
     color: #065f46;
   }
-  .history-note-actions {
+  .history-note-actions,
+  .recommendation-followup-actions {
     display: flex;
     justify-content: flex-end;
   }
   .btn-history-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .recommendation-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.45rem;
+  }
+  .recommendation-section-head p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+  .recommendation-followup-shell {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.9rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(208, 194, 170, 0.36);
+    background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(248, 242, 232, 0.9));
+    box-shadow: 0 14px 28px -28px rgba(43, 34, 25, 0.22);
+  }
+  .recommendation-followup-summary {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .recommendation-followup-summary strong {
+    color: var(--text-primary);
+    font-size: 0.92rem;
+  }
+  .recommendation-followup-summary p {
+    margin: 0.22rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+  .recommendation-followup-chips {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .recommendation-followup-form {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .recommendation-followup-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+  .recommendation-followup-field {
+    display: grid;
+    gap: 0.36rem;
+  }
+  .recommendation-followup-field span {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+  .recommendation-followup-field select,
+  .recommendation-followup-field input,
+  .recommendation-followup-field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--text-primary);
+    font: inherit;
+    padding: 0.78rem 0.88rem;
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  }
+  .recommendation-followup-field textarea {
+    min-height: 92px;
+    resize: vertical;
+  }
+  .recommendation-followup-field select:focus,
+  .recommendation-followup-field input:focus,
+  .recommendation-followup-field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+  .recommendation-followup-submit {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -9948,13 +10210,15 @@ import Layout from '../layouts/Layout.astro';
   }
   @media (max-width: 960px) {
     .recommendation-summary-grid,
-    .recommendation-meta-grid {
+    .recommendation-meta-grid,
+    .recommendation-followup-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
   @media (max-width: 640px) {
     .recommendation-summary-grid,
-    .recommendation-meta-grid {
+    .recommendation-meta-grid,
+    .recommendation-followup-grid {
       grid-template-columns: 1fr;
     }
   }
