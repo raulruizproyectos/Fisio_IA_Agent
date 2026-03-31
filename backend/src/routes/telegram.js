@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import crypto from 'node:crypto';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 import { supabase } from '../index.js';
@@ -2106,6 +2106,7 @@ router.post('/incoming', async (req, res, next) => {
       // In patient_appointments mode intent is always appointment — skip the n8n call.
       let agentConversation = null;
       let intent = { route: 'unknown', confidence: 0 };
+      let patientAppointmentSession = null;
       if (agentMode !== 'patient_appointments') {
         try {
           agentConversation = await resolveAgentConversation({
@@ -2155,7 +2156,20 @@ router.post('/incoming', async (req, res, next) => {
           intent = fallbackIntent;
         }
       } else {
-        intent = { route: 'appointment', confidence: 0.95 };
+        patientAppointmentSession = await loadChatSession(chat_id);
+        const normalizedPatientText = text.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+        const parsedPatientAppointment = parseNaturalAppointmentSlots(text);
+        const fallbackIntent = inferIntentFromText(text);
+        const hasAppointmentClues =
+          Boolean(patientAppointmentSession?.pendingSlot) ||
+          Boolean(parsedPatientAppointment.slotStart || parsedPatientAppointment.missingDay || parsedPatientAppointment.missingTime) ||
+          /\\b(cita|agendar|agenda|reservar|reserva|hueco|hora|disponibilidad|manana|hoy|lunes|martes|miercoles|jueves|viernes)\\b/.test(normalizedPatientText);
+
+        if (hasAppointmentClues || fallbackIntent.route === 'appointment') {
+          intent = { route: 'appointment', confidence: Math.max(Number(fallbackIntent.confidence || 0), 0.95) };
+        } else {
+          intent = { route: 'unknown', confidence: Math.max(Number(fallbackIntent.confidence || 0), 0.2) };
+        }
       }
 
       const sharedAgentReply = String(
@@ -2212,7 +2226,7 @@ router.post('/incoming', async (req, res, next) => {
       // W1: appointment intent detected, trigger dedicated n8n workflow if configured.
       if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
         const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-        const { history: chatHistory, pendingSlot } = await loadChatSession(chat_id);
+        const { history: chatHistory, pendingSlot } = patientAppointmentSession || await loadChatSession(chat_id);
 
         // Helper: call Carla with history, persist session, return reply text
         const carlaReplyAndSave = async (carlaCtx, fallback, newPendingSlot = null) => {
@@ -2363,7 +2377,7 @@ router.post('/incoming', async (req, res, next) => {
       // Default: use Carla for any other patient message.
       if (agentMode === 'patient_appointments') {
         const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
-        const { history: chatHistory } = await loadChatSession(chat_id);
+        const { history: chatHistory } = patientAppointmentSession || await loadChatSession(chat_id);
         const carlaReply = await callCarlaAgent(text, patientNameCtx || null, chatHistory);
         const replyText = carlaReply || truncateTelegramMessage(sharedAgentReply);
         await saveChatSession(chat_id, [
