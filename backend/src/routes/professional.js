@@ -1417,6 +1417,13 @@ function buildCalendarBusyConflict(event) {
   };
 }
 
+function isHolidayCalendarEvent(event) {
+  const calendarId = String(event?.calendar_id || '').trim().toLowerCase();
+  const holidayCalendarId = String(GOOGLE_HOLIDAY_CALENDAR_ID || '').trim().toLowerCase();
+  return Boolean(calendarId && holidayCalendarId && calendarId === holidayCalendarId);
+}
+
+
 async function findCalendarBusyConflicts({ startAt, endAt, excludeEventId = null }) {
   if (!calendarIntegrationEnabled()) return [];
   const events = await fetchCalendarBusyEvents(startAt, endAt);
@@ -1425,6 +1432,7 @@ async function findCalendarBusyConflicts({ startAt, endAt, excludeEventId = null
 
   return events
     .filter((event) => event?.google_calendar_event_id !== excludeEventId)
+    .filter((event) => !isHolidayCalendarEvent(event))
     .filter((event) => {
       const eventStartMs = new Date(event?.inicio_en || '').getTime();
       const eventEndMs = new Date(event?.fin_en || event?.inicio_en || '').getTime();

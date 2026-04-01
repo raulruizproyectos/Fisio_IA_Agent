@@ -174,6 +174,19 @@ function extractIsoSlots(messageText = '') {
   };
 }
 
+function normalizeAppointmentText(text = '') {
+  return String(text || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\ba\s+als?\b/g, 'a las')
+    .replace(/\ba\s+ls\b/g, 'a las')
+    .replace(/\balas\b/g, 'a las')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+
 function parseNaturalAppointmentSlots(text = '') {
   const iso = extractIsoSlots(text);
   if (iso.slotStart) return iso;
@@ -183,38 +196,38 @@ function parseNaturalAppointmentSlots(text = '') {
     julio: 7, agosto: 8, septiembre: 9, octubre: 10, noviembre: 11, diciembre: 12,
   };
   const DAY_NAMES = {
-    lunes: 1, martes: 2, miércoles: 3, miercoles: 3,
-    jueves: 4, viernes: 5, sábado: 6, sabado: 6, domingo: 0,
+    lunes: 1, martes: 2, miercoles: 3,
+    jueves: 4, viernes: 5, sabado: 6, domingo: 0,
   };
 
-  const t = text.toLowerCase();
+  const t = normalizeAppointmentText(text);
   const now = new Date();
   const nowYear = now.getFullYear();
   const nowMonth = now.getMonth() + 1;
   const nowDay = now.getDate();
   let day = null, month = null, year = nowYear;
 
-  // "17 de marzo", "el 17 de marzo"
   const monthMatch = t.match(/\b(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/);
   if (monthMatch) {
-    day = parseInt(monthMatch[1]);
+    day = parseInt(monthMatch[1], 10);
     month = MONTHS[monthMatch[2]];
     if (month < nowMonth || (month === nowMonth && day < nowDay)) year = nowYear + 1;
   }
 
-  // "mañana"
-  if (!day && /\bmañana\b/.test(t)) {
+  if (!day && /\bmanana\b/.test(t)) {
     const d = new Date(now);
     d.setDate(d.getDate() + 1);
-    day = d.getDate(); month = d.getMonth() + 1; year = d.getFullYear();
+    day = d.getDate();
+    month = d.getMonth() + 1;
+    year = d.getFullYear();
   }
 
-  // "hoy"
   if (!day && /\bhoy\b/.test(t)) {
-    day = nowDay; month = nowMonth; year = nowYear;
+    day = nowDay;
+    month = nowMonth;
+    year = nowYear;
   }
 
-  // "el lunes", "el martes", etc. — próxima ocurrencia
   if (!day) {
     for (const [name, targetDow] of Object.entries(DAY_NAMES)) {
       if (t.includes(name)) {
@@ -222,45 +235,54 @@ function parseNaturalAppointmentSlots(text = '') {
         let daysAhead = targetDow - d.getDay();
         if (daysAhead <= 0) daysAhead += 7;
         d.setDate(d.getDate() + daysAhead);
-        day = d.getDate(); month = d.getMonth() + 1; year = d.getFullYear();
+        day = d.getDate();
+        month = d.getMonth() + 1;
+        year = d.getFullYear();
         break;
       }
     }
   }
 
-  // "a las 10:00", "a las 10", "10:00", "10h"
-  let hours = null, minutes = 0;
-  const timeMatchFull = t.match(/a\s+las?\s+(\d{1,2})(?::(\d{2}))?/);
+  let hours = null;
+  let minutes = 0;
+  const timeMatchFull = t.match(/\ba\s+la?s\s+(\d{1,2})(?::(\d{2}))?\b/);
   const timeMatchStd = !timeMatchFull && t.match(/(?<!\d)(\d{1,2}):(\d{2})(?!\d)/);
   const timeMatchH = !timeMatchFull && !timeMatchStd && t.match(/(?<!\d)(\d{1,2})\s*h(?:oras?)?(?!\d)/);
   const tm = timeMatchFull || timeMatchStd || timeMatchH;
   if (tm) {
-    const h = parseInt(tm[1]);
-    const m = parseInt(tm[2] || '0');
-    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) { hours = h; minutes = m; }
+    const h = parseInt(tm[1], 10);
+    const m = parseInt(tm[2] || '0', 10);
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+      hours = h;
+      minutes = m;
+    }
   }
 
-  // Return partial info so the caller can give Carla a smarter context
-  if (!day && hours !== null) return { slotStart: null, slotEnd: null, missingDay: true, parsedHour: hours, parsedMinutes: minutes };
+  if (!day && hours !== null) {
+    return { slotStart: null, slotEnd: null, missingDay: true, parsedHour: hours, parsedMinutes: minutes };
+  }
   if (!day) return { slotStart: null, slotEnd: null };
   if (hours === null) return { slotStart: null, slotEnd: null, missingTime: true };
 
   const pad = (n) => String(n).padStart(2, '0');
 
-  // Compute Europe/Madrid UTC offset for the target date to avoid timezone shift
   const refDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   const tzParts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', timeZoneName: 'shortOffset' })
     .formatToParts(refDate);
   const tzName = tzParts.find((p) => p.type === 'timeZoneName')?.value || 'GMT+1';
   const offsetMatch = tzName.match(/GMT([+-])(\d+)(?::(\d+))?/);
   const offsetSign = offsetMatch?.[1] || '+';
-  const offsetH = pad(parseInt(offsetMatch?.[2] || '1'));
-  const offsetM = pad(parseInt(offsetMatch?.[3] || '0'));
+  const offsetH = pad(parseInt(offsetMatch?.[2] || '1', 10));
+  const offsetM = pad(parseInt(offsetMatch?.[3] || '0', 10));
   const tzOffset = `${offsetSign}${offsetH}:${offsetM}`;
 
   const slotStart = `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00${tzOffset}`;
-  let endH = hours, endM = minutes + 60;
-  if (endM >= 60) { endH += 1; endM -= 60; }
+  let endH = hours;
+  let endM = minutes + 60;
+  if (endM >= 60) {
+    endH += 1;
+    endM -= 60;
+  }
   const slotEnd = `${year}-${pad(month)}-${pad(day)}T${pad(endH)}:${pad(endM)}:00${tzOffset}`;
 
   return { slotStart, slotEnd };
@@ -315,25 +337,28 @@ async function saveChatSession(chatId, history, pendingSlot = null) {
 
 // Merge slot from current message with a pending slot (handles "a las 12" after pending day)
 function resolveSlot(parsedCurrent, pendingSlot) {
-  if (parsedCurrent.slotStart) return parsedCurrent; // complete slot in current message
+  if (parsedCurrent.slotStart) return parsedCurrent;
+  if (parsedCurrent.missingTime) return parsedCurrent;
   if (!pendingSlot) return parsedCurrent;
 
-  // Current message has a time but no day → use pending slot's date with new time
   if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
-    const date = pendingSlot.slotStart.slice(0, 10); // YYYY-MM-DD
-    const tz = pendingSlot.slotStart.slice(-6);       // +01:00
+    const date = pendingSlot.slotStart.slice(0, 10);
+    const tz = pendingSlot.slotStart.slice(-6);
     const pad = (n) => String(n).padStart(2, '0');
     const h = parsedCurrent.parsedHour;
     const m = parsedCurrent.parsedMinutes || 0;
-    let eH = h, eM = m + 60;
-    if (eM >= 60) { eH += 1; eM -= 60; }
+    let eH = h;
+    let eM = m + 60;
+    if (eM >= 60) {
+      eH += 1;
+      eM -= 60;
+    }
     return {
       slotStart: `${date}T${pad(h)}:${pad(m)}:00${tz}`,
       slotEnd: `${date}T${pad(eH)}:${pad(eM)}:00${tz}`,
     };
   }
 
-  // Current message has no slot info → reuse pending slot
   return { slotStart: pendingSlot.slotStart, slotEnd: pendingSlot.slotEnd };
 }
 
@@ -2225,90 +2250,72 @@ router.post('/incoming', async (req, res, next) => {
 
       // W1: appointment intent detected, trigger dedicated n8n workflow if configured.
       if (intent.route === 'appointment' && intent.confidence >= INTENT_CONFIDENCE_THRESHOLD) {
-        const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
         const { history: chatHistory, pendingSlot } = patientAppointmentSession || await loadChatSession(chat_id);
 
-        // Helper: call Carla with history, persist session, return reply text
-        const carlaReplyAndSave = async (carlaCtx, fallback, newPendingSlot = null) => {
-          const carlaReply = await callCarlaAgent(text, carlaCtx, chatHistory);
-          const replyText = carlaReply || fallback;
-          await saveChatSession(chat_id, [
+        const replyAndSaveAppointment = async (replyText, newPendingSlot = null, historyOverride = null) => {
+          const nextHistory = historyOverride || [
             ...chatHistory,
             { role: 'user', content: text },
             { role: 'assistant', content: replyText },
-          ], newPendingSlot);
-          return replyText;
+          ];
+          await saveChatSession(chat_id, nextHistory, newPendingSlot);
+          return await reply(replyText);
         };
 
-        // Resolve slot: try current message, then merge with pending slot
+        const formatSlotLabel = (isoValue) => new Intl.DateTimeFormat('es-ES', {
+          timeZone: 'Europe/Madrid',
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).format(new Date(isoValue));
+
         const parsedCurrent = parseNaturalAppointmentSlots(text);
         const { slotStart, slotEnd } = resolveSlot(parsedCurrent, pendingSlot);
+        const normalizedBookingText = normalizeAppointmentText(text);
 
-        // ── No slot yet → ask for date/time ──────────────────────────────────
         if (!slotStart) {
-          let carlaCtx;
-          if (chatHistory.length > 0) {
-            if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
-              const hStr = `${parsedCurrent.parsedHour}:${String(parsedCurrent.parsedMinutes || 0).padStart(2, '0')}`;
-              carlaCtx = `${patientNameCtx}El paciente indica las ${hStr}. Consulta el historial y pregúntale solo el día.`;
-            } else if (parsedCurrent.missingTime) {
-              carlaCtx = `${patientNameCtx}El paciente ha indicado el día. Consulta el historial y pregúntale solo la hora.`;
-            } else {
-              carlaCtx = `${patientNameCtx}Continúa la conversación de forma natural para completar la reserva.`;
-            }
-          } else {
-            if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
-              const hStr = `${parsedCurrent.parsedHour}:${String(parsedCurrent.parsedMinutes || 0).padStart(2, '0')}`;
-              carlaCtx = `${patientNameCtx}El paciente quiere cita a las ${hStr} pero no ha dicho el día. Pregúntale solo para qué día.`;
-            } else if (parsedCurrent.missingTime) {
-              carlaCtx = `${patientNameCtx}El paciente ha indicado el día pero no la hora. Pregúntale a qué hora (slots válidos: en punto o y media, 9:00-13:00 y 15:00-19:00).`;
-            } else {
-              carlaCtx = `${patientNameCtx}El paciente quiere pedir cita. Pregúntale cuándo le viene bien (día y hora) y el motivo de la consulta.`;
-            }
+          if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
+            const hStr = `${parsedCurrent.parsedHour}:${String(parsedCurrent.parsedMinutes || 0).padStart(2, '0')}`;
+            return await replyAndSaveAppointment(`Perfecto, tomo nota de las ${hStr}. Dime solo para qué día te viene bien y lo reviso contigo.`);
           }
-          const replyText = await carlaReplyAndSave(carlaCtx, 'Claro, dime qué día y a qué hora te viene mejor y compruebo disponibilidad.', null);
-          return await reply(replyText);
+
+          if (parsedCurrent.missingTime) {
+            return await replyAndSaveAppointment('Perfecto, tengo el día. Dime solo la hora que prefieres y lo reviso contigo.');
+          }
+
+          const greetingOnly = /^(hola|hola\?|buenas|buenos dias|buenas tardes|buenas noches|hey)\b/.test(normalizedBookingText);
+          const introReply = greetingOnly
+            ? 'Hola, soy Carla, la asistente de citas de la clínica. Dime qué día te viene bien, a qué hora y el motivo de la consulta.'
+            : 'Para revisarlo bien, dime por favor el día, la hora y el motivo de la consulta.';
+          return await replyAndSaveAppointment(introReply);
         }
 
-        // ── Validate slot: weekend / festivo / outside hours ─────────────────
         const slotValidation = validateBookingSlot(slotStart);
         if (!slotValidation.valid) {
-          const horario = 'lunes a viernes, mañanas 9:00-13:00 y tardes 15:00-19:00, cerrado sábados, domingos y festivos';
-          let carlaCtx;
-          let nextPendingSlot = null;
+          const horario = 'de lunes a viernes, mañanas 9:00-13:00 y tardes 15:00-19:00, cerrado sábados, domingos y festivos';
           if (slotValidation.reason === 'weekend') {
-            carlaCtx = `${patientNameCtx}El paciente ha pedido cita para un fin de semana. La consulta no abre sábados ni domingos. Explícaselo con naturalidad e indícale el horario: ${horario}.`;
-          } else if (slotValidation.reason === 'festivo') {
-            carlaCtx = `${patientNameCtx}El paciente ha pedido cita para un día festivo en que la consulta está cerrada. Explícaselo con naturalidad, indica el horario: ${horario}, y pregúntale otro día.`;
-          } else {
-            // outside_hours: if we have a snapped slot, offer it and save it as pendingSlot
-            if (slotValidation.snappedSlot) {
-              nextPendingSlot = slotValidation.snappedSlot;
-              const snapFmt = new Intl.DateTimeFormat('es-ES', {
-                timeZone: 'Europe/Madrid', weekday: 'long', day: 'numeric',
-                month: 'long', hour: '2-digit', minute: '2-digit', hour12: false,
-              }).format(new Date(slotValidation.snappedSlot.slotStart));
-              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario. Indícale el horario COMPLETO de la consulta: mañanas 9:00-13:00 y tardes 15:00-19:00, lunes a viernes. Luego ofrécele el siguiente slot disponible: ${snapFmt}. Pregúntale si le viene bien ese horario. NO confirmes ninguna cita todavía.`;
-            } else {
-              carlaCtx = `${patientNameCtx}El paciente ha pedido cita fuera del horario. Indícale el horario COMPLETO: mañanas 9:00-13:00 y tardes 15:00-19:00, lunes a viernes. Pregúntale qué horario le viene bien dentro de esos tramos.`;
-            }
+            return await replyAndSaveAppointment(`La clínica está cerrada ese día. Atendemos ${horario}. Si te va bien, dime otra franja y lo reviso contigo.`);
           }
-          const replyText = await carlaReplyAndSave(carlaCtx, `Lo siento, ese horario no está disponible. Atendemos ${horario}.`, nextPendingSlot);
-          return await reply(replyText);
+          if (slotValidation.reason === 'festivo') {
+            return await replyAndSaveAppointment(`Ese día la clínica está cerrada. Atendemos ${horario}. Si te va bien, dime otra franja y lo reviso contigo.`);
+          }
+          if (slotValidation.snappedSlot) {
+            const snapFmt = formatSlotLabel(slotValidation.snappedSlot.slotStart);
+            return await replyAndSaveAppointment(`Ese horario se sale de consulta. Atendemos ${horario}. Si te encaja, puedo revisar ${snapFmt}.`, slotValidation.snappedSlot);
+          }
+          return await replyAndSaveAppointment(`Ese horario se sale de consulta. Atendemos ${horario}. Dime otra franja y lo reviso contigo.`);
         }
 
-        // ── Slot found → check motivo ─────────────────────────────────────────
         const combinedText = buildCombinedUserText(chatHistory, text);
         const motivo = await extractMotivoFromText(combinedText);
 
         if (!motivo) {
-          // Save the slot as pending and ask for the motivo
-          const carlaCtx = `${patientNameCtx}El sistema aún NO ha registrado ninguna cita. ANTES de confirmar NADA, debes preguntar el motivo de la consulta: si es una dolencia nueva (y cuál es) o es seguimiento de una consulta anterior. No digas que la cita está reservada ni confirmada.`;
-          const replyText = await carlaReplyAndSave(carlaCtx, '¿Es una consulta nueva o seguimiento? Cuéntame brevemente el motivo.', { slotStart, slotEnd });
-          return await reply(replyText);
+          return await replyAndSaveAppointment(`Perfecto, tengo apuntado ${formatSlotLabel(slotStart)}. Para cerrar la cita, dime brevemente el motivo de la consulta.`, { slotStart, slotEnd });
         }
 
-        // ── All info collected → book ─────────────────────────────────────────
         const appointment = await triggerAppointmentWorkflow({
           req,
           patientId: link.paciente_id,
@@ -2342,36 +2349,23 @@ router.post('/incoming', async (req, res, next) => {
 
         if (appointment.ok) {
           const w1Status = appointment.status || '';
-          // Format slot in human-readable Spanish so Carla doesn't have to convert ISO and get wrong weekday
-          const slotFmt = new Intl.DateTimeFormat('es-ES', {
-            timeZone: 'Europe/Madrid', weekday: 'long', day: 'numeric',
-            month: 'long', hour: '2-digit', minute: '2-digit', hour12: false,
-          }).format(new Date(slotStart));
-          let carlaContext;
+          const slotFmt = formatSlotLabel(slotStart);
           if (w1Status === 'confirmed' || w1Status === 'created_direct') {
-            carlaContext = `La cita ha sido CONFIRMADA para el ${slotFmt}. Dile que queda confirmada con esa fecha y hora exactas, y que procure llegar puntual.`;
-          } else if (w1Status === 'slot_not_available') {
-            carlaContext = `El horario solicitado (${slotFmt}) está OCUPADO. Pídele que proponga otro horario disponible.`;
-          } else {
-            // W1 returned error (backend save failed) — inform patient we will contact them
-            carlaContext = `No ha sido posible registrar la cita automáticamente. Discúlpate y dile que nos pondremos en contacto con él/ella lo antes posible para confirmarla.`;
+            return await replyAndSaveAppointment(
+              `Perfecto, tu cita queda confirmada para ${slotFmt}. Si necesitas moverla, escríbeme por aquí.`,
+              null,
+              [{ role: 'assistant', content: `Cita confirmada: ${slotFmt} - ${motivo}` }]
+            );
           }
-          const replyText = await carlaReplyAndSave(`${patientNameCtx}${carlaContext}`, appointment.messageToPatient, null);
-          // After confirmed: keep a brief note so Carla can answer follow-up questions ("¿seguro?")
-          if (w1Status === 'confirmed' || w1Status === 'created_direct') {
-            await saveChatSession(chat_id, [
-              { role: 'assistant', content: `Cita confirmada: ${slotFmt} — ${motivo}` },
-            ], null);
+          if (w1Status === 'slot_not_available') {
+            return await replyAndSaveAppointment('Ahora mismo esa franja ya no está disponible. Si te va bien, dime otra hora y lo reviso contigo enseguida.');
           }
-          return await reply(replyText);
+          return await replyAndSaveAppointment(
+            appointment.messageToPatient || 'No he podido cerrar la reserva automáticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'
+          );
         }
 
-        const replyText = await carlaReplyAndSave(
-          `${patientNameCtx}No ha sido posible registrar la cita en este momento por un problema técnico. Discúlpate y dile que nos pondremos en contacto con él/ella lo antes posible para confirmarla.`,
-          'Lo siento, no ha sido posible registrar tu cita en este momento. Nos pondremos en contacto contigo lo antes posible para confirmártela.',
-          null
-        );
-        return await reply(replyText);
+        return await replyAndSaveAppointment('Lo siento, no he podido registrar tu cita en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.');
       }
 
       // Default: use Carla for any other patient message.
