@@ -233,13 +233,33 @@ function parseNaturalAppointmentSlots(text = '') {
   if (!day) {
     for (const [name, targetDow] of Object.entries(DAY_NAMES)) {
       if (t.includes(name)) {
-        const d = new Date(now);
-        let daysAhead = targetDow - d.getDay();
-        if (daysAhead <= 0) daysAhead += 7;
-        d.setDate(d.getDate() + daysAhead);
-        day = d.getDate();
-        month = d.getMonth() + 1;
-        year = d.getFullYear();
+        // Intentar extraer número de día explícito después del nombre del día (ej: "martes 14")
+        const explicitDayMatch = t.match(new RegExp(`${name}\\s+(\\d{1,2})(?!\\s*[:/h])`));
+        const explicitDay = explicitDayMatch ? parseInt(explicitDayMatch[1], 10) : null;
+        if (explicitDay && explicitDay >= 1 && explicitDay <= 31) {
+          // Buscar en qué mes cae ese día del mes con ese día de semana
+          day = explicitDay;
+          // Determinar mes: buscar el mes más próximo futuro donde ese día coincida
+          let candidate = new Date(now.getFullYear(), now.getMonth(), explicitDay);
+          for (let tries = 0; tries < 12; tries++) {
+            if (candidate.getDate() === explicitDay && candidate.getDay() === targetDow &&
+                (candidate > now || (candidate.getDate() === nowDay && candidate.getMonth() + 1 === nowMonth))) {
+              month = candidate.getMonth() + 1;
+              year = candidate.getFullYear();
+              break;
+            }
+            candidate = new Date(candidate.getFullYear(), candidate.getMonth() + 1, explicitDay);
+          }
+          if (!month) { month = now.getMonth() + 1; year = now.getFullYear(); }
+        } else {
+          const d = new Date(now);
+          let daysAhead = targetDow - d.getDay();
+          if (daysAhead <= 0) daysAhead += 7;
+          d.setDate(d.getDate() + daysAhead);
+          day = d.getDate();
+          month = d.getMonth() + 1;
+          year = d.getFullYear();
+        }
         break;
       }
     }
@@ -2414,7 +2434,9 @@ router.post('/incoming', async (req, res, next) => {
             );
           }
           if (w1Status === 'slot_not_available') {
-            return await replyAndSaveAppointment('Ahora mismo esa franja ya no está disponible. Si te va bien, dime otra hora y lo reviso contigo enseguida.');
+            // Conservar el día en pendingSlot para que el usuario pueda decir "a las 12" sin repetir el día
+            const dayOnlySlot = { slotStart: slotStart.slice(0, 11) + '12:00:00' + slotStart.slice(19), slotEnd: null, dayOnly: true };
+            return await replyAndSaveAppointment('Ahora mismo esa franja ya no está disponible. Si te va bien, dime otra hora y lo reviso contigo enseguida.', dayOnlySlot);
           }
           return await replyAndSaveAppointment(
             appointment.messageToPatient || 'No he podido cerrar la reserva automáticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'
