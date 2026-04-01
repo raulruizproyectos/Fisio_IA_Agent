@@ -3661,3 +3661,60 @@ Para cada sesion nueva anadir bloque con esta plantilla:
 - GitHub queda sincronizado en `origin/main`.
 - El siguiente paso exacto es redeploy de `fisio-frontend` para ver el ultimo ajuste del rail en la URL publica.
 - Despues de validar visualmente ese redeploy, la siguiente iteracion ya debe centrarse en funcionalidad real del agente de ejercicios, agenda online y automatizacion administrativa.
+
+---
+
+## [Sesion 113] - 2026-04-01 (Telegram citas endurecido, pendiente redeploy backend)
+### Objetivo
+- Corregir de raiz el agente de reservas por Telegram para que no invente disponibilidad, entienda mejor los mensajes naturales y deje de bloquear huecos reales por el calendario de festivos.
+
+### Cambios aplicados
+- Backend endurecido en:
+  - `backend/src/routes/telegram.js`
+  - `backend/src/routes/professional.js`
+- Parser de cita mejorado:
+  - normalizacion de texto de entrada (`normalizeAppointmentText`)
+  - tolerancia a variantes/errores tipo `a als 11`
+  - parseo consistente de `mañana`, dias de semana y horas
+- Flujo conversacional de cita rehecho:
+  - deja de delegar en Carla la recogida incompleta de dia/hora
+  - pasa a pedir solo el dato que falta con respuestas deterministas
+  - deja de sugerir huecos inventados o listas no verificadas
+- Conflictos de agenda corregidos:
+  - el calendario de festivos de Google (`es.spain#holiday@group.v.calendar.google.com`) ya no debe bloquear reservas reales en `findCalendarBusyConflicts`
+
+### Verificaciones realizadas
+- `node --check backend/src/routes/telegram.js` -> OK
+- `node --check backend/src/routes/professional.js` -> OK
+- Prueba dirigida del parser:
+  - `manana a als 11` -> `2026-04-02T11:00:00+02:00`
+  - `manana` -> `missingTime: true`
+- Publicado en GitHub:
+  - commit `106f969` - `fix: harden telegram booking availability`
+
+### Estado real al cierre
+- El repo esta correcto y GitHub queda actualizado.
+- Produccion sigue sirviendo la version anterior del backend:
+  - `POST /api/profesional/appointments/check-availability` para `2026-04-02 11:00 Europe/Madrid` sigue devolviendo `409`
+  - el conflicto productivo actual sigue siendo `Jueves Santo` como `external_busy`
+- Conclusion operativa:
+  - el bug de codigo esta corregido
+  - lo que queda pendiente es **redeploy manual de `fisio-backend` en EasyPanel**
+
+### Punto exacto para retomar
+1. Hacer redeploy de `fisio-backend` en EasyPanel desde `origin/main`.
+2. Confirmar que produccion ya corre el commit `106f969`.
+3. Repetir estos checks:
+   - `POST /api/profesional/appointments/check-availability` para `2026-04-02T11:00:00+02:00` -> debe dejar de devolver conflicto por `Jueves Santo`
+   - prueba real en Telegram:
+     - `hola`
+     - `mañana a las 11`
+     - `dolor de hombro`
+4. Solo despues de validar esto, continuar el roadmap de producto donde lo dejamos.
+
+### Lo que necesito que haga Raul al iniciar la proxima sesion
+- Tener hecho o listo para hacer el redeploy manual de `fisio-backend` en EasyPanel.
+- Decirme una de estas dos cosas nada mas empezar:
+  - `ya esta redeployado`
+  - `hazme checklist exacto de redeploy`
+- Si el redeploy ya entro, enviarme el resultado de una prueba real corta en Telegram para seguir desde ahi sin reabrir investigacion.

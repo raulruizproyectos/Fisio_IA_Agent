@@ -1646,3 +1646,42 @@ Tablas necesarias confirmadas:
    - agente de ejercicios,
    - agenda online,
    - intake/paciente y automatizacion administrativa.
+
+## Estado actual (2026-04-01, Sesion 113) - Telegram citas corregido en repo, pendiente redeploy backend
+- Fix de raiz ya aplicado y publicado en GitHub:
+  - commit `106f969` - `fix: harden telegram booking availability`
+- Archivos tocados:
+  - `backend/src/routes/telegram.js`
+  - `backend/src/routes/professional.js`
+- Que se ha corregido:
+  - parser mas robusto para mensajes naturales y variantes tipo `a als 11`
+  - flujo de cita mas determinista, sin dejar que el modelo improvise listas de horas
+  - exclusion del calendario de festivos de Google del bloqueo real de reservas
+
+## Verificacion cerrada en esta sesion
+- Local:
+  - `node --check backend/src/routes/telegram.js` -> OK
+  - `node --check backend/src/routes/professional.js` -> OK
+  - `manana a als 11` parsea a `2026-04-02T11:00:00+02:00`
+- Produccion:
+  - `POST /api/profesional/appointments/check-availability` para `2026-04-02 11:00` sigue devolviendo `409`
+  - conflicto actual devuelto por prod: `Jueves Santo` como `external_busy`
+- Lectura correcta del punto actual:
+  - el codigo ya esta bien en repo
+  - el backend productivo aun no ha cogido el commit nuevo
+
+## Siguiente paso exacto
+1. Redeploy manual de `fisio-backend` en EasyPanel.
+2. Repetir check de disponibilidad para `2026-04-02T11:00:00+02:00`.
+3. Repetir prueba real de Telegram:
+   - `hola`
+   - `mañana a las 11`
+   - `dolor de hombro`
+4. Si eso queda bien, retomar desarrollo desde este punto y continuar con producto/UX.
+
+## Instruccion de reentrada para la proxima sesion
+- Retomar exactamente desde aqui, sin reabrir la investigacion salvo que el redeploy ya haya entrado y prod siga devolviendo el conflicto.
+- Al iniciar sesion, Raul solo tiene que indicar una de estas dos cosas:
+  - `ya esta redeployado`
+  - `necesito checklist de redeploy`
+- Si responde `ya esta redeployado`, la siguiente accion debe ser validar produccion y seguir desarrollo.
