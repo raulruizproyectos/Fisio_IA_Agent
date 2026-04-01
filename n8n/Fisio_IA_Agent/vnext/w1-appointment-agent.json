@@ -110,7 +110,7 @@
         "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"patient_id\": $json.patient_id,\n  \"professional_id\": $json.professional_id,\n  \"start_at\": $json.start_at,\n  \"end_at\": $json.end_at,\n  \"channel\": $json.channel || \"telegram\",\n  \"reason\": $json.reason,\n  \"request_id\": $json.request_id\n}",
+        "jsonBody": "={{ ({ patient_id: $json.patient_id, professional_id: $json.professional_id, start_at: $json.start_at, end_at: $json.end_at, channel: $json.channel || 'telegram', reason: $json.reason, request_id: $json.request_id }) }}",
         "options": {
           "ignoreResponseCode": true,
           "timeout": 15000
