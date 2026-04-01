@@ -180,6 +180,8 @@ function normalizeAppointmentText(text = '') {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/\ba\s+als?\b/g, 'a las')
+    .replace(/\ba\s+asl\b/g, 'a las')
+    .replace(/\ba\s+lsa\b/g, 'a las')
     .replace(/\ba\s+ls\b/g, 'a las')
     .replace(/\balas\b/g, 'a las')
     .replace(/\s+/g, ' ')
@@ -262,7 +264,7 @@ function parseNaturalAppointmentSlots(text = '') {
     return { slotStart: null, slotEnd: null, missingDay: true, parsedHour: hours, parsedMinutes: minutes };
   }
   if (!day) return { slotStart: null, slotEnd: null };
-  if (hours === null) return { slotStart: null, slotEnd: null, missingTime: true };
+  if (hours === null) return { slotStart: null, slotEnd: null, missingTime: true, parsedDay: day, parsedMonth: month, parsedYear: year };
 
   const pad = (n) => String(n).padStart(2, '0');
 
@@ -338,26 +340,56 @@ async function saveChatSession(chatId, history, pendingSlot = null) {
 // Merge slot from current message with a pending slot (handles "a las 12" after pending day)
 function resolveSlot(parsedCurrent, pendingSlot) {
   if (parsedCurrent.slotStart) return parsedCurrent;
-  if (parsedCurrent.missingTime) return parsedCurrent;
-  if (!pendingSlot) return parsedCurrent;
+  if (!pendingSlot) {
+    if (parsedCurrent.missingTime) return parsedCurrent;
+    return parsedCurrent;
+  }
 
+  const pad = (n) => String(n).padStart(2, '0');
+
+  // Caso: mensaje actual tiene solo hora (missingDay) + pendingSlot tiene el día guardado
   if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
+    // pendingSlot puede ser dayOnly (guardado desde missingTime) o un slot completo
     const date = pendingSlot.slotStart.slice(0, 10);
-    const tz = pendingSlot.slotStart.slice(-6);
-    const pad = (n) => String(n).padStart(2, '0');
+    // Recalcular la TZ correcta para esa fecha
+    const refDate = new Date(`${date}T12:00:00Z`);
+    const tzParts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', timeZoneName: 'shortOffset' }).formatToParts(refDate);
+    const tzName = tzParts.find((p) => p.type === 'timeZoneName')?.value || 'GMT+2';
+    const offsetMatch = tzName.match(/GMT([+-])(\d+)(?::(\d+))?/);
+    const tz = `${offsetMatch?.[1] || '+'}${pad(parseInt(offsetMatch?.[2] || '2', 10))}:${pad(parseInt(offsetMatch?.[3] || '0', 10))}`;
     const h = parsedCurrent.parsedHour;
     const m = parsedCurrent.parsedMinutes || 0;
-    let eH = h;
-    let eM = m + 60;
-    if (eM >= 60) {
-      eH += 1;
-      eM -= 60;
-    }
+    let eH = h; let eM = m + 60;
+    if (eM >= 60) { eH += 1; eM -= 60; }
     return {
-      slotStart: `${date}T${pad(h)}:${pad(m)}:00${tz}`,
-      slotEnd: `${date}T${pad(eH)}:${pad(eM)}:00${tz}`,
+      slotStart: `${date}T${pad(h)}:${pad(m)}:00+${tz.replace(/^[+-]/, '')}`,
+      slotEnd: `${date}T${pad(eH)}:${pad(eM)}:00+${tz.replace(/^[+-]/, '')}`,
     };
   }
+
+  // Caso: mensaje actual tiene solo día (missingTime) + pendingSlot tiene la hora guardada (hourOnly)
+  if (parsedCurrent.missingTime && pendingSlot.hourOnly && parsedCurrent.parsedDay) {
+    const d = parsedCurrent.parsedDay;
+    const mo = parsedCurrent.parsedMonth;
+    const yr = parsedCurrent.parsedYear;
+    const date = `${yr}-${pad(mo)}-${pad(d)}`;
+    const refDate = new Date(`${date}T12:00:00Z`);
+    const tzParts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', timeZoneName: 'shortOffset' }).formatToParts(refDate);
+    const tzName = tzParts.find((p) => p.type === 'timeZoneName')?.value || 'GMT+2';
+    const offsetMatch = tzName.match(/GMT([+-])(\d+)(?::(\d+))?/);
+    const tz = `${pad(parseInt(offsetMatch?.[2] || '2', 10))}:${pad(parseInt(offsetMatch?.[3] || '0', 10))}`;
+    // Extraer hora del pendingSlot hourOnly (formato 1970-01-01THH:MM:00+01:00)
+    const timePart = pendingSlot.slotStart.slice(11, 16); // HH:MM
+    const [h, m] = timePart.split(':').map(Number);
+    let eH = h; let eM = m + 60;
+    if (eM >= 60) { eH += 1; eM -= 60; }
+    return {
+      slotStart: `${date}T${pad(h)}:${pad(m)}:00+${tz}`,
+      slotEnd: `${date}T${pad(eH)}:${pad(eM)}:00+${tz}`,
+    };
+  }
+
+  if (parsedCurrent.missingTime) return parsedCurrent;
 
   return { slotStart: pendingSlot.slotStart, slotEnd: pendingSlot.slotEnd };
 }
@@ -2279,10 +2311,34 @@ router.post('/incoming', async (req, res, next) => {
         if (!slotStart) {
           if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
             const hStr = `${parsedCurrent.parsedHour}:${String(parsedCurrent.parsedMinutes || 0).padStart(2, '0')}`;
-            return await replyAndSaveAppointment(`Perfecto, tomo nota de las ${hStr}. Dime solo para qué día te viene bien y lo reviso contigo.`);
+            // Guardar la hora en pendingSlot como slot parcial (fecha placeholder 1970-01-01)
+            // resolveSlot la combinará cuando llegue el día
+            const pad = (n) => String(n).padStart(2, '0');
+            const h = parsedCurrent.parsedHour;
+            const m = parsedCurrent.parsedMinutes || 0;
+            const partialHourSlot = {
+              slotStart: `1970-01-01T${pad(h)}:${pad(m)}:00+01:00`,
+              slotEnd: null,
+              hourOnly: true,
+            };
+            return await replyAndSaveAppointment(`Perfecto, tomo nota de las ${hStr}. Dime solo para qué día te viene bien y lo reviso contigo.`, partialHourSlot);
           }
 
           if (parsedCurrent.missingTime) {
+            // Guardar el día en pendingSlot con hora placeholder (12:00) para que resolveSlot pueda combinar
+            if (parsedCurrent.parsedDay) {
+              const pad = (n) => String(n).padStart(2, '0');
+              const d = parsedCurrent.parsedDay;
+              const mo = parsedCurrent.parsedMonth;
+              const yr = parsedCurrent.parsedYear;
+              const tz = '+02:00'; // Se calculará correctamente cuando se resuelva el slot completo
+              const partialDaySlot = {
+                slotStart: `${yr}-${pad(mo)}-${pad(d)}T12:00:00${tz}`,
+                slotEnd: `${yr}-${pad(mo)}-${pad(d)}T13:00:00${tz}`,
+                dayOnly: true,
+              };
+              return await replyAndSaveAppointment('Perfecto, tengo el día. Dime solo la hora que prefieres y lo reviso contigo.', partialDaySlot);
+            }
             return await replyAndSaveAppointment('Perfecto, tengo el día. Dime solo la hora que prefieres y lo reviso contigo.');
           }
 
