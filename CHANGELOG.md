@@ -1,3 +1,45 @@
+## Sesion 113 - 2026-04-01
+
+### Objetivo
+Corregir el agente de citas de Telegram de extremo a extremo hasta dejarlo sin fallos.
+
+### Trabajo realizado
+- [x] Diagnosticado estado del sistema: Google Calendar OAuth2 caducado en n8n.
+- [x] Reautorizado credencial OAuth2 Google Calendar en n8n UI (W5/W6).
+- [x] Verificado sync Calendar via API: `calendar_sync.status: synced`, `fetched: 1` OK.
+- [x] W1 Agenda de Citas corregido via n8n API (3 bugs):
+  - `neverError:true` en nodo HTTP (antes `ignoreResponseCode` no funcionaba en n8n v4.2 → 409 se trataba como error generico).
+  - UUID real en `request_id` (antes generaba `req_timestamp_random` → fallo SQL en `crm_citas`).
+  - `Build Backend Response` mejorado para extraer status_code desde mensaje de error cuando `continueOnFail` captura la excepcion.
+- [x] Backend `telegram.js` corregido (4 bugs):
+  - `normalizeAppointmentText`: añadidas variantes de typo `a asl`, `a lsa` → `a las`.
+  - `parseNaturalAppointmentSlots`: retorna `parsedDay/Month/Year` en `missingTime` para poder reconstruir slot parcial.
+  - `resolveSlot`: soporta `partialDaySlot` (tiene fecha, falta hora) y `partialHourSlot` (tiene hora, falta fecha) — resuelve el bucle infinito dia↔hora.
+  - Cuando `slot_not_available`: conserva el dia en `pendingSlot` (`dayOnly: true`) para que usuario diga solo "a las 12".
+  - Parser de dia: detecta "martes 14" (dia_nombre + numero_explicito) vs "martes" (proximo martes).
+- [x] Citas de test canceladas en BD (5 citas de prueba de la sesion).
+- [x] Archivos de seguimiento actualizados: `CHANGELOG.md`, `configuracion_pendiente.md`, `docs/checkpoint_*.md`, `MEMORY.md`.
+- [x] GitHub al dia: commits `5c41f52`, `2843d5e`, `51a4227`, `4bfcdff`.
+
+### Verificacion
+- [x] W1 test slot ocupado → `status: slot_not_available` ✅
+- [x] W1 test slot libre → `status: confirmed` + `appointment_id` ✅
+- [x] Backend readiness → `7/7 OK` ✅
+- [x] Calendar sync → `fetched: 1, status: healthy` ✅
+
+### Estado al cierre
+- Agente Telegram funcionalmente correcto a nivel de logica y API.
+- Pendiente: redeploy backend en EasyPanel para que los fixes lleguen a produccion.
+- Roadmap 8/9 completo. Unica mejora pendiente: Reserva online publica (#9).
+
+### Punto exacto de continuidad
+1. Redeploy backend en EasyPanel (fisio-backend → Deploy).
+2. Test E2E Telegram: `"quiero una cita para el martes 7 a las 14h, dolor de rodilla"`.
+3. Confirmar que la cita aparece en Google Calendar.
+4. Iniciar Roadmap #9: Reserva online publica.
+
+---
+
 ## Sesion 112 - 2026-03-30
 
 ### Objetivo

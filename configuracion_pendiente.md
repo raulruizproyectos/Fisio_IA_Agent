@@ -1,4 +1,32 @@
-## Estado actual (2026-03-23, Sesion 110) - check-availability CRM validado, W6 Writer importado, API key n8n invalidada.
+## Estado actual (2026-04-01, Sesion 113) - Agente Telegram citas corregido y operativo.
+
+### Completado sesion 113
+- [x] Google Calendar OAuth2 (W5/W6) reautorizado — citas se sincronizan con Calendar.
+- [x] W1 Agenda de Citas: 3 bugs corregidos via n8n API (neverError, UUID, deteccion 409).
+- [x] telegram.js: 4 bugs corregidos (bucle dia/hora, typos hora, parser "martes 14", slot_not_available conserva dia).
+- [x] API key n8n recuperada desde `.env.local` — valida.
+- [x] Citas de test canceladas en BD.
+- [x] Checkpoint y CHANGELOG actualizados. GitHub al dia (commit 4bfcdff).
+
+### Siguiente paso
+1. **Redeploy backend en EasyPanel** para que fixes de sesion 113 esten en produccion.
+2. **Test E2E Telegram**: enviar `"quiero una cita para el martes 7 a las 14h, dolor de rodilla"` — debe confirmar sin pedir mas datos.
+3. **Roadmap #9**: Reserva online publica (pagina publica Astro + endpoint /api/profesional/public-booking ya existe en backend).
+
+### Pendiente decidir
+- Limpiar archivos no trackeados: `index.astro.bak`, `index.astro.bak2`, `patients.json`, `backend/package-lock.json`
+
+### IDs utiles
+- `fisioterapeuta_id` productivo: `6dae4ef6-b6b3-4cb0-91d9-0320d10db255`
+- Calendario Google: `raul.ruiz.diaz.bcn@gmail.com`
+- W1 webhook: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w1/appointment`
+- W5 webhook: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events`
+- W6 webhook: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w6/calendar-write`
+- n8n API key: en `.env.local` como `N8N_API_KEY=eyJhbGci...`
+
+---
+
+## Estado anterior (2026-03-23, Sesion 110) - check-availability CRM validado, W6 Writer importado, API key n8n invalidada.
 
 ### Completado sesion 110
 - [x] `available=false` con conflicto CRM validado en produccion (`POST /api/profesional/appointments/check-availability`).
