@@ -12,6 +12,17 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 ## En pausa
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
+## Checkpoint actual (2026-04-01)
+- Estado de GitHub: `origin/main` debe quedar sincronizado con el fix de contexto Telegram de esta sesion.
+- Estado real del producto en este punto:
+  - el bug visto en Telegram no estaba en el prompt, sino en la logica de backend que perdia el modo `patient_appointments` en webhooks nativos.
+  - `backend/src/routes/telegram.js` ahora detecta el modo del bot tambien desde `chat_id` y mantiene la reserva en ruta `appointment` si ya existe `pending_slot`.
+  - validacion local cerrada: `node --check backend/src/routes/telegram.js` OK y `npm run lint` OK en copia local aislada.
+- Siguiente paso exacto:
+  - redeploy del backend.
+  - repetir prueba real en Telegram con `hola` -> `una cita para el proximo martes a las 16` -> `dolor hombro`.
+  - confirmar que el bot ya no vuelve a pedir fecha/hora tras recibir el motivo.
+- Checkpoint operativo recomendado: `docs/checkpoint_20260401_session114_telegram_context_fix_handoff.md`
 ## Checkpoint actual (2026-03-26)
 - Estado de GitHub: `origin/main` sincronizado con el cierre de robustez y continuidad documental de esta sesion.
 - Estado real del producto en este punto:

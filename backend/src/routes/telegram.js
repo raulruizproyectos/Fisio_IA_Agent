@@ -587,7 +587,7 @@ function buildTelegramDryRunResponse({
   };
 }
 
-function detectTelegramAgentMode(payload = {}) {
+async function detectTelegramAgentMode(payload = {}, { fromTelegramWebhook = false } = {}) {
   const explicitMode = String(payload.agent_mode || payload.bot_mode || '').trim().toLowerCase();
   if (explicitMode === 'patient_appointments' || explicitMode === 'physio_reports') {
     return explicitMode;
@@ -596,7 +596,75 @@ function detectTelegramAgentMode(payload = {}) {
   const botUsername = String(payload.bot_username || '').replace(/^@/, '').toLowerCase();
   if (botUsername && botUsername === TELEGRAM_PATIENT_BOT_USERNAME) return 'patient_appointments';
   if (botUsername && botUsername === TELEGRAM_PHYSIO_BOT_USERNAME) return 'physio_reports';
-  return 'legacy';
+
+  const normalizedText = normalizeCommand(String(payload.texto_mensaje || '')).toLowerCase();
+  if (normalizedText.startsWith('/informe')) return 'physio_reports';
+
+  if (!fromTelegramWebhook) {
+    return 'legacy';
+  }
+
+  const chatId = String(payload.chat_id || '').trim();
+  if (!chatId) {
+    return 'patient_appointments';
+  }
+
+  const envPhysioChatId = String(process.env.TELEGRAM_PHYSIO_REPORTS_CHAT_ID || '').trim();
+  if (envPhysioChatId && envPhysioChatId === chatId) {
+    return 'physio_reports';
+  }
+
+  try {
+    const physioProfile = await supabase
+      .from('crm_perfiles')
+      .select('id')
+      .eq('telegram_chat_id', chatId)
+      .limit(1)
+      .maybeSingle();
+
+    if (physioProfile.error && !isMissingColumnError(physioProfile.error, 'telegram_chat_id')) {
+      throw physioProfile.error;
+    }
+
+    if (physioProfile.data?.id) {
+      return 'physio_reports';
+    }
+  } catch (error) {
+    console.warn('[telegram] native mode physio lookup error:', error.message);
+  }
+
+  try {
+    const patientLink = await supabase
+      .from('vinculos_telegram_pacientes')
+      .select('id')
+      .eq('telegram_chat_id', chatId)
+      .limit(1)
+      .maybeSingle();
+
+    if (patientLink.data?.id) {
+      return 'patient_appointments';
+    }
+  } catch (error) {
+    if (!isMissingTableError(error)) {
+      console.warn('[telegram] native mode patient lookup error:', error.message);
+    }
+  }
+
+  try {
+    const pendingOnboarding = await supabase
+      .from('telegram_onboarding_pending')
+      .select('telegram_chat_id')
+      .eq('telegram_chat_id', chatId)
+      .maybeSingle();
+
+    if (pendingOnboarding.data?.telegram_chat_id) {
+      return 'patient_appointments';
+    }
+  } catch (error) {
+    console.warn('[telegram] native mode onboarding lookup error:', error.message);
+  }
+
+  return 'patient_appointments';
 }
 
 function inferIntentFromText(messageText = '') {
@@ -1713,7 +1781,7 @@ router.post('/incoming', async (req, res, next) => {
     }
 
     const { chat_id, username } = parsedPayload;
-    const agentMode = detectTelegramAgentMode(parsedPayload);
+    const agentMode = await detectTelegramAgentMode(parsedPayload, { fromTelegramWebhook });
 
     let resolvedIncoming = null;
     try {
@@ -2183,7 +2251,7 @@ router.post('/incoming', async (req, res, next) => {
       // In patient_appointments mode intent is always appointment — skip the n8n call.
       let agentConversation = null;
       let intent = { route: 'unknown', confidence: 0 };
-      let patientAppointmentSession = null;
+      let patientAppointmentSession = await loadChatSession(chat_id);
       if (agentMode !== 'patient_appointments') {
         try {
           agentConversation = await resolveAgentConversation({
@@ -2233,7 +2301,6 @@ router.post('/incoming', async (req, res, next) => {
           intent = fallbackIntent;
         }
       } else {
-        patientAppointmentSession = await loadChatSession(chat_id);
         const normalizedPatientText = text.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
         const parsedPatientAppointment = parseNaturalAppointmentSlots(text);
         const fallbackIntent = inferIntentFromText(text);
@@ -2249,6 +2316,9 @@ router.post('/incoming', async (req, res, next) => {
         }
       }
 
+      if (patientAppointmentSession?.pendingSlot && !isCommand) {
+        intent = { route: 'appointment', confidence: Math.max(Number(intent.confidence || 0), 0.95) };
+      }
       const sharedAgentReply = String(
         agentConversation?.data?.reply_text ||
         agentConversation?.data?.message ||

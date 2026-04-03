@@ -520,6 +520,27 @@ Fix bug citas: Calendar event creado a hora incorrecta (16:00 en vez de 15:00), 
 - `edcea12` — fix(w1): add time overlap check in EvaluateAvailability
 - `bb23058` — fix(bot,w1): show patient real name in Calendar events and CRM
 
+## Sesion 114 - 2026-04-01
+
+### Objetivo
+Corregir el fallo real del bot de citas en Telegram: tras recoger fecha y hora, el siguiente mensaje con el motivo hacia perder el contexto y volvia a pedir dia u hora.
+
+### Trabajo realizado
+- `backend/src/routes/telegram.js`
+  - `detectTelegramAgentMode` pasa a resolver `patient_appointments` o `physio_reports` tambien cuando entra un webhook nativo sin `agent_mode` ni `bot_username`.
+  - la rama real de booking carga siempre `telegram_chat_sessions` antes de clasificar.
+  - si existe `pending_slot`, el mensaje siguiente sigue en ruta `appointment` aunque sea una respuesta corta con solo el motivo.
+
+### Validaciones
+- `node --check backend/src/routes/telegram.js` -> OK
+- `npm run lint` en `backend/` -> OK
+
+### Siguiente paso
+1. Redeploy backend.
+2. Smoke test real en Telegram con fecha/hora seguida de motivo.
+3. Confirmar que ya no se pierde el contexto de cita.
+
+---
 ### Pendiente menor
 - 8 eventos test huérfanos en Google Calendar (Mar 17/19/20/23) — borrar manualmente.
 - Mover 7 workflows restantes a carpeta `Fisio_IA_Agent` en n8n UI (API no permite).
