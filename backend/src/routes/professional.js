@@ -130,8 +130,29 @@ function normalizeAppointmentRow(row) {
   const fullName = [row?.crm_pacientes?.nombre, row?.crm_pacientes?.apellidos].filter(Boolean).join(' ').trim();
   return attachCalendarSyncMeta({
     ...row,
+    motivo: normalizeAppointmentReason(row?.motivo),
     nombre_paciente: fullName || null,
   });
+}
+
+function normalizeAppointmentReason(rawValue = '') {
+  const input = String(rawValue || '').trim();
+  if (!input) return null;
+
+  const explicitReason = extractCalendarDescriptionField(input, 'Motivo');
+  if (explicitReason) return explicitReason;
+
+  if (!/\n|Paciente:|Fisioterapeuta:|CRM Appointment ID:|Tel:/i.test(input)) {
+    return input;
+  }
+
+  const cleanedLines = input
+    .split(/\r?\n/)
+    .map((line) => String(line || '').trim())
+    .filter(Boolean)
+    .filter((line) => !/^(Paciente|Fisioterapeuta|Tel|CRM Appointment ID)\s*:/i.test(line));
+
+  return cleanedLines[0] || null;
 }
 
 function splitFullName(fullName = '') {
@@ -466,7 +487,6 @@ function buildCalendarEventPayload({
   const description = [
     nameParts.description,
     extraReason ? `Motivo: ${extraReason}` : null,
-    appointmentId ? `CRM Appointment ID: ${appointmentId}` : null,
   ]
     .filter(Boolean)
     .join('\n');
@@ -1139,7 +1159,7 @@ async function persistCalendarBackfillAppointment({ event, professionalId }) {
     fin_en: event.fin_en,
     estado: 'confirmada',
     canal_origen: 'manual',
-    motivo: event.description || null,
+    motivo: normalizeAppointmentReason(event.description),
     google_calendar_event_id: event.google_calendar_event_id,
   };
 
@@ -1513,7 +1533,7 @@ function buildCalendarSyntheticAppointment(event, professionalId) {
     fin_en: event.fin_en,
     estado: 'confirmada',
     canal_origen: 'manual',
-    motivo: event.description || null,
+    motivo: normalizeAppointmentReason(event.description),
     nombre_paciente: normalizeCalendarPatientName(event.summary) || null,
     paciente_id: null,
     fisioterapeuta_id: professionalId,
@@ -1587,9 +1607,10 @@ async function reconcileAppointmentsWithCalendar({
     }
 
     const desired = {};
+    const normalizedCalendarReason = normalizeAppointmentReason(calendarEvent.description);
     if (row.inicio_en !== calendarEvent.inicio_en) desired.inicio_en = calendarEvent.inicio_en;
     if ((row.fin_en || null) !== (calendarEvent.fin_en || null)) desired.fin_en = calendarEvent.fin_en;
-    if ((row.motivo || null) !== (calendarEvent.description || null)) desired.motivo = calendarEvent.description || null;
+    if ((row.motivo || null) !== normalizedCalendarReason) desired.motivo = normalizedCalendarReason;
     if (row.estado === 'cancelada') desired.estado = 'confirmada';
 
     if (Object.keys(desired).length) {
