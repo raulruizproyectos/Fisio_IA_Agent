@@ -1504,6 +1504,30 @@ async function patchAppointmentDirectFallback({ req, appointmentId, startAt = nu
     };
   }
 }
+
+function resolveTargetAppointment(activeAppointments = [], pendingSlot = null, slotStart = null) {
+  if (!Array.isArray(activeAppointments) || !activeAppointments.length) return null;
+
+  const pendingAppointmentId = String(pendingSlot?.appointmentId || '').trim();
+  if (pendingAppointmentId) {
+    const byPendingId = activeAppointments.find((appointmentRow) => String(appointmentRow?.id || '').trim() === pendingAppointmentId);
+    if (byPendingId) return byPendingId;
+  }
+
+  if (slotStart) {
+    const requestedMs = new Date(slotStart).getTime();
+    if (Number.isFinite(requestedMs)) {
+      const exactMatches = activeAppointments.filter((appointmentRow) => {
+        const appointmentMs = new Date(appointmentRow?.inicio_en || '').getTime();
+        return Number.isFinite(appointmentMs) && appointmentMs === requestedMs;
+      });
+      if (exactMatches.length === 1) return exactMatches[0];
+    }
+  }
+
+  if (activeAppointments.length === 1) return activeAppointments[0];
+  return null;
+}
 async function triggerAppointmentWorkflow({
   req,
   patientId,
@@ -2573,9 +2597,7 @@ router.post('/incoming', async (req, res, next) => {
             });
         const targetAppointment = appointmentOperation === 'create'
           ? null
-          : (pendingSlot?.appointmentId
-              ? activeAppointments.find((appointmentRow) => appointmentRow.id === pendingSlot.appointmentId) || null
-              : (activeAppointments.length === 1 ? activeAppointments[0] : null));
+          : resolveTargetAppointment(activeAppointments, pendingSlot, slotStart);
         const buildOperationPendingSlot = (slotLike = null) => ({
           ...(slotLike || {}),
           operation: appointmentOperation,
