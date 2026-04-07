@@ -384,6 +384,15 @@ function buildCalendarSyncResult(partial = {}) {
   };
 }
 
+async function compensateCalendarCreateFailure(eventId) {
+  if (!eventId) return null;
+  return syncAppointmentToGoogleCalendar({
+    action: 'cancel',
+    eventId,
+    payload: null,
+  });
+}
+
 function getGoogleCalendarClient() {
   if (!calendarDirectEnabled()) return null;
   const auth = new google.auth.JWT({
@@ -1948,9 +1957,18 @@ router.post('/public-booking/appointments', async (req, res, next) => {
       .single();
 
     if (error) {
+      const calendarCompensation = effectiveCalendarEventId
+        ? await compensateCalendarCreateFailure(effectiveCalendarEventId)
+        : null;
       if (isMissingTableError(error, 'crm_citas')) {
-        return res.status(400).json({ error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.' });
+        return res.status(400).json({
+          error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.',
+          calendar_sync: calendarSync,
+          calendar_compensation: calendarCompensation,
+        });
       }
+      error.calendar_sync = calendarSync;
+      error.calendar_compensation = calendarCompensation;
       throw error;
     }
 
@@ -2245,11 +2263,18 @@ router.post('/appointments', async (req, res, next) => {
       .single();
 
     if (error) {
+      const calendarCompensation = effectiveCalendarEventId
+        ? await compensateCalendarCreateFailure(effectiveCalendarEventId)
+        : null;
       if (isMissingTableError(error, 'crm_citas')) {
         return res.status(400).json({
           error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.',
+          calendar_sync: calendarSync,
+          calendar_compensation: calendarCompensation,
         });
       }
+      error.calendar_sync = calendarSync;
+      error.calendar_compensation = calendarCompensation;
       throw error;
     }
 
