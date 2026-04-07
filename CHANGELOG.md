@@ -1,3 +1,37 @@
+## [Sesion 115] - 2026-04-07 (Citas Telegram cerradas + limpieza CRM de appointments)
+### Objetivo
+- Cerrar el bloque de citas para dejar Telegram estable y el dashboard CRM sin metadatos internos visibles.
+
+### Cambios aplicados
+- `backend/src/routes/telegram.js`
+  - soporte de cambio/reprogramacion y cancelacion real de citas
+  - resolucion de cita objetivo tambien por slot solicitado cuando hay varias citas activas
+- `backend/src/routes/professional.js`
+  - compensacion de eventos de Google Calendar si falla la insercion en `crm_citas`
+  - limpieza del `motivo` para ocultar `Appointment ID`, `Paciente:` y `Fisioterapeuta:` en el CRM
+  - eliminacion de `CRM Appointment ID` en la descripcion generada hacia Calendar
+
+### Verificaciones realizadas
+- `node --check backend/src/routes/telegram.js` -> OK
+- `node --check backend/src/routes/professional.js` -> OK
+- GitHub sincronizado con `origin/main`
+
+### Commits de sesion
+- `a1cf2a8` - `fix(telegram): support reschedule and cancel appointment intents`
+- `4edeebb` - `fix(telegram): match target appointment by requested slot`
+- `5e6f661` - `fix(calendar): compensate orphaned events on appointment create failure`
+- `f67d339` - `fix(crm): clean appointment details shown in dashboard`
+
+### Estado real al cierre
+- Telegram queda preparado para crear, cambiar y cancelar citas con continuidad conversacional.
+- El backend devuelve un `motivo` limpio al CRM para que las tarjetas muestren solo informacion final.
+- La futura reserva online publica se hara en la web publica del centro, pero seguira usando este CRM como backend de reservas.
+
+### Siguiente paso exacto
+1. Redeploy manual de `fisio-backend` en EasyPanel.
+2. Refrescar el CRM y validar visualmente que la tarjeta de proxima sesion ya no muestra texto tecnico.
+3. Si ese punto queda OK, continuar con la mejora de agenda CRM para representar mejor bloqueos reales de Google Calendar.
+
 ## Sesion 113 - 2026-04-01
 
 ### Objetivo

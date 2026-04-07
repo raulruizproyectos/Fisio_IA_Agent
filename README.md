@@ -12,17 +12,18 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 ## En pausa
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (2026-04-01)
-- Estado de GitHub: `origin/main` debe quedar sincronizado con el fix de contexto Telegram de esta sesion.
+## Checkpoint actual (2026-04-07)
+- Commit exacto para retomar: `f67d339`
+- Estado de GitHub: `origin/main` sincronizado con los fixes de Telegram, Calendar y limpieza CRM de esta sesion.
 - Estado real del producto en este punto:
-  - el bug visto en Telegram no estaba en el prompt, sino en la logica de backend que perdia el modo `patient_appointments` en webhooks nativos.
-  - `backend/src/routes/telegram.js` ahora detecta el modo del bot tambien desde `chat_id` y mantiene la reserva en ruta `appointment` si ya existe `pending_slot`.
-  - validacion local cerrada: `node --check backend/src/routes/telegram.js` OK y `npm run lint` OK en copia local aislada.
+  - Telegram ya crea, cambia y cancela citas sobre el backend sin caer al flujo de alta nueva.
+  - el backend limpia `motivo` antes de devolver citas al CRM, para no mostrar `Appointment ID` ni descripciones tecnicas en dashboard.
+  - la reserva online publica queda aplazada como superficie final hasta la futura web publica del centro, pero seguira conectando contra este CRM.
 - Siguiente paso exacto:
   - redeploy del backend.
-  - repetir prueba real en Telegram con `hola` -> `una cita para el proximo martes a las 16` -> `dolor hombro`.
-  - confirmar que el bot ya no vuelve a pedir fecha/hora tras recibir el motivo.
-- Checkpoint operativo recomendado: `docs/checkpoint_20260401_session114_telegram_context_fix_handoff.md`
+  - refrescar CRM y verificar que la tarjeta de proxima sesion muestra solo nombre, fecha/hora y motivo limpio.
+  - despues continuar la mejora de agenda CRM, priorizando bloqueos reales de Google Calendar en la parrilla semanal.
+- Checkpoint operativo recomendado: `docs/checkpoint_20260407_session115_crm_appointments_cleanup.md`
 ## Checkpoint actual (2026-03-26)
 - Estado de GitHub: `origin/main` sincronizado con el cierre de robustez y continuidad documental de esta sesion.
 - Estado real del producto en este punto:

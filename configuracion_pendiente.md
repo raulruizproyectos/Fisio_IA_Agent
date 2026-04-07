@@ -1,31 +1,28 @@
-## Estado actual (2026-04-01, Sesion 113) - Agente Telegram citas corregido y operativo.
+## Estado actual (2026-04-07, Sesion 115) - Citas Telegram cerradas y CRM limpio para retomar.
 
-### Completado sesion 113
-- [x] Google Calendar OAuth2 (W5/W6) reautorizado — citas se sincronizan con Calendar.
-- [x] W1 Agenda de Citas: 3 bugs corregidos via n8n API (neverError, UUID, deteccion 409).
-- [x] telegram.js: 4 bugs corregidos (bucle dia/hora, typos hora, parser "martes 14", slot_not_available conserva dia).
-- [x] API key n8n recuperada desde `.env.local` — valida.
-- [x] Citas de test canceladas en BD.
-- [x] Checkpoint y CHANGELOG actualizados. GitHub al dia (commit 4bfcdff).
+### Completado sesion 115
+- [x] Telegram: crear, cambiar y cancelar citas ya queda resuelto en backend.
+- [x] Seleccion de cita objetivo por slot cuando existen varias citas activas.
+- [x] Compensacion de eventos huerfanos si Google Calendar crea pero CRM falla al insertar.
+- [x] Limpieza del dashboard CRM: fuera `Appointment ID` y descripciones internas en tarjetas.
+- [x] GitHub actualizado en `origin/main` con commit final `f67d339`.
 
 ### Siguiente paso
-1. **Redeploy backend en EasyPanel** para que fixes de sesion 113 esten en produccion.
-2. **Test E2E Telegram**: enviar `"quiero una cita para el martes 7 a las 14h, dolor de rodilla"` — debe confirmar sin pedir mas datos.
-3. **Roadmap #9**: Reserva online publica (pagina publica Astro + endpoint /api/profesional/public-booking ya existe en backend).
+1. **Redeploy backend en EasyPanel** para publicar el commit `f67d339`.
+2. **Validar CRM**: refrescar dashboard y confirmar que la proxima sesion muestra solo datos finales legibles.
+3. **Continuidad siguiente**: mejorar agenda CRM para reflejar mejor bloqueos reales de Google Calendar en la parrilla semanal.
+4. **Reserva online publica**: mantenerla como integracion futura de la web publica del centro contra este CRM, no como foco inmediato aqui.
 
 ### Pendiente decidir
-- Limpiar archivos no trackeados: `index.astro.bak`, `index.astro.bak2`, `patients.json`, `backend/package-lock.json`
+- Si queremos limpiar tambien el texto legado ya persistido en base de datos de citas antiguas mediante script de saneado, o dejar que se vaya corrigiendo al pasar por sincronizacion/edicion.
 
 ### IDs utiles
+- Ultimo commit estable para retomar: `f67d339`
+- Checkpoint operativo: `docs/checkpoint_20260407_session115_crm_appointments_cleanup.md`
 - `fisioterapeuta_id` productivo: `6dae4ef6-b6b3-4cb0-91d9-0320d10db255`
 - Calendario Google: `raul.ruiz.diaz.bcn@gmail.com`
-- W1 webhook: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w1/appointment`
-- W5 webhook: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events`
-- W6 webhook: `https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w6/calendar-write`
-- n8n API key: en `.env.local` como `N8N_API_KEY=eyJhbGci...`
 
 ---
-
 ## Estado anterior (2026-03-23, Sesion 110) - check-availability CRM validado, W6 Writer importado, API key n8n invalidada.
 
 ### Completado sesion 110
