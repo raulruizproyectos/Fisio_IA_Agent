@@ -1341,6 +1341,169 @@ async function createAppointmentDirectFallback({
   }
 }
 
+const TELEGRAM_ACTIVE_APPOINTMENT_STATUSES = new Set(['pendiente', 'confirmada', 'reprogramada']);
+
+function detectPatientAppointmentOperation(text = '', pendingSlot = null) {
+  const normalized = normalizeAppointmentText(text);
+  if (/\b(cancelar|cancela|cancelacion|anular|anula|eliminar|elimina|borrar|borra)\b/.test(normalized)) return 'cancel';
+  if (/\b(cambiar|cambio|mover|mueve|reprogramar|reprograma|pasar)\b/.test(normalized)) return 'reschedule';
+  const pendingOperation = String(pendingSlot?.operation || '').trim();
+  return pendingOperation === 'cancel' || pendingOperation === 'reschedule' ? pendingOperation : 'create';
+}
+
+function extractTimeMentions(text = '') {
+  const normalized = normalizeAppointmentText(text);
+  const matches = [];
+  const pattern = /\ba\s+la?s\s+(\d{1,2})(?::(\d{2}))?\b|(?<!\d)(\d{1,2}):(\d{2})(?!\d)|(?<!\d)(\d{1,2})\s*h(?:oras?)?(?!\d)/g;
+  let match = null;
+  while ((match = pattern.exec(normalized))) {
+    const hour = Number.parseInt(match[1] || match[3] || match[5] || '', 10);
+    const minute = Number.parseInt(match[2] || match[4] || '0', 10);
+    if (Number.isFinite(hour) && Number.isFinite(minute)) matches.push({ hour, minute });
+  }
+  return matches;
+}
+
+function buildTelegramSlotFromParts({ year, month, day, hour, minute = 0 }) {
+  const pad = (value) => String(value).padStart(2, '0');
+  const refDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  const tzParts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', timeZoneName: 'shortOffset' }).formatToParts(refDate);
+  const tzName = tzParts.find((part) => part.type === 'timeZoneName')?.value || 'GMT+1';
+  const offsetMatch = tzName.match(/GMT([+-])(\d+)(?::(\d+))?/);
+  const offsetSign = offsetMatch?.[1] || '+';
+  const offsetH = pad(parseInt(offsetMatch?.[2] || '1', 10));
+  const offsetM = pad(parseInt(offsetMatch?.[3] || '0', 10));
+  const tzOffset = `${offsetSign}${offsetH}:${offsetM}`;
+  let endHour = hour;
+  let endMinute = minute + 60;
+  if (endMinute >= 60) {
+    endHour += 1;
+    endMinute -= 60;
+  }
+  return {
+    slotStart: `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00${tzOffset}`,
+    slotEnd: `${year}-${pad(month)}-${pad(day)}T${pad(endHour)}:${pad(endMinute)}:00${tzOffset}`,
+  };
+}
+
+function parseRequestedRescheduleSlot(text = '') {
+  const timeMentions = extractTimeMentions(text);
+  if (timeMentions.length < 2) return parseNaturalAppointmentSlots(text);
+
+  const dayOnlySource = normalizeAppointmentText(text)
+    .replace(/\ba\s+la?s\s+\d{1,2}(?::\d{2})?\b/g, ' ')
+    .replace(/(?<!\d)\d{1,2}:\d{2}(?!\d)/g, ' ')
+    .replace(/(?<!\d)\d{1,2}\s*h(?:oras?)?(?!\d)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const dayOnlyParsed = parseNaturalAppointmentSlots(dayOnlySource);
+  const desiredClock = timeMentions[timeMentions.length - 1];
+
+  if (dayOnlyParsed?.parsedDay) {
+    return buildTelegramSlotFromParts({
+      year: dayOnlyParsed.parsedYear,
+      month: dayOnlyParsed.parsedMonth,
+      day: dayOnlyParsed.parsedDay,
+      hour: desiredClock.hour,
+      minute: desiredClock.minute,
+    });
+  }
+
+  return {
+    slotStart: null,
+    slotEnd: null,
+    missingDay: true,
+    parsedHour: desiredClock.hour,
+    parsedMinutes: desiredClock.minute,
+  };
+}
+
+async function fetchPatientActiveAppointments({ req, patientId, professionalId }) {
+  if (!req || !patientId || !professionalId) return [];
+
+  const internalUrl = new URL(`${req.protocol}://${req.get('host')}/api/profesional/appointments`);
+  internalUrl.searchParams.set('paciente_id', patientId);
+  internalUrl.searchParams.set('fisioterapeuta_id', professionalId);
+  internalUrl.searchParams.set('desde', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
+  internalUrl.searchParams.set('limit', '10');
+
+  try {
+    const response = await fetch(internalUrl, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(12000),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) return [];
+
+    return (Array.isArray(data?.data) ? data.data : []).filter((appointment) =>
+      TELEGRAM_ACTIVE_APPOINTMENT_STATUSES.has(String(appointment?.estado || '').trim())
+    );
+  } catch {
+    return [];
+  }
+}
+
+async function patchAppointmentDirectFallback({ req, appointmentId, startAt = null, endAt = null, status = null, reason = null }) {
+  if (!req || !appointmentId) {
+    return { ok: false, reason: 'missing_appointment_context' };
+  }
+
+  try {
+    const internalUrl = `${req.protocol}://${req.get('host')}/api/profesional/appointments/${appointmentId}`;
+    const payload = {};
+    if (startAt && endAt) {
+      payload.inicio_en = startAt;
+      payload.fin_en = endAt;
+    }
+    if (status) payload.estado = status;
+    if (reason !== null && reason !== undefined) payload.motivo = reason;
+
+    const response = await fetch(internalUrl, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(12000),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        reason: 'direct_patch_http_error',
+        statusCode: response.status,
+        response: data,
+      };
+    }
+
+    return {
+      ok: true,
+      status: data?.data?.estado || status || 'updated',
+      appointment: data?.data || null,
+      response: data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: error?.name === 'AbortError' ? 'direct_patch_timeout' : 'direct_patch_failed',
+      errorMessage: error.message,
+    };
+  }
+}
 async function triggerAppointmentWorkflow({
   req,
   patientId,
@@ -1511,7 +1674,7 @@ function getHelpMessage() {
 function getPatientAppointmentHelpMessage() {
   return [
     'Comandos disponibles (citas):',
-    'Tambien puedes escribir o enviar una nota de voz para pedir cita.',
+    'Tambien puedes escribir para pedir, cambiar o cancelar una cita.',
     '/cita <inicio_iso> <fin_iso> [nota] - Solicitar cita',
     'Ejemplo: /cita 2026-03-10T18:00 2026-03-10T18:45 dolor cervical',
     '/ayuda - Ver esta ayuda',
@@ -2394,9 +2557,175 @@ router.post('/incoming', async (req, res, next) => {
           hour12: false,
         }).format(new Date(isoValue));
 
-        const parsedCurrent = parseNaturalAppointmentSlots(text);
+        const appointmentOperation = detectPatientAppointmentOperation(text, pendingSlot);
+        const parsedCurrent = appointmentOperation === 'reschedule'
+          ? parseRequestedRescheduleSlot(text)
+          : parseNaturalAppointmentSlots(text);
         const { slotStart, slotEnd } = resolveSlot(parsedCurrent, pendingSlot);
         const normalizedBookingText = normalizeAppointmentText(text);
+
+        const activeAppointments = appointmentOperation === 'create'
+          ? []
+          : await fetchPatientActiveAppointments({
+              req,
+              patientId: link.paciente_id,
+              professionalId,
+            });
+        const targetAppointment = appointmentOperation === 'create'
+          ? null
+          : (pendingSlot?.appointmentId
+              ? activeAppointments.find((appointmentRow) => appointmentRow.id === pendingSlot.appointmentId) || null
+              : (activeAppointments.length === 1 ? activeAppointments[0] : null));
+        const buildOperationPendingSlot = (slotLike = null) => ({
+          ...(slotLike || {}),
+          operation: appointmentOperation,
+          appointmentId: targetAppointment?.id || pendingSlot?.appointmentId || null,
+          currentSlotStart: targetAppointment?.inicio_en || pendingSlot?.currentSlotStart || null,
+          currentSlotEnd: targetAppointment?.fin_en || pendingSlot?.currentSlotEnd || null,
+        });
+
+        if (appointmentOperation !== 'create' && !activeAppointments.length) {
+          return await replyAndSaveAppointment('Ahora mismo no veo ninguna cita activa para cambiar o cancelar. Si quieres, dime un nuevo dia, hora y motivo y te ayudo a reservar una.', null);
+        }
+
+        if (appointmentOperation !== 'create' && !targetAppointment) {
+          const actionLabel = appointmentOperation === 'cancel' ? 'cancelar' : 'mover';
+          return await replyAndSaveAppointment(`Veo varias citas activas. Dime el dia y la hora de la que quieres ${actionLabel} y lo reviso contigo.`, { operation: appointmentOperation });
+        }
+
+        if (appointmentOperation === 'cancel') {
+          const cancelled = await patchAppointmentDirectFallback({
+            req,
+            appointmentId: targetAppointment.id,
+            status: 'cancelada',
+          });
+
+          await logCrmCommunication({
+            channel: 'telegram',
+            direction: 'internal',
+            message_type: 'event',
+            message_text: cancelled.ok
+              ? 'Solicitud de cancelacion procesada desde Telegram'
+              : 'Error al cancelar cita desde Telegram',
+            payload: {
+              legacy_patient_id: link.paciente_id,
+              legacy_profesional_id: professionalId,
+              chat_id: String(chat_id),
+              route: intent.route,
+              confidence: intent.confidence,
+              detail: cancelled,
+            },
+            status: cancelled.ok ? 'processed' : 'error',
+          });
+
+          if (cancelled.ok) {
+            const cancelledLabel = formatSlotLabel(targetAppointment.inicio_en);
+            return await replyAndSaveAppointment(
+              `Perfecto, he cancelado tu cita del ${cancelledLabel}. Si quieres otra, dime dia, hora y motivo y lo reviso contigo.`,
+              null,
+              [{ role: 'assistant', content: `Cita cancelada: ${cancelledLabel}` }]
+            );
+          }
+
+          return await replyAndSaveAppointment(
+            'Lo siento, no he podido cancelar tu cita ahora mismo. Revisaremos la solicitud y te confirmaremos enseguida.',
+            buildOperationPendingSlot()
+          );
+        }
+
+        if (appointmentOperation === 'reschedule') {
+          if (!slotStart) {
+            if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
+              const hStr = `${parsedCurrent.parsedHour}:${String(parsedCurrent.parsedMinutes || 0).padStart(2, '0')}`;
+              const pad = (n) => String(n).padStart(2, '0');
+              const h = parsedCurrent.parsedHour;
+              const m = parsedCurrent.parsedMinutes || 0;
+              const partialHourSlot = buildOperationPendingSlot({
+                slotStart: `1970-01-01T${pad(h)}:${pad(m)}:00+01:00`,
+                slotEnd: null,
+                hourOnly: true,
+              });
+              return await replyAndSaveAppointment(`Perfecto, tomo nota de las ${hStr}. Dime solo para que dia quieres mover la cita y lo reviso contigo.`, partialHourSlot);
+            }
+
+            if (parsedCurrent.missingTime) {
+              if (parsedCurrent.parsedDay) {
+                const pad = (n) => String(n).padStart(2, '0');
+                const partialDaySlot = buildOperationPendingSlot({
+                  slotStart: `${parsedCurrent.parsedYear}-${pad(parsedCurrent.parsedMonth)}-${pad(parsedCurrent.parsedDay)}T12:00:00+02:00`,
+                  slotEnd: `${parsedCurrent.parsedYear}-${pad(parsedCurrent.parsedMonth)}-${pad(parsedCurrent.parsedDay)}T13:00:00+02:00`,
+                  dayOnly: true,
+                });
+                return await replyAndSaveAppointment('Perfecto, tengo el dia. Dime solo la hora a la que quieres mover la cita.', partialDaySlot);
+              }
+              return await replyAndSaveAppointment('Perfecto, tengo el dia. Dime solo la hora a la que quieres mover la cita.');
+            }
+
+            return await replyAndSaveAppointment('Claro. Dime a que dia y hora quieres mover la cita y lo reviso contigo.', buildOperationPendingSlot());
+          }
+
+          const slotValidation = validateBookingSlot(slotStart);
+          if (!slotValidation.valid) {
+            const horario = 'de lunes a viernes, mananas 9:00-13:00 y tardes 15:00-19:00, cerrado sabados, domingos y festivos';
+            if (slotValidation.reason === 'weekend') {
+              return await replyAndSaveAppointment(`La clinica esta cerrada ese dia. Atendemos ${horario}. Si te va bien, dime otra franja y lo reviso contigo.`, buildOperationPendingSlot());
+            }
+            if (slotValidation.reason === 'festivo') {
+              return await replyAndSaveAppointment(`Ese dia la clinica esta cerrada. Atendemos ${horario}. Si te va bien, dime otra franja y lo reviso contigo.`, buildOperationPendingSlot());
+            }
+            if (slotValidation.snappedSlot) {
+              const snappedPending = buildOperationPendingSlot(slotValidation.snappedSlot);
+              const snapFmt = formatSlotLabel(slotValidation.snappedSlot.slotStart);
+              return await replyAndSaveAppointment(`Ese horario se sale de consulta. Atendemos ${horario}. Si te encaja, puedo revisar ${snapFmt}.`, snappedPending);
+            }
+            return await replyAndSaveAppointment(`Ese horario se sale de consulta. Atendemos ${horario}. Dime otra franja y lo reviso contigo.`, buildOperationPendingSlot());
+          }
+
+          const combinedText = buildCombinedUserText(chatHistory, text);
+          const motivoReprogramacion = await extractMotivoFromText(combinedText) || String(targetAppointment?.motivo || '').trim() || null;
+
+          const updatedAppointment = await patchAppointmentDirectFallback({
+            req,
+            appointmentId: targetAppointment.id,
+            startAt: slotStart,
+            endAt: slotEnd,
+            status: 'reprogramada',
+            reason: motivoReprogramacion,
+          });
+
+          await logCrmCommunication({
+            channel: 'telegram',
+            direction: 'internal',
+            message_type: 'event',
+            message_text: updatedAppointment.ok
+              ? 'Solicitud de cambio de cita procesada desde Telegram'
+              : 'Error al mover cita desde Telegram',
+            payload: {
+              legacy_patient_id: link.paciente_id,
+              legacy_profesional_id: professionalId,
+              chat_id: String(chat_id),
+              route: intent.route,
+              confidence: intent.confidence,
+              detail: updatedAppointment,
+            },
+            status: updatedAppointment.ok ? 'processed' : 'error',
+          });
+
+          if (updatedAppointment.ok) {
+            const previousLabel = formatSlotLabel(targetAppointment.inicio_en);
+            const nextLabel = formatSlotLabel(slotStart);
+            return await replyAndSaveAppointment(
+              `Perfecto, he movido tu cita de ${previousLabel} a ${nextLabel}. Si necesitas otro ajuste, escribeme por aqui.`,
+              null,
+              [{ role: 'assistant', content: `Cita reprogramada: ${nextLabel} - ${motivoReprogramacion || 'sin motivo'}` }]
+            );
+          }
+
+          return await replyAndSaveAppointment(
+            'Lo siento, no he podido mover tu cita ahora mismo. Revisaremos la solicitud y te confirmaremos enseguida.',
+            buildOperationPendingSlot({ slotStart, slotEnd })
+          );
+        }
 
         if (!slotStart) {
           if (parsedCurrent.missingDay && parsedCurrent.parsedHour !== undefined) {
