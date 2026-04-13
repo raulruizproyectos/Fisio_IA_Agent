@@ -1525,20 +1525,24 @@ async function resolveAppointmentAvailability({
   return buildAppointmentConflictPayload(localConflicts, calendarConflicts);
 }
 
-function buildCalendarSyntheticAppointment(event, professionalId) {
+function buildCalendarSyntheticAppointment(event, professionalId, options = {}) {
+  const blockKind = String(options.blockKind || 'managed_appointment').trim() || 'managed_appointment';
+  const blocksBooking = options.blocksBooking !== undefined ? Boolean(options.blocksBooking) : true;
   return attachCalendarSyncMeta({
     id: `cal_${event.google_calendar_event_id}`,
     google_calendar_event_id: event.google_calendar_event_id,
     inicio_en: event.inicio_en,
     fin_en: event.fin_en,
     estado: 'confirmada',
-    canal_origen: 'manual',
+    canal_origen: 'google_calendar',
     motivo: normalizeAppointmentReason(event.description),
     nombre_paciente: normalizeCalendarPatientName(event.summary) || null,
     paciente_id: null,
     fisioterapeuta_id: professionalId,
     calendar_id: event.calendar_id || null,
     all_day: Boolean(event.all_day),
+    calendar_block_kind: blockKind,
+    calendar_blocks_booking: blocksBooking,
   }, {
     calendar_sync_state: 'calendar_only',
   });
@@ -1646,7 +1650,10 @@ async function reconcileAppointmentsWithCalendar({
       continue;
     }
 
-    calendarOnlyRows.push(buildCalendarSyntheticAppointment(event, professionalId));
+    calendarOnlyRows.push(buildCalendarSyntheticAppointment(event, professionalId, {
+      blockKind: 'managed_appointment',
+      blocksBooking: true,
+    }));
     knownCalendarIds.add(event.google_calendar_event_id);
   }
 
@@ -1654,7 +1661,11 @@ async function reconcileAppointmentsWithCalendar({
   for (const event of busyEvents) {
     if (!event || event.status === 'cancelled') continue;
     if (knownCalendarIds.has(event.google_calendar_event_id)) continue;
-    busyOnlyRows.push(buildCalendarSyntheticAppointment(event, professionalId));
+    const isHoliday = isHolidayCalendarEvent(event);
+    busyOnlyRows.push(buildCalendarSyntheticAppointment(event, professionalId, {
+      blockKind: isHoliday ? 'holiday_reference' : 'external_busy',
+      blocksBooking: !isHoliday,
+    }));
     knownCalendarIds.add(event.google_calendar_event_id);
   }
 
@@ -3272,6 +3283,5 @@ router.post('/video-jobs/:jobId/send', async (req, res, next) => {
   }
 });
 export default router;
-
 
 

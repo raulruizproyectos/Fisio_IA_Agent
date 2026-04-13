@@ -468,6 +468,7 @@ import Layout from '../layouts/Layout.astro';
               <button class="btn-primary" id="openNewAppointmentBtn"><span class="material-symbols-rounded">add</span> Nueva cita</button>
             </div>
           </div>
+          <p id="agendaCalendarMeta" class="agenda-calendar-meta" hidden></p>
           <section class="card agenda-cal-card">
             <div id="agendaCalendar" class="agenda-calendar">
               <div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>
@@ -1520,6 +1521,7 @@ import Layout from '../layouts/Layout.astro';
   const agendaSyncTitle = document.getElementById('agendaSyncTitle') as HTMLElement | null;
   const agendaSyncMeta = document.getElementById('agendaSyncMeta') as HTMLElement | null;
   const agendaSyncFacts = document.getElementById('agendaSyncFacts') as HTMLElement | null;
+  const agendaCalendarMeta = document.getElementById('agendaCalendarMeta') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
   const addPatientBtn = document.getElementById('addPatientBtn') as HTMLButtonElement | null;
   const patientModal = document.getElementById('patientModal') as HTMLElement | null;
@@ -4519,10 +4521,87 @@ import Layout from '../layouts/Layout.astro';
   const getExternalAgendaBlocks = (citas: any[] = []) =>
     (Array.isArray(citas) ? citas : []).filter((cita: any) => isCalendarOnlyAppointment(cita));
 
+  const getCalendarBlockKind = (cita: any) =>
+    String(cita?.calendar_block_kind || '').trim() || 'external_busy';
+
+  const isBlockingCalendarOnlyAppointment = (cita: any) => {
+    if (!isCalendarOnlyAppointment(cita)) return false;
+    if (typeof cita?.calendar_blocks_booking === 'boolean') return cita.calendar_blocks_booking;
+    return getCalendarBlockKind(cita) !== 'holiday_reference';
+  };
+
+  const getAgendaCalendarBlockMeta = (cita: any) => {
+    const kind = getCalendarBlockKind(cita);
+    if (kind === 'holiday_reference') {
+      return {
+        label: 'Festivo de referencia',
+        shortLabel: 'Festivo',
+        note: 'Evento de calendario de referencia. Visible en agenda, pero no bloquea reservas.',
+        colors: { bg: '#f8fafc', color: '#475569', border: '#94a3b8' },
+      };
+    }
+    if (kind === 'managed_appointment') {
+      return {
+        label: 'Cita detectada en Google Calendar',
+        shortLabel: 'Calendar',
+        note: 'Evento detectado en Google Calendar todavia no enlazado con ficha CRM.',
+        colors: { bg: '#ecfeff', color: '#155e75', border: '#06b6d4' },
+      };
+    }
+    return {
+      label: 'Bloqueo externo de Google Calendar',
+      shortLabel: 'Bloqueo',
+      note: 'Bloqueo real de agenda detectado en Google Calendar.',
+      colors: { bg: '#fff7ed', color: '#9a3412', border: '#f97316' },
+    };
+  };
+
+  const summarizeCalendarOnlyBlocks = (citas: any[] = []) => {
+    const blocks = getExternalAgendaBlocks(citas);
+    let blocking = 0;
+    let managed = 0;
+    let holidays = 0;
+
+    for (const cita of blocks) {
+      const kind = getCalendarBlockKind(cita);
+      if (kind === 'holiday_reference') {
+        holidays += 1;
+        continue;
+      }
+      if (kind === 'managed_appointment') {
+        managed += 1;
+      } else if (isBlockingCalendarOnlyAppointment(cita)) {
+        blocking += 1;
+      }
+    }
+
+    return { total: blocks.length, blocking, managed, holidays };
+  };
+
+  const renderAgendaCalendarMeta = (citas: any[] = []) => {
+    if (!agendaCalendarMeta) return;
+    const summary = summarizeCalendarOnlyBlocks(citas);
+    if (!summary.total) {
+      agendaCalendarMeta.hidden = true;
+      agendaCalendarMeta.textContent = '';
+      return;
+    }
+
+    const chunks: string[] = [];
+    if (summary.blocking) chunks.push(`${summary.blocking} bloqueo${summary.blocking === 1 ? '' : 's'} real${summary.blocking === 1 ? '' : 'es'}`);
+    if (summary.managed) chunks.push(`${summary.managed} cita${summary.managed === 1 ? '' : 's'} solo Calendar`);
+    if (summary.holidays) chunks.push(`${summary.holidays} festivo${summary.holidays === 1 ? '' : 's'} de referencia (no bloquean reservas)`);
+    agendaCalendarMeta.textContent = `Google Calendar esta aportando ${chunks.join(' | ')} en esta semana.`;
+    agendaCalendarMeta.hidden = false;
+  };
+
   const getAgendaMirrorMeta = (cita: any) => {
     const state = String(cita?.calendar_sync_state || '').trim();
     const origin = String(cita?.calendar_origin || '').trim();
-    if (state === 'calendar_only') return { label: 'Solo Calendar', chipClass: 'pendiente', note: 'Bloque detectado en Google Calendar sin enlace todavia con una ficha del CRM.' };
+    if (state === 'calendar_only') {
+      const blockMeta = getAgendaCalendarBlockMeta(cita);
+      return { label: 'Solo Calendar', chipClass: 'pendiente', note: blockMeta.note };
+    }
     if (state === 'backfilled') return { label: 'Backfill', chipClass: 'pendiente', note: 'La cita se recupero desde Google Calendar y ya tiene correspondencia en CRM.' };
     if (state === 'crm_only') return { label: 'Solo CRM', chipClass: 'caducado', note: 'La cita existe en CRM pero todavia no aparece enlazada en Google Calendar.' };
     if (state === 'linked' || origin === 'calendar' || origin === 'crm') return { label: 'CRM + Calendar', chipClass: 'aprobado', note: 'La cita esta enlazada entre CRM y Google Calendar.' };
@@ -4677,18 +4756,19 @@ import Layout from '../layouts/Layout.astro';
         for (const a of appts) {
           const st = a.estado || 'pendiente';
           const calendarOnly = isCalendarOnlyAppointment(a);
+          const blockMeta = calendarOnly ? getAgendaCalendarBlockMeta(a) : null;
           const c = calendarOnly
-            ? { bg: '#fff7ed', color: '#9a3412', border: '#f97316' }
+            ? (blockMeta?.colors || { bg: '#fff7ed', color: '#9a3412', border: '#f97316' })
             : (STATUS[st] || DEF);
           const firstName = calendarOnly
-            ? 'Bloqueo'
+            ? (blockMeta?.shortLabel || 'Bloqueo')
             : (a.nombre_paciente || 'Paciente').split(' ')[0];
           const timeStr = fmtHourOnly(a.inicio_en);
           const motivo = calendarOnly
-            ? ((a.motivo || a.nombre_paciente || 'Google Calendar').slice(0, 26))
+            ? ((a.motivo || a.nombre_paciente || blockMeta?.label || 'Google Calendar').slice(0, 26))
             : (a.motivo ? a.motivo.slice(0, 22) : '');
           const tipLabel = calendarOnly
-            ? `Bloqueo Google Calendar${a.motivo ? ` - ${a.motivo}` : ''}`
+            ? `${blockMeta?.label || 'Bloqueo Google Calendar'}${a.motivo ? ` - ${a.motivo}` : ''}`
             : `${a.nombre_paciente || ''}${a.motivo ? ` - ${a.motivo}` : ''}`;
           const tip = escapeAttr(tipLabel);
           const calPatId = escapeAttr(a.paciente_id || '');
@@ -4736,8 +4816,9 @@ import Layout from '../layouts/Layout.astro';
       ]);
       const citas = payload.data || [];
       const operationalCitas = getOperationalAgendaAppointments(citas);
-      const externalBlocks = getExternalAgendaBlocks(citas);
+      const calendarOnlySummary = summarizeCalendarOnlyBlocks(citas);
       renderAgendaSyncStatus(syncPayload?.data || null, payload?.calendar_sync || null);
+      renderAgendaCalendarMeta(citas);
       renderDashboardCitas(operationalCitas);
       const todayCount = operationalCitas.filter((c: any) => !isAllDayAppointment(c) && isTodayDate(c.inicio_en || '')).length;
       const metricEl = document.getElementById('metricSesiones');
@@ -4750,8 +4831,8 @@ import Layout from '../layouts/Layout.astro';
 
       if (!citasBody) return;
       if (!operationalCitas.length) {
-        const externalMessage = externalBlocks.length
-          ? `No hay citas clinicas esta semana. Google Calendar aporta ${externalBlocks.length} bloqueo${externalBlocks.length === 1 ? '' : 's'} externo${externalBlocks.length === 1 ? '' : 's'} que solo se muestran en la rejilla semanal.`
+        const externalMessage = calendarOnlySummary.total
+          ? `No hay citas clinicas esta semana. Google Calendar aporta ${calendarOnlySummary.blocking} bloqueo${calendarOnlySummary.blocking === 1 ? '' : 's'} real${calendarOnlySummary.blocking === 1 ? '' : 'es'}, ${calendarOnlySummary.managed} cita${calendarOnlySummary.managed === 1 ? '' : 's'} solo Calendar y ${calendarOnlySummary.holidays} festivo${calendarOnlySummary.holidays === 1 ? '' : 's'} de referencia.`
           : 'No hay citas esta semana.';
         setTableState(citasBody, 8, 'event_busy', externalMessage);
         return;
@@ -4791,6 +4872,10 @@ import Layout from '../layouts/Layout.astro';
       }).join('');
     } catch {
       renderAgendaSyncStatus({ ui_status: 'error', error: 'No se pudo consultar el estado del sync de Google Calendar.' }, null);
+      if (agendaCalendarMeta) {
+        agendaCalendarMeta.hidden = true;
+        agendaCalendarMeta.textContent = '';
+      }
       if (cal) cal.innerHTML = '<div class="agenda-cal-loading">Error al cargar la agenda</div>';
       setTableState(citasBody, 8, 'cloud_off', 'Error al cargar citas');
       renderDashboardCitas([], 'error');
@@ -10850,6 +10935,16 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     min-width: 160px;
     text-align: center;
   }
+  .agenda-calendar-meta {
+    margin: 0.25rem 0 0.75rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 0.6rem;
+    border: 1px dashed var(--border);
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
   .agenda-cal-card { padding: 0; overflow: hidden; }
   .agenda-calendar { width: 100%; overflow-x: auto; }
   .agenda-cal-loading {
@@ -15074,6 +15169,534 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .assistant-fab {
       right: 0.75rem;
       bottom: 0.75rem;
+    }
+  }
+</style>
+
+<style is:global id="clinic-luxury-v3">
+  :root {
+    --clinic-ink: #11293a;
+    --clinic-teal-deep: #123a4f;
+    --clinic-teal-soft: #d7ece8;
+    --clinic-ivory: #f7f0e3;
+    --clinic-paper: #fffaf2;
+    --clinic-gold: #9a7440;
+    --clinic-line: rgba(181, 156, 115, 0.28);
+    --clinic-shadow: 0 28px 60px -40px rgba(27, 24, 18, 0.24);
+    --ease-premium: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(217, 236, 232, 0.82), transparent 24%),
+      radial-gradient(circle at 82% 18%, rgba(242, 225, 192, 0.65), transparent 20%),
+      linear-gradient(180deg, #f5eddf 0%, #efe6d6 100%);
+    color: var(--clinic-ink);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(154, 116, 64, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17, 41, 58, 0.035) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+    opacity: 0.42;
+    z-index: 0;
+  }
+
+  .app-shell,
+  .workspace-shell,
+  .content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar {
+    border-right: 1px solid rgba(168, 201, 194, 0.16);
+    background:
+      radial-gradient(circle at top right, rgba(239, 215, 172, 0.12), transparent 24%),
+      linear-gradient(180deg, #102a38 0%, #143a4d 62%, #0f6c67 100%);
+    box-shadow: 30px 0 60px -42px rgba(16, 24, 32, 0.58);
+  }
+
+  .sidebar::before {
+    opacity: 0.3;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0)),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: auto, 26px 26px;
+  }
+
+  .sidebar-brand,
+  .sidebar-nav,
+  .sidebar-bottom {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-text strong,
+  .sidebar-section-label {
+    color: #f7f2ea !important;
+  }
+
+  .brand-text span,
+  .sidebar-bottom,
+  .nav-item {
+    color: rgba(235, 242, 244, 0.8);
+  }
+
+  .nav-item {
+    border-radius: 1rem;
+    transition:
+      transform 160ms var(--ease-premium),
+      background 180ms var(--ease-premium),
+      border-color 180ms var(--ease-premium),
+      color 180ms var(--ease-premium);
+  }
+
+  .nav-item:hover,
+  .nav-item:focus-visible {
+    transform: translateX(2px);
+    background: rgba(255, 250, 242, 0.12);
+    border-color: rgba(237, 214, 177, 0.18);
+    color: #fff9f2;
+  }
+
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(255, 247, 232, 0.18), rgba(255, 247, 232, 0.08));
+    border: 1px solid rgba(237, 214, 177, 0.26);
+    color: #fffaf4;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-item.active .nav-icon,
+  .nav-item:hover .nav-icon {
+    color: #f3d8a2;
+  }
+
+  .topbar {
+    border: 1px solid rgba(186, 164, 126, 0.24);
+    border-radius: 1.4rem;
+    background:
+      linear-gradient(180deg, rgba(255, 251, 244, 0.86), rgba(248, 241, 229, 0.78));
+    box-shadow: 0 18px 40px -34px rgba(31, 29, 24, 0.28);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .topbar-left .material-symbols-rounded,
+  .topbar-right .material-symbols-rounded {
+    color: var(--clinic-ink);
+  }
+
+  .workspace-shell {
+    gap: 1.15rem;
+  }
+
+  .content {
+    padding-top: 1.05rem;
+  }
+
+  .page-section {
+    animation: pageFadeIn 240ms var(--ease-premium);
+  }
+
+  .card,
+  .metric-card,
+  .cockpit-block,
+  .widget-card,
+  .table-card,
+  .agenda-cal-card,
+  .template-kpi-card,
+  .ficha-hero-main,
+  .ficha-hero-card,
+  .ficha-overview-card,
+  .ficha-rail-card {
+    box-shadow: var(--clinic-shadow) !important;
+  }
+
+  .card,
+  .table-card,
+  .agenda-cal-card,
+  .widget-card {
+    border-color: var(--clinic-line) !important;
+    background:
+      radial-gradient(circle at top right, rgba(215, 236, 232, 0.42), transparent 20%),
+      linear-gradient(180deg, rgba(255, 252, 246, 0.97), rgba(247, 239, 227, 0.93)) !important;
+  }
+
+  .card-header h2,
+  .page-title,
+  .cockpit-block-copy h2,
+  .template-kpi-card strong {
+    color: var(--clinic-ink);
+  }
+
+  .page-title {
+    letter-spacing: -0.05em;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost,
+  .btn-link-inline,
+  .btn-action,
+  .command-tile,
+  .metric-card,
+  .hero-band-pill,
+  .nav-item,
+  .icon-btn,
+  .assistant-launch-btn {
+    transition:
+      transform 160ms var(--ease-premium),
+      box-shadow 180ms var(--ease-premium),
+      border-color 180ms var(--ease-premium),
+      background 180ms var(--ease-premium),
+      color 180ms var(--ease-premium);
+  }
+
+  .btn-primary:active,
+  .btn-secondary:active,
+  .btn-ghost:active,
+  .btn-link-inline:active,
+  .btn-action:active,
+  .command-tile:active,
+  .hero-band-pill:active,
+  .assistant-launch-btn:active,
+  .icon-btn:active {
+    transform: scale(0.97);
+  }
+
+  .assistant-launch-btn,
+  .icon-btn,
+  .sidebar-toggle {
+    border-color: rgba(181, 156, 115, 0.22);
+    background: rgba(255, 250, 242, 0.72);
+  }
+
+  .assistant-launch-btn:hover,
+  .icon-btn:hover,
+  .sidebar-toggle:hover {
+    background: rgba(255, 252, 247, 0.94);
+    box-shadow: 0 16px 26px -22px rgba(34, 33, 28, 0.22);
+  }
+
+  .clinical-metrics .metric-card {
+    overflow: hidden;
+  }
+
+  .clinical-metrics .metric-card::after {
+    content: '';
+    position: absolute;
+    inset: auto -12% -26% auto;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 108, 103, 0.12), rgba(16, 108, 103, 0));
+    pointer-events: none;
+  }
+
+  .clinical-metrics .metric-label,
+  .card-subtitle,
+  .cockpit-block-copy p,
+  .agenda-sync-copy p,
+  .agenda-calendar-meta {
+    color: #60707e !important;
+  }
+
+  .command-tile,
+  .template-kpi-card,
+  .ficha-stream-item,
+  .ficha-data-card,
+  .recommendation-card {
+    border-color: rgba(185, 162, 124, 0.3) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 253, 249, 0.98), rgba(249, 242, 232, 0.93)) !important;
+  }
+
+  .agenda-header-row {
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(181, 156, 115, 0.22);
+    border-radius: 1.35rem;
+    background:
+      radial-gradient(circle at top right, rgba(216, 236, 232, 0.56), transparent 22%),
+      linear-gradient(180deg, rgba(255, 251, 244, 0.96), rgba(247, 240, 228, 0.92));
+    box-shadow: 0 24px 48px -38px rgba(31, 29, 24, 0.22);
+  }
+
+  .agenda-calendar-meta {
+    padding: 0.72rem 0.9rem;
+    border-style: solid;
+    border-color: rgba(181, 156, 115, 0.24);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(255, 252, 247, 0.95), rgba(244, 249, 248, 0.92));
+  }
+
+  .agenda-cal-grid {
+    background:
+      linear-gradient(180deg, rgba(255, 251, 244, 0.92), rgba(247, 240, 228, 0.86));
+  }
+
+  .agenda-cal-day-header,
+  .agenda-cal-time-header {
+    background: rgba(252, 247, 239, 0.92);
+  }
+
+  .agenda-cal-day-header.today {
+    background: rgba(215, 236, 232, 0.92);
+    color: #144154;
+  }
+
+  .assistant-rail {
+    padding: 0.7rem 0.7rem 0.7rem 0;
+  }
+
+  .assistant-rail-card {
+    border: 1px solid rgba(181, 156, 115, 0.2) !important;
+    background:
+      radial-gradient(circle at top right, rgba(216, 236, 232, 0.36), transparent 18%),
+      linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(246, 239, 228, 0.95)) !important;
+    box-shadow: 0 32px 72px -42px rgba(22, 24, 28, 0.36) !important;
+  }
+
+  .assistant-rail .assistant-module-header {
+    background:
+      linear-gradient(135deg, #14344a 0%, #175766 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .assistant-rail .assistant-module-header,
+  .assistant-rail .assistant-module-header * {
+    color: #f9f5ed !important;
+  }
+
+  .assistant-rail .assistant-dialog-surface,
+  .assistant-rail .assistant-toolbar,
+  .assistant-rail .ai-input-area {
+    background: transparent !important;
+  }
+
+  .assistant-rail .patient-selector,
+  .assistant-rail .ai-textarea-wrapper,
+  .assistant-rail .msg.agent .msg-body,
+  .assistant-rail .exercise-report-compact,
+  .assistant-flow-card,
+  .assistant-flow-step {
+    border-color: rgba(181, 156, 115, 0.22) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 253, 249, 0.98), rgba(248, 242, 233, 0.94)) !important;
+  }
+
+  .assistant-rail .msg.user .msg-body,
+  .assistant-rail .btn-generate {
+    background: linear-gradient(135deg, #14344a 0%, #175766 100%) !important;
+  }
+
+  .assistant-fab {
+    background: linear-gradient(135deg, #14344a 0%, #175766 100%);
+    box-shadow: 0 24px 42px -28px rgba(20, 52, 74, 0.56);
+  }
+
+  .page-section[data-page='citas'] .table-card,
+  .page-section[data-page='pacientes'] .table-card,
+  .page-section[data-page='historial'] .card,
+  .page-section[data-page='pagos'] .card,
+  .page-section[data-page='bonos'] .card,
+  .page-section[data-page='documentos'] .card,
+  .page-section[data-page='config'] .card {
+    border-color: rgba(181, 156, 115, 0.24) !important;
+    background:
+      radial-gradient(circle at top right, rgba(216, 236, 232, 0.38), transparent 16%),
+      linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(247, 239, 227, 0.93)) !important;
+  }
+
+  @keyframes pageFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 1180px) {
+    .topbar {
+      border-radius: 1.05rem;
+    }
+
+    .page-section[data-page='dashboard'] .hero-action-row,
+    .page-section[data-page='ficha-paciente'] .ficha-hero-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .page-section[data-page='dashboard'] .hero-action-row .btn-primary,
+    .page-section[data-page='dashboard'] .hero-action-row .btn-secondary,
+    .page-section[data-page='dashboard'] .hero-action-row .btn-ghost,
+    .page-section[data-page='ficha-paciente'] .ficha-hero-actions .btn-primary,
+    .page-section[data-page='ficha-paciente'] .ficha-hero-actions .btn-secondary,
+    .page-section[data-page='ficha-paciente'] .ficha-hero-actions .btn-ghost {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .page-section[data-page='dashboard'] .clinical-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .page-section[data-page='dashboard'] .command-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .page-section[data-page='citas'] .agenda-header-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .page-section[data-page='citas'] .week-nav-bar {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, auto));
+      justify-content: start;
+      gap: 0.55rem;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 0.15rem;
+    }
+
+    .agenda-header-row {
+      padding: 0.9rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    body::before {
+      opacity: 0.24;
+    }
+
+    .topbar {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      flex-wrap: wrap;
+      align-items: center;
+      row-gap: 0.7rem;
+      padding-inline: 0.85rem;
+    }
+
+    .assistant-rail {
+      padding: 0;
+    }
+
+    .topbar-right {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .page-title {
+      font-size: clamp(1.55rem, 6vw, 2rem);
+      line-height: 1.02;
+    }
+
+    .page-header-row,
+    .agenda-header-row {
+      gap: 0.85rem;
+    }
+
+    .page-section[data-page='dashboard'] .hero-action-row,
+    .page-section[data-page='ficha-paciente'] .ficha-hero-actions,
+    .page-section[data-page='dashboard'] .clinical-metrics,
+    .page-section[data-page='dashboard'] .command-grid,
+    .page-section[data-page='dashboard'] .dashboard-bottom-row {
+      grid-template-columns: 1fr !important;
+    }
+
+    .page-section[data-page='dashboard'] .hero-panel-main,
+    .page-section[data-page='dashboard'] .cockpit-side-card,
+    .page-section[data-page='dashboard'] .metric-card,
+    .page-section[data-page='dashboard'] .command-tile,
+    .page-section[data-page='citas'] .agenda-header-row,
+    .page-section[data-page='citas'] .agenda-calendar-meta {
+      border-radius: 1.05rem !important;
+    }
+
+    .page-section[data-page='dashboard'] .hero-panel-main {
+      padding: 1rem !important;
+    }
+
+    .page-section[data-page='dashboard'] .hero-title {
+      max-width: 10ch !important;
+      font-size: clamp(2.1rem, 10vw, 3rem) !important;
+    }
+
+    .page-section[data-page='dashboard'] .clinical-hero-band {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .page-section[data-page='dashboard'] .hero-band-pill {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .page-section[data-page='dashboard'] .metric-card {
+      min-height: 8.8rem;
+    }
+
+    .page-section[data-page='dashboard'] .command-tile {
+      min-height: 10.2rem;
+    }
+
+    .page-section[data-page='citas'] .agenda-sync-status {
+      align-items: flex-start;
+    }
+
+    .page-section[data-page='citas'] .agenda-sync-copy {
+      min-width: 0;
+    }
+
+    .page-section[data-page='citas'] .week-nav-bar {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .page-section[data-page='citas'] .week-nav-bar #weekLabel {
+      grid-column: 1 / -1;
+      order: -1;
+      text-align: left;
+      min-width: 0;
+      padding-inline: 0.1rem;
+    }
+
+    .page-section[data-page='citas'] .week-nav-bar #openNewAppointmentBtn {
+      grid-column: 1 / -1;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .page-section[data-page='citas'] .agenda-calendar-meta {
+      padding: 0.78rem 0.82rem;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-hero-presence {
+      gap: 0.55rem;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-presence-chip {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .assistant-rail-card {
+      border-radius: 0 !important;
     }
   }
 </style>

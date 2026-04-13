@@ -1,3 +1,82 @@
+## [Sesion 117] - 2026-04-13 (Premium shell del CRM + validacion real de produccion)
+### Objetivo
+- Elevar la percepcion de producto del CRM para acercarlo a una experiencia mas premium y cerrar la validacion real tras el deploy anterior.
+
+### Cambios aplicados
+- `frontend/src/pages/index.astro`
+  - nueva capa visual global `clinic-luxury-v3` para todo el shell:
+    - fondo editorial con atmosfera marfil/teal/bronce
+    - sidebar mas sobria y premium
+    - topbar con tratamiento tipo barra de control
+    - tarjetas, agenda y rail del copilot alineados al mismo lenguaje visual
+    - microinteracciones mas limpias (`:active`, hover y page fade-in)
+  - refuerzo responsive de usabilidad:
+    - acciones del hero y ficha apilan limpio en tablet/movil
+    - agenda semanal reorganiza controles sin romper operativa
+    - metricas y tiles dejan de comprimirse en movil
+- `frontend/src/layouts/Layout.astro`
+  - actualizada `meta fisio-build` a `2026-04-13-clinic-luxury-v3`
+
+### Verificaciones realizadas
+- Produccion:
+  - `GET /api/health` del backend -> `200`
+  - `POST /api/profesional/appointments/check-availability` para `2026-04-02T11:00:00+02:00` a `2026-04-02T12:00:00+02:00` -> `available: true`
+  - conclusion: `Jueves Santo` ya no bloquea reservas en produccion
+- Frontend:
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\frontend-local-build.ps1 -WorkDir C:\Temp\Fisio_IA_Agent_frontend_local_v3` -> OK
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\frontend-local-build.ps1 -WorkDir C:\Temp\Fisio_IA_Agent_frontend_local_v4` -> OK tras refuerzo responsive
+  - warning no bloqueante de Vite:
+    - chunk principal del dashboard sigue grande y convendra dividirlo en una iteracion posterior
+
+### Hallazgo de continuidad
+- La mejora visual y de metadata de agenda de sesiones 116/117 aun no esta visible en la URL publica.
+- El backend productivo ya refleja el fix funcional de disponibilidad, pero el frontend productivo y la lectura de agenda todavia no muestran:
+  - `agendaCalendarMeta`
+  - `calendar_block_kind`
+  - `calendar_blocks_booking`
+
+### Punto exacto de continuidad
+1. Push de `main` con sesiones 116/117.
+2. Redeploy de `fisio-backend` y `fisio-frontend` desde `origin/main`.
+3. Validacion visual final:
+   - shell premium visible desde login/cockpit
+   - agenda semanal con resumen Calendar
+   - festivos visibles como referencia y no como bloqueo real.
+
+## [Sesion 116] - 2026-04-09 (Agenda: bloqueos Google Calendar mas claros)
+### Objetivo
+- Retomar desde el checkpoint 115 y mejorar la lectura de bloqueos reales de Google Calendar en la agenda semanal del CRM.
+
+### Cambios aplicados
+- `backend/src/routes/professional.js`
+  - `calendar_only` ahora etiqueta tipo de bloque con metadata:
+    - `calendar_block_kind`: `managed_appointment`, `external_busy`, `holiday_reference`
+    - `calendar_blocks_booking`: `true/false`
+  - los eventos de festivo quedan marcados como referencia (`holiday_reference`) y no bloqueantes.
+- `frontend/src/pages/index.astro`
+  - nuevo resumen visible semanal (`agendaCalendarMeta`) con desglose:
+    - bloqueos reales
+    - citas solo Calendar
+    - festivos de referencia (no bloqueantes)
+  - chips y tooltips de bloques `calendar_only` mas explicitos segun tipo.
+  - mensaje vacio de tabla afinado con desglose de bloqueos Calendar por categoria.
+
+### Verificaciones realizadas
+- `node --check backend/src/routes/professional.js` -> OK
+- GitHub remoto revisado por API:
+  - `main` en `7db0f8f`
+  - `open issues = 0`
+  - `open prs = 0`
+- No se pudo validar frontend local con Astro en este host:
+  - `npm run check` falla por `astro` no instalado localmente (`node_modules` ausente).
+
+### Punto exacto de continuidad
+1. Redeploy de `fisio-backend` y `fisio-frontend`.
+2. Abrir agenda semanal y validar:
+   - resumen de bloqueos Calendar visible arriba de la rejilla
+   - distincion correcta entre bloqueo real, cita solo Calendar y festivo de referencia.
+3. Confirmar que la reserva sigue permitida cuando el item es `holiday_reference`.
+
 ## [Sesion 115] - 2026-04-07 (Citas Telegram cerradas + limpieza CRM de appointments)
 ### Objetivo
 - Cerrar el bloque de citas para dejar Telegram estable y el dashboard CRM sin metadatos internos visibles.

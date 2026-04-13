@@ -1,3 +1,59 @@
+## Estado actual (2026-04-13, Sesion 117) - Shell premium listo y validacion funcional de produccion cerrada.
+
+### Completado sesion 117
+- [x] Backend productivo validado en `200` (`/api/health`).
+- [x] El hueco `2026-04-02 11:00 Europe/Madrid` ya queda libre en produccion:
+  - `POST /api/profesional/appointments/check-availability` -> `available=true`
+  - `Jueves Santo` ya no bloquea reservas.
+- [x] Rediseño premium del shell CRM aplicado localmente:
+  - fondo editorial
+  - sidebar y topbar mas premium
+  - cards, agenda y copilot con lenguaje visual unificado
+  - responsive reforzado para tablet y movil
+- [x] Frontend validado en copia aislada:
+  - `C:\Temp\Fisio_IA_Agent_frontend_local_v3`
+  - `astro build` OK
+  - `C:\Temp\Fisio_IA_Agent_frontend_local_v4`
+  - `astro build` OK tras refuerzo responsive
+
+### Siguiente paso exacto
+1. **Push de `main`** con sesiones 116/117.
+2. **Redeploy backend y frontend en EasyPanel**.
+3. **Validar visualmente**:
+   - cockpit con look premium ya publicado
+   - agenda con `agendaCalendarMeta`
+   - festivos visibles como referencia y no como bloqueo real.
+
+### Nota operativa
+- Produccion todavia no enseña la UI nueva de sesiones 116/117.
+- La siguiente iteracion de producto, una vez publicado esto, debe atacar percepcion de acabado y rendimiento:
+  - dividir chunk principal del dashboard
+  - seguir refinando agenda/ficha/copilot sobre esta base visual ya mas premium.
+
+---
+## Estado actual (2026-04-09, Sesion 116) - Agenda Calendar con bloqueos tipados para lectura operativa.
+
+### Completado sesion 116
+- [x] Reanudado proyecto en `main` sincronizado con GitHub (`7db0f8f`).
+- [x] GitHub revisado por API: `open issues=0`, `open prs=0`.
+- [x] Backend agenda ahora tipa `calendar_only`:
+  - `managed_appointment`
+  - `external_busy`
+  - `holiday_reference` (no bloqueante)
+- [x] Frontend agenda muestra resumen semanal de bloques Calendar y diferencia visual/tooltips por tipo.
+
+### Siguiente paso
+1. **Redeploy backend y frontend en EasyPanel** para publicar sesion 116.
+2. **Validar agenda semanal**:
+   - aparece el resumen de bloqueos encima de la rejilla
+   - los festivos salen como referencia y no como bloqueo real.
+3. **Prueba funcional**: verificar que un hueco con `holiday_reference` no devuelve conflicto en reserva.
+
+### IDs utiles
+- SHA `main` remoto revisado: `7db0f8f48c6822ef88da16d17eff024f95d42898`
+- Repo: `https://github.com/raulruizproyectos/Fisio_IA_Agent`
+
+---
 ## Estado actual (2026-04-07, Sesion 115) - Citas Telegram cerradas y CRM limpio para retomar.
 
 ### Completado sesion 115
