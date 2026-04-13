@@ -1398,6 +1398,28 @@ import Layout from '../layouts/Layout.astro';
       <span class="material-symbols-rounded">robot_2</span>
       <span>Copilot</span>
     </button>
+    <nav class="mobile-dock" id="mobileDock" aria-label="Accesos rapidos">
+      <button type="button" class="mobile-dock-item active" data-mobile-nav="dashboard" aria-label="Ir a inicio">
+        <span class="material-symbols-rounded">home</span>
+        <span>Inicio</span>
+      </button>
+      <button type="button" class="mobile-dock-item" data-mobile-nav="pacientes" aria-label="Ir a pacientes">
+        <span class="material-symbols-rounded">group</span>
+        <span>Pacientes</span>
+      </button>
+      <button type="button" class="mobile-dock-item mobile-dock-item-accent" data-mobile-action="open-copilot" aria-label="Abrir Copilot">
+        <span class="material-symbols-rounded">psychology</span>
+        <span>Copilot</span>
+      </button>
+      <button type="button" class="mobile-dock-item" data-mobile-nav="citas" aria-label="Ir a agenda">
+        <span class="material-symbols-rounded">calendar_today</span>
+        <span>Agenda</span>
+      </button>
+      <button type="button" class="mobile-dock-item" data-mobile-nav="pagos" aria-label="Ir a pagos">
+        <span class="material-symbols-rounded">payments</span>
+        <span>Pagos</span>
+      </button>
+    </nav>
   </div>
 </Layout>
 
@@ -1456,6 +1478,9 @@ import Layout from '../layouts/Layout.astro';
   const assistantRailClose = document.getElementById('assistantRailClose') as HTMLButtonElement | null;
   const assistantRailBackdrop = document.getElementById('assistantRailBackdrop') as HTMLElement | null;
   const assistantRailFab = document.getElementById('assistantRailFab') as HTMLButtonElement | null;
+  const mobileDock = document.getElementById('mobileDock') as HTMLElement | null;
+  const mobileDockNavButtons = document.querySelectorAll('[data-mobile-nav]') as NodeListOf<HTMLButtonElement>;
+  const mobileDockActionButtons = document.querySelectorAll('[data-mobile-action]') as NodeListOf<HTMLButtonElement>;
   const assistantPatientLabel = document.getElementById('assistantPatientLabel') as HTMLElement | null;
   const assistantPatientMeta = document.getElementById('assistantPatientMeta') as HTMLElement | null;
   const assistantPatientBrief = document.getElementById('assistantPatientBrief') as HTMLElement | null;
@@ -2441,6 +2466,7 @@ import Layout from '../layouts/Layout.astro';
   const navigateTo = (section: string) => {
     activeSection = section;
     navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === section));
+    mobileDockNavButtons.forEach((button) => button.classList.toggle('active', button.dataset.mobileNav === section));
     pages.forEach(p => {
       const isActive = (p as HTMLElement).dataset.page === section;
       p.classList.toggle('active', isActive);
@@ -2557,6 +2583,22 @@ import Layout from '../layouts/Layout.astro';
       }
       if (action === 'new-patient') {
         openPatientModal();
+      }
+    });
+  });
+  mobileDockNavButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const section = button.dataset.mobileNav;
+      if (!section) return;
+      navigateTo(section);
+    });
+  });
+  mobileDockActionButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.mobileAction;
+      if (action === 'open-copilot') {
+        openAssistantRail();
+        input?.focus();
       }
     });
   });
@@ -8622,6 +8664,77 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
   .assistant-fab[aria-expanded='true'] {
     background: linear-gradient(135deg, #0f766e, #0369a1);
+  }
+
+  .mobile-dock {
+    display: none;
+    position: fixed;
+    left: max(0.8rem, env(safe-area-inset-left, 0px));
+    right: max(0.8rem, env(safe-area-inset-right, 0px));
+    bottom: calc(0.82rem + env(safe-area-inset-bottom, 0px));
+    z-index: 96;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.45rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(181, 156, 115, 0.24);
+    border-radius: 1.45rem;
+    background:
+      linear-gradient(180deg, rgba(255, 251, 244, 0.94), rgba(246, 239, 228, 0.92));
+    box-shadow: 0 24px 54px -34px rgba(16, 24, 32, 0.42);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .mobile-dock-item {
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 1.1rem;
+    min-height: 4.2rem;
+    padding: 0.48rem 0.35rem 0.4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    color: #5f6d78;
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition:
+      transform 160ms var(--ease-premium),
+      background 180ms var(--ease-premium),
+      border-color 180ms var(--ease-premium),
+      color 180ms var(--ease-premium),
+      box-shadow 180ms var(--ease-premium);
+  }
+
+  .mobile-dock-item .material-symbols-rounded {
+    font-size: 1.2rem;
+    color: inherit;
+  }
+
+  .mobile-dock-item.active {
+    color: var(--clinic-ink);
+    border-color: rgba(23, 107, 99, 0.16);
+    background: linear-gradient(180deg, rgba(216, 236, 232, 0.92), rgba(255, 249, 240, 0.9));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  }
+
+  .mobile-dock-item-accent {
+    color: #f9f5ed;
+    background: linear-gradient(135deg, #14344a 0%, #175766 100%);
+    box-shadow: 0 16px 28px -20px rgba(20, 52, 74, 0.68);
+  }
+
+  .mobile-dock-item-accent .material-symbols-rounded,
+  .mobile-dock-item-accent span {
+    color: inherit;
+  }
+
+  .mobile-dock-item:active {
+    transform: translateY(1px) scale(0.97);
   }
 
   .assistant-rail {
@@ -15600,6 +15713,16 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       justify-content: space-between;
     }
 
+    .user-pill {
+      padding-right: 0.5rem;
+    }
+
+    .user-name {
+      max-width: 9.5rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .page-title {
       font-size: clamp(1.55rem, 6vw, 2rem);
       line-height: 1.02;
@@ -15697,6 +15820,19 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .assistant-rail-card {
       border-radius: 0 !important;
+    }
+
+    .mobile-dock {
+      display: grid;
+    }
+
+    .assistant-fab,
+    .assistant-launch-btn {
+      display: none !important;
+    }
+
+    .content {
+      padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px)) !important;
     }
   }
 </style>
