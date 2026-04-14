@@ -531,6 +531,18 @@ import Layout from '../layouts/Layout.astro';
               <div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>
             </div>
           </section>
+          <section class="card agenda-mobile-card">
+            <header class="agenda-mobile-head">
+              <div>
+                <span class="agenda-mobile-kicker">Agenda movil</span>
+                <h2>Semana clinica en formato tactil</h2>
+              </div>
+              <p id="agendaMobileSummary">Preparando timeline semanal...</p>
+            </header>
+            <div class="agenda-mobile-list" id="agendaMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando timeline movil...</p></div>
+            </div>
+          </section>
           <section class="card table-card">
             <header class="card-header">
               <h2>Pacientes esta semana <span class="badge-week-count" id="weekPatientCount"></span></h2>
@@ -803,6 +815,37 @@ import Layout from '../layouts/Layout.astro';
                 <strong id="fichaHeroContinuity">Caso listo para revisar</strong>
                 <p id="fichaHeroContinuityMeta">Usa el agente, documentos y agenda desde esta misma vista.</p>
               </article>
+            </div>
+          </section>
+
+          <section class="card ficha-command-shell">
+            <div class="ficha-command-grid">
+              <article class="ficha-command-card">
+                <span>Riesgo clinico</span>
+                <strong id="fichaOpsRiskTitle">Sin lectura todavia</strong>
+                <p id="fichaOpsRiskMeta">Carga inicial del caso en progreso.</p>
+              </article>
+              <article class="ficha-command-card">
+                <span>Proxima decision</span>
+                <strong id="fichaOpsNextTitle">Selecciona un paciente</strong>
+                <p id="fichaOpsNextMeta">Define la siguiente accion clinica para activar continuidad.</p>
+              </article>
+              <article class="ficha-command-card">
+                <span>Plan domiciliario</span>
+                <strong id="fichaOpsPlanTitle">Sin plan IA</strong>
+                <p id="fichaOpsPlanMeta">Cuando generes un plan, aparecera su estado aqui.</p>
+              </article>
+              <article class="ficha-command-card">
+                <span>Economia del caso</span>
+                <strong id="fichaOpsBillingTitle">0,00 EUR</strong>
+                <p id="fichaOpsBillingMeta">Sin cobros vinculados.</p>
+              </article>
+            </div>
+            <div class="ficha-command-actions">
+              <button class="btn-secondary btn-sm" type="button" id="fichaOpsAgendarBtn"><span class="material-symbols-rounded">calendar_today</span> Agendar</button>
+              <button class="btn-ghost btn-sm" type="button" id="fichaOpsNotaBtn"><span class="material-symbols-rounded">clinical_notes</span> Nueva nota</button>
+              <button class="btn-ghost btn-sm" type="button" id="fichaOpsHistoriaBtn"><span class="material-symbols-rounded">history</span> Historial</button>
+              <button class="btn-primary btn-sm" type="button" id="fichaOpsCopilotBtn"><span class="material-symbols-rounded">psychology</span> Copilot</button>
             </div>
           </section>
 
@@ -1615,6 +1658,8 @@ import Layout from '../layouts/Layout.astro';
   const agendaSyncMeta = document.getElementById('agendaSyncMeta') as HTMLElement | null;
   const agendaSyncFacts = document.getElementById('agendaSyncFacts') as HTMLElement | null;
   const agendaCalendarMeta = document.getElementById('agendaCalendarMeta') as HTMLElement | null;
+  const agendaMobileSummary = document.getElementById('agendaMobileSummary') as HTMLElement | null;
+  const agendaMobileList = document.getElementById('agendaMobileList') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
   const addPatientBtn = document.getElementById('addPatientBtn') as HTMLButtonElement | null;
   const patientModal = document.getElementById('patientModal') as HTMLElement | null;
@@ -2935,10 +2980,20 @@ import Layout from '../layouts/Layout.astro';
       }
     }
   };
+  const getStateHint = (icon: string, text: string) => {
+    const normalized = String(text || '').toLowerCase();
+    if (icon === 'cloud_off') return 'Reintenta en unos segundos. Si persiste, revisa backend y conectividad.';
+    if (icon === 'search_off') return 'Prueba menos filtros o elimina la busqueda para recuperar resultados.';
+    if (icon === 'person_off') return 'Crea la primera ficha para activar agenda, historial y documentos.';
+    if (icon === 'event_busy') return 'Puedes crear una cita manual o revisar bloqueos externos de Calendar.';
+    if (icon === 'sync' || normalized.includes('cargando') || normalized.includes('actualizando')) return 'Estamos sincronizando datos en tiempo real.';
+    return '';
+  };
   const renderState = (icon: string, text: string, compact = false, loading = false) => {
     const cls = compact ? 'empty-state-sm' : 'empty-state';
     const loadingCls = loading ? ' state-loading' : '';
-    return `<div class="${cls}${loadingCls}"><span class="material-symbols-rounded">${icon}</span><p>${escapeHtml(text)}</p></div>`;
+    const hint = getStateHint(icon, text);
+    return `<div class="${cls}${loadingCls}"><span class="material-symbols-rounded">${icon}</span><p>${escapeHtml(text)}</p>${hint ? `<small class="empty-state-hint">${escapeHtml(hint)}</small>` : ''}</div>`;
   };
   const setTableState = (tbody: HTMLElement | null, colspan: number, icon: string, text: string, loading = false) => {
     if (!tbody) return;
@@ -5066,11 +5121,102 @@ import Layout from '../layouts/Layout.astro';
     cal.innerHTML = html;
   };
 
+  const renderAgendaMobileTimeline = (operationalCitas: any[] = [], allCitas: any[] = [], weekStart: Date) => {
+    if (!agendaMobileList || !agendaMobileSummary) return;
+
+    const calendarOnlySummary = summarizeCalendarOnlyBlocks(allCitas);
+    const sorted = [...operationalCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+    const weekDays = Array.from({ length: 5 }, (_, idx) => {
+      const date = new Date(weekStart);
+      date.setDate(date.getDate() + idx);
+      return date;
+    });
+
+    if (!sorted.length) {
+      agendaMobileSummary.textContent = calendarOnlySummary.total
+        ? `Sin citas clinicas en esta semana. Google Calendar aporta ${calendarOnlySummary.total} bloqueo(s) de contexto.`
+        : 'Sin citas clinicas en esta semana.';
+      setListState(agendaMobileList, 'event_busy', 'No hay citas clinicas para mostrar en timeline movil.');
+      return;
+    }
+
+    const itemsByDay = new Map<string, any[]>();
+    for (const cita of sorted) {
+      const key = new Date(cita.inicio_en).toDateString();
+      if (!itemsByDay.has(key)) itemsByDay.set(key, []);
+      itemsByDay.get(key)!.push(cita);
+    }
+
+    const todayItems = sorted.filter((cita: any) => isTodayDate(cita.inicio_en || ''));
+    agendaMobileSummary.textContent = `${sorted.length} cita(s) esta semana | ${todayItems.length} hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
+
+    agendaMobileList.innerHTML = weekDays.map((date) => {
+      const key = date.toDateString();
+      const dayItems = itemsByDay.get(key) || [];
+      const isToday = isTodayDate(date.toISOString());
+      const dayTitle = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
+
+      if (!dayItems.length) {
+        return `
+          <article class="agenda-mobile-day ${isToday ? 'is-today' : ''}">
+            <header>
+              <strong>${escapeHtml(dayTitle)}</strong>
+              <span>Sin citas</span>
+            </header>
+            <p class="agenda-mobile-empty">Dia libre para captacion, seguimiento o documentacion.</p>
+          </article>
+        `;
+      }
+
+      return `
+        <article class="agenda-mobile-day ${isToday ? 'is-today' : ''}">
+          <header>
+            <strong>${escapeHtml(dayTitle)}</strong>
+            <span>${dayItems.length} cita(s)</span>
+          </header>
+          <div class="agenda-mobile-items">
+            ${dayItems.map((cita: any) => {
+              const estado = String(cita?.estado || 'pendiente');
+              const mirror = getAgendaMirrorMeta(cita);
+              const patientName = String(cita?.nombre_paciente || 'Paciente');
+              const patientId = String(cita?.paciente_id || '');
+              const hour = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita?.inicio_en);
+              const canal = cita?.canal_origen === 'crm_web' ? 'CRM Web' : cita?.canal_origen === 'telegram' ? 'Telegram' : String(cita?.canal_origen || 'Canal CRM');
+              const apptId = escapeAttr(cita?.id || '');
+              const canConfirm = estado === 'pendiente';
+              return `
+                <article class="agenda-mobile-item">
+                  <div class="agenda-mobile-item-main">
+                    <div class="agenda-mobile-item-top">
+                      <strong>${escapeHtml(hour)} | ${escapeHtml(patientName)}</strong>
+                      <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(estado)}</span>
+                    </div>
+                    <p>${escapeHtml(cita?.motivo || 'Sesion clinica sin motivo especificado.')}</p>
+                    <div class="agenda-mobile-item-meta">
+                      <span class="agenda-mobile-meta-pill">${escapeHtml(canal)}</span>
+                      <span class="agenda-mobile-meta-pill">${escapeHtml(mirror.label)}</span>
+                    </div>
+                  </div>
+                  <div class="agenda-mobile-item-actions">
+                    ${canConfirm ? `<button type="button" class="btn-sm" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar cita"><span class="material-symbols-rounded">check</span> Confirmar</button>` : ''}
+                    <button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>
+                  </div>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
+
   // === LOAD CITAS ===
   const loadCitas = async () => {
     const cal = document.getElementById('agendaCalendar');
     if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>';
     if (citasBody) setTableState(citasBody, 8, 'sync', 'Cargando agenda...', true);
+    if (agendaMobileList) setListState(agendaMobileList, 'sync', 'Cargando timeline movil...', true);
+    if (agendaMobileSummary) agendaMobileSummary.textContent = 'Sincronizando agenda semanal...';
     setListState(dashCitasBody, 'sync', 'Actualizando agenda...', true);
 
     const weekLabelEl = document.getElementById('weekLabel');
@@ -5103,6 +5249,7 @@ import Layout from '../layouts/Layout.astro';
       if (metricEl) metricEl.textContent = String(todayCount);
 
       renderAgendaCalendar(citas, agendaWeekStart);
+      renderAgendaMobileTimeline(operationalCitas, citas, agendaWeekStart);
 
       const countEl = document.getElementById('weekPatientCount');
       if (countEl) countEl.textContent = String(getVisibleAgendaPatientCount(citas));
@@ -5154,6 +5301,8 @@ import Layout from '../layouts/Layout.astro';
         agendaCalendarMeta.hidden = true;
         agendaCalendarMeta.textContent = '';
       }
+      if (agendaMobileSummary) agendaMobileSummary.textContent = 'No se pudo cargar la agenda movil esta vez.';
+      if (agendaMobileList) setListState(agendaMobileList, 'cloud_off', 'No se pudo cargar el timeline movil.');
       if (cal) cal.innerHTML = '<div class="agenda-cal-loading">Error al cargar la agenda</div>';
       setTableState(citasBody, 8, 'cloud_off', 'Error al cargar citas');
       renderDashboardCitas([], 'error');
@@ -6235,6 +6384,18 @@ import Layout from '../layouts/Layout.astro';
   const fichaHeroCopilotBtn = document.getElementById('fichaHeroCopilotBtn') as HTMLButtonElement | null;
   const fichaHeroAgendaBtn = document.getElementById('fichaHeroAgendaBtn') as HTMLButtonElement | null;
   const fichaHeroDocsBtn = document.getElementById('fichaHeroDocsBtn') as HTMLButtonElement | null;
+  const fichaOpsRiskTitle = document.getElementById('fichaOpsRiskTitle');
+  const fichaOpsRiskMeta = document.getElementById('fichaOpsRiskMeta');
+  const fichaOpsNextTitle = document.getElementById('fichaOpsNextTitle');
+  const fichaOpsNextMeta = document.getElementById('fichaOpsNextMeta');
+  const fichaOpsPlanTitle = document.getElementById('fichaOpsPlanTitle');
+  const fichaOpsPlanMeta = document.getElementById('fichaOpsPlanMeta');
+  const fichaOpsBillingTitle = document.getElementById('fichaOpsBillingTitle');
+  const fichaOpsBillingMeta = document.getElementById('fichaOpsBillingMeta');
+  const fichaOpsAgendarBtn = document.getElementById('fichaOpsAgendarBtn') as HTMLButtonElement | null;
+  const fichaOpsNotaBtn = document.getElementById('fichaOpsNotaBtn') as HTMLButtonElement | null;
+  const fichaOpsHistoriaBtn = document.getElementById('fichaOpsHistoriaBtn') as HTMLButtonElement | null;
+  const fichaOpsCopilotBtn = document.getElementById('fichaOpsCopilotBtn') as HTMLButtonElement | null;
   const fichaDatosView = document.getElementById('fichaDatosView');
   const fichaDatosForm = document.getElementById('fichaDatosForm') as HTMLFormElement | null;
   const fichaEditToggle = document.getElementById('fichaEditToggle');
@@ -6670,7 +6831,7 @@ import Layout from '../layouts/Layout.astro';
           </article>`).join('')
         : unavailableModules.length
           ? '<p class="empty-inline">La timeline se muestra en modo parcial hasta recuperar los modulos pendientes.</p>'
-          : '<p class="empty-inline">La actividad reciente del caso aparecera aqui cuando registres citas o notas.</p>';
+          : '<p class="empty-inline">La actividad del caso aparecera en cuanto registres una cita, una nota o un plan domiciliario.</p>';
     }
 
     if (fichaPlanInsights) {
@@ -6717,7 +6878,7 @@ import Layout from '../layouts/Layout.astro';
             <strong>${escapeHtml(item.title)}</strong>
             <p>${escapeHtml(item.body)}</p>
           </article>`).join('')
-        : '<p class="empty-inline">Todavia no hay decisiones sugeridas para este caso.</p>';
+        : '<p class="empty-inline">Cuando exista mas contexto clinico, aqui veras la siguiente mejor accion sugerida para el caso.</p>';
     }
 
     let primaryAction: 'agenda' | 'notas' | 'agente' | 'historial' = 'agente';
@@ -6753,6 +6914,31 @@ import Layout from '../layouts/Layout.astro';
       nextTitle = 'Revisar dolor alto y ajustar plan';
       nextMeta = `EVA elevado (${latestEva}/10). Revisar plan de tratamiento.`;
     }
+
+    if (fichaOpsRiskTitle) fichaOpsRiskTitle.textContent = unavailableModules.length ? 'Modo parcial' : painTrend.headline;
+    if (fichaOpsRiskMeta) fichaOpsRiskMeta.textContent = unavailableModules.length
+      ? `Faltan modulos: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.`
+      : painTrend.summary;
+    if (fichaOpsNextTitle) fichaOpsNextTitle.textContent = nextTitle;
+    if (fichaOpsNextMeta) fichaOpsNextMeta.textContent = nextMeta;
+    if (fichaOpsPlanTitle) fichaOpsPlanTitle.textContent = recommendationSummary.totalPlans
+      ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'} activo${recommendationSummary.totalPlans === 1 ? '' : 's'}`
+      : 'Sin plan IA';
+    if (fichaOpsPlanMeta) fichaOpsPlanMeta.textContent = recommendationSummary.totalPlans
+      ? recommendationSummary.totalFollowUps
+        ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con feedback registrado.`
+        : 'Falta respuesta del paciente para medir adherencia.'
+      : 'Genera un plan para activar continuidad domiciliaria.';
+    if (fichaOpsBillingTitle) fichaOpsBillingTitle.textContent = pagosUnavailable ? 'Modulo no disponible' : `${totalPayments.toFixed(2)} EUR`;
+    if (fichaOpsBillingMeta) fichaOpsBillingMeta.textContent = pagosUnavailable
+      ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.')
+      : pagos.length
+        ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} vinculado${pagos.length === 1 ? '' : 's'} al caso.`
+        : 'Sin cobros asociados todavia.';
+    fichaOpsRiskTitle?.closest('.ficha-command-card')?.setAttribute('data-tone', unavailableModules.length ? 'alert' : painTrend.tone);
+    fichaOpsNextTitle?.closest('.ficha-command-card')?.setAttribute('data-tone', primaryAction === 'agenda' ? 'warm' : primaryAction === 'historial' ? 'ready' : painTrend.tone);
+    fichaOpsPlanTitle?.closest('.ficha-command-card')?.setAttribute('data-tone', recommendationSummary.totalPlans ? (recommendationSummary.totalFollowUps ? 'ready' : 'warm') : 'soft');
+    fichaOpsBillingTitle?.closest('.ficha-command-card')?.setAttribute('data-tone', pagos.length ? 'ready' : 'soft');
 
     if (fichaRailNextTitle) fichaRailNextTitle.textContent = nextTitle;
     if (fichaRailNextMeta) fichaRailNextMeta.textContent = nextMeta;
@@ -6862,6 +7048,27 @@ import Layout from '../layouts/Layout.astro';
 
   fichaHeroDocsBtn?.addEventListener('click', () => {
     activateFichaTab('documentos');
+  });
+
+  fichaOpsAgendarBtn?.addEventListener('click', () => {
+    navigateTo('citas');
+  });
+
+  fichaOpsNotaBtn?.addEventListener('click', () => {
+    activateFichaTab('notas');
+  });
+
+  fichaOpsHistoriaBtn?.addEventListener('click', () => {
+    if (!fichaPatientId) return;
+    pendingHistoryAnchor = 'recommendations';
+    openPatientHistory(fichaPatientId, selectedPatientName || getPatientFullName(fichaData?.paciente || {}));
+  });
+
+  fichaOpsCopilotBtn?.addEventListener('click', () => {
+    if (fichaPatientId) {
+      syncChatPatientSelection(fichaPatientId, fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}));
+    }
+    openAssistantRail();
   });
 
   fichaRailPrimaryBtn?.addEventListener('click', () => {
@@ -7035,7 +7242,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     if (!citas.length) {
-      fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p></div></td></tr>';
+      fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p><small class="empty-state-hint">Programa la primera sesion para iniciar continuidad clinica y trazabilidad.</small></div></td></tr>';
       return;
     }
     fichaCitasBody.innerHTML = citas.map((c: any) => {
@@ -7075,7 +7282,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     if (!pagos.length) {
-      fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p></div></td></tr>';
+      fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p><small class="empty-state-hint">Cuando registres un cobro o bono, el resumen economico del caso se actualizara aqui.</small></div></td></tr>';
       if (fichaPagosTotal) fichaPagosTotal.textContent = '';
       return;
     }
@@ -7122,7 +7329,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     if (!notasOrdenadas.length) {
-      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clinicas registradas</p>';
+      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clinicas registradas. Crea la primera para dejar criterio terapeutico y evolucion.</p>';
       return;
     }
     fichaNotasTimeline.innerHTML = notasOrdenadas.map((n: any) => {
@@ -9768,7 +9975,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1.5rem;
+    gap: 0.45rem;
+    padding: 2.6rem 1.3rem;
     color: var(--text-muted);
     text-align: center;
     height: 100%;
@@ -9781,7 +9989,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .empty-state-sm p {
     margin: 0;
     font-size: 0.95rem;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   /* === TABLE OVERRIDES === */
@@ -9866,9 +10074,13 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4rem 2rem;
+    gap: 0.5rem;
+    padding: 2.8rem 1.55rem;
     color: var(--text-muted);
     text-align: center;
+    border-radius: 1rem;
+    border: 1px dashed rgba(148, 163, 184, 0.3);
+    background: linear-gradient(180deg, rgba(248, 251, 253, 0.82), rgba(241, 247, 250, 0.76));
   }
   .empty-state .material-symbols-rounded { 
     font-size: 48px; 
@@ -9877,8 +10089,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
   .empty-state p {
     font-size: 1.05rem;
-    font-weight: 500;
+    font-weight: 600;
     margin: 0;
+  }
+  .empty-state-hint {
+    margin: 0;
+    max-width: 34rem;
+    color: #6c7a88;
+    font-size: 0.8rem;
+    line-height: 1.5;
   }
   .state-loading .material-symbols-rounded {
     animation: spin 1.1s linear infinite;
@@ -10563,8 +10782,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .empty-inline {
     text-align: center;
     color: var(--text-muted);
-    padding: 2rem;
+    padding: 1.3rem 1.1rem;
     font-size: 0.9rem;
+    border-radius: 0.95rem;
+    border: 1px dashed rgba(148, 163, 184, 0.28);
+    background: rgba(247, 251, 253, 0.72);
+    line-height: 1.55;
   }
 
   /* === GESTORIA === */
@@ -15800,6 +16023,162 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     color: #144154;
   }
 
+  .agenda-mobile-card {
+    display: none;
+    padding: 1rem;
+    border-radius: 1.35rem;
+    border: 1px solid rgba(181, 156, 115, 0.24);
+    background:
+      radial-gradient(circle at top right, rgba(216, 236, 232, 0.42), transparent 24%),
+      linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 239, 227, 0.94));
+  }
+
+  .agenda-mobile-head {
+    display: grid;
+    gap: 0.45rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .agenda-mobile-kicker {
+    display: inline-flex;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a6731;
+  }
+
+  .agenda-mobile-head h2 {
+    margin: 0.25rem 0 0;
+    color: #183247;
+    font-size: 1.15rem;
+    line-height: 1.2;
+  }
+
+  .agenda-mobile-head p {
+    margin: 0;
+    color: #5f7080;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .agenda-mobile-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .agenda-mobile-day {
+    display: grid;
+    gap: 0.62rem;
+    padding: 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(204, 191, 168, 0.45);
+    background: rgba(255, 251, 245, 0.86);
+  }
+
+  .agenda-mobile-day.is-today {
+    border-color: rgba(39, 123, 138, 0.4);
+    background: linear-gradient(180deg, rgba(241, 251, 251, 0.98), rgba(248, 253, 252, 0.95));
+  }
+
+  .agenda-mobile-day header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+  }
+
+  .agenda-mobile-day header strong {
+    color: #183247;
+    font-size: 0.96rem;
+    text-transform: capitalize;
+  }
+
+  .agenda-mobile-day header span {
+    color: #677987;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .agenda-mobile-items {
+    display: grid;
+    gap: 0.62rem;
+  }
+
+  .agenda-mobile-item {
+    display: grid;
+    gap: 0.56rem;
+    padding: 0.72rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(201, 213, 220, 0.9);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .agenda-mobile-item-main {
+    display: grid;
+    gap: 0.38rem;
+  }
+
+  .agenda-mobile-item-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.62rem;
+  }
+
+  .agenda-mobile-item-top strong {
+    color: #183247;
+    font-size: 0.88rem;
+    line-height: 1.35;
+  }
+
+  .agenda-mobile-item p {
+    margin: 0;
+    color: #5f7080;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .agenda-mobile-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .agenda-mobile-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.85rem;
+    padding: 0.3rem 0.62rem;
+    border-radius: 999px;
+    background: rgba(24, 82, 95, 0.08);
+    color: #245265;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .agenda-mobile-item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .agenda-mobile-item-actions .btn-sm {
+    flex: 1 1 10.5rem;
+    justify-content: center;
+  }
+
+  .agenda-mobile-empty {
+    margin: 0;
+    color: #6d7e8c;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
   .assistant-rail {
     padding: 0.7rem 0.7rem 0.7rem 0;
   }
@@ -16107,6 +16486,31 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       padding: 0.78rem 0.82rem;
       font-size: 0.8rem;
       line-height: 1.5;
+    }
+
+    .page-section[data-page='citas'] .agenda-cal-card,
+    .page-section[data-page='citas'] .table-card {
+      display: none;
+    }
+
+    .page-section[data-page='citas'] .agenda-mobile-card {
+      display: block;
+      margin-top: 0.1rem;
+      padding: 0.86rem;
+      border-radius: 1.05rem;
+    }
+
+    .page-section[data-page='citas'] .agenda-mobile-head h2 {
+      font-size: 1.02rem;
+    }
+
+    .page-section[data-page='citas'] .agenda-mobile-item {
+      padding: 0.65rem;
+    }
+
+    .page-section[data-page='citas'] .agenda-mobile-item-actions .btn-sm {
+      min-height: 2.55rem;
+      font-size: 0.8rem;
     }
 
     .page-section[data-page='ficha-paciente'] .ficha-hero-presence {
@@ -18039,6 +18443,83 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     margin-bottom: 1.25rem;
   }
 
+  .page-section[data-page='ficha-paciente'] .ficha-command-shell {
+    display: grid;
+    gap: 0.85rem;
+    margin-bottom: 1.15rem;
+    padding: 0.95rem;
+    border-radius: 1.35rem;
+    border: 1px solid rgba(208, 194, 170, 0.42);
+    background:
+      radial-gradient(circle at top right, rgba(214, 235, 232, 0.32), transparent 22%),
+      linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 239, 227, 0.95));
+    box-shadow: 0 24px 40px -32px rgba(41, 33, 24, 0.2);
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.72rem;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-card {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 8.4rem;
+    padding: 0.86rem 0.9rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(210, 198, 178, 0.48);
+    background: rgba(255, 255, 255, 0.86);
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-card span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a6731;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-card strong {
+    color: #17283b;
+    font-size: 1.07rem;
+    line-height: 1.2;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-card p {
+    margin: 0;
+    color: #617283;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-card[data-tone='alert'] {
+    border-color: rgba(202, 141, 67, 0.42);
+    background: linear-gradient(180deg, rgba(255, 251, 242, 0.98), rgba(255, 244, 224, 0.94));
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-card[data-tone='ready'] {
+    border-color: rgba(74, 146, 116, 0.34);
+    background: linear-gradient(180deg, rgba(247, 255, 251, 0.98), rgba(236, 249, 241, 0.95));
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-card[data-tone='warm'] {
+    border-color: rgba(193, 153, 85, 0.34);
+    background: linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(252, 243, 228, 0.95));
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.62rem;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-command-actions .btn-primary,
+  .page-section[data-page='ficha-paciente'] .ficha-command-actions .btn-secondary,
+  .page-section[data-page='ficha-paciente'] .ficha-command-actions .btn-ghost {
+    min-height: 2.7rem;
+  }
+
   .page-section[data-page='ficha-paciente'] .ficha-hero-main {
     position: relative;
     align-items: stretch;
@@ -18264,6 +18745,10 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   @media (max-width: 1240px) {
+    .page-section[data-page='ficha-paciente'] .ficha-command-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .page-section[data-page='ficha-paciente'] .ficha-case-shell,
     .page-section[data-page='ficha-paciente'] .ficha-hero-grid {
       grid-template-columns: 1fr !important;
@@ -18271,6 +18756,27 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   @media (max-width: 760px) {
+    .page-section[data-page='ficha-paciente'] .ficha-command-shell {
+      padding: 0.82rem;
+      border-radius: 1.08rem;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-command-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-command-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-command-actions .btn-primary,
+    .page-section[data-page='ficha-paciente'] .ficha-command-actions .btn-secondary,
+    .page-section[data-page='ficha-paciente'] .ficha-command-actions .btn-ghost {
+      width: 100%;
+      justify-content: center;
+    }
+
     .page-section[data-page='ficha-paciente'] .ficha-overview-stats {
       grid-template-columns: 1fr;
     }
