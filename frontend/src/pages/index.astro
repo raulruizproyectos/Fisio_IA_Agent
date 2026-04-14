@@ -2628,9 +2628,15 @@ import Layout from '../layouts/Layout.astro';
   };
 
   const openAssistantRail = () => {
+    const railOpenTransform = isMobile() ? 'translateY(0)' : 'translateX(0)';
     assistantRail?.classList.add('open');
     assistantRailBackdrop?.classList.add('visible');
     assistantRail?.setAttribute('aria-hidden', 'false');
+    assistantRail?.style.setProperty('z-index', '190', 'important');
+    assistantRail?.style.setProperty('opacity', '1', 'important');
+    assistantRail?.style.setProperty('pointer-events', 'auto', 'important');
+    assistantRail?.style.setProperty('transform', railOpenTransform, 'important');
+    assistantRailBackdrop?.style.setProperty('z-index', '180', 'important');
     assistantRailToggle?.setAttribute('aria-expanded', 'true');
     assistantRailFab?.setAttribute('aria-expanded', 'true');
     syncOverlayBodyLock();
@@ -2641,6 +2647,11 @@ import Layout from '../layouts/Layout.astro';
     assistantRail?.classList.remove('open');
     assistantRailBackdrop?.classList.remove('visible');
     assistantRail?.setAttribute('aria-hidden', 'true');
+    assistantRail?.style.removeProperty('z-index');
+    assistantRail?.style.removeProperty('opacity');
+    assistantRail?.style.removeProperty('pointer-events');
+    assistantRail?.style.removeProperty('transform');
+    assistantRailBackdrop?.style.removeProperty('z-index');
     assistantRailToggle?.setAttribute('aria-expanded', 'false');
     assistantRailFab?.setAttribute('aria-expanded', 'false');
     syncOverlayBodyLock();
@@ -16637,6 +16648,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     opacity: 0 !important;
     pointer-events: none !important;
     transition: opacity 0.18s ease !important;
+    z-index: 170 !important;
   }
 
   html[data-assistant-mode='desktop'] .assistant-rail.open,
@@ -16648,6 +16660,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   html[data-assistant-mode='desktop'] .assistant-rail-backdrop,
   html[data-assistant-mode='compact'] .assistant-rail-backdrop {
     inset: 0 !important;
+    z-index: 160 !important;
   }
 
   html[data-assistant-mode='desktop'] .assistant-rail-card,
@@ -16656,6 +16669,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     border-radius: 1.3rem !important;
     border: 1px solid #dce8ee !important;
     box-shadow: 0 30px 88px -38px rgba(15, 23, 42, 0.42) !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
   }
 
   html[data-assistant-mode='desktop'] .assistant-rail-card {
@@ -16817,7 +16832,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     transform: translateY(100%) !important;
     opacity: 1 !important;
     pointer-events: none !important;
-    z-index: 140 !important;
+    z-index: 190 !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail.open {
@@ -16827,7 +16842,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
   html[data-assistant-mode='mobile'] .assistant-rail-backdrop {
     inset: 0 !important;
-    z-index: 130 !important;
+    z-index: 180 !important;
     background: rgba(2, 6, 23, 0.42) !important;
     backdrop-filter: blur(4px) !important;
   }
