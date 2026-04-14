@@ -266,13 +266,70 @@ import Layout from '../layouts/Layout.astro';
 
         <!-- === PAGE: PACIENTES === -->
         <div class="page-section" data-page="pacientes">
-          <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">group</span> Pacientes</h1>
+          <div class="page-header-row patients-header-row">
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">group</span> Pacientes</h1>
+              <p class="page-subtitle patients-page-subtitle">Admision, contexto clinico y acceso rapido a ficha, historial y seguimiento sin perder tiempo en tablas frias.</p>
+            </div>
             <button class="btn-primary" id="addPatientBtn"><span class="material-symbols-rounded">person_add</span> Nuevo paciente</button>
           </div>
-          <section class="card table-card">
-            <header class="card-header"><h2>Lista de pacientes</h2><button class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
-            <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Email</th><th>Fecha nac.</th><th>Registro</th><th>Acciones</th></tr></thead><tbody id="pacientesBody"><tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pacientes...</p></div></td></tr></tbody></table></div>
+
+          <section class="patients-hero-shell">
+            <article class="patients-hero-main">
+              <span class="patients-kicker">CRM CLINICO ACTIVO</span>
+              <h2>Base de pacientes preparada para agenda, copilot y continuidad terapeutica.</h2>
+              <p>La vista de pacientes pasa a ser un centro operativo: localiza rapido cada caso, detecta fichas incompletas y entra a la historia correcta sin friccion en desktop o movil.</p>
+              <div class="patients-hero-actions">
+                <button type="button" class="btn-primary" id="patientsHeroAddBtn"><span class="material-symbols-rounded">person_add</span> Alta rapida</button>
+                <button type="button" class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Sincronizar listado</button>
+              </div>
+            </article>
+
+            <div class="patients-hero-stats">
+              <article class="patients-stat-card">
+                <span>Total activo</span>
+                <strong id="patientsTotalValue">0</strong>
+                <p id="patientsTotalMeta">Cargando base clinica...</p>
+              </article>
+              <article class="patients-stat-card patients-stat-card-accent">
+                <span>Contacto util</span>
+                <strong id="patientsReachValue">0%</strong>
+                <p id="patientsReachMeta">Midiendo email y telefono disponibles.</p>
+              </article>
+              <article class="patients-stat-card">
+                <span>Altas recientes</span>
+                <strong id="patientsRecentValue">0</strong>
+                <p id="patientsRecentMeta">Sin lectura todavia.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="card patients-command-bar">
+            <div class="patients-filter-field">
+              <span class="material-symbols-rounded">search</span>
+              <input type="text" id="patientsFilterInput" placeholder="Buscar por nombre, email, telefono o ID..." autocomplete="off" />
+            </div>
+            <div class="patients-segmented" id="patientsSegmented">
+              <button type="button" class="patients-segment is-active" data-patient-filter="all">Todos</button>
+              <button type="button" class="patients-segment" data-patient-filter="contactable">Contactables</button>
+              <button type="button" class="patients-segment" data-patient-filter="incomplete">Incompletos</button>
+              <button type="button" class="patients-segment" data-patient-filter="recent">Recientes</button>
+            </div>
+          </section>
+
+          <section class="card patients-directory-card">
+            <header class="patients-directory-head">
+              <div>
+                <span class="patients-kicker">DIRECTORIO OPERATIVO</span>
+                <h2>Listado listo para trabajar</h2>
+                <p id="patientsListMeta">Cargando pacientes del CRM...</p>
+              </div>
+              <span class="patients-directory-chip" id="patientsFilterChip">Todos los pacientes</span>
+            </header>
+
+            <div class="patients-directory-list" id="pacientesBody">
+              <div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pacientes...</p></div>
+            </div>
           </section>
         </div>
 
@@ -1512,6 +1569,17 @@ import Layout from '../layouts/Layout.astro';
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
   const refreshBtn = document.getElementById('refreshIntakes') as HTMLElement | null;
   const pacientesBody = document.getElementById('pacientesBody') as HTMLElement | null;
+  const patientsHeroAddBtn = document.getElementById('patientsHeroAddBtn') as HTMLButtonElement | null;
+  const patientsFilterInput = document.getElementById('patientsFilterInput') as HTMLInputElement | null;
+  const patientsSegmentButtons = document.querySelectorAll('[data-patient-filter]') as NodeListOf<HTMLButtonElement>;
+  const patientsTotalValue = document.getElementById('patientsTotalValue') as HTMLElement | null;
+  const patientsTotalMeta = document.getElementById('patientsTotalMeta') as HTMLElement | null;
+  const patientsReachValue = document.getElementById('patientsReachValue') as HTMLElement | null;
+  const patientsReachMeta = document.getElementById('patientsReachMeta') as HTMLElement | null;
+  const patientsRecentValue = document.getElementById('patientsRecentValue') as HTMLElement | null;
+  const patientsRecentMeta = document.getElementById('patientsRecentMeta') as HTMLElement | null;
+  const patientsListMeta = document.getElementById('patientsListMeta') as HTMLElement | null;
+  const patientsFilterChip = document.getElementById('patientsFilterChip') as HTMLElement | null;
   const templatesBody = document.getElementById('templatesBody') as HTMLElement | null;
   const templateHistoryBody = document.getElementById('templateHistoryBody') as HTMLElement | null;
   const templateLibrarySummary = document.getElementById('templateLibrarySummary') as HTMLElement | null;
@@ -3043,15 +3111,20 @@ import Layout from '../layouts/Layout.astro';
     const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes`);
     const pts = payload.data || [];
     patientCatalog = pts.map((p: any) => ({
+      ...p,
       id: p.id,
       nombre_completo: p.nombre_completo || `Paciente ${p.id}`,
       email: p.email || null,
+      phone: p.phone || p.telefono || null,
+      telefono: p.telefono || p.phone || null,
+      fecha_nacimiento: p.fecha_nacimiento || null,
+      creado_en: p.creado_en || p.created_at || null,
       _source: p._source || 'crm',
     }));
     renderTemplatePatientOptions();
     renderChatPatientOptions();
     renderAppointmentPatientOptions();
-    return pts;
+    return patientCatalog;
   };
 
   const setPatientFormFeedback = (text = '', state: 'error' | 'success' = 'error') => {
@@ -4037,24 +4110,187 @@ import Layout from '../layouts/Layout.astro';
   loadDashboardKPIs();
 
   // === LOAD PACIENTES ===
+  let patientDirectory: any[] = [];
+  let patientDirectoryFilter: 'all' | 'contactable' | 'incomplete' | 'recent' = 'all';
+
+  const getPatientPrimaryPhone = (patient: any) => String(patient?.phone || patient?.telefono || '').trim();
+  const getPatientCreatedAt = (patient: any) => String(patient?.creado_en || patient?.created_at || '').trim();
+  const getPatientBirthMeta = (patient: any) => {
+    const raw = String(patient?.fecha_nacimiento || '').trim();
+    if (!raw) return 'Nacimiento pendiente';
+    const birth = new Date(raw);
+    if (Number.isNaN(birth.getTime())) return 'Nacimiento pendiente';
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDelta = today.getMonth() - birth.getMonth();
+    if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) age -= 1;
+    return `${Math.max(age, 0)} anos`;
+  };
+  const getPatientInitials = (name: string) =>
+    String(name || '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('') || 'PI';
+  const isRecentPatient = (patient: any) => {
+    const createdAt = getPatientCreatedAt(patient);
+    if (!createdAt) return false;
+    const created = new Date(createdAt).getTime();
+    if (Number.isNaN(created)) return false;
+    return Date.now() - created <= 1000 * 60 * 60 * 24 * 30;
+  };
+  const getPatientReadinessMeta = (patient: any) => {
+    const hasEmail = Boolean(String(patient?.email || '').trim());
+    const hasPhone = Boolean(getPatientPrimaryPhone(patient));
+    if (hasEmail && hasPhone) return { label: 'Contacto completo', tone: 'ready' };
+    if (hasEmail || hasPhone) return { label: 'Contacto parcial', tone: 'warm' };
+    return { label: 'Completar ficha', tone: 'soft' };
+  };
+  const renderPatientsDirectorySummary = (allPatients: any[], visiblePatients: any[]) => {
+    const total = allPatients.length;
+    const contactable = allPatients.filter((patient) => Boolean(String(patient?.email || '').trim()) || Boolean(getPatientPrimaryPhone(patient))).length;
+    const recent = allPatients.filter((patient) => isRecentPatient(patient)).length;
+    const incomplete = allPatients.filter((patient) => getPatientReadinessMeta(patient).tone === 'soft').length;
+    const query = patientsFilterInput?.value.trim() || '';
+    const visibleLabel = `${visiblePatients.length} ${visiblePatients.length === 1 ? 'caso visible' : 'casos visibles'}`;
+
+    if (patientsTotalValue) patientsTotalValue.textContent = String(total);
+    if (patientsTotalMeta) patientsTotalMeta.textContent = total ? `${incomplete} ficha${incomplete === 1 ? '' : 's'} necesitan completar contacto.` : 'Sin pacientes activos todavia.';
+    if (patientsReachValue) patientsReachValue.textContent = total ? `${Math.round((contactable / total) * 100)}%` : '0%';
+    if (patientsReachMeta) patientsReachMeta.textContent = total ? `${contactable} pacientes con email o telefono listos para seguimiento.` : 'Aun no hay vias de contacto registradas.';
+    if (patientsRecentValue) patientsRecentValue.textContent = String(recent);
+    if (patientsRecentMeta) patientsRecentMeta.textContent = recent ? `Altas creadas en los ultimos 30 dias.` : 'Sin altas nuevas en los ultimos 30 dias.';
+    if (patientsListMeta) {
+      const filterCopy = patientDirectoryFilter === 'all'
+        ? 'Mostrando toda la base activa.'
+        : patientDirectoryFilter === 'contactable'
+          ? 'Mostrando solo pacientes con via de contacto.'
+          : patientDirectoryFilter === 'incomplete'
+            ? 'Mostrando fichas que necesitan completar datos.'
+            : 'Mostrando altas recientes del ultimo mes.';
+      patientsListMeta.textContent = `${visibleLabel}. ${filterCopy}${query ? ` Busqueda: "${query}".` : ''}`;
+    }
+    if (patientsFilterChip) {
+      patientsFilterChip.textContent = patientDirectoryFilter === 'all'
+        ? 'Vista completa'
+        : patientDirectoryFilter === 'contactable'
+          ? 'Filtro: contactables'
+          : patientDirectoryFilter === 'incomplete'
+            ? 'Filtro: incompletos'
+            : 'Filtro: recientes';
+    }
+    patientsSegmentButtons.forEach((button) => {
+      button.classList.toggle('is-active', button.dataset.patientFilter === patientDirectoryFilter);
+    });
+  };
+  const renderPatientsDirectory = () => {
+    if (!pacientesBody) return;
+    const query = normalizeSearchValue(patientsFilterInput?.value || '');
+    const filtered = patientDirectory.filter((patient) => {
+      const matchesSegment = patientDirectoryFilter === 'all'
+        ? true
+        : patientDirectoryFilter === 'contactable'
+          ? Boolean(String(patient?.email || '').trim()) || Boolean(getPatientPrimaryPhone(patient))
+          : patientDirectoryFilter === 'incomplete'
+            ? getPatientReadinessMeta(patient).tone === 'soft'
+            : isRecentPatient(patient);
+
+      if (!matchesSegment) return false;
+      if (!query) return true;
+
+      const haystack = [
+        patient?.nombre_completo || '',
+        patient?.email || '',
+        getPatientPrimaryPhone(patient),
+        patient?.id || '',
+      ]
+        .map((value) => normalizeSearchValue(String(value)))
+        .join(' ');
+
+      return haystack.includes(query);
+    });
+
+    renderPatientsDirectorySummary(patientDirectory, filtered);
+
+    if (!patientDirectory.length) {
+      setListState(pacientesBody, 'person_off', 'Sin pacientes registrados');
+      return;
+    }
+
+    if (!filtered.length) {
+      setListState(pacientesBody, 'search_off', 'No hay pacientes que coincidan con los filtros actuales.');
+      return;
+    }
+
+    pacientesBody.innerHTML = filtered.map((patient: any) => {
+      const patientName = patient?.nombre_completo || 'Sin nombre';
+      const patientEmail = String(patient?.email || '').trim();
+      const patientPhone = getPatientPrimaryPhone(patient);
+      const patientBirthMeta = getPatientBirthMeta(patient);
+      const createdAt = getPatientCreatedAt(patient);
+      const createdLabel = createdAt ? fmtDate(createdAt) : 'Alta sin fecha';
+      const readiness = getPatientReadinessMeta(patient);
+      const sourceLabel = patient?._source === 'legacy' ? 'Legacy' : 'CRM';
+      const channelBits = [
+        patientEmail || 'Sin email',
+        patientPhone || 'Sin telefono',
+        patientBirthMeta,
+      ];
+      return `
+        <article class="patient-directory-item">
+          <div class="patient-directory-main">
+            <div class="patient-directory-avatar" aria-hidden="true">${escapeHtml(getPatientInitials(patientName))}</div>
+            <div class="patient-directory-copy">
+              <div class="patient-directory-head">
+                <div>
+                  <strong>${escapeHtml(patientName)}</strong>
+                  <p>${escapeHtml(channelBits.join(' | '))}</p>
+                </div>
+                <span class="patient-status-chip is-${escapeAttr(readiness.tone)}">${escapeHtml(readiness.label)}</span>
+              </div>
+              <div class="patient-directory-meta">
+                <span class="patient-directory-pill">${escapeHtml(sourceLabel)}</span>
+                <span class="patient-directory-pill">${isRecentPatient(patient) ? 'Alta reciente' : 'Base activa'}</span>
+                <span class="patient-directory-pill">Actualizado ${escapeHtml(createdLabel)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="patient-directory-actions">
+            <button type="button" class="btn-secondary btn-sm" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">person</span> Abrir ficha</button>
+            <button type="button" class="btn-ghost btn-sm" data-action="patient-telegram" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">forum</span> Historial</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
   const loadPacientes = async () => {
     if (!pacientesBody) return;
-    setTableState(pacientesBody, 5, 'sync', 'Cargando pacientes...', true);
+    setListState(pacientesBody, 'sync', 'Cargando pacientes...', true);
     try {
       const pts = await fetchPatientCatalog();
       const metricEl = document.getElementById('metricPacientes');
       if (metricEl) metricEl.textContent = String(pts.length);
-      if (!pts.length) { setTableState(pacientesBody, 5, 'person_off', 'Sin pacientes registrados'); return; }
-      pacientesBody.innerHTML = pts.map((p: any) => {
-        const patientName = p.nombre_completo || 'Sin nombre';
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(p.email||'Sin email')}</td><td>${escapeHtml(p.telefono||'')}</td><td><div class="table-actions"><button class="btn-sm" data-open-ficha="${p.id}">Ficha</button><button class="btn-sm btn-outline" data-open-chat="${p.id}" data-patient-name="${escapeAttr(patientName)}">Telegram</button></div></td></tr>`;
-      }).join('');
+      patientDirectory = Array.isArray(pts) ? pts : [];
+      renderPatientsDirectory();
     } catch {
-      setTableState(pacientesBody, 5, 'cloud_off', 'Error al cargar pacientes');
+      patientDirectory = [];
+      renderPatientsDirectorySummary([], []);
+      setListState(pacientesBody, 'cloud_off', 'Error al cargar pacientes');
     }
   };
   pageLoaders['pacientes'] = loadPacientes;
   document.getElementById('refreshPacientes')?.addEventListener('click', loadPacientes);
+  patientsHeroAddBtn?.addEventListener('click', openPatientModal);
+  patientsFilterInput?.addEventListener('input', () => {
+    renderPatientsDirectory();
+  });
+  patientsSegmentButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      patientDirectoryFilter = (button.dataset.patientFilter as 'all' | 'contactable' | 'incomplete' | 'recent') || 'all';
+      renderPatientsDirectory();
+    });
+  });
   searchInput?.setAttribute('aria-expanded', 'false');
   searchInput?.setAttribute('aria-controls', 'searchResults');
   searchInput?.addEventListener('focus', () => {
@@ -15668,6 +15904,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
 
+    .patients-hero-shell,
+    .patients-command-bar {
+      grid-template-columns: 1fr;
+    }
+
+    .patients-segmented {
+      justify-content: flex-start;
+    }
+
     .page-section[data-page='citas'] .agenda-header-row {
       display: grid;
       grid-template-columns: 1fr;
@@ -15706,6 +15951,61 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .assistant-rail {
       padding: 0;
+    }
+
+    .patients-hero-main {
+      border-radius: 1.35rem;
+      padding: 1.1rem;
+    }
+
+    .patients-hero-main h2 {
+      max-width: none;
+      font-size: clamp(2rem, 10vw, 2.85rem);
+    }
+
+    .patients-hero-actions,
+    .patients-directory-head {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .patients-hero-actions .btn-primary,
+    .patients-hero-actions .btn-ghost {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .patients-command-bar {
+      padding: 0.85rem;
+    }
+
+    .patients-filter-field {
+      min-height: 3.1rem;
+      padding-inline: 0.9rem;
+    }
+
+    .patients-segmented {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .patient-directory-item,
+    .patient-directory-head {
+      grid-template-columns: 1fr;
+    }
+
+    .patient-directory-main {
+      align-items: flex-start;
+    }
+
+    .patient-directory-actions {
+      justify-content: stretch;
+    }
+
+    .patient-directory-actions .btn-secondary,
+    .patient-directory-actions .btn-ghost {
+      flex: 1 1 100%;
+      justify-content: center;
     }
 
     .topbar-right {
@@ -16680,6 +16980,384 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     border-radius: 1.3rem;
     background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(246, 239, 228, 0.94));
     box-shadow: 0 20px 34px -30px rgba(41, 33, 24, 0.16);
+  }
+
+  .patients-header-row {
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .patients-page-subtitle {
+    max-width: 58rem;
+    margin: 0.42rem 0 0;
+  }
+
+  .patients-hero-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .patients-hero-main,
+  .patients-stat-card,
+  .patients-command-bar,
+  .patients-directory-card {
+    border: 1px solid rgba(205, 190, 163, 0.42);
+    box-shadow: 0 24px 44px -34px rgba(40, 33, 24, 0.24);
+  }
+
+  .patients-hero-main {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.85rem;
+    padding: clamp(1.35rem, 2vw, 2rem);
+    background:
+      radial-gradient(circle at top right, rgba(91, 170, 182, 0.22), transparent 30%),
+      linear-gradient(140deg, #153649 0%, #1b4964 52%, #204b55 100%);
+    color: #f8f6f0;
+  }
+
+  .patients-hero-main::after {
+    content: '';
+    position: absolute;
+    inset: auto -4rem -4rem auto;
+    width: 13rem;
+    height: 13rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(238, 214, 162, 0.34), rgba(238, 214, 162, 0));
+    pointer-events: none;
+  }
+
+  .patients-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    letter-spacing: 0.18em;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #d7c082;
+    text-transform: uppercase;
+  }
+
+  .patients-hero-main h2 {
+    margin: 0.85rem 0 0;
+    max-width: 12ch;
+    font-size: clamp(2rem, 4.2vw, 3.8rem);
+    line-height: 0.96;
+    letter-spacing: -0.06em;
+    color: #fcfaf6;
+  }
+
+  .patients-hero-main p {
+    max-width: 55ch;
+    margin: 1rem 0 0;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: rgba(244, 240, 231, 0.84);
+  }
+
+  .patients-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.3rem;
+  }
+
+  .patients-hero-actions .btn-primary,
+  .patients-hero-actions .btn-ghost {
+    min-height: 3rem;
+  }
+
+  .patients-hero-actions .btn-ghost {
+    background: rgba(255, 249, 239, 0.08);
+    border-color: rgba(255, 235, 204, 0.16);
+    color: #fbf6ed;
+  }
+
+  .patients-hero-stats {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .patients-stat-card {
+    border-radius: 1.55rem;
+    padding: 1.15rem 1.2rem;
+    background:
+      radial-gradient(circle at top right, rgba(216, 236, 232, 0.32), transparent 22%),
+      linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 239, 228, 0.95));
+  }
+
+  .patients-stat-card span {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(139, 102, 40, 0.92);
+  }
+
+  .patients-stat-card strong {
+    display: block;
+    margin-top: 0.45rem;
+    font-size: clamp(1.8rem, 2vw, 2.45rem);
+    line-height: 1;
+    color: #153649;
+  }
+
+  .patients-stat-card p {
+    margin: 0.65rem 0 0;
+    font-size: 0.94rem;
+    line-height: 1.55;
+    color: rgba(74, 99, 117, 0.92);
+  }
+
+  .patients-stat-card-accent {
+    background:
+      radial-gradient(circle at top right, rgba(238, 214, 162, 0.38), transparent 26%),
+      linear-gradient(145deg, rgba(248, 241, 225, 0.98), rgba(255, 249, 238, 0.96));
+  }
+
+  .patients-command-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) auto;
+    gap: 0.9rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.95rem;
+    border-radius: 1.45rem;
+    background:
+      linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(248, 242, 231, 0.94));
+  }
+
+  .patients-filter-field {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    min-height: 3.35rem;
+    padding: 0 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(205, 190, 163, 0.5);
+    background: rgba(255, 250, 242, 0.88);
+    color: var(--text-muted);
+  }
+
+  .patients-filter-field .material-symbols-rounded {
+    color: #87622e;
+  }
+
+  .patients-filter-field input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+  }
+
+  .patients-segmented {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .patients-segment {
+    min-height: 2.8rem;
+    padding: 0.72rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(205, 190, 163, 0.44);
+    background: rgba(255, 251, 245, 0.9);
+    color: #49606f;
+    font: inherit;
+    font-weight: 700;
+    transition:
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .patients-segment:hover {
+    transform: translateY(-1px);
+  }
+
+  .patients-segment:active {
+    transform: scale(0.98);
+  }
+
+  .patients-segment.is-active {
+    border-color: rgba(23, 61, 89, 0.18);
+    background: linear-gradient(135deg, #153649, #1d5460);
+    color: #fff8ef;
+  }
+
+  .patients-directory-card {
+    padding: 1rem;
+    border-radius: 1.55rem;
+    background:
+      radial-gradient(circle at top right, rgba(216, 236, 232, 0.26), transparent 18%),
+      linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(247, 239, 227, 0.95));
+  }
+
+  .patients-directory-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .patients-directory-head h2 {
+    margin: 0.4rem 0 0;
+    font-size: clamp(1.45rem, 2vw, 1.9rem);
+    letter-spacing: -0.04em;
+    color: #17384d;
+  }
+
+  .patients-directory-head p {
+    margin: 0.45rem 0 0;
+    max-width: 48rem;
+    color: rgba(79, 97, 110, 0.94);
+  }
+
+  .patients-directory-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.55rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    background: rgba(24, 82, 95, 0.08);
+    color: #174b58;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .patients-directory-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .patient-directory-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.9rem;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 1.35rem;
+    border: 1px solid rgba(207, 193, 169, 0.44);
+    background: rgba(255, 251, 245, 0.78);
+    transition:
+      transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .patient-directory-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(23, 61, 89, 0.18);
+    box-shadow: 0 18px 26px -24px rgba(23, 61, 89, 0.42);
+  }
+
+  .patient-directory-main {
+    display: flex;
+    align-items: center;
+    gap: 0.95rem;
+    min-width: 0;
+  }
+
+  .patient-directory-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 3rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgba(215, 232, 238, 0.9), rgba(255, 244, 223, 0.96));
+    color: #153649;
+    font-size: 0.98rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .patient-directory-copy {
+    min-width: 0;
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .patient-directory-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: flex-start;
+  }
+
+  .patient-directory-head strong {
+    display: block;
+    font-size: 1.05rem;
+    color: #17384d;
+  }
+
+  .patient-directory-head p {
+    margin: 0.25rem 0 0;
+    color: rgba(83, 101, 116, 0.92);
+    line-height: 1.5;
+  }
+
+  .patient-directory-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .patient-directory-pill,
+  .patient-status-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.35rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .patient-directory-pill {
+    background: rgba(24, 82, 95, 0.08);
+    color: #295366;
+  }
+
+  .patient-status-chip.is-ready {
+    background: rgba(34, 197, 94, 0.14);
+    color: #166534;
+  }
+
+  .patient-status-chip.is-warm {
+    background: rgba(245, 158, 11, 0.16);
+    color: #9a5d00;
+  }
+
+  .patient-status-chip.is-soft {
+    background: rgba(148, 163, 184, 0.16);
+    color: #516072;
+  }
+
+  .patient-directory-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: flex-end;
+  }
+
+  .patient-directory-actions .btn-secondary,
+  .patient-directory-actions .btn-ghost {
+    min-height: 2.9rem;
+    white-space: nowrap;
   }
 
   .ficha-tabs {
