@@ -2616,6 +2616,19 @@ import Layout from '../layouts/Layout.astro';
     document.body.style.overflow = sidebarOpen || assistantOpen ? 'hidden' : '';
   };
 
+  const mountAssistantLayerToBody = () => {
+    if (!assistantRail || !assistantRailBackdrop) return;
+    if (assistantRailBackdrop.parentElement !== document.body) {
+      document.body.appendChild(assistantRailBackdrop);
+    }
+    if (assistantRail.parentElement !== document.body) {
+      document.body.appendChild(assistantRail);
+    }
+    assistantRail.classList.add('assistant-rail-portal');
+    assistantRailBackdrop.classList.add('assistant-rail-backdrop-portal');
+  };
+  mountAssistantLayerToBody();
+
   const openSidebar = () => {
     sidebar?.classList.add('open');
     sidebarBackdrop?.classList.add('visible');
@@ -2632,11 +2645,13 @@ import Layout from '../layouts/Layout.astro';
     assistantRail?.classList.add('open');
     assistantRailBackdrop?.classList.add('visible');
     assistantRail?.setAttribute('aria-hidden', 'false');
-    assistantRail?.style.setProperty('z-index', '190', 'important');
+    assistantRail?.style.setProperty('position', 'fixed', 'important');
+    assistantRail?.style.setProperty('z-index', '2147483000', 'important');
     assistantRail?.style.setProperty('opacity', '1', 'important');
     assistantRail?.style.setProperty('pointer-events', 'auto', 'important');
     assistantRail?.style.setProperty('transform', railOpenTransform, 'important');
-    assistantRailBackdrop?.style.setProperty('z-index', '180', 'important');
+    assistantRailBackdrop?.style.setProperty('position', 'fixed', 'important');
+    assistantRailBackdrop?.style.setProperty('z-index', '2147482999', 'important');
     assistantRailToggle?.setAttribute('aria-expanded', 'true');
     assistantRailFab?.setAttribute('aria-expanded', 'true');
     syncOverlayBodyLock();
@@ -2647,10 +2662,12 @@ import Layout from '../layouts/Layout.astro';
     assistantRail?.classList.remove('open');
     assistantRailBackdrop?.classList.remove('visible');
     assistantRail?.setAttribute('aria-hidden', 'true');
+    assistantRail?.style.removeProperty('position');
     assistantRail?.style.removeProperty('z-index');
     assistantRail?.style.removeProperty('opacity');
     assistantRail?.style.removeProperty('pointer-events');
     assistantRail?.style.removeProperty('transform');
+    assistantRailBackdrop?.style.removeProperty('position');
     assistantRailBackdrop?.style.removeProperty('z-index');
     assistantRailToggle?.setAttribute('aria-expanded', 'false');
     assistantRailFab?.setAttribute('aria-expanded', 'false');
