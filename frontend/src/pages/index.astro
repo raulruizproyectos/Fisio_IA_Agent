@@ -2630,6 +2630,7 @@ import Layout from '../layouts/Layout.astro';
   const openAssistantRail = () => {
     assistantRail?.classList.add('open');
     assistantRailBackdrop?.classList.add('visible');
+    assistantRail?.setAttribute('aria-hidden', 'false');
     assistantRailToggle?.setAttribute('aria-expanded', 'true');
     assistantRailFab?.setAttribute('aria-expanded', 'true');
     syncOverlayBodyLock();
@@ -2639,9 +2640,15 @@ import Layout from '../layouts/Layout.astro';
   const closeAssistantRail = () => {
     assistantRail?.classList.remove('open');
     assistantRailBackdrop?.classList.remove('visible');
+    assistantRail?.setAttribute('aria-hidden', 'true');
     assistantRailToggle?.setAttribute('aria-expanded', 'false');
     assistantRailFab?.setAttribute('aria-expanded', 'false');
     syncOverlayBodyLock();
+  };
+
+  const requestOpenAssistantRail = () => {
+    openAssistantRail();
+    input?.focus();
   };
 
   sidebarToggle?.addEventListener('click', () => {
@@ -2653,22 +2660,16 @@ import Layout from '../layouts/Layout.astro';
   });
   sidebarBackdrop?.addEventListener('click', closeSidebar);
 
-  assistantRailToggle?.addEventListener('click', () => {
-    assistantRail?.classList.contains('open') ? closeAssistantRail() : openAssistantRail();
-  });
-  assistantRailFab?.addEventListener('click', () => {
-    assistantRail?.classList.contains('open') ? closeAssistantRail() : openAssistantRail();
-  });
+  assistantRailToggle?.addEventListener('click', requestOpenAssistantRail);
+  assistantRailFab?.addEventListener('click', requestOpenAssistantRail);
   assistantRailClose?.addEventListener('click', closeAssistantRail);
   assistantRailBackdrop?.addEventListener('click', closeAssistantRail);
   focusAgentNav?.addEventListener('click', (event: Event) => {
     event.preventDefault();
-    openAssistantRail();
-    input?.focus();
+    requestOpenAssistantRail();
   });
   heroAgentShortcutBtn?.addEventListener('click', () => {
-    openAssistantRail();
-    input?.focus();
+    requestOpenAssistantRail();
   });
   heroAgendaShortcutBtn?.addEventListener('click', () => navigateTo('citas'));
   heroNewPatientShortcutBtn?.addEventListener('click', () => openPatientModal());
@@ -2690,8 +2691,7 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
       if (action === 'open-copilot') {
-        openAssistantRail();
-        input?.focus();
+        requestOpenAssistantRail();
         return;
       }
       if (action === 'new-patient') {
@@ -2710,8 +2710,7 @@ import Layout from '../layouts/Layout.astro';
     button.addEventListener('click', () => {
       const action = button.dataset.mobileAction;
       if (action === 'open-copilot') {
-        openAssistantRail();
-        input?.focus();
+        requestOpenAssistantRail();
       }
     });
   });
@@ -2741,8 +2740,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     if (action === 'open-copilot') {
-      openAssistantRail();
-      input?.focus();
+      requestOpenAssistantRail();
       return;
     }
     if (action === 'open-agenda') {
@@ -2753,7 +2751,7 @@ import Layout from '../layouts/Layout.astro';
     button.addEventListener('click', () => {
       const prompt = button.dataset.assistantPrompt || '';
       const mode = String(button.getAttribute('data-assistant-mode') || 'new-plan') as AssistantWorkMode;
-      openAssistantRail();
+      requestOpenAssistantRail();
       setAssistantMode(mode);
       if (input) {
         input.value = prompt;
@@ -2768,9 +2766,23 @@ import Layout from '../layouts/Layout.astro';
     button.addEventListener('click', () => {
       const mode = String(button.getAttribute('data-assistant-mode') || '') as AssistantWorkMode;
       if (!mode || !(mode in assistantModeConfig)) return;
-      openAssistantRail();
+      requestOpenAssistantRail();
       setAssistantMode(mode, { focus: true });
     });
+  });
+
+  document.addEventListener('click', (event) => {
+    const trigger = (event.target as HTMLElement | null)?.closest(
+      '#assistantRailToggle, #assistantRailFab, [data-mobile-action="open-copilot"], [data-dashboard-action="open-copilot"]'
+    ) as HTMLElement | null;
+    if (!trigger) return;
+    requestOpenAssistantRail();
+  });
+
+  document.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') return;
+    if (!assistantRail?.classList.contains('open')) return;
+    closeAssistantRail();
   });
 
   // Close sidebar on nav click (mobile)
