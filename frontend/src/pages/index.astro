@@ -4385,6 +4385,12 @@ import Layout from '../layouts/Layout.astro';
         patientPhone || 'Sin telefono',
         patientBirthMeta,
       ];
+      const callAction = patientPhone
+        ? `<button type="button" class="btn-ghost btn-sm" data-action="patient-call" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-phone="${escapeAttr(patientPhone)}"><span class="material-symbols-rounded">call</span> Llamar</button>`
+        : '';
+      const emailAction = patientEmail
+        ? `<button type="button" class="btn-ghost btn-sm" data-action="patient-email" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-email="${escapeAttr(patientEmail)}"><span class="material-symbols-rounded">mail</span> Email</button>`
+        : '';
       return `
         <article class="patient-directory-item tone-${escapeAttr(readiness.tone)}">
           <div class="patient-directory-main">
@@ -4405,8 +4411,8 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <div class="patient-directory-actions">
-            <button type="button" class="btn-ghost btn-sm" data-action="patient-call" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-phone="${escapeAttr(patientPhone)}" ${patientPhone ? '' : 'disabled'}><span class="material-symbols-rounded">call</span> ${patientPhone ? 'Llamar' : 'Sin telefono'}</button>
-            <button type="button" class="btn-ghost btn-sm" data-action="patient-email" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-email="${escapeAttr(patientEmail)}" ${patientEmail ? '' : 'disabled'}><span class="material-symbols-rounded">mail</span> ${patientEmail ? 'Email' : 'Sin email'}</button>
+            ${callAction}
+            ${emailAction}
             <button type="button" class="btn-secondary btn-sm" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">person</span> Abrir ficha</button>
             <button type="button" class="btn-ghost btn-sm" data-action="patient-telegram" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">forum</span> Historial</button>
           </div>
