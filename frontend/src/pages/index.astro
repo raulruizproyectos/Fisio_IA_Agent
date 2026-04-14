@@ -16388,8 +16388,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }
 
     .topbar-right {
-      width: 100%;
-      justify-content: space-between;
+      width: auto;
+      margin-left: auto;
+      justify-content: flex-end;
+      gap: 0.4rem;
+    }
+
+    .topbar-notif-btn {
+      display: none !important;
     }
 
     .user-pill {
@@ -16488,11 +16494,6 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       line-height: 1.5;
     }
 
-    .page-section[data-page='citas'] .agenda-cal-card,
-    .page-section[data-page='citas'] .table-card {
-      display: none;
-    }
-
     .page-section[data-page='citas'] .agenda-mobile-card {
       display: block;
       margin-top: 0.1rem;
@@ -16513,6 +16514,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       font-size: 0.8rem;
     }
 
+    .page-section[data-page='citas'] .agenda-cal-card,
+    .page-section[data-page='citas'] .table-card {
+      display: block;
+      margin-top: 0.75rem;
+    }
+
     .page-section[data-page='ficha-paciente'] .ficha-hero-presence {
       gap: 0.55rem;
     }
@@ -16522,8 +16529,22 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       justify-content: flex-start;
     }
 
+    .assistant-rail {
+      z-index: 130 !important;
+      background: transparent !important;
+    }
+
     .assistant-rail-card {
       border-radius: 0 !important;
+      background: #ffffff !important;
+      opacity: 1 !important;
+      box-shadow: 0 -20px 48px -34px rgba(2, 6, 23, 0.5) !important;
+    }
+
+    .assistant-rail-backdrop {
+      z-index: 120 !important;
+      background: rgba(2, 6, 23, 0.42) !important;
+      backdrop-filter: blur(4px) !important;
     }
 
     .mobile-dock {
@@ -16784,6 +16805,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     transform: translateY(100%) !important;
     opacity: 1 !important;
     pointer-events: none !important;
+    z-index: 140 !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail.open {
@@ -16793,14 +16815,19 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
   html[data-assistant-mode='mobile'] .assistant-rail-backdrop {
     inset: 0 !important;
+    z-index: 130 !important;
+    background: rgba(2, 6, 23, 0.42) !important;
+    backdrop-filter: blur(4px) !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail-card {
     width: 100vw !important;
     max-width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
+    height: 100svh !important;
+    max-height: 100svh !important;
     border-radius: 0 !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
   }
 
   html[data-assistant-mode='mobile'] .assistant-rail .assistant-module-header {
