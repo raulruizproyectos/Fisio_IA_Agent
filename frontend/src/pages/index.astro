@@ -16956,6 +16956,73 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     font-size: 0.92rem !important;
   }
 
+  .assistant-rail .assistant-rail-card {
+    border: 1px solid rgba(23, 61, 89, 0.14) !important;
+    box-shadow: 0 32px 90px -46px rgba(15, 23, 42, 0.48) !important;
+    background:
+      radial-gradient(circle at top right, rgba(214, 234, 242, 0.48), transparent 20%),
+      linear-gradient(180deg, rgba(255, 253, 248, 0.99), rgba(247, 240, 229, 0.96)) !important;
+  }
+
+  .assistant-rail .assistant-module-header {
+    border-bottom: 1px solid rgba(23, 61, 89, 0.12) !important;
+    background: linear-gradient(135deg, rgba(230, 241, 246, 0.94), rgba(242, 248, 251, 0.98)) !important;
+  }
+
+  .assistant-rail .assistant-connected-badge {
+    border-color: rgba(22, 163, 74, 0.34) !important;
+    background: rgba(236, 253, 245, 0.9) !important;
+  }
+
+  .assistant-rail .assistant-mode-chip {
+    border-color: rgba(23, 61, 89, 0.18) !important;
+    background: rgba(255, 251, 244, 0.92) !important;
+    color: #29485d !important;
+  }
+
+  .assistant-rail .assistant-mode-chip.is-active {
+    background: linear-gradient(135deg, #15425b, #1f5c70) !important;
+    border-color: rgba(21, 66, 91, 0.68) !important;
+    color: #f7fbff !important;
+    box-shadow: 0 16px 28px -22px rgba(15, 23, 42, 0.55) !important;
+  }
+
+  .assistant-rail .btn-generate,
+  .assistant-rail .btn-send-compact {
+    box-shadow: 0 16px 28px -22px rgba(15, 23, 42, 0.52) !important;
+  }
+
+  .assistant-rail .assistant-rail-close {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.55rem !important;
+    height: 2.55rem !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(20, 52, 74, 0.24) !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    color: #17384d !important;
+    opacity: 1 !important;
+    box-shadow: 0 10px 24px -20px rgba(15, 23, 42, 0.42) !important;
+  }
+
+  .assistant-rail .assistant-rail-close .material-symbols-rounded {
+    color: currentColor !important;
+    font-size: 1.25rem !important;
+    font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 24 !important;
+  }
+
+  .assistant-rail .assistant-rail-close:hover {
+    background: #17384d !important;
+    border-color: rgba(20, 52, 74, 0.82) !important;
+    color: #ffffff !important;
+  }
+
+  .assistant-rail .assistant-rail-close:focus-visible {
+    outline: 2px solid rgba(20, 52, 74, 0.55) !important;
+    outline-offset: 2px !important;
+  }
+
 
   /* === DASHBOARD REDESIGN STITCH V1 === */
   .page-section[data-page='dashboard'] .dashboard-layout {
