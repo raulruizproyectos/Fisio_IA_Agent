@@ -739,6 +739,10 @@ import Layout from '../layouts/Layout.astro';
             <div class="pagos-stat pagos-stat-card"><span class="pagos-stat-label">Tarjeta</span><span class="pagos-stat-value" id="gestoriaGranTarjeta">0,00 &euro;</span></div>
           </div>
 
+          <div class="gestoria-mobile-list" id="gestoriaMobileList">
+            <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando resumen de gestor&iacute;a...</p></div>
+          </div>
+
           <!-- Tabla desglose por paciente x mes -->
           <section class="card table-card">
             <div class="table-wrap gestoria-table-wrap">
@@ -8593,6 +8597,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   const gestoriaBody = document.getElementById('gestoriaBody') as HTMLElement | null;
   const gestoriaHead = document.getElementById('gestoriaHead') as HTMLElement | null;
   const gestoriaAnioFilter = document.getElementById('gestoriaAnioFilter') as HTMLSelectElement | null;
+  const gestoriaMobileList = document.getElementById('gestoriaMobileList') as HTMLElement | null;
 
   (() => {
     if (!gestoriaAnioFilter) return;
@@ -8632,8 +8637,27 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       </tr>`;
 
       if (!pacientes.length) {
+        if (gestoriaMobileList) {
+          gestoriaMobileList.innerHTML = '<div class="empty-state-sm"><span class="material-symbols-rounded">account_balance</span><p>Sin datos de gestoría en este año.</p></div>';
+        }
         setTableState(gestoriaBody, 16, 'credit_card_off', 'Sin pagos registrados en ' + anio);
         return;
+      }
+
+      if (gestoriaMobileList) {
+        const mobileRows = [...pacientes].sort((a: any, b: any) => Number(b?.total_anual || 0) - Number(a?.total_anual || 0));
+        gestoriaMobileList.innerHTML = mobileRows.map((p: any) => `
+          <article class="gestoria-mobile-item">
+            <header>
+              <strong>${escapeHtml(p.nombre || 'Sin paciente')}</strong>
+              <span>${fmtMoney(Number(p.total_anual || 0))}</span>
+            </header>
+            <div class="gestoria-mobile-metrics">
+              <span><small>Efectivo</small><strong>${fmtMoney(Number(p.efectivo_anual || 0))}</strong></span>
+              <span><small>Tarjeta</small><strong>${fmtMoney(Number(p.tarjeta_anual || 0))}</strong></span>
+            </div>
+          </article>
+        `).join('');
       }
 
       // Patient rows
@@ -8669,6 +8693,9 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
       gestoriaBody.innerHTML = html;
     } catch {
+      if (gestoriaMobileList) {
+        gestoriaMobileList.innerHTML = '<div class="empty-state-sm"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar gestoría.</p></div>';
+      }
       setTableState(gestoriaBody, 16, 'cloud_off', 'Error al cargar datos de gestor\u00eda');
     }
   };
@@ -11701,6 +11728,55 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   /* === GESTORIA === */
+  .gestoria-mobile-list {
+    display: none;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+  .gestoria-mobile-item {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.82rem 0.9rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(199, 184, 155, 0.36);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 228, 0.94));
+  }
+  .gestoria-mobile-item header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .gestoria-mobile-item header strong {
+    color: #183247;
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  .gestoria-mobile-item header span {
+    color: #183247;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+  .gestoria-mobile-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+  .gestoria-mobile-metrics span {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .gestoria-mobile-metrics small {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7b8a96;
+    font-weight: 700;
+  }
+  .gestoria-mobile-metrics strong {
+    color: #183247;
+    font-size: 0.8rem;
+  }
   .gestoria-table-wrap {
     overflow-x: auto;
   }
@@ -11754,6 +11830,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .gestoria-mes-chip strong { color: var(--text-primary); }
   .gestoria-mes-cash strong { color: #166534; }
   .gestoria-mes-card strong { color: #1e40af; }
+
+  @media (max-width: 768px) {
+    .page-section[data-page='gestoria'] .gestoria-mobile-list {
+      display: grid;
+    }
+    .page-section[data-page='gestoria'] .gestoria-table-wrap {
+      display: none;
+    }
+  }
 
   /* === CONFIG GRID === */
   .config-grid {
