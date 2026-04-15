@@ -1216,7 +1216,10 @@ import Layout from '../layouts/Layout.astro';
               </article>
             </div>
             <p class="form-feedback" id="facturaAvailabilityNotice" hidden></p>
-            <div class="table-wrap">
+            <div class="facturas-mobile-list" id="facturasMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando facturacion...</p></div>
+            </div>
+            <div class="table-wrap facturas-table-wrap">
               <table><thead><tr><th>N&uacute;mero</th><th>Fecha</th><th>Paciente</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody id="facturasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">receipt_long</span><p>Sin facturas emitidas</p></div></td></tr></tbody></table>
             </div>
@@ -7630,6 +7633,7 @@ import Layout from '../layouts/Layout.astro';
   const nuevaFacturaBtn = document.getElementById('nuevaFacturaBtn') as HTMLButtonElement | null;
   const refreshFacturasBtn = document.getElementById('refreshFacturas') as HTMLButtonElement | null;
   const facturaAvailabilityNotice = document.getElementById('facturaAvailabilityNotice') as HTMLElement | null;
+  const facturasMobileList = document.getElementById('facturasMobileList') as HTMLElement | null;
   const facturasCountValue = document.getElementById('facturasCountValue') as HTMLElement | null;
   const facturasCountMeta = document.getElementById('facturasCountMeta') as HTMLElement | null;
   const facturasTotalValue = document.getElementById('facturasTotalValue') as HTMLElement | null;
@@ -7674,6 +7678,36 @@ import Layout from '../layouts/Layout.astro';
       : 'Todo el listado aparece cobrado.';
   };
 
+  const renderFacturasMobile = (facturas: any[]) => {
+    if (!facturasMobileList) return;
+    const rows = Array.isArray(facturas) ? facturas : [];
+    if (!rows.length) {
+      facturasMobileList.innerHTML = '<div class="empty-state-sm"><span class="material-symbols-rounded">receipt_long</span><p>Sin facturas en este periodo.</p></div>';
+      return;
+    }
+    facturasMobileList.innerHTML = rows.map((f: any) => {
+      const pName = f.crm_pacientes ? `${f.crm_pacientes.nombre || ''} ${f.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
+      const estadoClass = f.estado === 'anulada' ? 'cancelada' : f.estado === 'pagada' ? 'confirmada' : 'pendiente';
+      return `
+        <article class="factura-mobile-item">
+          <header>
+            <strong>${escapeHtml(f.numero || 'Sin numero')}</strong>
+            <span class="status-chip ${estadoClass}">${escapeHtml(String(f.estado || 'pendiente'))}</span>
+          </header>
+          <p>${escapeHtml(pName)} | ${escapeHtml(fmtDate(f.fecha))}</p>
+          <div class="factura-mobile-metrics">
+            <span><small>Base</small><strong>${Number(f.importe_bruto || 0).toFixed(2)} EUR</strong></span>
+            <span><small>IVA</small><strong>${Number(f.importe_iva || 0).toFixed(2)} EUR</strong></span>
+            <span><small>Total</small><strong>${Number(f.importe_total || 0).toFixed(2)} EUR</strong></span>
+          </div>
+          <div class="factura-mobile-actions">
+            <a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">Abrir PDF</a>
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
+
   const syncFacturasAvailabilityUi = () => {
     const unavailable = Boolean(facturasUnavailableMessage);
     if (nuevaFacturaBtn) {
@@ -7701,6 +7735,7 @@ import Layout from '../layouts/Layout.astro';
     facturasUnavailableMessage = '';
     syncFacturasAvailabilityUi();
     renderFacturasSummary([]);
+    renderFacturasMobile([]);
     setTableState(facturasBody, 8, 'sync', 'Cargando facturas...', true);
     try {
       const anio = facturasAnioFilter?.value || new Date().getFullYear();
@@ -7709,6 +7744,7 @@ import Layout from '../layouts/Layout.astro';
         facturasUnavailableMessage = payload.error || 'Modulo facturacion no disponible';
         syncFacturasAvailabilityUi();
         renderFacturasSummary([]);
+        renderFacturasMobile([]);
         setTableState(facturasBody, 8, 'warning', facturasUnavailableMessage);
         return;
       }
@@ -7719,6 +7755,7 @@ import Layout from '../layouts/Layout.astro';
         return String(b?.numero || '').localeCompare(String(a?.numero || ''), 'es', { sensitivity: 'base' });
       });
       renderFacturasSummary(facturas);
+      renderFacturasMobile(facturas);
       if (!facturas.length) {
         setTableState(facturasBody, 8, 'receipt_long', 'Sin facturas emitidas');
         return;
@@ -7738,6 +7775,8 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
     } catch {
+      renderFacturasSummary([]);
+      renderFacturasMobile([]);
       setTableState(facturasBody, 8, 'cloud_off', 'Error al cargar facturas');
     }
   };
@@ -10765,6 +10804,71 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     background: linear-gradient(180deg, rgba(241, 251, 251, 0.98), rgba(233, 247, 248, 0.94));
   }
 
+  .facturas-mobile-list {
+    display: none;
+    gap: 0.7rem;
+  }
+
+  .factura-mobile-item {
+    display: grid;
+    gap: 0.62rem;
+    padding: 0.8rem 0.86rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(199, 184, 155, 0.4);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 228, 0.94));
+  }
+
+  .factura-mobile-item header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .factura-mobile-item header strong {
+    color: #183247;
+    font-size: 0.92rem;
+    line-height: 1.25;
+  }
+
+  .factura-mobile-item p {
+    margin: 0;
+    color: #617382;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .factura-mobile-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .factura-mobile-metrics span {
+    display: grid;
+    gap: 0.18rem;
+    min-width: 0;
+  }
+
+  .factura-mobile-metrics small {
+    font-size: 0.69rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #7c8c98;
+  }
+
+  .factura-mobile-metrics strong {
+    color: #183247;
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+
+  .factura-mobile-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
   .factura-preview {
     margin: 1rem 0;
     padding: 1rem;
@@ -10778,6 +10882,16 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   @media (max-width: 900px) {
     .facturas-summary-strip {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .page-section[data-page='facturas'] .facturas-table-wrap {
+      display: none;
+    }
+
+    .page-section[data-page='facturas'] .facturas-mobile-list {
+      display: grid;
     }
   }
 
