@@ -20149,6 +20149,44 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       grid-template-columns: 1fr !important;
     }
   }
+
+  /* Hotfix: restore readability over legacy premium overrides */
+  body::before {
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-eyebrow,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-kicker,
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-title,
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .signal-value,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card p,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .agenda-sync-fact,
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card .agenda-sync-fact strong {
+    color: #0f172a !important;
+    opacity: 1 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-secondary,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-ghost,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-link-inline {
+    background: #ffffff !important;
+    border: 1px solid #d4dae3 !important;
+    color: #1e293b !important;
+    opacity: 1 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .signal-card {
+    background: #ffffff !important;
+    border: 1px solid #e4e7ec !important;
+    min-height: 0 !important;
+    opacity: 1 !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main {
+    min-height: 0 !important;
+  }
 </style>
 
 
