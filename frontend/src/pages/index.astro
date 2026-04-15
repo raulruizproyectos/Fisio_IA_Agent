@@ -176,7 +176,7 @@ import Layout from '../layouts/Layout.astro';
                 <article class="cockpit-side-card cockpit-side-card-agent">
                   <span class="cockpit-side-kicker">Motor terapeutico</span>
                   <h2 class="cockpit-side-title">Planes, entregas y seguimiento</h2>
-                  <p class="cockpit-side-copy">Genera ejercicios, registra cada envio y consulta en segundos que se le prescribio a cada paciente para casa.</p>
+                  <p class="cockpit-side-copy">Crea planes, registra entregas y consulta seguimiento en un solo flujo.</p>
                   <div class="cockpit-side-actions">
                     <button class="btn-primary btn-sm" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span> Nuevo plan</button>
                     <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Historial</button>
@@ -220,16 +220,16 @@ import Layout from '../layouts/Layout.astro';
                 <header class="cockpit-block-head">
                   <div class="cockpit-block-copy">
                     <h2>Flujos clave</h2>
-                    <p>Las acciones que mas se repiten en consulta, ordenadas para entrar, decidir y cerrar sin friccion.</p>
+                    <p>Accesos directos para resolver la operativa diaria sin pasos de sobra.</p>
                   </div>
                 </header>
                 <div class="command-grid">
-                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">person_add</span></span><span class="command-tile-kicker">Admision</span><strong>Alta de paciente</strong><p>Crea la ficha y deja el caso listo para agenda, seguimiento y documentos.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_month</span></span><span class="command-tile-kicker">Agenda</span><strong>Semana clinica</strong><p>Abre la semana, detecta huecos y mueve sesiones sin perder contexto del paciente.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="command-tile-kicker">Telegram</span><strong>Mensajes y triage</strong><p>Convierte mensajes y reservas en la siguiente accion clinica o administrativa.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="command-tile-kicker">Ejercicios</span><strong>Plan de ejercicios</strong><p>Prepara una propuesta terapeutica y archivala con PDF, historial y seguimiento.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">description</span></span><span class="command-tile-kicker">Documentos</span><strong>Documentacion clinica</strong><p>Centraliza firma, PDFs y consentimientos sin salir del CRM.</p></button>
-                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">open_in_new</span></span><span class="command-tile-kicker">Captacion</span><strong>Reserva online</strong><p>Comparte el enlace publico y llena huecos de agenda con una experiencia clara.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">person_add</span></span><span class="command-tile-kicker">Admision</span><strong>Alta de paciente</strong><p>Ficha lista en segundos.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_month</span></span><span class="command-tile-kicker">Agenda</span><strong>Semana clinica</strong><p>Gestiona huecos y cambios rapido.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="command-tile-kicker">Telegram</span><strong>Mensajes y triage</strong><p>Prioriza y responde sin friccion.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="command-tile-kicker">Ejercicios</span><strong>Plan de ejercicios</strong><p>Genera, entrega y guarda trazabilidad.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">description</span></span><span class="command-tile-kicker">Documentos</span><strong>Documentacion clinica</strong><p>Firmas y PDFs en un punto.</p></button>
+                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">open_in_new</span></span><span class="command-tile-kicker">Captacion</span><strong>Reserva online</strong><p>Comparte enlace y capta citas.</p></button>
                 </div>
               </article>
             </section>
@@ -269,7 +269,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="page-header-row patients-header-row">
             <div>
               <h1 class="page-title"><span class="material-symbols-rounded">group</span> Pacientes</h1>
-              <p class="page-subtitle patients-page-subtitle">Admision, contexto clinico y acceso rapido a ficha, historial y seguimiento sin perder tiempo en tablas frias.</p>
+              <p class="page-subtitle patients-page-subtitle">Listado operativo para entrar a ficha, historial y contacto en un clic.</p>
             </div>
             <button class="btn-primary" id="addPatientBtn"><span class="material-symbols-rounded">person_add</span> Nuevo paciente</button>
           </div>
@@ -277,8 +277,8 @@ import Layout from '../layouts/Layout.astro';
           <section class="patients-hero-shell">
             <article class="patients-hero-main">
               <span class="patients-kicker">CRM CLINICO ACTIVO</span>
-              <h2>Base de pacientes preparada para agenda, copilot y continuidad terapeutica.</h2>
-              <p>La vista de pacientes pasa a ser un centro operativo: localiza rapido cada caso, detecta fichas incompletas y entra a la historia correcta sin friccion en desktop o movil.</p>
+              <h2>CRM de pacientes claro y accionable.</h2>
+              <p>Encuentra cada caso, detecta fichas incompletas y entra directo a la accion correcta.</p>
               <div class="patients-hero-actions">
                 <button type="button" class="btn-primary" id="patientsHeroAddBtn"><span class="material-symbols-rounded">person_add</span> Alta rapida</button>
                 <button type="button" class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Sincronizar listado</button>
@@ -395,7 +395,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="page-header-row template-library-header">
             <div>
               <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Biblioteca clinica</h1>
-              <p class="page-subtitle">Consulta los planes IA que ya se han generado, las entregas archivadas y, si existen, las plantillas legacy que puedes reutilizar entre pacientes.</p>
+              <p class="page-subtitle">Gestiona planes IA, entregas archivadas y plantillas reutilizables en una sola vista.</p>
             </div>
             <button class="btn-ghost" id="refreshTemplates" type="button"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
           </div>
@@ -19978,6 +19978,154 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .page-section[data-page='ficha-paciente'] .ficha-hero-presence {
       flex-direction: column;
+    }
+  }
+
+  /* === FINAL PREMIUM COMPACT SWEEP (GLOBAL) === */
+  .page-header-row {
+    margin-bottom: 1rem !important;
+    gap: 0.65rem !important;
+  }
+
+  .page-title {
+    font-size: clamp(1.25rem, 1.55vw, 1.55rem) !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .page-subtitle {
+    max-width: 46rem !important;
+    font-size: 0.9rem !important;
+    line-height: 1.55 !important;
+    color: #5f7180 !important;
+  }
+
+  .card {
+    border-radius: 1rem !important;
+    box-shadow: 0 16px 30px -30px rgba(27, 30, 36, 0.28) !important;
+  }
+
+  .card-header {
+    padding: 0.72rem 0.95rem !important;
+  }
+
+  .card-header h2 {
+    font-size: 0.95rem !important;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    min-height: 2.65rem !important;
+    padding: 0.6rem 0.95rem !important;
+    border-radius: 0.8rem !important;
+  }
+
+  th, td {
+    padding: 0.52rem 0.72rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .content {
+    padding-top: 0.9rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main {
+    padding: 1.2rem !important;
+    border-radius: 1.15rem !important;
+    background: linear-gradient(145deg, #173246 0%, #1a4557 55%, #1f4e58 100%) !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main::before,
+  .page-section[data-page='dashboard'] .hero-panel-main::after {
+    opacity: 0.45 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+    font-size: clamp(3rem, 5.2vw, 4.2rem) !important;
+    line-height: 0.92 !important;
+    max-width: 8ch !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
+    font-size: 0.98rem !important;
+    max-width: 44ch !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-action-row {
+    gap: 0.55rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-grid {
+    gap: 0.72rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile {
+    min-height: 9rem !important;
+    padding: 0.85rem 0.92rem !important;
+    border-radius: 0.95rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile strong {
+    font-size: 1rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile p {
+    font-size: 0.82rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card {
+    padding: 1rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .signal-card {
+    min-height: 8.6rem !important;
+    padding: 0.85rem !important;
+    border-radius: 0.95rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main {
+    padding: 1.25rem !important;
+    border-radius: 1.2rem !important;
+    background: linear-gradient(145deg, #173246 0%, #1b4b61 65%, #1e5660 100%) !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main::after {
+    opacity: 0.35 !important;
+    width: 9rem !important;
+    height: 9rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main h2 {
+    font-size: clamp(2.2rem, 4.2vw, 3.2rem) !important;
+    line-height: 0.96 !important;
+    max-width: 11ch !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main p {
+    font-size: 0.96rem !important;
+    line-height: 1.55 !important;
+    max-width: 46ch !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card {
+    padding: 0.92rem 1rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card strong {
+    font-size: clamp(1.7rem, 2vw, 2.1rem) !important;
+  }
+
+  @media (max-width: 768px) {
+    .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+      font-size: clamp(2.2rem, 11vw, 3rem) !important;
+      max-width: 9ch !important;
+    }
+
+    .page-section[data-page='dashboard'] .command-tile {
+      min-height: 8.2rem !important;
     }
   }
 </style>
