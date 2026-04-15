@@ -474,11 +474,19 @@ import Layout from '../layouts/Layout.astro';
                     <option value="other">Otros</option>
                   </select>
                 </label>
+                <label class="intakes-source-filter" for="intakesPriorityFilter">
+                  <span class="material-symbols-rounded">priority_high</span>
+                  <select id="intakesPriorityFilter" aria-label="Filtrar mensajes por prioridad">
+                    <option value="all">Todas las prioridades</option>
+                    <option value="high">Prioridad alta</option>
+                    <option value="normal">Prioridad normal</option>
+                  </select>
+                </label>
                 <button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
               </div>
             </header>
             <div class="intakes-source-summary" id="intakesSourceSummary" aria-live="polite"></div>
-            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Fuente</th><th>Mensaje</th><th>Alertas</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="intakesFullBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando bandeja...</p></div></td></tr></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Canal</th><th>Prioridad</th><th>Mensaje</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="intakesFullBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando bandeja...</p></div></td></tr></tbody></table></div>
           </section>
         </div>
 
@@ -616,6 +624,24 @@ import Layout from '../layouts/Layout.astro';
               <select id="pagosAnioFilter" title="A&ntilde;o"></select>
             </div>
           </div>
+
+          <section class="finance-overview-grid" id="financeOverviewGrid" aria-live="polite">
+            <article class="finance-overview-card">
+              <span>Cobrado</span>
+              <strong id="financePaidValue">0,00 &euro;</strong>
+              <p id="financePaidMeta">Pagos del filtro actual.</p>
+            </article>
+            <article class="finance-overview-card finance-overview-card-warn">
+              <span>Pendiente</span>
+              <strong id="financePendingValue">0,00 &euro;</strong>
+              <p id="financePendingMeta">Facturas pendientes de cobro.</p>
+            </article>
+            <article class="finance-overview-card">
+              <span>Bonos activos</span>
+              <strong id="financeBonosValue">0</strong>
+              <p id="financeBonosMeta">Sesiones disponibles.</p>
+            </article>
+          </section>
 
           <p class="form-feedback" id="pagosAvailabilityNotice" hidden></p>
           <div class="pagos-mobile-list" id="pagosMobileList">
@@ -1699,6 +1725,7 @@ import Layout from '../layouts/Layout.astro';
   const assistantModeButtons = document.querySelectorAll('[data-assistant-mode]') as NodeListOf<HTMLButtonElement>;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const intakesSourceFilter = document.getElementById('intakesSourceFilter') as HTMLSelectElement | null;
+  const intakesPriorityFilter = document.getElementById('intakesPriorityFilter') as HTMLSelectElement | null;
   const intakesSourceSummary = document.getElementById('intakesSourceSummary') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
   const agendaSyncChip = document.getElementById('agendaSyncChip') as HTMLElement | null;
@@ -4793,20 +4820,40 @@ import Layout from '../layouts/Layout.astro';
     return 'other';
   };
 
+  const getIntakePriorityKey = (item: any) =>
+    item?.tiene_alertas_rojas || item?.alerta_roja || item?.priority === 'high' ? 'high' : 'normal';
+
   const renderIntakeSourceSummary = (items: any[]) => {
     if (!intakesSourceSummary) return;
-    const totals = { all: items.length, telegram: 0, web: 0, other: 0 };
+    const totals = { all: items.length, telegram: 0, web: 0, other: 0, high: 0 };
     items.forEach((item: any) => {
       const key = getIntakeSourceKey(item?.fuente);
       if (key in totals) (totals as any)[key] += 1;
+      if (getIntakePriorityKey(item) === 'high') totals.high += 1;
     });
     intakesSourceSummary.innerHTML = `
       <span class="intakes-source-chip">Total <strong>${totals.all}</strong></span>
       <span class="intakes-source-chip">Telegram <strong>${totals.telegram}</strong></span>
       <span class="intakes-source-chip">Web/Formulario <strong>${totals.web}</strong></span>
       <span class="intakes-source-chip">Otros <strong>${totals.other}</strong></span>
+      <span class="intakes-source-chip intakes-source-chip-urgent">Alta prioridad <strong>${totals.high}</strong></span>
     `;
   };
+
+  async function openAppointmentFromIntake(patientId: string | null, patientName = '', message = '') {
+    if (!patientId) {
+      alert('Este mensaje no tiene paciente vinculado. Abre la ficha o crea el paciente antes de agendar.');
+      return;
+    }
+    selectedPatientId = patientId;
+    selectedPatientName = patientName || '';
+    syncChatPatientSelection(patientId, patientName);
+    await openAppointmentModal();
+    if (appointmentPatientSelect) appointmentPatientSelect.value = patientId;
+    if (appointmentReasonInput && message) {
+      appointmentReasonInput.value = message.slice(0, 180);
+    }
+  }
 
   // === LOAD INTAKES FULL ===
   const loadIntakesFull = async () => {
@@ -4816,21 +4863,45 @@ import Layout from '../layouts/Layout.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
       const allIntakes = payload.data || [];
       const filterValue = intakesSourceFilter?.value || 'all';
+      const priorityValue = intakesPriorityFilter?.value || 'all';
       renderIntakeSourceSummary(allIntakes);
-      const intakes = filterValue === 'all'
+      const channelFiltered = filterValue === 'all'
         ? allIntakes
         : allIntakes.filter((item: any) => getIntakeSourceKey(item?.fuente) === filterValue);
+      const intakes = priorityValue === 'all'
+        ? channelFiltered
+        : channelFiltered.filter((item: any) => getIntakePriorityKey(item) === priorityValue);
 
       if (!intakes.length) {
-        const filterCopy = filterValue === 'all' ? 'Sin mensajes pendientes' : 'Sin mensajes en este canal';
+        const filterCopy = filterValue === 'all' && priorityValue === 'all' ? 'Sin mensajes pendientes' : 'Sin mensajes con estos filtros';
         setTableState(intakesFullBody, 7, 'check_circle', filterCopy);
         return;
       }
 
       intakesFullBody.innerHTML = intakes.map((i: any) => {
-        const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">&#9888; Si</span>` : '<span class="status-chip aprobado">No</span>';
+        const priorityKey = getIntakePriorityKey(i);
+        const priority = priorityKey === 'high'
+          ? '<span class="status-chip rechazado">Alta</span>'
+          : '<span class="status-chip aprobado">Normal</span>';
         const patientName = resolvePatientName(i);
-        return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'Sin fuente')}</td><td>${escapeHtml(i.objetivo || 'Sin objetivo')}</td><td>${escapeHtml(i.timestamp ? fmtDate(i.timestamp) : '')}</td><td>${alertas}</td><td><button class="btn-sm" data-open-ficha="${i.crm_paciente_id || ''}">Ficha</button><button class="btn-sm btn-outline" data-open-chat="${i.crm_paciente_id || ''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
+        const patientId = i.crm_paciente_id || i.paciente_id || '';
+        const source = i.fuente || i.canal || 'Sin canal';
+        const message = i.objetivo || i.mensaje || i.texto || 'Sin mensaje';
+        return `<tr>
+          <td class="td-patient">${escapeHtml(patientName)}</td>
+          <td>${escapeHtml(source)}</td>
+          <td>${priority}</td>
+          <td>${escapeHtml(message)}</td>
+          <td>${escapeHtml(i.timestamp || i.creado_en || i.created_at ? fmtDate(i.timestamp || i.creado_en || i.created_at) : '')}</td>
+          <td><span class="status-chip pendiente">Pendiente</span></td>
+          <td>
+            <div class="intake-row-actions">
+              <button class="btn-sm" data-open-ficha="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Ficha</button>
+              <button class="btn-sm btn-outline" data-create-appointment="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" data-intake-message="${escapeAttr(message)}">Cita</button>
+              <button class="btn-sm btn-outline" data-open-chat="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Historial</button>
+            </div>
+          </td>
+        </tr>`;
       }).join('');
     } catch {
       setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar la bandeja');
@@ -4839,12 +4910,22 @@ import Layout from '../layouts/Layout.astro';
   pageLoaders['intakes'] = loadIntakesFull;
   document.getElementById('refreshIntakesFull')?.addEventListener('click', loadIntakesFull);
   intakesSourceFilter?.addEventListener('change', loadIntakesFull);
+  intakesPriorityFilter?.addEventListener('change', loadIntakesFull);
   intakesFullBody?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
     const fichaBtn = target?.closest('button[data-open-ficha]') as HTMLButtonElement | null;
     if (fichaBtn) {
       const patientId = fichaBtn.getAttribute('data-open-ficha');
-      if (patientId) openPatientHistory(patientId, '');
+      const patientName = fichaBtn.getAttribute('data-patient-name') || '';
+      if (patientId) openPatientHistory(patientId, patientName);
+      return;
+    }
+    const appointmentBtn = target?.closest('button[data-create-appointment]') as HTMLButtonElement | null;
+    if (appointmentBtn) {
+      const patientId = appointmentBtn.getAttribute('data-create-appointment');
+      const patientName = appointmentBtn.getAttribute('data-patient-name') || '';
+      const message = appointmentBtn.getAttribute('data-intake-message') || '';
+      void openAppointmentFromIntake(patientId, patientName, message);
       return;
     }
     const historyBtn = target?.closest('button[data-open-chat]') as HTMLButtonElement | null;
@@ -6244,6 +6325,12 @@ import Layout from '../layouts/Layout.astro';
   const pagosTotalSesiones = document.getElementById('pagosTotalSesiones') as HTMLElement | null;
   const pagosTotalEfectivo = document.getElementById('pagosTotalEfectivo') as HTMLElement | null;
   const pagosTotalTarjeta = document.getElementById('pagosTotalTarjeta') as HTMLElement | null;
+  const financePaidValue = document.getElementById('financePaidValue') as HTMLElement | null;
+  const financePaidMeta = document.getElementById('financePaidMeta') as HTMLElement | null;
+  const financePendingValue = document.getElementById('financePendingValue') as HTMLElement | null;
+  const financePendingMeta = document.getElementById('financePendingMeta') as HTMLElement | null;
+  const financeBonosValue = document.getElementById('financeBonosValue') as HTMLElement | null;
+  const financeBonosMeta = document.getElementById('financeBonosMeta') as HTMLElement | null;
   let pagosUnavailableMessage = '';
   const pagoSubmitBtn = document.getElementById('pagoSubmitBtn') as HTMLButtonElement | null;
   const pagoModalTitle = document.getElementById('pagoModalTitle');
@@ -6367,6 +6454,37 @@ import Layout from '../layouts/Layout.astro';
     if (pagosTotalTarjeta) pagosTotalTarjeta.textContent = fmtMoney(tarjeta);
   };
 
+  const renderFinanceOverview = async (pagos: any[]) => {
+    const rows = Array.isArray(pagos) ? pagos : [];
+    const paidTotal = rows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
+    if (financePaidValue) financePaidValue.textContent = fmtMoney(paidTotal);
+    if (financePaidMeta) financePaidMeta.textContent = `${rows.length} pago${rows.length === 1 ? '' : 's'} en el filtro.`;
+
+    const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
+    try {
+      const [facturasPayload, bonosPayload] = await Promise.all([
+        fetchJson(`${BACKEND_BASE}/api/facturas?anio=${encodeURIComponent(anio)}`).catch(() => ({ data: [] })),
+        fetchJson(`${BACKEND_BASE}/api/bonos?estado=activo`).catch(() => ({ data: [] })),
+      ]);
+
+      const facturas = Array.isArray(facturasPayload?.data) ? facturasPayload.data : [];
+      const pendingInvoices = facturas.filter((row: any) => String(row?.estado || '').toLowerCase() !== 'pagada');
+      const pendingAmount = pendingInvoices.reduce((sum: number, row: any) => sum + Number(row?.importe_total || 0), 0);
+      if (financePendingValue) financePendingValue.textContent = fmtMoney(pendingAmount);
+      if (financePendingMeta) financePendingMeta.textContent = pendingInvoices.length
+        ? `${pendingInvoices.length} factura${pendingInvoices.length === 1 ? '' : 's'} por cobrar.`
+        : 'Sin facturas pendientes.';
+
+      const bonos = Array.isArray(bonosPayload?.data) ? bonosPayload.data : [];
+      const remainingSessions = bonos.reduce((sum: number, b: any) => sum + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
+      if (financeBonosValue) financeBonosValue.textContent = String(bonos.length);
+      if (financeBonosMeta) financeBonosMeta.textContent = `${remainingSessions} sesion${remainingSessions === 1 ? '' : 'es'} disponibles.`;
+    } catch {
+      if (financePendingMeta) financePendingMeta.textContent = 'No se pudo actualizar facturacion.';
+      if (financeBonosMeta) financeBonosMeta.textContent = 'No se pudo actualizar bonos.';
+    }
+  };
+
   const renderPagosMobile = (pagos: any[]) => {
     if (!pagosMobileList) return;
     const rows = Array.isArray(pagos) ? pagos : [];
@@ -6400,6 +6518,7 @@ import Layout from '../layouts/Layout.astro';
     pagosUnavailableMessage = '';
     syncPagosAvailabilityUi();
     renderPagosSummary([]);
+    void renderFinanceOverview([]);
     renderPagosMobile([]);
     setTableState(pagosBody, 5, 'sync', 'Cargando pagos...', true);
     const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
@@ -6412,6 +6531,7 @@ import Layout from '../layouts/Layout.astro';
         pagosUnavailableMessage = payload.error || 'Modulo pagos no disponible';
         syncPagosAvailabilityUi();
         renderPagosSummary([]);
+        void renderFinanceOverview([]);
         renderPagosMobile([]);
         setTableState(pagosBody, 5, 'warning', pagosUnavailableMessage);
         return;
@@ -6422,6 +6542,7 @@ import Layout from '../layouts/Layout.astro';
         return bTs - aTs;
       });
       renderPagosSummary(pagos);
+      void renderFinanceOverview(pagos);
       renderPagosMobile(pagos);
       if (!pagos.length) { setTableState(pagosBody, 5, 'credit_card_off', 'Sin pagos en este periodo'); return; }
       pagosBody.innerHTML = pagos.map((p: any) => {
@@ -6442,6 +6563,7 @@ import Layout from '../layouts/Layout.astro';
       }).join('');
     } catch {
       renderPagosSummary([]);
+      void renderFinanceOverview([]);
       renderPagosMobile([]);
       setTableState(pagosBody, 5, 'cloud_off', 'Error al cargar pagos');
     }
@@ -20202,6 +20324,72 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .intakes-source-chip strong {
     color: #0f172a;
     font-weight: 800;
+  }
+
+  .intakes-source-chip-urgent {
+    border-color: #fecaca;
+    background: #fff5f5;
+    color: #991b1b;
+  }
+
+  .intake-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .intake-row-actions .btn-sm {
+    min-width: 4.4rem;
+    justify-content: center;
+  }
+
+  .finance-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+  }
+
+  .finance-overview-card {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #e4e7ec;
+    border-radius: 0.75rem;
+    background: #ffffff;
+  }
+
+  .finance-overview-card span {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .finance-overview-card strong {
+    color: #0f172a;
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+
+  .finance-overview-card p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .finance-overview-card-warn {
+    border-color: #fed7aa;
+    background: #fffbf5;
+  }
+
+  @media (max-width: 760px) {
+    .finance-overview-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 
