@@ -1198,6 +1198,23 @@ import Layout from '../layouts/Layout.astro';
                 <button class="btn-ghost btn-sm" id="refreshFacturas"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
+            <div class="facturas-summary-strip" id="facturasSummaryStrip">
+              <article class="facturas-summary-card">
+                <span>Emitidas</span>
+                <strong id="facturasCountValue">0</strong>
+                <p id="facturasCountMeta">Sin lectura todavia.</p>
+              </article>
+              <article class="facturas-summary-card">
+                <span>Total facturado</span>
+                <strong id="facturasTotalValue">0 EUR</strong>
+                <p id="facturasTotalMeta">Esperando datos del ejercicio.</p>
+              </article>
+              <article class="facturas-summary-card facturas-summary-card-accent">
+                <span>Pendiente de cobro</span>
+                <strong id="facturasPendingValue">0 EUR</strong>
+                <p id="facturasPendingMeta">Sin facturas pendientes.</p>
+              </article>
+            </div>
             <p class="form-feedback" id="facturaAvailabilityNotice" hidden></p>
             <div class="table-wrap">
               <table><thead><tr><th>N&uacute;mero</th><th>Fecha</th><th>Paciente</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -7613,6 +7630,12 @@ import Layout from '../layouts/Layout.astro';
   const nuevaFacturaBtn = document.getElementById('nuevaFacturaBtn') as HTMLButtonElement | null;
   const refreshFacturasBtn = document.getElementById('refreshFacturas') as HTMLButtonElement | null;
   const facturaAvailabilityNotice = document.getElementById('facturaAvailabilityNotice') as HTMLElement | null;
+  const facturasCountValue = document.getElementById('facturasCountValue') as HTMLElement | null;
+  const facturasCountMeta = document.getElementById('facturasCountMeta') as HTMLElement | null;
+  const facturasTotalValue = document.getElementById('facturasTotalValue') as HTMLElement | null;
+  const facturasTotalMeta = document.getElementById('facturasTotalMeta') as HTMLElement | null;
+  const facturasPendingValue = document.getElementById('facturasPendingValue') as HTMLElement | null;
+  const facturasPendingMeta = document.getElementById('facturasPendingMeta') as HTMLElement | null;
   let facturasUnavailableMessage = '';
 
   // Populate year filter
@@ -7631,6 +7654,24 @@ import Layout from '../layouts/Layout.astro';
     if (!text) { facturaFeedback.hidden = true; return; }
     facturaFeedback.hidden = false;
     facturaFeedback.textContent = text;
+  };
+
+  const renderFacturasSummary = (facturas: any[]) => {
+    const rows = Array.isArray(facturas) ? facturas : [];
+    const totalCount = rows.length;
+    const totalAmount = rows.reduce((acc: number, row: any) => acc + Number(row?.importe_total || 0), 0);
+    const pendingRows = rows.filter((row: any) => String(row?.estado || '').toLowerCase() !== 'pagada');
+    const pendingAmount = pendingRows.reduce((acc: number, row: any) => acc + Number(row?.importe_total || 0), 0);
+    const paidCount = rows.filter((row: any) => String(row?.estado || '').toLowerCase() === 'pagada').length;
+
+    if (facturasCountValue) facturasCountValue.textContent = String(totalCount);
+    if (facturasCountMeta) facturasCountMeta.textContent = totalCount ? `${paidCount} ${paidCount === 1 ? 'pagada' : 'pagadas'} en este filtro.` : 'Sin facturas en el periodo.';
+    if (facturasTotalValue) facturasTotalValue.textContent = `${totalAmount.toFixed(2)} EUR`;
+    if (facturasTotalMeta) facturasTotalMeta.textContent = totalCount ? 'Suma total de facturas visibles.' : 'No hay importes para mostrar.';
+    if (facturasPendingValue) facturasPendingValue.textContent = `${pendingAmount.toFixed(2)} EUR`;
+    if (facturasPendingMeta) facturasPendingMeta.textContent = pendingRows.length
+      ? `${pendingRows.length} ${pendingRows.length === 1 ? 'factura pendiente' : 'facturas pendientes'} de cobro.`
+      : 'Todo el listado aparece cobrado.';
   };
 
   const syncFacturasAvailabilityUi = () => {
@@ -7659,6 +7700,7 @@ import Layout from '../layouts/Layout.astro';
     if (!facturasBody) return;
     facturasUnavailableMessage = '';
     syncFacturasAvailabilityUi();
+    renderFacturasSummary([]);
     setTableState(facturasBody, 8, 'sync', 'Cargando facturas...', true);
     try {
       const anio = facturasAnioFilter?.value || new Date().getFullYear();
@@ -7666,10 +7708,17 @@ import Layout from '../layouts/Layout.astro';
       if (payload.unavailable) {
         facturasUnavailableMessage = payload.error || 'Modulo facturacion no disponible';
         syncFacturasAvailabilityUi();
+        renderFacturasSummary([]);
         setTableState(facturasBody, 8, 'warning', facturasUnavailableMessage);
         return;
       }
-      const facturas = payload.data || [];
+      const facturas = [...(payload.data || [])].sort((a: any, b: any) => {
+        const aTs = new Date(a?.fecha || 0).getTime();
+        const bTs = new Date(b?.fecha || 0).getTime();
+        if (!Number.isNaN(bTs - aTs) && bTs !== aTs) return bTs - aTs;
+        return String(b?.numero || '').localeCompare(String(a?.numero || ''), 'es', { sensitivity: 'base' });
+      });
+      renderFacturasSummary(facturas);
       if (!facturas.length) {
         setTableState(facturasBody, 8, 'receipt_long', 'Sin facturas emitidas');
         return;
@@ -10674,6 +10723,48 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 }
 
   /* === FACTURACION === */
+  .facturas-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0.1rem 0 0.85rem;
+  }
+
+  .facturas-summary-card {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.82rem 0.92rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(199, 184, 155, 0.38);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.96), rgba(248, 242, 231, 0.92));
+  }
+
+  .facturas-summary-card span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8a6731;
+  }
+
+  .facturas-summary-card strong {
+    color: #183247;
+    font-size: clamp(1.1rem, 1.8vw, 1.45rem);
+    line-height: 1.1;
+  }
+
+  .facturas-summary-card p {
+    margin: 0;
+    color: #617382;
+    font-size: 0.79rem;
+    line-height: 1.45;
+  }
+
+  .facturas-summary-card-accent {
+    border-color: rgba(39, 123, 138, 0.3);
+    background: linear-gradient(180deg, rgba(241, 251, 251, 0.98), rgba(233, 247, 248, 0.94));
+  }
+
   .factura-preview {
     margin: 1rem 0;
     padding: 1rem;
@@ -10683,6 +10774,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
   .factura-preview .table-wrap { margin-top: 0.5rem; }
   .factura-preview table { font-size: 0.85rem; }
+
+  @media (max-width: 900px) {
+    .facturas-summary-strip {
+      grid-template-columns: 1fr;
+    }
+  }
 
   /* === FICHA PACIENTE === */
   .ficha-tabs {
@@ -16675,8 +16772,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .page-section[data-page='citas'] .agenda-cal-card,
     .page-section[data-page='citas'] .table-card {
-      display: block;
-      margin-top: 0.75rem;
+      display: none;
     }
 
     .page-section[data-page='ficha-paciente'] .ficha-hero-presence {
