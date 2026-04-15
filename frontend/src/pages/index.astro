@@ -20187,6 +20187,101 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .page-section[data-page='pacientes'] .patients-hero-main {
     min-height: 0 !important;
   }
+
+  /* Final polish: spacing, contrast, typography consistency */
+  .hero-title,
+  .cockpit-side-title,
+  .page-title,
+  .patients-hero-main h2,
+  .page-section[data-page='ficha-paciente'] .ficha-hero-copy h2 {
+    font-family: var(--font-ui) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-eyebrow,
+  .page-section[data-page='pacientes'] .patients-kicker {
+    display: none !important;
+  }
+
+  .card,
+  .widget-card,
+  .table-card,
+  .agenda-cal-card,
+  .cockpit-side-card,
+  .signal-card,
+  .patients-stat-card,
+  .patients-directory-card,
+  .bonos-summary-card,
+  .bonos-mobile-item {
+    border-radius: 1rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main,
+  .page-section[data-page='pacientes'] .patients-hero-main,
+  .page-section[data-page='bonos'] .card,
+  .page-section[data-page='pagos'] .card,
+  .page-section[data-page='documentos'] .card,
+  .page-section[data-page='facturas'] .card {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .table-wrap th,
+  .table-wrap td {
+    padding: 0.72rem 0.92rem !important;
+    vertical-align: middle !important;
+  }
+
+  .table-wrap .empty-state,
+  .table-wrap .empty-state-sm,
+  .empty-state,
+  .empty-state-sm {
+    padding: 0.9rem 1rem !important;
+  }
+
+  .page-section[data-page='bonos'] .bonos-table-wrap table {
+    min-width: 860px !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-kicker,
+  .page-section[data-page='dashboard'] .priority-copy span,
+  .page-section[data-page='dashboard'] .signal-kicker {
+    color: #0f766e !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .page-section[data-page='dashboard'] .priority-copy p,
+  .page-section[data-page='dashboard'] .cockpit-side-copy,
+  .page-section[data-page='pacientes'] .patients-stat-card p,
+  .page-section[data-page='pacientes'] .patients-hero-main p {
+    color: #475569 !important;
+  }
+
+  .page-section[data-page='dashboard'] .priority-item,
+  .page-section[data-page='dashboard'] .signal-card,
+  .page-section[data-page='pacientes'] .patients-stat-card,
+  .page-section[data-page='bonos'] .bonos-mobile-item {
+    padding: 0.9rem !important;
+  }
+
+  @media (max-width: 768px) {
+    .page-section[data-page='dashboard'] .hero-title,
+    .page-section[data-page='pacientes'] .patients-hero-main h2 {
+      font-size: clamp(1.35rem, 6.2vw, 1.8rem) !important;
+      line-height: 1.12 !important;
+    }
+
+    .page-section[data-page='pacientes'] .patients-command-bar {
+      padding: 0.8rem !important;
+    }
+
+    .table-wrap th,
+    .table-wrap td {
+      padding: 0.62rem 0.74rem !important;
+    }
+  }
 </style>
 
 
