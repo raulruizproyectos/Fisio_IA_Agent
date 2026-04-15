@@ -56,7 +56,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="sidebar-section-label">Comunicaci&oacute;n</div>
         <a href="#" class="nav-item has-badge" data-section="intakes">
           <span class="material-symbols-rounded">forward_to_inbox</span>
-          <span class="nav-label">Mensajes Intake</span>
+          <span class="nav-label">Mensajes</span>
           <span class="badge" id="intakeBadge">0</span>
         </a>
         <a href="#" class="nav-item" data-section="historial">
@@ -86,7 +86,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="topbar-right">
           <button class="assistant-launch-btn" id="assistantRailToggle" type="button" aria-label="Abrir copilot cl&iacute;nico" aria-controls="assistantRail" aria-expanded="false">
             <span class="material-symbols-rounded">right_panel_open</span>
-            <span>Copilot</span>
+            <span>Copiloto</span>
           </button>
           <button class="icon-btn topbar-notif-btn" aria-label="Notificaciones" id="notifBtn">
             <span class="material-symbols-rounded">notifications</span>
@@ -109,7 +109,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="hero-panel-main">
                 <div class="hero-heading-stack">
                   <span class="hero-eyebrow">Centro operativo del dia</span>
-                  <h1 class="hero-title">Centro clinico</h1>
+                  <h1 class="hero-title">Centro clínico</h1>
                   <p class="hero-subtitle" id="dashboardLiveSummary">Resumen diario en tiempo real.</p>
                   <div class="hero-runtime-strip" aria-label="Principios del trabajo diario">
                     <span class="hero-runtime-chip">Agenda viva</span>
@@ -142,9 +142,9 @@ import Layout from '../layouts/Layout.astro';
                   <article class="signal-card signal-card-live">
                     <div class="signal-live-head">
                       <span class="signal-kicker">Triage operativo</span>
-                      <span class="status-chip pendiente" id="dashboardIntakeStatus">Intake</span>
+                    <span class="status-chip pendiente" id="dashboardIntakeStatus">Entrada</span>
                     </div>
-                    <strong class="signal-value" id="dashboardIntakeTitle">Bandeja en revision</strong>
+                    <strong class="signal-value" id="dashboardIntakeTitle">Bandeja en revisión</strong>
                     <p id="dashboardIntakeMeta">Actualizando mensajes de pacientes desde Telegram y formulario web.</p>
                     <button class="btn-link-inline" type="button" data-dashboard-nav="intakes"><span class="material-symbols-rounded">forward_to_inbox</span> Abrir bandeja</button>
                   </article>
@@ -225,10 +225,10 @@ import Layout from '../layouts/Layout.astro';
                 </header>
                 <div class="command-grid">
                   <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">person_add</span></span><span class="command-tile-kicker">Admision</span><strong>Alta de paciente</strong><p>Ficha lista en segundos.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_month</span></span><span class="command-tile-kicker">Agenda</span><strong>Semana clinica</strong><p>Gestiona huecos y cambios rapido.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_month</span></span><span class="command-tile-kicker">Agenda</span><strong>Semana clínica</strong><p>Gestiona huecos y cambios rápido.</p></button>
                   <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="command-tile-kicker">Telegram</span><strong>Mensajes y triage</strong><p>Prioriza y responde sin friccion.</p></button>
                   <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="command-tile-kicker">Ejercicios</span><strong>Plan de ejercicios</strong><p>Genera, entrega y guarda trazabilidad.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">description</span></span><span class="command-tile-kicker">Documentos</span><strong>Documentacion clinica</strong><p>Firmas y PDFs en un punto.</p></button>
+                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">description</span></span><span class="command-tile-kicker">Documentos</span><strong>Documentación clínica</strong><p>Firmas y PDFs en un punto.</p></button>
                   <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">open_in_new</span></span><span class="command-tile-kicker">Captacion</span><strong>Reserva online</strong><p>Comparte enlace y capta citas.</p></button>
                 </div>
               </article>
@@ -289,7 +289,7 @@ import Layout from '../layouts/Layout.astro';
               <article class="patients-stat-card">
                 <span>Total activo</span>
                 <strong id="patientsTotalValue">0</strong>
-                <p id="patientsTotalMeta">Cargando base clinica...</p>
+                <p id="patientsTotalMeta">Cargando base clínica...</p>
               </article>
               <article class="patients-stat-card patients-stat-card-accent">
                 <span>Contacto util</span>
@@ -319,7 +319,7 @@ import Layout from '../layouts/Layout.astro';
               <label class="patients-sort-field" for="patientsSortSelect">
                 <span class="material-symbols-rounded" aria-hidden="true">sort</span>
                 <select id="patientsSortSelect" aria-label="Orden de pacientes">
-                  <option value="recent_desc">Mas recientes</option>
+                  <option value="recent_desc">Más recientes</option>
                   <option value="readiness">Priorizar incompletos</option>
                   <option value="name_asc">Nombre A-Z</option>
                   <option value="name_desc">Nombre Z-A</option>
@@ -350,7 +350,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="modal-title-group">
                 <p class="modal-eyebrow">CRM</p>
                 <h2 id="patientModalTitle">Alta de paciente</h2>
-                <p>Registra un paciente nuevo y dejalo listo para historial, chat clinico y plantillas.</p>
+                <p>Registra un paciente y déjalo listo para historial, chat clínico y plantillas.</p>
               </div>
               <button type="button" class="modal-close" id="closePatientModalBtn" aria-label="Cerrar formulario de paciente">
                 <span class="material-symbols-rounded">close</span>
@@ -394,7 +394,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="page-section" data-page="plantillas">
           <div class="page-header-row template-library-header">
             <div>
-              <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Biblioteca clinica</h1>
+              <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Biblioteca clínica</h1>
               <p class="page-subtitle">Gestiona planes IA, entregas archivadas y plantillas reutilizables en una sola vista.</p>
             </div>
             <button class="btn-ghost" id="refreshTemplates" type="button"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
@@ -405,7 +405,7 @@ import Layout from '../layouts/Layout.astro';
               <article class="template-kpi-card">
                 <span>Planes visibles</span>
                 <strong>--</strong>
-                <p>Cargando biblioteca clinica...</p>
+                <p>Cargando biblioteca clínica...</p>
               </article>
               <article class="template-kpi-card">
                 <span>Entregas visibles</span>
@@ -416,11 +416,6 @@ import Layout from '../layouts/Layout.astro';
                 <span>Pacientes con seguimiento</span>
                 <strong>--</strong>
                 <p>Preparando resumen operativo...</p>
-              </article>
-              <article class="template-kpi-card">
-                <span>Plantillas legacy</span>
-                <strong>--</strong>
-                <p>Comprobando reutilizacion disponible...</p>
               </article>
             </section>
 
@@ -449,7 +444,7 @@ import Layout from '../layouts/Layout.astro';
                         <td colspan="6">
                           <div class="empty-state">
                             <span class="material-symbols-rounded">hourglass_empty</span>
-                            <p>Cargando biblioteca clinica...</p>
+                            <p>Cargando biblioteca clínica...</p>
                           </div>
                         </td>
                       </tr>
@@ -458,58 +453,17 @@ import Layout from '../layouts/Layout.astro';
                 </div>
               </section>
 
-              <section class="card table-card template-legacy-card">
-                <header class="card-header card-header-stack">
-                  <div>
-                    <h2>Reutilizar plantilla legacy</h2>
-                    <p class="card-subtitle">Esta zona solo sirve para clonar planes repetidos del modelo legacy a otro paciente.</p>
-                  </div>
-                </header>
-                <div class="template-target-panel">
-                  <label>
-                    <span>Paciente destino</span>
-                    <select id="templateTargetPatient">
-                      <option value="">Selecciona paciente</option>
-                    </select>
-                  </label>
-                  <p class="template-target-note">Si aqui no ves nada, no pasa nada: la parte importante de esta pantalla es el historial real de planes generados.</p>
-                </div>
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Titulo</th>
-                        <th>Usos</th>
-                        <th>Ejercicios</th>
-                        <th>Ultimo uso</th>
-                        <th>Origen</th>
-                        <th>Accion</th>
-                      </tr>
-                    </thead>
-                    <tbody id="templatesBody">
-                      <tr class="empty-row">
-                        <td colspan="6">
-                          <div class="empty-state">
-                            <span class="material-symbols-rounded">hourglass_empty</span>
-                            <p>Cargando plantillas legacy...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
             </div>
           </div>
         </div>
         <!-- === PAGE: INTAKES === -->
         <div class="page-section" data-page="intakes">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">assignment</span> Intakes Pendientes</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">assignment</span> Mensajes pendientes</h1>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Mensajes de ingesta por revisar</h2><button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
-            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Fuente</th><th>Mensaje</th><th>Alertas</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="intakesFullBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando intakes...</p></div></td></tr></tbody></table></div>
+            <header class="card-header"><h2>Bandeja de entrada por revisar</h2><button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+            <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Fuente</th><th>Mensaje</th><th>Alertas</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="intakesFullBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando bandeja...</p></div></td></tr></tbody></table></div>
           </section>
         </div>
 
@@ -546,7 +500,7 @@ import Layout from '../layouts/Layout.astro';
             <header class="agenda-mobile-head">
               <div>
                 <span class="agenda-mobile-kicker">Agenda movil</span>
-                <h2>Semana clinica en formato tactil</h2>
+                <h2>Semana clínica en formato táctil</h2>
               </div>
               <p id="agendaMobileSummary">Preparando timeline semanal...</p>
             </header>
@@ -863,7 +817,7 @@ import Layout from '../layouts/Layout.astro';
               <button class="btn-secondary btn-sm" type="button" id="fichaOpsAgendarBtn"><span class="material-symbols-rounded">calendar_today</span> Agendar</button>
               <button class="btn-ghost btn-sm" type="button" id="fichaOpsNotaBtn"><span class="material-symbols-rounded">clinical_notes</span> Nueva nota</button>
               <button class="btn-ghost btn-sm" type="button" id="fichaOpsHistoriaBtn"><span class="material-symbols-rounded">history</span> Historial</button>
-              <button class="btn-primary btn-sm" type="button" id="fichaOpsCopilotBtn"><span class="material-symbols-rounded">psychology</span> Copilot</button>
+              <button class="btn-primary btn-sm" type="button" id="fichaOpsCopilotBtn"><span class="material-symbols-rounded">psychology</span> Copiloto</button>
             </div>
           </section>
 
@@ -1572,9 +1526,9 @@ import Layout from '../layouts/Layout.astro';
       </aside>
     </div>
     <div class="assistant-rail-backdrop" id="assistantRailBackdrop"></div>
-    <button class="assistant-fab" id="assistantRailFab" type="button" aria-label="Abrir copilot clinico" aria-controls="assistantRail" aria-expanded="false">
+    <button class="assistant-fab" id="assistantRailFab" type="button" aria-label="Abrir copiloto clínico" aria-controls="assistantRail" aria-expanded="false">
       <span class="material-symbols-rounded">robot_2</span>
-      <span>Copilot</span>
+      <span>Copiloto</span>
     </button>
     <nav class="mobile-dock" id="mobileDock" aria-label="Accesos rapidos">
       <button type="button" class="mobile-dock-item active" data-mobile-nav="dashboard" aria-label="Ir a inicio">
@@ -1585,9 +1539,9 @@ import Layout from '../layouts/Layout.astro';
         <span class="material-symbols-rounded">group</span>
         <span>Pacientes</span>
       </button>
-      <button type="button" class="mobile-dock-item mobile-dock-item-accent" data-mobile-action="open-copilot" aria-label="Abrir Copilot">
+      <button type="button" class="mobile-dock-item mobile-dock-item-accent" data-mobile-action="open-copilot" aria-label="Abrir copiloto">
         <span class="material-symbols-rounded">psychology</span>
-        <span>Copilot</span>
+        <span>Copiloto</span>
       </button>
       <button type="button" class="mobile-dock-item" data-mobile-nav="citas" aria-label="Ir a agenda">
         <span class="material-symbols-rounded">calendar_today</span>
@@ -1702,10 +1656,8 @@ import Layout from '../layouts/Layout.astro';
   const patientsRecentMeta = document.getElementById('patientsRecentMeta') as HTMLElement | null;
   const patientsListMeta = document.getElementById('patientsListMeta') as HTMLElement | null;
   const patientsFilterChip = document.getElementById('patientsFilterChip') as HTMLElement | null;
-  const templatesBody = document.getElementById('templatesBody') as HTMLElement | null;
   const templateHistoryBody = document.getElementById('templateHistoryBody') as HTMLElement | null;
   const templateLibrarySummary = document.getElementById('templateLibrarySummary') as HTMLElement | null;
-  const templateTargetPatient = document.getElementById('templateTargetPatient') as HTMLSelectElement | null;
   const chatPatientSelect = document.getElementById('chatPatientSelect') as HTMLSelectElement | null;
   const heroAgendaShortcutBtn = document.getElementById('heroAgendaShortcutBtn') as HTMLButtonElement | null;
   const heroNewPatientShortcutBtn = document.getElementById('heroNewPatientShortcutBtn') as HTMLButtonElement | null;
@@ -1974,8 +1926,6 @@ import Layout from '../layouts/Layout.astro';
     if (!patientId) return;
     selectedPatientId = patientId;
     selectedPatientName = patientName || '';
-    selectedTemplatePatientId = patientId;
-    renderTemplatePatientOptions();
     syncChatPatientSelection(patientId, patientName);
     if (appointmentPatientSelect) appointmentPatientSelect.value = patientId;
     navigateTo('historial');
@@ -1993,15 +1943,12 @@ import Layout from '../layouts/Layout.astro';
   let selectedPatientId: string | null = null;
   let selectedPatientName = '';
   let patientCatalog: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
-  let selectedTemplatePatientId: string | null = null;
   let templateLibraryCache: {
     summary: any;
     recentPlans: any[];
-    templates: any[];
   } = {
     summary: {},
     recentPlans: [],
-    templates: [],
   };
   let assistantPatientBriefCache: Record<string, any> = {};
   let currentAssistantPatientBrief: any = null;
@@ -3198,21 +3145,6 @@ import Layout from '../layouts/Layout.astro';
     input.setSelectionRange(input.value.length, input.value.length);
   });
 
-  const renderTemplatePatientOptions = () => {
-    if (!templateTargetPatient) return;
-    const current = selectedTemplatePatientId || templateTargetPatient.value || '';
-    const options = ['<option value="">Selecciona paciente</option>']
-      .concat(
-        patientCatalog.map((p) => {
-          const label = `${p.nombre_completo || `Paciente ${p.id}`} ${p.email ? ` - ${p.email}` : ''}`.trim();
-          return `<option value="${escapeAttr(p.id)}">${escapeHtml(label)}</option>`;
-        })
-      );
-    templateTargetPatient.innerHTML = options.join('');
-    templateTargetPatient.value = current;
-    selectedTemplatePatientId = templateTargetPatient.value || null;
-  };
-
   const renderChatPatientOptions = () => {
     if (!chatPatientSelect) return;
     const current = selectedPatientId || chatPatientSelect.value || '';
@@ -3295,7 +3227,6 @@ import Layout from '../layouts/Layout.astro';
       creado_en: p.creado_en || p.created_at || null,
       _source: p._source || 'crm',
     }));
-    renderTemplatePatientOptions();
     renderChatPatientOptions();
     renderAppointmentPatientOptions();
     return patientCatalog;
@@ -3761,8 +3692,6 @@ import Layout from '../layouts/Layout.astro';
     const patientId = chatPatientSelect.value || null;
     syncChatPatientSelection(patientId);
     if (patientId) {
-      selectedTemplatePatientId = patientId;
-      renderTemplatePatientOptions();
       void loadAssistantPatientBrief(patientId);
     }
   });
@@ -4037,7 +3966,7 @@ import Layout from '../layouts/Layout.astro';
 
     if (dashboardRuntime.intakeState === 'error') {
       setDashboardChip(dashboardIntakeStatus, 'Error', 'rechazado');
-      dashboardIntakeTitle.textContent = 'No se pudo actualizar intake';
+      dashboardIntakeTitle.textContent = 'No se pudo actualizar la bandeja';
       dashboardIntakeMeta.textContent = 'La bandeja sigue accesible, pero el resumen rapido no se ha podido refrescar.';
       return;
     }
@@ -4072,7 +4001,7 @@ import Layout from '../layouts/Layout.astro';
         title: `${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} sin responder`,
         body: `Telegram y formulario web.`,
         tone: 'warning',
-        actionLabel: 'Abrir intake',
+        actionLabel: 'Abrir bandeja',
         nav: 'intakes',
       });
     }
@@ -4139,7 +4068,7 @@ import Layout from '../layouts/Layout.astro';
 
   const loadIntakes = async () => {
     if (!intakeBody) return;
-    setListState(intakeBody, 'sync', 'Actualizando bandeja de intakes...', true);
+    setListState(intakeBody, 'sync', 'Actualizando bandeja de entrada...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
       const intakes = payload.data || payload || [];
@@ -4149,7 +4078,7 @@ import Layout from '../layouts/Layout.astro';
       const badge = document.getElementById('intakeBadge');
       if (badge) badge.textContent = String(intakes.length);
       if (!intakes.length) {
-        setListState(intakeBody, 'check_circle', 'Sin intakes pendientes');
+        setListState(intakeBody, 'check_circle', 'Sin mensajes pendientes');
         return;
       }
       intakeBody.innerHTML = intakes.slice(0, 8).map((i: any) => {
@@ -4172,7 +4101,7 @@ import Layout from '../layouts/Layout.astro';
       dashboardRuntime.pendingIntakes = [];
       dashboardRuntime.intakeState = 'error';
       syncDashboardCommandCenter();
-      setListState(intakeBody, 'cloud_off', 'No se pudieron cargar los intakes');
+      setListState(intakeBody, 'cloud_off', 'No se pudo cargar la bandeja');
     }
   };
   loadIntakes();
@@ -4636,8 +4565,6 @@ import Layout from '../layouts/Layout.astro';
       addMessage(`Paciente ${createdName} creado correctamente y listo para trabajar en CRM.`, 'agent');
 
       if (createdId) {
-        selectedTemplatePatientId = createdId;
-        renderTemplatePatientOptions();
         syncChatPatientSelection(createdId, createdName);
         openPatientHistory(createdId, createdName);
       }
@@ -4661,8 +4588,6 @@ import Layout from '../layouts/Layout.astro';
     const patientName = btn.getAttribute('data-patient-name') || '';
 
     if (patientId) {
-      selectedTemplatePatientId = patientId;
-      renderTemplatePatientOptions();
       syncChatPatientSelection(patientId, patientName);
     }
 
@@ -4696,7 +4621,7 @@ import Layout from '../layouts/Layout.astro';
   });
 
   // === LOAD PLANTILLAS ===
-  const renderTemplateLibrarySummary = (summary: any, templates: any[], recentPlans: any[]) => {
+  const renderTemplateLibrarySummary = (summary: any, recentPlans: any[]) => {
     if (!templateLibrarySummary) return;
 
     const cards = [
@@ -4714,11 +4639,6 @@ import Layout from '../layouts/Layout.astro';
         label: 'Pacientes con seguimiento',
         value: summary?.visible_patients ?? new Set(recentPlans.map((item: any) => item?.patient_id).filter(Boolean)).size,
         copy: 'Casos con prescripcion domiciliaria trazable desde el CRM.',
-      },
-      {
-        label: 'Plantillas legacy',
-        value: templates.length,
-        copy: templates.length ? 'Disponibles para clonar a otro paciente si te compensa reutilizar.' : 'No hay reutilizacion legacy preparada ahora mismo.',
       },
     ];
 
@@ -4800,85 +4720,41 @@ import Layout from '../layouts/Layout.astro';
     }).join('');
   };
 
-  const renderLegacyTemplates = (templates: any[]) => {
-    if (!templatesBody) return;
-
-    if (!templates.length) {
-      setTableState(
-        templatesBody,
-        6,
-        'library_books',
-        'Aun no hay plantillas legacy reutilizables. Esta zona solo se usa para clonar planes repetidos entre pacientes.',
-      );
-      return;
-    }
-
-    templatesBody.innerHTML = templates.map((tpl: any) => {
-      const originPatient = tpl.source_patient_name || 'Paciente sin nombre';
-      const canClone = Boolean(selectedTemplatePatientId);
-      const btnAttrs = canClone ? '' : 'disabled aria-disabled="true"';
-      const actionLabel = canClone ? 'Clonar' : 'Selecciona paciente';
-      return `
-        <tr>
-          <td class="td-patient">${escapeHtml(tpl.template_title || 'Plantilla')}</td>
-          <td>${escapeHtml(tpl.usage_count || 0)}</td>
-          <td>${escapeHtml(tpl.exercises_count || 0)}</td>
-          <td>${escapeHtml(fmtDate(tpl.last_used_at || ''))}</td>
-          <td>${escapeHtml(originPatient)}</td>
-          <td><button class="btn-sm btn-outline" data-action="clone-template" data-source-plan-id="${tpl.source_plan_id}" ${btnAttrs}>${actionLabel}</button></td>
-        </tr>`;
-    }).join('');
-  };
-
   const loadTemplates = async (forceRefresh = false) => {
-    if (!templatesBody && !templateHistoryBody && !templateLibrarySummary) return;
-    const hasCache = templateLibraryCache.recentPlans.length || templateLibraryCache.templates.length;
+    if (!templateHistoryBody && !templateLibrarySummary) return;
+    const hasCache = templateLibraryCache.recentPlans.length;
     if (hasCache && !forceRefresh) {
-      renderTemplateLibrarySummary(templateLibraryCache.summary, templateLibraryCache.templates, templateLibraryCache.recentPlans);
+      renderTemplateLibrarySummary(templateLibraryCache.summary, templateLibraryCache.recentPlans);
       renderRecentTemplatePlans(templateLibraryCache.recentPlans);
-      renderLegacyTemplates(templateLibraryCache.templates);
       return;
     }
 
     if (templateHistoryBody) setTableState(templateHistoryBody, 6, 'sync', 'Cargando biblioteca clinica...', true);
-    if (templatesBody) setTableState(templatesBody, 6, 'sync', 'Cargando plantillas legacy...', true);
     try {
       if (!patientCatalog.length) await fetchPatientCatalog();
-      const [libraryPayload, templatePayload] = await Promise.all([
-        fetchJson(`${BACKEND_BASE}/api/profesional/program-library?profesional_id=${PROF_ID}&limit=24`),
-        fetchJson(`${BACKEND_BASE}/api/profesional/program-templates?profesional_id=${PROF_ID}&limit=24`),
-      ]);
+      const libraryPayload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-library?profesional_id=${PROF_ID}&limit=24`);
       const library = libraryPayload?.data || {};
       const recentPlans = Array.isArray(library?.recent_plans) ? library.recent_plans : [];
       const summary = library?.summary || {};
-      const templates = Array.isArray(templatePayload?.data) ? templatePayload.data : [];
 
       templateLibraryCache = {
         summary,
         recentPlans,
-        templates,
       };
-      renderTemplateLibrarySummary(summary, templates, recentPlans);
+      renderTemplateLibrarySummary(summary, recentPlans);
       renderRecentTemplatePlans(recentPlans);
-      renderLegacyTemplates(templates);
     } catch (err: any) {
       templateLibraryCache = {
         summary: {},
         recentPlans: [],
-        templates: [],
       };
-      renderTemplateLibrarySummary({}, [], []);
+      renderTemplateLibrarySummary({}, []);
       if (templateHistoryBody) setTableState(templateHistoryBody, 6, 'cloud_off', 'Error al cargar la biblioteca clinica.');
-      if (templatesBody) setTableState(templatesBody, 6, 'cloud_off', 'Error al cargar plantillas legacy.');
     }
   };
 
   pageLoaders['plantillas'] = loadTemplates;
   document.getElementById('refreshTemplates')?.addEventListener('click', () => loadTemplates(true));
-  templateTargetPatient?.addEventListener('change', () => {
-    selectedTemplatePatientId = templateTargetPatient.value || null;
-    renderLegacyTemplates(templateLibraryCache.templates);
-  });
 
   templateHistoryBody?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
@@ -4889,66 +4765,23 @@ import Layout from '../layouts/Layout.astro';
     const patientName = btn.getAttribute('data-patient-name') || 'Paciente';
     if (!patientId) return;
 
-    selectedTemplatePatientId = patientId;
-    renderTemplatePatientOptions();
     openPatientHistory(patientId, patientName);
-  });
-
-  templatesBody?.addEventListener('click', async (event: Event) => {
-    const target = event.target as HTMLElement | null;
-    const btn = target?.closest('button[data-action="clone-template"]') as HTMLButtonElement | null;
-    if (!btn) return;
-
-    if (!selectedTemplatePatientId) {
-      addMessage('Selecciona antes el paciente destino para reutilizar una plantilla legacy.', 'agent');
-      return;
-    }
-
-    const sourcePlanId = btn.getAttribute('data-source-plan-id');
-    if (!sourcePlanId) return;
-
-    const previousLabel = btn.textContent || 'Clonar';
-    btn.disabled = true;
-    btn.textContent = 'Clonando...';
-    try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-templates/clone`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          source_plan_id: sourcePlanId,
-          paciente_id: selectedTemplatePatientId,
-          profesional_id: PROF_ID,
-        }),
-      });
-      const cloned = payload?.data || {};
-      addMessage(`Plantilla clonada para ${cloned?.target_patient_name || 'el paciente seleccionado'}.`, 'agent');
-      await loadTemplates(true);
-      if (selectedTemplatePatientId) {
-        const targetPatient = patientCatalog.find((item) => item.id === selectedTemplatePatientId);
-        openPatientHistory(selectedTemplatePatientId, targetPatient?.nombre_completo || cloned?.target_patient_name || 'Paciente');
-      }
-    } catch (err: any) {
-      addMessage(`No se pudo clonar la plantilla legacy: ${err?.message || 'error no identificado'}`, 'agent');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = previousLabel;
-    }
   });
   // === LOAD INTAKES FULL ===
   const loadIntakesFull = async () => {
     if (!intakesFullBody) return;
-    setTableState(intakesFullBody, 7, 'sync', 'Cargando intakes...', true);
+    setTableState(intakesFullBody, 7, 'sync', 'Cargando bandeja de entrada...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
       const intakes = payload.data || [];
-      if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin intakes pendientes'); return; }
+      if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin mensajes pendientes'); return; }
       intakesFullBody.innerHTML = intakes.map((i: any) => {
         const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">&#9888; Si</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
         return `<tr><td class="td-patient">${escapeHtml(patientName)}</td><td>${escapeHtml(i.fuente||'Sin fuente')}</td><td>${escapeHtml(i.objetivo || 'Sin objetivo')}</td><td>${escapeHtml(i.timestamp ? fmtDate(i.timestamp) : '')}</td><td>${alertas}</td><td><button class="btn-sm" data-open-ficha="${i.crm_paciente_id || ''}">Ficha</button><button class="btn-sm btn-outline" data-open-chat="${i.crm_paciente_id || ''}" data-patient-name="${escapeAttr(patientName)}">Historial</button></td></tr>`;
       }).join('');
     } catch {
-      setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar intakes');
+      setTableState(intakesFullBody, 7, 'cloud_off', 'Error al cargar la bandeja');
     }
   };
   pageLoaders['intakes'] = loadIntakesFull;
@@ -19077,12 +18910,11 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .template-library-grid {
     display: grid;
     gap: 1.25rem;
-    grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.95fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
 
-  .template-history-card,
-  .template-legacy-card {
+  .template-history-card {
     border-radius: 1.45rem;
     border-color: #dbe7ef;
     background:
@@ -19104,32 +18936,6 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     margin: 0;
     color: #657a8e;
     font-size: 0.84rem;
-    line-height: 1.55;
-  }
-
-  .template-target-panel {
-    display: grid;
-    gap: 0.8rem;
-    padding: 0.95rem 1rem 0;
-  }
-
-  .template-target-panel label {
-    display: grid;
-    gap: 0.42rem;
-  }
-
-  .template-target-panel label span {
-    color: #5a6f83;
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .template-target-note {
-    margin: 0;
-    color: #6c8095;
-    font-size: 0.82rem;
     line-height: 1.55;
   }
 
@@ -19161,17 +18967,9 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     line-height: 1.45;
   }
 
-  .template-legacy-card .table-wrap {
-    margin-top: 0.45rem;
-  }
-
   @media (max-width: 1180px) {
     .template-kpi-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .template-library-grid {
-      grid-template-columns: 1fr;
     }
   }
 
