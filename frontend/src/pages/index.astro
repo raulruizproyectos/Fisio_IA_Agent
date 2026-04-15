@@ -649,9 +649,12 @@ import Layout from '../layouts/Layout.astro';
           </div>
 
           <p class="form-feedback" id="pagosAvailabilityNotice" hidden></p>
+          <div class="pagos-mobile-list" id="pagosMobileList">
+            <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando pagos...</p></div>
+          </div>
           <!-- Tabla de pagos -->
           <section class="card table-card">
-            <div class="table-wrap">
+            <div class="table-wrap pagos-table-wrap">
               <table>
                 <thead>
                   <tr>
@@ -6297,6 +6300,11 @@ import Layout from '../layouts/Layout.astro';
   const pagoFormFeedback = document.getElementById('pagoFormFeedback') as HTMLElement | null;
   const addPagoBtn = document.getElementById('addPagoBtn') as HTMLButtonElement | null;
   const pagosAvailabilityNotice = document.getElementById('pagosAvailabilityNotice') as HTMLElement | null;
+  const pagosMobileList = document.getElementById('pagosMobileList') as HTMLElement | null;
+  const pagosTotalImporte = document.getElementById('pagosTotalImporte') as HTMLElement | null;
+  const pagosTotalSesiones = document.getElementById('pagosTotalSesiones') as HTMLElement | null;
+  const pagosTotalEfectivo = document.getElementById('pagosTotalEfectivo') as HTMLElement | null;
+  const pagosTotalTarjeta = document.getElementById('pagosTotalTarjeta') as HTMLElement | null;
   let pagosUnavailableMessage = '';
   const pagoSubmitBtn = document.getElementById('pagoSubmitBtn') as HTMLButtonElement | null;
   const pagoModalTitle = document.getElementById('pagoModalTitle');
@@ -6404,10 +6412,56 @@ import Layout from '../layouts/Layout.astro';
 
   const fmtMoney = (n: number) => n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.').replace(/\.(\d{2})$/, ',$1') + ' \u20ac';
 
+  const renderPagosSummary = (pagos: any[]) => {
+    const rows = Array.isArray(pagos) ? pagos : [];
+    const total = rows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
+    const efectivo = rows
+      .filter((row: any) => String(row?.metodo_pago || '').toLowerCase() === 'efectivo')
+      .reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
+    const tarjeta = rows
+      .filter((row: any) => String(row?.metodo_pago || '').toLowerCase() === 'tarjeta')
+      .reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
+
+    if (pagosTotalImporte) pagosTotalImporte.textContent = fmtMoney(total);
+    if (pagosTotalSesiones) pagosTotalSesiones.textContent = String(rows.length);
+    if (pagosTotalEfectivo) pagosTotalEfectivo.textContent = fmtMoney(efectivo);
+    if (pagosTotalTarjeta) pagosTotalTarjeta.textContent = fmtMoney(tarjeta);
+  };
+
+  const renderPagosMobile = (pagos: any[]) => {
+    if (!pagosMobileList) return;
+    const rows = Array.isArray(pagos) ? pagos : [];
+    if (!rows.length) {
+      pagosMobileList.innerHTML = '<div class="empty-state-sm"><span class="material-symbols-rounded">payments</span><p>Sin pagos para este filtro.</p></div>';
+      return;
+    }
+
+    pagosMobileList.innerHTML = rows.map((p: any) => {
+      const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
+      const metodoClass = p.metodo_pago === 'efectivo' ? 'pagos-chip-cash' : 'pagos-chip-card';
+      return `
+        <article class="pagos-mobile-item" data-pago='${escapeAttr(JSON.stringify(p))}'>
+          <header>
+            <strong>${escapeHtml(patientName)}</strong>
+            <span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span>
+          </header>
+          <p>${escapeHtml(fmtDate(p.fecha))}</p>
+          <div class="pagos-mobile-amount">${Number(p.importe || 0).toFixed(2)} EUR</div>
+          <div class="pagos-mobile-actions">
+            <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
+            <button class="btn-sm btn-outline pagos-mobile-delete" data-action="delete-pago" data-pago-id="${p.id}">Eliminar</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
+
   const loadPagos = async () => {
     if (!pagosBody) return;
     pagosUnavailableMessage = '';
     syncPagosAvailabilityUi();
+    renderPagosSummary([]);
+    renderPagosMobile([]);
     setTableState(pagosBody, 5, 'sync', 'Cargando pagos...', true);
     const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
     const mes = pagosMesFilter?.value || '';
@@ -6418,10 +6472,18 @@ import Layout from '../layouts/Layout.astro';
       if (payload.unavailable) {
         pagosUnavailableMessage = payload.error || 'Modulo pagos no disponible';
         syncPagosAvailabilityUi();
+        renderPagosSummary([]);
+        renderPagosMobile([]);
         setTableState(pagosBody, 5, 'warning', pagosUnavailableMessage);
         return;
       }
-      const pagos = payload.data || [];
+      const pagos = [...(payload.data || [])].sort((a: any, b: any) => {
+        const aTs = new Date(a?.fecha || 0).getTime();
+        const bTs = new Date(b?.fecha || 0).getTime();
+        return bTs - aTs;
+      });
+      renderPagosSummary(pagos);
+      renderPagosMobile(pagos);
       if (!pagos.length) { setTableState(pagosBody, 5, 'credit_card_off', 'Sin pagos en este periodo'); return; }
       pagosBody.innerHTML = pagos.map((p: any) => {
         const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
@@ -6440,6 +6502,8 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
     } catch {
+      renderPagosSummary([]);
+      renderPagosMobile([]);
       setTableState(pagosBody, 5, 'cloud_off', 'Error al cargar pagos');
     }
   };
@@ -7202,6 +7266,38 @@ import Layout from '../layouts/Layout.astro';
 
   fichaHeroDocsBtn?.addEventListener('click', () => {
     activateFichaTab('documentos');
+  });
+
+  pagosMobileList?.addEventListener('click', async (event: Event) => {
+    if (pagosUnavailableMessage) { alert(pagosUnavailableMessage); return; }
+    const btn = (event.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const pagoId = btn.getAttribute('data-pago-id');
+    if (!pagoId) return;
+
+    if (action === 'edit-pago') {
+      const card = btn.closest('article[data-pago]');
+      const raw = card?.getAttribute('data-pago');
+      if (!raw) return;
+      try {
+        const pago = JSON.parse(raw);
+        await openPagoModal(pago);
+      } catch {
+        alert('No pude cargar el pago seleccionado.');
+      }
+      return;
+    }
+
+    if (action === 'delete-pago') {
+      if (!confirm('Eliminar este pago?')) return;
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
+        await loadPagos();
+      } catch (err: any) {
+        alert('Error: ' + (err?.message || 'desconocido'));
+      }
+    }
   });
 
   fichaOpsAgendarBtn?.addEventListener('click', () => {
@@ -10502,6 +10598,50 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     font-size: 0.85rem;
     background: var(--bg-surface);
   }
+  .pagos-mobile-list {
+    display: none;
+    gap: 0.72rem;
+    margin-bottom: 0.8rem;
+  }
+  .pagos-mobile-item {
+    display: grid;
+    gap: 0.58rem;
+    padding: 0.8rem 0.88rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(199, 184, 155, 0.38);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 228, 0.94));
+    box-shadow: 0 16px 26px -24px rgba(22, 24, 28, 0.2);
+  }
+  .pagos-mobile-item header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .pagos-mobile-item header strong {
+    color: #183247;
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  .pagos-mobile-item p {
+    margin: 0;
+    color: #607281;
+    font-size: 0.81rem;
+  }
+  .pagos-mobile-amount {
+    color: #183247;
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .pagos-mobile-actions {
+    display: flex;
+    gap: 0.45rem;
+    justify-content: flex-end;
+  }
+  .pagos-mobile-delete {
+    color: #b91c1c !important;
+  }
   .pagos-chip {
     display: inline-block;
     padding: 0.18rem 0.55rem;
@@ -10520,6 +10660,27 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     padding: 0.2rem 0.5rem;
   }
   .btn-danger-outline:hover { background: #fee2e2; }
+
+  @media (max-width: 768px) {
+    .page-section[data-page='pagos'] .pagos-table-wrap {
+      display: none;
+    }
+    .page-section[data-page='pagos'] .pagos-mobile-list {
+      display: grid;
+    }
+    .page-section[data-page='pagos'] .pagos-filters-row {
+      width: 100%;
+    }
+    .page-section[data-page='pagos'] .pagos-filters-row select {
+      flex: 1 1 0;
+    }
+    .page-section[data-page='pagos'] .pagos-summary-row {
+      gap: 0.9rem;
+    }
+    .page-section[data-page='pagos'] .pagos-stat-value {
+      font-size: 1.1rem;
+    }
+  }
 
   /* Pago patient select */
   #pagoPacienteSelect {
