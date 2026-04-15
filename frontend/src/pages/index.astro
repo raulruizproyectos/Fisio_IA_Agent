@@ -20128,6 +20128,248 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       min-height: 8.2rem !important;
     }
   }
+
+  /* === HARD RESET PREMIUM V2 === */
+  .workspace-shell {
+    background: linear-gradient(180deg, #f6f7f9 0%, #f4f5f7 100%) !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main,
+  .page-section[data-page='dashboard'] .hero-panel-side,
+  .page-section[data-page='dashboard'] .cockpit-side-card,
+  .page-section[data-page='dashboard'] .signal-card,
+  .page-section[data-page='dashboard'] .command-tile,
+  .page-section[data-page='dashboard'] .metric-card,
+  .page-section[data-page='pacientes'] .patients-hero-main,
+  .page-section[data-page='pacientes'] .patients-stat-card,
+  .page-section[data-page='pacientes'] .patients-command-bar,
+  .page-section[data-page='pacientes'] .patients-directory-card {
+    background: #ffffff !important;
+    border: 1px solid #e6e8ee !important;
+    box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.2) !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main::before,
+  .page-section[data-page='dashboard'] .hero-panel-main::after,
+  .page-section[data-page='pacientes'] .patients-hero-main::after {
+    display: none !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-eyebrow,
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-title,
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle,
+  .page-section[data-page='dashboard'] .signal-kicker,
+  .page-section[data-page='dashboard'] .signal-value,
+  .page-section[data-page='dashboard'] .signal-card p,
+  .page-section[data-page='dashboard'] .cockpit-side-title,
+  .page-section[data-page='dashboard'] .cockpit-side-copy,
+  .page-section[data-page='dashboard'] .command-tile strong,
+  .page-section[data-page='dashboard'] .command-tile p,
+  .page-section[data-page='pacientes'] .patients-kicker,
+  .page-section[data-page='pacientes'] .patients-hero-main h2,
+  .page-section[data-page='pacientes'] .patients-hero-main p {
+    color: #1e293b !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+    font-size: clamp(2rem, 3.2vw, 2.85rem) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.035em !important;
+    max-width: 10ch !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
+    font-size: 0.95rem !important;
+    color: #475569 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-runtime-strip,
+  .page-section[data-page='dashboard'] .clinical-hero-band {
+    display: none !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-action-row {
+    margin-top: 0.25rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .signal-card {
+    min-height: 7.6rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile {
+    min-height: 7.8rem !important;
+    padding: 0.78rem 0.82rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile p {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main h2 {
+    font-size: clamp(1.9rem, 3vw, 2.5rem) !important;
+    line-height: 1.03 !important;
+    max-width: 12ch !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main p {
+    font-size: 0.9rem !important;
+    line-height: 1.48 !important;
+    color: #526274 !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-actions .btn-ghost {
+    color: #334155 !important;
+    border-color: #d1d9e5 !important;
+    background: #f8fafc !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card span {
+    color: #6b7280 !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card strong {
+    color: #0f172a !important;
+  }
+
+  @media (max-width: 1180px) {
+    .page-section[data-page='dashboard'] .command-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .page-section[data-page='dashboard'] .command-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* === COMPACT SIZE OVERRIDE (FINAL) === */
+  .page-section[data-page='dashboard'] .dashboard-layout {
+    gap: 0.9rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main {
+    padding: 0.9rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
+    font-size: clamp(1.55rem, 2.2vw, 2rem) !important;
+    line-height: 1.06 !important;
+    max-width: none !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
+    font-size: 0.88rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-primary,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-secondary,
+  .page-section[data-page='dashboard'] .hero-panel-main .btn-ghost {
+    min-height: 2.4rem !important;
+    padding: 0.45rem 0.75rem !important;
+    font-size: 0.86rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .signal-card {
+    min-height: 0 !important;
+    padding: 0.7rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .signal-card .signal-value {
+    font-size: 1rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .page-section[data-page='dashboard'] .signal-card p {
+    font-size: 0.84rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-card {
+    padding: 0.8rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-title {
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .page-section[data-page='dashboard'] .cockpit-side-copy {
+    font-size: 0.85rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile {
+    min-height: 0 !important;
+    padding: 0.68rem 0.72rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile strong {
+    font-size: 0.92rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .command-tile p {
+    font-size: 0.76rem !important;
+    line-height: 1.32 !important;
+  }
+
+  .page-section[data-page='dashboard'] .metric-card {
+    padding: 0.75rem !important;
+    min-height: 0 !important;
+  }
+
+  .page-section[data-page='dashboard'] .metric-value {
+    font-size: 1.25rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .metric-label {
+    font-size: 0.72rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-shell {
+    gap: 0.7rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main {
+    padding: 0.95rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main h2 {
+    font-size: clamp(1.45rem, 2vw, 1.85rem) !important;
+    line-height: 1.08 !important;
+    max-width: none !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main p {
+    font-size: 0.84rem !important;
+    line-height: 1.4 !important;
+    margin-top: 0.65rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-actions {
+    margin-top: 0.85rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card {
+    padding: 0.7rem 0.78rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card strong {
+    font-size: 1.1rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card p {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+  }
 </style>
 
 
