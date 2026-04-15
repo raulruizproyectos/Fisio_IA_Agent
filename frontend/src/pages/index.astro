@@ -110,7 +110,7 @@ import Layout from '../layouts/Layout.astro';
                 <div class="hero-heading-stack">
                   <span class="hero-eyebrow">Centro operativo del dia</span>
                   <h1 class="hero-title">Centro clinico</h1>
-                  <p class="hero-subtitle" id="dashboardLiveSummary">Cargando...</p>
+                  <p class="hero-subtitle" id="dashboardLiveSummary">Resumen diario en tiempo real.</p>
                   <div class="hero-runtime-strip" aria-label="Principios del trabajo diario">
                     <span class="hero-runtime-chip">Agenda viva</span>
                     <span class="hero-runtime-chip">Seguimiento trazable</span>
@@ -175,8 +175,8 @@ import Layout from '../layouts/Layout.astro';
               <div class="hero-panel-side">
                 <article class="cockpit-side-card cockpit-side-card-agent">
                   <span class="cockpit-side-kicker">Motor terapeutico</span>
-                  <h2 class="cockpit-side-title">Planes, entregas y seguimiento</h2>
-                  <p class="cockpit-side-copy">Crea planes, registra entregas y consulta seguimiento en un solo flujo.</p>
+                  <h2 class="cockpit-side-title">Planes y seguimiento</h2>
+                  <p class="cockpit-side-copy">Genera y revisa planes en segundos.</p>
                   <div class="cockpit-side-actions">
                     <button class="btn-primary btn-sm" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span> Nuevo plan</button>
                     <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Historial</button>
@@ -269,7 +269,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="page-header-row patients-header-row">
             <div>
               <h1 class="page-title"><span class="material-symbols-rounded">group</span> Pacientes</h1>
-              <p class="page-subtitle patients-page-subtitle">Listado operativo para entrar a ficha, historial y contacto en un clic.</p>
+              <p class="page-subtitle patients-page-subtitle">Busca y actua sobre cada paciente en un clic.</p>
             </div>
             <button class="btn-primary" id="addPatientBtn"><span class="material-symbols-rounded">person_add</span> Nuevo paciente</button>
           </div>
@@ -277,8 +277,8 @@ import Layout from '../layouts/Layout.astro';
           <section class="patients-hero-shell">
             <article class="patients-hero-main">
               <span class="patients-kicker">CRM CLINICO ACTIVO</span>
-              <h2>CRM de pacientes claro y accionable.</h2>
-              <p>Encuentra cada caso, detecta fichas incompletas y entra directo a la accion correcta.</p>
+              <h2>Pacientes claros y ordenados.</h2>
+              <p>Todo el equipo sabe que hacer en cada ficha.</p>
               <div class="patients-hero-actions">
                 <button type="button" class="btn-primary" id="patientsHeroAddBtn"><span class="material-symbols-rounded">person_add</span> Alta rapida</button>
                 <button type="button" class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Sincronizar listado</button>
@@ -19981,177 +19981,62 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }
   }
 
-  /* === FINAL PREMIUM COMPACT SWEEP (GLOBAL) === */
-  .page-header-row {
-    margin-bottom: 1rem !important;
-    gap: 0.65rem !important;
+  /* === LINEAR / LUXURY CLINIC (FINAL) === */
+  .workspace-shell {
+    background: #f3f4f6 !important;
+  }
+
+  .topbar,
+  .card,
+  .widget-card,
+  .cockpit-block,
+  .modal-panel {
+    background: #ffffff !important;
+    border: 1px solid #e4e7ec !important;
+    box-shadow: 0 8px 22px -20px rgba(15, 23, 42, 0.26) !important;
   }
 
   .page-title {
-    font-size: clamp(1.25rem, 1.55vw, 1.55rem) !important;
+    font-size: clamp(1.18rem, 1.45vw, 1.5rem) !important;
     letter-spacing: -0.02em !important;
   }
 
   .page-subtitle {
-    max-width: 46rem !important;
     font-size: 0.9rem !important;
-    line-height: 1.55 !important;
-    color: #5f7180 !important;
+    line-height: 1.5 !important;
+    color: #64748b !important;
   }
 
-  .card {
-    border-radius: 1rem !important;
-    box-shadow: 0 16px 30px -30px rgba(27, 30, 36, 0.28) !important;
+  .btn-primary {
+    background: #0f4c81 !important;
+    border-color: #0f4c81 !important;
+    color: #f8fafc !important;
   }
 
-  .card-header {
-    padding: 0.72rem 0.95rem !important;
-  }
-
-  .card-header h2 {
-    font-size: 0.95rem !important;
-  }
-
-  .btn-primary,
   .btn-secondary,
   .btn-ghost {
-    min-height: 2.65rem !important;
-    padding: 0.6rem 0.95rem !important;
-    border-radius: 0.8rem !important;
+    background: #ffffff !important;
+    border-color: #d4dae3 !important;
+    color: #1e293b !important;
   }
 
-  th, td {
-    padding: 0.52rem 0.72rem !important;
-    font-size: 0.82rem !important;
-  }
-
-  .content {
-    padding-top: 0.9rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .hero-panel-main {
-    padding: 1.2rem !important;
-    border-radius: 1.15rem !important;
-    background: linear-gradient(145deg, #173246 0%, #1a4557 55%, #1f4e58 100%) !important;
-  }
-
-  .page-section[data-page='dashboard'] .hero-panel-main::before,
-  .page-section[data-page='dashboard'] .hero-panel-main::after {
-    opacity: 0.45 !important;
-  }
-
-  .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
-    font-size: clamp(3rem, 5.2vw, 4.2rem) !important;
-    line-height: 0.92 !important;
-    max-width: 8ch !important;
-  }
-
-  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
-    font-size: 0.98rem !important;
-    max-width: 44ch !important;
-  }
-
-  .page-section[data-page='dashboard'] .hero-action-row {
-    gap: 0.55rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-grid {
-    gap: 0.72rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile {
-    min-height: 9rem !important;
-    padding: 0.85rem 0.92rem !important;
-    border-radius: 0.95rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile strong {
-    font-size: 1rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile p {
-    font-size: 0.82rem !important;
-    line-height: 1.45 !important;
-  }
-
-  .page-section[data-page='dashboard'] .cockpit-side-card {
-    padding: 1rem !important;
-    border-radius: 1rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .signal-card {
-    min-height: 8.6rem !important;
-    padding: 0.85rem !important;
-    border-radius: 0.95rem !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-main {
-    padding: 1.25rem !important;
-    border-radius: 1.2rem !important;
-    background: linear-gradient(145deg, #173246 0%, #1b4b61 65%, #1e5660 100%) !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-main::after {
-    opacity: 0.35 !important;
-    width: 9rem !important;
-    height: 9rem !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-main h2 {
-    font-size: clamp(2.2rem, 4.2vw, 3.2rem) !important;
-    line-height: 0.96 !important;
-    max-width: 11ch !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-main p {
-    font-size: 0.96rem !important;
-    line-height: 1.55 !important;
-    max-width: 46ch !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-stat-card {
-    padding: 0.92rem 1rem !important;
-    border-radius: 1rem !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-stat-card strong {
-    font-size: clamp(1.7rem, 2vw, 2.1rem) !important;
-  }
-
-  @media (max-width: 768px) {
-    .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
-      font-size: clamp(2.2rem, 11vw, 3rem) !important;
-      max-width: 9ch !important;
-    }
-
-    .page-section[data-page='dashboard'] .command-tile {
-      min-height: 8.2rem !important;
-    }
-  }
-
-  /* === HARD RESET PREMIUM V2 === */
-  .workspace-shell {
-    background: linear-gradient(180deg, #f6f7f9 0%, #f4f5f7 100%) !important;
-  }
-
+  /* Dashboard: menos ruido, mas contraste */
   .page-section[data-page='dashboard'] .hero-panel-main,
   .page-section[data-page='dashboard'] .hero-panel-side,
   .page-section[data-page='dashboard'] .cockpit-side-card,
   .page-section[data-page='dashboard'] .signal-card,
   .page-section[data-page='dashboard'] .command-tile,
-  .page-section[data-page='dashboard'] .metric-card,
-  .page-section[data-page='pacientes'] .patients-hero-main,
-  .page-section[data-page='pacientes'] .patients-stat-card,
-  .page-section[data-page='pacientes'] .patients-command-bar,
-  .page-section[data-page='pacientes'] .patients-directory-card {
+  .page-section[data-page='dashboard'] .metric-card {
     background: #ffffff !important;
-    border: 1px solid #e6e8ee !important;
-    box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.2) !important;
+    border: 1px solid #e4e7ec !important;
+    box-shadow: 0 8px 22px -20px rgba(15, 23, 42, 0.22) !important;
+    opacity: 1 !important;
   }
 
   .page-section[data-page='dashboard'] .hero-panel-main::before,
   .page-section[data-page='dashboard'] .hero-panel-main::after,
-  .page-section[data-page='pacientes'] .patients-hero-main::after {
+  .page-section[data-page='dashboard'] .cockpit-side-card-agent::after,
+  .page-section[data-page='dashboard'] .priorities-side-card::before {
     display: none !important;
   }
 
@@ -20165,210 +20050,104 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .page-section[data-page='dashboard'] .cockpit-side-copy,
   .page-section[data-page='dashboard'] .command-tile strong,
   .page-section[data-page='dashboard'] .command-tile p,
-  .page-section[data-page='pacientes'] .patients-kicker,
-  .page-section[data-page='pacientes'] .patients-hero-main h2,
-  .page-section[data-page='pacientes'] .patients-hero-main p {
-    color: #1e293b !important;
+  .page-section[data-page='dashboard'] .priority-copy strong,
+  .page-section[data-page='dashboard'] .priority-copy p {
+    color: #0f172a !important;
+    opacity: 1 !important;
   }
 
-  .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
-    font-size: clamp(2rem, 3.2vw, 2.85rem) !important;
-    line-height: 1.02 !important;
-    letter-spacing: -0.035em !important;
-    max-width: 10ch !important;
-  }
-
-  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
-    font-size: 0.95rem !important;
+  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle,
+  .page-section[data-page='dashboard'] .signal-card p,
+  .page-section[data-page='dashboard'] .cockpit-side-copy {
     color: #475569 !important;
   }
 
-  .page-section[data-page='dashboard'] .hero-runtime-strip,
-  .page-section[data-page='dashboard'] .clinical-hero-band {
-    display: none !important;
-  }
-
-  .page-section[data-page='dashboard'] .hero-action-row {
-    margin-top: 0.25rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .signal-card {
-    min-height: 7.6rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 0.65rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile {
-    min-height: 7.8rem !important;
-    padding: 0.78rem 0.82rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile p {
-    font-size: 0.78rem !important;
-    line-height: 1.35 !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-main h2 {
-    font-size: clamp(1.9rem, 3vw, 2.5rem) !important;
-    line-height: 1.03 !important;
-    max-width: 12ch !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-main p {
-    font-size: 0.9rem !important;
-    line-height: 1.48 !important;
-    color: #526274 !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-actions .btn-ghost {
-    color: #334155 !important;
-    border-color: #d1d9e5 !important;
-    background: #f8fafc !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-stat-card span {
-    color: #6b7280 !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-stat-card strong {
-    color: #0f172a !important;
-  }
-
-  @media (max-width: 1180px) {
-    .page-section[data-page='dashboard'] .command-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .page-section[data-page='dashboard'] .command-grid {
-      grid-template-columns: 1fr !important;
-    }
-  }
-
-  /* === COMPACT SIZE OVERRIDE (FINAL) === */
-  .page-section[data-page='dashboard'] .dashboard-layout {
-    gap: 0.9rem !important;
-  }
-
   .page-section[data-page='dashboard'] .hero-panel-main {
-    padding: 0.9rem !important;
+    padding: 1rem !important;
   }
 
   .page-section[data-page='dashboard'] .hero-panel-main .hero-title {
-    font-size: clamp(1.55rem, 2.2vw, 2rem) !important;
+    font-size: clamp(1.65rem, 2.3vw, 2.15rem) !important;
     line-height: 1.06 !important;
-    max-width: none !important;
+    max-width: 14ch !important;
   }
 
-  .page-section[data-page='dashboard'] .hero-panel-main .hero-subtitle {
-    font-size: 0.88rem !important;
-    line-height: 1.4 !important;
+  .page-section[data-page='dashboard'] .hero-runtime-strip,
+  .page-section[data-page='dashboard'] .clinical-hero-band,
+  .page-section[data-page='dashboard'] .clinical-metrics,
+  .page-section[data-page='dashboard'] .dashboard-ops-grid,
+  .page-section[data-page='dashboard'] .dashboard-bottom-row,
+  .page-section[data-page='dashboard'] .card.widget-card {
+    display: none !important;
   }
 
-  .page-section[data-page='dashboard'] .hero-panel-main .btn-primary,
-  .page-section[data-page='dashboard'] .hero-panel-main .btn-secondary,
-  .page-section[data-page='dashboard'] .hero-panel-main .btn-ghost {
-    min-height: 2.4rem !important;
-    padding: 0.45rem 0.75rem !important;
-    font-size: 0.86rem !important;
+  .page-section[data-page='dashboard'] .hero-signal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-signal-grid .signal-card:nth-child(n+3) {
+    display: none !important;
   }
 
   .page-section[data-page='dashboard'] .signal-card {
     min-height: 0 !important;
-    padding: 0.7rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .signal-card .signal-value {
-    font-size: 1rem !important;
-    line-height: 1.25 !important;
-  }
-
-  .page-section[data-page='dashboard'] .signal-card p {
-    font-size: 0.84rem !important;
-    line-height: 1.4 !important;
-  }
-
-  .page-section[data-page='dashboard'] .cockpit-side-card {
     padding: 0.8rem !important;
   }
 
-  .page-section[data-page='dashboard'] .cockpit-side-title {
-    font-size: 1rem !important;
-    line-height: 1.2 !important;
+  /* Pacientes: compacto y premium */
+  .page-section[data-page='pacientes'] .patients-hero-main,
+  .page-section[data-page='pacientes'] .patients-stat-card,
+  .page-section[data-page='pacientes'] .patients-command-bar,
+  .page-section[data-page='pacientes'] .patients-directory-card {
+    background: #ffffff !important;
+    border: 1px solid #e4e7ec !important;
+    box-shadow: 0 8px 22px -20px rgba(15, 23, 42, 0.2) !important;
   }
 
-  .page-section[data-page='dashboard'] .cockpit-side-copy {
-    font-size: 0.85rem !important;
-    line-height: 1.45 !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile {
-    min-height: 0 !important;
-    padding: 0.68rem 0.72rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile strong {
-    font-size: 0.92rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .command-tile p {
-    font-size: 0.76rem !important;
-    line-height: 1.32 !important;
-  }
-
-  .page-section[data-page='dashboard'] .metric-card {
-    padding: 0.75rem !important;
-    min-height: 0 !important;
-  }
-
-  .page-section[data-page='dashboard'] .metric-value {
-    font-size: 1.25rem !important;
-  }
-
-  .page-section[data-page='dashboard'] .metric-label {
-    font-size: 0.72rem !important;
-  }
-
-  .page-section[data-page='pacientes'] .patients-hero-shell {
-    gap: 0.7rem !important;
+  .page-section[data-page='pacientes'] .patients-hero-main::after {
+    display: none !important;
   }
 
   .page-section[data-page='pacientes'] .patients-hero-main {
-    padding: 0.95rem !important;
+    padding: 1rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-kicker,
+  .page-section[data-page='pacientes'] .patients-hero-main h2,
+  .page-section[data-page='pacientes'] .patients-hero-main p {
+    color: #0f172a !important;
   }
 
   .page-section[data-page='pacientes'] .patients-hero-main h2 {
-    font-size: clamp(1.45rem, 2vw, 1.85rem) !important;
-    line-height: 1.08 !important;
-    max-width: none !important;
-    letter-spacing: -0.02em !important;
+    font-size: clamp(1.45rem, 2.1vw, 1.9rem) !important;
+    line-height: 1.1 !important;
+    max-width: 18ch !important;
   }
 
   .page-section[data-page='pacientes'] .patients-hero-main p {
-    font-size: 0.84rem !important;
-    line-height: 1.4 !important;
-    margin-top: 0.65rem !important;
+    color: #475569 !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
   }
 
-  .page-section[data-page='pacientes'] .patients-hero-actions {
-    margin-top: 0.85rem !important;
+  .page-section[data-page='pacientes'] .patients-hero-stats {
+    gap: 0.55rem !important;
   }
 
   .page-section[data-page='pacientes'] .patients-stat-card {
-    padding: 0.7rem 0.78rem !important;
+    padding: 0.75rem 0.85rem !important;
   }
 
   .page-section[data-page='pacientes'] .patients-stat-card strong {
-    font-size: 1.1rem !important;
+    font-size: clamp(1.15rem, 1.7vw, 1.45rem) !important;
+    color: #0f172a !important;
   }
 
-  .page-section[data-page='pacientes'] .patients-stat-card p {
-    font-size: 0.78rem !important;
-    line-height: 1.35 !important;
+  @media (max-width: 980px) {
+    .page-section[data-page='dashboard'] .hero-signal-grid {
+      grid-template-columns: 1fr !important;
+    }
   }
 </style>
 
