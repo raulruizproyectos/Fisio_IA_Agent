@@ -462,7 +462,22 @@ import Layout from '../layouts/Layout.astro';
             <h1 class="page-title"><span class="material-symbols-rounded">assignment</span> Mensajes pendientes</h1>
           </div>
           <section class="card table-card">
-            <header class="card-header"><h2>Bandeja de entrada por revisar</h2><button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+            <header class="card-header intakes-head">
+              <h2>Bandeja de entrada por revisar</h2>
+              <div class="intakes-head-actions">
+                <label class="intakes-source-filter" for="intakesSourceFilter">
+                  <span class="material-symbols-rounded">filter_alt</span>
+                  <select id="intakesSourceFilter" aria-label="Filtrar mensajes por canal">
+                    <option value="all">Todos los canales</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="web">Web/Formulario</option>
+                    <option value="other">Otros</option>
+                  </select>
+                </label>
+                <button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
+              </div>
+            </header>
+            <div class="intakes-source-summary" id="intakesSourceSummary" aria-live="polite"></div>
             <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Fuente</th><th>Mensaje</th><th>Alertas</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="intakesFullBody"><tr class="empty-row"><td colspan="7"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando bandeja...</p></div></td></tr></tbody></table></div>
           </section>
         </div>
@@ -1683,6 +1698,8 @@ import Layout from '../layouts/Layout.astro';
   const assistantPromptButtons = document.querySelectorAll('[data-assistant-prompt]') as NodeListOf<HTMLButtonElement>;
   const assistantModeButtons = document.querySelectorAll('[data-assistant-mode]') as NodeListOf<HTMLButtonElement>;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
+  const intakesSourceFilter = document.getElementById('intakesSourceFilter') as HTMLSelectElement | null;
+  const intakesSourceSummary = document.getElementById('intakesSourceSummary') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
   const agendaSyncChip = document.getElementById('agendaSyncChip') as HTMLElement | null;
   const agendaSyncTitle = document.getElementById('agendaSyncTitle') as HTMLElement | null;
@@ -4767,14 +4784,49 @@ import Layout from '../layouts/Layout.astro';
 
     openPatientHistory(patientId, patientName);
   });
+
+  const getIntakeSourceKey = (rawSource: any) => {
+    const source = String(rawSource || '').toLowerCase().trim();
+    if (!source) return 'other';
+    if (source.includes('telegram')) return 'telegram';
+    if (source.includes('web') || source.includes('form')) return 'web';
+    return 'other';
+  };
+
+  const renderIntakeSourceSummary = (items: any[]) => {
+    if (!intakesSourceSummary) return;
+    const totals = { all: items.length, telegram: 0, web: 0, other: 0 };
+    items.forEach((item: any) => {
+      const key = getIntakeSourceKey(item?.fuente);
+      if (key in totals) (totals as any)[key] += 1;
+    });
+    intakesSourceSummary.innerHTML = `
+      <span class="intakes-source-chip">Total <strong>${totals.all}</strong></span>
+      <span class="intakes-source-chip">Telegram <strong>${totals.telegram}</strong></span>
+      <span class="intakes-source-chip">Web/Formulario <strong>${totals.web}</strong></span>
+      <span class="intakes-source-chip">Otros <strong>${totals.other}</strong></span>
+    `;
+  };
+
   // === LOAD INTAKES FULL ===
   const loadIntakesFull = async () => {
     if (!intakesFullBody) return;
     setTableState(intakesFullBody, 7, 'sync', 'Cargando bandeja de entrada...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
-      const intakes = payload.data || [];
-      if (!intakes.length) { setTableState(intakesFullBody, 7, 'check_circle', 'Sin mensajes pendientes'); return; }
+      const allIntakes = payload.data || [];
+      const filterValue = intakesSourceFilter?.value || 'all';
+      renderIntakeSourceSummary(allIntakes);
+      const intakes = filterValue === 'all'
+        ? allIntakes
+        : allIntakes.filter((item: any) => getIntakeSourceKey(item?.fuente) === filterValue);
+
+      if (!intakes.length) {
+        const filterCopy = filterValue === 'all' ? 'Sin mensajes pendientes' : 'Sin mensajes en este canal';
+        setTableState(intakesFullBody, 7, 'check_circle', filterCopy);
+        return;
+      }
+
       intakesFullBody.innerHTML = intakes.map((i: any) => {
         const alertas = i.tiene_alertas_rojas ? `<span class="status-chip rechazado">&#9888; Si</span>` : '<span class="status-chip aprobado">No</span>';
         const patientName = resolvePatientName(i);
@@ -4786,11 +4838,21 @@ import Layout from '../layouts/Layout.astro';
   };
   pageLoaders['intakes'] = loadIntakesFull;
   document.getElementById('refreshIntakesFull')?.addEventListener('click', loadIntakesFull);
+  intakesSourceFilter?.addEventListener('change', loadIntakesFull);
   intakesFullBody?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
-    const btn = target?.closest('button[data-action="view-history"]') as HTMLButtonElement | null;
-    if (!btn) return;
-    openPatientHistory(btn.getAttribute('data-patient-id'), btn.getAttribute('data-patient-name') || '');
+    const fichaBtn = target?.closest('button[data-open-ficha]') as HTMLButtonElement | null;
+    if (fichaBtn) {
+      const patientId = fichaBtn.getAttribute('data-open-ficha');
+      if (patientId) openPatientHistory(patientId, '');
+      return;
+    }
+    const historyBtn = target?.closest('button[data-open-chat]') as HTMLButtonElement | null;
+    if (historyBtn) {
+      const patientId = historyBtn.getAttribute('data-open-chat');
+      const patientName = historyBtn.getAttribute('data-patient-name') || '';
+      if (patientId) openPatientHistory(patientId, patientName);
+    }
   });
 
   const renderDashboardCitas = (citas: any[], mode: 'ready' | 'error' = 'ready') => {
@@ -20079,6 +20141,67 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .table-wrap td {
       padding: 0.62rem 0.74rem !important;
     }
+  }
+
+  .intakes-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .intakes-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .intakes-source-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.4rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #d4dae3;
+    border-radius: 0.75rem;
+    background: #ffffff;
+    color: #334155;
+  }
+
+  .intakes-source-filter select {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+
+  .intakes-source-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0 1rem 0.75rem;
+  }
+
+  .intakes-source-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.34rem;
+    min-height: 1.95rem;
+    padding: 0.28rem 0.62rem;
+    border-radius: 999px;
+    border: 1px solid #d8dfe8;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .intakes-source-chip strong {
+    color: #0f172a;
+    font-weight: 800;
   }
 </style>
 
