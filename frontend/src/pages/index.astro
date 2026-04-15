@@ -1284,7 +1284,27 @@ import Layout from '../layouts/Layout.astro';
           </div>
           <section class="card table-card">
             <header class="card-header"><h2>Consentimientos y firmas digitales</h2></header>
-            <div class="table-wrap">
+            <div class="documentos-summary-strip" id="documentosSummaryStrip">
+              <article class="documentos-summary-card">
+                <span>Total</span>
+                <strong id="documentosCountValue">0</strong>
+                <p id="documentosCountMeta">Sin lectura.</p>
+              </article>
+              <article class="documentos-summary-card documentos-summary-card-ready">
+                <span>Firmados</span>
+                <strong id="documentosSignedValue">0</strong>
+                <p id="documentosSignedMeta">Sin firmas.</p>
+              </article>
+              <article class="documentos-summary-card documentos-summary-card-pending">
+                <span>Pendientes</span>
+                <strong id="documentosPendingValue">0</strong>
+                <p id="documentosPendingMeta">Sin pendientes.</p>
+              </article>
+            </div>
+            <div class="documentos-mobile-list" id="documentosMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando documentos...</p></div>
+            </div>
+            <div class="table-wrap documentos-table-wrap">
               <table>
                 <thead><tr><th>Paciente</th><th>Tipo</th><th>T&iacute;tulo</th><th>Estado</th><th>Fecha firma</th><th>Acciones</th></tr></thead>
                 <tbody id="documentosBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando documentos...</p></div></td></tr></tbody>
@@ -8629,6 +8649,13 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   // === DOCUMENTOS (consentimientos globales) ===
   const documentosBody = document.getElementById('documentosBody') as HTMLElement | null;
   const documentosEstadoFilter = document.getElementById('documentosEstadoFilter') as HTMLSelectElement | null;
+  const documentosMobileList = document.getElementById('documentosMobileList') as HTMLElement | null;
+  const documentosCountValue = document.getElementById('documentosCountValue') as HTMLElement | null;
+  const documentosCountMeta = document.getElementById('documentosCountMeta') as HTMLElement | null;
+  const documentosSignedValue = document.getElementById('documentosSignedValue') as HTMLElement | null;
+  const documentosSignedMeta = document.getElementById('documentosSignedMeta') as HTMLElement | null;
+  const documentosPendingValue = document.getElementById('documentosPendingValue') as HTMLElement | null;
+  const documentosPendingMeta = document.getElementById('documentosPendingMeta') as HTMLElement | null;
 
   const TIPO_LABELS: Record<string, string> = {
     consentimiento_informado: 'Consentimiento',
@@ -8637,14 +8664,61 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     otro: 'Otro',
   };
 
+  const renderDocumentosSummary = (docs: any[]) => {
+    const rows = Array.isArray(docs) ? docs : [];
+    const signed = rows.filter((d: any) => d?.estado === 'firmado');
+    const pending = rows.filter((d: any) => d?.estado !== 'firmado');
+    if (documentosCountValue) documentosCountValue.textContent = String(rows.length);
+    if (documentosCountMeta) documentosCountMeta.textContent = rows.length ? 'Documentos visibles en este filtro.' : 'Sin documentos en este filtro.';
+    if (documentosSignedValue) documentosSignedValue.textContent = String(signed.length);
+    if (documentosSignedMeta) documentosSignedMeta.textContent = signed.length ? 'Listos para PDF y archivo.' : 'No hay firmas registradas.';
+    if (documentosPendingValue) documentosPendingValue.textContent = String(pending.length);
+    if (documentosPendingMeta) documentosPendingMeta.textContent = pending.length ? 'Casos pendientes de firma.' : 'Todo aparece firmado.';
+  };
+
+  const renderDocumentosMobile = (docs: any[]) => {
+    if (!documentosMobileList) return;
+    if (!docs.length) {
+      documentosMobileList.innerHTML = '<div class="empty-state-sm"><span class="material-symbols-rounded">description</span><p>Sin documentos para este filtro.</p></div>';
+      return;
+    }
+    documentosMobileList.innerHTML = docs.map((d: any) => {
+      const pac = d.crm_pacientes;
+      const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : 'Sin paciente';
+      const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Sin tipo';
+      const signed = d.estado === 'firmado';
+      const fechaFirma = d.fecha_firma
+        ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+        : 'Pendiente';
+      return `
+        <article class="documentos-mobile-item">
+          <header>
+            <strong>${escapeHtml(pacNombre)}</strong>
+            <span class="status-chip ${signed ? 'confirmada' : 'pendiente'}">${signed ? 'Firmado' : 'Pendiente'}</span>
+          </header>
+          <p>${escapeHtml(tipoLabel)} | ${escapeHtml(d.titulo || 'Sin titulo')}</p>
+          <small>${escapeHtml(fechaFirma)}</small>
+          <div class="documentos-mobile-actions">
+            ${signed ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : ''}
+            <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}">Eliminar</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
+
   const loadDocumentos = async () => {
     if (!documentosBody) return;
+    renderDocumentosSummary([]);
+    renderDocumentosMobile([]);
     setTableState(documentosBody, 6, 'sync', 'Cargando documentos...', true);
     try {
       const estado = documentosEstadoFilter?.value || '';
       const url = `${BACKEND_BASE}/api/documentos${estado ? `?estado=${estado}` : ''}`;
       const payload = await fetchJson(url);
-      const docs = payload.data || [];
+      const docs = [...(payload.data || [])].sort((a: any, b: any) => new Date((b?.fecha_firma || b?.created_at || 0)).getTime() - new Date((a?.fecha_firma || a?.created_at || 0)).getTime());
+      renderDocumentosSummary(docs);
+      renderDocumentosMobile(docs);
       if (!docs.length) {
         setTableState(documentosBody, 6, 'description', 'Sin documentos registrados');
         return;
@@ -8669,13 +8743,28 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           </td>
         </tr>`;
       }).join('');
-    } catch { setTableState(documentosBody, 6, 'cloud_off', 'Error al cargar documentos'); }
+    } catch {
+      renderDocumentosSummary([]);
+      renderDocumentosMobile([]);
+      setTableState(documentosBody, 6, 'cloud_off', 'Error al cargar documentos');
+    }
   };
   pageLoaders['documentos'] = loadDocumentos;
   documentosEstadoFilter?.addEventListener('change', loadDocumentos);
   document.getElementById('refreshDocumentos')?.addEventListener('click', loadDocumentos);
 
   documentosBody?.addEventListener('click', async (e: Event) => {
+    const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
+    if (!btn) return;
+    const docId = btn.getAttribute('data-doc-id');
+    if (!docId || !confirm('Eliminar este documento?')) return;
+    try {
+      await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
+      await loadDocumentos();
+    } catch { alert('Error al eliminar el documento.'); }
+  });
+
+  documentosMobileList?.addEventListener('click', async (e: Event) => {
     const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
     if (!btn) return;
     const docId = btn.getAttribute('data-doc-id');
@@ -11046,12 +11135,117 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }
   }
 
+  .documentos-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    padding: 0.85rem 1rem 0.2rem;
+  }
+
+  .documentos-summary-card {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.72rem 0.8rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(199, 184, 155, 0.36);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 228, 0.94));
+  }
+
+  .documentos-summary-card span {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8a6731;
+  }
+
+  .documentos-summary-card strong {
+    color: #183247;
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+
+  .documentos-summary-card p {
+    margin: 0;
+    color: #607281;
+    font-size: 0.77rem;
+  }
+
+  .documentos-summary-card-ready {
+    border-color: rgba(16, 185, 129, 0.34);
+    background: linear-gradient(180deg, rgba(241, 253, 247, 0.98), rgba(232, 250, 241, 0.94));
+  }
+
+  .documentos-summary-card-pending {
+    border-color: rgba(245, 158, 11, 0.34);
+    background: linear-gradient(180deg, rgba(255, 251, 238, 0.98), rgba(255, 244, 219, 0.94));
+  }
+
+  .documentos-mobile-list {
+    display: none;
+    gap: 0.7rem;
+    padding: 0.75rem 1rem 0.95rem;
+  }
+
+  .documentos-mobile-item {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(199, 184, 155, 0.36);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 228, 0.94));
+  }
+
+  .documentos-mobile-item header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .documentos-mobile-item strong {
+    color: #183247;
+    font-size: 0.88rem;
+    line-height: 1.35;
+  }
+
+  .documentos-mobile-item p {
+    margin: 0;
+    color: #607281;
+    font-size: 0.81rem;
+    line-height: 1.45;
+  }
+
+  .documentos-mobile-item small {
+    color: #738491;
+    font-size: 0.74rem;
+  }
+
+  .documentos-mobile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.45rem;
+  }
+
   @media (max-width: 768px) {
     .page-section[data-page='facturas'] .facturas-table-wrap {
       display: none;
     }
 
     .page-section[data-page='facturas'] .facturas-mobile-list {
+      display: grid;
+    }
+
+    .page-section[data-page='documentos'] .documentos-summary-strip {
+      grid-template-columns: 1fr;
+      padding: 0.8rem;
+    }
+
+    .page-section[data-page='documentos'] .documentos-table-wrap {
+      display: none;
+    }
+
+    .page-section[data-page='documentos'] .documentos-mobile-list {
       display: grid;
     }
   }
