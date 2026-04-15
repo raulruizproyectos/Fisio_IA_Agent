@@ -1134,8 +1134,28 @@ import Layout from '../layouts/Layout.astro';
                 <button class="btn-ghost btn-sm" id="refreshBonos"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
+            <div class="bonos-summary-strip" id="bonosSummaryStrip">
+              <article class="bonos-summary-card">
+                <span>Bonos visibles</span>
+                <strong id="bonosCountValue">0</strong>
+                <p id="bonosCountMeta">Sin lectura.</p>
+              </article>
+              <article class="bonos-summary-card">
+                <span>Sesiones restantes</span>
+                <strong id="bonosRemainingValue">0</strong>
+                <p id="bonosRemainingMeta">Sin consumo.</p>
+              </article>
+              <article class="bonos-summary-card bonos-summary-card-accent">
+                <span>Valor pendiente</span>
+                <strong id="bonosPendingValue">0,00 &euro;</strong>
+                <p id="bonosPendingMeta">Sin valor pendiente.</p>
+              </article>
+            </div>
             <p class="form-feedback" id="bonosAvailabilityNotice" hidden></p>
-            <div class="table-wrap">
+            <div class="bonos-mobile-list" id="bonosMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando bonos...</p></div>
+            </div>
+            <div class="table-wrap bonos-table-wrap">
               <table><thead><tr><th>Paciente</th><th>Bono</th><th>Sesiones</th><th>Precio</th><th>Inicio</th><th>Caducidad</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody id="bonosBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">confirmation_number</span><p>Sin bonos registrados</p></div></td></tr></tbody></table>
             </div>
@@ -7992,6 +8012,13 @@ import Layout from '../layouts/Layout.astro';
   const bonoPacienteSelect = document.getElementById('bonoPacienteSelect') as HTMLSelectElement | null;
   const bonoFeedback = document.getElementById('bonoFeedback') as HTMLElement | null;
   const bonosAvailabilityNotice = document.getElementById('bonosAvailabilityNotice') as HTMLElement | null;
+  const bonosMobileList = document.getElementById('bonosMobileList') as HTMLElement | null;
+  const bonosCountValue = document.getElementById('bonosCountValue') as HTMLElement | null;
+  const bonosCountMeta = document.getElementById('bonosCountMeta') as HTMLElement | null;
+  const bonosRemainingValue = document.getElementById('bonosRemainingValue') as HTMLElement | null;
+  const bonosRemainingMeta = document.getElementById('bonosRemainingMeta') as HTMLElement | null;
+  const bonosPendingValue = document.getElementById('bonosPendingValue') as HTMLElement | null;
+  const bonosPendingMeta = document.getElementById('bonosPendingMeta') as HTMLElement | null;
   const bonoSubmitBtn = document.getElementById('bonoSubmitBtn') as HTMLButtonElement | null;
   const bonoEditId = document.getElementById('bonoEditId') as HTMLInputElement | null;
   const bonoModalTitle = document.getElementById('bonoModalTitle');
@@ -8026,10 +8053,64 @@ import Layout from '../layouts/Layout.astro';
     bonoFeedback.hidden = false; bonoFeedback.textContent = t;
   };
 
+  const renderBonosSummary = (bonos: any[]) => {
+    const rows = Array.isArray(bonos) ? bonos : [];
+    const totalCount = rows.length;
+    const remaining = rows.reduce((acc: number, b: any) => acc + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
+    const pendingValue = rows
+      .filter((b: any) => String(b?.estado || '').toLowerCase() === 'activo')
+      .reduce((acc: number, b: any) => acc + Number(b?.precio || 0), 0);
+    const activeCount = rows.filter((b: any) => String(b?.estado || '').toLowerCase() === 'activo').length;
+
+    if (bonosCountValue) bonosCountValue.textContent = String(totalCount);
+    if (bonosCountMeta) bonosCountMeta.textContent = totalCount ? `${activeCount} bono${activeCount === 1 ? '' : 's'} activo${activeCount === 1 ? '' : 's'}.` : 'Sin bonos en este filtro.';
+    if (bonosRemainingValue) bonosRemainingValue.textContent = String(remaining);
+    if (bonosRemainingMeta) bonosRemainingMeta.textContent = totalCount ? 'Sesiones disponibles por consumir.' : 'No hay sesiones disponibles.';
+    if (bonosPendingValue) bonosPendingValue.textContent = fmtMoney(pendingValue);
+    if (bonosPendingMeta) bonosPendingMeta.textContent = activeCount ? 'Valor asociado a bonos activos.' : 'No hay valor pendiente en bonos.';
+  };
+
+  const renderBonosMobile = (bonos: any[]) => {
+    if (!bonosMobileList) return;
+    const rows = Array.isArray(bonos) ? bonos : [];
+    if (!rows.length) {
+      bonosMobileList.innerHTML = '<div class="empty-state-sm"><span class="material-symbols-rounded">confirmation_number</span><p>Sin bonos para este filtro.</p></div>';
+      return;
+    }
+
+    bonosMobileList.innerHTML = rows.map((b: any) => {
+      const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
+      const restantes = Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0);
+      const pct = Math.max(Math.min(Math.round((Number(b?.sesiones_usadas || 0) / Math.max(Number(b?.sesiones_total || 1), 1)) * 100), 100), 0);
+      const estadoClass = b.estado;
+      return `
+        <article class="bonos-mobile-item" data-bono="${escapeAttr(JSON.stringify(b))}">
+          <header>
+            <strong>${escapeHtml(pName)}</strong>
+            <span class="status-chip ${escapeAttr(estadoClass)}">${escapeHtml(String(b.estado || 'activo'))}</span>
+          </header>
+          <p>${escapeHtml(b.nombre || 'Bono')}</p>
+          <div class="bono-progress">
+            <span>${b.sesiones_usadas}/${b.sesiones_total} <small>(${restantes} restantes)</small></span>
+            <div class="bono-bar"><div class="bono-bar-fill" style="width:${pct}%"></div></div>
+          </div>
+          <div class="bonos-mobile-meta">${Number(b.precio || 0).toFixed(2)} EUR | Inicio ${escapeHtml(b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'sin fecha')}</div>
+          <div class="bonos-mobile-actions">
+            ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesion</button>` : ''}
+            <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
+            <button class="btn-sm btn-outline bonos-mobile-delete" data-action="delete-bono" data-bono-id="${b.id}">Eliminar</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
+
   const loadBonos = async () => {
     if (!bonosBody) return;
     bonosUnavailableMessage = '';
     syncBonosAvailabilityUi();
+    renderBonosSummary([]);
+    renderBonosMobile([]);
     setTableState(bonosBody, 8, 'sync', 'Cargando bonos...', true);
     try {
       const estado = bonosEstadoFilter?.value || '';
@@ -8038,10 +8119,14 @@ import Layout from '../layouts/Layout.astro';
       if (payload.unavailable) {
         bonosUnavailableMessage = payload.error || 'Modulo bonos no disponible';
         syncBonosAvailabilityUi();
+        renderBonosSummary([]);
+        renderBonosMobile([]);
         setTableState(bonosBody, 8, 'warning', bonosUnavailableMessage);
         return;
       }
-      const bonos = payload.data || [];
+      const bonos = [...(payload.data || [])].sort((a: any, b: any) => new Date((b?.fecha_inicio || b?.created_at || 0)).getTime() - new Date((a?.fecha_inicio || a?.created_at || 0)).getTime());
+      renderBonosSummary(bonos);
+      renderBonosMobile(bonos);
       if (!bonos.length) { setTableState(bonosBody, 8, 'confirmation_number', 'Sin bonos'); return; }
       bonosBody.innerHTML = bonos.map((b: any) => {
         const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
@@ -8070,7 +8155,11 @@ import Layout from '../layouts/Layout.astro';
           </td>
         </tr>`;
       }).join('');
-    } catch { setTableState(bonosBody, 8, 'cloud_off', 'Error al cargar bonos'); }
+    } catch {
+      renderBonosSummary([]);
+      renderBonosMobile([]);
+      setTableState(bonosBody, 8, 'cloud_off', 'Error al cargar bonos');
+    }
   };
   pageLoaders['bonos'] = loadBonos;
   bonosEstadoFilter?.addEventListener('change', loadBonos);
@@ -8762,6 +8851,36 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
       await loadDocumentos();
     } catch { alert('Error al eliminar el documento.'); }
+  });
+
+  bonosMobileList?.addEventListener('click', async (e: Event) => {
+    const btn = (e.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const bonoId = btn.getAttribute('data-bono-id');
+    if (!bonoId) return;
+    if (bonosUnavailableMessage) { alert(bonosUnavailableMessage); return; }
+
+    if (action === 'usar-bono') {
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
+        await loadBonos();
+      } catch (err: any) { alert(`Error: ${err?.message}`); }
+      return;
+    }
+    if (action === 'edit-bono') {
+      const card = btn.closest('article[data-bono]') as HTMLElement | null;
+      try {
+        const bono = card?.dataset.bono ? JSON.parse(card.dataset.bono) : null;
+        if (bono) openBonoModal(bono);
+      } catch {}
+      return;
+    }
+    if (action === 'delete-bono') {
+      if (!confirm('Eliminar este bono?')) return;
+      try { await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' }); await loadBonos(); }
+      catch (err: any) { alert(`Error: ${err?.message}`); }
+    }
   });
 
   documentosMobileList?.addEventListener('click', async (e: Event) => {
@@ -10803,9 +10922,100 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   /* === BONOS === */
+  .bonos-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    padding: 0.85rem 1rem 0.25rem;
+  }
+  .bonos-summary-card {
+    display: grid;
+    gap: 0.32rem;
+    padding: 0.72rem 0.8rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(199, 184, 155, 0.36);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 228, 0.94));
+  }
+  .bonos-summary-card span {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8a6731;
+  }
+  .bonos-summary-card strong {
+    color: #183247;
+    font-size: 1.22rem;
+    line-height: 1.1;
+  }
+  .bonos-summary-card p {
+    margin: 0;
+    color: #607281;
+    font-size: 0.76rem;
+  }
+  .bonos-summary-card-accent {
+    border-color: rgba(39, 123, 138, 0.3);
+    background: linear-gradient(180deg, rgba(241, 251, 251, 0.98), rgba(233, 247, 248, 0.94));
+  }
+  .bonos-mobile-list {
+    display: none;
+    gap: 0.7rem;
+    padding: 0.75rem 1rem 0.95rem;
+  }
+  .bonos-mobile-item {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(199, 184, 155, 0.36);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(247, 240, 228, 0.94));
+  }
+  .bonos-mobile-item header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .bonos-mobile-item strong {
+    color: #183247;
+    font-size: 0.88rem;
+    line-height: 1.35;
+  }
+  .bonos-mobile-item p {
+    margin: 0;
+    color: #607281;
+    font-size: 0.81rem;
+    line-height: 1.45;
+  }
+  .bonos-mobile-meta {
+    color: #748593;
+    font-size: 0.74rem;
+  }
+  .bonos-mobile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+  .bonos-mobile-delete {
+    color: #b91c1c !important;
+  }
   .bono-progress { display: flex; flex-direction: column; gap: 0.3rem; }
   .bono-bar { height: 6px; background: var(--border); border-radius: 99px; width: 120px; }
   .bono-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+
+  @media (max-width: 768px) {
+    .page-section[data-page='bonos'] .bonos-summary-strip {
+      grid-template-columns: 1fr;
+      padding: 0.8rem;
+    }
+    .page-section[data-page='bonos'] .bonos-table-wrap {
+      display: none;
+    }
+    .page-section[data-page='bonos'] .bonos-mobile-list {
+      display: grid;
+    }
+  }
 
   /* === FIRMA DIGITAL === */
   .modal-panel-wide { max-width: 720px; }
