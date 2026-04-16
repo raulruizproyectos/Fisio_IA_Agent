@@ -12,6 +12,21 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 ## En pausa
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
+## Checkpoint actual (2026-04-16)
+- Base funcional exacta antes del cierre documental: `34ea207`
+- Estado de GitHub: `origin/main` sincronizado con el tramo de pulido producto-pro y varias iteraciones del Copilot.
+- Estado real del producto en este punto:
+  - el CRM general queda bastante mas ordenado y vendible que al inicio del tramo,
+  - el Copilot mejora respecto al estado roto inicial, pero aun no alcanza nivel premium final,
+  - el principal problema restante ya no es funcional sino de UX/estructura visual del rail del agente IA.
+- Siguiente paso exacto:
+  - retomar exclusivamente el Copilot,
+  - simplificar estructura del rail,
+  - dejar un solo scroll en el chat,
+  - mover el contexto clinico a una capa secundaria plegable,
+  - rehacer el layout del agente como producto premium real.
+- Checkpoint operativo recomendado: `docs/checkpoint_20260416_copilot_premium_handoff.md`
+
 ## Checkpoint actual (2026-04-07)
 - Commit exacto para retomar: `f67d339`
 - Estado de GitHub: `origin/main` sincronizado con los fixes de Telegram, Calendar y limpieza CRM de esta sesion.
