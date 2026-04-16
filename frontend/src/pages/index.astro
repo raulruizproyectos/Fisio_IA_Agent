@@ -482,6 +482,13 @@ import Layout from '../layouts/Layout.astro';
                     <option value="normal">Prioridad normal</option>
                   </select>
                 </label>
+                <label class="intakes-source-filter" for="intakesAgeSort">
+                  <span class="material-symbols-rounded">schedule</span>
+                  <select id="intakesAgeSort" aria-label="Ordenar mensajes por antiguedad">
+                    <option value="oldest">Mas antiguos primero</option>
+                    <option value="newest">Mas recientes primero</option>
+                  </select>
+                </label>
                 <button class="btn-ghost" id="refreshIntakesFull"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
               </div>
             </header>
@@ -640,6 +647,11 @@ import Layout from '../layouts/Layout.astro';
               <span>Bonos activos</span>
               <strong id="financeBonosValue">0</strong>
               <p id="financeBonosMeta">Sesiones disponibles.</p>
+            </article>
+            <article class="finance-overview-card">
+              <span>Tendencia mensual</span>
+              <strong id="financeTrendValue">0,00 &euro;</strong>
+              <p id="financeTrendMeta">Comparativa mes actual vs mes anterior.</p>
             </article>
           </section>
 
@@ -1449,6 +1461,8 @@ import Layout from '../layouts/Layout.astro';
                     <p class="assistant-flow-draft" id="assistantFlowDraft"></p>
                   </div>
 
+                  <div class="chat-log" id="chatLog"></div>
+
                   <div class="assistant-shortcuts" id="assistantShortcuts">
                     <button type="button" class="assistant-chip" data-assistant-mode="new-plan" data-assistant-prompt="Dolor lumbar con progresion de 3 semanas y foco en adherencia."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
                     <button type="button" class="assistant-chip" data-assistant-mode="next-session" data-assistant-prompt="Que revisar en la proxima sesion y que progresion valorar."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
@@ -1540,8 +1554,6 @@ import Layout from '../layouts/Layout.astro';
                     <p class="assistant-delivery-summary" id="assistantDeliverySummary">Selecciona un paciente para preparar el envio por Telegram y la exportacion del PDF.</p>
                     <div class="assistant-delivery-pills" id="assistantDeliveryPills"></div>
                   </div>
-
-                  <div class="chat-log" id="chatLog"></div>
                 </div>
 
                 <form id="agentForm" class="ai-input-area">
@@ -1726,6 +1738,7 @@ import Layout from '../layouts/Layout.astro';
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const intakesSourceFilter = document.getElementById('intakesSourceFilter') as HTMLSelectElement | null;
   const intakesPriorityFilter = document.getElementById('intakesPriorityFilter') as HTMLSelectElement | null;
+  const intakesAgeSort = document.getElementById('intakesAgeSort') as HTMLSelectElement | null;
   const intakesSourceSummary = document.getElementById('intakesSourceSummary') as HTMLElement | null;
   const citasBody = document.getElementById('citasBody') as HTMLElement | null;
   const agendaSyncChip = document.getElementById('agendaSyncChip') as HTMLElement | null;
@@ -4842,6 +4855,8 @@ import Layout from '../layouts/Layout.astro';
 
   const intakeScheduledStorageKey = 'fisio_intakes_scheduled_v1';
   const intakeScheduledSet = new Set<string>();
+  const intakeTriagedStorageKey = 'fisio_intakes_triaged_v1';
+  const intakeTriagedSet = new Set<string>();
   let pendingIntakeIdForAppointment: string | null = null;
   try {
     const raw = localStorage.getItem(intakeScheduledStorageKey);
@@ -4850,10 +4865,22 @@ import Layout from '../layouts/Layout.astro';
       if (Array.isArray(parsed)) parsed.forEach((id: any) => id && intakeScheduledSet.add(String(id)));
     }
   } catch {}
+  try {
+    const triagedRaw = localStorage.getItem(intakeTriagedStorageKey);
+    if (triagedRaw) {
+      const parsedTriaged = JSON.parse(triagedRaw);
+      if (Array.isArray(parsedTriaged)) parsedTriaged.forEach((id: any) => id && intakeTriagedSet.add(String(id)));
+    }
+  } catch {}
 
   const persistIntakeScheduledSet = () => {
     try {
       localStorage.setItem(intakeScheduledStorageKey, JSON.stringify(Array.from(intakeScheduledSet)));
+    } catch {}
+  };
+  const persistIntakeTriagedSet = () => {
+    try {
+      localStorage.setItem(intakeTriagedStorageKey, JSON.stringify(Array.from(intakeTriagedSet)));
     } catch {}
   };
 
@@ -4862,6 +4889,9 @@ import Layout from '../layouts/Layout.astro';
     const intakeId = getIntakeId(item);
     if (intakeId && intakeScheduledSet.has(intakeId)) {
       return { label: 'Agendado', tone: 'aprobado' };
+    }
+    if (intakeId && intakeTriagedSet.has(intakeId)) {
+      return { label: 'En triage', tone: 'pendiente' };
     }
     const createdAt = item?.timestamp || item?.creado_en || item?.created_at || '';
     const ts = createdAt ? new Date(createdAt).getTime() : Number.NaN;
@@ -4900,9 +4930,16 @@ import Layout from '../layouts/Layout.astro';
       const channelFiltered = filterValue === 'all'
         ? allIntakes
         : allIntakes.filter((item: any) => getIntakeSourceKey(item?.fuente) === filterValue);
-      const intakes = priorityValue === 'all'
+      const priorityFiltered = priorityValue === 'all'
         ? channelFiltered
         : channelFiltered.filter((item: any) => getIntakePriorityKey(item) === priorityValue);
+      const ageSort = intakesAgeSort?.value || 'oldest';
+      const intakes = [...priorityFiltered].sort((a: any, b: any) => {
+        const aTs = new Date(a?.timestamp || a?.creado_en || a?.created_at || 0).getTime();
+        const bTs = new Date(b?.timestamp || b?.creado_en || b?.created_at || 0).getTime();
+        if (ageSort === 'newest') return bTs - aTs;
+        return aTs - bTs;
+      });
 
       if (!intakes.length) {
         const filterCopy = filterValue === 'all' && priorityValue === 'all' ? 'Sin mensajes pendientes' : 'Sin mensajes con estos filtros';
@@ -4933,6 +4970,7 @@ import Layout from '../layouts/Layout.astro';
               <button class="btn-sm" data-open-ficha="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Ficha</button>
               <button class="btn-sm btn-outline" data-create-appointment="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" data-intake-message="${escapeAttr(message)}" data-intake-id="${escapeAttr(intakeId)}">Cita</button>
               <button class="btn-sm btn-outline" data-open-chat="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Historial</button>
+              <button class="btn-sm btn-outline" data-mark-triage="${escapeAttr(intakeId)}">${intakeId && intakeTriagedSet.has(intakeId) ? 'Quitar triage' : 'Marcar triage'}</button>
             </div>
           </td>
         </tr>`;
@@ -4945,6 +4983,7 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('refreshIntakesFull')?.addEventListener('click', loadIntakesFull);
   intakesSourceFilter?.addEventListener('change', loadIntakesFull);
   intakesPriorityFilter?.addEventListener('change', loadIntakesFull);
+  intakesAgeSort?.addEventListener('change', loadIntakesFull);
   intakesFullBody?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
     const fichaBtn = target?.closest('button[data-open-ficha]') as HTMLButtonElement | null;
@@ -4968,6 +5007,16 @@ import Layout from '../layouts/Layout.astro';
       const patientId = historyBtn.getAttribute('data-open-chat');
       const patientName = historyBtn.getAttribute('data-patient-name') || '';
       if (patientId) openPatientHistory(patientId, patientName);
+      return;
+    }
+    const triageBtn = target?.closest('button[data-mark-triage]') as HTMLButtonElement | null;
+    if (triageBtn) {
+      const intakeId = String(triageBtn.getAttribute('data-mark-triage') || '').trim();
+      if (!intakeId) return;
+      if (intakeTriagedSet.has(intakeId)) intakeTriagedSet.delete(intakeId);
+      else intakeTriagedSet.add(intakeId);
+      persistIntakeTriagedSet();
+      void loadIntakesFull();
     }
   });
 
@@ -6372,6 +6421,8 @@ import Layout from '../layouts/Layout.astro';
   const financePendingMeta = document.getElementById('financePendingMeta') as HTMLElement | null;
   const financeBonosValue = document.getElementById('financeBonosValue') as HTMLElement | null;
   const financeBonosMeta = document.getElementById('financeBonosMeta') as HTMLElement | null;
+  const financeTrendValue = document.getElementById('financeTrendValue') as HTMLElement | null;
+  const financeTrendMeta = document.getElementById('financeTrendMeta') as HTMLElement | null;
   let pagosUnavailableMessage = '';
   const pagoSubmitBtn = document.getElementById('pagoSubmitBtn') as HTMLButtonElement | null;
   const pagoModalTitle = document.getElementById('pagoModalTitle');
@@ -6502,6 +6553,12 @@ import Layout from '../layouts/Layout.astro';
     if (financePaidMeta) financePaidMeta.textContent = `${rows.length} pago${rows.length === 1 ? '' : 's'} en el filtro.`;
 
     const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
+    const now = new Date();
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const getMonthOffset = (offset: number) => {
+      const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+      return { year: d.getFullYear(), month: d.getMonth() + 1, name: monthNames[d.getMonth()] };
+    };
     try {
       const [facturasPayload, bonosPayload] = await Promise.all([
         fetchJson(`${BACKEND_BASE}/api/facturas?anio=${encodeURIComponent(anio)}`).catch(() => ({ data: [] })),
@@ -6520,9 +6577,29 @@ import Layout from '../layouts/Layout.astro';
       const remainingSessions = bonos.reduce((sum: number, b: any) => sum + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
       if (financeBonosValue) financeBonosValue.textContent = String(bonos.length);
       if (financeBonosMeta) financeBonosMeta.textContent = `${remainingSessions} sesion${remainingSessions === 1 ? '' : 'es'} disponibles.`;
+
+      if (financeTrendValue || financeTrendMeta) {
+        const current = getMonthOffset(0);
+        const previous = getMonthOffset(-1);
+        const [currentMonthPayload, previousMonthPayload] = await Promise.all([
+          fetchJson(`${BACKEND_BASE}/api/pagos?anio=${current.year}&mes=${current.month}`).catch(() => ({ data: [] })),
+          fetchJson(`${BACKEND_BASE}/api/pagos?anio=${previous.year}&mes=${previous.month}`).catch(() => ({ data: [] })),
+        ]);
+        const currentRows = Array.isArray(currentMonthPayload?.data) ? currentMonthPayload.data : [];
+        const previousRows = Array.isArray(previousMonthPayload?.data) ? previousMonthPayload.data : [];
+        const currentTotal = currentRows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
+        const previousTotal = previousRows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
+        const delta = currentTotal - previousTotal;
+        const trendPrefix = delta > 0 ? '+' : delta < 0 ? '-' : '=';
+        if (financeTrendValue) financeTrendValue.textContent = `${trendPrefix} ${fmtMoney(Math.abs(delta))}`;
+        if (financeTrendMeta) {
+          financeTrendMeta.textContent = `${current.name}: ${fmtMoney(currentTotal)} vs ${previous.name}: ${fmtMoney(previousTotal)}.`;
+        }
+      }
     } catch {
       if (financePendingMeta) financePendingMeta.textContent = 'No se pudo actualizar facturacion.';
       if (financeBonosMeta) financeBonosMeta.textContent = 'No se pudo actualizar bonos.';
+      if (financeTrendMeta) financeTrendMeta.textContent = 'No se pudo calcular la tendencia mensual.';
     }
   };
 
@@ -7178,6 +7255,8 @@ import Layout from '../layouts/Layout.astro';
       const circuitSteps = [
         {
           label: 'Plan generado',
+          action: 'generate-plan',
+          actionLabel: recommendationSummary.totalPlans ? 'Actualizar plan' : 'Generar plan',
           done: Boolean(recommendationSummary.totalPlans),
           value: recommendationSummary.totalPlans ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'}` : 'Pendiente',
           meta: recommendationSummary.totalPlans
@@ -7186,6 +7265,8 @@ import Layout from '../layouts/Layout.astro';
         },
         {
           label: 'Entrega',
+          action: 'delivery',
+          actionLabel: 'Ver entregas',
           done: Boolean(recommendationSummary.totalArchivedReports),
           value: recommendationSummary.totalArchivedReports ? `${recommendationSummary.totalArchivedReports} archivada${recommendationSummary.totalArchivedReports === 1 ? '' : 's'}` : 'Sin entrega',
           meta: latestArchivedReport?.archived_at || latestArchivedReport?.created_at
@@ -7194,6 +7275,8 @@ import Layout from '../layouts/Layout.astro';
         },
         {
           label: 'Feedback',
+          action: 'feedback',
+          actionLabel: 'Registrar feedback',
           done: Boolean(recommendationSummary.totalFollowUps),
           value: recommendationSummary.totalFollowUps ? latestAdherence.label : 'Sin respuesta',
           meta: latestFollowUp?.pain_scale !== null && latestFollowUp?.pain_scale !== undefined
@@ -7204,6 +7287,8 @@ import Layout from '../layouts/Layout.astro';
         },
         {
           label: 'Ajuste recomendado',
+          action: 'adjust-plan',
+          actionLabel: 'Aplicar ajuste',
           done: Boolean(recommendationSummary.totalPlans),
           value: adjustmentTitle,
           meta: adjustmentMeta,
@@ -7219,6 +7304,7 @@ import Layout from '../layouts/Layout.astro';
                   <span class="ficha-ia-step-label">${escapeHtml(step.label)}</span>
                   <strong>${escapeHtml(step.value)}</strong>
                   <p>${escapeHtml(step.meta)}</p>
+                  <button type="button" class="btn-link-inline ficha-ia-step-action" data-ficha-ia-action="${escapeAttr(step.action)}">${escapeHtml(step.actionLabel)}</button>
                 </div>
               </article>
             `).join('')}
@@ -7232,6 +7318,7 @@ import Layout from '../layouts/Layout.astro';
                   <span class="ficha-ia-step-label">${escapeHtml(step.label)}</span>
                   <strong>${escapeHtml(step.value)}</strong>
                   <p>${escapeHtml(step.meta)}</p>
+                  <button type="button" class="btn-link-inline ficha-ia-step-action" data-ficha-ia-action="${escapeAttr(step.action)}">${escapeHtml(step.actionLabel)}</button>
                 </div>
               </article>
             `).join('')}
@@ -7507,6 +7594,34 @@ import Layout from '../layouts/Layout.astro';
     if (!fichaPatientId) return;
     pendingHistoryAnchor = 'telegram';
     openPatientHistory(fichaPatientId, selectedPatientName || getPatientFullName(fichaData?.paciente || {}));
+  });
+
+  const runFichaIaAction = (action: string) => {
+    if (!fichaPatientId) return;
+    const patientName = selectedPatientName || getPatientFullName(fichaData?.paciente || {});
+    if (action === 'generate-plan') {
+      syncChatPatientSelection(fichaPatientId, patientName);
+      requestOpenAssistantRail();
+      setAssistantMode('new-plan', { focus: true });
+      return;
+    }
+    if (action === 'delivery' || action === 'feedback') {
+      pendingHistoryAnchor = 'recommendations';
+      openPatientHistory(fichaPatientId, patientName);
+      return;
+    }
+    if (action === 'adjust-plan') {
+      syncChatPatientSelection(fichaPatientId, patientName);
+      requestOpenAssistantRail();
+      setAssistantMode('update-plan', { focus: true });
+    }
+  };
+
+  fichaPlanInsights?.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const button = target?.closest('button[data-ficha-ia-action]') as HTMLButtonElement | null;
+    if (!button) return;
+    runFichaIaAction(String(button.getAttribute('data-ficha-ia-action') || '').trim());
   });
 
   // Tab switching
@@ -16937,6 +17052,472 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }
   }
 </style>
+
+<style is:global id="assistant-rail-ultrapremium-fix-v2">
+  html[data-assistant-mode='desktop'] .assistant-rail-card,
+  html[data-assistant-mode='compact'] .assistant-rail-card {
+    width: min(880px, calc(100vw - 2rem)) !important;
+    max-width: min(880px, calc(100vw - 2rem)) !important;
+    height: min(760px, calc(100dvh - 2rem)) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    border-radius: 1.15rem !important;
+    background: #fcfaf6 !important;
+  }
+
+  html[data-assistant-mode='mobile'] .assistant-rail-card {
+    background: #fcfaf6 !important;
+  }
+
+  .assistant-rail .assistant-module-header {
+    background: #f3f7f8 !important;
+    border-bottom: 1px solid #d7e1e7 !important;
+  }
+
+  .assistant-rail .assistant-rail-copy {
+    display: grid !important;
+    gap: 0.22rem !important;
+  }
+
+  .assistant-rail .assistant-rail-copy h2 {
+    margin: 0 !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+    color: #122b42 !important;
+  }
+
+  .assistant-rail .assistant-eyebrow {
+    font-size: 0.7rem !important;
+    letter-spacing: 0.12em !important;
+    color: #147a78 !important;
+  }
+
+  .assistant-rail-close {
+    border: 1px solid #c6d3dd !important;
+    background: #ffffff !important;
+    color: #17324a !important;
+  }
+
+  .assistant-rail .assistant-toolbar {
+    padding: 0.7rem 0.82rem 0.45rem !important;
+  }
+
+  .assistant-rail .patient-selector {
+    min-height: 2.9rem !important;
+    border: 1px solid #d7e1e7 !important;
+    background: #fffdfa !important;
+  }
+
+  .assistant-rail .assistant-live-context,
+  .assistant-rail .assistant-flow-card,
+  .assistant-rail .assistant-shortcuts,
+  .assistant-rail .assistant-mode-card {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding: 0.55rem 0.82rem 0.82rem !important;
+    background: transparent !important;
+  }
+
+  .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    gap: 0.55rem !important;
+    padding: 0 !important;
+  }
+
+  .assistant-rail .assistant-patient-brief {
+    order: 1 !important;
+    padding: 0.72rem !important;
+    border: 1px solid #d9e3e8 !important;
+    border-radius: 0.85rem !important;
+    background: #f7fbfc !important;
+  }
+
+  .assistant-rail .chat-log,
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
+    order: 2 !important;
+    display: grid !important;
+    flex: 0 0 auto !important;
+    min-height: 14rem !important;
+    gap: 0.55rem !important;
+    padding: 0.85rem !important;
+    border: 1px solid #d7e1e7 !important;
+    border-radius: 0.95rem !important;
+    background: #ffffff !important;
+  }
+
+  .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log:empty {
+    display: grid !important;
+    align-content: center !important;
+  }
+
+  .assistant-rail .chat-log:empty::before {
+    content: 'Describe el caso y el Copilot construira aqui el dialogo, el plan y los siguientes pasos.';
+    color: #5f7284;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    text-align: center;
+    max-width: 42ch;
+    margin: 0 auto;
+  }
+
+  .assistant-rail .assistant-mode-switch {
+    order: 3 !important;
+    margin: 0 !important;
+    padding: 0.15rem !important;
+    border: 1px solid #d7e1e7 !important;
+    border-radius: 0.9rem !important;
+    background: #f8fafb !important;
+  }
+
+  .assistant-rail .assistant-mode-chip {
+    min-height: 2.35rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-diagnostic-card {
+    order: 4 !important;
+    padding: 0.75rem !important;
+    border: 1px solid #d7e1e7 !important;
+    border-radius: 0.95rem !important;
+    background: #fffdfa !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-head {
+    gap: 0.22rem !important;
+    margin-bottom: 0.55rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-head strong {
+    font-size: 0.96rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-grid {
+    gap: 0.55rem !important;
+  }
+
+  .assistant-rail .assistant-intake-field span {
+    font-size: 0.7rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .assistant-rail .assistant-intake-field input,
+  .assistant-rail .assistant-intake-field select {
+    min-height: 2.8rem !important;
+    font-size: 0.88rem !important;
+    border-radius: 0.8rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-summary {
+    margin-top: 0.55rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .assistant-rail .assistant-delivery-card {
+    order: 5 !important;
+    padding: 0.72rem !important;
+    border-radius: 0.95rem !important;
+  }
+
+  .assistant-rail .ai-input-area,
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='compact'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area {
+    margin-top: 0.6rem !important;
+    padding: 0.72rem !important;
+    border: 1px solid #d7e1e7 !important;
+    border-radius: 0.95rem !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .assistant-rail .btn-action {
+    min-height: 2.7rem !important;
+    font-size: 0.83rem !important;
+  }
+
+  .assistant-rail .assistant-composer-shell {
+    margin-top: 0.58rem !important;
+  }
+
+  .assistant-rail .ai-textarea-wrapper {
+    border: 1px solid #d7e1e7 !important;
+    border-radius: 0.9rem !important;
+    background: #fffdfa !important;
+  }
+
+  .assistant-rail .ai-textarea-wrapper textarea,
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-textarea-wrapper textarea,
+  html[data-assistant-mode='compact'] .assistant-rail .ai-textarea-wrapper textarea,
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 4rem !important;
+    height: 4rem !important;
+    max-height: 8rem !important;
+    font-size: 0.92rem !important;
+  }
+
+  .assistant-rail .assistant-disclaimer {
+    display: none !important;
+  }
+
+  @media (max-width: 900px) {
+    .assistant-rail .assistant-action-grid,
+    html[data-assistant-mode='mobile'] .assistant-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .chat-log,
+    html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
+      min-height: 10rem !important;
+      padding: 0.72rem !important;
+    }
+
+    .assistant-rail .assistant-dialog-surface,
+    html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
+      padding: 0.45rem 0.6rem 0.72rem !important;
+    }
+
+    .assistant-rail .assistant-mode-switch {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
+<style is:global id="premium-final-polish-v1">
+  html,
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .content,
+  .page-section {
+    opacity: 1 !important;
+  }
+
+  .page-title {
+    font-size: clamp(1.42rem, 2.05vw, 1.98rem) !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.14 !important;
+    margin: 0 !important;
+  }
+
+  .card,
+  .table-card,
+  .agenda-cal-card,
+  .widget-card,
+  .metric-card,
+  .ficha-overview-card,
+  .ficha-rail-card {
+    border-radius: 1rem !important;
+  }
+
+  .card-header,
+  .section-body {
+    padding-left: 0.95rem !important;
+    padding-right: 0.95rem !important;
+  }
+
+  .table-wrap th,
+  .table-wrap td {
+    padding: 0.68rem 0.82rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .finance-overview-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .finance-overview-card {
+    min-height: 6.2rem;
+  }
+
+  .ficha-ia-step {
+    min-height: 0 !important;
+    padding: 0.78rem !important;
+  }
+
+  .ficha-ia-step-label {
+    color: #2b7f83 !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .ficha-ia-step-action {
+    margin-top: 0.4rem !important;
+    min-height: 2rem !important;
+    padding: 0.22rem 0.62rem !important;
+    border-radius: 0.6rem !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #f8fafc !important;
+    color: #0f2b46 !important;
+    text-decoration: none !important;
+    font-weight: 700 !important;
+  }
+
+  .ficha-ia-step-action:hover {
+    background: #eff6ff !important;
+    border-color: #93c5fd !important;
+  }
+
+  .intake-row-actions {
+    gap: 0.34rem !important;
+  }
+
+  .intake-row-actions .btn-sm {
+    min-width: 0 !important;
+    padding-inline: 0.58rem !important;
+  }
+
+  .assistant-rail .assistant-rail-card,
+  .assistant-rail-card {
+    opacity: 1 !important;
+  }
+
+  .assistant-rail .assistant-module-header {
+    background: #eef4f7 !important;
+    border-bottom: 1px solid #d7e2ea !important;
+  }
+
+  .assistant-rail .assistant-module-header * {
+    color: #112b44 !important;
+  }
+
+  .assistant-rail .assistant-rail-copy h2 {
+    font-size: 1.06rem !important;
+    line-height: 1.22 !important;
+  }
+
+  .assistant-rail-close {
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #b9c7d4 !important;
+    background: #ffffff !important;
+    color: #0f2b46 !important;
+    box-shadow: 0 8px 20px -16px rgba(15, 23, 42, 0.45) !important;
+  }
+
+  .assistant-rail .assistant-dialog-surface {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    background: #f7fafc !important;
+  }
+
+  .assistant-rail .assistant-dialog-scroll {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding: 0.2rem 0.2rem 0.8rem !important;
+    scrollbar-gutter: stable !important;
+    gap: 0.58rem !important;
+  }
+
+  .assistant-rail .chat-log {
+    display: grid !important;
+    gap: 0.52rem !important;
+    min-height: 8rem !important;
+    padding: 0.15rem !important;
+    border-radius: 0.78rem !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #dbe4ec !important;
+  }
+
+  .assistant-rail .ai-input-area {
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: 0.45rem !important;
+    border-top: 1px solid #dbe4ec !important;
+    background: #ffffff !important;
+    border-radius: 0.78rem !important;
+    box-shadow: none !important;
+    z-index: 2 !important;
+  }
+
+  .assistant-rail .assistant-action-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.48rem !important;
+  }
+
+  .assistant-rail .btn-action {
+    min-height: 2.72rem !important;
+    font-size: 0.83rem !important;
+  }
+
+  .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 3.5rem !important;
+    height: 3.5rem !important;
+    max-height: 7.2rem !important;
+    font-size: 0.92rem !important;
+  }
+
+  .assistant-rail .assistant-disclaimer {
+    display: none !important;
+  }
+
+  @media (max-width: 1080px) {
+    .finance-overview-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .topbar,
+    .content,
+    .page-section,
+    .card {
+      max-width: 100% !important;
+    }
+
+    .finance-overview-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .assistant-dialog-surface {
+      padding: 0.45rem !important;
+    }
+
+    .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .assistant-module-header {
+      position: sticky !important;
+      top: 0;
+      z-index: 5;
+    }
+  }
+</style>
+
 
 <style is:global id="clinic-luxury-v3">
   :root {
