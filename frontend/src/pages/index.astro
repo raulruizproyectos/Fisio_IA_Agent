@@ -929,12 +929,12 @@ import Layout from '../layouts/Layout.astro';
                   <section class="card ficha-overview-card">
                     <header class="ficha-section-head">
                       <div>
-                        <span class="ficha-section-kicker">Plan domiciliario</span>
-                        <h2>Adherencia y entregas</h2>
+                        <span class="ficha-section-kicker">Motor IA clinico</span>
+                        <h2>Circuito del plan</h2>
                       </div>
                     </header>
                     <div class="ficha-overview-stats" id="fichaPlanInsights">
-                      <p class="empty-inline">Cuando existan planes IA, veras aqui el estado del tratamiento, las entregas archivadas y el ultimo feedback del paciente.</p>
+                      <p class="empty-inline">Cuando exista un plan IA, veras aqui el circuito: plan, entrega, feedback y ajuste recomendado.</p>
                     </div>
                   </section>
                 </div>
@@ -7114,29 +7114,87 @@ import Layout from '../layouts/Layout.astro';
     }
 
     if (fichaPlanInsights) {
+      const latestPlan = recommendationSummary.latestRecommendation || null;
+      const latestPlanDate = latestPlan?.created_at || latestPlan?.fecha || latestPlan?.updated_at || '';
+      const adjustmentTitle = !recommendationSummary.totalPlans
+        ? 'Generar plan'
+        : recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps
+          ? 'Pedir feedback'
+          : painTrend.tone === 'alert'
+            ? 'Ajustar carga'
+            : recommendationSummary.totalFollowUps
+              ? 'Progresar o mantener'
+              : 'Archivar entrega';
+      const adjustmentMeta = !recommendationSummary.totalPlans
+        ? 'Aun no hay plan IA para este caso.'
+        : recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps
+          ? 'El paciente ya recibio el plan. Falta respuesta.'
+          : painTrend.tone === 'alert'
+            ? 'Dolor alto o tendencia desfavorable.'
+            : recommendationSummary.totalFollowUps
+              ? 'Hay feedback para decidir el siguiente ajuste.'
+              : 'Deja constancia de PDF o envio al paciente.';
+      const circuitSteps = [
+        {
+          label: 'Plan generado',
+          done: Boolean(recommendationSummary.totalPlans),
+          value: recommendationSummary.totalPlans ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'}` : 'Pendiente',
+          meta: recommendationSummary.totalPlans
+            ? `${recommendationSummary.totalExercises} ejercicios${latestPlanDate ? ` | ${fmtDate(latestPlanDate)}` : ''}`
+            : 'Genera el primer plan desde el copiloto.',
+        },
+        {
+          label: 'Entrega',
+          done: Boolean(recommendationSummary.totalArchivedReports),
+          value: recommendationSummary.totalArchivedReports ? `${recommendationSummary.totalArchivedReports} archivada${recommendationSummary.totalArchivedReports === 1 ? '' : 's'}` : 'Sin entrega',
+          meta: latestArchivedReport?.archived_at || latestArchivedReport?.created_at
+            ? `Ultima ${fmtDate(latestArchivedReport?.archived_at || latestArchivedReport?.created_at)}`
+            : 'Archiva PDF o envio para dejar trazabilidad.',
+        },
+        {
+          label: 'Feedback',
+          done: Boolean(recommendationSummary.totalFollowUps),
+          value: recommendationSummary.totalFollowUps ? latestAdherence.label : 'Sin respuesta',
+          meta: latestFollowUp?.pain_scale !== null && latestFollowUp?.pain_scale !== undefined
+            ? `Dolor ${latestFollowUp.pain_scale}/10`
+            : recommendationSummary.totalFollowUps
+              ? 'Feedback registrado sin EVA.'
+              : 'Falta adherencia, dolor o comentario.',
+        },
+        {
+          label: 'Ajuste recomendado',
+          done: Boolean(recommendationSummary.totalPlans),
+          value: adjustmentTitle,
+          meta: adjustmentMeta,
+        },
+      ];
       fichaPlanInsights.innerHTML = recommendationSummary.totalPlans
         ? `
-          <article class="ficha-overview-stat">
-            <span>Planes</span>
-            <strong>${recommendationSummary.totalPlans}</strong>
-            <p>${recommendationSummary.totalExercises} ejercicios prescritos en total.</p>
-          </article>
-          <article class="ficha-overview-stat">
-            <span>Entregas</span>
-            <strong>${recommendationSummary.totalArchivedReports || 0}</strong>
-            <p>${latestArchivedReport?.archived_at ? `Ultima ${fmtDate(latestArchivedReport.archived_at)}` : 'Sin entrega archivada.'}</p>
-          </article>
-          <article class="ficha-overview-stat">
-            <span>Feedback</span>
-            <strong>${escapeHtml(latestAdherence.label)}</strong>
-            <p>${latestFollowUp?.pain_scale !== null && latestFollowUp?.pain_scale !== undefined ? `Dolor ${latestFollowUp.pain_scale}/10.` : 'Sin dolor reportado.'}</p>
-          </article>
-          <article class="ficha-overview-stat">
-            <span>Proximo paso</span>
-            <strong>${recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps ? 'Pedir feedback' : recommendationSummary.totalArchivedReports ? 'Mantener seguimiento' : 'Archivar entrega'}</strong>
-            <p>${recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps ? 'El plan ya se entrego, pero aun no hay respuesta del paciente.' : recommendationSummary.totalArchivedReports ? 'El caso ya tiene trazabilidad domiciliaria activa.' : 'Conviene dejar el informe o PDF archivado en historial.'}</p>
-          </article>`
-        : '<p class="empty-inline">Todavia no hay planes IA en este caso. Cuando generes uno, veras aqui entregas y adherencia.</p>';
+          <div class="ficha-ia-circuit">
+            ${circuitSteps.map((step: any, index: number) => `
+              <article class="ficha-ia-step ${step.done ? 'is-done' : 'is-pending'}">
+                <span class="ficha-ia-step-index">${index + 1}</span>
+                <div>
+                  <span class="ficha-ia-step-label">${escapeHtml(step.label)}</span>
+                  <strong>${escapeHtml(step.value)}</strong>
+                  <p>${escapeHtml(step.meta)}</p>
+                </div>
+              </article>
+            `).join('')}
+          </div>`
+        : `
+          <div class="ficha-ia-circuit ficha-ia-circuit-empty">
+            ${circuitSteps.map((step: any, index: number) => `
+              <article class="ficha-ia-step is-pending">
+                <span class="ficha-ia-step-index">${index + 1}</span>
+                <div>
+                  <span class="ficha-ia-step-label">${escapeHtml(step.label)}</span>
+                  <strong>${escapeHtml(step.value)}</strong>
+                  <p>${escapeHtml(step.meta)}</p>
+                </div>
+              </article>
+            `).join('')}
+          </div>`;
     }
 
     const decisions = [
@@ -13329,6 +13387,88 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .ficha-progress-next.tone-warm {
     border-color: rgba(194, 125, 79, 0.24);
     background: linear-gradient(180deg, rgba(255, 248, 246, 0.98), rgba(255, 241, 237, 0.94));
+  }
+
+  .ficha-ia-circuit {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+    width: 100%;
+  }
+
+  .ficha-ia-step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: start;
+    min-height: 8.2rem;
+    padding: 0.85rem;
+    border: 1px solid #dce3eb;
+    border-radius: 0.75rem;
+    background: #ffffff;
+  }
+
+  .ficha-ia-step.is-done {
+    border-color: #b7dfca;
+    background: #f6fbf8;
+  }
+
+  .ficha-ia-step-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 999px;
+    background: #e8eef5;
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .ficha-ia-step.is-done .ficha-ia-step-index {
+    background: #dff4e9;
+    color: #166534;
+  }
+
+  .ficha-ia-step-label {
+    display: block;
+    margin-bottom: 0.18rem;
+    color: #64748b;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .ficha-ia-step strong {
+    display: block;
+    color: #0f172a;
+    font-size: 0.96rem;
+    line-height: 1.25;
+  }
+
+  .ficha-ia-step p {
+    margin: 0.22rem 0 0;
+    color: #64748b;
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  @media (max-width: 1180px) {
+    .ficha-ia-circuit {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 760px) {
+    .ficha-ia-circuit {
+      grid-template-columns: 1fr;
+    }
+
+    .ficha-ia-step {
+      min-height: 0;
+    }
   }
 
   .ficha-stream-item {

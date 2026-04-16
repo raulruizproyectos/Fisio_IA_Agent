@@ -61,3 +61,11 @@ Plataforma clinica para fisioterapia con foco en 4 bucles: captacion, atencion, 
 3. Modulo Agenda (conversion intake -> cita).
 4. Modulo IA (flujos de plan por objetivo clinico).
 5. Modulo Finanzas (dashboard de cobro/factura).
+
+## Estado actual (2026-04-16)
+- Mensajes: `completado` (canal + prioridad + acciones 1 clic).
+- Agenda desde captacion: `completado` (mensaje -> modal cita con paciente y motivo precargados).
+- Historia clinica: `completado` en base operativa + circuito visual IA en ficha.
+- Motor IA trazable: `completado` en visualizacion de circuito (plan -> entrega -> feedback -> ajuste).
+- Finanzas: `completado` en KPIs principales + resumen cruzado cobrado/pendiente/bonos.
+- Proxima fase: modularizar `index.astro` y cerrar estandar de copy/servicios para escalar sin friccion.
