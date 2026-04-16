@@ -4840,6 +4840,38 @@ import Layout from '../layouts/Layout.astro';
     `;
   };
 
+  const intakeScheduledStorageKey = 'fisio_intakes_scheduled_v1';
+  const intakeScheduledSet = new Set<string>();
+  let pendingIntakeIdForAppointment: string | null = null;
+  try {
+    const raw = localStorage.getItem(intakeScheduledStorageKey);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) parsed.forEach((id: any) => id && intakeScheduledSet.add(String(id)));
+    }
+  } catch {}
+
+  const persistIntakeScheduledSet = () => {
+    try {
+      localStorage.setItem(intakeScheduledStorageKey, JSON.stringify(Array.from(intakeScheduledSet)));
+    } catch {}
+  };
+
+  const getIntakeId = (item: any) => String(item?.id || item?.intake_id || '').trim();
+  const getIntakeSla = (item: any) => {
+    const intakeId = getIntakeId(item);
+    if (intakeId && intakeScheduledSet.has(intakeId)) {
+      return { label: 'Agendado', tone: 'aprobado' };
+    }
+    const createdAt = item?.timestamp || item?.creado_en || item?.created_at || '';
+    const ts = createdAt ? new Date(createdAt).getTime() : Number.NaN;
+    if (!Number.isFinite(ts)) return { label: 'En triage', tone: 'pendiente' };
+    const ageHours = (Date.now() - ts) / (1000 * 60 * 60);
+    if (ageHours <= 2) return { label: 'Nuevo', tone: 'aprobado' };
+    if (ageHours > 24) return { label: 'Urgente', tone: 'rechazado' };
+    return { label: 'En triage', tone: 'pendiente' };
+  };
+
   async function openAppointmentFromIntake(patientId: string | null, patientName = '', message = '') {
     if (!patientId) {
       alert('Este mensaje no tiene paciente vinculado. Abre la ficha o crea el paciente antes de agendar.');
@@ -4883,6 +4915,8 @@ import Layout from '../layouts/Layout.astro';
         const priority = priorityKey === 'high'
           ? '<span class="status-chip rechazado">Alta</span>'
           : '<span class="status-chip aprobado">Normal</span>';
+        const intakeId = getIntakeId(i);
+        const sla = getIntakeSla(i);
         const patientName = resolvePatientName(i);
         const patientId = i.crm_paciente_id || i.paciente_id || '';
         const source = i.fuente || i.canal || 'Sin canal';
@@ -4893,11 +4927,11 @@ import Layout from '../layouts/Layout.astro';
           <td>${priority}</td>
           <td>${escapeHtml(message)}</td>
           <td>${escapeHtml(i.timestamp || i.creado_en || i.created_at ? fmtDate(i.timestamp || i.creado_en || i.created_at) : '')}</td>
-          <td><span class="status-chip pendiente">Pendiente</span></td>
+          <td><span class="status-chip ${sla.tone}">${escapeHtml(sla.label)}</span></td>
           <td>
             <div class="intake-row-actions">
               <button class="btn-sm" data-open-ficha="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Ficha</button>
-              <button class="btn-sm btn-outline" data-create-appointment="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" data-intake-message="${escapeAttr(message)}">Cita</button>
+              <button class="btn-sm btn-outline" data-create-appointment="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" data-intake-message="${escapeAttr(message)}" data-intake-id="${escapeAttr(intakeId)}">Cita</button>
               <button class="btn-sm btn-outline" data-open-chat="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Historial</button>
             </div>
           </td>
@@ -4925,6 +4959,7 @@ import Layout from '../layouts/Layout.astro';
       const patientId = appointmentBtn.getAttribute('data-create-appointment');
       const patientName = appointmentBtn.getAttribute('data-patient-name') || '';
       const message = appointmentBtn.getAttribute('data-intake-message') || '';
+      pendingIntakeIdForAppointment = appointmentBtn.getAttribute('data-intake-id') || null;
       void openAppointmentFromIntake(patientId, patientName, message);
       return;
     }
@@ -5582,9 +5617,15 @@ import Layout from '../layouts/Layout.astro';
       });
       if (res.error) throw new Error(res.error);
       setAppointmentFormFeedback('Cita creada correctamente', 'success');
+      if (pendingIntakeIdForAppointment) {
+        intakeScheduledSet.add(pendingIntakeIdForAppointment);
+        persistIntakeScheduledSet();
+      }
+      pendingIntakeIdForAppointment = null;
       window.setTimeout(() => { closeAppointmentModal(); loadCitas(); }, 600);
     } catch (err: any) {
       setAppointmentFormFeedback(err.message || 'Error al crear la cita', 'error');
+      pendingIntakeIdForAppointment = null;
     } finally {
       if (appointmentSubmitBtn) appointmentSubmitBtn.disabled = false;
     }
@@ -20529,6 +20570,65 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   @media (max-width: 760px) {
     .finance-overview-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Pacientes: lectura mas compacta y operativa */
+  .page-section[data-page='pacientes'] .patients-hero-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px) !important;
+    gap: 0.65rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main {
+    padding: 0.82rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main h2 {
+    font-size: 1.28rem !important;
+    line-height: 1.14 !important;
+    max-width: 22ch !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-main p {
+    font-size: 0.82rem !important;
+    line-height: 1.38 !important;
+    margin-top: 0.45rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-actions {
+    margin-top: 0.58rem !important;
+    gap: 0.45rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-hero-actions .btn-primary,
+  .page-section[data-page='pacientes'] .patients-hero-actions .btn-ghost {
+    min-height: 2.2rem !important;
+    padding: 0.36rem 0.68rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card {
+    padding: 0.62rem 0.72rem !important;
+    min-height: 0 !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card strong {
+    font-size: 1.02rem !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-stat-card p {
+    font-size: 0.74rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-command-bar {
+    padding: 0.72rem !important;
+    margin-top: 0.65rem !important;
+  }
+
+  @media (max-width: 980px) {
+    .page-section[data-page='pacientes'] .patients-hero-shell {
+      grid-template-columns: 1fr !important;
     }
   }
 </style>
