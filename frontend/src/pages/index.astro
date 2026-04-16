@@ -17093,6 +17093,47 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 
+<style is:global id="assistant-diagnostic-field-fix-v1">
+  .assistant-rail .assistant-diagnostic-grid {
+    align-items: start !important;
+    grid-auto-rows: minmax(0, auto) !important;
+  }
+
+  .assistant-rail .assistant-intake-field {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    align-content: flex-start !important;
+    min-height: 0 !important;
+    gap: 0.42rem !important;
+    padding: 0.72rem 0.82rem !important;
+  }
+
+  .assistant-rail .assistant-intake-field span {
+    display: block !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .assistant-rail .assistant-intake-field input,
+  .assistant-rail .assistant-intake-field select {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 2.6rem !important;
+    height: 2.6rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.25 !important;
+    box-sizing: border-box !important;
+  }
+
+  .assistant-rail .assistant-intake-field input::placeholder {
+    line-height: 1.25 !important;
+  }
+</style>
+
 <style is:global id="assistant-copilot-premium-final-v4">
   .assistant-rail .assistant-delivery-card {
     display: none !important;
