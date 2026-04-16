@@ -1698,6 +1698,7 @@ import Layout from '../layouts/Layout.astro';
   const assistantDeliverySummary = document.getElementById('assistantDeliverySummary') as HTMLElement | null;
   const assistantDeliveryPills = document.getElementById('assistantDeliveryPills') as HTMLElement | null;
   const inputArea = document.querySelector('.ai-input-area') as HTMLElement | null;
+  const assistantActionGrid = document.querySelector('.assistant-action-grid') as HTMLElement | null;
   const dashCitasBody = document.getElementById('dashCitasBody') as HTMLElement | null;
   const intakeBody = document.getElementById('intakeBody') as HTMLElement | null;
   const refreshBtn = document.getElementById('refreshIntakes') as HTMLElement | null;
@@ -2157,6 +2158,14 @@ import Layout from '../layouts/Layout.astro';
       : hasData
         ? 'Editar contexto'
         : 'Anadir contexto';
+  };
+
+  const syncAssistantActionGrid = () => {
+    if (!assistantActionGrid) return;
+    const hasReport = Boolean(lastExerciseReportPayload);
+    assistantActionGrid.style.gridTemplateColumns = hasReport
+      ? 'repeat(3, minmax(0, 1fr))'
+      : '1fr';
   };
 
   const buildAssistantPatientBrief = (patient: any, notes: any[] = [], recommendations: any[] = []) => {
@@ -2961,6 +2970,7 @@ import Layout from '../layouts/Layout.astro';
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
     const hasReport = Boolean(lastExerciseReportPayload);
+    exercisePdfBtn.hidden = !hasReport;
     exercisePdfBtn.disabled = false;
     exercisePdfBtn.classList.toggle('is-pending', !hasReport);
     exercisePdfBtn.classList.toggle('is-available', hasReport);
@@ -2969,6 +2979,7 @@ import Layout from '../layouts/Layout.astro';
       : '<span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar';
     exercisePdfBtn.title = hasReport ? 'Exportar a PDF' : 'Genera un plan y luego exportalo a PDF';
     exercisePdfBtn.setAttribute('aria-label', hasReport ? 'Descargar PDF del plan actual' : 'PDF disponible tras generar un plan');
+    syncAssistantActionGrid();
   };
   const hasLinkedTelegramPatient = () => {
     const linkStatus = String(currentPatientTelegramLinkState?.link_status || '').trim();
@@ -3040,6 +3051,7 @@ import Layout from '../layouts/Layout.astro';
     const hasPatient = Boolean(selectedPatientId);
     const hasReport = Boolean(lastExerciseReportPayload);
     const isLinked = hasLinkedTelegramPatient();
+    exerciseTelegramBtn.hidden = !hasReport;
     exerciseTelegramBtn.disabled = false;
     exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !hasReport);
     exerciseTelegramBtn.classList.toggle('is-available', isLinked && hasReport);
@@ -3048,6 +3060,7 @@ import Layout from '../layouts/Layout.astro';
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Telegram paciente';
       exerciseTelegramBtn.title = 'Selecciona un paciente para preparar el envio';
       exerciseTelegramBtn.setAttribute('aria-label', 'Selecciona un paciente para preparar el envio por Telegram');
+      syncAssistantActionGrid();
       return;
     }
 
@@ -3055,6 +3068,7 @@ import Layout from '../layouts/Layout.astro';
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">link</span> Vincular Telegram';
       exerciseTelegramBtn.title = 'Este paciente aun no tiene Telegram vinculado';
       exerciseTelegramBtn.setAttribute('aria-label', 'Vincular Telegram del paciente');
+      syncAssistantActionGrid();
       return;
     }
 
@@ -3063,6 +3077,7 @@ import Layout from '../layouts/Layout.astro';
       exerciseTelegramBtn.title = 'Genera un plan antes de enviarlo al paciente';
       exerciseTelegramBtn.setAttribute('aria-label', 'Enviar por Telegram cuando el plan este generado');
       renderAssistantDeliveryCard();
+      syncAssistantActionGrid();
       return;
     }
 
@@ -3071,6 +3086,7 @@ import Layout from '../layouts/Layout.astro';
       exerciseTelegramBtn.title = 'Reenviar PDF y mensaje del plan al paciente por Telegram';
       exerciseTelegramBtn.setAttribute('aria-label', 'Reenviar informe al paciente por Telegram');
       renderAssistantDeliveryCard();
+      syncAssistantActionGrid();
       return;
     }
 
@@ -3078,6 +3094,7 @@ import Layout from '../layouts/Layout.astro';
     exerciseTelegramBtn.title = 'Enviar PDF y mensaje del plan al paciente por Telegram';
     exerciseTelegramBtn.setAttribute('aria-label', 'Enviar informe al paciente por Telegram');
     renderAssistantDeliveryCard();
+    syncAssistantActionGrid();
   };
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
     if (sendBtn) sendBtn.disabled = busy;
@@ -3171,6 +3188,7 @@ import Layout from '../layouts/Layout.astro';
 
   updateExercisePdfButton();
   updateExerciseTelegramButton();
+  syncAssistantActionGrid();
   renderAssistantDeliveryCard();
   renderAssistantPrimaryButton();
   renderAssistantModeSwitch();
@@ -3706,8 +3724,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     syncChatPatientSelection(activePatientId);
-    addMessage(`Solicitar recomendacion para: ${visibleText}`, 'user');
-    upsertAgentProgress('Preparando solicitud clinica...');
+    upsertAgentProgress(`Preparando plan para: ${visibleText}`);
     setSending(true, 'exercise');
     try {
       let payload: any = null;
@@ -17072,6 +17089,84 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .assistant-fab {
       right: 0.75rem;
       bottom: 0.75rem;
+    }
+  }
+</style>
+
+<style is:global id="assistant-copilot-premium-final-v4">
+  .assistant-rail .assistant-delivery-card {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-mode-switch {
+    grid-template-columns: repeat(3, minmax(0, max-content)) !important;
+    justify-content: start !important;
+    align-items: center !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    gap: 0.42rem !important;
+  }
+
+  .assistant-rail .assistant-mode-chip {
+    min-height: 2.1rem !important;
+    padding: 0.28rem 0.7rem !important;
+    border-radius: 999px !important;
+    font-size: 0.78rem !important;
+    background: #fffdfa !important;
+    border: 1px solid #d9e2e8 !important;
+    box-shadow: none !important;
+  }
+
+  .assistant-rail .assistant-mode-chip.is-active {
+    background: #173d59 !important;
+    border-color: #173d59 !important;
+    color: #ffffff !important;
+  }
+
+  .assistant-rail .assistant-mode-chip .material-symbols-rounded {
+    font-size: 1rem !important;
+  }
+
+  .assistant-rail .chat-log .msg.user {
+    display: none !important;
+  }
+
+  .assistant-rail .msg-progress .msg-body {
+    background: #f6fafc !important;
+    border: 1px solid #d9e2e8 !important;
+    color: #21445b !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card.is-collapsed {
+    padding-top: 0.62rem !important;
+    padding-bottom: 0.62rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-summary {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card.is-collapsed.is-has-data .assistant-diagnostic-summary {
+    display: block !important;
+    margin-top: 0.45rem !important;
+  }
+
+  .assistant-rail .assistant-action-grid button[hidden] {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-action-grid {
+    align-items: stretch !important;
+  }
+
+  .assistant-rail .btn-generate {
+    min-width: 0 !important;
+  }
+
+  @media (max-width: 900px) {
+    .assistant-rail .assistant-mode-switch {
+      grid-template-columns: 1fr !important;
     }
   }
 </style>
