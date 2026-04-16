@@ -1489,8 +1489,11 @@ import Layout from '../layouts/Layout.astro';
 
                   <section class="assistant-diagnostic-card" id="assistantDiagnosticCard" aria-live="polite">
                     <div class="assistant-diagnostic-head">
-                      <span class="assistant-brief-kicker">Ficha estructurada</span>
-                      <strong>Convierte el briefing libre en criterio clinico legible para la IA</strong>
+                      <div class="assistant-diagnostic-copy">
+                        <span class="assistant-brief-kicker">Ficha estructurada</span>
+                        <strong>Contexto clinico opcional para afinar la IA</strong>
+                      </div>
+                      <button type="button" class="assistant-diagnostic-toggle" id="assistantDiagnosticToggle" aria-expanded="false">Anadir contexto</button>
                     </div>
                     <div class="assistant-diagnostic-grid">
                       <label class="assistant-intake-field">
@@ -1688,6 +1691,8 @@ import Layout from '../layouts/Layout.astro';
   const assistantPainLevelInput = document.getElementById('assistantPainLevelInput') as HTMLSelectElement | null;
   const assistantObjectiveInput = document.getElementById('assistantObjectiveInput') as HTMLInputElement | null;
   const assistantDiagnosticSummary = document.getElementById('assistantDiagnosticSummary') as HTMLElement | null;
+  const assistantDiagnosticCard = document.getElementById('assistantDiagnosticCard') as HTMLElement | null;
+  const assistantDiagnosticToggle = document.getElementById('assistantDiagnosticToggle') as HTMLButtonElement | null;
   const assistantDeliveryCard = document.getElementById('assistantDeliveryCard') as HTMLElement | null;
   const assistantDeliveryStatus = document.getElementById('assistantDeliveryStatus') as HTMLElement | null;
   const assistantDeliverySummary = document.getElementById('assistantDeliverySummary') as HTMLElement | null;
@@ -2074,6 +2079,7 @@ import Layout from '../layouts/Layout.astro';
   let quickSearchMatches: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let quickSearchActiveIndex = -1;
   let assistantTelegramLinkRequestToken = 0;
+  let assistantDiagnosticExpanded = false;
   const deliveredExerciseReports = new Map<string, { recommendationId: string | null; sentAt: string }>();
 
   const renderAssistantPatientContext = () => {
@@ -2132,6 +2138,25 @@ import Layout from '../layouts/Layout.astro';
     assistantDiagnosticSummary.textContent = summary
       ? `Ficha lista para IA: ${summary}`
       : 'Sin ficha estructurada todavia. Completa 2 o 3 campos y el agente trabajara con una entrada mas clinica.';
+    syncAssistantDiagnosticPanel();
+  };
+
+  const syncAssistantDiagnosticPanel = () => {
+    if (!assistantDiagnosticCard || !assistantDiagnosticToggle) return;
+    const hasData = hasAssistantDiagnosticData();
+    const hasPlan = hasExerciseReportReady();
+    const forceCompact = hasPlan || activeAssistantMode !== 'new-plan';
+    const isExpanded = assistantDiagnosticExpanded && !forceCompact;
+
+    assistantDiagnosticCard.classList.toggle('is-expanded', isExpanded);
+    assistantDiagnosticCard.classList.toggle('is-collapsed', !isExpanded);
+    assistantDiagnosticCard.classList.toggle('is-has-data', hasData);
+    assistantDiagnosticToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    assistantDiagnosticToggle.textContent = isExpanded
+      ? 'Ocultar contexto'
+      : hasData
+        ? 'Editar contexto'
+        : 'Anadir contexto';
   };
 
   const buildAssistantPatientBrief = (patient: any, notes: any[] = [], recommendations: any[] = []) => {
@@ -2233,6 +2258,7 @@ import Layout from '../layouts/Layout.astro';
       assistantModeTip.textContent = 'Este modo usa el contexto clinico del caso. Primero vincula el copilot al paciente correcto.';
       assistantModeCard.classList.add('is-blocked');
       assistantModeCard.classList.remove('is-ready', 'is-complete');
+      syncAssistantDiagnosticPanel();
       return;
     }
 
@@ -2243,6 +2269,7 @@ import Layout from '../layouts/Layout.astro';
       assistantModeTip.textContent = `Ya tienes una propuesta para ${patientLabel}. Puedes exportar PDF o cambiar a Actualizar plan para iterar.`;
       assistantModeCard.classList.add('is-complete');
       assistantModeCard.classList.remove('is-ready');
+      syncAssistantDiagnosticPanel();
       return;
     }
 
@@ -2252,12 +2279,14 @@ import Layout from '../layouts/Layout.astro';
       assistantModeRequirement.textContent = modeConfig.requirementLabel;
       assistantModeTip.textContent = `Briefing listo para ${patientLabel || 'este caso'}. Revisa el texto y lanza ${modeConfig.primaryLabel.toLowerCase()}.`;
       assistantModeCard.classList.add('is-ready');
+      syncAssistantDiagnosticPanel();
       return;
     }
 
     assistantModeRequirement.textContent = modeConfig.requirementLabel;
     assistantModeTip.textContent = modeConfig.tip;
     assistantModeCard.classList.remove('is-ready');
+    syncAssistantDiagnosticPanel();
   };
 
   const getAssistantModeDraft = (mode: AssistantWorkMode) => {
@@ -2909,7 +2938,7 @@ import Layout from '../layouts/Layout.astro';
 
   // === CHAT ===
   const scrollAssistantRailToBottom = () => {
-    const scrollTarget = assistantDialogScroll || log;
+    const scrollTarget = log || assistantDialogScroll;
     if (!scrollTarget) return;
     window.requestAnimationFrame(() => {
       scrollTarget.scrollTop = scrollTarget.scrollHeight;
@@ -2959,7 +2988,7 @@ import Layout from '../layouts/Layout.astro';
   const renderAssistantDeliveryCard = () => {
     if (!assistantDeliveryCard || !assistantDeliveryStatus || !assistantDeliverySummary || !assistantDeliveryPills) return;
 
-    if (!selectedPatientId) {
+    if (!selectedPatientId || !lastExerciseReportPayload) {
       assistantDeliveryCard.hidden = true;
       assistantDeliveryPills.innerHTML = '';
       assistantDeliveryCard.classList.remove('is-ready', 'is-sent', 'is-blocked');
@@ -2982,17 +3011,6 @@ import Layout from '../layouts/Layout.astro';
         pill(hasReport ? 'PDF listo' : 'PDF pendiente', hasReport ? 'is-ready' : 'is-soft')
       ].join('');
       assistantDeliveryCard.classList.add('is-blocked');
-      return;
-    }
-
-    if (!hasReport) {
-      assistantDeliveryStatus.textContent = 'Canal listo para enviar';
-      assistantDeliverySummary.textContent = 'El paciente ya tiene Telegram vinculado. Genera o actualiza el plan y luego podras enviar el PDF directamente desde aqui.';
-      assistantDeliveryPills.innerHTML = [
-        pill('Telegram vinculado', 'is-ready'),
-        pill('Esperando plan', 'is-soft')
-      ].join('');
-      assistantDeliveryCard.classList.add('is-ready');
       return;
     }
 
@@ -3167,6 +3185,11 @@ import Layout from '../layouts/Layout.astro';
   [assistantAreaInput, assistantInjuryTypeInput, assistantDurationInput, assistantPainLevelInput, assistantObjectiveInput].forEach((field) => {
     field?.addEventListener('input', () => { renderAssistantDiagnosticSummary(); renderAssistantModeCard(); renderAssistantFlowCard(); });
     field?.addEventListener('change', () => { renderAssistantDiagnosticSummary(); renderAssistantModeCard(); renderAssistantFlowCard(); });
+  });
+
+  assistantDiagnosticToggle?.addEventListener('click', () => {
+    assistantDiagnosticExpanded = !assistantDiagnosticExpanded;
+    syncAssistantDiagnosticPanel();
   });
 
   assistantShortcuts?.addEventListener('click', (event: Event) => {
@@ -17049,6 +17072,223 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .assistant-fab {
       right: 0.75rem;
       bottom: 0.75rem;
+    }
+  }
+</style>
+
+<style is:global id="assistant-copilot-premium-v3">
+  .assistant-rail .assistant-patient-brief,
+  .assistant-rail .assistant-flow-card,
+  .assistant-rail .assistant-mode-card,
+  .assistant-rail .assistant-shortcuts {
+    display: none !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface,
+  .assistant-rail .assistant-dialog-surface {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0.5rem 0.8rem 0.75rem !important;
+    background: transparent !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll,
+  .assistant-rail .assistant-dialog-scroll {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    gap: 0.55rem !important;
+    padding: 0 !important;
+  }
+
+  .assistant-rail .assistant-mode-switch {
+    order: 1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.45rem !important;
+    padding: 0.18rem !important;
+    border: 1px solid #d8e1e7 !important;
+    border-radius: 0.9rem !important;
+    background: #f7fafb !important;
+  }
+
+  .assistant-rail .assistant-mode-chip {
+    min-height: 2.5rem !important;
+    border-radius: 0.78rem !important;
+    font-size: 0.83rem !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log,
+  .assistant-rail .chat-log {
+    order: 2 !important;
+    display: grid !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    gap: 0.55rem !important;
+    padding: 0.85rem !important;
+    border: 1px solid #d8e1e7 !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  .assistant-rail .chat-log:empty {
+    align-content: center !important;
+  }
+
+  .assistant-rail .chat-log:empty::before {
+    content: 'El dialogo del Copilot se mantiene aqui. Describe el caso y revisa el plan sin perder esta zona de vista.';
+    max-width: 40ch;
+    margin: 0 auto;
+    color: #627587;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  .assistant-rail .assistant-diagnostic-card {
+    order: 3 !important;
+    flex: 0 0 auto !important;
+    padding: 0.75rem !important;
+    border: 1px solid #d8e1e7 !important;
+    border-radius: 0.95rem !important;
+    background: #fffdfa !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.7rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-copy {
+    display: grid;
+    gap: 0.18rem;
+    min-width: 0;
+  }
+
+  .assistant-rail .assistant-diagnostic-head strong {
+    font-size: 0.92rem !important;
+    line-height: 1.28 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-toggle {
+    flex: 0 0 auto;
+    min-height: 2.1rem;
+    padding: 0.3rem 0.72rem;
+    border: 1px solid #cfd9e2;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #153149;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .assistant-rail .assistant-diagnostic-grid {
+    margin-top: 0.7rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-summary {
+    margin: 0.55rem 0 0 !important;
+    font-size: 0.8rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-grid {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-summary {
+    margin-top: 0.45rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card.is-expanded .assistant-diagnostic-grid {
+    display: grid !important;
+  }
+
+  .assistant-rail .assistant-delivery-card {
+    order: 4 !important;
+    flex: 0 0 auto !important;
+    padding: 0.68rem 0.78rem !important;
+    border-radius: 0.95rem !important;
+    background: #f8fbfc !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='compact'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area,
+  .assistant-rail .ai-input-area {
+    position: relative !important;
+    flex: 0 0 auto !important;
+    margin-top: 0.55rem !important;
+    padding: 0.72rem !important;
+    border: 1px solid #d8e1e7 !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .assistant-rail .assistant-action-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .assistant-rail .assistant-composer-shell {
+    margin-top: 0.55rem !important;
+  }
+
+  .assistant-rail .ai-textarea-wrapper {
+    border: 1px solid #d8e1e7 !important;
+    border-radius: 0.9rem !important;
+    background: #fffdfa !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-textarea-wrapper textarea,
+  html[data-assistant-mode='compact'] .assistant-rail .ai-textarea-wrapper textarea,
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-textarea-wrapper textarea,
+  .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 3.7rem !important;
+    height: 3.7rem !important;
+    max-height: 7rem !important;
+  }
+
+  .assistant-rail .assistant-disclaimer {
+    display: none !important;
+  }
+
+  @media (max-width: 900px) {
+    .assistant-rail .assistant-mode-switch,
+    .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .chat-log {
+      min-height: 12rem !important;
+      padding: 0.72rem !important;
+    }
+
+    .assistant-rail .assistant-diagnostic-head {
+      align-items: flex-start !important;
+      flex-direction: column !important;
+    }
+
+    .assistant-rail .assistant-diagnostic-toggle {
+      width: 100%;
+      justify-content: center;
     }
   }
 </style>
