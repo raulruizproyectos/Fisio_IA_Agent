@@ -2016,7 +2016,6 @@ import Layout from '../layouts/Layout.astro';
   let assistantPatientBriefCache: Record<string, any> = {};
   let currentAssistantPatientBrief: any = null;
   let assistantPatientBriefRequestToken = 0;
-  let pendingAssistantPlanChoice: { requestText: string; visibleText: string } | null = null;
   type AssistantWorkMode = 'new-plan' | 'update-plan' | 'next-session';
   const assistantModeConfig: Record<AssistantWorkMode, {
     placeholder: string;
@@ -2180,16 +2179,6 @@ import Layout from '../layouts/Layout.astro';
     const itemExercises = Array.isArray(latestRecommendation?.crm_recomendacion_items)
       ? latestRecommendation.crm_recomendacion_items
       : [];
-    const previousPlanExercises = (reportExercises.length ? reportExercises : itemExercises)
-      .map((exercise: any, index: number) => {
-        const name = String(exercise?.nombre || exercise?.name || exercise?.titulo || exercise?.title || '').trim();
-        const dose = String(exercise?.dosage || exercise?.pauta || exercise?.series_reps || exercise?.prescription || '').trim();
-        const reason = String(exercise?.why || exercise?.rationale || exercise?.motivo || '').trim();
-        if (!name) return '';
-        return `${index + 1}. ${name}${dose ? ` - ${dose}` : ''}${reason ? ` (${reason})` : ''}`;
-      })
-      .filter(Boolean)
-      .slice(0, 10);
 
     return {
       patientId: selectedPatientId,
@@ -2203,10 +2192,7 @@ import Layout from '../layouts/Layout.astro';
       latestRecommendationDate: latestRecommendation?.created_at || null,
       latestRecommendationState: String(latestRecommendation?.estado || 'sin_plan'),
       latestPainScale: latestFollowUp?.pain_scale ?? null,
-      latestFollowUpText: trimAgentBriefText(latestFollowUp?.note_text || latestFollowUp?.notas || latestFollowUp?.observaciones || '', 180),
-      latestFollowUpAdherence: latestFollowUp?.adherence_status || latestFollowUp?.adherencia || null,
       exerciseCount: reportExercises.length || itemExercises.length || 0,
-      previousPlanExercises,
       therapistNote: trimAgentBriefText(reportSnapshot?.message_to_therapist || latestRecommendation?.message_to_therapist_es || ''),
       patientMessage: trimAgentBriefText(reportSnapshot?.message_to_patient || latestRecommendation?.message_to_patient_es || '', 110),
       redFlagsPresent: Boolean(latestRecommendation?.red_flags_present || reportSnapshot?.red_flags?.present),
@@ -2216,18 +2202,6 @@ import Layout from '../layouts/Layout.astro';
   const buildAssistantBriefPrompt = (action: 'update-plan' | 'next-session') => {
     if (!currentAssistantPatientBrief) return '';
     const brief = currentAssistantPatientBrief;
-    const sessionExercises = Array.isArray(lastExerciseReportPayload?.exercises)
-      ? lastExerciseReportPayload.exercises
-        .map((exercise: any, index: number) => {
-          const name = String(exercise?.nombre || exercise?.name || '').trim();
-          const dose = String(exercise?.dosage || exercise?.pauta || '').trim();
-          if (!name) return '';
-          return `${index + 1}. ${name}${dose ? ` - ${dose}` : ''}`;
-        })
-        .filter(Boolean)
-        .slice(0, 10)
-      : [];
-    const previousExercises = sessionExercises.length ? sessionExercises : brief.previousPlanExercises;
     const contextLines = [
       `Paciente: ${brief.patientName}`,
       brief.patientEmail ? `Email: ${brief.patientEmail}` : '',
@@ -2238,18 +2212,13 @@ import Layout from '../layouts/Layout.astro';
       brief.therapistNote ? `Nota clinica del ultimo plan: ${brief.therapistNote}` : '',
       brief.patientMessage ? `Mensaje previo al paciente: ${brief.patientMessage}` : '',
       brief.exerciseCount ? `Ejercicios del ultimo plan: ${brief.exerciseCount}` : '',
-      Array.isArray(previousExercises) && previousExercises.length
-        ? `Plan anterior de ejercicios:\n${previousExercises.join('\n')}`
-        : '',
-      brief.latestFollowUpAdherence ? `Adherencia registrada: ${brief.latestFollowUpAdherence}` : '',
-      brief.latestFollowUpText ? `Feedback registrado: ${brief.latestFollowUpText}` : '',
       brief.latestRecommendationState ? `Estado del ultimo plan: ${brief.latestRecommendationState}` : '',
       brief.redFlagsPresent ? 'Hay alertas rojas previas a tener en cuenta.' : '',
     ].filter(Boolean);
 
     const task = action === 'next-session'
       ? 'Con este contexto, resume el objetivo de la siguiente sesion, que revisar en consulta y que progresion o regresion valorar.'
-      : 'Con este contexto, actualiza el plan de ejercicios domiciliarios anterior. Mantén lo que sigue siendo útil, retira o regresa lo que no conviene, progresa solo lo tolerado y deja criterio de seguimiento.';
+      : 'Con este contexto, actualiza el plan de ejercicios domiciliarios con progresion segura, objetivo clinico, red flags y criterio de seguimiento.';
 
     return contextLines.join('\n') + '\n\n' + task;
   };
@@ -2768,45 +2737,6 @@ import Layout from '../layouts/Layout.astro';
     document.body.style.overflow = sidebarOpen || assistantOpen ? 'hidden' : '';
   };
 
-  const patientHasPreviousPlan = () => {
-    return Boolean(
-      selectedPatientId &&
-      (
-        hasExerciseReportReady() ||
-        (
-          currentAssistantPatientBrief &&
-          (currentAssistantPatientBrief.latestRecommendationId || Number(currentAssistantPatientBrief.recommendationsCount || 0) > 0)
-        )
-      )
-    );
-  };
-
-  const renderAssistantPlanChoice = (requestText: string, visibleText: string) => {
-    if (!log) return;
-    pendingAssistantPlanChoice = { requestText, visibleText };
-    const brief = currentAssistantPatientBrief || {};
-    const planDate = brief.latestRecommendationDate ? fmtDate(brief.latestRecommendationDate) : 'plan anterior';
-    const count = Number(brief.exerciseCount || 0);
-    const article = document.createElement('article');
-    article.className = 'msg agent assistant-plan-choice-msg';
-    article.innerHTML = `
-      <div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div>
-      <div class="msg-body">
-        <span class="msg-sender">Agente IA</span>
-        <div class="assistant-plan-choice">
-          <strong>Este paciente ya tiene un plan.</strong>
-          <p>${escapeHtml(planDate)}${count ? ` · ${count} ejercicio(s)` : ''}. Elige si quieres crear uno nuevo o actualizar el anterior con seguimiento.</p>
-          <div class="assistant-plan-choice-actions">
-            <button type="button" class="assistant-chip" data-assistant-plan-choice="update"><span class="material-symbols-rounded">neurology</span> Actualizar anterior</button>
-            <button type="button" class="assistant-chip" data-assistant-plan-choice="new"><span class="material-symbols-rounded">add_circle</span> Nuevo plan</button>
-          </div>
-        </div>
-      </div>
-    `;
-    log.appendChild(article);
-    scrollAssistantRailToBottom();
-  };
-
   const mountAssistantLayerToBody = () => {
     if (!assistantRail || !assistantRailBackdrop) return;
     if (assistantRailBackdrop.parentElement !== document.body) {
@@ -3313,35 +3243,6 @@ import Layout from '../layouts/Layout.astro';
     input.setSelectionRange(input.value.length, input.value.length);
   });
 
-  log?.addEventListener('click', (event: Event) => {
-    const target = event.target as HTMLElement | null;
-    const button = target?.closest('[data-assistant-plan-choice]') as HTMLButtonElement | null;
-    if (!button || !pendingAssistantPlanChoice) return;
-    const choice = String(button.getAttribute('data-assistant-plan-choice') || '');
-    const pending = pendingAssistantPlanChoice;
-    pendingAssistantPlanChoice = null;
-    button.closest('.assistant-plan-choice-msg')?.remove();
-
-    if (choice === 'update') {
-      setAssistantMode('update-plan', { focus: true });
-      const updateText = String(input?.value || '').trim() || getAssistantModeDraft('update-plan');
-      const contextualPrompt = buildAssistantBriefPrompt('update-plan');
-      let requestText = appendAssistantInstruction(contextualPrompt, updateText, 'Cambio solicitado');
-      const diagnosticPrompt = buildAssistantDiagnosticPrompt();
-      requestText = appendAssistantInstruction(requestText, diagnosticPrompt, 'Ficha estructurada');
-      const visibleText = trimAgentBriefText(updateText, 150) || 'Actualizar plan anterior con seguimiento';
-      handleExerciseRecommend(requestText, visibleText);
-      return;
-    }
-
-    const requestText = appendAssistantInstruction(
-      pending.requestText,
-      'Crear un plan nuevo independiente del plan anterior. Usar el historial solo como contexto de seguridad y no como base de progresion.',
-      'Decision del profesional'
-    );
-    handleExerciseRecommend(requestText, pending.visibleText || 'Nuevo plan');
-  });
-
   const renderChatPatientOptions = () => {
     if (!chatPatientSelect) return;
     const current = selectedPatientId || chatPatientSelect.value || '';
@@ -3579,42 +3480,16 @@ import Layout from '../layouts/Layout.astro';
     lastExerciseReportPayload = payload;
     const payloadPatientId = String(payload?.patient_id || selectedPatientId || '').trim();
     const payloadRecommendationId = String(payload?.recommendation_id || '').trim() || null;
-    const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
     if (payloadPatientId) {
       const delivered = deliveredExerciseReports.get(payloadPatientId);
       if (delivered && delivered.recommendationId !== payloadRecommendationId) {
         deliveredExerciseReports.delete(payloadPatientId);
       }
-      const generatedExercises = exercises
-        .map((exercise: any, index: number) => {
-          const name = String(exercise?.nombre || exercise?.name || '').trim();
-          const dose = String(exercise?.dosage || exercise?.pauta || '').trim();
-          if (!name) return '';
-          return `${index + 1}. ${name}${dose ? ` - ${dose}` : ''}`;
-        })
-        .filter(Boolean)
-        .slice(0, 10);
-      const nextBrief = {
-        ...(currentAssistantPatientBrief || {}),
-        patientId: payloadPatientId,
-        patientName: selectedPatientName || currentAssistantPatientBrief?.patientName || 'Paciente seleccionado',
-        recommendationsCount: Math.max(1, Number(currentAssistantPatientBrief?.recommendationsCount || 0)),
-        latestRecommendationId: payloadRecommendationId || currentAssistantPatientBrief?.latestRecommendationId || null,
-        latestRecommendationDate: new Date().toISOString(),
-        latestRecommendationState: 'generada',
-        exerciseCount: exercises.length || currentAssistantPatientBrief?.exerciseCount || 0,
-        previousPlanExercises: generatedExercises.length ? generatedExercises : currentAssistantPatientBrief?.previousPlanExercises || [],
-        therapistNote: trimAgentBriefText(payload?.message_to_therapist || currentAssistantPatientBrief?.therapistNote || ''),
-        patientMessage: trimAgentBriefText(payload?.message_to_patient || currentAssistantPatientBrief?.patientMessage || '', 110),
-        redFlagsPresent: Boolean(payload?.red_flags?.present || currentAssistantPatientBrief?.redFlagsPresent),
-      };
-      currentAssistantPatientBrief = nextBrief;
-      assistantPatientBriefCache[payloadPatientId] = nextBrief;
-      renderAssistantPatientBrief(nextBrief);
     }
     updateExercisePdfButton();
     renderAssistantFlowCard();
     renderAssistantDeliveryCard();
+    const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
     const coverage = payload?.image_coverage || {};
     const briefClinicalNote = trimAgentBriefText(payload?.message_to_therapist || '', 180)
       || 'Plan inicial generado. Revisa el resumen y exporta el PDF para ver el informe clinico completo.';
@@ -3834,10 +3709,6 @@ import Layout from '../layouts/Layout.astro';
     }
 
     if (payload.action === 'exercise') {
-      if (activeAssistantMode === 'new-plan' && patientHasPreviousPlan()) {
-        renderAssistantPlanChoice(payload.requestText, payload.visibleText);
-        return;
-      }
       handleExerciseRecommend(payload.requestText, payload.visibleText);
       return;
     }
@@ -17222,7 +17093,150 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 
+<style is:global id="assistant-copilot-finish-v2">
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-rail-card {
+    width: min(960px, calc(100vw - 2rem)) !important;
+    height: min(700px, calc(100dvh - 2rem)) !important;
+  }
 
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-rail-card {
+    width: min(820px, calc(100vw - 1.5rem)) !important;
+    height: min(680px, calc(100dvh - 1.5rem)) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-module-header {
+    min-height: 3.45rem !important;
+    padding: 0.58rem 0.82rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-rail-copy h2 {
+    font-size: 0.96rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-toolbar {
+    padding: 0.5rem 0.74rem 0.42rem !important;
+  }
+
+  #assistantRail.assistant-rail .patient-selector {
+    min-height: 2.3rem !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-dialog-scroll {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 280px) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 0.58rem !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-mode-switch,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-mode-switch {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .chat-log,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .chat-log {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    min-height: 18rem !important;
+    height: 100% !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-card {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    align-self: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding: 0.6rem !important;
+    overflow: hidden !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-head,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-head {
+    flex: 0 0 auto !important;
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 0.45rem !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-toggle,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-toggle {
+    width: 100% !important;
+    min-height: 1.9rem !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-grid,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.42rem !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-diagnostic-summary {
+    flex: 0 0 auto !important;
+    font-size: 0.74rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field {
+    padding: 0.42rem 0.5rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field span {
+    font-size: 0.62rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field input,
+  #assistantRail.assistant-rail .assistant-intake-field select {
+    min-height: 1.8rem !important;
+    height: 1.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  #assistantRail.assistant-rail .ai-input-area {
+    margin-top: 0.52rem !important;
+    padding: 0.54rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-action-grid {
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)) !important;
+  }
+
+  #assistantRail.assistant-rail .btn-action {
+    min-height: 2.1rem !important;
+    font-size: 0.74rem !important;
+  }
+
+  #assistantRail.assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 2.8rem !important;
+    height: 2.8rem !important;
+    max-height: 5.5rem !important;
+  }
+
+  @media (max-width: 900px) {
+    html[data-assistant-mode='mobile'] #assistantRail.assistant-rail .assistant-dialog-scroll {
+      grid-template-rows: auto minmax(0, 1fr) auto !important;
+    }
+
+    html[data-assistant-mode='mobile'] #assistantRail.assistant-rail .assistant-diagnostic-card {
+      max-height: 30dvh !important;
+      overflow: hidden !important;
+    }
+
+    html[data-assistant-mode='mobile'] #assistantRail.assistant-rail .assistant-diagnostic-grid {
+      max-height: 18dvh !important;
+      overflow-y: auto !important;
+    }
+  }
+</style>
 
 
 <style is:global id="assistant-diagnostic-field-fix-v1">
@@ -21837,190 +21851,6 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       height: 3.25rem !important;
       max-height: 6.5rem !important;
     }
-  }
-
-  /* Final Copilot proportions: chat-first agent with visible continuity context. */
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-rail-card {
-    width: min(980px, calc(100vw - 2rem)) !important;
-    height: min(720px, calc(100dvh - 2rem)) !important;
-  }
-
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-rail-card {
-    width: min(860px, calc(100vw - 1.5rem)) !important;
-    height: min(700px, calc(100dvh - 1.5rem)) !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-module-header {
-    min-height: 3.55rem !important;
-    padding: 0.58rem 0.82rem !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-toolbar {
-    padding: 0.5rem 0.74rem 0.42rem !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-dialog-scroll,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-dialog-scroll {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 330px) !important;
-    grid-template-rows: auto minmax(0, 1fr) !important;
-    gap: 0.58rem !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-mode-switch,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-mode-switch {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .chat-log,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .chat-log {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    height: 100% !important;
-    min-height: 20rem !important;
-    max-height: none !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-patient-brief,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-patient-brief {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-    display: grid !important;
-    align-self: stretch !important;
-    max-height: 13rem !important;
-    overflow: hidden !important;
-    padding: 0.58rem !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail:not(.assistant-has-patient) .assistant-patient-brief,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail:not(.assistant-has-patient) .assistant-patient-brief {
-    display: none !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-brief-grid,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-brief-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 0.35rem !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-brief-title {
-    font-size: 0.82rem !important;
-    line-height: 1.28 !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-brief-item {
-    padding: 0.42rem 0.48rem !important;
-    border-radius: 8px !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-brief-item span,
-  #assistantRail.assistant-rail .assistant-brief-item small {
-    font-size: 0.68rem !important;
-    line-height: 1.25 !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-brief-item strong {
-    font-size: 0.76rem !important;
-    line-height: 1.28 !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-card,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-card {
-    grid-column: 2 !important;
-    grid-row: 2 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-    height: 100% !important;
-    overflow: hidden !important;
-    padding: 0.58rem !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail:not(.assistant-has-patient) .assistant-diagnostic-card,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail:not(.assistant-has-patient) .assistant-diagnostic-card {
-    grid-row: 1 / span 2 !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-diagnostic-head {
-    flex: 0 0 auto !important;
-    align-items: flex-start !important;
-    flex-direction: column !important;
-    gap: 0.42rem !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-diagnostic-toggle {
-    width: 100% !important;
-    min-height: 1.9rem !important;
-  }
-
-  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-grid,
-  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-grid {
-    grid-template-columns: 1fr !important;
-    gap: 0.4rem !important;
-    flex: 1 1 auto !important;
-    max-height: none !important;
-    overflow-y: auto !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-intake-field {
-    padding: 0.42rem 0.48rem !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-intake-field input,
-  #assistantRail.assistant-rail .assistant-intake-field select {
-    min-height: 1.8rem !important;
-    height: 1.8rem !important;
-    font-size: 0.8rem !important;
-  }
-
-  #assistantRail.assistant-rail .ai-input-area {
-    margin-top: 0.52rem !important;
-    padding: 0.54rem !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-action-grid {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.38rem !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-action-grid .btn-action {
-    flex: 1 1 9rem !important;
-  }
-
-  #assistantRail.assistant-rail .btn-action {
-    min-height: 2.1rem !important;
-    font-size: 0.74rem !important;
-  }
-
-  #assistantRail.assistant-rail .ai-textarea-wrapper textarea {
-    min-height: 2.8rem !important;
-    height: 2.8rem !important;
-    max-height: 5.5rem !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-plan-choice {
-    display: grid !important;
-    gap: 0.52rem !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-plan-choice p {
-    margin: 0 !important;
-    color: var(--assistant-muted) !important;
-    font-size: 0.82rem !important;
-    line-height: 1.45 !important;
-  }
-
-  #assistantRail.assistant-rail .assistant-plan-choice-actions {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.42rem !important;
   }
 </style>
 
