@@ -17093,6 +17093,152 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 
+<style is:global id="assistant-copilot-finish-v2">
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-rail-card {
+    width: min(960px, calc(100vw - 2rem)) !important;
+    height: min(700px, calc(100dvh - 2rem)) !important;
+  }
+
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-rail-card {
+    width: min(820px, calc(100vw - 1.5rem)) !important;
+    height: min(680px, calc(100dvh - 1.5rem)) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-module-header {
+    min-height: 3.45rem !important;
+    padding: 0.58rem 0.82rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-rail-copy h2 {
+    font-size: 0.96rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-toolbar {
+    padding: 0.5rem 0.74rem 0.42rem !important;
+  }
+
+  #assistantRail.assistant-rail .patient-selector {
+    min-height: 2.3rem !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-dialog-scroll {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 280px) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 0.58rem !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-mode-switch,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-mode-switch {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .chat-log,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .chat-log {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    min-height: 18rem !important;
+    height: 100% !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-card {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    align-self: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding: 0.6rem !important;
+    overflow: hidden !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-head,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-head {
+    flex: 0 0 auto !important;
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 0.45rem !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-toggle,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-toggle {
+    width: 100% !important;
+    min-height: 1.9rem !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-diagnostic-grid,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-diagnostic-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.42rem !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-diagnostic-summary {
+    flex: 0 0 auto !important;
+    font-size: 0.74rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field {
+    padding: 0.42rem 0.5rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field span {
+    font-size: 0.62rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field input,
+  #assistantRail.assistant-rail .assistant-intake-field select {
+    min-height: 1.8rem !important;
+    height: 1.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  #assistantRail.assistant-rail .ai-input-area {
+    margin-top: 0.52rem !important;
+    padding: 0.54rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-action-grid {
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)) !important;
+  }
+
+  #assistantRail.assistant-rail .btn-action {
+    min-height: 2.1rem !important;
+    font-size: 0.74rem !important;
+  }
+
+  #assistantRail.assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 2.8rem !important;
+    height: 2.8rem !important;
+    max-height: 5.5rem !important;
+  }
+
+  @media (max-width: 900px) {
+    html[data-assistant-mode='mobile'] #assistantRail.assistant-rail .assistant-dialog-scroll {
+      grid-template-rows: auto minmax(0, 1fr) auto !important;
+    }
+
+    html[data-assistant-mode='mobile'] #assistantRail.assistant-rail .assistant-diagnostic-card {
+      max-height: 30dvh !important;
+      overflow: hidden !important;
+    }
+
+    html[data-assistant-mode='mobile'] #assistantRail.assistant-rail .assistant-diagnostic-grid {
+      max-height: 18dvh !important;
+      overflow-y: auto !important;
+    }
+  }
+</style>
+
+
 <style is:global id="assistant-diagnostic-field-fix-v1">
   .assistant-rail .assistant-diagnostic-grid {
     align-items: start !important;
@@ -17134,246 +17280,119 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 
-<style is:global id="assistant-copilot-premium-final-v4">
-  .assistant-rail .assistant-delivery-card {
-    display: none !important;
-  }
-
-  .assistant-rail .assistant-mode-switch {
-    grid-template-columns: repeat(3, minmax(0, max-content)) !important;
-    justify-content: start !important;
-    align-items: center !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    gap: 0.42rem !important;
-  }
-
-  .assistant-rail .assistant-mode-chip {
-    min-height: 2.1rem !important;
-    padding: 0.28rem 0.7rem !important;
-    border-radius: 999px !important;
-    font-size: 0.78rem !important;
-    background: #fffdfa !important;
-    border: 1px solid #d9e2e8 !important;
-    box-shadow: none !important;
-  }
-
-  .assistant-rail .assistant-mode-chip.is-active {
-    background: #173d59 !important;
-    border-color: #173d59 !important;
-    color: #ffffff !important;
-  }
-
-  .assistant-rail .assistant-mode-chip .material-symbols-rounded {
-    font-size: 1rem !important;
-  }
-
-  .assistant-rail .chat-log .msg.user {
-    display: none !important;
-  }
-
-  .assistant-rail .msg-progress .msg-body {
-    background: #f6fafc !important;
-    border: 1px solid #d9e2e8 !important;
-    color: #21445b !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-card.is-collapsed {
-    padding-top: 0.62rem !important;
-    padding-bottom: 0.62rem !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-summary {
-    display: none !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-card.is-collapsed.is-has-data .assistant-diagnostic-summary {
-    display: block !important;
-    margin-top: 0.45rem !important;
-  }
-
-  .assistant-rail .assistant-action-grid button[hidden] {
-    display: none !important;
-  }
-
-  .assistant-rail .assistant-action-grid {
-    align-items: stretch !important;
-  }
-
-  .assistant-rail .btn-generate {
-    min-width: 0 !important;
-  }
-
-  @media (max-width: 900px) {
-    .assistant-rail .assistant-mode-switch {
-      grid-template-columns: 1fr !important;
-    }
-  }
-</style>
-
-<style is:global id="assistant-copilot-premium-v3">
-  .assistant-rail .assistant-patient-brief,
+<style is:global id="assistant-copilot-structural-reset-v1">
   .assistant-rail .assistant-flow-card,
   .assistant-rail .assistant-mode-card,
-  .assistant-rail .assistant-shortcuts {
+  .assistant-rail .assistant-shortcuts,
+  .assistant-rail .assistant-delivery-card,
+  .assistant-rail .assistant-live-context {
     display: none !important;
   }
 
-  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-surface,
-  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface,
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface,
   .assistant-rail .assistant-dialog-surface {
-    display: flex !important;
-    flex-direction: column !important;
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
     min-height: 0 !important;
     overflow: hidden !important;
-    padding: 0.5rem 0.8rem 0.75rem !important;
-    background: transparent !important;
+    padding: 0.58rem 0.72rem 0.78rem !important;
+    background: #f7fafc !important;
   }
 
-  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
-  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll,
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll,
   .assistant-rail .assistant-dialog-scroll {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 1 auto !important;
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0, 1fr) !important;
+    gap: 0.55rem !important;
     min-height: 0 !important;
     overflow: hidden !important;
-    gap: 0.55rem !important;
     padding: 0 !important;
   }
 
   .assistant-rail .assistant-mode-switch {
-    order: 1 !important;
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 0.45rem !important;
-    padding: 0.18rem !important;
+    gap: 0.4rem !important;
+    padding: 0.12rem !important;
     border: 1px solid #d8e1e7 !important;
-    border-radius: 0.9rem !important;
-    background: #f7fafb !important;
+    border-radius: 0.92rem !important;
+    background: #f8fafb !important;
   }
 
   .assistant-rail .assistant-mode-chip {
-    min-height: 2.5rem !important;
-    border-radius: 0.78rem !important;
-    font-size: 0.83rem !important;
+    min-height: 2.3rem !important;
+    border-radius: 0.72rem !important;
+    font-size: 0.8rem !important;
   }
 
-  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
-  html[data-assistant-mode='compact'] .assistant-rail .chat-log,
-  html[data-assistant-mode='mobile'] .assistant-rail .chat-log,
-  .assistant-rail .chat-log {
-    order: 2 !important;
-    display: grid !important;
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    gap: 0.55rem !important;
-    padding: 0.85rem !important;
-    border: 1px solid #d8e1e7 !important;
-    border-radius: 1rem !important;
-    background: #ffffff !important;
-    scrollbar-gutter: stable !important;
+  .assistant-rail .assistant-patient-brief {
+    margin: 0 !important;
+    padding: 0.62rem 0.7rem !important;
+    border: 1px solid #dce7ef !important;
+    border-radius: 0.84rem !important;
+    background: #f6fafc !important;
   }
 
-  .assistant-rail .chat-log:empty {
-    align-content: center !important;
-  }
-
-  .assistant-rail .chat-log:empty::before {
-    content: 'El dialogo del Copilot se mantiene aqui. Describe el caso y revisa el plan sin perder esta zona de vista.';
-    max-width: 40ch;
-    margin: 0 auto;
-    color: #627587;
-    font-size: 0.9rem;
-    line-height: 1.55;
-    text-align: center;
+  .assistant-rail:not(.assistant-has-patient) .assistant-patient-brief {
+    display: none !important;
   }
 
   .assistant-rail .assistant-diagnostic-card {
-    order: 3 !important;
-    flex: 0 0 auto !important;
-    padding: 0.75rem !important;
-    border: 1px solid #d8e1e7 !important;
-    border-radius: 0.95rem !important;
+    margin: 0 !important;
+    padding: 0.68rem !important;
+    border: 1px solid #dce7ef !important;
+    border-radius: 0.9rem !important;
     background: #fffdfa !important;
   }
 
   .assistant-rail .assistant-diagnostic-head {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 0.7rem !important;
     margin-bottom: 0 !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-copy {
-    display: grid;
-    gap: 0.18rem;
-    min-width: 0;
-  }
-
-  .assistant-rail .assistant-diagnostic-head strong {
-    font-size: 0.92rem !important;
-    line-height: 1.28 !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-toggle {
-    flex: 0 0 auto;
-    min-height: 2.1rem;
-    padding: 0.3rem 0.72rem;
-    border: 1px solid #cfd9e2;
-    border-radius: 999px;
-    background: #ffffff;
-    color: #153149;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .assistant-rail .assistant-diagnostic-grid {
-    margin-top: 0.7rem !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-summary {
-    margin: 0.55rem 0 0 !important;
-    font-size: 0.8rem !important;
-    line-height: 1.45 !important;
+    gap: 0.6rem !important;
   }
 
   .assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-grid {
     display: none !important;
   }
 
-  .assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-summary {
-    margin-top: 0.45rem !important;
+  .assistant-rail .assistant-diagnostic-summary {
+    margin-top: 0.5rem !important;
+    font-size: 0.78rem !important;
   }
 
-  .assistant-rail .assistant-diagnostic-card.is-expanded .assistant-diagnostic-grid {
+  .assistant-rail .chat-log {
     display: grid !important;
+    gap: 0.52rem !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding: 0.74rem !important;
+    border-radius: 0.92rem !important;
+    border: 1px solid #dbe4ec !important;
+    background: #ffffff !important;
+    scrollbar-gutter: stable !important;
   }
 
-  .assistant-rail .assistant-delivery-card {
-    order: 4 !important;
-    flex: 0 0 auto !important;
-    padding: 0.68rem 0.78rem !important;
-    border-radius: 0.95rem !important;
-    background: #f8fbfc !important;
+  .assistant-rail .chat-log:empty {
+    display: grid !important;
+    align-content: center !important;
   }
 
-  html[data-assistant-mode='desktop'] .assistant-rail .ai-input-area,
-  html[data-assistant-mode='compact'] .assistant-rail .ai-input-area,
-  html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area,
+  .assistant-rail .chat-log:empty::before {
+    content: 'Describe el caso y el Copilot trabajara aqui con un unico historial de conversacion.';
+    margin: 0 auto;
+    max-width: 38ch;
+    color: #5f7284;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .assistant-rail .chat-log .msg.user {
+    display: block !important;
+  }
+
   .assistant-rail .ai-input-area {
-    position: relative !important;
-    flex: 0 0 auto !important;
-    margin-top: 0.55rem !important;
-    padding: 0.72rem !important;
-    border: 1px solid #d8e1e7 !important;
-    border-radius: 1rem !important;
+    margin-top: 0.56rem !important;
+    padding: 0.66rem !important;
+    border-top: 1px solid #dbe4ec !important;
+    border-radius: 0.86rem !important;
     background: #ffffff !important;
     box-shadow: none !important;
   }
@@ -17383,23 +17402,16 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     gap: 0.5rem !important;
   }
 
-  .assistant-rail .assistant-composer-shell {
-    margin-top: 0.55rem !important;
+  .assistant-rail .btn-action {
+    min-height: 2.68rem !important;
+    font-size: 0.82rem !important;
   }
 
-  .assistant-rail .ai-textarea-wrapper {
-    border: 1px solid #d8e1e7 !important;
-    border-radius: 0.9rem !important;
-    background: #fffdfa !important;
-  }
-
-  html[data-assistant-mode='desktop'] .assistant-rail .ai-textarea-wrapper textarea,
-  html[data-assistant-mode='compact'] .assistant-rail .ai-textarea-wrapper textarea,
-  html[data-assistant-mode='mobile'] .assistant-rail .ai-textarea-wrapper textarea,
   .assistant-rail .ai-textarea-wrapper textarea {
     min-height: 3.7rem !important;
     height: 3.7rem !important;
-    max-height: 7rem !important;
+    max-height: 7.2rem !important;
+    font-size: 0.9rem !important;
   }
 
   .assistant-rail .assistant-disclaimer {
@@ -17412,279 +17424,17 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       grid-template-columns: 1fr !important;
     }
 
+    .assistant-rail .assistant-dialog-surface {
+      padding: 0.45rem 0.58rem 0.72rem !important;
+    }
+
     .assistant-rail .chat-log {
-      min-height: 12rem !important;
-      padding: 0.72rem !important;
+      padding: 0.64rem !important;
     }
 
     .assistant-rail .assistant-diagnostic-head {
       align-items: flex-start !important;
       flex-direction: column !important;
-    }
-
-    .assistant-rail .assistant-diagnostic-toggle {
-      width: 100%;
-      justify-content: center;
-    }
-  }
-</style>
-
-<style is:global id="assistant-rail-ultrapremium-fix-v2">
-  html[data-assistant-mode='desktop'] .assistant-rail-card,
-  html[data-assistant-mode='compact'] .assistant-rail-card {
-    width: min(880px, calc(100vw - 2rem)) !important;
-    max-width: min(880px, calc(100vw - 2rem)) !important;
-    height: min(760px, calc(100dvh - 2rem)) !important;
-    max-height: calc(100dvh - 2rem) !important;
-    border-radius: 1.15rem !important;
-    background: #fcfaf6 !important;
-  }
-
-  html[data-assistant-mode='mobile'] .assistant-rail-card {
-    background: #fcfaf6 !important;
-  }
-
-  .assistant-rail .assistant-module-header {
-    background: #f3f7f8 !important;
-    border-bottom: 1px solid #d7e1e7 !important;
-  }
-
-  .assistant-rail .assistant-rail-copy {
-    display: grid !important;
-    gap: 0.22rem !important;
-  }
-
-  .assistant-rail .assistant-rail-copy h2 {
-    margin: 0 !important;
-    font-size: 1rem !important;
-    line-height: 1.2 !important;
-    color: #122b42 !important;
-  }
-
-  .assistant-rail .assistant-eyebrow {
-    font-size: 0.7rem !important;
-    letter-spacing: 0.12em !important;
-    color: #147a78 !important;
-  }
-
-  .assistant-rail-close {
-    border: 1px solid #c6d3dd !important;
-    background: #ffffff !important;
-    color: #17324a !important;
-  }
-
-  .assistant-rail .assistant-toolbar {
-    padding: 0.7rem 0.82rem 0.45rem !important;
-  }
-
-  .assistant-rail .patient-selector {
-    min-height: 2.9rem !important;
-    border: 1px solid #d7e1e7 !important;
-    background: #fffdfa !important;
-  }
-
-  .assistant-rail .assistant-live-context,
-  .assistant-rail .assistant-flow-card,
-  .assistant-rail .assistant-shortcuts,
-  .assistant-rail .assistant-mode-card {
-    display: none !important;
-  }
-
-  .assistant-rail .assistant-dialog-surface,
-  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-surface,
-  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface,
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-    padding: 0.55rem 0.82rem 0.82rem !important;
-    background: transparent !important;
-  }
-
-  .assistant-rail .assistant-dialog-scroll,
-  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
-  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll,
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    gap: 0.55rem !important;
-    padding: 0 !important;
-  }
-
-  .assistant-rail .assistant-patient-brief {
-    order: 1 !important;
-    padding: 0.72rem !important;
-    border: 1px solid #d9e3e8 !important;
-    border-radius: 0.85rem !important;
-    background: #f7fbfc !important;
-  }
-
-  .assistant-rail .chat-log,
-  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
-  html[data-assistant-mode='compact'] .assistant-rail .chat-log,
-  html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
-    order: 2 !important;
-    display: grid !important;
-    flex: 0 0 auto !important;
-    min-height: 14rem !important;
-    gap: 0.55rem !important;
-    padding: 0.85rem !important;
-    border: 1px solid #d7e1e7 !important;
-    border-radius: 0.95rem !important;
-    background: #ffffff !important;
-  }
-
-  .assistant-rail .chat-log:empty,
-  html[data-assistant-mode='desktop'] .assistant-rail .chat-log:empty,
-  html[data-assistant-mode='compact'] .assistant-rail .chat-log:empty,
-  html[data-assistant-mode='mobile'] .assistant-rail .chat-log:empty {
-    display: grid !important;
-    align-content: center !important;
-  }
-
-  .assistant-rail .chat-log:empty::before {
-    content: 'Describe el caso y el Copilot construira aqui el dialogo, el plan y los siguientes pasos.';
-    color: #5f7284;
-    font-size: 0.88rem;
-    line-height: 1.55;
-    text-align: center;
-    max-width: 42ch;
-    margin: 0 auto;
-  }
-
-  .assistant-rail .assistant-mode-switch {
-    order: 3 !important;
-    margin: 0 !important;
-    padding: 0.15rem !important;
-    border: 1px solid #d7e1e7 !important;
-    border-radius: 0.9rem !important;
-    background: #f8fafb !important;
-  }
-
-  .assistant-rail .assistant-mode-chip {
-    min-height: 2.35rem !important;
-    font-size: 0.82rem !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-card,
-  html[data-assistant-mode='desktop'] .assistant-rail .assistant-diagnostic-card,
-  html[data-assistant-mode='compact'] .assistant-rail .assistant-diagnostic-card,
-  html[data-assistant-mode='mobile'] .assistant-rail .assistant-diagnostic-card {
-    order: 4 !important;
-    padding: 0.75rem !important;
-    border: 1px solid #d7e1e7 !important;
-    border-radius: 0.95rem !important;
-    background: #fffdfa !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-head {
-    gap: 0.22rem !important;
-    margin-bottom: 0.55rem !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-head strong {
-    font-size: 0.96rem !important;
-    line-height: 1.3 !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-grid {
-    gap: 0.55rem !important;
-  }
-
-  .assistant-rail .assistant-intake-field span {
-    font-size: 0.7rem !important;
-    letter-spacing: 0.08em !important;
-  }
-
-  .assistant-rail .assistant-intake-field input,
-  .assistant-rail .assistant-intake-field select {
-    min-height: 2.8rem !important;
-    font-size: 0.88rem !important;
-    border-radius: 0.8rem !important;
-  }
-
-  .assistant-rail .assistant-diagnostic-summary {
-    margin-top: 0.55rem !important;
-    font-size: 0.8rem !important;
-  }
-
-  .assistant-rail .assistant-delivery-card {
-    order: 5 !important;
-    padding: 0.72rem !important;
-    border-radius: 0.95rem !important;
-  }
-
-  .assistant-rail .ai-input-area,
-  html[data-assistant-mode='desktop'] .assistant-rail .ai-input-area,
-  html[data-assistant-mode='compact'] .assistant-rail .ai-input-area,
-  html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area {
-    margin-top: 0.6rem !important;
-    padding: 0.72rem !important;
-    border: 1px solid #d7e1e7 !important;
-    border-radius: 0.95rem !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
-  }
-
-  .assistant-rail .assistant-action-grid,
-  html[data-assistant-mode='desktop'] .assistant-rail .assistant-action-grid,
-  html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 0.5rem !important;
-  }
-
-  .assistant-rail .btn-action {
-    min-height: 2.7rem !important;
-    font-size: 0.83rem !important;
-  }
-
-  .assistant-rail .assistant-composer-shell {
-    margin-top: 0.58rem !important;
-  }
-
-  .assistant-rail .ai-textarea-wrapper {
-    border: 1px solid #d7e1e7 !important;
-    border-radius: 0.9rem !important;
-    background: #fffdfa !important;
-  }
-
-  .assistant-rail .ai-textarea-wrapper textarea,
-  html[data-assistant-mode='desktop'] .assistant-rail .ai-textarea-wrapper textarea,
-  html[data-assistant-mode='compact'] .assistant-rail .ai-textarea-wrapper textarea,
-  html[data-assistant-mode='mobile'] .assistant-rail .ai-textarea-wrapper textarea {
-    min-height: 4rem !important;
-    height: 4rem !important;
-    max-height: 8rem !important;
-    font-size: 0.92rem !important;
-  }
-
-  .assistant-rail .assistant-disclaimer {
-    display: none !important;
-  }
-
-  @media (max-width: 900px) {
-    .assistant-rail .assistant-action-grid,
-    html[data-assistant-mode='mobile'] .assistant-action-grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .assistant-rail .chat-log,
-    html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
-      min-height: 10rem !important;
-      padding: 0.72rem !important;
-    }
-
-    .assistant-rail .assistant-dialog-surface,
-    html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
-      padding: 0.45rem 0.6rem 0.72rem !important;
-    }
-
-    .assistant-rail .assistant-mode-switch {
-      display: grid !important;
-      grid-template-columns: 1fr !important;
     }
   }
 </style>
@@ -21586,6 +21336,520 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   @media (max-width: 980px) {
     .page-section[data-page='pacientes'] .patients-hero-shell {
       grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
+<style is:global id="assistant-copilot-final-order-v1">
+  #assistantRail.assistant-rail {
+    --assistant-ink: #10263a;
+    --assistant-muted: #5f7182;
+    --assistant-line: #d8e3ea;
+    --assistant-paper: #fffdf8;
+    --assistant-surface: #f4f8f9;
+    --assistant-teal: #0f766e;
+    --assistant-teal-strong: #115e59;
+    --assistant-gold: #9b743a;
+    background: transparent !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail {
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: 170 !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail.open,
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail.open {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  html[data-assistant-mode='mobile'] #assistantRail.assistant-rail {
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 0 !important;
+    transform: translateY(100%) !important;
+    z-index: 170 !important;
+  }
+
+  html[data-assistant-mode='mobile'] #assistantRail.assistant-rail.open {
+    transform: translateY(0) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-rail-card {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    border: 1px solid rgba(151, 132, 98, 0.28) !important;
+    background: linear-gradient(180deg, #fffdf8 0%, #f7f2e9 100%) !important;
+    box-shadow: 0 38px 80px -42px rgba(20, 30, 38, 0.42) !important;
+    overflow: hidden !important;
+  }
+
+  html[data-assistant-mode='desktop'] #assistantRail.assistant-rail .assistant-rail-card {
+    width: min(840px, calc(100vw - 2rem)) !important;
+    height: min(720px, calc(100dvh - 2rem)) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    border-radius: 16px !important;
+  }
+
+  html[data-assistant-mode='compact'] #assistantRail.assistant-rail .assistant-rail-card {
+    width: min(640px, calc(100vw - 1.5rem)) !important;
+    height: min(700px, calc(100dvh - 1.5rem)) !important;
+    max-height: calc(100dvh - 1.5rem) !important;
+    border-radius: 16px !important;
+  }
+
+  html[data-assistant-mode='mobile'] #assistantRail.assistant-rail .assistant-rail-card {
+    width: 100vw !important;
+    height: 100dvh !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-module-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.8rem !important;
+    min-height: 3.7rem !important;
+    padding: 0.66rem 0.9rem !important;
+    border-bottom: 1px solid rgba(151, 132, 98, 0.22) !important;
+    background: linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(236, 246, 245, 0.96)) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-rail-copy {
+    display: grid !important;
+    gap: 0.18rem !important;
+    min-width: 0 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-eyebrow {
+    color: var(--assistant-gold) !important;
+    font-size: 0.66rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-rail-copy h2 {
+    margin: 0 !important;
+    color: var(--assistant-ink) !important;
+    font-size: 1.02rem !important;
+    font-weight: 850 !important;
+    line-height: 1.18 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-connected-badge {
+    min-height: 1.45rem !important;
+    padding: 0.18rem 0.48rem !important;
+    border: 1px solid #b9e4dc !important;
+    background: #edfdf9 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-connected-badge .status-text {
+    color: var(--assistant-teal) !important;
+    font-size: 0.58rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-rail-close {
+    display: inline-flex !important;
+    width: 2.15rem !important;
+    height: 2.15rem !important;
+    border: 1px solid rgba(151, 132, 98, 0.28) !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+    color: var(--assistant-ink) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-rail-body,
+  #assistantRail.assistant-rail .assistant-console {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 0.58rem 0.78rem 0.46rem !important;
+    border-bottom: 1px solid rgba(216, 227, 234, 0.9) !important;
+    background: rgba(255, 253, 248, 0.86) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-live-context {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .patient-selector {
+    min-height: 2.45rem !important;
+    padding: 0.34rem 0.62rem !important;
+    border: 1px solid var(--assistant-line) !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+  }
+
+  #assistantRail.assistant-rail .patient-selector select {
+    color: var(--assistant-ink) !important;
+    -webkit-text-fill-color: var(--assistant-ink) !important;
+    font-size: 0.9rem !important;
+    font-weight: 750 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-dialog-surface {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    gap: 0 !important;
+    min-height: 0 !important;
+    padding: 0.58rem 0.78rem 0.72rem !important;
+    overflow: hidden !important;
+    background: linear-gradient(180deg, rgba(244, 248, 249, 0.96), rgba(250, 247, 241, 0.96)) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-dialog-scroll {
+    display: grid !important;
+    grid-template-rows: auto minmax(16rem, 1fr) auto !important;
+    gap: 0.5rem !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-flow-card,
+  #assistantRail.assistant-rail .assistant-mode-card,
+  #assistantRail.assistant-rail .assistant-shortcuts,
+  #assistantRail.assistant-rail .assistant-delivery-card {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-mode-switch {
+    order: 1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.38rem !important;
+    padding: 0.16rem !important;
+    border: 1px solid var(--assistant-line) !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-mode-chip {
+    min-height: 2.35rem !important;
+    padding: 0.32rem 0.54rem !important;
+    border-radius: 10px !important;
+    color: var(--assistant-muted) !important;
+    font-size: 0.82rem !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-mode-chip.is-active {
+    background: #17364d !important;
+    border-color: #17364d !important;
+    color: #ffffff !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-patient-brief {
+    order: 2 !important;
+    display: grid !important;
+    gap: 0.45rem !important;
+    margin: 0 !important;
+    padding: 0.68rem 0.72rem !important;
+    border: 1px solid rgba(216, 227, 234, 0.95) !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-patient-brief {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail:not(.assistant-has-patient) .assistant-patient-brief,
+  #assistantRail.assistant-rail.assistant-has-report .assistant-patient-brief {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-brief-grid {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-brief-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.42rem !important;
+  }
+
+  #assistantRail.assistant-rail .chat-log {
+    order: 2 !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 0.6rem !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+    padding: 0.84rem !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--assistant-line) !important;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%) !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  #assistantRail.assistant-rail .chat-log:empty {
+    display: grid !important;
+    align-content: center !important;
+  }
+
+  #assistantRail.assistant-rail .chat-log:empty::before {
+    content: 'Describe el caso. El historial, el plan y las respuestas apareceran aqui.';
+    max-width: 36ch !important;
+    margin: 0 auto !important;
+    color: #687a88 !important;
+    font-size: 0.9rem !important;
+    line-height: 1.55 !important;
+    text-align: center !important;
+  }
+
+  #assistantRail.assistant-rail .msg {
+    display: flex !important;
+    max-width: min(92%, 42rem) !important;
+    gap: 0.42rem !important;
+  }
+
+  #assistantRail.assistant-rail .msg.agent {
+    justify-self: start !important;
+  }
+
+  #assistantRail.assistant-rail .msg.user {
+    justify-self: end !important;
+  }
+
+  #assistantRail.assistant-rail .msg.user .msg-avatar {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .msg-body {
+    padding: 0.68rem 0.82rem !important;
+    border-radius: 14px !important;
+    font-size: 0.86rem !important;
+    line-height: 1.55 !important;
+    box-shadow: none !important;
+  }
+
+  #assistantRail.assistant-rail .msg.agent .msg-body,
+  #assistantRail.assistant-rail .msg-progress .msg-body {
+    border: 1px solid #e1e9ee !important;
+    background: #f8fbfc !important;
+    color: #3f5466 !important;
+  }
+
+  #assistantRail.assistant-rail .msg.user .msg-body,
+  #assistantRail.assistant-rail .msg-body.user-msg {
+    border: 1px solid var(--assistant-teal) !important;
+    background: var(--assistant-teal) !important;
+    color: #ffffff !important;
+  }
+
+  #assistantRail.assistant-rail .exercise-card,
+  #assistantRail.assistant-rail .exercise-card-body,
+  #assistantRail.assistant-rail .exercise-card-title,
+  #assistantRail.assistant-rail .exercise-card-pauta,
+  #assistantRail.assistant-rail .exercise-card-proc,
+  #assistantRail.assistant-rail .exercise-card-why,
+  #assistantRail.assistant-rail .exercise-card-caution,
+  #assistantRail.assistant-rail .exercise-patient-msg,
+  #assistantRail.assistant-rail .exercise-id {
+    display: block !important;
+  }
+
+  #assistantRail.assistant-rail .exercise-card-img {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-diagnostic-card {
+    order: 3 !important;
+    margin: 0 !important;
+    padding: 0.56rem 0.62rem !important;
+    border: 1px solid rgba(216, 227, 234, 0.95) !important;
+    border-radius: 10px !important;
+    background: rgba(255, 253, 248, 0.94) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-diagnostic-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.58rem !important;
+    margin: 0 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-grid {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-diagnostic-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.42rem !important;
+    max-height: min(18dvh, 8.5rem) !important;
+    margin-top: 0.5rem !important;
+    overflow-y: auto !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field-wide {
+    grid-column: 1 / -1 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field {
+    padding: 0.44rem 0.52rem !important;
+    border: 1px solid #e5edf2 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-intake-field input,
+  #assistantRail.assistant-rail .assistant-intake-field select {
+    min-height: 1.95rem !important;
+    height: 1.95rem !important;
+    color: var(--assistant-ink) !important;
+    -webkit-text-fill-color: var(--assistant-ink) !important;
+    font-size: 0.82rem !important;
+  }
+
+  #assistantRail.assistant-rail .ai-input-area {
+    display: grid !important;
+    gap: 0.48rem !important;
+    margin: 0.56rem 0 0 !important;
+    padding: 0.58rem !important;
+    border: 1px solid rgba(216, 227, 234, 0.95) !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    box-shadow: 0 -18px 42px -40px rgba(15, 23, 42, 0.28) !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-action-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.38rem !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-action-grid button[hidden] {
+    display: none !important;
+  }
+
+  #assistantRail.assistant-rail .btn-action {
+    min-width: 0 !important;
+    min-height: 2.25rem !important;
+    padding: 0.3rem 0.5rem !important;
+    border-radius: 9px !important;
+    font-size: 0.76rem !important;
+    font-weight: 850 !important;
+    white-space: normal !important;
+    line-height: 1.15 !important;
+  }
+
+  #assistantRail.assistant-rail .btn-generate,
+  #assistantRail.assistant-rail .btn-send-compact {
+    border-color: var(--assistant-teal) !important;
+    background: var(--assistant-teal) !important;
+    color: #ffffff !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-composer-shell {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: end !important;
+    gap: 0.52rem !important;
+    margin: 0 !important;
+  }
+
+  #assistantRail.assistant-rail .ai-textarea-wrapper {
+    min-width: 0 !important;
+    border: 1px solid var(--assistant-line) !important;
+    border-radius: 12px !important;
+    background: #fffdf8 !important;
+    box-shadow: none !important;
+  }
+
+  #assistantRail.assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 3rem !important;
+    height: 3rem !important;
+    max-height: 6rem !important;
+    padding: 0.65rem 0.78rem !important;
+    color: var(--assistant-ink) !important;
+    -webkit-text-fill-color: var(--assistant-ink) !important;
+    font-size: 0.92rem !important;
+    line-height: 1.45 !important;
+  }
+
+  #assistantRail.assistant-rail .btn-send-compact {
+    width: 2.35rem !important;
+    min-width: 2.35rem !important;
+    min-height: 2.35rem !important;
+    padding: 0 !important;
+  }
+
+  #assistantRail.assistant-rail .assistant-disclaimer {
+    display: none !important;
+  }
+
+  @media (max-width: 900px) {
+    #assistantRail.assistant-rail .assistant-module-header {
+      min-height: 3.75rem !important;
+      padding: 0.64rem 0.72rem !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-eyebrow,
+    #assistantRail.assistant-rail .assistant-connected-badge {
+      display: none !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-dialog-surface {
+      padding: 0.58rem 0.68rem calc(0.72rem + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-dialog-scroll {
+      grid-template-rows: auto minmax(12rem, 1fr) auto !important;
+      gap: 0.5rem !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-patient-brief {
+      display: none !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-mode-switch,
+    #assistantRail.assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-diagnostic-head {
+      align-items: flex-start !important;
+      flex-direction: column !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-diagnostic-toggle {
+      width: 100% !important;
+    }
+
+    #assistantRail.assistant-rail .assistant-diagnostic-grid {
+      grid-template-columns: 1fr !important;
+      max-height: 24dvh !important;
+    }
+
+    #assistantRail.assistant-rail .ai-textarea-wrapper textarea {
+      min-height: 3.25rem !important;
+      height: 3.25rem !important;
+      max-height: 6.5rem !important;
     }
   }
 </style>
