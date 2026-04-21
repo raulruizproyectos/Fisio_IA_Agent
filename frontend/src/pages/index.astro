@@ -1406,7 +1406,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </main>
 
-      <aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico">
+      <aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico" data-copilot-build="clean-rail-20260421">
         <section class="ai-clinical-module card assistant-rail-card">
           <header class="module-header assistant-module-header">
             <div class="assistant-rail-copy">
@@ -1443,48 +1443,25 @@ import Layout from '../layouts/Layout.astro';
 
                             <div class="assistant-dialog-surface">
                 <div class="assistant-dialog-scroll">
-                  <div class="assistant-patient-brief" id="assistantPatientBrief" aria-live="polite">
-                    <div class="assistant-patient-brief-empty">
-                      <span class="assistant-brief-kicker">Briefing cl&iacute;nico</span>
-                      <strong>Selecciona un paciente para cargar contexto cl&iacute;nico &uacute;til.</strong>
-                      <p>Ver&aacute;s seguimiento reciente, estado del plan y accesos r&aacute;pidos para pedir mejores ejercicios.</p>
-                    </div>
-                  </div>
-
-                  <div class="assistant-flow-card" id="assistantFlowCard" aria-live="polite">
-                    <div class="assistant-flow-head">
-                      <span class="assistant-brief-kicker">Flujo guiado</span>
-                      <strong id="assistantFlowTitle">Plan listo para historial y PDF</strong>
-                    </div>
-                    <div class="assistant-flow-steps" id="assistantFlowSteps"></div>
-                    <p class="assistant-flow-hint" id="assistantFlowHint">Selecciona un paciente para empezar el flujo guiado.</p>
-                    <p class="assistant-flow-draft" id="assistantFlowDraft"></p>
-                  </div>
-
-                  <div class="chat-log" id="chatLog"></div>
-
-                  <div class="assistant-shortcuts" id="assistantShortcuts">
-                    <button type="button" class="assistant-chip" data-assistant-mode="new-plan" data-assistant-prompt="Dolor lumbar con progresion de 3 semanas y foco en adherencia."><span class="material-symbols-rounded">description</span> Plan lumbar</button>
-                    <button type="button" class="assistant-chip" data-assistant-mode="next-session" data-assistant-prompt="Que revisar en la proxima sesion y que progresion valorar."><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
-                  </div>
-
                   <div class="assistant-mode-switch" id="assistantModeSwitch" aria-label="Modo de trabajo del copilot">
                     <button type="button" class="assistant-mode-chip is-active" data-assistant-mode="new-plan" aria-pressed="true"><span class="material-symbols-rounded">electric_bolt</span> Nuevo plan</button>
                     <button type="button" class="assistant-mode-chip" data-assistant-mode="update-plan" aria-pressed="false"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
                     <button type="button" class="assistant-mode-chip" data-assistant-mode="next-session" aria-pressed="false"><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
                   </div>
 
-                  <div class="assistant-mode-card" id="assistantModeCard" aria-live="polite">
-                    <div class="assistant-mode-card-head">
-                      <span class="assistant-brief-kicker">Modo activo</span>
-                      <strong id="assistantModeTitle">Nuevo plan guiado</strong>
-                    </div>
-                    <p class="assistant-mode-copy" id="assistantModeSummary">Genera una propuesta inicial con plan IA, PDF e historial listos desde un briefing corto.</p>
-                    <div class="assistant-mode-meta">
-                      <span class="assistant-mode-pill" id="assistantModeOutput">Salida: plan IA + PDF</span>
-                      <span class="assistant-mode-pill is-soft" id="assistantModeRequirement">Requiere: paciente + objetivo</span>
-                    </div>
-                    <p class="assistant-mode-tip" id="assistantModeTip">Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.</p>
+                  <div class="assistant-patient-brief" id="assistantPatientBrief" aria-live="polite" hidden></div>
+                  <div class="assistant-flow-card" id="assistantFlowCard" aria-live="polite" hidden>
+                    <strong id="assistantFlowTitle"></strong>
+                    <div class="assistant-flow-steps" id="assistantFlowSteps"></div>
+                    <p class="assistant-flow-hint" id="assistantFlowHint"></p>
+                    <p class="assistant-flow-draft" id="assistantFlowDraft"></p>
+                  </div>
+                  <div class="assistant-mode-card" id="assistantModeCard" aria-live="polite" hidden>
+                    <strong id="assistantModeTitle">Nuevo plan guiado</strong>
+                    <p id="assistantModeSummary"></p>
+                    <span id="assistantModeOutput"></span>
+                    <span id="assistantModeRequirement"></span>
+                    <p id="assistantModeTip"></p>
                   </div>
 
                   <section class="assistant-diagnostic-card" id="assistantDiagnosticCard" aria-live="polite">
@@ -1557,6 +1534,8 @@ import Layout from '../layouts/Layout.astro';
                     <p class="assistant-delivery-summary" id="assistantDeliverySummary">Selecciona un paciente para preparar el envio por Telegram y la exportacion del PDF.</p>
                     <div class="assistant-delivery-pills" id="assistantDeliveryPills"></div>
                   </div>
+
+                  <div class="chat-log" id="chatLog"></div>
                 </div>
 
                 <form id="agentForm" class="ai-input-area">
@@ -1798,6 +1777,60 @@ import Layout from '../layouts/Layout.astro';
     },
   };
 
+  const enforceAssistantStructuredLayout = () => {
+    const isMobileLayout = window.innerWidth <= 720;
+    const diagnosticGrid = document.querySelector('#assistantRail .assistant-diagnostic-grid') as HTMLElement | null;
+    const intakeFields = document.querySelectorAll('#assistantRail .assistant-intake-field') as NodeListOf<HTMLElement>;
+
+    assistantShortcuts?.style.setProperty('display', 'none', 'important');
+    assistantPatientBrief?.style.setProperty('display', 'none', 'important');
+
+    if (assistantDialogScroll) {
+      assistantDialogScroll.style.setProperty('overflow-y', 'auto', 'important');
+      assistantDialogScroll.style.setProperty('overflow-x', 'hidden', 'important');
+      assistantDialogScroll.style.setProperty('min-height', '0', 'important');
+      assistantDialogScroll.style.setProperty('height', 'auto', 'important');
+      assistantDialogScroll.style.setProperty('padding-right', isMobileLayout ? '0.1rem' : '0.15rem', 'important');
+    }
+
+    if (assistantDiagnosticCard) {
+      assistantDiagnosticCard.style.setProperty('display', 'block', 'important');
+      assistantDiagnosticCard.style.setProperty('overflow', 'visible', 'important');
+      assistantDiagnosticCard.style.setProperty('max-height', 'none', 'important');
+      assistantDiagnosticCard.style.setProperty('height', 'auto', 'important');
+    }
+
+    if (diagnosticGrid) {
+      diagnosticGrid.style.setProperty('display', 'grid', 'important');
+      diagnosticGrid.style.setProperty('grid-template-columns', isMobileLayout ? '1fr' : 'repeat(2, minmax(0, 1fr))', 'important');
+      diagnosticGrid.style.setProperty('max-height', 'none', 'important');
+      diagnosticGrid.style.setProperty('overflow', 'visible', 'important');
+      diagnosticGrid.style.setProperty('height', 'auto', 'important');
+      diagnosticGrid.style.setProperty('align-items', 'stretch', 'important');
+    }
+
+    intakeFields.forEach((field) => {
+      field.style.setProperty('display', 'flex', 'important');
+      field.style.setProperty('flex-direction', 'column', 'important');
+      field.style.setProperty('justify-content', 'flex-start', 'important');
+      field.style.setProperty('min-height', isMobileLayout ? '3.45rem' : '3.55rem', 'important');
+      field.style.setProperty('height', 'auto', 'important');
+      field.style.setProperty('overflow', 'visible', 'important');
+    });
+
+    if (log) {
+      log.style.setProperty('display', 'grid', 'important');
+      log.style.setProperty('min-height', isMobileLayout ? '10rem' : '13rem', 'important');
+      log.style.setProperty('max-height', 'none', 'important');
+    }
+  };
+
+  const queueAssistantLayoutEnforce = () => {
+    window.requestAnimationFrame(() => {
+      enforceAssistantStructuredLayout();
+    });
+  };
+
   // === HELPERS ===
   const MOJIBAKE_RE = /(?:\u00C3|\u00C2|\u00E2|\u00F0|\u00D0|\u00D1|\uFFFD|\u0153|\u0152|\u0161|\u0178|\u00EF\u00BF\u00BD)/;
   const CP1252_UNICODE_TO_BYTE: Record<number, number> = {
@@ -1959,6 +1992,7 @@ import Layout from '../layouts/Layout.astro';
   };
   sanitizePageTextNodes();
   sanitizeCommonAttributes();
+  queueAssistantLayoutEnforce();
   const isTimeoutError = (err: any) => {
     const msg = String(err?.message || '').toLowerCase();
     return err?.name === 'TimeoutError' || msg.includes('timed out') || msg.includes('abort');
@@ -2080,7 +2114,7 @@ import Layout from '../layouts/Layout.astro';
   let quickSearchMatches: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let quickSearchActiveIndex = -1;
   let assistantTelegramLinkRequestToken = 0;
-  let assistantDiagnosticExpanded = false;
+  let assistantDiagnosticExpanded = true;
   const deliveredExerciseReports = new Map<string, { recommendationId: string | null; sentAt: string }>();
 
   const renderAssistantPatientContext = () => {
@@ -2145,9 +2179,7 @@ import Layout from '../layouts/Layout.astro';
   const syncAssistantDiagnosticPanel = () => {
     if (!assistantDiagnosticCard || !assistantDiagnosticToggle) return;
     const hasData = hasAssistantDiagnosticData();
-    const hasPlan = hasExerciseReportReady();
-    const forceCompact = hasPlan || activeAssistantMode !== 'new-plan';
-    const isExpanded = assistantDiagnosticExpanded && !forceCompact;
+    const isExpanded = assistantDiagnosticExpanded;
 
     assistantDiagnosticCard.classList.toggle('is-expanded', isExpanded);
     assistantDiagnosticCard.classList.toggle('is-collapsed', !isExpanded);
@@ -2158,6 +2190,7 @@ import Layout from '../layouts/Layout.astro';
       : hasData
         ? 'Editar contexto'
         : 'Anadir contexto';
+    queueAssistantLayoutEnforce();
   };
 
   const syncAssistantActionGrid = () => {
@@ -2917,6 +2950,7 @@ import Layout from '../layouts/Layout.astro';
       if (!mode || !(mode in assistantModeConfig)) return;
       requestOpenAssistantRail();
       setAssistantMode(mode, { focus: true });
+      queueAssistantLayoutEnforce();
     });
   });
 
@@ -2943,6 +2977,7 @@ import Layout from '../layouts/Layout.astro';
     syncResponsiveViewportState();
     if (!isMobile()) closeSidebar();
     syncOverlayBodyLock();
+    queueAssistantLayoutEnforce();
   });
 
   // === CHAT ===
@@ -2963,6 +2998,7 @@ import Layout from '../layouts/Layout.astro';
       article.innerHTML = `<div class="msg-body user-msg"><p>${escapeHtml(text)}</p></div>`;
     }
     log.appendChild(article);
+    queueAssistantLayoutEnforce();
     scrollAssistantRailToBottom();
   };
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexion'; };
@@ -21589,18 +21625,227 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }
   }
 
-  /* Copilot: compactar redundancias y evitar recortes en ficha estructurada */
-  .assistant-rail .assistant-shortcuts {
+  /* Copilot: simplificacion estructural final (una sola zona scrolleable) */
+  .assistant-rail .assistant-live-context,
+  .assistant-rail .assistant-flow-card,
+  .assistant-rail .assistant-mode-card,
+  .assistant-rail .assistant-shortcuts,
+  .assistant-rail .assistant-delivery-card {
     display: none !important;
   }
 
+  .assistant-rail .assistant-module-header {
+    padding: 0.68rem 0.78rem !important;
+    border-bottom: 1px solid #dbe5ec !important;
+    background: linear-gradient(180deg, #f3f8fb 0%, #edf4f8 100%) !important;
+  }
+
+  .assistant-rail .assistant-eyebrow {
+    color: #0f766e !important;
+    font-size: 0.64rem !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  .assistant-rail .assistant-rail-copy h2 {
+    margin: 0 !important;
+    font-size: 0.96rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.01em !important;
+    color: #14354f !important;
+  }
+
+  .assistant-rail .assistant-connected-badge {
+    padding: 0.22rem 0.52rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #cde1ea !important;
+    background: #ffffff !important;
+  }
+
+  .assistant-rail .assistant-connected-badge .status-text {
+    font-size: 0.66rem !important;
+    letter-spacing: 0.08em !important;
+    color: #31566f !important;
+  }
+
+  .assistant-rail .assistant-toolbar {
+    padding: 0.62rem 0.72rem 0.5rem !important;
+    gap: 0.48rem !important;
+  }
+
+  .assistant-rail .patient-selector {
+    min-height: 2.65rem !important;
+    border: 1px solid #d8e3ea !important;
+    border-radius: 0.82rem !important;
+    background: #ffffff !important;
+  }
+
+  .assistant-rail .patient-selector select {
+    font-size: 0.83rem !important;
+    color: #14354f !important;
+  }
+
+  .assistant-rail .assistant-dialog-surface {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll,
+  .assistant-rail .assistant-dialog-scroll {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    gap: 0.55rem !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-gutter: stable !important;
+    padding-right: 0.15rem !important;
+  }
+
+  .assistant-rail .assistant-mode-switch {
+    order: 1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.42rem !important;
+    padding: 0.16rem !important;
+    border: 1px solid #d7e1e7 !important;
+    border-radius: 0.9rem !important;
+    background: #f8fafb !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-patient-brief,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-patient-brief,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-patient-brief,
+  .assistant-rail .assistant-patient-brief {
+    display: none !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-diagnostic-card,
   .assistant-rail .assistant-diagnostic-card {
+    order: 2 !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
     overflow: visible !important;
+    padding: 0.72rem !important;
+    border: 1px solid #dbe4ec !important;
+    border-radius: 0.9rem !important;
+    background: #fffdfa !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-head {
+    margin-bottom: 0 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-grid {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-summary {
+    margin-top: 0.52rem !important;
+    font-size: 0.78rem !important;
+    line-height: 1.45 !important;
+    color: #516779 !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log,
+  .assistant-rail .chat-log {
+    order: 3 !important;
+    display: grid !important;
+    flex: 0 0 auto !important;
+    gap: 0.52rem !important;
+    min-height: 8rem !important;
+    overflow-y: auto !important;
+    max-height: min(34vh, 15rem) !important;
+    border: 1px solid #dbe4ec !important;
+    border-radius: 0.92rem !important;
+    background: #ffffff !important;
+    padding: 0.74rem !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  .assistant-rail .msg-body {
+    font-size: 0.83rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .assistant-rail .msg.agent .msg-body {
+    background: #f7fafc !important;
+    border: 1px solid #e1e9ef !important;
+    color: #21445c !important;
+  }
+
+  .assistant-rail .msg.user .msg-body,
+  .assistant-rail .msg-body.user-msg {
+    background: #153f5a !important;
+    color: #ffffff !important;
+    border: 1px solid #153f5a !important;
+  }
+
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log:empty,
+  .assistant-rail .chat-log:empty {
+    display: grid !important;
+    align-content: center !important;
+  }
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log:empty::before,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log:empty::before,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log:empty::before,
+  .assistant-rail .chat-log:empty::before {
+    content: 'Las respuestas del agente apareceran aqui.';
+    max-width: 32ch;
+    margin: 0 auto;
+    color: #647789;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  .assistant-rail .chat-log .msg.user {
+    display: block !important;
+  }
+
+  .assistant-rail .ai-input-area {
+    flex: 0 0 auto !important;
+    margin-top: 0.56rem !important;
+    border-top: 1px solid #dbe4ec !important;
+    border-radius: 0.86rem !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .assistant-rail .assistant-action-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .assistant-rail .btn-action {
+    min-height: 2.68rem !important;
+    font-size: 0.82rem !important;
+    border-radius: 0.72rem !important;
+  }
+
+  .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 3.7rem !important;
+    height: 3.7rem !important;
+    max-height: 7.2rem !important;
+  }
+
+  .assistant-rail .assistant-disclaimer {
+    display: none !important;
   }
 
   .assistant-rail .assistant-diagnostic-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)) !important;
     gap: 0.62rem !important;
     max-height: none !important;
     overflow: visible !important;
@@ -21608,7 +21853,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   .assistant-rail .assistant-intake-field {
-    min-height: 4.9rem !important;
+    min-height: 4.4rem !important;
     height: auto !important;
     overflow: visible !important;
     padding: 0.72rem 0.78rem !important;
@@ -21635,8 +21880,205 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   @media (max-width: 720px) {
+    .assistant-rail .assistant-dialog-scroll {
+      overflow-y: auto !important;
+      padding-right: 0.1rem !important;
+    }
+
+    .assistant-rail .assistant-patient-brief,
+    .assistant-rail .assistant-diagnostic-card {
+      flex: 0 0 auto !important;
+    }
+
+    .assistant-rail .chat-log {
+      flex: 0 0 auto !important;
+      min-height: 8.5rem !important;
+      max-height: 28vh !important;
+    }
+
+    .assistant-rail .assistant-module-header {
+      padding: 0.6rem 0.66rem !important;
+    }
+
+    .assistant-rail .assistant-rail-copy h2 {
+      font-size: 0.88rem !important;
+    }
+
+    .assistant-rail .assistant-toolbar {
+      padding: 0.52rem 0.58rem 0.42rem !important;
+    }
+
+    .assistant-rail .assistant-mode-switch,
+    .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
     .assistant-rail .assistant-diagnostic-grid {
       grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Copilot clean rebuild: compact clinical form + usable answer area */
+  .assistant-rail [hidden],
+  .assistant-rail .assistant-patient-brief[hidden],
+  .assistant-rail .assistant-flow-card[hidden],
+  .assistant-rail .assistant-mode-card[hidden],
+  .assistant-rail .assistant-delivery-card[hidden] {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-dialog-surface {
+    padding: 0.58rem 0.72rem 0.72rem !important;
+  }
+
+  .assistant-rail .assistant-dialog-scroll {
+    gap: 0.62rem !important;
+  }
+
+  .assistant-rail .assistant-mode-switch {
+    border-radius: 0.72rem !important;
+  }
+
+  .assistant-rail .assistant-mode-chip {
+    min-height: 2.28rem !important;
+    padding: 0.3rem 0.62rem !important;
+    font-size: 0.78rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card {
+    padding: 0.7rem !important;
+    border-radius: 0.78rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.65rem !important;
+    margin-bottom: 0.58rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-copy {
+    min-width: 0 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-copy strong {
+    display: block !important;
+    font-size: 0.86rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .assistant-rail .assistant-brief-kicker {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-toggle {
+    min-height: 2rem !important;
+    padding: 0.28rem 0.66rem !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+    font-size: 0.75rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.48rem !important;
+    padding-top: 0 !important;
+  }
+
+  .assistant-rail .assistant-intake-field {
+    min-height: 3.55rem !important;
+    padding: 0.48rem 0.62rem !important;
+    border-radius: 0.66rem !important;
+    gap: 0.18rem !important;
+    justify-content: center !important;
+  }
+
+  .assistant-rail .assistant-intake-field span {
+    font-size: 0.62rem !important;
+    line-height: 1 !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .assistant-rail .assistant-intake-field input,
+  .assistant-rail .assistant-intake-field select {
+    min-height: 1.75rem !important;
+    height: 1.75rem !important;
+    padding: 0 !important;
+    font-size: 0.84rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .assistant-rail .assistant-intake-field-wide {
+    grid-column: 1 / -1 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-summary {
+    display: none !important;
+  }
+
+  .assistant-rail .chat-log {
+    min-height: 13rem !important;
+    max-height: none !important;
+    flex: 1 1 13rem !important;
+  }
+
+  .assistant-rail .ai-input-area {
+    margin-top: 0.5rem !important;
+    padding: 0.58rem !important;
+  }
+
+  .assistant-rail .assistant-action-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .assistant-rail .assistant-action-grid .btn-pdf,
+  .assistant-rail .assistant-action-grid .btn-telegram {
+    display: none !important;
+  }
+
+  .assistant-rail .assistant-action-grid .btn-generate {
+    width: min(17rem, 100%) !important;
+  }
+
+  .assistant-rail .ai-textarea-wrapper textarea {
+    min-height: 3.35rem !important;
+    height: 3.35rem !important;
+    max-height: 6.5rem !important;
+  }
+
+  @media (max-width: 720px) {
+    .assistant-rail .assistant-dialog-surface {
+      padding: 0.48rem 0.56rem 0.62rem !important;
+    }
+
+    .assistant-rail .assistant-mode-switch {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .assistant-diagnostic-head {
+      align-items: flex-start !important;
+      flex-direction: column !important;
+    }
+
+    .assistant-rail .assistant-diagnostic-toggle {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+
+    .assistant-rail .assistant-diagnostic-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .assistant-intake-field {
+      min-height: 3.45rem !important;
+    }
+
+    .assistant-rail .chat-log {
+      min-height: 10rem !important;
+      flex-basis: 10rem !important;
     }
   }
 </style>
