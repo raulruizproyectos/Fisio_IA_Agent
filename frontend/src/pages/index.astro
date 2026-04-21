@@ -3007,8 +3007,8 @@ import Layout from '../layouts/Layout.astro';
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
     const hasReport = Boolean(lastExerciseReportPayload);
-    exercisePdfBtn.hidden = !hasReport;
-    exercisePdfBtn.disabled = false;
+    exercisePdfBtn.hidden = false;
+    exercisePdfBtn.disabled = !hasReport;
     exercisePdfBtn.classList.toggle('is-pending', !hasReport);
     exercisePdfBtn.classList.toggle('is-available', hasReport);
     exercisePdfBtn.innerHTML = hasReport
@@ -3088,8 +3088,8 @@ import Layout from '../layouts/Layout.astro';
     const hasPatient = Boolean(selectedPatientId);
     const hasReport = Boolean(lastExerciseReportPayload);
     const isLinked = hasLinkedTelegramPatient();
-    exerciseTelegramBtn.hidden = !hasReport;
-    exerciseTelegramBtn.disabled = false;
+    exerciseTelegramBtn.hidden = false;
+    exerciseTelegramBtn.disabled = !hasPatient || !hasReport;
     exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !hasReport);
     exerciseTelegramBtn.classList.toggle('is-available', isLinked && hasReport);
 
@@ -22186,6 +22186,39 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     font-size: 0.78rem !important;
   }
 
+  .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+  }
+
+  .assistant-rail .assistant-action-grid .btn-generate {
+    order: 1 !important;
+    width: auto !important;
+  }
+
+  .assistant-rail .assistant-action-grid .btn-pdf {
+    order: 2 !important;
+  }
+
+  .assistant-rail .assistant-action-grid .btn-telegram {
+    order: 3 !important;
+  }
+
+  .assistant-rail .assistant-action-grid .btn-pdf:not([hidden]),
+  .assistant-rail .assistant-action-grid .btn-telegram:not([hidden]) {
+    display: inline-flex !important;
+  }
+
+  .assistant-rail .assistant-action-grid .btn-pdf:disabled,
+  .assistant-rail .assistant-action-grid .btn-telegram:disabled {
+    opacity: 0.62 !important;
+    cursor: not-allowed !important;
+  }
+
   @media (max-width: 720px) {
     .assistant-rail .assistant-dialog-scroll,
     html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
@@ -22196,6 +22229,11 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
       min-height: 5rem !important;
       flex-basis: 5rem !important;
+    }
+
+    .assistant-rail .assistant-action-grid,
+    html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
     }
   }
 </style>
