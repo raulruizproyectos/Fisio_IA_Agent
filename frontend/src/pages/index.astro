@@ -3090,7 +3090,7 @@ import Layout from '../layouts/Layout.astro';
     const hasReport = Boolean(lastExerciseReportPayload);
     const isLinked = hasLinkedTelegramPatient();
     exerciseTelegramBtn.hidden = false;
-    exerciseTelegramBtn.disabled = !hasPatient || !hasReport;
+    exerciseTelegramBtn.disabled = !hasPatient || (isLinked && !hasReport);
     exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !hasReport);
     exerciseTelegramBtn.classList.toggle('is-available', isLinked && hasReport);
 
@@ -3121,15 +3121,15 @@ import Layout from '../layouts/Layout.astro';
 
     if (getCurrentReportDeliveryState()) {
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Reenviar Telegram';
-      exerciseTelegramBtn.title = 'Reenviar PDF y mensaje del plan al paciente por Telegram';
+      exerciseTelegramBtn.title = 'Reenviar el informe del plan al paciente por Telegram';
       exerciseTelegramBtn.setAttribute('aria-label', 'Reenviar informe al paciente por Telegram');
       renderAssistantDeliveryCard();
       syncAssistantActionGrid();
       return;
     }
 
-    exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Enviar PDF Telegram';
-    exerciseTelegramBtn.title = 'Enviar PDF y mensaje del plan al paciente por Telegram';
+    exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Enviar Telegram';
+    exerciseTelegramBtn.title = 'Enviar el informe del plan al paciente por Telegram';
     exerciseTelegramBtn.setAttribute('aria-label', 'Enviar informe al paciente por Telegram');
     renderAssistantDeliveryCard();
     syncAssistantActionGrid();
@@ -3831,6 +3831,42 @@ import Layout from '../layouts/Layout.astro';
     }
   });
 
+  const buildTelegramDeliveryFollowUpNote = (payload: any) => {
+    const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
+    const exerciseNames = exercises
+      .map((exercise: any) => String(exercise?.nombre || exercise?.name || '').trim())
+      .filter(Boolean)
+      .slice(0, 4);
+    const clinicalSummary = trimAgentBriefText(
+      payload?.message_to_therapist ||
+      payload?.selection_rationale ||
+      payload?.symptom_summary ||
+      '',
+      180
+    );
+    const parts = [
+      'Tipo de informe: plan de ejercicios enviado por Telegram.',
+      `${exercises.length || 'Sin'} ejercicio(s) incluidos.`,
+    ];
+    if (exerciseNames.length) parts.push(`Ejercicios clave: ${exerciseNames.join(', ')}.`);
+    if (clinicalSummary) parts.push(`Resumen: ${clinicalSummary}`);
+    return parts.join(' ');
+  };
+
+  const recordTelegramDeliveryFollowUp = async (recommendationId: string, payload: any) => {
+    if (!recommendationId) return false;
+    await fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${recommendationId}/follow-up`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        note_text: buildTelegramDeliveryFollowUpNote(payload),
+        recommendation_state: 'enviada',
+        fisioterapeuta_id: PROF_ID,
+      }),
+    });
+    return true;
+  };
+
   exerciseTelegramBtn?.addEventListener('click', async () => {
     if (!selectedPatientId) {
       addMessage('Selecciona un paciente antes de enviar el informe por Telegram.', 'agent');
@@ -3840,7 +3876,9 @@ import Layout from '../layouts/Layout.astro';
     if (!hasLinkedTelegramPatient()) {
       pendingHistoryAnchor = 'telegram';
       addMessage('Este paciente aun no tiene Telegram vinculado. Te llevo a su ficha para completar el enlace.', 'agent');
+      closeAssistantRail();
       openPatientHistory(selectedPatientId, selectedPatientName);
+      window.setTimeout(() => focusHistoryAnchor('telegram'), 650);
       return;
     }
 
@@ -3869,20 +3907,10 @@ import Layout from '../layouts/Layout.astro';
         }),
       });
 
+      let followUpRegistered = false;
       if (recommendationId) {
         try {
-          await fetchJson(`${BACKEND_BASE}/api/exercises/reports/archive`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              recommendation_id: recommendationId,
-              patient_id: selectedPatientId,
-              fisioterapeuta_id: PROF_ID,
-              format: 'pdf',
-              source: 'crm_telegram',
-            }),
-          });
-          incrementArchivedReportsMetric(recommendationId);
+          followUpRegistered = await recordTelegramDeliveryFollowUp(recommendationId, lastExerciseReportPayload);
         } catch {}
       }
 
@@ -3891,7 +3919,16 @@ import Layout from '../layouts/Layout.astro';
         sentAt: new Date().toISOString(),
       });
       updateExerciseTelegramButton();
-      addMessage('Informe enviado por Telegram al paciente y dejado listo en trazabilidad del caso.', 'agent');
+      if (followUpRegistered && activeSection === 'historial') {
+        pendingHistoryAnchor = 'recommendations';
+        await loadHistorial();
+      }
+      addMessage(
+        followUpRegistered
+          ? 'Informe enviado por Telegram y registrado como seguimiento breve en la ficha del paciente.'
+          : 'Informe enviado por Telegram. No pude registrar el seguimiento porque falta la recomendacion asociada.',
+        'agent'
+      );
     } catch (err: any) {
       addMessage(`No se pudo enviar por Telegram: ${err?.message || 'error no identificado'}`, 'agent');
     } finally {
