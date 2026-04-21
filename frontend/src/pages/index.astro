@@ -1498,6 +1498,10 @@ import Layout from '../layouts/Layout.astro';
                           <option value="Prevencion / mantenimiento">Prevencion / mantenimiento</option>
                         </select>
                       </label>
+                      <label class="assistant-intake-field assistant-intake-field-wide assistant-objective-field">
+                        <span>Objetivo clinico / matices</span>
+                        <textarea id="assistantObjectiveInput" rows="2" placeholder="Ej. bajar dolor, recuperar movilidad, evitar flexion profunda, volver a correr"></textarea>
+                      </label>
                       <label class="assistant-intake-field">
                         <span>Duracion sintomas</span>
                         <input id="assistantDurationInput" type="text" placeholder="Ej. 3 semanas" />
@@ -1518,10 +1522,6 @@ import Layout from '../layouts/Layout.astro';
                           <option value="10/10">10/10</option>
                         </select>
                       </label>
-                      <label class="assistant-intake-field assistant-intake-field-wide">
-                        <span>Objetivo clinico</span>
-                        <input id="assistantObjectiveInput" type="text" placeholder="Ej. bajar dolor, recuperar movilidad y volver a correr" />
-                      </label>
                     </div>
                     <p class="assistant-diagnostic-summary" id="assistantDiagnosticSummary">Sin ficha estructurada todavia. Completa 2 o 3 campos y el agente trabajara con una entrada mas clinica.</p>
                   </section>
@@ -1540,12 +1540,13 @@ import Layout from '../layouts/Layout.astro';
                 <form id="agentForm" class="ai-input-area">
                   <div class="assistant-composer-shell">
                     <div class="ai-textarea-wrapper">
-                      <textarea id="agentInput" rows="1" placeholder="Describe el objetivo clinico o el dolor principal..."></textarea>
+                      <textarea id="agentInput" rows="1" placeholder="Anade objetivo, limitaciones o preferencias para completar la ficha estructurada..."></textarea>
                     </div>
                     <button type="submit" class="btn-action btn-chat btn-send-compact" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)">
                       <span class="material-symbols-rounded">arrow_upward</span>
                     </button>
                   </div>
+                  <p class="assistant-context-hint">La IA combinara este texto con area, tipo de caso, duracion y dolor para generar un plan mas afinado.</p>
                   <div class="assistant-action-grid">
                     <button type="button" class="btn-action btn-pdf is-pending" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF"><span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar</button>
                     <button type="button" class="btn-action btn-telegram is-pending" id="exerciseTelegramBtn" aria-label="Enviar plan por Telegram" title="Vincula Telegram para enviar el plan al paciente"><span class="material-symbols-rounded">send</span> Telegram paciente</button>
@@ -1669,7 +1670,7 @@ import Layout from '../layouts/Layout.astro';
   const assistantInjuryTypeInput = document.getElementById('assistantInjuryTypeInput') as HTMLSelectElement | null;
   const assistantDurationInput = document.getElementById('assistantDurationInput') as HTMLInputElement | null;
   const assistantPainLevelInput = document.getElementById('assistantPainLevelInput') as HTMLSelectElement | null;
-  const assistantObjectiveInput = document.getElementById('assistantObjectiveInput') as HTMLInputElement | null;
+  const assistantObjectiveInput = document.getElementById('assistantObjectiveInput') as HTMLTextAreaElement | null;
   const assistantDiagnosticSummary = document.getElementById('assistantDiagnosticSummary') as HTMLElement | null;
   const assistantDiagnosticCard = document.getElementById('assistantDiagnosticCard') as HTMLElement | null;
   const assistantDiagnosticToggle = document.getElementById('assistantDiagnosticToggle') as HTMLButtonElement | null;
@@ -22120,6 +22121,34 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     margin-top: 0 !important;
   }
 
+  .assistant-rail .assistant-diagnostic-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.42rem !important;
+  }
+
+  .assistant-rail .assistant-intake-field {
+    min-height: 3.3rem !important;
+  }
+
+  .assistant-rail .assistant-objective-field {
+    min-height: 4.65rem !important;
+  }
+
+  .assistant-rail .assistant-objective-field textarea {
+    width: 100% !important;
+    min-height: 2.35rem !important;
+    height: 2.35rem !important;
+    max-height: 4.5rem !important;
+    resize: vertical !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #152d44 !important;
+    font: inherit !important;
+    line-height: 1.25 !important;
+    padding: 0 !important;
+    outline: none !important;
+  }
+
   .assistant-rail .assistant-diagnostic-toggle {
     min-height: 1.9rem !important;
     padding: 0.24rem 0.72rem !important;
@@ -22150,6 +22179,13 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
   .assistant-rail .assistant-composer-shell {
     margin-top: 0 !important;
+  }
+
+  .assistant-rail .assistant-context-hint {
+    margin: 0.38rem 0 0 !important;
+    color: #5f7284 !important;
+    font-size: 0.72rem !important;
+    line-height: 1.35 !important;
   }
 
   .assistant-rail .assistant-action-grid,
@@ -22233,6 +22269,10 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .assistant-rail .assistant-action-grid,
     html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .assistant-diagnostic-grid {
       grid-template-columns: 1fr !important;
     }
   }
