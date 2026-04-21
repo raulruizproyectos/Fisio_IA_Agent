@@ -583,36 +583,38 @@ router.get('/recommendations/:patientId', async (req, res) => {
         .order('occurred_at', { ascending: false })
         .limit(500);
 
-      if (commErr) throw commErr;
+      if (commErr) {
+        console.warn('[exercises/recommendations] communications enrichment skipped:', commErr.message);
+      } else {
+        for (const row of commRows || []) {
+          const recommendationId = row?.recomendacion_id;
+          if (!recommendationId) continue;
 
-      for (const row of commRows || []) {
-        const recommendationId = row?.recomendacion_id;
-        if (!recommendationId) continue;
+          const eventName = String(row?.payload?.event || '').trim();
+          if (eventName === 'recommendation_follow_up') {
+            const current = followUpsByRecommendation.get(recommendationId) || [];
+            current.push(normalizeRecommendationFollowUp(row));
+            followUpsByRecommendation.set(recommendationId, current);
+            continue;
+          }
 
-        const eventName = String(row?.payload?.event || '').trim();
-        if (eventName === 'recommendation_follow_up') {
-          const current = followUpsByRecommendation.get(recommendationId) || [];
-          current.push(normalizeRecommendationFollowUp(row));
-          followUpsByRecommendation.set(recommendationId, current);
-          continue;
-        }
+          if (eventName === 'exercise_report_archived') {
+            const current = archivedReportsByRecommendation.get(recommendationId) || [];
+            current.push({
+              id: row?.id || null,
+              format: String(row?.payload?.format || 'pdf').trim().toLowerCase() || 'pdf',
+              source: String(row?.payload?.source || '').trim() || null,
+              archived_at: row?.payload?.archived_at || row?.occurred_at || row?.created_at || null,
+              message_text: row?.message_text || '',
+              status: row?.status || null,
+            });
+            archivedReportsByRecommendation.set(recommendationId, current);
+            continue;
+          }
 
-        if (eventName === 'exercise_report_archived') {
-          const current = archivedReportsByRecommendation.get(recommendationId) || [];
-          current.push({
-            id: row?.id || null,
-            format: String(row?.payload?.format || 'pdf').trim().toLowerCase() || 'pdf',
-            source: String(row?.payload?.source || '').trim() || null,
-            archived_at: row?.payload?.archived_at || row?.occurred_at || row?.created_at || null,
-            message_text: row?.message_text || '',
-            status: row?.status || null,
-          });
-          archivedReportsByRecommendation.set(recommendationId, current);
-          continue;
-        }
-
-        if (eventName === 'exercise_report_snapshot' && !reportSnapshotByRecommendation.has(recommendationId)) {
-          reportSnapshotByRecommendation.set(recommendationId, row?.payload?.report || null);
+          if (eventName === 'exercise_report_snapshot' && !reportSnapshotByRecommendation.has(recommendationId)) {
+            reportSnapshotByRecommendation.set(recommendationId, row?.payload?.report || null);
+          }
         }
       }
     }

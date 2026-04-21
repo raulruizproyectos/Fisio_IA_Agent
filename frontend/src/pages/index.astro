@@ -2041,6 +2041,7 @@ import Layout from '../layouts/Layout.astro';
   const pageLoaders: Record<string, () => void> = {};
   let selectedPatientId: string | null = null;
   let selectedPatientName = '';
+  const SELECTED_PATIENT_STORAGE_KEY = 'fisio_ia_selected_patient_v1';
   let patientCatalog: Array<{ id: string; nombre_completo: string; email?: string | null }> = [];
   let templateLibraryCache: {
     summary: any;
@@ -2648,6 +2649,33 @@ import Layout from '../layouts/Layout.astro';
     selectorShell?.classList.toggle('has-value', hasValue);
   };
 
+  const rememberSelectedPatient = (patientId: string | null, patientName = '') => {
+    try {
+      if (!patientId) {
+        localStorage.removeItem(SELECTED_PATIENT_STORAGE_KEY);
+        return;
+      }
+      localStorage.setItem(SELECTED_PATIENT_STORAGE_KEY, JSON.stringify({
+        id: patientId,
+        name: patientName || '',
+      }));
+    } catch {}
+  };
+
+  const restoreSelectedPatientFromStorage = () => {
+    if (selectedPatientId || !patientCatalog.length) return;
+    try {
+      const raw = localStorage.getItem(SELECTED_PATIENT_STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      const patientId = String(saved?.id || '').trim();
+      const patient = patientCatalog.find((item) => item.id === patientId);
+      if (!patient) return;
+      selectedPatientId = patient.id;
+      selectedPatientName = patient.nombre_completo || String(saved?.name || '').trim();
+    } catch {}
+  };
+
   function syncChatPatientSelection(patientId: string | null, fallbackName = '') {
     if (!chatPatientSelect) return;
     const nextId = patientId || '';
@@ -2665,6 +2693,7 @@ import Layout from '../layouts/Layout.astro';
       selectedPatientName = '';
       currentAssistantPatientBrief = null;
       currentPatientTelegramLinkState = null;
+      rememberSelectedPatient(null);
       renderAssistantPatientContext();
       renderAssistantPatientBrief(null);
       renderAssistantFlowCard();
@@ -2674,6 +2703,7 @@ import Layout from '../layouts/Layout.astro';
 
     const selected = patientCatalog.find((p) => p.id === nextId);
     selectedPatientName = selected?.nombre_completo || fallbackName || selectedPatientName || '';
+    rememberSelectedPatient(nextId, selectedPatientName);
     currentPatientTelegramLinkState = null;
     renderAssistantPatientContext();
     updateExerciseTelegramButton();
@@ -3363,6 +3393,7 @@ import Layout from '../layouts/Layout.astro';
       creado_en: p.creado_en || p.created_at || null,
       _source: p._source || 'crm',
     }));
+    restoreSelectedPatientFromStorage();
     renderChatPatientOptions();
     renderAppointmentPatientOptions();
     return patientCatalog;
@@ -3796,6 +3827,15 @@ import Layout from '../layouts/Layout.astro';
       syncEngineOpsFromPayload(payload);
       clearAgentProgress();
       addExerciseReport(payload);
+      if (payload?.recommendation_id) {
+        addMessage('Plan generado y guardado en el historial del paciente.', 'agent');
+        if (activeSection === 'historial') {
+          pendingHistoryAnchor = 'recommendations';
+          await loadHistorial();
+        }
+      } else if (payload?.persistence_skipped || payload?.persistence_warning) {
+        addMessage(`Plan generado, pero no quedo guardado en historial: ${payload?.persistence_warning || 'faltan datos de paciente CRM'}.`, 'agent');
+      }
       updateExercisePdfButton();
       if (retriesUsed > 0) {
         addMessage(`Motor IA respondio tras ${retriesUsed} reintento(s).`, 'agent');
@@ -6059,23 +6099,39 @@ import Layout from '../layouts/Layout.astro';
     }
     historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
 
+    const loadPiece = async (label: string, request: Promise<any>) => {
+      try {
+        return { ok: true, label, response: await request, error: '' };
+      } catch (err: any) {
+        return { ok: false, label, response: null, error: err?.message || 'No disponible' };
+      }
+    };
+
     try {
-      const [patientResp, historyResp, recommendationsResp, telegramLinkResp] = await Promise.all([
-        fetchJson(`${BACKEND_BASE}/api/pacientes/${selectedPatientId}`),
-        fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`),
-        fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${selectedPatientId}?limit=25`),
-        fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`).catch((err: any) => ({ error: err?.message || 'No se pudo cargar el estado de Telegram.' })),
+      const [patientPiece, historyPiece, recommendationsPiece, telegramPiece] = await Promise.all([
+        loadPiece('datos del paciente', fetchJson(`${BACKEND_BASE}/api/pacientes/${selectedPatientId}`)),
+        loadPiece('notas clinicas', fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`)),
+        loadPiece('planes de ejercicios', fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${selectedPatientId}?limit=25`)),
+        loadPiece('Telegram', fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`)),
       ]);
 
-      const patient = patientResp?.data || {};
-      const notes = historyResp?.data?.notas_seguimiento || [];
-      const recommendations = recommendationsResp?.data || [];
-      const telegramLink = telegramLinkResp?.data || null;
-      const telegramLinkError = telegramLinkResp?.error || '';
+      const patient = patientPiece.response?.data || {};
+      const notes = historyPiece.response?.data?.notas_seguimiento || [];
+      const recommendations = recommendationsPiece.response?.data || [];
+      const telegramLink = telegramPiece.response?.data || null;
+      const telegramLinkError = telegramPiece.error || '';
       currentPatientTelegramLinkState = telegramLink;
       updateExerciseTelegramButton();
       const displayName = patient?.nombre_completo || selectedPatientName || `Paciente #${selectedPatientId}`;
       syncAssistantPatientBriefFromData(selectedPatientId, patient, notes, recommendations);
+      selectedPatientName = displayName;
+      rememberSelectedPatient(selectedPatientId, displayName);
+      const unavailablePieces = [patientPiece, historyPiece, recommendationsPiece, telegramPiece]
+        .filter((piece) => !piece.ok)
+        .map((piece) => `${piece.label}: ${piece.error}`);
+      const historyPartialNotice = unavailablePieces.length
+        ? `<div class="detail-block detail-block-warning"><h3>Historial cargado en modo parcial</h3><p>${escapeHtml(unavailablePieces.join(' · '))}</p></div>`
+        : '';
 
       const pickLatestIsoDate = (current: string | null, candidate: string | null) => {
         if (!candidate) return current;
@@ -6280,6 +6336,7 @@ import Layout from '../layouts/Layout.astro';
         : `<p class="detail-empty">Sin recomendaciones de ejercicios registradas.</p>`;
 
       historialContent.innerHTML = `
+        ${historyPartialNotice}
         <div class="detail-block">
           <h3>${escapeHtml(displayName)}</h3>
           <p><strong>Email:</strong> ${escapeHtml(patient.email || '-')} - <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '-'}</p>
@@ -22311,6 +22368,139 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .assistant-rail .assistant-diagnostic-grid {
       grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
+<style is:global id="assistant-single-scroll-usability-v1">
+  .assistant-rail .assistant-console,
+  .assistant-rail .assistant-rail-body {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    scrollbar-gutter: stable !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.72rem !important;
+    padding: 0.72rem 0.82rem 1rem !important;
+  }
+
+  .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
+    order: 1 !important;
+    flex: 0 0 auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    scrollbar-gutter: auto !important;
+  }
+
+  .assistant-rail .ai-input-area,
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='compact'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area {
+    order: 2 !important;
+    flex: 0 0 auto !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0.74rem !important;
+    border: 1px solid #d8e6ee !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+  }
+
+  .assistant-rail .chat-log,
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
+    order: 3 !important;
+    flex: 0 0 auto !important;
+    min-height: 12rem !important;
+    max-height: none !important;
+    overflow: visible !important;
+    scrollbar-gutter: auto !important;
+    padding: 0.82rem !important;
+    border: 1px solid #d8e6ee !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+  }
+
+  .assistant-rail .chat-log:empty {
+    min-height: 7.5rem !important;
+    display: grid !important;
+    align-content: center !important;
+  }
+
+  .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 0.55rem !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-toggle {
+    font-weight: 700 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-diagnostic-card {
+    overflow: visible !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-grid,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-diagnostic-grid,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-diagnostic-grid,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-diagnostic-grid {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .detail-block-warning {
+    border-color: #fed7aa !important;
+    background: #fff7ed !important;
+  }
+
+  .detail-block-warning h3 {
+    color: #9a3412 !important;
+  }
+
+  .detail-block-warning p {
+    color: #7c2d12 !important;
+  }
+
+  @media (max-width: 720px) {
+    .assistant-rail .assistant-dialog-surface,
+    html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
+      padding: 0.62rem 0.62rem 0.9rem !important;
+      gap: 0.62rem !important;
+    }
+
+    .assistant-rail .assistant-action-grid,
+    html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .assistant-rail .chat-log,
+    html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
+      min-height: 11rem !important;
     }
   }
 </style>
