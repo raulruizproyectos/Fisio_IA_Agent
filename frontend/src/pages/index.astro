@@ -1444,9 +1444,9 @@ import Layout from '../layouts/Layout.astro';
                             <div class="assistant-dialog-surface">
                 <div class="assistant-dialog-scroll">
                   <div class="assistant-mode-switch" id="assistantModeSwitch" aria-label="Modo de trabajo del copilot">
-                    <button type="button" class="assistant-mode-chip is-active" data-assistant-mode="new-plan" aria-pressed="true"><span class="material-symbols-rounded">electric_bolt</span> Nuevo plan</button>
-                    <button type="button" class="assistant-mode-chip" data-assistant-mode="update-plan" aria-pressed="false"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
-                    <button type="button" class="assistant-mode-chip" data-assistant-mode="next-session" aria-pressed="false"><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
+                    <button type="button" class="assistant-mode-chip is-active" data-assistant-mode="new-plan" aria-pressed="true"><span class="material-symbols-rounded">electric_bolt</span> Plan nuevo</button>
+                    <button type="button" class="assistant-mode-chip" data-assistant-mode="update-plan" aria-pressed="false"><span class="material-symbols-rounded">neurology</span> Ajuste</button>
+                    <button type="button" class="assistant-mode-chip" data-assistant-mode="next-session" aria-pressed="false"><span class="material-symbols-rounded">event_available</span> Visita</button>
                   </div>
 
                   <div class="assistant-patient-brief" id="assistantPatientBrief" aria-live="polite" hidden></div>
@@ -1535,15 +1535,9 @@ import Layout from '../layouts/Layout.astro';
                     <div class="assistant-delivery-pills" id="assistantDeliveryPills"></div>
                   </div>
 
-                  <div class="chat-log" id="chatLog"></div>
                 </div>
 
                 <form id="agentForm" class="ai-input-area">
-                  <div class="assistant-action-grid">
-                    <button type="button" class="btn-action btn-pdf is-pending" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF"><span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar</button>
-                    <button type="button" class="btn-action btn-telegram is-pending" id="exerciseTelegramBtn" aria-label="Enviar plan por Telegram" title="Vincula Telegram para enviar el plan al paciente"><span class="material-symbols-rounded">send</span> Telegram paciente</button>
-                    <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
-                  </div>
                   <div class="assistant-composer-shell">
                     <div class="ai-textarea-wrapper">
                       <textarea id="agentInput" rows="1" placeholder="Describe el objetivo clinico o el dolor principal..."></textarea>
@@ -1552,8 +1546,15 @@ import Layout from '../layouts/Layout.astro';
                       <span class="material-symbols-rounded">arrow_upward</span>
                     </button>
                   </div>
+                  <div class="assistant-action-grid">
+                    <button type="button" class="btn-action btn-pdf is-pending" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF"><span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar</button>
+                    <button type="button" class="btn-action btn-telegram is-pending" id="exerciseTelegramBtn" aria-label="Enviar plan por Telegram" title="Vincula Telegram para enviar el plan al paciente"><span class="material-symbols-rounded">send</span> Telegram paciente</button>
+                    <button type="button" class="btn-action btn-generate" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios"><span class="material-symbols-rounded">electric_bolt</span> Generar Plan</button>
+                  </div>
                   <p class="assistant-disclaimer">El asistente puede cometer errores. Verifica siempre la informacion medica.</p>
                 </form>
+
+                <div class="chat-log" id="chatLog"></div>
               </div>
             </section>
           </div>
@@ -2088,14 +2089,14 @@ import Layout from '../layouts/Layout.astro';
       tip: 'Ideal cuando el dolor cambia, el paciente mejora o hace falta ajustar la dosificacion.',
     },
     'next-session': {
-      placeholder: 'Escribe que quieres revisar o preparar para la siguiente sesion...',
-      primaryLabel: 'Preparar sesion',
+      placeholder: 'Escribe que quieres revisar en la proxima visita: dolor, adherencia, progresion o dudas...',
+      primaryLabel: 'Crear checklist',
       primaryBusyLabel: 'Preparando...',
       primaryIcon: 'event_available',
       action: 'chat',
-      title: 'Preparar siguiente sesion',
+      title: 'Preparar proxima visita',
       summary: 'Resume que revisar en consulta y deja una checklist breve para la siguiente visita.',
-      outputLabel: 'Salida: checklist de sesion',
+      outputLabel: 'Salida: checklist de visita',
       requirementLabel: 'Requiere: paciente con historial',
       tip: 'Util para entrar a consulta con foco y decidir progresiones o regresiones rapidas.',
     },
@@ -2554,7 +2555,7 @@ import Layout from '../layouts/Layout.astro';
       </div>
       <div class="assistant-brief-actions">
         <button type="button" class="assistant-chip" data-assistant-brief-action="update-plan"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
-        <button type="button" class="assistant-chip" data-assistant-brief-action="next-session"><span class="material-symbols-rounded">event_available</span> Preparar sesion</button>
+        <button type="button" class="assistant-chip" data-assistant-brief-action="next-session"><span class="material-symbols-rounded">event_available</span> Checklist visita</button>
       </div>
     `;
   };
@@ -7451,7 +7452,7 @@ import Layout from '../layouts/Layout.astro';
       nextMeta = 'Hay un plan IA generado y conviene dejar trazabilidad del envio o PDF en el historial.';
     } else if (!notasUnavailable && latestEva != null && latestEva >= 7) {
       primaryAction = 'agente';
-      primaryLabel = 'Preparar sesion';
+      primaryLabel = 'Checklist visita';
       nextTitle = 'Revisar dolor alto y ajustar plan';
       nextMeta = `EVA elevado (${latestEva}/10). Revisar plan de tratamiento.`;
     }
@@ -22079,6 +22080,122 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .assistant-rail .chat-log {
       min-height: 10rem !important;
       flex-basis: 10rem !important;
+    }
+  }
+
+  /* Copilot layout reset: ficha + texto arriba, respuestas abajo */
+  .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-surface {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.58rem !important;
+    overflow: hidden !important;
+    padding: 0.52rem 0.72rem 0.72rem !important;
+  }
+
+  .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-dialog-scroll,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
+    order: 1 !important;
+    flex: 0 0 auto !important;
+    max-height: min(46vh, 24rem) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    gap: 0.52rem !important;
+    padding: 0 !important;
+  }
+
+  .assistant-rail .assistant-mode-switch {
+    order: 1 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-diagnostic-card,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-diagnostic-card {
+    order: 2 !important;
+    margin-top: 0 !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-toggle {
+    min-height: 1.9rem !important;
+    padding: 0.24rem 0.72rem !important;
+    border: 1px solid #cfe0ea !important;
+    border-radius: 999px !important;
+    background: #f8fcfd !important;
+    color: #24506a !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.01em !important;
+    box-shadow: none !important;
+  }
+
+  .assistant-rail .assistant-diagnostic-toggle:hover {
+    background: #edf7fa !important;
+    color: #14384f !important;
+  }
+
+  .assistant-rail .ai-input-area,
+  html[data-assistant-mode='desktop'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='compact'] .assistant-rail .ai-input-area,
+  html[data-assistant-mode='mobile'] .assistant-rail .ai-input-area {
+    order: 2 !important;
+    margin-top: 0 !important;
+    padding: 0.58rem !important;
+    flex: 0 0 auto !important;
+  }
+
+  .assistant-rail .assistant-composer-shell {
+    margin-top: 0 !important;
+  }
+
+  .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='desktop'] .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='compact'] .assistant-rail .assistant-action-grid,
+  html[data-assistant-mode='mobile'] .assistant-rail .assistant-action-grid {
+    margin-top: 0.5rem !important;
+  }
+
+  .assistant-rail .chat-log,
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
+    order: 3 !important;
+    flex: 1 1 auto !important;
+    min-height: 5.8rem !important;
+    max-height: none !important;
+    padding: 0.62rem !important;
+  }
+
+  .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log:empty,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log:empty {
+    min-height: 4.4rem !important;
+    align-content: center !important;
+  }
+
+  .assistant-rail .chat-log:empty::before,
+  html[data-assistant-mode='desktop'] .assistant-rail .chat-log:empty::before,
+  html[data-assistant-mode='compact'] .assistant-rail .chat-log:empty::before,
+  html[data-assistant-mode='mobile'] .assistant-rail .chat-log:empty::before {
+    content: 'Las respuestas apareceran aqui.' !important;
+    font-size: 0.78rem !important;
+  }
+
+  @media (max-width: 720px) {
+    .assistant-rail .assistant-dialog-scroll,
+    html[data-assistant-mode='mobile'] .assistant-rail .assistant-dialog-scroll {
+      max-height: 52vh !important;
+    }
+
+    .assistant-rail .chat-log,
+    html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
+      min-height: 5rem !important;
+      flex-basis: 5rem !important;
     }
   }
 </style>
