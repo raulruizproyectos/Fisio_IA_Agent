@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 frontend/node_modules_stuck*/
+backend/package-lock.json
 .pnp
 .pnp.js
 
