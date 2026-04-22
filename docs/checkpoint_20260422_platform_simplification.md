@@ -17,7 +17,7 @@
   - mensajes de pacientes,
   - tarjetas de sync/reserva.
 - El dock movil priorizaba `Pagos`, pero para el dia a dia clinico es mas util tener `Mensajes` junto a inicio, pacientes, copiloto y agenda.
-- Finanzas esta repartido entre `Pagos`, `Gestoria`, `Facturacion` y `Bonos`. No se ha fusionado aun para evitar riesgo funcional, pero queda identificado como proxima simplificacion.
+- Finanzas estaba repartido entre `Pagos`, `Gestoria`, `Facturacion` y `Bonos`, obligando a saltar entre cuatro entradas del menu lateral.
 - `Documentos`, `Biblioteca`, `Historial` y `Reserva online` siguen disponibles, pero no deben competir como acciones primarias del dashboard.
 
 ## Cambios aplicados
@@ -34,6 +34,12 @@
     - pagos y bonos.
   - restaurada la visibilidad de metricas, flujos, agenda inmediata, mensajes, sync y reserva online.
   - el dock movil cambia `Pagos` por `Mensajes`.
+  - fase 2 inicial aplicada:
+    - el sidebar pasa de cuatro entradas financieras a una sola entrada `Finanzas`,
+    - `Pagos`, `Facturas`, `Bonos` y `Gestoria` quedan como pestanas internas,
+    - la pestana activa se marca visualmente,
+    - el sidebar mantiene `Finanzas` activo aunque se navegue a una subpagina financiera,
+    - no se han tocado endpoints ni persistencia.
 
 ## Criterio de producto adoptado
 - `Inicio` = cockpit diario, no escaparate de todas las funciones.
@@ -48,12 +54,10 @@
   - biblioteca,
   - historial,
   - reserva online,
-  - facturacion,
-  - gestoria,
-  - bonos.
+  - finanzas avanzadas.
 
-## Pendiente recomendado para fase 2
-1. Consolidar `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una unica seccion `Finanzas`, con pestanas internas.
+## Pendiente recomendado tras fase 2
+1. Revisar si merece la pena convertir `Finanzas` en una unica pagina real con pestanas internas cargadas sin cambiar de `data-page`.
 2. Revisar `Historial` vs ficha de paciente para que el seguimiento viva preferentemente en la ficha y el historial global sea solo busqueda/auditoria.
 3. Revisar `Biblioteca` y `Documentos` para separar claramente recursos terapeuticos de documentos administrativos.
 4. Hacer una pasada visual por cada seccion tras el redeploy, una por una, con capturas desktop y movil.
@@ -61,6 +65,7 @@
 ## Verificacion realizada
 - `npm run check` en frontend: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
 - `npm run build` en frontend: OK.
+- Tras fase 2 financiera, se repiten `npm run check` y `npm run build`: OK.
 
 ## Verificacion pendiente en produccion
 - Redeploy de `fisio-frontend`.
@@ -68,4 +73,5 @@
   - Inicio muestra tarjetas utiles y no queda vacio.
   - Dock movil abre `Mensajes`.
   - Copiloto sigue abriendo desde `Generar plan guiado`.
-  - Pagos sigue accesible desde sidebar y desde `Pagos y bonos`.
+  - `Finanzas` abre pagos.
+  - Las pestanas `Pagos`, `Facturas`, `Bonos` y `Gestoria` navegan correctamente.

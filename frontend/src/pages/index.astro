@@ -32,19 +32,7 @@ import Layout from '../layouts/Layout.astro';
         </a>
         <a href="#" class="nav-item" data-section="pagos">
           <span class="material-symbols-rounded">payments</span>
-          <span class="nav-label">Pagos</span>
-        </a>
-        <a href="#" class="nav-item" data-section="gestoria">
-          <span class="material-symbols-rounded">account_balance</span>
-          <span class="nav-label">Gestor&iacute;a</span>
-        </a>
-        <a href="#" class="nav-item" data-section="facturas">
-          <span class="material-symbols-rounded">receipt_long</span>
-          <span class="nav-label">Facturaci&oacute;n</span>
-        </a>
-        <a href="#" class="nav-item" data-section="bonos">
-          <span class="material-symbols-rounded">confirmation_number</span>
-          <span class="nav-label">Bonos</span>
+          <span class="nav-label">Finanzas</span>
         </a>
         <a href="#" class="nav-item" data-section="documentos">
           <span class="material-symbols-rounded">description</span>
@@ -586,11 +574,17 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PAGOS === -->
         <div class="page-section" data-page="pagos">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Pagos</h1>
+            <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
             <button class="btn-primary" id="addPagoBtn">
               <span class="material-symbols-rounded">add_card</span> Registrar pago
             </button>
           </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas">
+            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
+          </nav>
 
           <!-- Resumen + filtros compactos -->
           <div class="pagos-toolbar">
@@ -717,6 +711,12 @@ import Layout from '../layouts/Layout.astro';
               <select id="gestoriaAnioFilter" title="A&ntilde;o"></select>
             </div>
           </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas">
+            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
+          </nav>
 
           <!-- Gran total -->
           <div class="pagos-summary-row" style="margin-bottom:1rem">
@@ -1112,6 +1112,12 @@ import Layout from '../layouts/Layout.astro';
             <h1 class="page-title"><span class="material-symbols-rounded">confirmation_number</span> Bonos de sesiones</h1>
             <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">add</span> Nuevo bono</button>
           </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas">
+            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
+          </nav>
           <section class="card table-card">
             <header class="card-header">
               <h2>Bonos activos y hist&oacute;rico</h2>
@@ -1203,6 +1209,12 @@ import Layout from '../layouts/Layout.astro';
             <h1 class="page-title"><span class="material-symbols-rounded">receipt_long</span> Facturaci&oacute;n</h1>
             <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">add</span> Nueva factura</button>
           </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas">
+            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
+            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
+          </nav>
 
           <section class="card table-card">
             <header class="card-header">
@@ -2699,10 +2711,12 @@ import Layout from '../layouts/Layout.astro';
   };
 
   let activeSection = 'dashboard';
+  const financeSections = new Set(['pagos', 'facturas', 'bonos', 'gestoria']);
 
   const navigateTo = (section: string) => {
     activeSection = section;
-    navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === section));
+    const sidebarSection = financeSections.has(section) ? 'pagos' : section;
+    navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === sidebarSection));
     mobileDockNavButtons.forEach((button) => button.classList.toggle('active', button.dataset.mobileNav === section));
     pages.forEach(p => {
       const isActive = (p as HTMLElement).dataset.page === section;
@@ -20773,9 +20787,60 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     justify-content: center;
   }
 
+  .finance-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: -0.35rem 0 1rem;
+    padding: 0.38rem;
+    overflow-x: auto;
+    border: 1px solid #dce4ee;
+    border-radius: 999px;
+    background: #f8fafc;
+  }
+
+  .finance-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.38rem;
+    min-height: 2.42rem;
+    padding: 0.42rem 0.78rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: #475569;
+    font-size: 0.86rem;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out, transform 150ms ease-out;
+  }
+
+  .finance-tab:hover {
+    transform: translateY(-1px);
+    border-color: #d4dae3;
+    background: #ffffff;
+    color: #0f172a;
+  }
+
+  .finance-tab .material-symbols-rounded {
+    font-size: 1.05rem;
+  }
+
+  .page-section[data-page='pagos'] .finance-tab[data-dashboard-nav='pagos'],
+  .page-section[data-page='facturas'] .finance-tab[data-dashboard-nav='facturas'],
+  .page-section[data-page='bonos'] .finance-tab[data-dashboard-nav='bonos'],
+  .page-section[data-page='gestoria'] .finance-tab[data-dashboard-nav='gestoria'] {
+    border-color: #0f4c81;
+    background: #0f4c81;
+    color: #f8fafc;
+    box-shadow: 0 12px 26px -22px rgba(15, 76, 129, 0.8);
+  }
+
   .finance-overview-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.75rem;
     margin: 0 0 1rem;
   }
@@ -20816,6 +20881,16 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   @media (max-width: 760px) {
+    .finance-tabs {
+      margin-top: -0.2rem;
+      border-radius: 1rem;
+    }
+
+    .finance-tab {
+      flex: 1 0 auto;
+      min-width: 8rem;
+    }
+
     .finance-overview-grid {
       grid-template-columns: 1fr;
     }

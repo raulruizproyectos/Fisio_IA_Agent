@@ -11,17 +11,22 @@
   - `Flujos clave` queda centrado en alta de paciente, agenda, mensajes, plan IA y pagos/bonos.
   - restaurada la visibilidad de metricas, flujos, agenda inmediata, mensajes, sync y reserva online, que estaban ocultos por un override final demasiado agresivo.
   - dock movil ajustado: `Pagos` pasa a `Mensajes` para priorizar triage diario.
+  - finanzas simplificado:
+    - sidebar con una unica entrada `Finanzas`,
+    - `Pagos`, `Facturas`, `Bonos` y `Gestoria` pasan a pestanas internas,
+    - el menu lateral conserva `Finanzas` activo al navegar por subpaginas financieras.
 - `docs/checkpoint_20260422_platform_simplification.md`
-  - nuevo punto de situacion con auditoria de redundancias y fase 2 recomendada.
+  - punto de situacion actualizado con la fase 2 financiera inicial.
 
 ### Verificaciones realizadas
 - `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
 - `npm run build` en `frontend`: OK.
+- Repetidas tras la simplificacion de finanzas: `npm run check` OK y `npm run build` OK.
 
 ### Punto exacto para continuar
 1. Leer `docs/checkpoint_20260422_platform_simplification.md`.
-2. Validar dashboard en desktop y movil tras redeploy de `fisio-frontend`.
-3. Si esta base queda estable, continuar con fase 2: consolidar `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una sola seccion `Finanzas`.
+2. Validar dashboard y `Finanzas` en desktop y movil tras redeploy de `fisio-frontend`.
+3. Si esta base queda estable, continuar con `Historial` vs ficha de paciente y `Biblioteca` vs `Documentos`.
 
 ## [Sesion 119] - 2026-04-22 (Copilot clinico: reset arquitectonico, historial y Telegram)
 ### Objetivo

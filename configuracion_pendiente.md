@@ -1,4 +1,4 @@
-## Estado actual (2026-04-22, Sesion 120) - Inicio simplificado y fase 2 de plataforma preparada.
+## Estado actual (2026-04-22, Sesion 120) - Inicio simplificado y finanzas consolidado.
 
 ### Completado sesion 120
 - [x] Auditoria rapida de redundancias en la plataforma:
@@ -14,6 +14,11 @@
   - flujos clave centrados en alta, agenda, mensajes, plan IA y pagos/bonos,
   - metricas, flujos, agenda inmediata, mensajes, sync y reserva online vuelven a ser visibles,
   - dock movil cambia `Pagos` por `Mensajes`.
+- [x] Fase 2 inicial de finanzas aplicada:
+  - sidebar con una sola entrada `Finanzas`,
+  - `Pagos`, `Facturas`, `Bonos` y `Gestoria` como pestanas internas,
+  - `Finanzas` queda activo en el sidebar al navegar por subpaginas financieras,
+  - sin cambios en backend ni base de datos.
 - [x] Checkpoint operativo nuevo:
   - `docs/checkpoint_20260422_platform_simplification.md`.
 
@@ -24,16 +29,18 @@
    - `Inicio` no queda vacio,
    - `Generar plan guiado` abre Copilot,
    - `Mensajes` del dock movil abre la bandeja,
-   - `Pagos y bonos` abre pagos.
+   - `Pagos y bonos` abre finanzas,
+   - pestanas financieras navegan entre `Pagos`, `Facturas`, `Bonos` y `Gestoria`.
 
 ### Validaciones locales
 - [x] `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
 - [x] `npm run build` en `frontend`: OK.
+- [x] Checks repetidos tras consolidar finanzas: `npm run check` OK y `npm run build` OK.
 
 ### Siguiente fase recomendada
-1. Fusionar `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una unica seccion `Finanzas`.
-2. Revisar `Historial` para que no compita con la ficha de paciente.
-3. Separar mejor `Biblioteca` (recursos terapeuticos) de `Documentos` (administrativo/legal).
+1. Revisar `Historial` para que no compita con la ficha de paciente.
+2. Separar mejor `Biblioteca` (recursos terapeuticos) de `Documentos` (administrativo/legal).
+3. Si se quiere ir mas alla, convertir `Finanzas` en una unica pagina real con pestanas internas sin cambiar de `data-page`.
 
 ## Estado actual (2026-04-22, Sesion 119) - Copilot clinico simplificado y pendiente de redeploy.
 
