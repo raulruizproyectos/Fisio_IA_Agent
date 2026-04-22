@@ -13,20 +13,24 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
 ## Checkpoint actual (2026-04-22)
-- Base funcional exacta antes del cierre documental: `45be475`
-- Estado de GitHub: `origin/main` sincronizado con el refactor arquitectonico del Copilot clinico.
+- Base funcional exacta antes de este tramo: `fd82cd9`
+- Estado de GitHub: pendiente de sincronizar con la simplificacion operativa de plataforma.
 - Estado real del producto en este punto:
-  - el CRM conserva la base producto-pro anterior,
-  - el Copilot deja de depender de multiples capas CSS contradictorias,
-  - el layout del agente queda definido por una sola fuente de verdad: `assistant-clinical-layout-reset-20260422`,
-  - el rail incluye marcador de verificacion productiva: `data-copilot-build="clinical-reset-20260422"`,
-  - historial y entrega Telegram quedan endurecidos para no romper todo el flujo por fallos parciales.
+  - el Copilot queda estabilizado por el checkpoint clinico anterior,
+  - el dashboard se simplifica como cockpit diario,
+  - se eliminan accesos duplicados del hero,
+  - se recuperan metricas, flujos clave, agenda inmediata, mensajes, sync y reserva online que habian quedado ocultos,
+  - el dock movil prioriza `Mensajes` sobre `Pagos`.
 - Siguiente paso exacto:
   - redeploy de `fisio-frontend`,
-  - redeploy de `fisio-backend` si aun no esta publicado el commit `9e7007b`,
-  - validar en EasyPanel que el HTML productivo contiene `clinical-reset-20260422`,
-  - smoke test de Copilot en desktop y movil.
-- Checkpoint operativo recomendado: `docs/checkpoint_20260422_copilot_clinical_reset.md`
+  - smoke test de `Inicio` en desktop y movil,
+  - confirmar que `Generar plan guiado`, `Mensajes` y `Pagos y bonos` abren el modulo correcto,
+  - continuar con fase 2: fusionar `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una seccion `Finanzas`.
+- Validacion local:
+  - `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`),
+  - `npm run build` en `frontend`: OK.
+- Checkpoint operativo recomendado: `docs/checkpoint_20260422_platform_simplification.md`
+- Checkpoint operativo anterior del Copilot: `docs/checkpoint_20260422_copilot_clinical_reset.md`
 
 ## Checkpoint anterior (2026-04-16)
 - Base funcional exacta antes del cierre documental: `34ea207`

@@ -1,3 +1,40 @@
+## Estado actual (2026-04-22, Sesion 120) - Inicio simplificado y fase 2 de plataforma preparada.
+
+### Completado sesion 120
+- [x] Auditoria rapida de redundancias en la plataforma:
+  - dashboard con tres capas de accesos repetidos,
+  - override final ocultando metricas y bloques utiles,
+  - dock movil priorizando `Pagos` por encima de `Mensajes`,
+  - finanzas repartido en demasiadas entradas (`Pagos`, `Gestoria`, `Facturacion`, `Bonos`).
+- [x] Primer ajuste seguro aplicado en `frontend/src/pages/index.astro`:
+  - dashboard renombrado a `Hoy en la clinica`,
+  - eliminada banda redundante del hero,
+  - eliminado card lateral duplicado de planes/seguimiento,
+  - hero reducido a un CTA principal de copiloto,
+  - flujos clave centrados en alta, agenda, mensajes, plan IA y pagos/bonos,
+  - metricas, flujos, agenda inmediata, mensajes, sync y reserva online vuelven a ser visibles,
+  - dock movil cambia `Pagos` por `Mensajes`.
+- [x] Checkpoint operativo nuevo:
+  - `docs/checkpoint_20260422_platform_simplification.md`.
+
+### Pendiente inmediato
+1. Hacer commit y push de la simplificacion.
+2. Redeploy de `fisio-frontend`.
+3. Smoke test en desktop y movil:
+   - `Inicio` no queda vacio,
+   - `Generar plan guiado` abre Copilot,
+   - `Mensajes` del dock movil abre la bandeja,
+   - `Pagos y bonos` abre pagos.
+
+### Validaciones locales
+- [x] `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
+- [x] `npm run build` en `frontend`: OK.
+
+### Siguiente fase recomendada
+1. Fusionar `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una unica seccion `Finanzas`.
+2. Revisar `Historial` para que no compita con la ficha de paciente.
+3. Separar mejor `Biblioteca` (recursos terapeuticos) de `Documentos` (administrativo/legal).
+
 ## Estado actual (2026-04-22, Sesion 119) - Copilot clinico simplificado y pendiente de redeploy.
 
 ### Completado sesion 119

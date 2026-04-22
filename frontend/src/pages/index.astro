@@ -109,7 +109,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="hero-panel-main">
                 <div class="hero-heading-stack">
                   <span class="hero-eyebrow">Centro operativo del dia</span>
-                  <h1 class="hero-title">Centro clínico</h1>
+                  <h1 class="hero-title">Hoy en la clinica</h1>
                   <p class="hero-subtitle" id="dashboardLiveSummary">Resumen diario en tiempo real.</p>
                   <div class="hero-runtime-strip" aria-label="Principios del trabajo diario">
                     <span class="hero-runtime-chip">Agenda viva</span>
@@ -119,15 +119,6 @@ import Layout from '../layouts/Layout.astro';
                 </div>
                 <div class="hero-actions hero-action-row">
                   <button class="btn-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
-                  <button class="btn-secondary" id="heroAgendaShortcutBtn" type="button"><span class="material-symbols-rounded">calendar_today</span> Abrir agenda</button>
-                  <button class="btn-ghost" id="heroNewPatientShortcutBtn" type="button"><span class="material-symbols-rounded">add</span> Alta express</button>
-                </div>
-                <div class="clinical-hero-band" aria-label="Pilares del cockpit clinico">
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="citas"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_today</span></span><span class="hero-band-label">Agenda</span></button>
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="intakes"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="hero-band-label">Telegram</span></button>
-                  <button type="button" class="hero-band-pill" data-dashboard-action="open-copilot"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="hero-band-label">Ejercicios IA</span></button>
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="pagos"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">euro</span></span><span class="hero-band-label">Pagos</span></button>
-                  <button type="button" class="hero-band-pill" data-dashboard-nav="bonos"><span class="hero-band-icon" aria-hidden="true"><span class="material-symbols-rounded">card_giftcard</span></span><span class="hero-band-label">Bonos</span></button>
                 </div>
                 <div class="hero-signal-grid">
                   <article class="signal-card signal-card-live" id="dashboardNextSessionCard">
@@ -173,16 +164,6 @@ import Layout from '../layouts/Layout.astro';
                 </div>
               </div>
               <div class="hero-panel-side">
-                <article class="cockpit-side-card cockpit-side-card-agent">
-                  <span class="cockpit-side-kicker">Motor terapeutico</span>
-                  <h2 class="cockpit-side-title">Planes y seguimiento</h2>
-                  <p class="cockpit-side-copy">Genera y revisa planes en segundos.</p>
-                  <div class="cockpit-side-actions">
-                    <button class="btn-primary btn-sm" type="button" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span> Nuevo plan</button>
-                    <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="historial"><span class="material-symbols-rounded">history</span> Historial</button>
-                    <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="plantillas"><span class="material-symbols-rounded">assignment</span> Biblioteca</button>
-                  </div>
-                </article>
                 <article class="cockpit-side-card priorities-side-card">
                   <span class="cockpit-side-kicker">Foco operativo</span>
                   <div class="priority-list" id="dashboardPriorityList">
@@ -228,8 +209,7 @@ import Layout from '../layouts/Layout.astro';
                   <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_month</span></span><span class="command-tile-kicker">Agenda</span><strong>Semana clínica</strong><p>Gestiona huecos y cambios rápido.</p></button>
                   <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="command-tile-kicker">Telegram</span><strong>Mensajes y triage</strong><p>Prioriza y responde sin friccion.</p></button>
                   <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="command-tile-kicker">Ejercicios</span><strong>Plan de ejercicios</strong><p>Genera, entrega y guarda trazabilidad.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="documentos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">description</span></span><span class="command-tile-kicker">Documentos</span><strong>Documentación clínica</strong><p>Firmas y PDFs en un punto.</p></button>
-                  <button type="button" class="command-tile command-tile-accent" data-dashboard-action="open-booking-page"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">open_in_new</span></span><span class="command-tile-kicker">Captacion</span><strong>Reserva online</strong><p>Comparte enlace y capta citas.</p></button>
+                  <button type="button" class="command-tile command-tile-accent" data-dashboard-nav="pagos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">payments</span></span><span class="command-tile-kicker">Cobros</span><strong>Pagos y bonos</strong><p>Revisa cobros, bonos y sesiones pendientes.</p></button>
                 </div>
               </article>
             </section>
@@ -1584,9 +1564,9 @@ import Layout from '../layouts/Layout.astro';
         <span class="material-symbols-rounded">calendar_today</span>
         <span>Agenda</span>
       </button>
-      <button type="button" class="mobile-dock-item" data-mobile-nav="pagos" aria-label="Ir a pagos">
-        <span class="material-symbols-rounded">payments</span>
-        <span>Pagos</span>
+      <button type="button" class="mobile-dock-item" data-mobile-nav="intakes" aria-label="Ir a mensajes">
+        <span class="material-symbols-rounded">forward_to_inbox</span>
+        <span>Mensajes</span>
       </button>
     </nav>
   </div>
@@ -20486,13 +20466,24 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     max-width: 14ch !important;
   }
 
+  .page-section[data-page='dashboard'] .hero-action-row {
+    display: flex !important;
+    width: auto !important;
+  }
+
   .page-section[data-page='dashboard'] .hero-runtime-strip,
-  .page-section[data-page='dashboard'] .clinical-hero-band,
+  .page-section[data-page='dashboard'] .clinical-hero-band {
+    display: none !important;
+  }
+
   .page-section[data-page='dashboard'] .clinical-metrics,
   .page-section[data-page='dashboard'] .dashboard-ops-grid,
-  .page-section[data-page='dashboard'] .dashboard-bottom-row,
+  .page-section[data-page='dashboard'] .dashboard-bottom-row {
+    display: grid !important;
+  }
+
   .page-section[data-page='dashboard'] .card.widget-card {
-    display: none !important;
+    display: block !important;
   }
 
   .page-section[data-page='dashboard'] .hero-signal-grid {
@@ -20501,7 +20492,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   .page-section[data-page='dashboard'] .hero-signal-grid .signal-card:nth-child(n+3) {
-    display: none !important;
+    display: flex !important;
   }
 
   .page-section[data-page='dashboard'] .signal-card {
@@ -20685,6 +20676,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .page-section[data-page='pacientes'] .patients-hero-main h2 {
       font-size: clamp(1.35rem, 6.2vw, 1.8rem) !important;
       line-height: 1.12 !important;
+    }
+
+    .page-section[data-page='dashboard'] .hero-action-row,
+    .page-section[data-page='dashboard'] .hero-action-row .btn-primary {
+      width: 100% !important;
+      justify-content: center !important;
     }
 
     .page-section[data-page='pacientes'] .patients-command-bar {

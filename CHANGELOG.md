@@ -1,3 +1,28 @@
+## [Sesion 120] - 2026-04-22 (Simplificacion operativa de plataforma)
+### Objetivo
+- Empezar la revision global de usabilidad reduciendo redundancias sin quitar funciones.
+
+### Cambios aplicados
+- `frontend/src/pages/index.astro`
+  - dashboard renombrado a `Hoy en la clinica`.
+  - eliminada la banda redundante de accesos del hero.
+  - eliminado el card lateral duplicado de planes/seguimiento.
+  - el hero conserva un unico CTA principal: `Generar plan guiado`.
+  - `Flujos clave` queda centrado en alta de paciente, agenda, mensajes, plan IA y pagos/bonos.
+  - restaurada la visibilidad de metricas, flujos, agenda inmediata, mensajes, sync y reserva online, que estaban ocultos por un override final demasiado agresivo.
+  - dock movil ajustado: `Pagos` pasa a `Mensajes` para priorizar triage diario.
+- `docs/checkpoint_20260422_platform_simplification.md`
+  - nuevo punto de situacion con auditoria de redundancias y fase 2 recomendada.
+
+### Verificaciones realizadas
+- `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
+- `npm run build` en `frontend`: OK.
+
+### Punto exacto para continuar
+1. Leer `docs/checkpoint_20260422_platform_simplification.md`.
+2. Validar dashboard en desktop y movil tras redeploy de `fisio-frontend`.
+3. Si esta base queda estable, continuar con fase 2: consolidar `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una sola seccion `Finanzas`.
+
 ## [Sesion 119] - 2026-04-22 (Copilot clinico: reset arquitectonico, historial y Telegram)
 ### Objetivo
 - Dejar el Copilot clinico en un punto mantenible y documentado, eliminando la acumulacion de overrides que provocaba doble scroll, ficha cortada y cajas vacias gigantes.
