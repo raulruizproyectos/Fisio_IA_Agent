@@ -1,3 +1,62 @@
+## Estado actual (2026-04-22, Sesion 119) - Copilot clinico simplificado y pendiente de redeploy.
+
+### Completado sesion 119
+- [x] Copilot clinico limpiado a nivel arquitectonico:
+  - eliminados bloques CSS correctivos acumulados del rail,
+  - una sola fuente de verdad visual: `assistant-clinical-layout-reset-20260422`,
+  - marcador productivo: `data-copilot-build="clinical-reset-20260422"`.
+- [x] Layout objetivo aplicado:
+  - desktop: ficha estructurada izquierda, texto/botones/respuestas derecha,
+  - movil: columna unica,
+  - sin respuestas: no se pinta caja blanca vacia.
+- [x] JS del Copilot saneado:
+  - fuera alturas inline que provocaban huecos gigantes,
+  - fuera grid inline de botones,
+  - paciente activo recordado en `localStorage`.
+- [x] Historial endurecido:
+  - carga parcial si falla una pieza secundaria,
+  - al generar plan con `recommendation_id` se informa que quedo guardado.
+- [x] Telegram desde Copilot ajustado:
+  - sin vinculacion: lleva al bloque de Telegram del paciente,
+  - con vinculacion: envia informe y registra seguimiento breve.
+
+### Commits clave publicados
+- `45be475` - `refactor: simplify assistant rail architecture`
+- `e63c54b` - `fix: reset assistant clinical layout`
+- `9e7007b` - `fix: improve assistant history usability`
+- `b82dadc` - `fix: repair assistant telegram delivery flow`
+
+### Validaciones locales
+- [x] `npm run check` en `frontend`: OK.
+- [x] `npm run build` en `frontend`: OK.
+- [x] `git diff --check -- frontend/src/pages/index.astro`: OK.
+- [x] `npm run lint` en `backend`: OK en el tramo backend, con warning antiguo no bloqueante.
+
+### Siguiente paso exacto
+1. **Redeploy frontend en EasyPanel**.
+2. **Redeploy backend en EasyPanel** si aun no esta publicado el commit `9e7007b`.
+3. Abrir la URL productiva y verificar en HTML:
+   - `clinical-reset-20260422`
+   - `assistant-clinical-layout-reset-20260422`
+4. Smoke test:
+   - abrir Copilot,
+   - seleccionar paciente,
+   - revisar que no haya doble scroll ni caja blanca gigante,
+   - generar plan,
+   - confirmar plan en `Historial > Informes y recomendaciones`,
+   - probar Telegram con paciente sin vincular y con paciente vinculado.
+
+### Nota operativa importante
+- Si EasyPanel sigue mostrando el layout viejo, no tocar codigo primero.
+- Antes hay que confirmar si el HTML productivo contiene el marcador `clinical-reset-20260422`.
+- Si no aparece, es cache/redeploy pendiente.
+- Si aparece y aun falla, ajustar solo el bloque `assistant-clinical-layout-reset-20260422`.
+
+### Archivo local no relacionado
+- Sigue apareciendo `?? backend/package-lock.json`.
+- No incluirlo salvo que se decida regenerar/normalizar locks del backend.
+
+---
 ## Estado actual (2026-04-13, Sesion 117) - Shell premium listo y validacion funcional de produccion cerrada.
 
 ### Completado sesion 117

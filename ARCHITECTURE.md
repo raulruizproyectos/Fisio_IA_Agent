@@ -19,6 +19,20 @@ Principios de producto reforzados (benchmark funcional del mercado):
 - Interoperabilidad basada en datos estructurados y trazabilidad.
 - IA confiable: recomendaciones prudentes, auditables y con gobernanza de datos.
 
+Checkpoint de producto actual (2026-04-22, Sesion 119):
+
+- El Copilot clinico del CRM queda reencauzado como componente con una unica fuente de verdad visual.
+- El layout final vigente se define en `frontend/src/pages/index.astro` mediante `assistant-clinical-layout-reset-20260422`.
+- El rail incluye marcador de verificacion de despliegue: `data-copilot-build="clinical-reset-20260422"`.
+- Decision arquitectonica:
+  - no seguir acumulando bloques CSS correctivos para el Copilot,
+  - cualquier ajuste futuro debe tocar el reset clinico final o extraer el componente a modulo dedicado,
+  - evitar estilos inline JS para layout salvo apertura/cierre del overlay,
+  - historial y recomendaciones deben degradar en modo parcial si falla una dependencia secundaria.
+- Estado operativo:
+  - frontend validado con `npm run check` y `npm run build`,
+  - pendiente validar visualmente en EasyPanel tras redeploy.
+
 Checkpoint de producto actual (2026-03-19, Sesion 109):
 
 - La agenda productiva ya opera como espejo visible Calendar <-> CRM y muestra estados por cita en el frontend.
@@ -399,7 +413,6 @@ Telegram (intents base):
 Condicion de continuidad:
 
 - Mantener el flujo centrado en informe clÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nico de ejercicios (sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­ntomas -> selecciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n -> imÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡genes/pautas -> entrega CRM/Telegram).
-
 
 
 

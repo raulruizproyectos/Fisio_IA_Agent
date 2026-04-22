@@ -1,3 +1,52 @@
+## [Sesion 119] - 2026-04-22 (Copilot clinico: reset arquitectonico, historial y Telegram)
+### Objetivo
+- Dejar el Copilot clinico en un punto mantenible y documentado, eliminando la acumulacion de overrides que provocaba doble scroll, ficha cortada y cajas vacias gigantes.
+
+### Cambios aplicados
+- `frontend/src/pages/index.astro`
+  - refactor del rail del Copilot:
+    - eliminado el stack de bloques CSS correctivos anteriores,
+    - nueva fuente de verdad `assistant-clinical-layout-reset-20260422`,
+    - nuevo marcador `data-copilot-build="clinical-reset-20260422"`,
+    - escritorio en dos columnas: ficha estructurada a la izquierda y texto/botones/respuestas a la derecha,
+    - movil en una columna,
+    - respuestas ocultas si no hay mensajes para evitar caja blanca vacia.
+  - eliminados estilos inline de JS que forzaban alturas y grid de botones.
+  - persistencia del paciente activo en `localStorage`.
+  - al generar plan se informa si quedo guardado en historial y se recarga `Historial` si es la vista activa.
+  - flujo Telegram ajustado:
+    - sin vinculacion: lleva al bloque de Telegram del paciente,
+    - con vinculacion: envia informe y registra seguimiento breve.
+- `backend/src/routes/exercises.js`
+  - `GET /api/exercises/recommendations/:patientId` tolera fallos al enriquecer con comunicaciones y no rompe toda la respuesta.
+- `docs/checkpoint_20260422_copilot_clinical_reset.md`
+  - nuevo checkpoint operativo para retomar la proxima sesion.
+- `README.md`, `configuracion_pendiente.md`, `ARCHITECTURE.md`
+  - actualizados con punto de situacion y despliegue pendiente.
+
+### Commits funcionales del tramo
+- `df98bc3` - `fix: clean copilot rail layout`
+- `185c56e` - `fix: improve copilot form order`
+- `e6db61f` - `fix: restore copilot delivery actions`
+- `90a929b` - `fix: clarify copilot clinical objective input`
+- `b82dadc` - `fix: repair assistant telegram delivery flow`
+- `9e7007b` - `fix: improve assistant history usability`
+- `e63c54b` - `fix: reset assistant clinical layout`
+- `45be475` - `refactor: simplify assistant rail architecture`
+
+### Verificaciones realizadas
+- `npm run check` en `frontend`: OK.
+- `npm run build` en `frontend`: OK.
+- `git diff --check -- frontend/src/pages/index.astro`: OK.
+- `npm run lint` en `backend`: OK en el tramo backend, con warning antiguo no relacionado en `professional.js`.
+
+### Punto exacto para la proxima sesion
+1. Leer `docs/checkpoint_20260422_copilot_clinical_reset.md`.
+2. Hacer redeploy de `fisio-frontend` y, si procede, `fisio-backend`.
+3. Confirmar en EasyPanel que el HTML productivo contiene `clinical-reset-20260422`.
+4. Si el usuario ve el layout viejo, revisar cache/redeploy antes de tocar codigo.
+5. Si el marcador nuevo aparece y aun hay fallo visual, ajustar solo el bloque `assistant-clinical-layout-reset-20260422`.
+
 ## [Sesion 118] - 2026-04-16 (Producto pro + handoff del Copilot)
 ### Objetivo
 - Empujar el CRM hacia un acabado mas premium y dejar documentado con precision el punto de continuidad del agente IA.
