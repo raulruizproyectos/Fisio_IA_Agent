@@ -1406,7 +1406,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </main>
 
-      <aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico" data-copilot-build="clean-rail-20260421">
+      <aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico" data-copilot-build="clinical-reset-20260422">
         <section class="ai-clinical-module card assistant-rail-card">
           <header class="module-header assistant-module-header">
             <div class="assistant-rail-copy">
@@ -1788,11 +1788,11 @@ import Layout from '../layouts/Layout.astro';
     assistantPatientBrief?.style.setProperty('display', 'none', 'important');
 
     if (assistantDialogScroll) {
-      assistantDialogScroll.style.setProperty('overflow-y', 'auto', 'important');
-      assistantDialogScroll.style.setProperty('overflow-x', 'hidden', 'important');
-      assistantDialogScroll.style.setProperty('min-height', '0', 'important');
-      assistantDialogScroll.style.setProperty('height', 'auto', 'important');
-      assistantDialogScroll.style.setProperty('padding-right', isMobileLayout ? '0.1rem' : '0.15rem', 'important');
+      assistantDialogScroll.style.removeProperty('overflow-y');
+      assistantDialogScroll.style.removeProperty('overflow-x');
+      assistantDialogScroll.style.removeProperty('min-height');
+      assistantDialogScroll.style.removeProperty('height');
+      assistantDialogScroll.style.removeProperty('padding-right');
     }
 
     if (assistantDiagnosticCard) {
@@ -1821,9 +1821,10 @@ import Layout from '../layouts/Layout.astro';
     });
 
     if (log) {
-      log.style.setProperty('display', 'grid', 'important');
-      log.style.setProperty('min-height', isMobileLayout ? '10rem' : '13rem', 'important');
-      log.style.setProperty('max-height', 'none', 'important');
+      log.style.removeProperty('display');
+      log.style.removeProperty('min-height');
+      log.style.removeProperty('max-height');
+      log.style.removeProperty('overflow-y');
     }
   };
 
@@ -3014,7 +3015,7 @@ import Layout from '../layouts/Layout.astro';
 
   // === CHAT ===
   const scrollAssistantRailToBottom = () => {
-    const scrollTarget = log || assistantDialogScroll;
+    const scrollTarget = document.querySelector('#assistantRail .assistant-dialog-surface') as HTMLElement | null;
     if (!scrollTarget) return;
     window.requestAnimationFrame(() => {
       scrollTarget.scrollTop = scrollTarget.scrollHeight;
@@ -22501,6 +22502,303 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .assistant-rail .chat-log,
     html[data-assistant-mode='mobile'] .assistant-rail .chat-log {
       min-height: 11rem !important;
+    }
+  }
+</style>
+
+<style is:global id="assistant-clinical-layout-reset-20260422">
+  #assistantRail .assistant-rail-body,
+  #assistantRail .assistant-console {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #assistantRail .assistant-toolbar {
+    flex: 0 0 auto !important;
+    padding: clamp(0.58rem, 1vw, 0.78rem) clamp(0.72rem, 1.15vw, 1rem) !important;
+    border-bottom: 1px solid #dbe7ef !important;
+    background: #fbfdff !important;
+  }
+
+  #assistantRail .patient-selector {
+    min-height: 2.7rem !important;
+    border-radius: 0.9rem !important;
+  }
+
+  #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    scrollbar-gutter: stable !important;
+    padding: clamp(0.72rem, 1.1vw, 1rem) !important;
+    gap: clamp(0.62rem, 1vw, 0.9rem) !important;
+    background: #f7fafb !important;
+  }
+
+  #assistantRail .assistant-dialog-scroll,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-scroll,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-scroll {
+    display: contents !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+
+  #assistantRail .assistant-mode-switch {
+    order: 1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #assistantRail .assistant-diagnostic-card,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-diagnostic-card,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-diagnostic-card {
+    order: 2 !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: clamp(0.82rem, 1.2vw, 1rem) !important;
+    border: 1px solid #d8e5ec !important;
+    border-radius: 1.05rem !important;
+    background: #fffdfa !important;
+  }
+
+  #assistantRail .assistant-diagnostic-head {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 0.75rem !important;
+    margin: 0 0 0.72rem !important;
+  }
+
+  #assistantRail .assistant-diagnostic-toggle {
+    flex: 0 0 auto !important;
+    min-height: 2rem !important;
+    padding: 0.34rem 0.82rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #cddde7 !important;
+    background: #ffffff !important;
+    color: #173d59 !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+  }
+
+  #assistantRail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-grid {
+    display: none !important;
+  }
+
+  #assistantRail .assistant-diagnostic-card.is-expanded .assistant-diagnostic-grid,
+  #assistantRail .assistant-diagnostic-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: clamp(0.5rem, 0.8vw, 0.72rem) !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    align-items: stretch !important;
+  }
+
+  #assistantRail .assistant-intake-field {
+    min-height: 4.3rem !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0.76rem 0.88rem !important;
+    border-radius: 0.92rem !important;
+    background: #fbf6eb !important;
+  }
+
+  #assistantRail .assistant-objective-field,
+  #assistantRail .assistant-intake-field-wide {
+    grid-column: 1 / -1 !important;
+  }
+
+  #assistantRail .assistant-objective-field textarea {
+    min-height: 3.2rem !important;
+    height: auto !important;
+    max-height: 7rem !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  #assistantRail .assistant-diagnostic-summary {
+    margin: 0.7rem 0 0 !important;
+    font-size: 0.8rem !important;
+    line-height: 1.45 !important;
+    color: #5f7284 !important;
+  }
+
+  #assistantRail .ai-input-area,
+  html[data-assistant-mode='desktop'] #assistantRail .ai-input-area,
+  html[data-assistant-mode='compact'] #assistantRail .ai-input-area,
+  html[data-assistant-mode='mobile'] #assistantRail .ai-input-area {
+    order: 3 !important;
+    flex: 0 0 auto !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: clamp(0.72rem, 1vw, 0.9rem) !important;
+    border: 1px solid #d8e5ec !important;
+    border-radius: 1.05rem !important;
+    background: #ffffff !important;
+    box-shadow: 0 12px 30px -28px rgba(15, 23, 42, 0.22) !important;
+  }
+
+  #assistantRail .assistant-composer-shell {
+    align-items: stretch !important;
+    gap: 0.58rem !important;
+  }
+
+  #assistantRail .ai-textarea-wrapper {
+    border-radius: 0.92rem !important;
+    border-color: #cfe0ea !important;
+    background: #fbfdff !important;
+  }
+
+  #assistantRail .ai-textarea-wrapper textarea {
+    min-height: 3.8rem !important;
+    height: 3.8rem !important;
+    max-height: 8rem !important;
+    padding: 0.86rem 0.95rem !important;
+    color: #10233d !important;
+    -webkit-text-fill-color: #10233d !important;
+    font-size: 0.94rem !important;
+    line-height: 1.5 !important;
+  }
+
+  #assistantRail .assistant-context-hint {
+    margin: 0.5rem 0 0 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.4 !important;
+    color: #66798b !important;
+  }
+
+  #assistantRail .assistant-action-grid,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-action-grid,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-action-grid,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-action-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 0.58rem !important;
+    margin-top: 0.64rem !important;
+  }
+
+  #assistantRail .assistant-action-grid .btn-action {
+    min-height: 2.85rem !important;
+    border-radius: 0.82rem !important;
+    font-size: 0.86rem !important;
+  }
+
+  #assistantRail .assistant-action-grid .btn-generate {
+    order: 1 !important;
+  }
+
+  #assistantRail .assistant-action-grid .btn-pdf {
+    order: 2 !important;
+  }
+
+  #assistantRail .assistant-action-grid .btn-telegram {
+    order: 3 !important;
+  }
+
+  #assistantRail .chat-log,
+  html[data-assistant-mode='desktop'] #assistantRail .chat-log,
+  html[data-assistant-mode='compact'] #assistantRail .chat-log,
+  html[data-assistant-mode='mobile'] #assistantRail .chat-log {
+    order: 4 !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.68rem !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0.82rem !important;
+    border: 1px solid #d8e5ec !important;
+    border-radius: 1.05rem !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  #assistantRail .chat-log:empty,
+  html[data-assistant-mode='desktop'] #assistantRail .chat-log:empty,
+  html[data-assistant-mode='compact'] #assistantRail .chat-log:empty,
+  html[data-assistant-mode='mobile'] #assistantRail .chat-log:empty {
+    display: none !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    margin: 0 !important;
+  }
+
+  #assistantRail .chat-log:empty::before,
+  html[data-assistant-mode='desktop'] #assistantRail .chat-log:empty::before,
+  html[data-assistant-mode='compact'] #assistantRail .chat-log:empty::before,
+  html[data-assistant-mode='mobile'] #assistantRail .chat-log:empty::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  @media (min-width: 980px) and (min-height: 680px) {
+    #assistantRail .assistant-dialog-surface,
+    html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
+    html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface {
+      display: grid !important;
+      grid-template-columns: minmax(25rem, 0.95fr) minmax(24rem, 1.05fr) !important;
+      grid-auto-rows: max-content !important;
+      align-content: start !important;
+      align-items: start !important;
+    }
+
+    #assistantRail .assistant-mode-switch {
+      grid-column: 1 / -1 !important;
+    }
+
+    #assistantRail .assistant-diagnostic-card {
+      grid-column: 1 !important;
+      grid-row: 2 / span 2 !important;
+    }
+
+    #assistantRail .ai-input-area {
+      grid-column: 2 !important;
+      grid-row: 2 !important;
+    }
+
+    #assistantRail .chat-log {
+      grid-column: 2 !important;
+      grid-row: 3 !important;
+    }
+  }
+
+  @media (max-width: 979px) {
+    #assistantRail .assistant-dialog-surface,
+    html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    #assistantRail .assistant-diagnostic-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    #assistantRail .assistant-action-grid,
+    html[data-assistant-mode='mobile'] #assistantRail .assistant-action-grid {
+      grid-template-columns: 1fr !important;
     }
   }
 </style>
