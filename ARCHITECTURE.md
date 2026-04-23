@@ -19,7 +19,7 @@ Principios de producto reforzados (benchmark funcional del mercado):
 - Interoperabilidad basada en datos estructurados y trazabilidad.
 - IA confiable: recomendaciones prudentes, auditables y con gobernanza de datos.
 
-Checkpoint de producto actual (2026-04-22, Sesion 120):
+Checkpoint de producto actual (2026-04-23, Sesion 121):
 
 - El Copilot clinico del CRM queda reencauzado como componente con una unica fuente de verdad visual.
 - El layout final vigente se define en `frontend/src/pages/index.astro` mediante `assistant-clinical-layout-reset-20260422`.
@@ -38,6 +38,7 @@ Checkpoint de producto actual (2026-04-22, Sesion 120):
   - historial y recomendaciones deben degradar en modo parcial si falla una dependencia secundaria.
 - Estado operativo:
   - frontend validado con `npm run check` y `npm run build` tras la simplificacion de `Inicio`, `Finanzas` y ficha de paciente,
+  - GitHub sincronizado hasta `8f568cf`,
   - pendiente validar visualmente en EasyPanel tras redeploy.
 
 Checkpoint de producto actual (2026-03-19, Sesion 109):

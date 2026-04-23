@@ -12,9 +12,9 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 ## En pausa
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (2026-04-22)
-- Base funcional exacta antes de este tramo: `fd82cd9`
-- Estado de GitHub: pendiente de sincronizar con la simplificacion operativa de plataforma.
+## Checkpoint actual (2026-04-23)
+- Commit exacto para retomar: `8f568cf`
+- Estado de GitHub: `origin/main` sincronizado con la simplificacion operativa de plataforma y ficha de paciente.
 - Estado real del producto en este punto:
   - el Copilot queda estabilizado por el checkpoint clinico anterior,
   - el dashboard se simplifica como cockpit diario,
@@ -26,13 +26,14 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 - Siguiente paso exacto:
   - redeploy de `fisio-frontend`,
   - smoke test de `Inicio`, `Finanzas` y ficha de paciente en desktop y movil,
-  - confirmar que `Generar plan guiado`, `Mensajes` y `Pagos y bonos` abren el modulo correcto,
+  - confirmar que `Generar plan guiado`, `Mensajes`, `Finanzas` y las pestanas financieras abren el modulo correcto,
   - continuar con la revision de `Historial` vs ficha de paciente y `Biblioteca` vs `Documentos`.
 - Validacion local:
   - `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`),
   - `npm run build` en `frontend`: OK,
   - checks repetidos tras la consolidacion de finanzas y la ficha compacta: OK.
-- Checkpoint operativo recomendado: `docs/checkpoint_20260422_platform_simplification.md`
+- Checkpoint operativo recomendado: `docs/checkpoint_20260423_session_closeout.md`
+- Checkpoint de simplificacion de plataforma: `docs/checkpoint_20260422_platform_simplification.md`
 - Checkpoint operativo anterior del Copilot: `docs/checkpoint_20260422_copilot_clinical_reset.md`
 
 ## Checkpoint anterior (2026-04-16)

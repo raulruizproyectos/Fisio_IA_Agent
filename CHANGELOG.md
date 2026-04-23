@@ -1,3 +1,28 @@
+## [Sesion 121] - 2026-04-23 (Cierre documental y handoff)
+### Objetivo
+- Cerrar la sesion con GitHub y archivos de seguimiento alineados para retomar sin reconstruir contexto.
+
+### Estado publicado
+- Ultimo commit funcional publicado: `8f568cf` - `refactor: compact patient continuity rail`.
+- `origin/main` sincronizado.
+- Working tree limpio antes del cierre documental.
+
+### Documentacion actualizada
+- `docs/checkpoint_20260423_session_closeout.md`
+  - nuevo checkpoint de cierre con estado exacto, validaciones, pendiente de redeploy y siguiente bloque.
+- `README.md`
+  - checkpoint actual actualizado a 2026-04-23.
+- `configuracion_pendiente.md`
+  - punto de situacion superior actualizado para la proxima sesion.
+- `ARCHITECTURE.md`
+  - checkpoint de producto actualizado con la decision de cockpit, finanzas y ficha compacta.
+
+### Punto exacto para continuar
+1. Hacer redeploy de `fisio-frontend` en EasyPanel.
+2. Confirmar que produccion sirve `8f568cf` o superior.
+3. Validar visualmente `Inicio`, `Finanzas`, ficha de paciente, Copilot y dock movil.
+4. Si todo esta correcto, seguir con `Historial` vs ficha de paciente y `Biblioteca` vs `Documentos`.
+
 ## [Sesion 120] - 2026-04-22 (Simplificacion operativa de plataforma)
 ### Objetivo
 - Empezar la revision global de usabilidad reduciendo redundancias sin quitar funciones.

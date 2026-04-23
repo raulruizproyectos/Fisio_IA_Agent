@@ -1,3 +1,40 @@
+## Estado actual (2026-04-23, Sesion 121) - Cierre de sesion publicado y listo para redeploy.
+
+### Estado de GitHub
+- [x] Ultimo commit funcional publicado: `8f568cf` - `refactor: compact patient continuity rail`.
+- [x] `origin/main` sincronizado.
+- [x] Checkpoint de cierre creado: `docs/checkpoint_20260423_session_closeout.md`.
+
+### Producto al cierre
+- [x] Copilot clinico estabilizado con layout de una sola fuente de verdad.
+- [x] Inicio simplificado como cockpit diario.
+- [x] Finanzas consolidado en una sola entrada lateral con pestanas internas.
+- [x] Ficha de paciente compactada con rail `Continuidad del caso`.
+
+### Validaciones locales acumuladas
+- [x] `npm run check` en `frontend`: OK.
+- [x] `npm run build` en `frontend`: OK.
+- [x] `git diff --check`: OK antes de los commits funcionales.
+- Avisos conocidos no bloqueantes:
+  - `mobileDock` declarado pero no leido,
+  - `total` declarado pero no leido.
+
+### Pendiente inmediato para la proxima sesion
+1. Redeploy de `fisio-frontend` en EasyPanel.
+2. Confirmar que produccion sirve `8f568cf` o superior.
+3. Smoke test:
+   - `Inicio`,
+   - `Finanzas`,
+   - ficha de paciente,
+   - Copilot,
+   - dock movil `Mensajes`.
+4. Si se ve la UI antigua, no tocar codigo: revisar redeploy/cache.
+
+### Siguiente fase recomendada
+1. Revisar `Historial` para que no compita con la ficha de paciente.
+2. Separar mejor `Biblioteca` (recursos terapeuticos) de `Documentos` (administrativo/legal).
+3. Mantener criterio de producto: cada bloque visible debe ayudar a una decision diaria.
+
 ## Estado actual (2026-04-22, Sesion 120) - Inicio simplificado y finanzas consolidado.
 
 ### Completado sesion 120
