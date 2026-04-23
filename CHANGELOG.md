@@ -15,6 +15,11 @@
     - sidebar con una unica entrada `Finanzas`,
     - `Pagos`, `Facturas`, `Bonos` y `Gestoria` pasan a pestanas internas,
     - el menu lateral conserva `Finanzas` activo al navegar por subpaginas financieras.
+  - ficha de paciente simplificada:
+    - el rail derecho deja de mostrar tres tarjetas estrechas de bajo valor,
+    - `Accion recomendada`, `Canales` y `Checklist` se compactan en una unica tarjeta `Continuidad del caso`,
+    - canales pasan a chips cortos (`Listo`, `Falta`, `Preparar`),
+    - checklist muestra progreso y hasta tres pendientes prioritarios, no una lista larga que corta la pantalla.
 - `docs/checkpoint_20260422_platform_simplification.md`
   - punto de situacion actualizado con la fase 2 financiera inicial.
 
@@ -22,10 +27,11 @@
 - `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
 - `npm run build` en `frontend`: OK.
 - Repetidas tras la simplificacion de finanzas: `npm run check` OK y `npm run build` OK.
+- Repetidas tras compactar ficha de paciente: `npm run check` OK y `npm run build` OK.
 
 ### Punto exacto para continuar
 1. Leer `docs/checkpoint_20260422_platform_simplification.md`.
-2. Validar dashboard y `Finanzas` en desktop y movil tras redeploy de `fisio-frontend`.
+2. Validar dashboard, `Finanzas` y ficha de paciente en desktop y movil tras redeploy de `fisio-frontend`.
 3. Si esta base queda estable, continuar con `Historial` vs ficha de paciente y `Biblioteca` vs `Documentos`.
 
 ## [Sesion 119] - 2026-04-22 (Copilot clinico: reset arquitectonico, historial y Telegram)

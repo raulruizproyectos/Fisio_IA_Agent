@@ -21,16 +21,17 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
   - se eliminan accesos duplicados del hero,
   - se recuperan metricas, flujos clave, agenda inmediata, mensajes, sync y reserva online que habian quedado ocultos,
   - el dock movil prioriza `Mensajes` sobre `Pagos`,
-  - el sidebar consolida `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una unica entrada `Finanzas` con pestanas internas.
+  - el sidebar consolida `Pagos`, `Facturacion`, `Bonos` y `Gestoria` en una unica entrada `Finanzas` con pestanas internas,
+  - la ficha de paciente compacta el rail derecho en una tarjeta `Continuidad del caso`, evitando columnas cortadas y texto redundante.
 - Siguiente paso exacto:
   - redeploy de `fisio-frontend`,
-  - smoke test de `Inicio` y `Finanzas` en desktop y movil,
+  - smoke test de `Inicio`, `Finanzas` y ficha de paciente en desktop y movil,
   - confirmar que `Generar plan guiado`, `Mensajes` y `Pagos y bonos` abren el modulo correcto,
   - continuar con la revision de `Historial` vs ficha de paciente y `Biblioteca` vs `Documentos`.
 - Validacion local:
   - `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`),
   - `npm run build` en `frontend`: OK,
-  - checks repetidos tras la consolidacion de finanzas: OK.
+  - checks repetidos tras la consolidacion de finanzas y la ficha compacta: OK.
 - Checkpoint operativo recomendado: `docs/checkpoint_20260422_platform_simplification.md`
 - Checkpoint operativo anterior del Copilot: `docs/checkpoint_20260422_copilot_clinical_reset.md`
 

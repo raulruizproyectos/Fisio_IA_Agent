@@ -19,6 +19,11 @@
   - `Pagos`, `Facturas`, `Bonos` y `Gestoria` como pestanas internas,
   - `Finanzas` queda activo en el sidebar al navegar por subpaginas financieras,
   - sin cambios en backend ni base de datos.
+- [x] Ficha de paciente compactada:
+  - rail derecho unificado en `Continuidad del caso`,
+  - fuera tres tarjetas estrechas que no aportaban,
+  - canales resumidos como estados cortos,
+  - checklist reducida a progreso y pendientes prioritarios.
 - [x] Checkpoint operativo nuevo:
   - `docs/checkpoint_20260422_platform_simplification.md`.
 
@@ -30,12 +35,14 @@
    - `Generar plan guiado` abre Copilot,
    - `Mensajes` del dock movil abre la bandeja,
    - `Pagos y bonos` abre finanzas,
-   - pestanas financieras navegan entre `Pagos`, `Facturas`, `Bonos` y `Gestoria`.
+   - pestanas financieras navegan entre `Pagos`, `Facturas`, `Bonos` y `Gestoria`,
+   - ficha de paciente no muestra columnas cortadas en el rail derecho.
 
 ### Validaciones locales
 - [x] `npm run check` en `frontend`: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
 - [x] `npm run build` en `frontend`: OK.
 - [x] Checks repetidos tras consolidar finanzas: `npm run check` OK y `npm run build` OK.
+- [x] Checks repetidos tras compactar ficha: `npm run check` OK y `npm run build` OK.
 
 ### Siguiente fase recomendada
 1. Revisar `Historial` para que no compita con la ficha de paciente.

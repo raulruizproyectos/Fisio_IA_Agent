@@ -40,6 +40,11 @@
     - la pestana activa se marca visualmente,
     - el sidebar mantiene `Finanzas` activo aunque se navegue a una subpagina financiera,
     - no se han tocado endpoints ni persistencia.
+  - ficha de paciente:
+    - el rail lateral deja de ser tres tarjetas estrechas (`Accion`, `Canales`, `Checklist`),
+    - se convierte en una unica tarjeta `Continuidad del caso`,
+    - canales se resumen como estados cortos,
+    - checklist muestra ratio completado y solo los pendientes prioritarios.
 
 ## Criterio de producto adoptado
 - `Inicio` = cockpit diario, no escaparate de todas las funciones.
@@ -66,6 +71,7 @@
 - `npm run check` en frontend: OK, solo avisos antiguos no bloqueantes (`mobileDock`, `total`).
 - `npm run build` en frontend: OK.
 - Tras fase 2 financiera, se repiten `npm run check` y `npm run build`: OK.
+- Tras compactar ficha de paciente, se repiten `npm run check` y `npm run build`: OK.
 
 ## Verificacion pendiente en produccion
 - Redeploy de `fisio-frontend`.
@@ -75,3 +81,4 @@
   - Copiloto sigue abriendo desde `Generar plan guiado`.
   - `Finanzas` abre pagos.
   - Las pestanas `Pagos`, `Facturas`, `Bonos` y `Gestoria` navegan correctamente.
+  - Ficha de paciente muestra una sola tarjeta compacta de continuidad, sin columnas cortadas.

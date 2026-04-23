@@ -1048,27 +1048,29 @@ import Layout from '../layouts/Layout.astro';
 </div>
             </div>
             <aside class="ficha-case-rail">
-              <section class="card ficha-rail-card ficha-rail-card-accent">
-                <span class="ficha-rail-label">Accion recomendada</span>
-                <strong id="fichaRailNextTitle">Selecciona un paciente</strong>
-                <p id="fichaRailNextMeta">Cargando datos del paciente...</p>
-                <div class="ficha-rail-actions">
-                  <button class="btn-primary" type="button" id="fichaRailPrimaryBtn"><span class="material-symbols-rounded">arrow_forward</span> Continuar</button>
-                  <button class="btn-secondary" type="button" id="fichaRailTelegramBtn"><span class="material-symbols-rounded">send</span> Telegram</button>
+              <section class="card ficha-rail-card ficha-rail-card-unified">
+                <div class="ficha-rail-main">
+                  <span class="ficha-rail-label">Continuidad del caso</span>
+                  <strong id="fichaRailNextTitle">Selecciona un paciente</strong>
+                  <p id="fichaRailNextMeta">Cargando datos del paciente...</p>
+                  <div class="ficha-rail-actions">
+                    <button class="btn-primary" type="button" id="fichaRailPrimaryBtn"><span class="material-symbols-rounded">arrow_forward</span> Continuar</button>
+                    <button class="btn-secondary" type="button" id="fichaRailTelegramBtn"><span class="material-symbols-rounded">send</span> Telegram</button>
+                  </div>
                 </div>
-              </section>
-
-              <section class="card ficha-rail-card">
-                <span class="ficha-rail-label">Canales</span>
-                <div class="ficha-rail-stack" id="fichaRailChannels">
-                  <p class="empty-inline">Email, telefono y continuidad apareceran aqui.</p>
-                </div>
-              </section>
-
-              <section class="card ficha-rail-card">
-                <span class="ficha-rail-label">Checklist operativo</span>
-                <div class="ficha-checklist" id="fichaRailChecklist">
-                  <p class="empty-inline">La checklist del caso aparecera aqui.</p>
+                <div class="ficha-rail-compact-grid">
+                  <div class="ficha-rail-compact-block">
+                    <span class="ficha-rail-label">Canales</span>
+                    <div class="ficha-rail-stack" id="fichaRailChannels">
+                      <p class="empty-inline">Email, telefono y Telegram apareceran aqui.</p>
+                    </div>
+                  </div>
+                  <div class="ficha-rail-compact-block">
+                    <span class="ficha-rail-label">Pendientes</span>
+                    <div class="ficha-checklist" id="fichaRailChecklist">
+                      <p class="empty-inline">La checklist del caso aparecera aqui.</p>
+                    </div>
+                  </div>
                 </div>
               </section>
             </aside>
@@ -7200,7 +7202,6 @@ import Layout from '../layouts/Layout.astro';
     const latestNote = notasUnavailable ? null : (notas[0] || null);
     const totalPayments = pagosUnavailable ? 0 : pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
     const latestEva = latestNote?.dolor_eva != null ? Number(latestNote.dolor_eva) : null;
-    const patientName = getPatientFullName(patient);
     const recommendationSummary = summarizePatientRecommendations(recommendations);
     const latestFollowUp = recommendationSummary.latestFollowUp;
     const latestArchivedReport = recommendationSummary.latestArchivedReport;
@@ -7538,19 +7539,16 @@ import Layout from '../layouts/Layout.astro';
     if (fichaRailTelegramBtn) fichaRailTelegramBtn.disabled = !Boolean(fichaPatientId);
 
     if (fichaRailChannels) {
-      fichaRailChannels.innerHTML = `
-        <article class="ficha-channel-item">
-          <span class="material-symbols-rounded">mail</span>
-          <div><strong>Email</strong><p>${escapeHtml(patient?.email || 'Sin email registrado')}</p></div>
-        </article>
-        <article class="ficha-channel-item">
-          <span class="material-symbols-rounded">call</span>
-          <div><strong>Telefono</strong><p>${escapeHtml(patient?.telefono || 'Sin telefono registrado')}</p></div>
-        </article>
-        <article class="ficha-channel-item">
-          <span class="material-symbols-rounded">send</span>
-          <div><strong>Telegram</strong><p>${escapeHtml(patient?.telefono ? `Listo para preparar invitacion de ${patientName}.` : 'Completa telefono y luego genera la invitacion desde historial.')}</p></div>
-        </article>`;
+      const channelItems = [
+        { icon: 'mail', label: 'Email', value: patient?.email ? 'Listo' : 'Falta', tone: patient?.email ? 'ready' : 'pending' },
+        { icon: 'call', label: 'Telefono', value: patient?.telefono ? 'Listo' : 'Falta', tone: patient?.telefono ? 'ready' : 'pending' },
+        { icon: 'send', label: 'Telegram', value: patient?.telefono ? 'Preparar' : 'Completar telefono', tone: patient?.telefono ? 'ready' : 'pending' },
+      ];
+      fichaRailChannels.innerHTML = channelItems.map((item) => `
+        <article class="ficha-channel-item is-${item.tone}">
+          <span class="material-symbols-rounded">${item.icon}</span>
+          <div><strong>${escapeHtml(item.label)}</strong><p>${escapeHtml(item.value)}</p></div>
+        </article>`).join('');
     }
 
     if (fichaRailChecklist) {
@@ -7562,14 +7560,23 @@ import Layout from '../layouts/Layout.astro';
         { done: Boolean(recommendationSummary.totalFollowUps), title: 'Feedback del plan', body: recommendationSummary.totalFollowUps ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con adherencia o dolor registrado.` : 'Falta registrar la respuesta del paciente al plan domiciliario.' },
         { done: !pagosUnavailable && Boolean(pagos.length), title: 'Cobro vinculado', body: pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
       ];
-      fichaRailChecklist.innerHTML = checks.map((item) => `
-        <article class="ficha-check-item ${item.done ? 'is-done' : 'is-pending'}">
-          <span class="ficha-check-dot"></span>
-          <div class="ficha-check-copy">
-            <strong>${escapeHtml(item.title)}</strong>
-            <p>${escapeHtml(item.body)}</p>
-          </div>
-        </article>`).join('');
+      const doneCount = checks.filter((item) => item.done).length;
+      const pendingChecks = checks.filter((item) => !item.done);
+      fichaRailChecklist.innerHTML = `
+        <article class="ficha-check-summary">
+          <strong>${doneCount}/${checks.length}</strong>
+          <span>${pendingChecks.length ? `${pendingChecks.length} pendiente${pendingChecks.length === 1 ? '' : 's'}` : 'Caso al dia'}</span>
+        </article>
+        ${pendingChecks.length
+          ? pendingChecks.slice(0, 3).map((item) => `
+            <article class="ficha-check-item is-pending">
+              <span class="ficha-check-dot"></span>
+              <div class="ficha-check-copy">
+                <strong>${escapeHtml(item.title)}</strong>
+                <p>${escapeHtml(item.body)}</p>
+              </div>
+            </article>`).join('')
+          : '<p class="empty-inline">No hay bloqueos operativos prioritarios.</p>'}`;
     }
   };
 
@@ -20257,7 +20264,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   .page-section[data-page='ficha-paciente'] .ficha-case-shell {
-    grid-template-columns: minmax(0, 1.38fr) minmax(20rem, 0.76fr);
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.38fr);
     gap: 1.05rem;
   }
 
@@ -20347,6 +20354,143 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     color: #d9c186;
   }
 
+  .page-section[data-page='ficha-paciente'] .ficha-rail-card-unified {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem !important;
+    background: #ffffff !important;
+    border: 1px solid #e4e7ec !important;
+    box-shadow: 0 8px 22px -20px rgba(15, 23, 42, 0.22) !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main {
+    display: grid;
+    gap: 0.44rem;
+    padding: 0.95rem;
+    border-radius: 1rem;
+    background: linear-gradient(145deg, #14374d 0%, #175f68 100%);
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main .ficha-rail-label {
+    color: #d9c186 !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main strong,
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main p {
+    color: #f7fbfd !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main strong {
+    font-size: 1.08rem;
+    line-height: 1.2;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main p {
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main .btn-primary {
+    background: #fff5e5 !important;
+    border-color: rgba(255, 255, 255, 0.24) !important;
+    color: #153047 !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main .btn-primary .material-symbols-rounded {
+    color: #153047 !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main .btn-secondary {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    color: #f7fbfd !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-compact-grid {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-compact-block {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-stack,
+  .page-section[data-page='ficha-paciente'] .ficha-checklist {
+    gap: 0.48rem !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item {
+    grid-template-columns: auto 1fr;
+    gap: 0.58rem;
+    min-height: 0;
+    padding: 0.58rem 0.64rem !important;
+    border-radius: 0.78rem !important;
+    background: #f8fafc !important;
+    border-color: #e4e7ec !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item.is-ready {
+    background: #f3fbf7 !important;
+    border-color: #cdebd9 !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item .material-symbols-rounded {
+    margin-top: 0.1rem;
+    color: #0f4c81 !important;
+    font-size: 1rem !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item strong,
+  .page-section[data-page='ficha-paciente'] .ficha-check-copy strong {
+    font-size: 0.86rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item p,
+  .page-section[data-page='ficha-paciente'] .ficha-check-copy p {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-check-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    padding: 0.62rem 0.68rem;
+    border-radius: 0.82rem;
+    background: #f8fafc;
+    border: 1px solid #e4e7ec;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-check-summary strong {
+    color: #0f172a;
+    font-size: 1.05rem;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-check-summary span {
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-check-item {
+    padding: 0.58rem 0.64rem !important;
+    border-radius: 0.78rem !important;
+    background: #fffaf2 !important;
+    border-color: #f1dfbd !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-check-dot {
+    width: 0.58rem;
+    height: 0.58rem;
+    margin-top: 0.34rem;
+  }
+
   @media (max-width: 1240px) {
     .page-section[data-page='ficha-paciente'] .ficha-command-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -20355,6 +20499,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .page-section[data-page='ficha-paciente'] .ficha-case-shell,
     .page-section[data-page='ficha-paciente'] .ficha-hero-grid {
       grid-template-columns: 1fr !important;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-case-rail {
+      grid-template-columns: 1fr !important;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-rail-compact-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
@@ -20381,6 +20533,10 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }
 
     .page-section[data-page='ficha-paciente'] .ficha-overview-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-rail-compact-grid {
       grid-template-columns: 1fr;
     }
 
