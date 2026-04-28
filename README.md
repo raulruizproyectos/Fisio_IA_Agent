@@ -24,13 +24,14 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
   - sistema propio de toast/confirmacion implementado para sustituir `alert()`, `confirm()` y `prompt()` nativos en flujos operativos,
   - sidebar usa `Finanzas` como entrada semantica unica y resuelve internamente a la portada financiera actual,
   - Finanzas incorpora panel operativo con prioridad, resumen de caja y acciones directas para registrar cobro, emitir factura, crear bono o revisar gestoria,
-  - Facturas, Bonos y Gestoria comparten encabezado de Finanzas, contexto de subvista y vuelta rapida al resumen.
+  - Facturas, Bonos y Gestoria comparten encabezado de Finanzas, contexto de subvista y vuelta rapida al resumen,
+  - limpieza interna iniciada en Finanzas: acciones destructivas con clase unica, preview de factura sin inline y progreso de bonos con `progress` nativo.
 - Validacion local:
-  - `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints tras integrar subpantallas de Finanzas.
-  - `npm run build` en `frontend`: OK tras integrar subpantallas de Finanzas.
+  - `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints tras limpieza interna de Finanzas.
+  - `npm run build` en `frontend`: OK tras limpieza interna de Finanzas.
 - Siguiente paso exacto:
   - smoke visual local en `http://127.0.0.1:4321`,
-  - continuar Fase 1 premium limpiando estilos inline visibles y reduciendo duplicidad interna de las tablas financieras.
+  - continuar Fase 1 premium reduciendo duplicidad de tablas/resumenes y limpiando estilos inline visibles restantes fuera de Finanzas.
 
 ## Checkpoint actual (2026-04-23)
 - Commit exacto para retomar: `8f568cf`

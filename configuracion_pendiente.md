@@ -21,6 +21,10 @@
   - banda de contexto por subvista,
   - boton de vuelta rapida a Resumen,
   - limpieza de estilos inline visibles en el bloque de Gestoria mensual.
+- [x] Limpieza interna adicional de Finanzas:
+  - acciones destructivas usan clase comun `finance-danger-action`,
+  - preview de factura usa clase `factura-preview-summary`,
+  - progreso de bonos usa `progress` nativo en vez de ancho inline.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
@@ -38,7 +42,7 @@
    - confirmacion de borrado.
 2. Continuar Fase 1 premium:
    - reducir duplicidad interna de tablas y resumenes financieros,
-   - limpiar estilos inline visibles,
+   - limpiar estilos inline visibles restantes fuera de Finanzas,
    - mantener solo funcionalidades practicas y accionables.
 
 ### Criterio de producto nuevo

@@ -1268,7 +1268,7 @@ import Layout from '../layouts/Layout.astro';
                   <textarea id="bonoNotas" rows="2" placeholder="Observaciones..."></textarea>
                 </label>
                 <p class="form-feedback" id="bonoFeedback" hidden></p>
-                <div class="modal-actions" style="grid-column:1/-1">
+                <div class="modal-actions modal-actions-full">
                   <button type="button" class="btn-ghost" id="bonoModalDismiss">Cancelar</button>
                   <button type="submit" class="btn-primary" id="bonoSubmitBtn"><span class="material-symbols-rounded">save</span> Guardar</button>
                 </div>
@@ -7168,7 +7168,7 @@ import Layout from '../layouts/Layout.astro';
           <td>
             <div class="table-actions">
               <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
-              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-pago" data-pago-id="${p.id}">Eliminar</button>
+              <button class="btn-sm btn-outline finance-danger-action" data-action="delete-pago" data-pago-id="${p.id}">Eliminar</button>
             </div>
           </td>
         </tr>`;
@@ -8725,7 +8725,7 @@ import Layout from '../layouts/Layout.astro';
       }
       const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
       facturaPreview.innerHTML = `
-        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) registrados - ${total.toFixed(2)} EUR pendientes de facturar</p>
+        <p class="factura-preview-summary">${pagos.length} pago(s) registrados - ${total.toFixed(2)} EUR pendientes de facturar</p>
         <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Metodo</th><th>Importe</th></tr></thead><tbody>
         ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesion')}</td><td>${escapeHtml(p.metodo || '')}</td><td>${Number(p.importe || 0).toFixed(2)} EUR</td></tr>`).join('')}
         </tbody></table></div>`;
@@ -8846,8 +8846,9 @@ import Layout from '../layouts/Layout.astro';
     bonosMobileList.innerHTML = rows.map((b: any) => {
       const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
       const restantes = Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0);
-      const pct = Math.max(Math.min(Math.round((Number(b?.sesiones_usadas || 0) / Math.max(Number(b?.sesiones_total || 1), 1)) * 100), 100), 0);
       const estadoClass = b.estado;
+      const sesionesTotal = Math.max(Number(b?.sesiones_total || 1), 1);
+      const sesionesUsadas = Math.min(Math.max(Number(b?.sesiones_usadas || 0), 0), sesionesTotal);
       return `
         <article class="bonos-mobile-item" data-bono="${escapeAttr(JSON.stringify(b))}">
           <header>
@@ -8857,7 +8858,7 @@ import Layout from '../layouts/Layout.astro';
           <p>${escapeHtml(b.nombre || 'Bono')}</p>
           <div class="bono-progress">
             <span>${b.sesiones_usadas}/${b.sesiones_total} <small>(${restantes} restantes)</small></span>
-            <div class="bono-bar"><div class="bono-bar-fill" style="width:${pct}%"></div></div>
+            <progress class="bono-progress-meter" value="${sesionesUsadas}" max="${sesionesTotal}" aria-label="Consumo del bono"></progress>
           </div>
           <div class="bonos-mobile-meta">${Number(b.precio || 0).toFixed(2)} EUR | Inicio ${escapeHtml(b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'sin fecha')}</div>
           <div class="bonos-mobile-actions">
@@ -8896,15 +8897,16 @@ import Layout from '../layouts/Layout.astro';
       bonosBody.innerHTML = bonos.map((b: any) => {
         const pName = b.crm_pacientes ? `${b.crm_pacientes.nombre || ''} ${b.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
         const restantes = b.sesiones_total - b.sesiones_usadas;
-        const pct = Math.round((b.sesiones_usadas / b.sesiones_total) * 100);
         const estadoClass = b.estado; // activo/agotado/caducado/anulado - CSS defines .status-chip.activo etc.
+        const sesionesTotal = Math.max(Number(b?.sesiones_total || 1), 1);
+        const sesionesUsadas = Math.min(Math.max(Number(b?.sesiones_usadas || 0), 0), sesionesTotal);
         return `<tr data-bono="${escapeAttr(JSON.stringify(b))}">
           <td class="td-patient">${escapeHtml(pName)}</td>
           <td>${escapeHtml(b.nombre)}</td>
           <td>
             <div class="bono-progress">
               <span>${b.sesiones_usadas}/${b.sesiones_total} <small>(${restantes} restantes)</small></span>
-              <div class="bono-bar"><div class="bono-bar-fill" style="width:${pct}%"></div></div>
+              <progress class="bono-progress-meter" value="${sesionesUsadas}" max="${sesionesTotal}" aria-label="Consumo del bono"></progress>
             </div>
           </td>
           <td>${Number(b.precio).toFixed(2)} EUR</td>
@@ -8915,7 +8917,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="table-actions">
               ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesion</button>` : ''}
               <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
-              <button class="btn-sm btn-outline" style="color:#ef4444" data-action="delete-bono" data-bono-id="${b.id}"><span class="material-symbols-rounded" style="font-size:1rem">delete</span></button>
+              <button class="btn-sm btn-outline finance-danger-action finance-icon-action" data-action="delete-bono" data-bono-id="${b.id}" aria-label="Eliminar bono"><span class="material-symbols-rounded">delete</span></button>
             </div>
           </td>
         </tr>`;
@@ -11707,6 +11709,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     padding: 0.2rem 0.5rem;
   }
   .btn-danger-outline:hover { background: #fee2e2; }
+  .finance-danger-action {
+    color: #b91c1c !important;
+  }
+  .finance-icon-action .material-symbols-rounded {
+    font-size: 1rem;
+  }
+  .modal-actions-full {
+    grid-column: 1 / -1;
+  }
 
   @media (max-width: 768px) {
     .page-section[data-page='pagos'] .pagos-table-wrap {
@@ -11836,12 +11847,28 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     gap: 0.45rem;
     flex-wrap: wrap;
   }
-  .bonos-mobile-delete {
-    color: #b91c1c !important;
-  }
+  .bonos-mobile-delete { color: #b91c1c !important; }
   .bono-progress { display: flex; flex-direction: column; gap: 0.3rem; }
-  .bono-bar { height: 6px; background: var(--border); border-radius: 99px; width: 120px; }
-  .bono-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+  .bono-progress-meter {
+    width: min(8rem, 100%);
+    height: 0.42rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    background: var(--border);
+  }
+  .bono-progress-meter::-webkit-progress-bar {
+    background: var(--border);
+    border-radius: 999px;
+  }
+  .bono-progress-meter::-webkit-progress-value {
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .bono-progress-meter::-moz-progress-bar {
+    background: var(--accent);
+    border-radius: 999px;
+  }
 
   @media (max-width: 768px) {
     .page-section[data-page='bonos'] .bonos-summary-strip {
@@ -12174,6 +12201,11 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     background: var(--bg-surface);
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
+  }
+  .factura-preview-summary {
+    margin: 0 0 0.5rem;
+    color: var(--text-primary);
+    font-weight: 700;
   }
   .factura-preview .table-wrap { margin-top: 0.5rem; }
   .factura-preview table { font-size: 0.85rem; }

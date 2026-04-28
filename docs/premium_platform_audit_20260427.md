@@ -43,6 +43,7 @@ Objetivo de la siguiente fase:
 - Se reutiliza `mobileDock` para estado activo y se consumen totales que antes generaban avisos.
 - `Finanzas` empieza a comportarse como superficie operativa: prioridad de caja, acciones directas y lectura conjunta de pagos, facturas pendientes y bonos.
 - `Facturas`, `Bonos` y `Gestoria` comparten ya el marco visual de `Finanzas`: mismo encabezado, contexto de subvista y vuelta rapida al resumen.
+- Limpieza interna de Finanzas iniciada: clases comunes para acciones destructivas, preview de factura sin inline y progreso de bonos con `progress` nativo.
 - Validacion local cerrada con `astro check` y `astro build` OK.
 
 ## Arquitectura objetivo premium
@@ -154,7 +155,8 @@ Estado parcial implementado:
 - sidebar `Finanzas` como entrada semantica unica: implementado,
 - panel operativo de Finanzas: implementado con prioridad y acciones directas,
 - subpantallas Facturas/Bonos/Gestoria integradas visualmente en la superficie de Finanzas,
-- pendiente: reducir duplicidad interna de tablas/resumenes financieros y limpiar estilos inline visibles restantes.
+- limpieza interna de estilos financieros iniciada,
+- pendiente: reducir duplicidad interna de tablas/resumenes financieros y limpiar estilos inline visibles restantes fuera de Finanzas.
 
 ### Fase 2 - Modularizacion frontend
 

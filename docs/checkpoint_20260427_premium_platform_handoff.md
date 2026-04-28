@@ -68,6 +68,10 @@
   - `Facturas`, `Bonos` y `Gestoria` muestran encabezado comun de `Finanzas`,
   - cada subvista tiene banda de contexto practico,
   - todas tienen vuelta rapida al resumen financiero.
+- El 2026-04-28 se limpia el bloque financiero:
+  - botones destructivos con clase comun,
+  - preview de factura con clase propia,
+  - progreso de bonos con elemento `progress`.
 
 ## Validaciones realizadas
 
@@ -75,7 +79,7 @@
   - 0 errores.
   - 0 warnings.
   - 0 hints.
-- `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28 y repetido OK tras la integracion visual de subpantallas.
+- `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28, repetido OK tras la integracion visual de subpantallas y repetido OK tras la limpieza interna de Finanzas.
 - `git diff --check`: OK; solo aparece aviso normal de CRLF/LF en Windows para `frontend/src/pages/index.astro`.
 
 ## Auditoria premium creada
@@ -109,7 +113,7 @@ El nuevo enfoque es:
 Ejecutar Fase 1 del documento premium, empezando por:
 
 1. Reducir duplicidad interna de tablas y resumenes en Finanzas.
-2. Limpiar estilos inline visibles en pagos, bonos, documentos y agenda.
+2. Limpiar estilos inline visibles restantes en dashboard, agenda y documentos.
 3. Reducir ruido visual y eliminar bloques que no ayuden a una accion diaria.
 4. Validar con:
    - `npm run check`
