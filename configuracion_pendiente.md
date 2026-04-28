@@ -1,4 +1,4 @@
-## Estado actual (2026-04-28, Sesion premium practica) - Finanzas operativa iniciada.
+## Estado actual (2026-04-28, Sesion premium practica) - Finanzas integrada en primera version.
 
 ### Completado en esta sesion
 - [x] Auditoria premium creada en `docs/premium_platform_audit_20260427.md`.
@@ -16,6 +16,11 @@
   - prioridad de caja segun facturas pendientes, bonos cerca de agotarse o cobros del filtro,
   - acciones directas para registrar cobro, emitir factura, crear bono y abrir gestoria,
   - copy orientado a decision diaria, no a metricas decorativas.
+- [x] Facturas, Bonos y Gestoria integradas visualmente en una misma superficie:
+  - encabezado comun `Finanzas`,
+  - banda de contexto por subvista,
+  - boton de vuelta rapida a Resumen,
+  - limpieza de estilos inline visibles en el bloque de Gestoria mensual.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
@@ -32,7 +37,7 @@
    - toast de exito/error,
    - confirmacion de borrado.
 2. Continuar Fase 1 premium:
-   - hacer que Facturas/Bonos/Gestoria vivan como superficie unica de Finanzas,
+   - reducir duplicidad interna de tablas y resumenes financieros,
    - limpiar estilos inline visibles,
    - mantener solo funcionalidades practicas y accionables.
 

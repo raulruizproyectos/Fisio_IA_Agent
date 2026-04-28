@@ -752,8 +752,12 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: GESTORIA === -->
         <div class="page-section" data-page="gestoria">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</h1>
-            <div class="pagos-filters-row">
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Cierre anual, detalle mensual y resumen para gestoria.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" type="button" data-dashboard-nav="pagos"><span class="material-symbols-rounded">arrow_back</span> Resumen</button>
               <select id="gestoriaAnioFilter" title="A&ntilde;o"></select>
             </div>
           </div>
@@ -763,9 +767,17 @@ import Layout from '../layouts/Layout.astro';
             <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
             <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
           </nav>
+          <section class="finance-subview-strip">
+            <div>
+              <span>Vista financiera</span>
+              <strong>Gestoria y cierre</strong>
+              <p>Revisa el acumulado anual, el detalle mensual y lo que conviene exportar o contrastar antes de cerrar caja.</p>
+            </div>
+            <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Ver facturas</button>
+          </section>
 
           <!-- Gran total -->
-          <div class="pagos-summary-row" style="margin-bottom:1rem">
+          <div class="pagos-summary-row finance-annual-summary">
             <div class="pagos-stat"><span class="pagos-stat-label">Facturaci&oacute;n total</span><span class="pagos-stat-value" id="gestoriaGranTotal">0,00 &euro;</span></div>
             <div class="pagos-stat"><span class="pagos-stat-label">Sesiones</span><span class="pagos-stat-value" id="gestoriaGranSesiones">0</span></div>
             <div class="pagos-stat pagos-stat-cash"><span class="pagos-stat-label">Efectivo</span><span class="pagos-stat-value" id="gestoriaGranEfectivo">0,00 &euro;</span></div>
@@ -789,9 +801,9 @@ import Layout from '../layouts/Layout.astro';
           </section>
 
           <!-- Informe mensual detallado -->
-          <section class="card table-card" style="margin-top:1rem">
+          <section class="card table-card gestoria-month-card">
             <header class="card-header">
-              <h2><span class="material-symbols-rounded" style="font-size:1.1rem;vertical-align:middle">receipt_long</span> Informe mensual</h2>
+              <h2><span class="material-symbols-rounded card-title-icon">receipt_long</span> Informe mensual</h2>
               <select id="gestoriaMesFilter" title="Mes" class="gestoria-mes-select">
                 <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
                 <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
@@ -1157,8 +1169,14 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: BONOS === -->
         <div class="page-section" data-page="bonos">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">confirmation_number</span> Bonos de sesiones</h1>
-            <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">add</span> Nuevo bono</button>
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Bonos activos, sesiones restantes y renovaciones faciles de detectar.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" type="button" data-dashboard-nav="pagos"><span class="material-symbols-rounded">arrow_back</span> Resumen</button>
+              <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">add</span> Nuevo bono</button>
+            </div>
           </div>
           <nav class="finance-tabs" aria-label="Secciones de finanzas">
             <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
@@ -1166,6 +1184,14 @@ import Layout from '../layouts/Layout.astro';
             <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
             <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
           </nav>
+          <section class="finance-subview-strip">
+            <div>
+              <span>Vista financiera</span>
+              <strong>Bonos de sesiones</strong>
+              <p>Controla consumo, valor pendiente y bonos que necesitan renovacion antes de la siguiente visita.</p>
+            </div>
+            <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
+          </section>
           <section class="card table-card">
             <header class="card-header">
               <h2>Bonos activos y hist&oacute;rico</h2>
@@ -1254,8 +1280,14 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: FACTURACION === -->
         <div class="page-section" data-page="facturas">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">receipt_long</span> Facturaci&oacute;n</h1>
-            <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">add</span> Nueva factura</button>
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Facturas emitidas, pendiente de cobro y PDF listos para compartir.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" type="button" data-dashboard-nav="pagos"><span class="material-symbols-rounded">arrow_back</span> Resumen</button>
+              <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">add</span> Nueva factura</button>
+            </div>
           </div>
           <nav class="finance-tabs" aria-label="Secciones de finanzas">
             <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
@@ -1263,6 +1295,14 @@ import Layout from '../layouts/Layout.astro';
             <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
             <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
           </nav>
+          <section class="finance-subview-strip">
+            <div>
+              <span>Vista financiera</span>
+              <strong>Facturacion</strong>
+              <p>Revisa lo emitido y lo pendiente antes de registrar cobros o preparar el cierre.</p>
+            </div>
+            <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestoria</button>
+          </section>
 
           <section class="card table-card">
             <header class="card-header">
@@ -21700,6 +21740,59 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     background: #fffbf5;
   }
 
+  .finance-subview-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    margin: -0.15rem 0 1rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #dce6ee;
+    border-radius: 0.7rem;
+    background: #fbfdff;
+  }
+
+  .finance-subview-strip div {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .finance-subview-strip span {
+    color: #2e647d;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .finance-subview-strip strong {
+    color: #102c42;
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .finance-subview-strip p {
+    max-width: 68ch;
+    margin: 0;
+    color: #64748b;
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+
+  .finance-annual-summary {
+    margin-bottom: 1rem;
+  }
+
+  .gestoria-month-card {
+    margin-top: 1rem;
+  }
+
+  .card-title-icon {
+    font-size: 1.1rem;
+    vertical-align: middle;
+  }
+
   .finance-workbench {
     display: grid;
     grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.55fr);
@@ -21824,6 +21917,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .finance-action-card {
       min-height: 6.8rem;
+    }
+
+    .finance-subview-strip {
+      display: grid;
+    }
+
+    .finance-subview-strip .btn-sm {
+      justify-content: center;
+      width: 100%;
     }
   }
 

@@ -42,6 +42,7 @@ Objetivo de la siguiente fase:
 - `Documentos` queda explicitado como vista global; los documentos de un caso concreto viven en ficha.
 - Se reutiliza `mobileDock` para estado activo y se consumen totales que antes generaban avisos.
 - `Finanzas` empieza a comportarse como superficie operativa: prioridad de caja, acciones directas y lectura conjunta de pagos, facturas pendientes y bonos.
+- `Facturas`, `Bonos` y `Gestoria` comparten ya el marco visual de `Finanzas`: mismo encabezado, contexto de subvista y vuelta rapida al resumen.
 - Validacion local cerrada con `astro check` y `astro build` OK.
 
 ## Arquitectura objetivo premium
@@ -152,7 +153,8 @@ Estado parcial implementado:
 - toast/confirmacion propios: implementado,
 - sidebar `Finanzas` como entrada semantica unica: implementado,
 - panel operativo de Finanzas: implementado con prioridad y acciones directas,
-- pendiente: unir Facturas/Bonos/Gestoria dentro de una sola superficie real y limpiar estilos inline visibles.
+- subpantallas Facturas/Bonos/Gestoria integradas visualmente en la superficie de Finanzas,
+- pendiente: reducir duplicidad interna de tablas/resumenes financieros y limpiar estilos inline visibles restantes.
 
 ### Fase 2 - Modularizacion frontend
 
@@ -187,9 +189,9 @@ Objetivo: que parezca producto listo para vender.
 
 ## Proximo bloque recomendado
 
-Continuar Fase 1.1 y Fase 1.4 juntas:
+Continuar Fase 1.4:
 
-- hacer que Facturas, Bonos y Gestoria compartan una unica superficie de Finanzas,
+- reducir duplicidad interna de tablas, resumenes y acciones financieras,
 - mantener el sistema pequeno de toast + confirmacion reutilizable ya implementado,
 - limpiar estilos inline y recortar UI poco practica,
 - validar con `npm run check` y `npm run build`.

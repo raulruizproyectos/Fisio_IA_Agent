@@ -64,6 +64,10 @@
   - prioridad de caja,
   - accion primaria contextual,
   - accesos directos a registrar cobro, emitir factura, crear bono y abrir gestoria.
+- El 2026-04-28 se integran visualmente las subpantallas:
+  - `Facturas`, `Bonos` y `Gestoria` muestran encabezado comun de `Finanzas`,
+  - cada subvista tiene banda de contexto practico,
+  - todas tienen vuelta rapida al resumen financiero.
 
 ## Validaciones realizadas
 
@@ -71,7 +75,7 @@
   - 0 errores.
   - 0 warnings.
   - 0 hints.
-- `npm run build` en `frontend`: OK en cierre 2026-04-27 y repetido OK tras el panel operativo 2026-04-28.
+- `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28 y repetido OK tras la integracion visual de subpantallas.
 - `git diff --check`: OK; solo aparece aviso normal de CRLF/LF en Windows para `frontend/src/pages/index.astro`.
 
 ## Auditoria premium creada
@@ -104,7 +108,7 @@ El nuevo enfoque es:
 
 Ejecutar Fase 1 del documento premium, empezando por:
 
-1. Unir `Facturas`, `Bonos` y `Gestoria` dentro de una unica superficie real de Finanzas.
+1. Reducir duplicidad interna de tablas y resumenes en Finanzas.
 2. Limpiar estilos inline visibles en pagos, bonos, documentos y agenda.
 3. Reducir ruido visual y eliminar bloques que no ayuden a una accion diaria.
 4. Validar con:

@@ -13,7 +13,7 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
 ## Checkpoint actual (2026-04-28)
-- Estado local: nueva fase premium practica en curso, con cambios pendientes de commit y primer panel operativo de Finanzas implementado.
+- Estado local: nueva fase premium practica en curso, con cambios pendientes de commit y superficie de Finanzas integrada en primera version.
 - Checkpoint operativo recomendado: `docs/checkpoint_20260427_premium_platform_handoff.md`
 - Auditoria premium: `docs/premium_platform_audit_20260427.md`
 - Estado real del producto en este punto:
@@ -23,13 +23,14 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
   - navegacion cotidiana orientada a abrir ficha desde busqueda, agenda, pacientes, intakes y biblioteca,
   - sistema propio de toast/confirmacion implementado para sustituir `alert()`, `confirm()` y `prompt()` nativos en flujos operativos,
   - sidebar usa `Finanzas` como entrada semantica unica y resuelve internamente a la portada financiera actual,
-  - Finanzas incorpora panel operativo con prioridad, resumen de caja y acciones directas para registrar cobro, emitir factura, crear bono o revisar gestoria.
+  - Finanzas incorpora panel operativo con prioridad, resumen de caja y acciones directas para registrar cobro, emitir factura, crear bono o revisar gestoria,
+  - Facturas, Bonos y Gestoria comparten encabezado de Finanzas, contexto de subvista y vuelta rapida al resumen.
 - Validacion local:
-  - `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints tras el panel operativo de Finanzas.
-  - `npm run build` en `frontend`: OK tras el panel operativo de Finanzas.
+  - `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints tras integrar subpantallas de Finanzas.
+  - `npm run build` en `frontend`: OK tras integrar subpantallas de Finanzas.
 - Siguiente paso exacto:
   - smoke visual local en `http://127.0.0.1:4321`,
-  - continuar Fase 1 premium limpiando estilos inline visibles y haciendo que Facturas/Bonos/Gestoria compartan la misma superficie de Finanzas.
+  - continuar Fase 1 premium limpiando estilos inline visibles y reduciendo duplicidad interna de las tablas financieras.
 
 ## Checkpoint actual (2026-04-23)
 - Commit exacto para retomar: `8f568cf`
