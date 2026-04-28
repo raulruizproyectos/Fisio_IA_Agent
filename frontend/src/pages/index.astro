@@ -30,7 +30,7 @@ import Layout from '../layouts/Layout.astro';
           <span class="material-symbols-rounded">prescriptions</span>
           <span class="nav-label">Biblioteca</span>
         </a>
-        <a href="#" class="nav-item" data-section="pagos">
+        <a href="#" class="nav-item" data-section="finanzas">
           <span class="material-symbols-rounded">payments</span>
           <span class="nav-label">Finanzas</span>
         </a>
@@ -563,10 +563,14 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: HISTORIAL === -->
         <div class="page-section" data-page="historial">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">history</span> Historial</h1>
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">history</span> Seguimiento del caso</h1>
+              <p class="page-subtitle">Usa la ficha como vista principal. Esta pantalla queda para auditoria longitudinal, Telegram y planes domiciliarios.</p>
+            </div>
+            <button class="btn-secondary" id="historyOpenFichaBtn" type="button"><span class="material-symbols-rounded">person</span> Abrir ficha</button>
           </div>
           <section class="card">
-            <header class="card-header"><h2>Notas de seguimiento</h2><button class="btn-ghost" id="refreshHistorial"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
+            <header class="card-header"><h2>Auditoria clinica y planes</h2><button class="btn-ghost" id="refreshHistorial"><span class="material-symbols-rounded">refresh</span> Actualizar</button></header>
             <div id="historialContent" class="section-body"><div class="empty-state"><span class="material-symbols-rounded">history</span><p>Selecciona un paciente para ver su historial</p></div></div>
           </section>
         </div>
@@ -574,10 +578,18 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: PAGOS === -->
         <div class="page-section" data-page="pagos">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
-            <button class="btn-primary" id="addPagoBtn">
-              <span class="material-symbols-rounded">add_card</span> Registrar pago
-            </button>
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Caja diaria, facturas pendientes y bonos en una vista de trabajo.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" id="financeInvoiceBtn" type="button">
+                <span class="material-symbols-rounded">receipt_long</span> Emitir factura
+              </button>
+              <button class="btn-primary" id="addPagoBtn">
+                <span class="material-symbols-rounded">add_card</span> Registrar pago
+              </button>
+            </div>
           </div>
           <nav class="finance-tabs" aria-label="Secciones de finanzas">
             <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
@@ -585,6 +597,40 @@ import Layout from '../layouts/Layout.astro';
             <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
             <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
           </nav>
+
+          <section class="finance-workbench" aria-label="Panel operativo de finanzas">
+            <article class="finance-priority-panel">
+              <span class="finance-kicker">Prioridad ahora</span>
+              <strong id="financePriorityTitle">Cargando caja...</strong>
+              <p id="financePriorityMeta">Calculando cobros, facturas pendientes y bonos activos.</p>
+              <div class="finance-priority-actions">
+                <button class="btn-primary btn-sm" id="financePrimaryActionBtn" type="button" data-finance-action="pago"><span class="material-symbols-rounded">arrow_forward</span> Registrar pago</button>
+                <button class="btn-ghost btn-sm" id="financeSecondaryActionBtn" type="button" data-finance-action="facturas"><span class="material-symbols-rounded">receipt_long</span> Ver facturas</button>
+              </div>
+            </article>
+            <div class="finance-action-grid">
+              <button class="finance-action-card" type="button" id="financeNewPaymentBtn">
+                <span class="material-symbols-rounded">add_card</span>
+                <strong>Registrar cobro</strong>
+                <small>Entrada rapida de caja.</small>
+              </button>
+              <button class="finance-action-card" type="button" id="financeNewInvoiceBtn">
+                <span class="material-symbols-rounded">receipt_long</span>
+                <strong>Emitir factura</strong>
+                <small>Desde pagos pendientes.</small>
+              </button>
+              <button class="finance-action-card" type="button" id="financeNewBonoBtn">
+                <span class="material-symbols-rounded">confirmation_number</span>
+                <strong>Crear bono</strong>
+                <small>Paquetes de sesiones.</small>
+              </button>
+              <button class="finance-action-card" type="button" id="financeOpenGestoriaBtn">
+                <span class="material-symbols-rounded">account_balance</span>
+                <strong>Gestoria</strong>
+                <small>Resumen para cierre.</small>
+              </button>
+            </div>
+          </section>
 
           <!-- Resumen + filtros compactos -->
           <div class="pagos-toolbar">
@@ -1297,7 +1343,10 @@ import Layout from '../layouts/Layout.astro';
         <!-- === PAGE: DOCUMENTOS === -->
         <div class="page-section" data-page="documentos">
           <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">description</span> Documentos y Consentimientos</h1>
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">description</span> Documentos y Consentimientos</h1>
+              <p class="page-subtitle">Vista global para firmas y consentimientos. Para trabajar un caso concreto, entra en la ficha del paciente y abre la pestana Documentos.</p>
+            </div>
             <div class="page-tools">
               <select id="documentosEstadoFilter" title="Estado">
                 <option value="">Todos</option>
@@ -1583,6 +1632,25 @@ import Layout from '../layouts/Layout.astro';
         <span>Mensajes</span>
       </button>
     </nav>
+    <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
+    <div class="confirm-shell" id="confirmDialog" aria-hidden="true">
+      <div class="confirm-backdrop" data-confirm-cancel></div>
+      <section class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+        <div class="confirm-icon"><span class="material-symbols-rounded" id="confirmIcon">help</span></div>
+        <div class="confirm-copy">
+          <h2 id="confirmTitle">Confirmar accion</h2>
+          <p id="confirmMessage">Revisa la accion antes de continuar.</p>
+          <label class="confirm-input-field" id="confirmInputField" hidden>
+            <span id="confirmInputLabel">Texto de confirmacion</span>
+            <input id="confirmInput" type="text" autocomplete="off" />
+          </label>
+        </div>
+        <div class="confirm-actions">
+          <button type="button" class="btn-ghost" id="confirmCancelBtn" data-confirm-cancel>Cancelar</button>
+          <button type="button" class="btn-primary" id="confirmOkBtn">Confirmar</button>
+        </div>
+      </section>
+    </div>
   </div>
 </Layout>
 
@@ -1644,6 +1712,16 @@ import Layout from '../layouts/Layout.astro';
   const mobileDock = document.getElementById('mobileDock') as HTMLElement | null;
   const mobileDockNavButtons = document.querySelectorAll('[data-mobile-nav]') as NodeListOf<HTMLButtonElement>;
   const mobileDockActionButtons = document.querySelectorAll('[data-mobile-action]') as NodeListOf<HTMLButtonElement>;
+  const toastRegion = document.getElementById('toastRegion') as HTMLElement | null;
+  const confirmDialog = document.getElementById('confirmDialog') as HTMLElement | null;
+  const confirmTitle = document.getElementById('confirmTitle') as HTMLElement | null;
+  const confirmMessage = document.getElementById('confirmMessage') as HTMLElement | null;
+  const confirmIcon = document.getElementById('confirmIcon') as HTMLElement | null;
+  const confirmInputField = document.getElementById('confirmInputField') as HTMLElement | null;
+  const confirmInputLabel = document.getElementById('confirmInputLabel') as HTMLElement | null;
+  const confirmInput = document.getElementById('confirmInput') as HTMLInputElement | null;
+  const confirmCancelBtn = document.getElementById('confirmCancelBtn') as HTMLButtonElement | null;
+  const confirmOkBtn = document.getElementById('confirmOkBtn') as HTMLButtonElement | null;
   const assistantPatientLabel = document.getElementById('assistantPatientLabel') as HTMLElement | null;
   const assistantPatientMeta = document.getElementById('assistantPatientMeta') as HTMLElement | null;
   const assistantPatientBrief = document.getElementById('assistantPatientBrief') as HTMLElement | null;
@@ -1730,6 +1808,7 @@ import Layout from '../layouts/Layout.astro';
   const agendaMobileSummary = document.getElementById('agendaMobileSummary') as HTMLElement | null;
   const agendaMobileList = document.getElementById('agendaMobileList') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
+  const historyOpenFichaBtn = document.getElementById('historyOpenFichaBtn') as HTMLButtonElement | null;
   const addPatientBtn = document.getElementById('addPatientBtn') as HTMLButtonElement | null;
   const patientModal = document.getElementById('patientModal') as HTMLElement | null;
   const patientForm = document.getElementById('patientForm') as HTMLFormElement | null;
@@ -1749,6 +1828,101 @@ import Layout from '../layouts/Layout.astro';
   const bookingCopyBtn = document.getElementById('cfgBookingCopyBtn') as HTMLButtonElement | null;
   const bookingFeedback = document.getElementById('cfgBookingFeedback') as HTMLElement | null;
   const appointmentForm = document.getElementById('appointmentForm') as HTMLFormElement | null;
+
+  type ToastTone = 'info' | 'success' | 'warning' | 'error';
+  const showToast = (message: string, tone: ToastTone = 'info', title?: string) => {
+    if (!toastRegion) return;
+    const toast = document.createElement('article');
+    toast.className = `toast-card toast-${tone}`;
+    toast.setAttribute('role', tone === 'error' || tone === 'warning' ? 'alert' : 'status');
+    const icon = tone === 'success' ? 'check_circle' : tone === 'warning' ? 'warning' : tone === 'error' ? 'error' : 'info';
+    toast.innerHTML = `
+      <span class="toast-icon material-symbols-rounded">${icon}</span>
+      <div class="toast-copy">
+        ${title ? `<strong>${escapeHtml(title)}</strong>` : ''}
+        <p>${escapeHtml(message)}</p>
+      </div>
+      <button type="button" class="toast-close" aria-label="Cerrar aviso"><span class="material-symbols-rounded">close</span></button>
+    `;
+    const close = () => {
+      toast.classList.add('is-leaving');
+      window.setTimeout(() => toast.remove(), 180);
+    };
+    toast.querySelector('.toast-close')?.addEventListener('click', close);
+    toastRegion.appendChild(toast);
+    window.setTimeout(close, tone === 'error' ? 6500 : 4400);
+  };
+
+  type ConfirmOptions = {
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    tone?: ToastTone;
+    inputLabel?: string;
+    inputPlaceholder?: string;
+  };
+  let resolveConfirmDialog: ((value: boolean | string | null) => void) | null = null;
+  const closeConfirmDialog = (value: boolean | string | null) => {
+    confirmDialog?.classList.remove('open');
+    confirmDialog?.setAttribute('aria-hidden', 'true');
+    const resolver = resolveConfirmDialog;
+    resolveConfirmDialog = null;
+    resolver?.(value);
+  };
+  const openConfirmDialog = (options: ConfirmOptions, expectsText = false) =>
+    new Promise<boolean | string | null>((resolve) => {
+      if (!confirmDialog || !confirmOkBtn || !confirmCancelBtn) {
+        resolve(expectsText ? null : false);
+        return;
+      }
+      resolveConfirmDialog?.(expectsText ? null : false);
+      resolveConfirmDialog = resolve;
+      const tone = options.tone || 'warning';
+      if (confirmTitle) confirmTitle.textContent = options.title;
+      if (confirmMessage) confirmMessage.textContent = options.message;
+      if (confirmIcon) confirmIcon.textContent = tone === 'error' ? 'warning' : tone === 'success' ? 'check_circle' : 'help';
+      if (confirmOkBtn) {
+        confirmOkBtn.textContent = options.confirmLabel || 'Confirmar';
+        confirmOkBtn.setAttribute('data-tone', tone);
+      }
+      if (confirmCancelBtn) confirmCancelBtn.textContent = options.cancelLabel || 'Cancelar';
+      if (confirmInputField && confirmInput && confirmInputLabel) {
+        confirmInputField.hidden = !expectsText;
+        confirmInput.value = '';
+        confirmInput.placeholder = options.inputPlaceholder || '';
+        confirmInputLabel.textContent = options.inputLabel || 'Texto de confirmacion';
+      }
+      confirmDialog.classList.add('open');
+      confirmDialog.setAttribute('aria-hidden', 'false');
+      window.setTimeout(() => (expectsText ? confirmInput : confirmOkBtn)?.focus(), 20);
+    });
+  const requestConfirm = async (options: ConfirmOptions) => Boolean(await openConfirmDialog(options, false));
+  const requestTextInput = async (options: ConfirmOptions) => {
+    const value = await openConfirmDialog(options, true);
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
+  };
+  confirmOkBtn?.addEventListener('click', () => {
+    if (confirmInputField && !confirmInputField.hidden) {
+      closeConfirmDialog(confirmInput?.value || '');
+      return;
+    }
+    closeConfirmDialog(true);
+  });
+  confirmCancelBtn?.addEventListener('click', () => closeConfirmDialog(confirmInputField && !confirmInputField.hidden ? null : false));
+  confirmDialog?.querySelectorAll('[data-confirm-cancel]').forEach((node) => {
+    node.addEventListener('click', () => closeConfirmDialog(confirmInputField && !confirmInputField.hidden ? null : false));
+  });
+  confirmDialog?.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeConfirmDialog(confirmInputField && !confirmInputField.hidden ? null : false);
+    }
+    if (event.key === 'Enter' && confirmInputField && !confirmInputField.hidden) {
+      event.preventDefault();
+      closeConfirmDialog(confirmInput?.value || '');
+    }
+  });
   const appointmentPatientSelect = document.getElementById('appointmentPatientSelect') as HTMLSelectElement | null;
   const appointmentStartInput = document.getElementById('appointmentStartInput') as HTMLInputElement | null;
   const appointmentEndInput = document.getElementById('appointmentEndInput') as HTMLInputElement | null;
@@ -2716,15 +2890,17 @@ import Layout from '../layouts/Layout.astro';
   const financeSections = new Set(['pagos', 'facturas', 'bonos', 'gestoria']);
 
   const navigateTo = (section: string) => {
-    activeSection = section;
-    const sidebarSection = financeSections.has(section) ? 'pagos' : section;
+    const targetSection = section === 'finanzas' ? 'pagos' : section;
+    activeSection = targetSection;
+    const sidebarSection = financeSections.has(targetSection) ? 'finanzas' : targetSection;
     navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === sidebarSection));
-    mobileDockNavButtons.forEach((button) => button.classList.toggle('active', button.dataset.mobileNav === section));
+    mobileDock?.setAttribute('data-active-section', targetSection);
+    mobileDockNavButtons.forEach((button) => button.classList.toggle('active', button.dataset.mobileNav === targetSection));
     pages.forEach(p => {
-      const isActive = (p as HTMLElement).dataset.page === section;
+      const isActive = (p as HTMLElement).dataset.page === targetSection;
       p.classList.toggle('active', isActive);
     });
-    if (pageLoaders[section]) pageLoaders[section]();
+    if (pageLoaders[targetSection]) pageLoaders[targetSection]();
     syncAgendaAutoRefresh();
   };
   navItems.forEach(n => n.addEventListener('click', (e: Event) => { e.preventDefault(); navigateTo(n.getAttribute('data-section') || 'dashboard'); }));
@@ -2887,7 +3063,10 @@ import Layout from '../layouts/Layout.astro';
     const patientId = String(next?.paciente_id || '').trim();
     const patientName = String(next?.nombre_paciente || '').trim();
     if (patientId) {
-      openPatientHistory(patientId, patientName || 'Paciente');
+      selectedPatientId = patientId;
+      selectedPatientName = patientName || 'Paciente';
+      syncChatPatientSelection(patientId, selectedPatientName);
+      void openFichaPaciente(patientId);
       return;
     }
     navigateTo('citas');
@@ -3466,7 +3645,10 @@ import Layout from '../layouts/Layout.astro';
       searchInput.value = match.nombre_completo || '';
     }
     hideSearchResults();
-    openPatientHistory(match.id, match.nombre_completo || '');
+    selectedPatientId = match.id;
+    selectedPatientName = match.nombre_completo || '';
+    syncChatPatientSelection(match.id, selectedPatientName);
+    void openFichaPaciente(match.id);
   };
 
   const updateSearchResults = async (query: string, resetActive = true) => {
@@ -4278,7 +4460,10 @@ import Layout from '../layouts/Layout.astro';
     if (!btn) return;
     const patientId = btn.getAttribute('data-patient-id');
     const patientName = btn.getAttribute('data-patient-name') || '';
-    openPatientHistory(patientId, patientName);
+    selectedPatientId = patientId;
+    selectedPatientName = patientName || '';
+    syncChatPatientSelection(patientId || '', selectedPatientName);
+    if (patientId) void openFichaPaciente(patientId);
   });
 
   // === DASHBOARD KPIs + CHART ===
@@ -4576,7 +4761,7 @@ import Layout from '../layouts/Layout.astro';
             ${callAction}
             ${emailAction}
             <button type="button" class="btn-secondary btn-sm" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">person</span> Abrir ficha</button>
-            <button type="button" class="btn-ghost btn-sm" data-action="patient-telegram" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">forum</span> Historial</button>
+            <button type="button" class="btn-ghost btn-sm" data-action="patient-telegram" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">forum</span> Seguimiento</button>
           </div>
         </article>
       `;
@@ -4732,7 +4917,9 @@ import Layout from '../layouts/Layout.astro';
 
       if (createdId) {
         syncChatPatientSelection(createdId, createdName);
-        openPatientHistory(createdId, createdName);
+        selectedPatientId = createdId;
+        selectedPatientName = createdName;
+        void openFichaPaciente(createdId);
       }
     } catch (err: any) {
       setPatientFormFeedback(`No se pudo crear el paciente: ${err?.message || 'error no identificado'}`);
@@ -4783,6 +4970,10 @@ import Layout from '../layouts/Layout.astro';
 
     if (!['view-patient', 'patient-telegram'].includes(action)) return;
     pendingHistoryAnchor = action === 'patient-telegram' ? 'telegram' : null;
+    if (action === 'view-patient') {
+      if (patientId) void openFichaPaciente(patientId);
+      return;
+    }
     openPatientHistory(patientId, patientName);
   });
 
@@ -4879,7 +5070,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </td>
           <td>
-            <button class="btn-sm btn-outline" data-action="template-open-history" data-patient-id="${escapeAttr(plan?.patient_id || '')}" data-patient-name="${escapeAttr(patientName)}">Abrir caso</button>
+            <button class="btn-sm btn-outline" data-action="template-open-history" data-patient-id="${escapeAttr(plan?.patient_id || '')}" data-patient-name="${escapeAttr(patientName)}">Abrir ficha</button>
           </td>
         </tr>
       `;
@@ -4931,7 +5122,10 @@ import Layout from '../layouts/Layout.astro';
     const patientName = btn.getAttribute('data-patient-name') || 'Paciente';
     if (!patientId) return;
 
-    openPatientHistory(patientId, patientName);
+    selectedPatientId = patientId;
+    selectedPatientName = patientName;
+    syncChatPatientSelection(patientId, patientName);
+    void openFichaPaciente(patientId);
   });
 
   const getIntakeSourceKey = (rawSource: any) => {
@@ -5013,7 +5207,7 @@ import Layout from '../layouts/Layout.astro';
 
   async function openAppointmentFromIntake(patientId: string | null, patientName = '', message = '') {
     if (!patientId) {
-      alert('Este mensaje no tiene paciente vinculado. Abre la ficha o crea el paciente antes de agendar.');
+      showToast('Este mensaje no tiene paciente vinculado. Abre la ficha o crea el paciente antes de agendar.', 'warning');
       return;
     }
     selectedPatientId = patientId;
@@ -5099,7 +5293,12 @@ import Layout from '../layouts/Layout.astro';
     if (fichaBtn) {
       const patientId = fichaBtn.getAttribute('data-open-ficha');
       const patientName = fichaBtn.getAttribute('data-patient-name') || '';
-      if (patientId) openPatientHistory(patientId, patientName);
+      if (patientId) {
+        selectedPatientId = patientId;
+        selectedPatientName = patientName;
+        syncChatPatientSelection(patientId, patientName);
+        void openFichaPaciente(patientId);
+      }
       return;
     }
     const appointmentBtn = target?.closest('button[data-create-appointment]') as HTMLButtonElement | null;
@@ -5813,7 +6012,12 @@ import Layout from '../layouts/Layout.astro';
       if (action === 'ficha') {
         const patientId = actionBtn.getAttribute('data-patient-id') || '';
         const patientName = actionBtn.getAttribute('data-patient-name') || '';
-        if (patientId) openPatientHistory(patientId, patientName);
+        if (patientId) {
+          selectedPatientId = patientId;
+          selectedPatientName = patientName;
+          syncChatPatientSelection(patientId, patientName);
+          void openFichaPaciente(patientId);
+        }
       } else {
         updateAppointmentStatus(apptId, action);
       }
@@ -5823,7 +6027,12 @@ import Layout from '../layouts/Layout.astro';
     if (calAppt) {
       const patientId = calAppt.getAttribute('data-cal-appt-patient') || '';
       const patientName = calAppt.getAttribute('data-cal-appt-name') || '';
-      if (patientId) openPatientHistory(patientId, patientName);
+      if (patientId) {
+        selectedPatientId = patientId;
+        selectedPatientName = patientName;
+        syncChatPatientSelection(patientId, patientName);
+        void openFichaPaciente(patientId);
+      }
     }
   });
 
@@ -6048,7 +6257,7 @@ import Layout from '../layouts/Layout.astro';
     if (!selectedPatientId) {
       currentPatientTelegramLinkState = null;
       updateExerciseTelegramButton();
-      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">&#xe889;</span><p>Selecciona un paciente para ver su historial</p></div>`;
+      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">&#xe889;</span><p>Selecciona un paciente desde Pacientes, Agenda o la busqueda superior para revisar su seguimiento longitudinal.</p></div>`;
       return;
     }
     historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
@@ -6291,9 +6500,16 @@ import Layout from '../layouts/Layout.astro';
 
       historialContent.innerHTML = `
         ${historyPartialNotice}
-        <div class="detail-block">
-          <h3>${escapeHtml(displayName)}</h3>
-          <p><strong>Email:</strong> ${escapeHtml(patient.email || '-')} - <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '-'}</p>
+        <div class="detail-block history-case-hero">
+          <div>
+            <span class="detail-kicker">Caso seleccionado</span>
+            <h3>${escapeHtml(displayName)}</h3>
+            <p><strong>Email:</strong> ${escapeHtml(patient.email || '-')} - <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '-'}</p>
+          </div>
+          <div class="history-case-actions">
+            <button type="button" class="btn-secondary btn-sm" data-history-action="open-ficha"><span class="material-symbols-rounded">person</span> Abrir ficha</button>
+            <button type="button" class="btn-ghost btn-sm" data-history-action="open-docs"><span class="material-symbols-rounded">description</span> Documentos del caso</button>
+          </div>
         </div>
         ${renderPatientTelegramLinkBlock(telegramLink, telegramLinkError)}
         <div class="detail-block">
@@ -6324,8 +6540,28 @@ import Layout from '../layouts/Layout.astro';
   };
   pageLoaders['historial'] = loadHistorial;
   document.getElementById('refreshHistorial')?.addEventListener('click', loadHistorial);
+  historyOpenFichaBtn?.addEventListener('click', () => {
+    if (!selectedPatientId) {
+      navigateTo('pacientes');
+      return;
+    }
+    void openFichaPaciente(selectedPatientId);
+  });
   historialContent?.addEventListener('click', async (event: Event) => {
     const target = event.target as HTMLElement | null;
+    const historyActionBtn = target?.closest('button[data-history-action]') as HTMLButtonElement | null;
+    if (historyActionBtn && selectedPatientId) {
+      const action = historyActionBtn.getAttribute('data-history-action') || '';
+      if (action === 'open-ficha') {
+        void openFichaPaciente(selectedPatientId);
+        return;
+      }
+      if (action === 'open-docs') {
+        await openFichaPaciente(selectedPatientId);
+        activateFichaTab('documentos');
+        return;
+      }
+    }
     const btn = target?.closest('button[data-action^="telegram-"]') as HTMLButtonElement | null;
     if (!btn || !selectedPatientId) return;
 
@@ -6549,6 +6785,15 @@ import Layout from '../layouts/Layout.astro';
   const financeBonosMeta = document.getElementById('financeBonosMeta') as HTMLElement | null;
   const financeTrendValue = document.getElementById('financeTrendValue') as HTMLElement | null;
   const financeTrendMeta = document.getElementById('financeTrendMeta') as HTMLElement | null;
+  const financePriorityTitle = document.getElementById('financePriorityTitle') as HTMLElement | null;
+  const financePriorityMeta = document.getElementById('financePriorityMeta') as HTMLElement | null;
+  const financePrimaryActionBtn = document.getElementById('financePrimaryActionBtn') as HTMLButtonElement | null;
+  const financeSecondaryActionBtn = document.getElementById('financeSecondaryActionBtn') as HTMLButtonElement | null;
+  const financeInvoiceBtn = document.getElementById('financeInvoiceBtn') as HTMLButtonElement | null;
+  const financeNewPaymentBtn = document.getElementById('financeNewPaymentBtn') as HTMLButtonElement | null;
+  const financeNewInvoiceBtn = document.getElementById('financeNewInvoiceBtn') as HTMLButtonElement | null;
+  const financeNewBonoBtn = document.getElementById('financeNewBonoBtn') as HTMLButtonElement | null;
+  const financeOpenGestoriaBtn = document.getElementById('financeOpenGestoriaBtn') as HTMLButtonElement | null;
   let pagosUnavailableMessage = '';
   const pagoSubmitBtn = document.getElementById('pagoSubmitBtn') as HTMLButtonElement | null;
   const pagoModalTitle = document.getElementById('pagoModalTitle');
@@ -6656,6 +6901,52 @@ import Layout from '../layouts/Layout.astro';
 
   const fmtMoney = (n: number) => n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.').replace(/\.(\d{2})$/, ',$1') + ' \u20ac';
 
+  const setFinanceActionButton = (button: HTMLButtonElement | null, label: string, icon: string, action: string) => {
+    if (!button) return;
+    button.dataset.financeAction = action;
+    button.innerHTML = `<span class="material-symbols-rounded">${icon}</span> ${escapeHtml(label)}`;
+  };
+
+  const setFinancePriority = (title: string, meta: string, primary: { label: string; icon: string; action: string }, secondary: { label: string; icon: string; action: string }) => {
+    if (financePriorityTitle) financePriorityTitle.textContent = title;
+    if (financePriorityMeta) financePriorityMeta.textContent = meta;
+    setFinanceActionButton(financePrimaryActionBtn, primary.label, primary.icon, primary.action);
+    setFinanceActionButton(financeSecondaryActionBtn, secondary.label, secondary.icon, secondary.action);
+  };
+
+  const runFinanceAction = async (action = 'pago') => {
+    if (action === 'pagos') {
+      navigateTo('pagos');
+      return;
+    }
+    if (action === 'pago') {
+      await openPagoModal();
+      return;
+    }
+    if (action === 'facturas') {
+      navigateTo('facturas');
+      return;
+    }
+    if (action === 'factura') {
+      navigateTo('facturas');
+      window.setTimeout(() => document.getElementById('nuevaFacturaBtn')?.click(), 80);
+      return;
+    }
+    if (action === 'bonos') {
+      navigateTo('bonos');
+      return;
+    }
+    if (action === 'bono') {
+      navigateTo('bonos');
+      window.setTimeout(() => document.getElementById('nuevoBonoBtn')?.click(), 80);
+      return;
+    }
+    if (action === 'gestoria') {
+      navigateTo('gestoria');
+      return;
+    }
+  };
+
   const renderPagosSummary = (pagos: any[]) => {
     const rows = Array.isArray(pagos) ? pagos : [];
     const total = rows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
@@ -6701,8 +6992,39 @@ import Layout from '../layouts/Layout.astro';
 
       const bonos = Array.isArray(bonosPayload?.data) ? bonosPayload.data : [];
       const remainingSessions = bonos.reduce((sum: number, b: any) => sum + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
+      const lowBonos = bonos.filter((b: any) => Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0) <= 2);
       if (financeBonosValue) financeBonosValue.textContent = String(bonos.length);
       if (financeBonosMeta) financeBonosMeta.textContent = `${remainingSessions} sesion${remainingSessions === 1 ? '' : 'es'} disponibles.`;
+
+      if (pendingInvoices.length) {
+        setFinancePriority(
+          `${pendingInvoices.length} factura${pendingInvoices.length === 1 ? '' : 's'} pendiente${pendingInvoices.length === 1 ? '' : 's'}`,
+          `${fmtMoney(pendingAmount)} por revisar antes del cierre de caja.`,
+          { label: 'Revisar facturas', icon: 'receipt_long', action: 'facturas' },
+          { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
+        );
+      } else if (lowBonos.length) {
+        setFinancePriority(
+          `${lowBonos.length} bono${lowBonos.length === 1 ? '' : 's'} cerca de agotarse`,
+          'Conviene revisar renovaciones antes de la siguiente sesion.',
+          { label: 'Revisar bonos', icon: 'confirmation_number', action: 'bonos' },
+          { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
+        );
+      } else if (!rows.length) {
+        setFinancePriority(
+          'Sin cobros en este filtro',
+          'Registra el primer cobro o cambia el periodo para revisar caja anterior.',
+          { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
+          { label: 'Ver gestoria', icon: 'account_balance', action: 'gestoria' },
+        );
+      } else {
+        setFinancePriority(
+          'Caja al dia',
+          `${fmtMoney(paidTotal)} cobrados en ${rows.length} movimiento${rows.length === 1 ? '' : 's'}.`,
+          { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
+          { label: 'Ver gestoria', icon: 'account_balance', action: 'gestoria' },
+        );
+      }
 
       if (financeTrendValue || financeTrendMeta) {
         const current = getMonthOffset(0);
@@ -6723,6 +7045,12 @@ import Layout from '../layouts/Layout.astro';
         }
       }
     } catch {
+      setFinancePriority(
+        'Finanzas parcialmente disponibles',
+        'La caja carga, pero no se pudo completar la lectura de facturas o bonos.',
+        { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
+        { label: 'Reintentar', icon: 'refresh', action: 'pagos' },
+      );
       if (financePendingMeta) financePendingMeta.textContent = 'No se pudo actualizar facturacion.';
       if (financeBonosMeta) financeBonosMeta.textContent = 'No se pudo actualizar bonos.';
       if (financeTrendMeta) financeTrendMeta.textContent = 'No se pudo calcular la tendencia mensual.';
@@ -6816,9 +7144,16 @@ import Layout from '../layouts/Layout.astro';
   pageLoaders['pagos'] = loadPagos;
   pagosAnioFilter?.addEventListener('change', loadPagos);
   pagosMesFilter?.addEventListener('change', loadPagos);
+  financePrimaryActionBtn?.addEventListener('click', () => runFinanceAction(financePrimaryActionBtn.dataset.financeAction));
+  financeSecondaryActionBtn?.addEventListener('click', () => runFinanceAction(financeSecondaryActionBtn.dataset.financeAction));
+  financeInvoiceBtn?.addEventListener('click', () => runFinanceAction('factura'));
+  financeNewPaymentBtn?.addEventListener('click', () => runFinanceAction('pago'));
+  financeNewInvoiceBtn?.addEventListener('click', () => runFinanceAction('factura'));
+  financeNewBonoBtn?.addEventListener('click', () => runFinanceAction('bono'));
+  financeOpenGestoriaBtn?.addEventListener('click', () => runFinanceAction('gestoria'));
 
   pagosBody?.addEventListener('click', async (event: Event) => {
-    if (pagosUnavailableMessage) { alert(pagosUnavailableMessage); return; }
+    if (pagosUnavailableMessage) { showToast(pagosUnavailableMessage, 'warning'); return; }
     const btn = (event.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
     if (!btn) return;
     const action = btn.getAttribute('data-action');
@@ -6833,18 +7168,25 @@ import Layout from '../layouts/Layout.astro';
         const pago = JSON.parse(raw);
         await openPagoModal(pago);
       } catch {
-        alert('No pude cargar el pago seleccionado.');
+        showToast('No pude cargar el pago seleccionado.', 'error');
       }
       return;
     }
 
     if (action === 'delete-pago') {
-      if (!confirm('Eliminar este pago?')) return;
+      const confirmed = await requestConfirm({
+        title: 'Eliminar pago',
+        message: 'Este pago desaparecera del historial financiero. La accion no se puede deshacer.',
+        confirmLabel: 'Eliminar',
+        tone: 'error',
+      });
+      if (!confirmed) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
+        showToast('Pago eliminado correctamente.', 'success');
         await loadPagos();
       } catch (err: any) {
-        alert('Error: ' + (err?.message || 'desconocido'));
+        showToast(err?.message || 'No se pudo eliminar el pago.', 'error');
       }
     }
   });
@@ -7647,7 +7989,7 @@ import Layout from '../layouts/Layout.astro';
   });
 
   pagosMobileList?.addEventListener('click', async (event: Event) => {
-    if (pagosUnavailableMessage) { alert(pagosUnavailableMessage); return; }
+    if (pagosUnavailableMessage) { showToast(pagosUnavailableMessage, 'warning'); return; }
     const btn = (event.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
     if (!btn) return;
     const action = btn.getAttribute('data-action');
@@ -7662,18 +8004,25 @@ import Layout from '../layouts/Layout.astro';
         const pago = JSON.parse(raw);
         await openPagoModal(pago);
       } catch {
-        alert('No pude cargar el pago seleccionado.');
+        showToast('No pude cargar el pago seleccionado.', 'error');
       }
       return;
     }
 
     if (action === 'delete-pago') {
-      if (!confirm('Eliminar este pago?')) return;
+      const confirmed = await requestConfirm({
+        title: 'Eliminar pago',
+        message: 'Este pago desaparecera del historial financiero. La accion no se puede deshacer.',
+        confirmLabel: 'Eliminar',
+        tone: 'error',
+      });
+      if (!confirmed) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/pagos/${pagoId}`, { method: 'DELETE' });
+        showToast('Pago eliminado correctamente.', 'success');
         await loadPagos();
       } catch (err: any) {
-        alert('Error: ' + (err?.message || 'desconocido'));
+        showToast(err?.message || 'No se pudo eliminar el pago.', 'error');
       }
     }
   });
@@ -7872,8 +8221,9 @@ import Layout from '../layouts/Layout.astro';
       });
       // Reload ficha
       await openFichaPaciente(fichaPatientId);
+      showToast('Datos del paciente actualizados.', 'success');
     } catch (err: any) {
-      alert(`Error al guardar: ${err?.message || 'desconocido'}`);
+      showToast(err?.message || 'No se pudieron guardar los datos del paciente.', 'error');
     }
   });
 
@@ -7929,6 +8279,7 @@ import Layout from '../layouts/Layout.astro';
         ? `<span class="ficha-summary-chip">Modulo no disponible</span>`
         : `
         <span class="ficha-summary-chip"><strong>${pagos.length}</strong> cobro${pagos.length === 1 ? '' : 's'}</span>
+        <span class="ficha-summary-chip"><strong>${total.toFixed(2)} EUR</strong> total</span>
         <span class="ficha-summary-chip">${tarjeta} tarjeta</span>
         <span class="ficha-summary-chip">${efectivo} efectivo</span>`;
     }
@@ -8056,8 +8407,9 @@ import Layout from '../layouts/Layout.astro';
       renderFichaHero(fichaData || {});
       renderFichaWorkspace(fichaData || {});
       renderFichaNotas(fichaData?.notas || []);
+      showToast('Nota clinica guardada.', 'success');
     } catch (err: any) {
-      alert(`Error: ${err?.message || 'no se pudo guardar la nota'}`);
+      showToast(err?.message || 'No se pudo guardar la nota.', 'error');
     }
   });
 
@@ -8071,7 +8423,13 @@ import Layout from '../layouts/Layout.astro';
     if (!notaId || !fichaPatientId) return;
 
     if (action === 'delete-nota') {
-      if (!confirm('Eliminar esta nota clinica?')) return;
+      const confirmed = await requestConfirm({
+        title: 'Eliminar nota clinica',
+        message: 'La nota se eliminara del seguimiento del paciente.',
+        confirmLabel: 'Eliminar',
+        tone: 'error',
+      });
+      if (!confirmed) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
         const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
@@ -8079,8 +8437,9 @@ import Layout from '../layouts/Layout.astro';
         renderFichaHero(fichaData || {});
         renderFichaWorkspace(fichaData || {});
         renderFichaNotas(fichaData?.notas || []);
+        showToast('Nota clinica eliminada.', 'success');
       } catch (err: any) {
-        alert(`Error: ${err?.message}`);
+        showToast(err?.message || 'No se pudo eliminar la nota.', 'error');
       }
     }
 
@@ -8326,7 +8685,7 @@ import Layout from '../layouts/Layout.astro';
       }
       const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
       facturaPreview.innerHTML = `
-        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) registrados</p>
+        <p style="font-weight:600;margin-bottom:0.5rem">${pagos.length} pago(s) registrados - ${total.toFixed(2)} EUR pendientes de facturar</p>
         <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Metodo</th><th>Importe</th></tr></thead><tbody>
         ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesion')}</td><td>${escapeHtml(p.metodo || '')}</td><td>${Number(p.importe || 0).toFixed(2)} EUR</td></tr>`).join('')}
         </tbody></table></div>`;
@@ -8597,13 +8956,14 @@ import Layout from '../layouts/Layout.astro';
     const action = btn.getAttribute('data-action');
     const bonoId = btn.getAttribute('data-bono-id');
     if (!bonoId) return;
-    if (bonosUnavailableMessage) { alert(bonosUnavailableMessage); return; }
+    if (bonosUnavailableMessage) { showToast(bonosUnavailableMessage, 'warning'); return; }
 
     if (action === 'usar-bono') {
       try {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
+        showToast('Sesion descontada del bono.', 'success');
         await loadBonos();
-      } catch (err: any) { alert(`Error: ${err?.message}`); }
+      } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
     }
     if (action === 'edit-bono') {
       const row = btn.closest('tr') as HTMLTableRowElement | null;
@@ -8613,9 +8973,18 @@ import Layout from '../layouts/Layout.astro';
       } catch {}
     }
     if (action === 'delete-bono') {
-      if (!confirm('Eliminar este bono?')) return;
-      try { await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' }); await loadBonos(); }
-      catch (err: any) { alert(`Error: ${err?.message}`); }
+      const confirmed = await requestConfirm({
+        title: 'Eliminar bono',
+        message: 'El bono dejara de estar disponible para este paciente.',
+        confirmLabel: 'Eliminar',
+        tone: 'error',
+      });
+      if (!confirmed) return;
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' });
+        showToast('Bono eliminado.', 'success');
+        await loadBonos();
+      } catch (err: any) { showToast(err?.message || 'No se pudo eliminar el bono.', 'error'); }
     }
   });
 
@@ -8693,7 +9062,7 @@ import Layout from '../layouts/Layout.astro';
       firmaModal?.setAttribute('aria-hidden', 'false');
       initFirmaPad();
     } catch (err: any) {
-      alert(`Error: ${err?.message || 'no se pudo crear el documento'}`);
+      showToast(err?.message || 'No se pudo crear el documento.', 'error');
     }
   };
 
@@ -8914,7 +9283,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     btn.addEventListener('click', async () => {
       const docId = (btn as HTMLElement).getAttribute('data-doc-sign');
       if (!docId || !fichaPatientId) return;
-      const signature = prompt('Escribe tu nombre para firmar el documento');
+      const signature = await requestTextInput({
+        title: 'Firmar documento',
+        message: 'Escribe el nombre que debe quedar asociado a la firma del documento.',
+        inputLabel: 'Nombre de firma',
+        inputPlaceholder: 'Nombre y apellidos',
+        confirmLabel: 'Firmar',
+        tone: 'warning',
+      });
       if (!signature) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}/firmar`, {
@@ -8924,15 +9300,22 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         });
         const docsPayload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
         renderFichaDocumentos(docsPayload.data || [], fichaData?.recommendations || []);
+        showToast('Documento firmado correctamente.', 'success');
       } catch (err: any) {
-        alert(`Error: ${err?.message}`);
+        showToast(err?.message || 'No se pudo firmar el documento.', 'error');
       }
     });
   });
 
   el.querySelectorAll('[data-doc-delete]').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Eliminar este documento?')) return;
+      const confirmed = await requestConfirm({
+        title: 'Eliminar documento',
+        message: 'El documento se eliminara de la ficha del paciente.',
+        confirmLabel: 'Eliminar',
+        tone: 'error',
+      });
+      if (!confirmed) return;
       const docId = (btn as HTMLElement).getAttribute('data-doc-id') || (btn as HTMLElement).getAttribute('data-doc-delete');
       if (!docId) return;
       try {
@@ -8941,8 +9324,9 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           const pl = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
           renderFichaDocumentos(pl.data || [], fichaData?.recommendations || []);
         }
+        showToast('Documento eliminado.', 'success');
       } catch (err: any) {
-        alert(`Error: ${err?.message}`);
+        showToast(err?.message || 'No se pudo eliminar el documento.', 'error');
       }
     });
   });
@@ -9235,11 +9619,19 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
     if (!btn) return;
     const docId = btn.getAttribute('data-doc-id');
-    if (!docId || !confirm('Eliminar este documento?')) return;
+    if (!docId) return;
+    const confirmed = await requestConfirm({
+      title: 'Eliminar documento',
+      message: 'El documento se eliminara del listado global.',
+      confirmLabel: 'Eliminar',
+      tone: 'error',
+    });
+    if (!confirmed) return;
     try {
       await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
+      showToast('Documento eliminado.', 'success');
       await loadDocumentos();
-    } catch { alert('Error al eliminar el documento.'); }
+    } catch { showToast('Error al eliminar el documento.', 'error'); }
   });
 
   bonosMobileList?.addEventListener('click', async (e: Event) => {
@@ -9248,13 +9640,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     const action = btn.getAttribute('data-action');
     const bonoId = btn.getAttribute('data-bono-id');
     if (!bonoId) return;
-    if (bonosUnavailableMessage) { alert(bonosUnavailableMessage); return; }
+    if (bonosUnavailableMessage) { showToast(bonosUnavailableMessage, 'warning'); return; }
 
     if (action === 'usar-bono') {
       try {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
+        showToast('Sesion descontada del bono.', 'success');
         await loadBonos();
-      } catch (err: any) { alert(`Error: ${err?.message}`); }
+      } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
       return;
     }
     if (action === 'edit-bono') {
@@ -9266,9 +9659,18 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       return;
     }
     if (action === 'delete-bono') {
-      if (!confirm('Eliminar este bono?')) return;
-      try { await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' }); await loadBonos(); }
-      catch (err: any) { alert(`Error: ${err?.message}`); }
+      const confirmed = await requestConfirm({
+        title: 'Eliminar bono',
+        message: 'El bono dejara de estar disponible para este paciente.',
+        confirmLabel: 'Eliminar',
+        tone: 'error',
+      });
+      if (!confirmed) return;
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}`, { method: 'DELETE' });
+        showToast('Bono eliminado.', 'success');
+        await loadBonos();
+      } catch (err: any) { showToast(err?.message || 'No se pudo eliminar el bono.', 'error'); }
     }
   });
 
@@ -9276,11 +9678,19 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     const btn = (e.target as HTMLElement).closest('.doc-delete-btn') as HTMLElement | null;
     if (!btn) return;
     const docId = btn.getAttribute('data-doc-id');
-    if (!docId || !confirm('Eliminar este documento?')) return;
+    if (!docId) return;
+    const confirmed = await requestConfirm({
+      title: 'Eliminar documento',
+      message: 'El documento se eliminara del listado global.',
+      confirmLabel: 'Eliminar',
+      tone: 'error',
+    });
+    if (!confirmed) return;
     try {
       await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
+      showToast('Documento eliminado.', 'success');
       await loadDocumentos();
-    } catch { alert('Error al eliminar el documento.'); }
+    } catch { showToast('Error al eliminar el documento.', 'error'); }
   });
 
   const loadConfig = async () => {
@@ -12308,6 +12718,220 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     box-shadow: 0 2px 8px -2px rgba(13, 148, 136, 0.30);
   }
 
+  .toast-region {
+    position: fixed;
+    right: clamp(0.8rem, 2vw, 1.4rem);
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    z-index: 260;
+    display: grid;
+    gap: 0.65rem;
+    width: min(24rem, calc(100vw - 1.6rem));
+    pointer-events: none;
+  }
+
+  .toast-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.72rem;
+    padding: 0.82rem 0.88rem;
+    border: 1px solid rgba(203, 213, 225, 0.82);
+    border-radius: 0.95rem;
+    background: #ffffff;
+    box-shadow: 0 24px 58px -36px rgba(15, 23, 42, 0.46);
+    pointer-events: auto;
+    animation: toastIn 0.18s ease-out;
+  }
+
+  .toast-card.is-leaving {
+    animation: toastOut 0.18s ease-in forwards;
+  }
+
+  .toast-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.75rem;
+    color: #0f4c81;
+    background: #eaf4fb;
+  }
+
+  .toast-success .toast-icon {
+    color: #047857;
+    background: #ecfdf5;
+  }
+
+  .toast-warning .toast-icon {
+    color: #a16207;
+    background: #fffbeb;
+  }
+
+  .toast-error .toast-icon {
+    color: #b91c1c;
+    background: #fef2f2;
+  }
+
+  .toast-copy {
+    min-width: 0;
+    display: grid;
+    gap: 0.12rem;
+  }
+
+  .toast-copy strong {
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    line-height: 1.25;
+  }
+
+  .toast-copy p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    line-height: 1.42;
+  }
+
+  .toast-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 0;
+    border-radius: 999px;
+    color: #64748b;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .confirm-shell {
+    position: fixed;
+    inset: 0;
+    z-index: 270;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .confirm-shell.open {
+    display: flex;
+  }
+
+  .confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(5px);
+  }
+
+  .confirm-panel {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.95rem;
+    width: min(31rem, 100%);
+    padding: 1rem;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-radius: 1.15rem;
+    background: #ffffff;
+    box-shadow: 0 34px 90px -42px rgba(15, 23, 42, 0.58);
+  }
+
+  .confirm-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.9rem;
+    color: #0f4c81;
+    background: #eaf4fb;
+  }
+
+  .confirm-copy {
+    min-width: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .confirm-copy h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    letter-spacing: 0;
+  }
+
+  .confirm-copy p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .confirm-input-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .confirm-input-field span {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .confirm-input-field input {
+    width: 100%;
+    min-height: 2.7rem;
+    padding: 0.72rem 0.82rem;
+    border: 1px solid var(--border);
+    border-radius: 0.82rem;
+    color: var(--text-primary);
+    background: #fbfdff;
+    font: inherit;
+  }
+
+  .confirm-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+  }
+
+  .confirm-actions .btn-primary[data-tone='error'] {
+    border-color: #b91c1c;
+    background: #b91c1c;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(8px); }
+  }
+
+  @media (max-width: 720px) {
+    .toast-region {
+      right: 0.75rem;
+      bottom: calc(5.9rem + env(safe-area-inset-bottom, 0px));
+      width: calc(100vw - 1.5rem);
+    }
+
+    .confirm-panel {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .confirm-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+  }
+
   .detail-block {
     padding: 1rem 1.1rem;
     border-bottom: 1px solid var(--border);
@@ -12328,6 +12952,32 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     margin: 0;
     color: var(--text-secondary);
     font-size: 0.88rem;
+  }
+  .history-case-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    background: linear-gradient(180deg, rgba(248, 252, 253, 0.98), rgba(242, 247, 248, 0.96));
+  }
+  .detail-kicker {
+    display: block;
+    margin-bottom: 0.26rem;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .history-case-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  .history-case-actions .btn-secondary,
+  .history-case-actions .btn-ghost {
+    min-height: 2.35rem;
   }
   .detail-caption {
     margin-top: 0.35rem;
@@ -12603,6 +13253,20 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .recommendation-history-shell {
     display: grid;
     gap: 0.95rem;
+  }
+
+  @media (max-width: 720px) {
+    .history-case-hero {
+      display: grid;
+    }
+    .history-case-actions {
+      justify-content: stretch;
+    }
+    .history-case-actions .btn-secondary,
+    .history-case-actions .btn-ghost {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
   }
   .recommendation-summary-grid {
     display: grid;
@@ -21036,6 +21700,105 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     background: #fffbf5;
   }
 
+  .finance-workbench {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.55fr);
+    gap: 0.85rem;
+    margin: 0 0 1rem;
+  }
+
+  .finance-priority-panel {
+    display: grid;
+    align-content: start;
+    gap: 0.52rem;
+    min-height: 12.2rem;
+    padding: 1rem;
+    border: 1px solid #c9d8e5;
+    border-radius: 0.7rem;
+    background: linear-gradient(180deg, #f7fbfd 0%, #edf5f9 100%);
+  }
+
+  .finance-kicker {
+    color: #2e647d;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .finance-priority-panel strong {
+    color: #102c42;
+    font-size: 1.22rem;
+    line-height: 1.15;
+  }
+
+  .finance-priority-panel p {
+    max-width: 44ch;
+    margin: 0;
+    color: #506879;
+    font-size: 0.86rem;
+    line-height: 1.42;
+  }
+
+  .finance-priority-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.2rem;
+  }
+
+  .finance-action-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .finance-action-card {
+    display: grid;
+    align-content: start;
+    gap: 0.36rem;
+    min-height: 7.6rem;
+    padding: 0.82rem;
+    border: 1px solid #dce4ee;
+    border-radius: 0.7rem;
+    background: #ffffff;
+    color: #334155;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out;
+  }
+
+  .finance-action-card:hover {
+    transform: translateY(-1px);
+    border-color: #b9c9d8;
+    box-shadow: 0 14px 28px -24px rgba(15, 23, 42, 0.28);
+  }
+
+  .finance-action-card .material-symbols-rounded {
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.55rem;
+    background: #eef6f8;
+    color: #0f4c81;
+    font-size: 1.14rem;
+  }
+
+  .finance-action-card strong {
+    color: #132c3f;
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+
+  .finance-action-card small {
+    color: #64748b;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
   @media (max-width: 760px) {
     .finance-tabs {
       margin-top: -0.2rem;
@@ -21049,6 +21812,18 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     .finance-overview-grid {
       grid-template-columns: 1fr;
+    }
+
+    .finance-workbench {
+      grid-template-columns: 1fr;
+    }
+
+    .finance-action-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .finance-action-card {
+      min-height: 6.8rem;
     }
   }
 

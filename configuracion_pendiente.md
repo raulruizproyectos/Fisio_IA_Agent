@@ -1,3 +1,46 @@
+## Estado actual (2026-04-28, Sesion premium practica) - Finanzas operativa iniciada.
+
+### Completado en esta sesion
+- [x] Auditoria premium creada en `docs/premium_platform_audit_20260427.md`.
+- [x] Checkpoint de continuidad creado en `docs/checkpoint_20260427_premium_platform_handoff.md`.
+- [x] Ficha de paciente reforzada como vista primaria del caso:
+  - busqueda superior abre ficha,
+  - Inicio/proxima sesion abre ficha si hay paciente,
+  - Pacientes, Agenda, Intakes y Biblioteca priorizan ficha.
+- [x] `Historial` reposicionado como `Seguimiento del caso`, con acciones para volver a ficha o documentos del caso.
+- [x] `Documentos` descrito como vista global; documentos concretos desde ficha.
+- [x] Sistema propio de toast + confirmacion implementado en `frontend/src/pages/index.astro`.
+- [x] Sustituidos `alert()`, `confirm()` y `prompt()` nativos en flujos operativos por feedback integrado.
+- [x] Sidebar actualizado para que `Finanzas` sea entrada semantica unica, resolviendo internamente a la portada financiera.
+- [x] Finanzas mejorada con panel operativo:
+  - prioridad de caja segun facturas pendientes, bonos cerca de agotarse o cobros del filtro,
+  - acciones directas para registrar cobro, emitir factura, crear bono y abrir gestoria,
+  - copy orientado a decision diaria, no a metricas decorativas.
+
+### Validacion cerrada
+- [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
+- [x] `npm run build` en `frontend`: OK.
+
+### Pendiente inmediato
+1. Smoke visual local:
+   - Inicio,
+   - Pacientes,
+   - Ficha,
+   - Seguimiento,
+   - Finanzas,
+   - Documentos,
+   - toast de exito/error,
+   - confirmacion de borrado.
+2. Continuar Fase 1 premium:
+   - hacer que Facturas/Bonos/Gestoria vivan como superficie unica de Finanzas,
+   - limpiar estilos inline visibles,
+   - mantener solo funcionalidades practicas y accionables.
+
+### Criterio de producto nuevo
+- Premium = practico, claro, amable y rapido.
+- Evitar decoracion o modulos que no ayuden a una decision diaria.
+- Cada pantalla debe responder: que miro, que hago ahora y que puede esperar.
+
 ## Estado actual (2026-04-23, Sesion 121) - Cierre de sesion publicado y listo para redeploy.
 
 ### Estado de GitHub
