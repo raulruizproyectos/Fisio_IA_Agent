@@ -34,6 +34,7 @@ Objetivo de la siguiente fase:
 ## Cambios aplicados en esta sesion
 
 - `Historial` pasa a llamarse `Seguimiento del caso` y queda descrito como auditoria longitudinal.
+- `Seguimiento del caso` se endurece para produccion: los fallos parciales no exponen errores HTTP/JSON y el usuario puede seguir abriendo ficha o guardando nota.
 - La ficha de paciente queda reforzada como vista primaria:
   - busqueda superior abre ficha,
   - proxima sesion del dashboard abre ficha si hay paciente,
@@ -156,6 +157,7 @@ Estado parcial implementado:
 - panel operativo de Finanzas: implementado con prioridad y acciones directas,
 - subpantallas Facturas/Bonos/Gestoria integradas visualmente en la superficie de Finanzas,
 - limpieza interna de estilos financieros iniciada,
+- Seguimiento robusto ante cargas parciales: implementado,
 - pendiente: reducir duplicidad interna de tablas/resumenes financieros y limpiar estilos inline visibles restantes fuera de Finanzas.
 
 ### Fase 2 - Modularizacion frontend

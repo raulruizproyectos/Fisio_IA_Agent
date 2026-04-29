@@ -35,6 +35,11 @@
   - `Abrir ficha`,
   - `Documentos del caso`.
 - Si no hay paciente seleccionado, el estado vacio indica que se seleccione desde Pacientes, Agenda o busqueda.
+- El 2026-04-29 se corrige la experiencia vista en produccion:
+  - no se muestran errores HTTP/JSON crudos,
+  - las cargas parciales se explican como avisos humanos,
+  - Telegram no bloquea el seguimiento si devuelve 404,
+  - el formulario de nota clinica queda con layout estable.
 
 ### Documentos reposicionado
 
@@ -79,7 +84,7 @@
   - 0 errores.
   - 0 warnings.
   - 0 hints.
-- `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28, repetido OK tras la integracion visual de subpantallas y repetido OK tras la limpieza interna de Finanzas.
+- `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28, repetido OK tras la integracion visual de subpantallas, repetido OK tras la limpieza interna de Finanzas y repetido OK tras el fix de Seguimiento 2026-04-29.
 - `git diff --check`: OK; solo aparece aviso normal de CRLF/LF en Windows para `frontend/src/pages/index.astro`.
 
 ## Auditoria premium creada

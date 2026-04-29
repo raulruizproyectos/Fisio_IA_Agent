@@ -6228,9 +6228,14 @@ import Layout from '../layouts/Layout.astro';
   const renderPatientTelegramLinkBlock = (linkState: any, errorMessage = '') => {
     if (errorMessage) {
       return `
-        <div class="detail-block">
-          <h3>Canal Telegram</h3>
-          <p class="detail-caption telegram-link-error">${escapeHtml(errorMessage)}</p>
+        <div class="detail-block telegram-link-unavailable" id="patientTelegramLinkBlock" tabindex="-1">
+          <div class="telegram-link-head">
+            <div>
+              <h3>Canal Telegram</h3>
+              <p class="detail-caption">No he podido comprobar ahora la vinculacion de Telegram. Puedes seguir trabajando el caso y reintentar despues.</p>
+            </div>
+            <span class="status-chip pendiente">No disponible</span>
+          </div>
         </div>
       `;
     }
@@ -6309,6 +6314,13 @@ import Layout from '../layouts/Layout.astro';
         return { ok: false, label, response: null, error: err?.message || 'No disponible' };
       }
     };
+    const getHistoryPieceCopy = (label: string) => {
+      if (label === 'datos del paciente') return 'Ficha resumida no disponible';
+      if (label === 'notas clinicas') return 'Notas clinicas no disponibles';
+      if (label === 'planes de ejercicios') return 'Planes IA no disponibles';
+      if (label === 'Telegram') return 'Telegram no comprobado';
+      return `${label} no disponible`;
+    };
 
     try {
       const [patientPiece, historyPiece, recommendationsPiece, telegramPiece] = await Promise.all([
@@ -6331,9 +6343,15 @@ import Layout from '../layouts/Layout.astro';
       rememberSelectedPatient(selectedPatientId, displayName);
       const unavailablePieces = [patientPiece, historyPiece, recommendationsPiece, telegramPiece]
         .filter((piece) => !piece.ok)
-        .map((piece) => `${piece.label}: ${piece.error}`);
+        .map((piece) => getHistoryPieceCopy(piece.label));
       const historyPartialNotice = unavailablePieces.length
-        ? `<div class="detail-block detail-block-warning"><h3>Historial cargado en modo parcial</h3><p>${escapeHtml(unavailablePieces.join(' · '))}</p></div>`
+        ? `<div class="detail-block detail-block-warning history-service-notice">
+            <div>
+              <h3>Seguimiento disponible parcialmente</h3>
+              <p>Algunos servicios no respondieron, pero puedes abrir ficha, revisar lo disponible y guardar una nota clinica.</p>
+            </div>
+            <div class="history-service-list">${unavailablePieces.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
+          </div>`
         : '';
 
       const pickLatestIsoDate = (current: string | null, candidate: string | null) => {
@@ -13057,6 +13075,32 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     font-size: 0.84rem;
     line-height: 1.45;
   }
+  .history-service-notice {
+    display: grid;
+    gap: 0.75rem;
+    border-left: 0;
+    background: #fff8ed;
+  }
+  .history-service-notice h3 {
+    margin: 0 0 0.24rem;
+  }
+  .history-service-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .history-service-list span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.9rem;
+    padding: 0.28rem 0.62rem;
+    border-radius: 999px;
+    border: 1px solid #fed7aa;
+    background: #fffdf7;
+    color: #9a5b13;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
   .telegram-link-head {
     display: flex;
     align-items: flex-start;
@@ -13101,21 +13145,28 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .telegram-link-error {
     color: #991b1b;
   }
-  .history-note-form {
+  .telegram-link-unavailable {
+    background: #f8fafc;
+  }
+  .page-section[data-page='historial'] .history-note-form {
     margin-top: 0.85rem;
     display: grid;
     gap: 0.8rem;
+    max-width: 56rem;
   }
-  .history-note-field {
+  .page-section[data-page='historial'] .history-note-field {
     display: grid;
     gap: 0.42rem;
+    width: 100%;
   }
-  .history-note-field span {
+  .page-section[data-page='historial'] .history-note-field span {
+    display: block;
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-secondary);
   }
-  .history-note-field textarea {
+  .page-section[data-page='historial'] .history-note-field textarea {
+    display: block;
     width: 100%;
     min-height: 120px;
     resize: vertical;
@@ -13127,7 +13178,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     padding: 0.85rem 0.95rem;
     transition: border-color var(--transition), box-shadow var(--transition);
   }
-  .history-note-field textarea:focus {
+  .page-section[data-page='historial'] .history-note-field textarea:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 4px var(--accent-soft);
@@ -13154,10 +13205,13 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     background: rgba(16, 185, 129, 0.1);
     color: #065f46;
   }
-  .history-note-actions,
+  .page-section[data-page='historial'] .history-note-actions,
   .recommendation-followup-actions {
     display: flex;
     justify-content: flex-end;
+  }
+  .page-section[data-page='historial'] .history-note-actions .btn-primary {
+    min-height: 2.7rem;
   }
   .btn-history-note {
     display: inline-flex;

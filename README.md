@@ -12,8 +12,8 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 ## En pausa
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
-## Checkpoint actual (2026-04-28)
-- Estado local: nueva fase premium practica en curso, con cambios pendientes de commit y superficie de Finanzas integrada en primera version.
+## Checkpoint actual (2026-04-29)
+- Estado local: nueva fase premium practica en curso, con Seguimiento del caso simplificado para produccion.
 - Checkpoint operativo recomendado: `docs/checkpoint_20260427_premium_platform_handoff.md`
 - Auditoria premium: `docs/premium_platform_audit_20260427.md`
 - Estado real del producto en este punto:
@@ -22,13 +22,14 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
   - `Documentos` definido como vista global; documentos de caso concreto desde ficha,
   - navegacion cotidiana orientada a abrir ficha desde busqueda, agenda, pacientes, intakes y biblioteca,
   - sistema propio de toast/confirmacion implementado para sustituir `alert()`, `confirm()` y `prompt()` nativos en flujos operativos,
+  - `Seguimiento del caso` ya no muestra errores HTTP/JSON crudos; convierte cargas parciales en avisos humanos y mantiene acciones utiles,
   - sidebar usa `Finanzas` como entrada semantica unica y resuelve internamente a la portada financiera actual,
   - Finanzas incorpora panel operativo con prioridad, resumen de caja y acciones directas para registrar cobro, emitir factura, crear bono o revisar gestoria,
   - Facturas, Bonos y Gestoria comparten encabezado de Finanzas, contexto de subvista y vuelta rapida al resumen,
   - limpieza interna iniciada en Finanzas: acciones destructivas con clase unica, preview de factura sin inline y progreso de bonos con `progress` nativo.
 - Validacion local:
-  - `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints tras limpieza interna de Finanzas.
-  - `npm run build` en `frontend`: OK tras limpieza interna de Finanzas.
+  - `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints tras el fix de Seguimiento.
+  - `npm run build` en `frontend`: OK tras el fix de Seguimiento.
 - Siguiente paso exacto:
   - smoke visual local en `http://127.0.0.1:4321`,
   - continuar Fase 1 premium reduciendo duplicidad de tablas/resumenes y limpiando estilos inline visibles restantes fuera de Finanzas.

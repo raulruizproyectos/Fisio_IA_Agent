@@ -1,4 +1,4 @@
-## Estado actual (2026-04-28, Sesion premium practica) - Finanzas integrada en primera version.
+## Estado actual (2026-04-29, Sesion premium practica) - Seguimiento simplificado y robusto.
 
 ### Completado en esta sesion
 - [x] Auditoria premium creada en `docs/premium_platform_audit_20260427.md`.
@@ -25,6 +25,11 @@
   - acciones destructivas usan clase comun `finance-danger-action`,
   - preview de factura usa clase `factura-preview-summary`,
   - progreso de bonos usa `progress` nativo en vez de ancho inline.
+- [x] `Seguimiento del caso` corregido para produccion:
+  - oculta errores HTTP/JSON crudos,
+  - muestra aviso humano cuando el historial carga parcialmente,
+  - Telegram queda como estado no bloqueante,
+  - formulario de nota clinica reforzado con layout estable y practico.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
