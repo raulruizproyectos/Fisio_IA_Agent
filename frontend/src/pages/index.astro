@@ -23031,6 +23031,174 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       grid-template-columns: 1fr !important;
     }
   }
+
+  /* Ficha premium practica: evita rail lateral estrecho o texto cortado en produccion. */
+  .page-section[data-page='ficha-paciente'] .ficha-case-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem) !important;
+    align-items: start !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-case-rail,
+  .page-section[data-page='ficha-paciente'] .ficha-rail-card-unified {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main,
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item,
+  .page-section[data-page='ficha-paciente'] .ficha-check-item {
+    overflow: visible !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main strong,
+  .page-section[data-page='ficha-paciente'] .ficha-rail-main p,
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item strong,
+  .page-section[data-page='ficha-paciente'] .ficha-channel-item p,
+  .page-section[data-page='ficha-paciente'] .ficha-check-copy strong,
+  .page-section[data-page='ficha-paciente'] .ficha-check-copy p {
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+  }
+
+  @media (max-width: 1500px) {
+    .page-section[data-page='ficha-paciente'] .ficha-case-shell {
+      grid-template-columns: 1fr !important;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-case-rail {
+      position: static !important;
+    }
+
+    .page-section[data-page='ficha-paciente'] .ficha-rail-card-unified {
+      grid-template-columns: minmax(18rem, 0.9fr) minmax(0, 1.1fr) !important;
+      align-items: start !important;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .page-section[data-page='ficha-paciente'] .ficha-rail-card-unified {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Seguimiento premium practico: controles legibles, sin inputs nativos estrechos. */
+  .page-section[data-page='historial'] .section-body {
+    display: grid !important;
+    gap: 1rem !important;
+    padding: 1rem 1.15rem 1.25rem !important;
+  }
+
+  .page-section[data-page='historial'] .detail-block {
+    padding: 1rem 1.05rem !important;
+    border: 1px solid #e4e7ec !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+    box-shadow: 0 14px 28px -26px rgba(15, 23, 42, 0.24) !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-hero {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    gap: 1rem !important;
+    background: linear-gradient(180deg, #ffffff, #f8fafc) !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions,
+  .page-section[data-page='historial'] .telegram-link-actions,
+  .page-section[data-page='historial'] .history-note-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.6rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions {
+    justify-content: flex-end !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-actions {
+    justify-content: flex-start !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions .btn-sm,
+  .page-section[data-page='historial'] .telegram-link-actions .btn-sm,
+  .page-section[data-page='historial'] .btn-history-note {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.45rem !important;
+    min-height: 2.6rem !important;
+    width: auto !important;
+    border-radius: 0.85rem !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    text-decoration: none !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-actions .btn-outline {
+    border: 1px solid #d7e1ea !important;
+    background: #ffffff !important;
+    color: #123047 !important;
+    padding: 0.62rem 0.9rem !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-actions .btn-outline:hover {
+    border-color: #a8c6d6 !important;
+    background: #f4fafc !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-card {
+    border-color: #d8e8ef !important;
+    border-radius: 1rem !important;
+    background: linear-gradient(180deg, #f7fbfd, #ffffff) !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-grid {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)) !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-form {
+    width: 100% !important;
+    max-width: 58rem !important;
+    margin-top: 0.9rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-field {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-field textarea {
+    box-sizing: border-box !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 8.5rem !important;
+    resize: vertical !important;
+    border: 1px solid #d7e1ea !important;
+    border-radius: 0.95rem !important;
+    background: #ffffff !important;
+    color: #102033 !important;
+    font: inherit !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    padding: 0.9rem 1rem !important;
+  }
+
+  @media (max-width: 900px) {
+    .page-section[data-page='historial'] .history-case-hero {
+      grid-template-columns: 1fr !important;
+    }
+
+    .page-section[data-page='historial'] .history-case-actions,
+    .page-section[data-page='historial'] .history-case-actions .btn-sm,
+    .page-section[data-page='historial'] .telegram-link-actions .btn-sm,
+    .page-section[data-page='historial'] .btn-history-note {
+      width: 100% !important;
+    }
+  }
 </style>
 
 

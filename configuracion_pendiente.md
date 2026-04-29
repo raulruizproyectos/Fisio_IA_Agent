@@ -37,10 +37,14 @@
   - `/api/pacientes/:id/ficha` busca CRM sin `.single()` estricto,
   - si el paciente solo existe en legacy devuelve ficha basica usable con aviso claro,
   - el frontend muestra el aviso como estado parcial y bloquea notas/citas/pagos enriquecidos hasta migrar el paciente.
+- [x] Correccion visual EasyPanel:
+  - el rail derecho de ficha ya no queda como columna estrecha con texto cortado,
+  - `Seguimiento del caso` fuerza formulario, textarea y botones a controles premium consistentes,
+  - Telegram en seguimiento se presenta como tarjeta legible y accionable.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
-- [x] `npm run build` en `frontend`: OK.
+- [x] `npm run build` en `frontend`: OK, repetido tras correccion visual EasyPanel.
 - [x] `npm run lint` en `backend`: OK, con warning antiguo no bloqueante en `professional.js`.
 - [x] `node --check backend/src/routes/patients.js`: OK tras fallback de ficha legacy.
 

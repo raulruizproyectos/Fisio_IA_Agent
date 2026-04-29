@@ -37,6 +37,7 @@ Objetivo de la siguiente fase:
 - `Seguimiento del caso` se endurece para produccion: los fallos parciales no exponen errores HTTP/JSON y el usuario puede seguir abriendo ficha o guardando nota.
 - Backend acompana el fix: resolucion de pacientes CRM/legacy y lectura Telegram mas tolerante.
 - La ficha completa se endurece para pacientes antiguos: si el paciente no esta en `crm_pacientes`, se devuelve una ficha minima legacy con aviso claro en vez de bloquear el flujo.
+- Se corrigen problemas visuales detectados en EasyPanel: rail de ficha demasiado estrecho y formulario de seguimiento cayendo a controles nativos.
 - La ficha de paciente queda reforzada como vista primaria:
   - busqueda superior abre ficha,
   - proxima sesion del dashboard abre ficha si hay paciente,
@@ -162,6 +163,7 @@ Estado parcial implementado:
 - Seguimiento robusto ante cargas parciales: implementado,
 - endpoints de pacientes/Telegram mas tolerantes con CRM/legacy: implementado,
 - ficha completa con fallback legacy limpio: implementado,
+- correccion visual practica de ficha y seguimiento en produccion: implementado,
 - pendiente: reducir duplicidad interna de tablas/resumenes financieros y limpiar estilos inline visibles restantes fuera de Finanzas.
 
 ### Fase 2 - Modularizacion frontend

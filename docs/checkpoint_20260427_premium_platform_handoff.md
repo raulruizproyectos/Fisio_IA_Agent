@@ -47,6 +47,10 @@
   - `/api/pacientes/:id/ficha` usa CRM con fallback legacy,
   - los pacientes antiguos abren ficha minima en vez de devolver 404,
   - el aviso de ficha antigua queda como estado parcial, no como error tecnico.
+- El 2026-04-29 se corrigen cortes visuales detectados en EasyPanel:
+  - rail de ficha baja a bloque completo cuando no hay ancho suficiente,
+  - `Seguimiento del caso` deja de mostrar textarea/botones con estilo nativo estrecho,
+  - Telegram queda en tarjeta de accion clara.
 
 ### Documentos reposicionado
 
@@ -91,7 +95,7 @@
   - 0 errores.
   - 0 warnings.
   - 0 hints.
-- `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28, repetido OK tras la integracion visual de subpantallas, repetido OK tras la limpieza interna de Finanzas, repetido OK tras el fix de Seguimiento 2026-04-29 y repetido OK tras fallback de ficha legacy.
+- `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28, repetido OK tras la integracion visual de subpantallas, repetido OK tras la limpieza interna de Finanzas, repetido OK tras el fix de Seguimiento 2026-04-29, repetido OK tras fallback de ficha legacy y repetido OK tras correccion visual EasyPanel.
 - `npm run lint` en `backend`: OK tras endurecer pacientes/Telegram y ficha legacy; queda warning antiguo no bloqueante en `professional.js`.
 - `git diff --check`: OK; solo aparece aviso normal de CRLF/LF en Windows para `frontend/src/pages/index.astro`.
 
