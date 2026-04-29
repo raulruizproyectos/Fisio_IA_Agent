@@ -24,6 +24,72 @@ const normalizeCrmPatient = (p) => ({
   _source: 'crm',
 });
 
+const formatLegacyNotes = (notes) => {
+  if (!notes) return null;
+  if (typeof notes === 'string') return notes;
+  if (Array.isArray(notes)) return notes.filter(Boolean).map(String).join('\n') || null;
+  if (typeof notes === 'object') {
+    return Object.entries(notes)
+      .filter(([, value]) => value !== undefined && value !== null && value !== '')
+      .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : String(value)}`)
+      .join('\n') || null;
+  }
+  return String(notes);
+};
+
+const normalizeLegacyPatientForFicha = (p) => {
+  const nombreCompleto = p?.nombre_completo || p?.full_name || `Paciente ${p?.id || ''}`.trim();
+  const legacyNotes = formatLegacyNotes(p?.notas_medicas || p?.medical_notes);
+  return {
+    id: p?.id,
+    nombre: nombreCompleto,
+    apellidos: '',
+    nombre_completo: nombreCompleto,
+    email: p?.email || null,
+    telefono: p?.phone || p?.telefono || null,
+    fecha_nacimiento: p?.fecha_nacimiento || p?.birth_date || null,
+    dni: null,
+    direccion: null,
+    profesion: null,
+    medico_derivador: null,
+    aseguradora: null,
+    alergias: null,
+    antecedentes: legacyNotes,
+    observaciones: p?.observaciones || null,
+    activo: true,
+    created_at: p?.creado_en || p?.created_at || null,
+    updated_at: p?.updated_at || null,
+    _source: 'legacy',
+  };
+};
+
+const getLegacyFichaAvailability = () => [
+  {
+    key: 'legacy',
+    label: 'Ficha antigua',
+    status: 'partial',
+    message: 'Paciente antiguo: se muestra la ficha basica. Para usar citas, pagos y notas enriquecidas, migralo a CRM.',
+  },
+  {
+    key: 'citas',
+    label: 'Historial de citas',
+    status: 'unavailable',
+    message: 'Historial de citas no disponible para pacientes antiguos hasta migrarlos a CRM.',
+  },
+  {
+    key: 'pagos',
+    label: 'Historial de pagos',
+    status: 'unavailable',
+    message: 'Historial de pagos no disponible para pacientes antiguos hasta migrarlos a CRM.',
+  },
+  {
+    key: 'notas',
+    label: 'Notas clinicas',
+    status: 'unavailable',
+    message: 'Notas clinicas enriquecidas no disponibles para pacientes antiguos hasta migrarlos a CRM.',
+  },
+];
+
 const isMissingTableError = (result, table) => {
   if (result?.status !== 'fulfilled' || !result?.value?.error) return false;
   const error = result.value.error;
@@ -96,22 +162,47 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// Ficha completa de un paciente CRM: datos + citas + pagos + notas
+// Ficha completa: CRM enriquecido con fallback basico para pacientes antiguos.
 router.get('/:id/ficha', async (req, res, next) => {
   try {
     const id = req.params.id;
-    const [patientRes, citasRes, pagosRes, notasRes] = await Promise.allSettled([
-      supabase.from('crm_pacientes').select(CRM_FIELDS).eq('id', id).single(),
+    const patientRes = await supabase
+      .from('crm_pacientes')
+      .select(CRM_FIELDS)
+      .eq('id', id)
+      .limit(1);
+
+    if (patientRes.error && !isMissingTableError({ status: 'fulfilled', value: patientRes }, 'crm_pacientes')) {
+      throw patientRes.error;
+    }
+
+    const p = firstRow(patientRes.data);
+    if (!p) {
+      const { data, error } = await supabase
+        .from('pacientes')
+        .select('*')
+        .eq('id', id)
+        .limit(1);
+
+      if (error) throw error;
+      const legacyPatient = firstRow(data);
+      if (!legacyPatient) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+      return res.json({
+        paciente: normalizeLegacyPatientForFicha(legacyPatient),
+        citas: [],
+        pagos: [],
+        notas: [],
+        module_availability: getLegacyFichaAvailability(),
+      });
+    }
+
+    const [citasRes, pagosRes, notasRes] = await Promise.allSettled([
       supabase.from('crm_citas').select('id, fecha_hora, estado, motivo, created_at').eq('paciente_id', id).order('fecha_hora', { ascending: false }).limit(50),
       supabase.from('crm_pagos').select('id, fecha, importe, metodo_pago, concepto, notas').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
       supabase.from('crm_notas_clinicas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
     ]);
 
-    if (patientRes.status === 'rejected' || patientRes.value.error) {
-      return res.status(404).json({ error: 'Paciente no encontrado' });
-    }
-
-    const p = patientRes.value.data;
     const moduleAvailability = [
       getSectionAvailability(citasRes, { key: 'citas', label: 'Historial de citas', table: 'crm_citas', migration: 'database/schema_vnext.sql' }),
       getSectionAvailability(pagosRes, { key: 'pagos', label: 'Historial de pagos', table: 'crm_pagos', migration: 'database/migrations/007_crm_pagos.sql' }),

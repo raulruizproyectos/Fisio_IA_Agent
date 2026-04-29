@@ -33,11 +33,16 @@
 - [x] Backend endurecido para seguimiento:
   - `/api/pacientes/:id` busca primero en CRM y luego en legacy sin forzar `.single()`,
   - `/api/telegram/link-code/:patientId` reconoce pacientes CRM para no devolver 404 innecesario en lectura.
+- [x] Backend endurecido para ficha:
+  - `/api/pacientes/:id/ficha` busca CRM sin `.single()` estricto,
+  - si el paciente solo existe en legacy devuelve ficha basica usable con aviso claro,
+  - el frontend muestra el aviso como estado parcial y bloquea notas/citas/pagos enriquecidos hasta migrar el paciente.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
 - [x] `npm run build` en `frontend`: OK.
 - [x] `npm run lint` en `backend`: OK, con warning antiguo no bloqueante en `professional.js`.
+- [x] `node --check backend/src/routes/patients.js`: OK tras fallback de ficha legacy.
 
 ### Pendiente inmediato
 1. Smoke visual local:

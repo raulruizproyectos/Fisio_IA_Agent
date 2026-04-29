@@ -24,6 +24,7 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
   - sistema propio de toast/confirmacion implementado para sustituir `alert()`, `confirm()` y `prompt()` nativos en flujos operativos,
   - `Seguimiento del caso` ya no muestra errores HTTP/JSON crudos; convierte cargas parciales en avisos humanos y mantiene acciones utiles,
   - backend de pacientes/Telegram tolera IDs CRM y legacy para evitar 500/404 innecesarios en seguimiento,
+  - `GET /api/pacientes/:id/ficha` tolera pacientes legacy y devuelve una ficha minima limpia con aviso de migracion CRM,
   - sidebar usa `Finanzas` como entrada semantica unica y resuelve internamente a la portada financiera actual,
   - Finanzas incorpora panel operativo con prioridad, resumen de caja y acciones directas para registrar cobro, emitir factura, crear bono o revisar gestoria,
   - Facturas, Bonos y Gestoria comparten encabezado de Finanzas, contexto de subvista y vuelta rapida al resumen,

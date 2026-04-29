@@ -7384,11 +7384,13 @@ import Layout from '../layouts/Layout.astro';
 
     const unavailableModules = Array.from(fichaModuleAvailability.values());
     if (fichaAvailabilityNotice) {
+      const needsMigration = unavailableModules.some((item: any) => item?.migration || item?.table);
+      const primaryMessage = unavailableModules.find((item: any) => item?.key === 'legacy')?.message;
       fichaAvailabilityNotice.hidden = !unavailableModules.length;
       fichaAvailabilityNotice.textContent = unavailableModules.length
-        ? `Algunas secciones de la ficha no estan disponibles: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}. Revisa Configuracion > Conexiones y ejecuta las migraciones pendientes.`
+        ? primaryMessage || `Algunas secciones de la ficha no estan disponibles: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.${needsMigration ? ' Revisa Configuracion > Conexiones y ejecuta las migraciones pendientes.' : ''}`
         : '';
-      if (unavailableModules.length) fichaAvailabilityNotice.setAttribute('data-state', 'error');
+      if (unavailableModules.length && needsMigration) fichaAvailabilityNotice.setAttribute('data-state', 'error');
       else fichaAvailabilityNotice.removeAttribute('data-state');
     }
 
