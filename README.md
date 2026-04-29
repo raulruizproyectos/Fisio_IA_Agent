@@ -23,6 +23,7 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
   - navegacion cotidiana orientada a abrir ficha desde busqueda, agenda, pacientes, intakes y biblioteca,
   - sistema propio de toast/confirmacion implementado para sustituir `alert()`, `confirm()` y `prompt()` nativos en flujos operativos,
   - `Seguimiento del caso` ya no muestra errores HTTP/JSON crudos; convierte cargas parciales en avisos humanos y mantiene acciones utiles,
+  - backend de pacientes/Telegram tolera IDs CRM y legacy para evitar 500/404 innecesarios en seguimiento,
   - sidebar usa `Finanzas` como entrada semantica unica y resuelve internamente a la portada financiera actual,
   - Finanzas incorpora panel operativo con prioridad, resumen de caja y acciones directas para registrar cobro, emitir factura, crear bono o revisar gestoria,
   - Facturas, Bonos y Gestoria comparten encabezado de Finanzas, contexto de subvista y vuelta rapida al resumen,
@@ -30,6 +31,7 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 - Validacion local:
   - `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints tras el fix de Seguimiento.
   - `npm run build` en `frontend`: OK tras el fix de Seguimiento.
+  - `npm run lint` en `backend`: OK, con warning antiguo no bloqueante en `professional.js`.
 - Siguiente paso exacto:
   - smoke visual local en `http://127.0.0.1:4321`,
   - continuar Fase 1 premium reduciendo duplicidad de tablas/resumenes y limpiando estilos inline visibles restantes fuera de Finanzas.

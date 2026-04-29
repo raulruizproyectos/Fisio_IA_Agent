@@ -40,6 +40,9 @@
   - las cargas parciales se explican como avisos humanos,
   - Telegram no bloquea el seguimiento si devuelve 404,
   - el formulario de nota clinica queda con layout estable.
+- El 2026-04-29 se endurece backend:
+  - `/api/pacientes/:id` resuelve CRM y legacy sin `.single()` estricto,
+  - `/api/telegram/link-code/:patientId` reconoce pacientes CRM en lectura de estado.
 
 ### Documentos reposicionado
 
@@ -85,6 +88,7 @@
   - 0 warnings.
   - 0 hints.
 - `npm run build` en `frontend`: OK en cierre 2026-04-27, repetido OK tras el panel operativo 2026-04-28, repetido OK tras la integracion visual de subpantallas, repetido OK tras la limpieza interna de Finanzas y repetido OK tras el fix de Seguimiento 2026-04-29.
+- `npm run lint` en `backend`: OK tras endurecer pacientes/Telegram; queda warning antiguo no bloqueante en `professional.js`.
 - `git diff --check`: OK; solo aparece aviso normal de CRLF/LF en Windows para `frontend/src/pages/index.astro`.
 
 ## Auditoria premium creada

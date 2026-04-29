@@ -35,6 +35,7 @@ Objetivo de la siguiente fase:
 
 - `Historial` pasa a llamarse `Seguimiento del caso` y queda descrito como auditoria longitudinal.
 - `Seguimiento del caso` se endurece para produccion: los fallos parciales no exponen errores HTTP/JSON y el usuario puede seguir abriendo ficha o guardando nota.
+- Backend acompana el fix: resolucion de pacientes CRM/legacy y lectura Telegram mas tolerante.
 - La ficha de paciente queda reforzada como vista primaria:
   - busqueda superior abre ficha,
   - proxima sesion del dashboard abre ficha si hay paciente,
@@ -158,6 +159,7 @@ Estado parcial implementado:
 - subpantallas Facturas/Bonos/Gestoria integradas visualmente en la superficie de Finanzas,
 - limpieza interna de estilos financieros iniciada,
 - Seguimiento robusto ante cargas parciales: implementado,
+- endpoints de pacientes/Telegram mas tolerantes con CRM/legacy: implementado,
 - pendiente: reducir duplicidad interna de tablas/resumenes financieros y limpiar estilos inline visibles restantes fuera de Finanzas.
 
 ### Fase 2 - Modularizacion frontend

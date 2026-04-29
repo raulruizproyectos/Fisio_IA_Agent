@@ -14,6 +14,16 @@ function pickValue(obj, ...keys) {
 
 const CRM_FIELDS = 'id, nombre, apellidos, email, telefono, fecha_nacimiento, dni, direccion, profesion, medico_derivador, aseguradora, alergias, antecedentes, observaciones, activo, created_at, updated_at';
 
+const firstRow = (data) => (Array.isArray(data) && data.length ? data[0] : null);
+
+const normalizeCrmPatient = (p) => ({
+  ...p,
+  nombre_completo: [p?.nombre, p?.apellidos].filter(Boolean).join(' ').trim() || `Paciente ${p?.id || ''}`.trim(),
+  phone: p?.telefono || null,
+  creado_en: p?.created_at || null,
+  _source: 'crm',
+});
+
 const isMissingTableError = (result, table) => {
   if (result?.status !== 'fulfilled' || !result?.value?.error) return false;
   const error = result.value.error;
@@ -151,15 +161,31 @@ router.patch('/:id', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   try {
+    const crmResp = await supabase
+      .from('crm_pacientes')
+      .select(CRM_FIELDS)
+      .eq('id', req.params.id)
+      .limit(1);
+
+    if (crmResp.error && !isMissingTableError({ status: 'fulfilled', value: crmResp }, 'crm_pacientes')) {
+      throw crmResp.error;
+    }
+
+    const crmPatient = firstRow(crmResp.data);
+    if (crmPatient) {
+      return res.json({ data: normalizeCrmPatient(crmPatient) });
+    }
+
     const { data, error } = await supabase
       .from('pacientes')
       .select('*')
       .eq('id', req.params.id)
-      .single();
+      .limit(1);
 
     if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Paciente no encontrado' });
-    res.json({ data });
+    const legacyPatient = firstRow(data);
+    if (!legacyPatient) return res.status(404).json({ error: 'Paciente no encontrado' });
+    res.json({ data: { ...legacyPatient, _source: legacyPatient._source || 'legacy' } });
   } catch (err) {
     next(err);
   }

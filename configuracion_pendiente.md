@@ -30,10 +30,14 @@
   - muestra aviso humano cuando el historial carga parcialmente,
   - Telegram queda como estado no bloqueante,
   - formulario de nota clinica reforzado con layout estable y practico.
+- [x] Backend endurecido para seguimiento:
+  - `/api/pacientes/:id` busca primero en CRM y luego en legacy sin forzar `.single()`,
+  - `/api/telegram/link-code/:patientId` reconoce pacientes CRM para no devolver 404 innecesario en lectura.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
 - [x] `npm run build` en `frontend`: OK.
+- [x] `npm run lint` en `backend`: OK, con warning antiguo no bloqueante en `professional.js`.
 
 ### Pendiente inmediato
 1. Smoke visual local:

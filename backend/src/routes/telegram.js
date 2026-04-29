@@ -1097,14 +1097,36 @@ function generateTelegramLinkCode() {
 }
 
 async function getTelegramLinkPatient(patientId) {
-  const { data, error } = await supabase
+  const legacyResp = await supabase
     .from('pacientes')
     .select('id, profesional_id, nombre_completo')
     .eq('id', patientId)
-    .maybeSingle();
+    .limit(1);
 
-  if (error) throw error;
-  return data || null;
+  if (legacyResp.error) throw legacyResp.error;
+  if (Array.isArray(legacyResp.data) && legacyResp.data.length) return legacyResp.data[0];
+
+  const crmResp = await supabase
+    .from('crm_pacientes')
+    .select('id, nombre, apellidos')
+    .eq('id', patientId)
+    .limit(1);
+
+  if (crmResp.error) {
+    const code = String(crmResp.error?.code || '').toUpperCase();
+    const message = String(crmResp.error?.message || '').toLowerCase();
+    const missingCrmTable = code === 'PGRST205' || (message.includes('crm_pacientes') && message.includes('schema cache'));
+    if (!missingCrmTable) throw crmResp.error;
+  }
+  const crmPatient = Array.isArray(crmResp.data) && crmResp.data.length ? crmResp.data[0] : null;
+  if (!crmPatient) return null;
+
+  return {
+    id: crmPatient.id,
+    profesional_id: null,
+    nombre_completo: [crmPatient.nombre, crmPatient.apellidos].filter(Boolean).join(' ').trim() || `Paciente ${crmPatient.id}`,
+    source: 'crm',
+  };
 }
 
 async function getPatientTelegramLinkRecord(patientId) {
@@ -3017,6 +3039,4 @@ router.post('/incoming', async (req, res, next) => {
 });
 
 export default router;
-
-
 
