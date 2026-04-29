@@ -6555,6 +6555,34 @@ import Layout from '../layouts/Layout.astro';
         }).join('')}</div>
           </div>`
         : `<p class="detail-empty">Sin recomendaciones de ejercicios registradas.</p>`;
+      void recommendationsHtml;
+
+      const latestRecommendation = recommendations
+        .filter((rec: any) => rec?.created_at)
+        .sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())[0] || null;
+      const simplifiedRecommendationsHtml = recommendations.length
+        ? `<div class="history-plan-summary">
+            <article>
+              <span>Planes</span>
+              <strong>${recommendations.length}</strong>
+              <p>${latestRecommendation?.created_at ? `Ultimo plan ${escapeHtml(fmtDate(latestRecommendation.created_at))}` : 'Planes guardados para este paciente.'}</p>
+            </article>
+            <article>
+              <span>Ejercicios</span>
+              <strong>${recommendationsSummary.totalExercises}</strong>
+              <p>Total pautado en los planes del caso.</p>
+            </article>
+            <article>
+              <span>Entregas</span>
+              <strong>${recommendationsSummary.totalArchivedReports}</strong>
+              <p>${recommendationsSummary.latestArchivedReportAt ? `Ultima entrega ${escapeHtml(fmtDate(recommendationsSummary.latestArchivedReportAt))}` : 'Sin entregas archivadas.'}</p>
+            </article>
+          </div>
+          <div class="history-plan-actions">
+            <button type="button" class="btn-secondary btn-sm" data-history-action="open-ficha"><span class="material-symbols-rounded">person</span> Ver en ficha</button>
+            <button type="button" class="btn-ghost btn-sm" data-history-action="open-library"><span class="material-symbols-rounded">account_tree</span> Abrir biblioteca</button>
+          </div>`
+        : `<p class="detail-empty">Sin planes domiciliarios registrados. Genera el primero desde Copiloto cuando haya un objetivo clinico claro.</p>`;
 
       historialContent.innerHTML = `
         ${historyPartialNotice}
@@ -6580,9 +6608,9 @@ import Layout from '../layouts/Layout.astro';
           ${notesHtml}
         </div>
         <div class="detail-block" id="patientRecommendationsBlock">
-          <h3>Informes y recomendaciones (${recommendations.length})</h3>
-          <p class="detail-caption">Cada plan conserva entregas, trazabilidad domiciliaria y feedback clinico del paciente.</p>
-          ${recommendationsHtml}
+          <h3>Planes domiciliarios</h3>
+          <p class="detail-caption">Resumen rapido. El detalle y las acciones clinicas quedan en ficha, biblioteca y Copiloto.</p>
+          ${simplifiedRecommendationsHtml}
         </div>
       `;
 
@@ -6617,6 +6645,10 @@ import Layout from '../layouts/Layout.astro';
       if (action === 'open-docs') {
         await openFichaPaciente(selectedPatientId);
         activateFichaTab('documentos');
+        return;
+      }
+      if (action === 'open-library') {
+        navigateTo('plantillas');
         return;
       }
     }
@@ -23197,6 +23229,70 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .page-section[data-page='historial'] .telegram-link-actions .btn-sm,
     .page-section[data-page='historial'] .btn-history-note {
       width: 100% !important;
+    }
+  }
+
+  /* Recorte practico: la ficha ya tiene acciones arriba; el rail lateral anade ruido. */
+  .page-section[data-page='ficha-paciente'] .ficha-case-shell {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .page-section[data-page='ficha-paciente'] .ficha-case-rail {
+    display: none !important;
+  }
+
+  .page-section[data-page='historial'] #patientRecommendationsBlock {
+    background: #ffffff !important;
+  }
+
+  .page-section[data-page='historial'] .history-plan-summary {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+    margin-top: 0.9rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-plan-summary article {
+    display: grid !important;
+    gap: 0.24rem !important;
+    min-height: 7.2rem !important;
+    padding: 0.9rem 0.95rem !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.95rem !important;
+    background: #f8fafc !important;
+  }
+
+  .page-section[data-page='historial'] .history-plan-summary span {
+    color: #64748b !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+  }
+
+  .page-section[data-page='historial'] .history-plan-summary strong {
+    color: #0f172a !important;
+    font-size: 1.35rem !important;
+    line-height: 1 !important;
+  }
+
+  .page-section[data-page='historial'] .history-plan-summary p {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.84rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .page-section[data-page='historial'] .history-plan-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.6rem !important;
+    margin-top: 0.85rem !important;
+  }
+
+  @media (max-width: 900px) {
+    .page-section[data-page='historial'] .history-plan-summary {
+      grid-template-columns: 1fr !important;
     }
   }
 </style>

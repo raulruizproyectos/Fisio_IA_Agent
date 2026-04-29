@@ -41,6 +41,10 @@
   - el rail derecho de ficha ya no queda como columna estrecha con texto cortado,
   - `Seguimiento del caso` fuerza formulario, textarea y botones a controles premium consistentes,
   - Telegram en seguimiento se presenta como tarjeta legible y accionable.
+- [x] Recorte de usabilidad tras feedback real:
+  - ficha queda en una sola columna sin rail lateral redundante,
+  - `Seguimiento del caso` deja de listar planes completos y formularios de follow-up,
+  - planes domiciliarios se resumen con metricas y accesos a ficha/biblioteca.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.

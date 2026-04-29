@@ -51,6 +51,10 @@
   - rail de ficha baja a bloque completo cuando no hay ancho suficiente,
   - `Seguimiento del caso` deja de mostrar textarea/botones con estilo nativo estrecho,
   - Telegram queda en tarjeta de accion clara.
+- Tras nuevo feedback en produccion, se aplica un recorte mas practico:
+  - la ficha elimina el rail lateral redundante,
+  - `Seguimiento del caso` ya no renderiza planes completos ni formularios de follow-up,
+  - los planes quedan como resumen con acceso a ficha y biblioteca.
 
 ### Documentos reposicionado
 
