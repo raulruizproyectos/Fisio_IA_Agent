@@ -6274,20 +6274,21 @@ import Layout from '../layouts/Layout.astro';
         : 'Genera una invitacion segura para que el paciente vincule su chat con /start.';
 
     return `
-      <div class="detail-block" id="patientTelegramLinkBlock" tabindex="-1">
+      <div class="detail-block history-telegram-block" id="patientTelegramLinkBlock" tabindex="-1">
         <div class="telegram-link-head">
           <div>
-            <h3>Canal Telegram</h3>
+            <span class="detail-kicker">Canal del paciente</span>
+            <h3>Telegram</h3>
             <p class="detail-caption">${escapeHtml(hint)}</p>
           </div>
           <span class="status-chip ${statusMeta.chipClass}">${escapeHtml(statusMeta.label)}</span>
         </div>
         <div class="telegram-link-card">
           <div class="telegram-link-grid">
-            <p><strong>Paciente:</strong> ${escapeHtml(linkState?.patient_name || selectedPatientName || 'Paciente seleccionado')}</p>
-            <p><strong>Usuario:</strong> ${escapeHtml(username || 'Sin username')}</p>
-            <p><strong>Vinculado:</strong> ${escapeHtml(linkedAt || 'Aun no')}</p>
-            <p><strong>Codigo:</strong> ${escapeHtml(linkState?.codigo_vinculacion || 'No generado')}</p>
+            <div class="telegram-link-field"><span>Paciente</span><strong>${escapeHtml(linkState?.patient_name || selectedPatientName || 'Paciente seleccionado')}</strong></div>
+            <div class="telegram-link-field"><span>Usuario</span><strong>${escapeHtml(username || 'Sin username')}</strong></div>
+            <div class="telegram-link-field"><span>Vinculado</span><strong>${escapeHtml(linkedAt || 'Aun no')}</strong></div>
+            <div class="telegram-link-field"><span>Codigo</span><strong>${escapeHtml(linkState?.codigo_vinculacion || 'No generado')}</strong></div>
           </div>
           ${startCommand ? `<div class="telegram-link-command"><code>${escapeHtml(startCommand)}</code></div>` : ''}
           ${actions.length ? `<div class="telegram-link-actions">${actions.join('')}</div>` : ''}
@@ -6588,9 +6589,12 @@ import Layout from '../layouts/Layout.astro';
         ${historyPartialNotice}
         <div class="detail-block history-case-hero">
           <div>
-            <span class="detail-kicker">Caso seleccionado</span>
+            <span class="detail-kicker">Paciente seleccionado</span>
             <h3>${escapeHtml(displayName)}</h3>
-            <p><strong>Email:</strong> ${escapeHtml(patient.email || '-')} - <strong>Nacimiento:</strong> ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '-'}</p>
+            <p class="history-patient-meta">
+              <span>Email: ${escapeHtml(patient.email || '-')}</span>
+              <span>Nacimiento: ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '-'}</span>
+            </p>
           </div>
           <div class="history-case-actions">
             <button type="button" class="btn-secondary btn-sm" data-history-action="open-ficha"><span class="material-symbols-rounded">person</span> Abrir ficha</button>
@@ -23294,6 +23298,329 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .page-section[data-page='historial'] .history-plan-summary {
       grid-template-columns: 1fr !important;
     }
+  }
+
+  /* Seguimiento final: una escala, menos ruido, mas ficha clinica. */
+  .page-section[data-page='historial'] {
+    --history-ink: #142234;
+    --history-muted: #617083;
+    --history-line: #dce4ec;
+    --history-soft: #f6f8fb;
+    --history-accent: #0f5f67;
+  }
+
+  .page-section[data-page='historial'] .card {
+    border-radius: 1.1rem !important;
+    border-color: var(--history-line) !important;
+    background: #fbfcfd !important;
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='historial'] .card-header {
+    min-height: 4rem !important;
+    padding: 0.9rem 1.1rem !important;
+    border-bottom: 1px solid var(--history-line) !important;
+    background: #f6f1e8 !important;
+  }
+
+  .page-section[data-page='historial'] .card-header h2 {
+    margin: 0 !important;
+    color: var(--history-ink) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .page-section[data-page='historial'] .section-body {
+    max-width: 1140px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    padding: 1.05rem !important;
+  }
+
+  .page-section[data-page='historial'] .detail-block {
+    padding: 1.05rem !important;
+    border-radius: 0.95rem !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='historial'] .detail-block h3 {
+    margin: 0 !important;
+    color: var(--history-ink) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+    line-height: 1.25 !important;
+  }
+
+  .page-section[data-page='historial'] .detail-block p,
+  .page-section[data-page='historial'] .detail-caption,
+  .page-section[data-page='historial'] .detail-empty {
+    color: var(--history-muted) !important;
+    font-size: 0.9rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .page-section[data-page='historial'] .detail-kicker {
+    margin-bottom: 0.28rem !important;
+    color: #9a7b3e !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.11em !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-hero {
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    align-items: center !important;
+    padding: 1rem 1.05rem !important;
+    background: #ffffff !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-hero h3 {
+    font-size: 1.2rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-patient-meta {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.45rem !important;
+    margin-top: 0.38rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-patient-meta span {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 1.9rem !important;
+    padding: 0.28rem 0.62rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #e4eaf0 !important;
+    background: var(--history-soft) !important;
+    color: #4d5d70 !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions .btn-secondary,
+  .page-section[data-page='historial'] .history-case-actions .btn-ghost,
+  .page-section[data-page='historial'] .telegram-link-actions .btn-outline,
+  .page-section[data-page='historial'] .history-plan-actions .btn-sm,
+  .page-section[data-page='historial'] .btn-history-note,
+  .page-section[data-page='historial'] #refreshHistorial {
+    min-height: 2.45rem !important;
+    padding: 0.55rem 0.82rem !important;
+    border-radius: 0.72rem !important;
+    font-family: var(--font-ui) !important;
+    font-size: 0.86rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions .material-symbols-rounded,
+  .page-section[data-page='historial'] .telegram-link-actions .material-symbols-rounded,
+  .page-section[data-page='historial'] .btn-history-note .material-symbols-rounded,
+  .page-section[data-page='historial'] #refreshHistorial .material-symbols-rounded {
+    font-size: 1rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-telegram-block {
+    display: grid !important;
+    grid-template-columns: minmax(15rem, 0.72fr) minmax(0, 1.28fr) !important;
+    gap: 1rem !important;
+    align-items: start !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-head {
+    display: grid !important;
+    gap: 0.75rem !important;
+    margin: 0 !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-card {
+    gap: 0.8rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.6rem !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-field {
+    display: grid !important;
+    gap: 0.18rem !important;
+    min-height: 4.2rem !important;
+    padding: 0.72rem 0.78rem !important;
+    border: 1px solid #e4eaf0 !important;
+    border-radius: 0.82rem !important;
+    background: var(--history-soft) !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-field span {
+    color: #758295 !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-field strong {
+    color: var(--history-ink) !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-actions {
+    margin-top: 0.05rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-field span {
+    color: var(--history-ink) !important;
+    font-size: 0.86rem !important;
+    font-weight: 800 !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-field textarea {
+    min-height: 7.6rem !important;
+    border-radius: 0.82rem !important;
+    font-size: 0.92rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-plan-summary article {
+    min-height: 6.4rem !important;
+    background: var(--history-soft) !important;
+  }
+
+  @media (max-width: 1100px) {
+    .page-section[data-page='historial'] .history-telegram-block {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .page-section[data-page='historial'] .history-case-hero,
+    .page-section[data-page='historial'] .telegram-link-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Seguimiento typography lock: neutraliza tipografias heredadas y pesos excesivos. */
+  .page-section[data-page='historial'],
+  .page-section[data-page='historial'] *:not(.material-symbols-rounded) {
+    font-family: var(--font-ui, "Segoe UI", system-ui, -apple-system, sans-serif) !important;
+    letter-spacing: 0 !important;
+  }
+
+  .page-section[data-page='historial'] .page-title,
+  .page-section[data-page='historial'] .page-title span:not(.material-symbols-rounded),
+  .page-section[data-page='historial'] .card-header h2,
+  .page-section[data-page='historial'] .detail-block h3,
+  .page-section[data-page='historial'] .telegram-link-field strong,
+  .page-section[data-page='historial'] .history-plan-summary strong {
+    text-wrap: balance;
+  }
+
+  .page-section[data-page='historial'] .detail-block h3,
+  .page-section[data-page='historial'] .history-case-hero h3,
+  .page-section[data-page='historial'] .history-note-field span {
+    font-size: 1rem !important;
+    font-weight: 750 !important;
+    line-height: 1.28 !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-hero h3 {
+    margin-top: 0.12rem !important;
+    font-size: 1.12rem !important;
+  }
+
+  .page-section[data-page='historial'] .detail-block p,
+  .page-section[data-page='historial'] .detail-caption,
+  .page-section[data-page='historial'] .detail-empty,
+  .page-section[data-page='historial'] .history-patient-meta span,
+  .page-section[data-page='historial'] .telegram-link-field strong,
+  .page-section[data-page='historial'] .history-plan-summary p {
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    line-height: 1.45 !important;
+  }
+
+  .page-section[data-page='historial'] .detail-kicker,
+  .page-section[data-page='historial'] .telegram-link-field span,
+  .page-section[data-page='historial'] .history-plan-summary span {
+    font-size: 0.68rem !important;
+    font-weight: 760 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+  }
+
+  .page-section[data-page='historial'] .status-chip {
+    min-height: 1.75rem !important;
+    padding: 0.22rem 0.58rem !important;
+    font-size: 0.74rem !important;
+    font-weight: 760 !important;
+    line-height: 1 !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions .btn-secondary,
+  .page-section[data-page='historial'] .history-case-actions .btn-ghost,
+  .page-section[data-page='historial'] .telegram-link-actions .btn-outline,
+  .page-section[data-page='historial'] .history-plan-actions .btn-sm,
+  .page-section[data-page='historial'] .btn-history-note,
+  .page-section[data-page='historial'] #refreshHistorial {
+    min-height: 2.35rem !important;
+    padding: 0.5rem 0.78rem !important;
+    font-size: 0.84rem !important;
+    font-weight: 760 !important;
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions .btn-secondary,
+  .page-section[data-page='historial'] .btn-history-note {
+    background: #123a4f !important;
+    border-color: #123a4f !important;
+    color: #ffffff !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions .btn-ghost,
+  .page-section[data-page='historial'] .telegram-link-actions .btn-outline,
+  .page-section[data-page='historial'] .history-plan-actions .btn-sm,
+  .page-section[data-page='historial'] #refreshHistorial {
+    background: #ffffff !important;
+    border: 1px solid #d8e0e8 !important;
+    color: #173047 !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions {
+    align-items: center !important;
+  }
+
+  .page-section[data-page='historial'] .history-case-actions .btn-sm {
+    white-space: nowrap !important;
+  }
+
+  .page-section[data-page='historial'] .history-telegram-block {
+    padding: 1.05rem !important;
+  }
+
+  .page-section[data-page='historial'] .telegram-link-field {
+    min-height: 3.75rem !important;
+    padding: 0.64rem 0.72rem !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-form {
+    max-width: none !important;
+  }
+
+  .page-section[data-page='historial'] .history-note-field textarea {
+    min-height: 7rem !important;
+    color: #142234 !important;
   }
 </style>
 

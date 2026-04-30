@@ -55,6 +55,10 @@
   - la ficha elimina el rail lateral redundante,
   - `Seguimiento del caso` ya no renderiza planes completos ni formularios de follow-up,
   - los planes quedan como resumen con acceso a ficha y biblioteca.
+- Se anade una capa tipografica final para `Seguimiento del caso`:
+  - una sola familia y escala de pesos,
+  - botones compactos y homogeneos,
+  - Telegram y cabecera de paciente como estados operativos sobrios.
 
 ### Documentos reposicionado
 

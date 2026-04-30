@@ -45,6 +45,10 @@
   - ficha queda en una sola columna sin rail lateral redundante,
   - `Seguimiento del caso` deja de listar planes completos y formularios de follow-up,
   - planes domiciliarios se resumen con metricas y accesos a ficha/biblioteca.
+- [x] Homogeneizacion visual de `Seguimiento del caso`:
+  - bloqueo tipografico por pagina para neutralizar estilos heredados,
+  - pesos y tamanos reducidos a una escala clinica sobria,
+  - botones y tarjetas compactos para lectura profesional.
 
 ### Validacion cerrada
 - [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.

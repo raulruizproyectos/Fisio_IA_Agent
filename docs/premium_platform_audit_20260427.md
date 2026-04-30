@@ -39,6 +39,7 @@ Objetivo de la siguiente fase:
 - La ficha completa se endurece para pacientes antiguos: si el paciente no esta en `crm_pacientes`, se devuelve una ficha minima legacy con aviso claro en vez de bloquear el flujo.
 - Se corrigen problemas visuales detectados en EasyPanel: rail de ficha demasiado estrecho y formulario de seguimiento cayendo a controles nativos.
 - El feedback real confirma que la prioridad no es mas UI, sino menos ruido: se elimina el rail lateral de ficha y `Seguimiento` pasa a resumen operativo, sin planes completos ni formularios avanzados.
+- `Seguimiento del caso` queda con bloqueo tipografico especifico para evitar mezcla de familias, tamanos y pesos heredados del monolito.
 - La ficha de paciente queda reforzada como vista primaria:
   - busqueda superior abre ficha,
   - proxima sesion del dashboard abre ficha si hay paciente,
@@ -166,6 +167,7 @@ Estado parcial implementado:
 - ficha completa con fallback legacy limpio: implementado,
 - correccion visual practica de ficha y seguimiento en produccion: implementado,
 - recorte de usabilidad en ficha y seguimiento: implementado,
+- homogeneizacion tipografica de seguimiento: implementado,
 - pendiente: reducir duplicidad interna de tablas/resumenes financieros y limpiar estilos inline visibles restantes fuera de Finanzas.
 
 ### Fase 2 - Modularizacion frontend
