@@ -41,6 +41,20 @@ Checkpoint de producto actual (2026-04-23, Sesion 121):
   - GitHub sincronizado hasta `8f568cf`,
   - pendiente validar visualmente en EasyPanel tras redeploy.
 
+Checkpoint de producto actual (2026-05-04, Sesion 122):
+
+- Se mantiene la estrategia de Fase 1 premium: cambios tacticos, medibles y sin romper contratos backend/n8n.
+- La navegacion financiera conserva la misma semantica funcional pero reduce duplicidad de markup:
+  - `Pagos`, `Facturas`, `Bonos` y `Gestoria` renderizan sus pestanas desde una sola fuente (`financeTabsMarkup`).
+- Se anade binding dedicado para botones financieros dinamicos y se mantiene `navigateTo(...)` como unico flujo de navegacion.
+- Se limpia deuda visual de inline styles en superficies de uso diario (`Inicio`, `Agenda`, `Documentos`, `Configuracion`) migrando a clases CSS.
+- Estado tecnico del frontend tras cambios:
+  - `npm run check`: OK.
+  - `npm run build`: OK.
+- Siguiente paso recomendado:
+  - cerrar limpieza de inline styles restantes en la tabla semanal de agenda,
+  - despues continuar con modularizacion gradual del monolito `index.astro`.
+
 Checkpoint de producto actual (2026-03-19, Sesion 109):
 
 - La agenda productiva ya opera como espejo visible Calendar <-> CRM y muestra estados por cita en el frontend.

@@ -1,3 +1,41 @@
+## [Sesion 122] - 2026-05-04 (Finanzas DRY + limpieza visible de inline styles)
+### Objetivo
+- Continuar la Fase 1 premium reduciendo duplicidad en frontend y limpiando estilos inline visibles sin tocar contratos backend/n8n.
+
+### Cambios aplicados
+- `frontend/src/pages/index.astro`
+  - Finanzas:
+    - pestanas financieras unificadas con `data-finance-tabs` + template comun `financeTabsMarkup`.
+    - binding explicito para click en pestanas financieras dinamicas (`.finance-tab[data-dashboard-nav]`).
+  - Inicio:
+    - iconos de metricas migrados a clases (`metric-icon-*`).
+    - tarjeta de grafico mensual y metadato anual migrados a clases.
+    - etiqueta de `Proximas` en agenda inmediata migrada a clase.
+  - Agenda:
+    - iconos de acciones de cita migrados a clase (`agenda-action-icon`).
+  - Documentos:
+    - celda de acciones y estado "Sin firma" migrados a clases.
+  - Ficha/Configuracion:
+    - acciones de documentos/firma y feedback/configuracion migrados a clases.
+
+### Validaciones realizadas
+- `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
+- `npm run build` en `frontend`: OK.
+- Repetidas tras ajuste de binding de pestanas financieras: OK.
+
+### Documentacion actualizada
+- Nuevo checkpoint de cierre:
+  - `docs/checkpoint_20260504_session_closeout.md`
+- Actualizaciones de continuidad:
+  - `configuracion_pendiente.md`
+  - `README.md`
+  - `ARCHITECTURE.md`
+
+### Punto exacto para continuar
+1. Smoke visual local en `Inicio`, `Agenda`, `Documentos` y `Finanzas`.
+2. Commit del bloque frontend actual.
+3. Siguiente bloque: limpiar inline styles restantes de la tabla semanal de agenda renderizada por JS.
+
 ## [Sesion 121] - 2026-04-23 (Cierre documental y handoff)
 ### Objetivo
 - Cerrar la sesion con GitHub y archivos de seguimiento alineados para retomar sin reconstruir contexto.

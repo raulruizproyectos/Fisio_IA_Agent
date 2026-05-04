@@ -12,6 +12,22 @@ CRM + agentes para centros de fisioterapia: gestion de pacientes, citas y recome
 ## En pausa
 - Generacion de video: desactivada en backend y eliminada del frontend y de los workflows n8n activos.
 
+## Checkpoint actual (2026-05-04)
+- Estado local: bloque frontend premium tactico avanzado y validado localmente.
+- Checkpoint operativo recomendado: `docs/checkpoint_20260504_session_closeout.md`
+- Estado real del producto en este punto:
+  - `Finanzas` reduce duplicidad de pestañas en `pagos/facturas/bonos/gestoria` con una sola fuente de markup.
+  - la navegacion de pestañas financieras se mantiene operativa con binding dedicado para botones dinamicos.
+  - limpieza de inline styles visibles aplicada en `Inicio`, `Agenda`, `Documentos` y `Configuracion`.
+  - no se han tocado contratos backend/n8n ni rutas API.
+- Validacion local:
+  - `npm run check` en `frontend`: OK (0 errors, 0 warnings, 0 hints).
+  - `npm run build` en `frontend`: OK.
+- Siguiente paso exacto:
+  - smoke visual local de `Inicio`, `Agenda`, `Documentos` y `Finanzas`,
+  - commit del bloque frontend,
+  - continuar limpieza de inline styles restantes en la tabla semanal de agenda.
+
 ## Checkpoint actual (2026-04-29)
 - Estado local: nueva fase premium practica en curso, con Seguimiento del caso simplificado para produccion.
 - Checkpoint operativo recomendado: `docs/checkpoint_20260427_premium_platform_handoff.md`

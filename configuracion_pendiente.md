@@ -1,3 +1,40 @@
+## Estado actual (2026-05-04, Sesion 122) - Cierre de fase premium tactica en frontend.
+
+### Completado en esta sesion
+- [x] Reduccion de duplicidad en `Finanzas`:
+  - pestanas `Pagos/Facturas/Bonos/Gestoria` unificadas con `data-finance-tabs`,
+  - template unico `financeTabsMarkup` en JS.
+- [x] Navegacion financiera asegurada tras unificacion:
+  - click en pestanas financieras dinamicas enlazado con `navigateTo(...)`.
+- [x] Limpieza de inline styles visibles en `frontend/src/pages/index.astro`:
+  - Inicio (metricas + bloque grafico),
+  - Agenda (iconos de acciones),
+  - Documentos (celda de acciones y estado sin firma),
+  - Ficha/Configuracion (acciones y feedback visibles).
+- [x] Checkpoint de cierre creado:
+  - `docs/checkpoint_20260504_session_closeout.md`.
+
+### Validacion cerrada
+- [x] `npm run check` en `frontend`: OK, 0 errores, 0 warnings, 0 hints.
+- [x] `npm run build` en `frontend`: OK.
+- [x] Repeticion de `check/build` tras el ajuste de binding de pestanas financieras: OK.
+
+### Pendiente inmediato
+1. Smoke visual local en:
+   - Inicio,
+   - Agenda,
+   - Documentos,
+   - Finanzas (`pagos`, `facturas`, `bonos`, `gestoria`).
+2. Commit del bloque frontend actual.
+3. Continuar Fase 1 premium:
+   - limpiar `style=` inline restantes en la tabla semanal de agenda renderizada por JS,
+   - mantener cero cambios de contrato backend/n8n.
+
+### Criterio de continuidad en este punto
+- Mantener cambios pequenos y verificables.
+- Reducir duplicidad y ruido antes de modularizar en grande.
+- No abrir refactor de arquitectura hasta cerrar la limpieza tactica de Fase 1.
+
 ## Estado actual (2026-04-29, Sesion premium practica) - Seguimiento simplificado y robusto.
 
 ### Completado en esta sesion

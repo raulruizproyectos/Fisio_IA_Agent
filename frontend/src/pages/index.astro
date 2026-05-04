@@ -167,19 +167,19 @@ import Layout from '../layouts/Layout.astro';
             </section>
 
             <section class="metrics-row clinical-metrics">
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(15, 118, 110, 0.1); color: var(--accent);"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">&mdash;</span><span class="metric-label">Pacientes activos</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">&mdash;</span><span class="metric-label">Citas hoy</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(22, 163, 74, 0.1); color: #16a34a;"><span class="material-symbols-rounded">euro</span></div><div class="metric-data"><span class="metric-value" id="metricIngresosMes">0 &euro;</span><span class="metric-label">Ingresos este mes</span></div></div>
-              <div class="metric-card"><div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><span class="material-symbols-rounded">receipt_long</span></div><div class="metric-data"><span class="metric-value" id="metricSesionesMes">0</span><span class="metric-label">Sesiones este mes</span></div></div>
+              <div class="metric-card"><div class="metric-icon metric-icon-teal"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">&mdash;</span><span class="metric-label">Pacientes activos</span></div></div>
+              <div class="metric-card"><div class="metric-icon metric-icon-mint"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">&mdash;</span><span class="metric-label">Citas hoy</span></div></div>
+              <div class="metric-card"><div class="metric-icon metric-icon-emerald"><span class="material-symbols-rounded">euro</span></div><div class="metric-data"><span class="metric-value" id="metricIngresosMes">0 &euro;</span><span class="metric-label">Ingresos este mes</span></div></div>
+              <div class="metric-card"><div class="metric-icon metric-icon-amber"><span class="material-symbols-rounded">receipt_long</span></div><div class="metric-data"><span class="metric-value" id="metricSesionesMes">0</span><span class="metric-label">Sesiones este mes</span></div></div>
             </section>
 
             <!-- Grafico ingresos mensuales -->
-            <section class="card widget-card" style="margin-bottom:0">
+            <section class="card widget-card dashboard-chart-card">
               <header class="card-header">
                 <h2>Ingresos mensuales</h2>
-                <span style="font-size:0.8rem;color:var(--text-muted)" id="dashChartYear"></span>
+                <span class="dashboard-year-meta" id="dashChartYear"></span>
               </header>
-              <div style="padding:0 1rem 1rem">
+              <div class="dashboard-chart-wrap">
                 <canvas id="dashIncomeChart" height="150"></canvas>
               </div>
             </section>
@@ -591,12 +591,7 @@ import Layout from '../layouts/Layout.astro';
               </button>
             </div>
           </div>
-          <nav class="finance-tabs" aria-label="Secciones de finanzas">
-            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
-          </nav>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
 
           <section class="finance-workbench" aria-label="Panel operativo de finanzas">
             <article class="finance-priority-panel">
@@ -761,12 +756,7 @@ import Layout from '../layouts/Layout.astro';
               <select id="gestoriaAnioFilter" title="A&ntilde;o"></select>
             </div>
           </div>
-          <nav class="finance-tabs" aria-label="Secciones de finanzas">
-            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
-          </nav>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
           <section class="finance-subview-strip">
             <div>
               <span>Vista financiera</span>
@@ -1092,7 +1082,7 @@ import Layout from '../layouts/Layout.astro';
   <section class="card">
     <header class="card-header">
       <h2>Documentacion clinica y legal</h2>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+      <div class="ficha-doc-actions">
         <button class="btn-sm btn-outline" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
         <button class="btn-sm btn-outline" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
         <button class="btn-sm btn-outline" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocacion</button>
@@ -1153,7 +1143,7 @@ import Layout from '../layouts/Layout.astro';
               <div class="firma-pad-wrap">
                 <canvas id="firmaCanvas" width="600" height="160"></canvas>
               </div>
-              <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+              <div class="firma-pad-actions">
                 <button type="button" class="btn-ghost btn-sm" id="firmaClearBtn"><span class="material-symbols-rounded">restart_alt</span> Borrar</button>
                 <span id="firmaStatus" class="firma-status-hint">Sin firma</span>
               </div>
@@ -1178,12 +1168,7 @@ import Layout from '../layouts/Layout.astro';
               <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">add</span> Nuevo bono</button>
             </div>
           </div>
-          <nav class="finance-tabs" aria-label="Secciones de finanzas">
-            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
-          </nav>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
           <section class="finance-subview-strip">
             <div>
               <span>Vista financiera</span>
@@ -1289,12 +1274,7 @@ import Layout from '../layouts/Layout.astro';
               <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">add</span> Nueva factura</button>
             </div>
           </div>
-          <nav class="finance-tabs" aria-label="Secciones de finanzas">
-            <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
-            <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestor&iacute;a</button>
-          </nav>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
           <section class="finance-subview-strip">
             <div>
               <span>Vista financiera</span>
@@ -1433,10 +1413,10 @@ import Layout from '../layouts/Layout.astro';
             <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Configuraci&oacute;n</h1>
           </div>
           <div class="config-grid">
-            <section class="card" style="grid-column:1/-1">
+            <section class="card config-card-full">
               <header class="card-header">
                 <h2>Datos de la cl&iacute;nica</h2>
-                <span style="font-size:0.78rem;color:var(--text-muted)">Usados en facturas PDF y consentimientos</span>
+                <span class="config-card-hint">Usados en facturas PDF y consentimientos</span>
               </header>
               <form id="clinicConfigForm" class="section-body">
                 <div class="form-grid">
@@ -1447,9 +1427,9 @@ import Layout from '../layouts/Layout.astro';
                   <label class="field"><span>Email</span><input id="cfgClinicEmail" type="email" placeholder="clinica@ejemplo.com" /></label>
                   <label class="field"><span>Web (opcional)</span><input id="cfgClinicWeb" type="text" placeholder="www.miclinica.com" /></label>
                 </div>
-                <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+                <div class="config-form-actions">
                   <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar datos</button>
-                  <span id="clinicConfigFeedback" style="font-size:0.82rem;color:var(--color-success,#16a34a)" hidden></span>
+                  <span id="clinicConfigFeedback" class="config-feedback-inline" hidden></span>
                 </div>
               </form>
             </section>
@@ -2928,6 +2908,15 @@ import Layout from '../layouts/Layout.astro';
 
   let activeSection = 'dashboard';
   const financeSections = new Set(['pagos', 'facturas', 'bonos', 'gestoria']);
+  const financeTabsMarkup = `
+    <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
+    <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
+    <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
+    <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestoria</button>
+  `;
+  document.querySelectorAll<HTMLElement>('.finance-tabs[data-finance-tabs]').forEach((nav) => {
+    nav.innerHTML = financeTabsMarkup;
+  });
 
   const navigateTo = (section: string) => {
     const targetSection = section === 'finanzas' ? 'pagos' : section;
@@ -3061,6 +3050,15 @@ import Layout from '../layouts/Layout.astro';
     button.addEventListener('click', (event: Event) => {
       event.preventDefault();
       const section = (button as HTMLElement).dataset.dashboardNav;
+      if (!section) return;
+      navigateTo(section);
+      if (isMobile()) closeSidebar();
+    });
+  });
+  document.querySelectorAll<HTMLElement>('.finance-tabs .finance-tab[data-dashboard-nav]').forEach((button) => {
+    button.addEventListener('click', (event: Event) => {
+      event.preventDefault();
+      const section = button.dataset.dashboardNav;
       if (!section) return;
       navigateTo(section);
       if (isMobile()) closeSidebar();
@@ -5419,7 +5417,7 @@ import Layout from '../layouts/Layout.astro';
       html += `<div class="dash-section-label dash-section-label-muted">Sin citas hoy</div>`;
     }
     if (upcomingCitas.length) {
-      html += `<div class="dash-section-label" style="margin-top:8px">Pr&oacute;ximas</div>`;
+      html += `<div class="dash-section-label dash-section-label-spaced">Pr&oacute;ximas</div>`;
       html += upcomingCitas.map((c: any) => renderItem(c, false)).join('');
     }
     dashCitasBody.innerHTML = html;
@@ -5889,10 +5887,10 @@ import Layout from '../layouts/Layout.astro';
         const patName = escapeAttr(patientLabel);
         const actions: string[] = [];
         if (estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar">&#x2713;</button>`);
-        if (estado === 'confirmada' || estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded" style="font-size:15px">check_circle</span></button>`);
-        if (estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded" style="font-size:15px">close</span></button>`);
-        if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded" style="font-size:15px">person_off</span></button>`);
-        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded" style="font-size:15px">person</span></button>`);
+        if (estado === 'confirmada' || estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded agenda-action-icon">check_circle</span></button>`);
+        if (estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded agenda-action-icon">close</span></button>`);
+        if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded agenda-action-icon">person_off</span></button>`);
+        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>`);
         return `<tr>
           <td class="td-patient">${escapeHtml(patientLabel)}</td>
           <td>${escapeHtml(dayStr)}</td>
@@ -8394,7 +8392,7 @@ import Layout from '../layouts/Layout.astro';
       return `<tr>
         <td><div class="ficha-table-primary">${fmtDate(p.fecha)}</div></td>
         <td><strong>${Number(p.importe).toFixed(2)} EUR</strong></td>
-        <td><span class="${metodoClass}" style="font-weight:600">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
+        <td><span class="${metodoClass} ficha-payment-method">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
         <td>
           <div class="ficha-table-primary">${escapeHtml(p.concepto || 'Sesion')}</div>
           <div class="ficha-table-meta">${escapeHtml(p.notas || 'Movimiento asociado al caso')}</div>
@@ -8442,8 +8440,8 @@ import Layout from '../layouts/Layout.astro';
       const pruebasHtml = n.pruebas_realizadas ? `<div class="ficha-nota-pruebas"><strong>Pruebas</strong><p>${escapeHtml(n.pruebas_realizadas)}</p></div>` : '';
       return `<div class="ficha-nota-card">
         <div class="ficha-nota-actions">
-          <button title="Editar" data-action="edit-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded" style="font-size:1.1rem">edit</span></button>
-          <button title="Eliminar" data-action="delete-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded" style="font-size:1.1rem">delete</span></button>
+          <button title="Editar" data-action="edit-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded ficha-note-action-icon">edit</span></button>
+          <button title="Eliminar" data-action="delete-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded ficha-note-action-icon">delete</span></button>
         </div>
         <div class="ficha-nota-header">
           <div class="ficha-nota-headline">
@@ -9697,8 +9695,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <td>${escapeHtml(d.titulo || 'Sin titulo')}</td>
           <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
           <td>${fechaFirma}</td>
-          <td style="display:flex;gap:6px;align-items:center">
-            ${d.estado === 'firmado' ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : '<span style="color:var(--text-muted);font-size:0.8rem">Sin firma</span>'}
+          <td class="documentos-actions-cell">
+            ${d.estado === 'firmado' ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
             <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
           </td>
         </tr>`;
@@ -21769,6 +21767,93 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .intake-row-actions .btn-sm {
     min-width: 4.4rem;
     justify-content: center;
+  }
+
+  .metric-icon-teal {
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent);
+  }
+
+  .metric-icon-mint {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+  }
+
+  .metric-icon-emerald {
+    background: rgba(22, 163, 74, 0.1);
+    color: #16a34a;
+  }
+
+  .metric-icon-amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--warning);
+  }
+
+  .dashboard-chart-card {
+    margin-bottom: 0;
+  }
+
+  .dashboard-year-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .dashboard-chart-wrap {
+    padding: 0 1rem 1rem;
+  }
+
+  .dash-section-label-spaced {
+    margin-top: 8px;
+  }
+
+  .ficha-payment-method {
+    font-weight: 600;
+  }
+
+  .ficha-note-action-icon {
+    font-size: 1.1rem;
+  }
+
+  .agenda-action-icon {
+    font-size: 15px;
+  }
+
+  .firma-pad-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .config-card-full {
+    grid-column: 1 / -1;
+  }
+
+  .config-card-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .config-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .config-feedback-inline {
+    font-size: 0.82rem;
+    color: var(--color-success, #16a34a);
+  }
+
+  .documentos-actions-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .documentos-actions-empty {
+    color: var(--text-muted);
+    font-size: 0.8rem;
   }
 
   .finance-tabs {
