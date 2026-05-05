@@ -1338,8 +1338,8 @@ import Layout from '../layouts/Layout.astro';
           </section>
 
           <!-- Modal nueva factura -->
-          <div class="modal-shell" id="facturaModal" aria-hidden="true">
-            <div class="modal-panel" role="dialog" aria-modal="true">
+          <div class="modal-shell crm-drawer-shell finance-drawer-shell" id="facturaModal" aria-hidden="true">
+            <div class="modal-panel crm-drawer-panel" role="dialog" aria-modal="true">
               <div class="modal-header">
                 <div class="modal-title-group">
                   <p class="modal-eyebrow">FACTURACI&Oacute;N</p>
@@ -5716,10 +5716,10 @@ import Layout from '../layouts/Layout.astro';
 
     const todayStr = new Date().toDateString();
 
-    let html = `<div class="agenda-week-scroll">
-<table class="agenda-week-table">
-<thead><tr>
-  <th class="agenda-week-time-head"></th>`;
+    let html = `<div class="agenda-board-shell">
+      <div class="agenda-board" role="grid" aria-label="Agenda semanal">
+        <div class="agenda-board-head" role="row">
+          <div class="agenda-board-corner" aria-hidden="true">Hora</div>`;
 
     for (let i = 0; i < 5; i++) {
       const isToday = weekDays[i].toDateString() === todayStr;
@@ -5730,31 +5730,33 @@ import Layout from '../layouts/Layout.astro';
         const label = cita.nombre_paciente || cita.motivo || 'Cerrado';
         return `<div class="agenda-all-day-chip" title="${escapeAttr(label)}">${escapeHtml(label)}</div>`;
       }).join('');
-      html += `<th class="agenda-day-head${isToday ? ' is-today' : ''}">
+      html += `<div class="agenda-day-head${isToday ? ' is-today' : ''}" role="columnheader">
         <span class="agenda-day-name">${escapeHtml(dayName)}</span>
         <span class="agenda-day-number">${dayNum}</span>
         ${allDayHtml}
-      </th>`;
+      </div>`;
     }
-    html += '</tr></thead><tbody>';
+    html += '</div><div class="agenda-board-body">';
 
     // Separator row between morning and afternoon
     for (let si = 0; si < HOUR_SLOTS.length; si++) {
       const hour = HOUR_SLOTS[si];
       const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
-      // Lunch break separator
       if (prevHour !== null && hour - prevHour > 1) {
-        html += `<tr><td colspan="6" class="agenda-break-cell">pausa 13:00 - 15:00</td></tr>`;
+        html += `<div class="agenda-break-cell" role="row" aria-label="Pausa 13:00 - 15:00">
+          <span>Pausa clinica</span>
+          <strong>13:00 - 15:00</strong>
+        </div>`;
       }
 
       const timeLabel = `${String(hour).padStart(2,'0')}:00`;
-      html += `<tr>
-        <td class="agenda-time-cell">${timeLabel}</td>`;
+      html += `<div class="agenda-board-row" role="row">
+        <div class="agenda-time-cell" role="rowheader">${timeLabel}</div>`;
 
       for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
         const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
         const isToday = weekDays[dayIdx].toDateString() === todayStr;
-        html += `<td class="agenda-week-cell${isToday ? ' is-today' : ''}">`;
+        html += `<div class="agenda-week-cell${isToday ? ' is-today' : ''}" role="gridcell">`;
         for (const a of appts) {
           const st = a.estado || 'pendiente';
           const calendarOnly = isCalendarOnlyAppointment(a);
@@ -5776,18 +5778,21 @@ import Layout from '../layouts/Layout.astro';
           const apptId = escapeAttr(a.id || a.appointment_id || '');
           const calPatId = escapeAttr(a.paciente_id || '');
           const calPatName = escapeAttr(a.nombre_paciente || 'Paciente');
-          html += `<div class="agenda-event-card ${eventClass}${calendarOnly ? ' is-calendar-only' : ''}" data-cal-appt-id="${apptId}" data-cal-appt-patient="${calPatId}" data-cal-appt-name="${calPatName}" title="${tip}">
+          html += `<button type="button" class="agenda-event-card ${eventClass}${calendarOnly ? ' is-calendar-only' : ''}" data-cal-appt-id="${apptId}" data-cal-appt-patient="${calPatId}" data-cal-appt-name="${calPatName}" title="${tip}">
             <div class="agenda-event-time">${timeStr}</div>
             <div class="agenda-event-name">${escapeHtml(firstName)}</div>
             ${motivo ? `<div class="agenda-event-reason">${escapeHtml(motivo)}</div>` : ''}
-          </div>`;
+          </button>`;
         }
-        html += '</td>';
+        if (!appts.length) {
+          html += '<span class="agenda-cell-empty" aria-hidden="true"></span>';
+        }
+        html += '</div>';
       }
-      html += '</tr>';
+      html += '</div>';
     }
 
-    html += '</tbody></table></div>';
+    html += '</div></div></div>';
     cal.innerHTML = html;
   };
 
@@ -24342,6 +24347,693 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     :global(.assistant-report-priority-icon) {
       display: none;
     }
+  }
+</style>
+
+<style is:global id="premium-crm-polish-20260505">
+  :root {
+    --crm-ink: #171618;
+    --crm-muted: #727578;
+    --crm-line: #e2e5e4;
+    --crm-paper: #ffffff;
+    --crm-panel: #f7f7f4;
+    --crm-teal: #0f766e;
+    --crm-blue: #004d60;
+    --crm-violet: #38296c;
+    --crm-gold: #6c4800;
+    --crm-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  body {
+    background: var(--crm-panel) !important;
+    color: var(--crm-ink);
+  }
+
+  .content {
+    padding: clamp(1rem, 1.7vw, 1.65rem) clamp(1rem, 2vw, 2rem) !important;
+  }
+
+  .page-section[data-page='citas'] {
+    display: grid !important;
+    gap: clamp(0.95rem, 1.4vw, 1.35rem) !important;
+    max-width: 100% !important;
+    animation: crmPageReveal 420ms var(--crm-ease) both;
+  }
+
+  .page-section[data-page='citas'] .agenda-header-row {
+    display: grid !important;
+    grid-template-columns: minmax(22rem, 1fr) auto !important;
+    align-items: end !important;
+    gap: clamp(1rem, 1.8vw, 1.7rem) !important;
+    padding: clamp(1rem, 1.6vw, 1.45rem) !important;
+    border: 1px solid rgba(202, 215, 222, 0.92) !important;
+    border-radius: 1.25rem !important;
+    background: var(--crm-paper) !important;
+    box-shadow: rgba(239, 239, 239, 0.65) 0 2px 15px 0 !important;
+    overflow: hidden !important;
+  }
+
+  .page-section[data-page='citas'] .agenda-header-copy {
+    display: grid !important;
+    grid-template-columns: max-content minmax(18rem, 36rem) !important;
+    align-items: center !important;
+    gap: clamp(0.9rem, 1.3vw, 1.25rem) !important;
+    min-width: 0 !important;
+  }
+
+  .page-section[data-page='citas'] .page-title {
+    margin: 0 !important;
+    color: var(--crm-ink) !important;
+    font-size: clamp(1.45rem, 1.55vw, 1.95rem) !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .page-section[data-page='citas'] .page-title .material-symbols-rounded {
+    color: var(--crm-blue) !important;
+  }
+
+  .page-section[data-page='citas'] .agenda-sync-status {
+    width: min(100%, 34rem) !important;
+    min-height: auto !important;
+    padding: 0.8rem 0.95rem !important;
+    border: 1px solid #e8ebe9 !important;
+    border-radius: 1rem !important;
+    background: #fafaf7 !important;
+    box-shadow: none !important;
+  }
+
+  .page-section[data-page='citas'] .agenda-sync-copy strong {
+    color: var(--crm-ink) !important;
+    font-size: 0.88rem !important;
+  }
+
+  .page-section[data-page='citas'] .agenda-sync-copy p {
+    margin-top: 0.18rem !important;
+    color: var(--crm-muted) !important;
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .page-section[data-page='citas'] .week-nav-bar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    padding: 0.42rem !important;
+    border: 1px solid #e4e7e5 !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+    box-shadow: rgba(239, 239, 239, 0.55) 0 2px 15px 0 !important;
+  }
+
+  .page-section[data-page='citas'] .week-label {
+    min-width: 9.6rem !important;
+    padding: 0 0.55rem !important;
+    color: var(--crm-ink) !important;
+    font-weight: 820 !important;
+    text-align: center !important;
+  }
+
+  .page-section[data-page='citas'] .btn-ghost,
+  .page-section[data-page='citas'] .btn-primary {
+    min-height: 2.48rem !important;
+    border-radius: 10px !important;
+    transition: transform 180ms var(--crm-ease), box-shadow 180ms var(--crm-ease), background 180ms ease !important;
+  }
+
+  .page-section[data-page='citas'] .btn-ghost:hover,
+  .page-section[data-page='citas'] .btn-primary:hover {
+    transform: translateY(-1px);
+  }
+
+  .page-section[data-page='citas'] #openNewAppointmentBtn {
+    background: var(--crm-blue) !important;
+    box-shadow: rgba(0, 0, 0, 0.08) 0 1px 2px 0, rgba(0, 0, 0, 0.12) 0 0.5px 0 0 !important;
+  }
+
+  .page-section[data-page='citas'] .agenda-cal-card {
+    padding: 0 !important;
+    border: 1px solid #e2e5e4 !important;
+    border-radius: 1.25rem !important;
+    background: #ffffff !important;
+    box-shadow: rgba(239, 239, 239, 0.65) 0 2px 15px 0 !important;
+    overflow: hidden !important;
+  }
+
+  .agenda-calendar {
+    min-height: 0 !important;
+    padding: clamp(0.55rem, 0.9vw, 0.85rem) !important;
+  }
+
+  .agenda-board-shell {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--crm-line);
+    border-radius: 1rem;
+    background: #ffffff;
+  }
+
+  .agenda-board {
+    min-width: 920px;
+  }
+
+  .agenda-board-head,
+  .agenda-board-row {
+    display: grid;
+    grid-template-columns: 5.2rem repeat(5, minmax(9.5rem, 1fr));
+  }
+
+  .agenda-board-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f8faf9;
+    border-bottom: 1px solid var(--crm-line);
+  }
+
+  .agenda-board-corner,
+  .agenda-day-head {
+    min-height: 4.4rem;
+    padding: 0.78rem 0.8rem;
+    border-right: 1px solid var(--crm-line);
+  }
+
+  .agenda-board-corner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    color: #8a9aa4;
+    font-size: 0.72rem;
+    font-weight: 820;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .agenda-day-head {
+    display: grid;
+    align-content: start;
+    gap: 0.18rem;
+    text-align: left;
+  }
+
+  .agenda-day-head.is-today {
+    background: #eff8fa;
+  }
+
+  .agenda-day-name {
+    color: #7b8b94 !important;
+    font-size: 0.72rem !important;
+    font-weight: 820 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+  }
+
+  .agenda-day-number {
+    color: var(--crm-ink) !important;
+    font-size: 1.42rem !important;
+    font-weight: 860 !important;
+    line-height: 1 !important;
+  }
+
+  .agenda-board-row {
+    min-height: 5.45rem;
+    border-bottom: 1px solid #edf2f4;
+  }
+
+  .agenda-time-cell {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 0.92rem 0.78rem !important;
+    border-right: 1px solid var(--crm-line) !important;
+    background: #fbfcfb !important;
+    color: #7a8b94 !important;
+    font-size: 0.78rem !important;
+    font-weight: 840 !important;
+  }
+
+  .agenda-week-cell {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.35rem;
+    min-height: 5.45rem !important;
+    height: auto !important;
+    padding: 0.5rem !important;
+    border-right: 1px solid #eef3f5 !important;
+    background: #ffffff !important;
+    transition: background 180ms ease;
+  }
+
+  .agenda-week-cell:hover {
+    background: #f8fbfc !important;
+  }
+
+  .agenda-week-cell.is-today {
+    background: #fbfffd !important;
+  }
+
+  .agenda-cell-empty {
+    display: block;
+    width: 100%;
+    min-height: 3.9rem;
+    border-radius: 0.78rem;
+    background-image: linear-gradient(180deg, transparent 0, transparent calc(100% - 1px), rgba(226, 233, 237, 0.72) calc(100% - 1px));
+  }
+
+  .agenda-break-cell {
+    display: grid !important;
+    grid-template-columns: 5.2rem minmax(0, 1fr) !important;
+    grid-column: 1 / -1 !important;
+    align-items: center !important;
+    min-height: 2.55rem !important;
+    padding: 0 !important;
+    border-block: 1px dashed #d7e2e7 !important;
+    background: #faf8f1 !important;
+    color: #9a6a21 !important;
+    text-align: left !important;
+    font-style: normal !important;
+  }
+
+  .agenda-break-cell span {
+    padding-right: 0.78rem;
+    text-align: right;
+    color: #a17c42;
+    font-size: 0.7rem;
+    font-weight: 820;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .agenda-break-cell strong {
+    padding-left: 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 840;
+  }
+
+  .agenda-event-card {
+    width: 100%;
+    appearance: none;
+    border: 0 !important;
+    border-left: 4px solid var(--crm-gold) !important;
+    border-radius: 10px !important;
+    padding: 0.55rem 0.62rem !important;
+    background: #fbf5e5 !important;
+    color: #704408 !important;
+    text-align: left !important;
+    box-shadow: rgba(239, 239, 239, 0.55) 0 2px 15px 0;
+    transform: translateY(0);
+    transition: transform 180ms var(--crm-ease), box-shadow 180ms var(--crm-ease), border-color 180ms ease !important;
+  }
+
+  .agenda-event-card:hover,
+  .agenda-event-card:focus-visible {
+    outline: 2px solid rgba(11, 87, 146, 0.18) !important;
+    outline-offset: 2px !important;
+    transform: translateY(-1px);
+    box-shadow: rgba(0, 0, 0, 0.08) 0 1px 2px 0, rgba(0, 0, 0, 0.12) 0 0.5px 0 0;
+  }
+
+  .agenda-event-time {
+    color: inherit !important;
+    font-size: 0.68rem !important;
+    font-weight: 900 !important;
+  }
+
+  .agenda-event-name {
+    margin-top: 0.1rem;
+    color: inherit !important;
+    font-size: 0.82rem !important;
+    font-weight: 860 !important;
+  }
+
+  .agenda-event-reason {
+    margin-top: 0.08rem;
+    color: color-mix(in srgb, currentColor 74%, white 26%) !important;
+    font-size: 0.7rem !important;
+  }
+
+  .agenda-event-confirmada {
+    border-left-color: var(--crm-blue) !important;
+    background: #edf7f9 !important;
+    color: #004150 !important;
+  }
+
+  .agenda-event-completada {
+    border-left-color: var(--crm-violet) !important;
+    background: #f1eef9 !important;
+    color: #38296c !important;
+  }
+
+  .agenda-event-cancelada {
+    border-left-color: #9cabB5 !important;
+    background: #f2f5f6 !important;
+    color: #596872 !important;
+  }
+
+  .agenda-event-no_show {
+    border-left-color: #d94b69 !important;
+    background: #fff0f3 !important;
+    color: #9d1736 !important;
+  }
+
+  .agenda-event-block {
+    border-left-color: var(--crm-gold) !important;
+    background: #fbf5e5 !important;
+    color: #6c4800 !important;
+  }
+
+  .page-section[data-page='citas'] .table-card,
+  .page-section[data-page='citas'] .agenda-mobile-card {
+    border: 1px solid #e2e5e4 !important;
+    border-radius: 1.25rem !important;
+    background: #ffffff !important;
+    box-shadow: rgba(239, 239, 239, 0.55) 0 2px 15px 0 !important;
+    overflow: hidden !important;
+  }
+
+  .modal-shell.open:not(.crm-drawer-shell) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: clamp(0.75rem, 2vw, 1.4rem) !important;
+  }
+
+  .modal-shell.open:not(.crm-drawer-shell) .modal-panel {
+    width: min(640px, calc(100vw - 2rem)) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    margin: 0 auto !important;
+    border-radius: 1.25rem !important;
+    overflow: auto !important;
+    transform: translateY(0) scale(1) !important;
+    animation: modalPremiumIn 260ms var(--crm-ease) both;
+  }
+
+  .modal-shell.open:not(.crm-drawer-shell) .modal-header,
+  .modal-shell.open:not(.crm-drawer-shell) .patient-form,
+  .modal-shell.open:not(.crm-drawer-shell) .modal-actions {
+    padding-left: clamp(1rem, 2vw, 1.35rem) !important;
+    padding-right: clamp(1rem, 2vw, 1.35rem) !important;
+  }
+
+  .crm-drawer-shell {
+    background: rgba(16, 30, 39, 0.34) !important;
+    backdrop-filter: blur(12px) saturate(1.04) !important;
+  }
+
+  .crm-drawer-shell.open .crm-drawer-panel {
+    animation: drawerSlideIn 320ms var(--crm-ease) both;
+  }
+
+  .crm-drawer-shell .crm-drawer-panel > form {
+    display: grid !important;
+    min-height: calc(100dvh - 5.5rem) !important;
+    padding: 1.1rem 1.25rem 1.25rem !important;
+    overflow: auto !important;
+  }
+
+  .finance-drawer-shell .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+
+  .finance-drawer-shell .field,
+  .finance-drawer-shell .field-full {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .finance-drawer-shell .modal-actions {
+    align-self: end !important;
+  }
+
+  #assistantRail.assistant-rail,
+  #assistantRail.assistant-rail-portal {
+    inset: clamp(0.7rem, 1.4vw, 1rem) clamp(0.7rem, 1.4vw, 1rem) auto auto !important;
+    width: min(900px, calc(100vw - 1.4rem)) !important;
+    height: min(88dvh, 760px) !important;
+    max-height: min(88dvh, 760px) !important;
+    transform: translateX(calc(100% + 2rem)) scale(0.98) !important;
+    transition: transform 340ms var(--crm-ease), opacity 240ms ease !important;
+  }
+
+  #assistantRail.open {
+    transform: translateX(0) scale(1) !important;
+  }
+
+  #assistantRail .assistant-rail-card {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 1.25rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 26px 70px -42px rgba(13, 27, 36, 0.72) !important;
+  }
+
+  #assistantRail .assistant-module-header {
+    min-height: auto !important;
+    padding: 1rem 1.1rem !important;
+    background: #f8fbfc !important;
+  }
+
+  #assistantRail .assistant-module-header h2 {
+    font-size: 1.05rem !important;
+    letter-spacing: 0 !important;
+  }
+
+  #assistantRail .assistant-rail-body,
+  #assistantRail .assistant-console {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  #assistantRail .assistant-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.1fr) !important;
+    gap: 0.75rem !important;
+    padding: 0.78rem 1rem !important;
+  }
+
+  #assistantRail .assistant-live-context {
+    min-width: 0 !important;
+    padding: 0.72rem 0.9rem !important;
+    border: 1px solid #dce7ee !important;
+    border-radius: 0.9rem !important;
+    background: #ffffff !important;
+  }
+
+  #assistantRail .assistant-live-context p {
+    display: none !important;
+  }
+
+  #assistantRail .assistant-report-priority-card {
+    margin: 0.72rem 1rem 0 !important;
+    padding: 0.7rem 0.85rem !important;
+    border-radius: 0.95rem !important;
+    background: var(--crm-blue) !important;
+    color: #e9fbf8 !important;
+  }
+
+  #assistantRail .assistant-report-priority-card strong,
+  #assistantRail .assistant-report-priority-card p,
+  #assistantRail .assistant-report-priority-card .assistant-brief-kicker {
+    color: inherit !important;
+  }
+
+  #assistantRail .assistant-report-priority-card p {
+    margin-top: 0.18rem !important;
+    font-size: 0.76rem !important;
+    line-height: 1.3 !important;
+    opacity: 0.82 !important;
+  }
+
+  #assistantRail .assistant-report-priority-icon {
+    width: 2.1rem !important;
+    height: 2.1rem !important;
+    border-radius: 0.72rem !important;
+    background: #e9fbff !important;
+    color: var(--crm-blue) !important;
+  }
+
+  #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+    margin: 0.72rem 1rem 1rem !important;
+    padding: 0 !important;
+    background: transparent !important;
+    overflow: auto !important;
+  }
+
+  #assistantRail .assistant-dialog-scroll,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-scroll,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-scroll,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-scroll {
+    display: grid !important;
+    grid-template-columns: minmax(18rem, 0.92fr) minmax(18rem, 1.08fr) !important;
+    gap: 0.82rem !important;
+    align-items: start !important;
+    max-height: calc(88dvh - 14.5rem) !important;
+    overflow: auto !important;
+    padding: 0 !important;
+  }
+
+  #assistantRail .assistant-mode-switch {
+    grid-column: 1 / -1 !important;
+    order: 0 !important;
+    padding: 0.28rem !important;
+    border: 1px solid #d8e5ec !important;
+    border-radius: 0.9rem !important;
+    background: #ffffff !important;
+  }
+
+  #assistantRail .assistant-diagnostic-card {
+    grid-column: 1 !important;
+    grid-row: 2 / span 2 !important;
+  }
+
+  #assistantRail .ai-input-area {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  #assistantRail .chat-log {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+  }
+
+  #assistantRail .assistant-diagnostic-card,
+  #assistantRail .ai-input-area,
+  #assistantRail .chat-log {
+    border-radius: 1rem !important;
+  }
+
+  #assistantRail .assistant-diagnostic-card:not(.is-expanded) .assistant-diagnostic-grid {
+    display: none !important;
+  }
+
+  #assistantRail .assistant-diagnostic-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  @media (max-width: 1100px) {
+    .page-section[data-page='citas'] .agenda-header-row,
+    .page-section[data-page='citas'] .agenda-header-copy {
+      grid-template-columns: 1fr !important;
+    }
+
+    .page-section[data-page='citas'] .week-nav-bar {
+      justify-content: flex-start !important;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .content {
+      padding: 0.85rem !important;
+    }
+
+    .page-section[data-page='citas'] .agenda-header-row {
+      border-radius: 1.1rem !important;
+      padding: 0.9rem !important;
+    }
+
+    .page-section[data-page='citas'] .week-nav-bar {
+      display: grid !important;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      width: 100% !important;
+    }
+
+    .page-section[data-page='citas'] .week-nav-bar #thisWeek,
+    .page-section[data-page='citas'] .week-nav-bar #refreshCitas,
+    .page-section[data-page='citas'] .week-nav-bar #openNewAppointmentBtn {
+      grid-column: span 3;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .page-section[data-page='citas'] .agenda-cal-card {
+      display: none !important;
+    }
+
+    .page-section[data-page='citas'] .agenda-mobile-card {
+      display: block !important;
+    }
+
+    .modal-shell.open:not(.crm-drawer-shell) {
+      align-items: stretch !important;
+      padding: 0.55rem !important;
+    }
+
+    .modal-shell.open:not(.crm-drawer-shell) .modal-panel {
+      width: calc(100vw - 1.1rem) !important;
+      max-height: calc(100dvh - 1.1rem) !important;
+      border-radius: 1.05rem !important;
+    }
+
+    #assistantRail.assistant-rail,
+    #assistantRail.assistant-rail-portal {
+      inset: auto 0 0 0 !important;
+      width: 100vw !important;
+      height: min(92dvh, 760px) !important;
+      max-height: 92dvh !important;
+      transform: translateY(105%) !important;
+    }
+
+    #assistantRail.open {
+      transform: translateY(0) !important;
+    }
+
+    #assistantRail .assistant-rail-card {
+      border-radius: 1.25rem 1.25rem 0 0 !important;
+    }
+
+    #assistantRail .assistant-toolbar,
+    #assistantRail .assistant-dialog-scroll {
+      grid-template-columns: 1fr !important;
+    }
+
+    #assistantRail .assistant-report-priority-card {
+      grid-template-columns: minmax(0, 1fr) auto !important;
+    }
+
+    #assistantRail .assistant-dialog-scroll {
+      max-height: calc(92dvh - 16rem) !important;
+    }
+
+    #assistantRail .assistant-diagnostic-card,
+    #assistantRail .ai-input-area,
+    #assistantRail .chat-log {
+      grid-column: 1 !important;
+      grid-row: auto !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-section[data-page='citas'],
+    .modal-shell.open:not(.crm-drawer-shell) .modal-panel,
+    .crm-drawer-shell .crm-drawer-panel,
+    #assistantRail.assistant-rail,
+    #assistantRail.assistant-rail-portal {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  @keyframes crmPageReveal {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes modalPremiumIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes drawerSlideIn {
+    from { opacity: 0.72; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
   }
 </style>
 

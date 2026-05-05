@@ -11,6 +11,8 @@ Referencias principales para esta fase:
 - Schedulo: calendario como centro de trabajo con drawers para crear, revisar y resolver citas sin perder el contexto.
 - Chatform: inbox multicanal con panel de contexto y acciones rapidas.
 - RecruitSmart: arquitectura de informacion para productos complejos usados por perfiles no tecnicos.
+- Refero Styles / Cycle: base visual principal para el CRM operativo: canvas claro, bloques suaves pero precisos, acentos funcionales por estado y elevacion minima.
+- Refero Styles / Public + Amie: claridad editorial y superficie de trabajo blanca para que agenda, finanzas y agente IA se lean rapido durante consulta.
 
 Principios del nuevo redisenio:
 1. El CRM debe sentirse como una plataforma premium de operacion clinica, no como una suma de formularios.

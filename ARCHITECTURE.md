@@ -22,6 +22,7 @@ Principios de producto reforzados (benchmark funcional del mercado):
 Nuevo rumbo UX/UI (2026-05-05):
 
 - La referencia de diseno pasa a ser Fikri Studio aplicado a SaaS clinico: Zendenta para gestion sanitaria, Schedulo para agenda con paneles deslizantes, Chatform para inbox multicanal y RecruitSmart para arquitectura de informacion compleja.
+- La capa visual adopta Refero Styles / Cycle como patron principal: workspace claro, precision suave, acentos funcionales (`Agent Blue`, violeta para completado, ambar para contexto) y sombras muy contenidas; Public/Amie aportan claridad editorial para superficies densas.
 - El CRM debe evolucionar de paginas y modales aislados a workspaces continuos con drawers contextuales.
 - Agenda, ficha del paciente, mensajes, Copilot IA y finanzas deben mantener el contexto visible mientras el usuario crea, revisa o resuelve.
 - El agente IA de informes de ejercicios queda definido como pieza clave y diferenciadora: debe ser un flujo guiado premium para generar, archivar y entregar planes de ejercicios con trazabilidad clinica y PDF compartido.
