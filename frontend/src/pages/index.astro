@@ -519,13 +519,14 @@ import Layout from '../layouts/Layout.astro';
           </section>
         </div>
 
-        <!-- MODAL: Nueva Cita -->
-        <div class="modal-shell" id="appointmentModal" aria-hidden="true">
-          <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="appointmentModalTitle">
+        <!-- DRAWER: Nueva Cita -->
+        <div class="modal-shell crm-drawer-shell appointment-create-drawer" id="appointmentModal" aria-hidden="true">
+          <div class="modal-panel crm-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="appointmentModalTitle">
             <div class="modal-header">
               <div class="modal-title-group">
-                <p class="modal-eyebrow">AGENDA</p>
+                <p class="modal-eyebrow">Agenda contextual</p>
                 <h2 id="appointmentModalTitle">Nueva cita</h2>
+                <p class="drawer-subtitle">Crea la cita sin salir de la semana clinica. El calendario queda como referencia de disponibilidad.</p>
               </div>
               <button type="button" class="modal-close" id="closeAppointmentModalBtn" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
             </div>
@@ -558,6 +559,23 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </form>
           </div>
+        </div>
+
+        <!-- DRAWER: Detalle de Cita -->
+        <div class="modal-shell crm-drawer-shell appointment-detail-drawer" id="appointmentDetailDrawer" aria-hidden="true">
+          <aside class="modal-panel crm-drawer-panel appointment-detail-panel" role="dialog" aria-modal="true" aria-labelledby="appointmentDetailTitle">
+            <div class="modal-header">
+              <div class="modal-title-group">
+                <p class="modal-eyebrow">Cita seleccionada</p>
+                <h2 id="appointmentDetailTitle">Detalle de agenda</h2>
+                <p class="drawer-subtitle" id="appointmentDetailSubtitle">Revisa el contexto y decide el siguiente paso sin perder la semana.</p>
+              </div>
+              <button type="button" class="modal-close" id="closeAppointmentDetailDrawerBtn" aria-label="Cerrar detalle"><span class="material-symbols-rounded">close</span></button>
+            </div>
+            <div class="drawer-body appointment-detail-body" id="appointmentDetailBody">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">event_note</span><p>Selecciona una cita para ver su contexto.</p></div>
+            </div>
+          </aside>
         </div>
 
         <!-- === PAGE: HISTORIAL === -->
@@ -842,7 +860,7 @@ import Layout from '../layouts/Layout.astro';
                 </div>
               </div>
               <div class="ficha-hero-actions">
-                <button class="btn-primary" type="button" id="fichaHeroCopilotBtn"><span class="material-symbols-rounded">psychology</span> Abrir agente</button>
+                <button class="btn-primary" type="button" id="fichaHeroCopilotBtn"><span class="material-symbols-rounded">exercise</span> Informe IA</button>
                 <button class="btn-secondary" type="button" id="fichaHeroAgendaBtn"><span class="material-symbols-rounded">calendar_today</span> Ir a agenda</button>
                 <button class="btn-ghost" type="button" id="fichaHeroDocsBtn"><span class="material-symbols-rounded">description</span> Ver documentos</button>
               </div>
@@ -898,7 +916,7 @@ import Layout from '../layouts/Layout.astro';
               <button class="btn-secondary btn-sm" type="button" id="fichaOpsAgendarBtn"><span class="material-symbols-rounded">calendar_today</span> Agendar</button>
               <button class="btn-ghost btn-sm" type="button" id="fichaOpsNotaBtn"><span class="material-symbols-rounded">clinical_notes</span> Nueva nota</button>
               <button class="btn-ghost btn-sm" type="button" id="fichaOpsHistoriaBtn"><span class="material-symbols-rounded">history</span> Historial</button>
-              <button class="btn-primary btn-sm" type="button" id="fichaOpsCopilotBtn"><span class="material-symbols-rounded">psychology</span> Copiloto</button>
+              <button class="btn-primary btn-sm" type="button" id="fichaOpsCopilotBtn"><span class="material-symbols-rounded">exercise</span> Informe IA</button>
             </div>
           </section>
 
@@ -1504,6 +1522,15 @@ import Layout from '../layouts/Layout.astro';
                 </div>
               </div>
 
+              <section class="assistant-report-priority-card" aria-label="Flujo diferencial de informe IA">
+                <div>
+                  <span class="assistant-brief-kicker">Diferencial Fisio IA</span>
+                  <strong>Informe de ejercicios con PDF, Telegram e historial</strong>
+                  <p>El agente convierte sintomas y objetivo clinico en una propuesta revisable por el fisioterapeuta antes de entregar al paciente.</p>
+                </div>
+                <span class="assistant-report-priority-icon material-symbols-rounded">exercise</span>
+              </section>
+
                             <div class="assistant-dialog-surface">
                 <div class="assistant-dialog-scroll">
                   <div class="assistant-mode-switch" id="assistantModeSwitch" aria-label="Modo de trabajo del copilot">
@@ -1814,6 +1841,7 @@ import Layout from '../layouts/Layout.astro';
   const dashboardBookingFeedback = document.getElementById('dashboardBookingFeedback') as HTMLElement | null;
   const assistantPromptButtons = document.querySelectorAll('[data-assistant-prompt]') as NodeListOf<HTMLButtonElement>;
   const assistantModeButtons = document.querySelectorAll('[data-assistant-mode]') as NodeListOf<HTMLButtonElement>;
+  const assistantReportPriorityCard = document.querySelector('.assistant-report-priority-card') as HTMLElement | null;
   const intakesFullBody = document.getElementById('intakesFullBody') as HTMLElement | null;
   const intakesSourceFilter = document.getElementById('intakesSourceFilter') as HTMLSelectElement | null;
   const intakesPriorityFilter = document.getElementById('intakesPriorityFilter') as HTMLSelectElement | null;
@@ -1827,6 +1855,10 @@ import Layout from '../layouts/Layout.astro';
   const agendaCalendarMeta = document.getElementById('agendaCalendarMeta') as HTMLElement | null;
   const agendaMobileSummary = document.getElementById('agendaMobileSummary') as HTMLElement | null;
   const agendaMobileList = document.getElementById('agendaMobileList') as HTMLElement | null;
+  const appointmentDetailDrawer = document.getElementById('appointmentDetailDrawer') as HTMLElement | null;
+  const appointmentDetailTitle = document.getElementById('appointmentDetailTitle') as HTMLElement | null;
+  const appointmentDetailSubtitle = document.getElementById('appointmentDetailSubtitle') as HTMLElement | null;
+  const appointmentDetailBody = document.getElementById('appointmentDetailBody') as HTMLElement | null;
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
   const historyOpenFichaBtn = document.getElementById('historyOpenFichaBtn') as HTMLButtonElement | null;
   const addPatientBtn = document.getElementById('addPatientBtn') as HTMLButtonElement | null;
@@ -2270,6 +2302,7 @@ import Layout from '../layouts/Layout.astro';
   const renderAssistantPatientContext = () => {
     if (!assistantPatientLabel || !assistantPatientMeta) return;
     assistantRail?.classList.toggle('assistant-has-patient', Boolean(selectedPatientId));
+    assistantReportPriorityCard?.classList.toggle('is-linked', Boolean(selectedPatientId));
 
     if (!selectedPatientId) {
       assistantPatientLabel.textContent = 'Sin paciente seleccionado';
@@ -2506,6 +2539,48 @@ import Layout from '../layouts/Layout.astro';
     if (options.focus && input) {
       input.focus();
       input.setSelectionRange(input.value.length, input.value.length);
+    }
+  };
+
+  const openExerciseReportAssistant = (options: {
+    patientId?: string | null;
+    patientName?: string;
+    mode?: AssistantWorkMode;
+    seedText?: string;
+    objective?: string;
+    focus?: boolean;
+  } = {}) => {
+    const nextPatientId = String(options.patientId || selectedPatientId || '').trim();
+    const nextPatientName = String(options.patientName || selectedPatientName || '').trim();
+    if (nextPatientId) {
+      syncChatPatientSelection(nextPatientId, nextPatientName);
+      void loadAssistantPatientBrief(nextPatientId);
+    }
+
+    setAssistantMode(options.mode || 'new-plan', { focus: false });
+
+    const objectiveText = String(options.objective || '').trim();
+    if (objectiveText && assistantObjectiveInput && !assistantObjectiveInput.value.trim()) {
+      assistantObjectiveInput.value = objectiveText;
+    }
+
+    const seedText = String(options.seedText || '').trim();
+    if (seedText && input && !input.value.trim()) {
+      input.value = seedText;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    assistantDiagnosticExpanded = true;
+    renderAssistantDiagnosticSummary();
+    renderAssistantModeCard();
+    renderAssistantFlowCard();
+    requestOpenAssistantRail();
+
+    if (options.focus !== false && input) {
+      window.setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }, 60);
     }
   };
 
@@ -5439,6 +5514,7 @@ import Layout from '../layouts/Layout.astro';
     d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Madrid' });
 
   let agendaWeekStart: Date = getWeekMonday(new Date());
+  let latestAgendaAppointments: any[] = [];
 
   const isCalendarOnlyAppointment = (cita: any) =>
     String(cita?.calendar_sync_state || '').trim() === 'calendar_only';
@@ -5638,38 +5714,25 @@ import Layout from '../layouts/Layout.astro';
       apptMap.get(key)!.push(cita);
     }
 
-    // Status colors (inline styles because Astro scoped styles don't apply to dynamic innerHTML)
-    const STATUS: Record<string, { bg: string; color: string; border: string }> = {
-      confirmada: { bg: '#d1fae5', color: '#065f46', border: '#10b981' },
-      pendiente:  { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
-      cancelada:  { bg: '#f1f5f9', color: '#94a3b8', border: '#cbd5e1' },
-      completada: { bg: '#ede9fe', color: '#4c1d95', border: '#7c3aed' },
-      no_show:    { bg: '#fff1f2', color: '#be123c', border: '#f43f5e' },
-    };
-    const DEF = STATUS.pendiente;
     const todayStr = new Date().toDateString();
 
-    // Table layout inline so it works regardless of Astro style scoping
-    const thBase = 'padding:10px 8px;text-align:center;border-bottom:2px solid #e2e8f0;font-size:0.8rem;font-weight:700;white-space:nowrap;';
-    let html = `<div style="overflow-x:auto;width:100%;">
-<table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
+    let html = `<div class="agenda-week-scroll">
+<table class="agenda-week-table">
 <thead><tr>
-  <th style="${thBase}width:52px;background:#f8fafc;color:#94a3b8;"></th>`;
+  <th class="agenda-week-time-head"></th>`;
 
     for (let i = 0; i < 5; i++) {
       const isToday = weekDays[i].toDateString() === todayStr;
       const dayNum = weekDays[i].toLocaleDateString('es-ES', { day: 'numeric' });
       const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short' });
-      const bg = isToday ? '#eff6ff' : '#f8fafc';
-      const col = isToday ? '#2563eb' : '#334155';
       const allDayClosures = allDayMap.get(i) || [];
       const allDayHtml = allDayClosures.map((cita: any) => {
         const label = cita.nombre_paciente || cita.motivo || 'Cerrado';
-        return `<div title="${escapeAttr(label)}" style="margin-top:4px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:999px;padding:2px 6px;font-size:0.62rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(label)}</div>`;
+        return `<div class="agenda-all-day-chip" title="${escapeAttr(label)}">${escapeHtml(label)}</div>`;
       }).join('');
-      html += `<th style="${thBase}background:${bg};color:${col};text-transform:capitalize;vertical-align:top;">
-        <span style="display:block;font-size:0.7rem;font-weight:500;opacity:0.7;">${escapeHtml(dayName)}</span>
-        <span style="display:block;font-size:1.1rem;font-weight:700;">${dayNum}</span>
+      html += `<th class="agenda-day-head${isToday ? ' is-today' : ''}">
+        <span class="agenda-day-name">${escapeHtml(dayName)}</span>
+        <span class="agenda-day-number">${dayNum}</span>
         ${allDayHtml}
       </th>`;
     }
@@ -5681,25 +5744,24 @@ import Layout from '../layouts/Layout.astro';
       const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
       // Lunch break separator
       if (prevHour !== null && hour - prevHour > 1) {
-        html += `<tr><td colspan="6" style="padding:4px 8px;background:#f8fafc;border-top:2px dashed #e2e8f0;border-bottom:2px dashed #e2e8f0;text-align:center;font-size:0.7rem;color:#94a3b8;font-style:italic;">pausa 13:00 - 15:00</td></tr>`;
+        html += `<tr><td colspan="6" class="agenda-break-cell">pausa 13:00 - 15:00</td></tr>`;
       }
 
       const timeLabel = `${String(hour).padStart(2,'0')}:00`;
       html += `<tr>
-        <td style="padding:6px 8px;text-align:right;font-size:0.72rem;color:#94a3b8;font-weight:600;vertical-align:top;white-space:nowrap;background:#f8fafc;border-right:2px solid #e2e8f0;border-bottom:1px solid #f1f5f9;">${timeLabel}</td>`;
+        <td class="agenda-time-cell">${timeLabel}</td>`;
 
       for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
         const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
         const isToday = weekDays[dayIdx].toDateString() === todayStr;
-        const cellBg = isToday ? '#fafcff' : '#fff';
-        html += `<td style="padding:3px;vertical-align:top;background:${cellBg};border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;min-height:58px;height:58px;">`;
+        html += `<td class="agenda-week-cell${isToday ? ' is-today' : ''}">`;
         for (const a of appts) {
           const st = a.estado || 'pendiente';
           const calendarOnly = isCalendarOnlyAppointment(a);
           const blockMeta = calendarOnly ? getAgendaCalendarBlockMeta(a) : null;
-          const c = calendarOnly
-            ? (blockMeta?.colors || { bg: '#fff7ed', color: '#9a3412', border: '#f97316' })
-            : (STATUS[st] || DEF);
+          const eventClass = calendarOnly
+            ? `agenda-event-block agenda-block-${String(getCalendarBlockKind(a)).replace(/[^a-z0-9_-]/gi, '_')}`
+            : `agenda-event-${String(st || 'pendiente').replace(/[^a-z0-9_-]/gi, '_')}`;
           const firstName = calendarOnly
             ? (blockMeta?.shortLabel || 'Bloqueo')
             : (a.nombre_paciente || 'Paciente').split(' ')[0];
@@ -5711,12 +5773,13 @@ import Layout from '../layouts/Layout.astro';
             ? `${blockMeta?.label || 'Bloqueo Google Calendar'}${a.motivo ? ` - ${a.motivo}` : ''}`
             : `${a.nombre_paciente || ''}${a.motivo ? ` - ${a.motivo}` : ''}`;
           const tip = escapeAttr(tipLabel);
+          const apptId = escapeAttr(a.id || a.appointment_id || '');
           const calPatId = escapeAttr(a.paciente_id || '');
           const calPatName = escapeAttr(a.nombre_paciente || 'Paciente');
-          html += `<div data-cal-appt-patient="${calPatId}" data-cal-appt-name="${calPatName}" style="background:${c.bg};color:${c.color};border-left:3px solid ${c.border};border-radius:4px;padding:3px 5px 4px;margin-bottom:2px;font-size:0.71rem;overflow:hidden;cursor:${calendarOnly ? 'default' : 'pointer'};line-height:1.3;" title="${tip}">
-            <div style="font-weight:700;font-size:0.63rem;opacity:0.8;margin-bottom:1px;">${timeStr}</div>
-            <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(firstName)}</div>
-            ${motivo ? `<div style="font-size:0.62rem;opacity:0.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(motivo)}</div>` : ''}
+          html += `<div class="agenda-event-card ${eventClass}${calendarOnly ? ' is-calendar-only' : ''}" data-cal-appt-id="${apptId}" data-cal-appt-patient="${calPatId}" data-cal-appt-name="${calPatName}" title="${tip}">
+            <div class="agenda-event-time">${timeStr}</div>
+            <div class="agenda-event-name">${escapeHtml(firstName)}</div>
+            ${motivo ? `<div class="agenda-event-reason">${escapeHtml(motivo)}</div>` : ''}
           </div>`;
         }
         html += '</td>';
@@ -5805,6 +5868,7 @@ import Layout from '../layouts/Layout.astro';
                     </div>
                   </div>
                   <div class="agenda-mobile-item-actions">
+                    <button type="button" class="btn-sm btn-outline" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle de la cita"><span class="material-symbols-rounded">right_panel_open</span> Detalle</button>
                     ${canConfirm ? `<button type="button" class="btn-sm" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar cita"><span class="material-symbols-rounded">check</span> Confirmar</button>` : ''}
                     <button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>
                   </div>
@@ -5815,6 +5879,97 @@ import Layout from '../layouts/Layout.astro';
         </article>
       `;
     }).join('');
+  };
+
+  const closeAppointmentDetailDrawer = () => {
+    appointmentDetailDrawer?.classList.remove('open');
+    appointmentDetailDrawer?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('has-modal-open');
+  };
+
+  const findAgendaAppointmentById = (appointmentId: string) =>
+    latestAgendaAppointments.find((cita: any) => String(cita?.id || cita?.appointment_id || '') === String(appointmentId));
+
+  const openAppointmentDetailDrawer = (cita: any) => {
+    if (!appointmentDetailDrawer || !appointmentDetailBody) return;
+    const patientName = String(cita?.nombre_paciente || 'Paciente sin nombre');
+    const patientId = String(cita?.paciente_id || '');
+    const estado = String(cita?.estado || 'pendiente');
+    const calendarOnly = isCalendarOnlyAppointment(cita);
+    const mirror = getAgendaMirrorMeta(cita);
+    const start = cita?.inicio_en ? new Date(cita.inicio_en) : null;
+    const end = cita?.fin_en ? new Date(cita.fin_en) : null;
+    const day = start ? start.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', timeZone: 'Europe/Madrid' }) : 'Fecha no disponible';
+    const time = isAllDayAppointment(cita)
+      ? 'Todo el dia'
+      : `${start ? fmtHourOnly(cita.inicio_en) : '--:--'}${end ? ` - ${fmtHourOnly(cita.fin_en)}` : ''}`;
+    const canal = cita?.canal_origen === 'telegram'
+      ? 'Telegram'
+      : cita?.canal_origen === 'crm_web'
+        ? 'CRM Web'
+        : cita?.canal_origen || (calendarOnly ? 'Google Calendar' : 'CRM');
+    const apptId = escapeAttr(cita?.id || cita?.appointment_id || '');
+    const patientAttr = escapeAttr(patientId);
+    const patientNameAttr = escapeAttr(patientName);
+
+    if (appointmentDetailTitle) appointmentDetailTitle.textContent = calendarOnly ? 'Bloque de calendario' : patientName;
+    if (appointmentDetailSubtitle) {
+      appointmentDetailSubtitle.textContent = `${day} | ${time}`;
+    }
+
+    const canAct = !calendarOnly && Boolean(apptId);
+    const statusActions: string[] = [];
+    if (canAct && estado === 'pendiente') statusActions.push(`<button class="btn-secondary" type="button" data-appt-action="confirmada" data-appt-id="${apptId}"><span class="material-symbols-rounded">check</span> Confirmar</button>`);
+    if (canAct && ['pendiente', 'confirmada'].includes(estado)) statusActions.push(`<button class="btn-secondary" type="button" data-appt-action="completada" data-appt-id="${apptId}"><span class="material-symbols-rounded">check_circle</span> Completar</button>`);
+    if (canAct && !['cancelada', 'completada'].includes(estado)) statusActions.push(`<button class="btn-ghost btn-danger-ghost" type="button" data-appt-action="cancelada" data-appt-id="${apptId}"><span class="material-symbols-rounded">close</span> Cancelar</button>`);
+
+    appointmentDetailBody.innerHTML = `
+      <section class="drawer-summary-card">
+        <div class="drawer-summary-main">
+          <span class="drawer-kicker">${calendarOnly ? 'Google Calendar' : 'Paciente'}</span>
+          <strong>${escapeHtml(patientName)}</strong>
+          <p>${escapeHtml(cita?.motivo || mirror.note || 'Sin motivo especifico registrado.')}</p>
+        </div>
+        <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(calendarOnly ? mirror.label : estado)}</span>
+      </section>
+      <section class="drawer-info-grid">
+        <article>
+          <span>Dia</span>
+          <strong>${escapeHtml(day)}</strong>
+        </article>
+        <article>
+          <span>Hora</span>
+          <strong>${escapeHtml(time)}</strong>
+        </article>
+        <article>
+          <span>Canal</span>
+          <strong>${escapeHtml(canal)}</strong>
+        </article>
+        <article>
+          <span>Espejo</span>
+          <strong>${escapeHtml(mirror.label)}</strong>
+        </article>
+      </section>
+      <section class="drawer-action-stack">
+        <button class="btn-primary" type="button" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patientAttr}" data-patient-name="${patientNameAttr}" ${patientId ? '' : 'disabled'}>
+          <span class="material-symbols-rounded">person</span>
+          Abrir ficha del caso
+        </button>
+        <button class="btn-secondary" type="button" data-appt-action="exercise-report" data-patient-id="${patientAttr}" data-patient-name="${patientNameAttr}" ${patientId ? '' : 'disabled'}>
+          <span class="material-symbols-rounded">exercise</span>
+          Preparar informe IA de ejercicios
+        </button>
+        ${statusActions.join('')}
+      </section>
+      <section class="drawer-clinical-note">
+        <span class="material-symbols-rounded">psychology</span>
+        <p>Rumbo nuevo: la cita abre contexto, la ficha concentra el caso y el agente IA convierte sintomas en informe profesional con PDF y entrega trazable.</p>
+      </section>
+    `;
+
+    appointmentDetailDrawer.classList.add('open');
+    appointmentDetailDrawer.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
   };
 
   // === LOAD CITAS ===
@@ -5846,6 +6001,7 @@ import Layout from '../layouts/Layout.astro';
         fetchJson(`${BACKEND_BASE}/api/profesional/appointments/sync-calendar/status`).catch(() => ({ data: null })),
       ]);
       const citas = payload.data || [];
+      latestAgendaAppointments = citas;
       const operationalCitas = getOperationalAgendaAppointments(citas);
       const calendarOnlySummary = summarizeCalendarOnlyBlocks(citas);
       renderAgendaSyncStatus(syncPayload?.data || null, payload?.calendar_sync || null);
@@ -5890,6 +6046,7 @@ import Layout from '../layouts/Layout.astro';
         if (estado === 'confirmada' || estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded agenda-action-icon">check_circle</span></button>`);
         if (estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded agenda-action-icon">close</span></button>`);
         if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded agenda-action-icon">person_off</span></button>`);
+        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle"><span class="material-symbols-rounded agenda-action-icon">right_panel_open</span></button>`);
         actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>`);
         return `<tr>
           <td class="td-patient">${escapeHtml(patientLabel)}</td>
@@ -5903,6 +6060,7 @@ import Layout from '../layouts/Layout.astro';
         </tr>`;
       }).join('');
     } catch {
+      latestAgendaAppointments = [];
       renderAgendaSyncStatus({ ui_status: 'error', error: 'No se pudo consultar el estado del sync de Google Calendar.' }, null);
       if (agendaCalendarMeta) {
         agendaCalendarMeta.hidden = true;
@@ -5980,6 +6138,8 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('closeAppointmentModalBtn')?.addEventListener('click', closeAppointmentModal);
   document.getElementById('appointmentModalDismiss')?.addEventListener('click', closeAppointmentModal);
   appointmentModal?.addEventListener('click', (e) => { if (e.target === appointmentModal) closeAppointmentModal(); });
+  document.getElementById('closeAppointmentDetailDrawerBtn')?.addEventListener('click', closeAppointmentDetailDrawer);
+  appointmentDetailDrawer?.addEventListener('click', (e) => { if (e.target === appointmentDetailDrawer) closeAppointmentDetailDrawer(); });
 
   appointmentForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -6047,22 +6207,47 @@ import Layout from '../layouts/Layout.astro';
     if (actionBtn) {
       const action = actionBtn.getAttribute('data-appt-action')!;
       const apptId = actionBtn.getAttribute('data-appt-id')!;
-      if (action === 'ficha') {
+      if (action === 'detalle') {
+        const cita = findAgendaAppointmentById(apptId);
+        if (cita) openAppointmentDetailDrawer(cita);
+      } else if (action === 'ficha') {
         const patientId = actionBtn.getAttribute('data-patient-id') || '';
         const patientName = actionBtn.getAttribute('data-patient-name') || '';
         if (patientId) {
           selectedPatientId = patientId;
           selectedPatientName = patientName;
           syncChatPatientSelection(patientId, patientName);
+          closeAppointmentDetailDrawer();
           void openFichaPaciente(patientId);
+        }
+      } else if (action === 'exercise-report') {
+        const patientId = actionBtn.getAttribute('data-patient-id') || '';
+        const patientName = actionBtn.getAttribute('data-patient-name') || '';
+        if (patientId) {
+          const cita = findAgendaAppointmentById(apptId);
+          closeAppointmentDetailDrawer();
+          openExerciseReportAssistant({
+            patientId,
+            patientName,
+            mode: 'new-plan',
+            seedText: cita?.motivo ? `Preparar informe de ejercicios para: ${cita.motivo}` : '',
+            objective: cita?.motivo || '',
+          });
         }
       } else {
         updateAppointmentStatus(apptId, action);
+        closeAppointmentDetailDrawer();
       }
       return;
     }
     const calAppt = target.closest('[data-cal-appt-patient]') as HTMLElement | null;
     if (calAppt) {
+      const apptId = calAppt.getAttribute('data-cal-appt-id') || '';
+      const cita = apptId ? findAgendaAppointmentById(apptId) : null;
+      if (cita) {
+        openAppointmentDetailDrawer(cita);
+        return;
+      }
       const patientId = calAppt.getAttribute('data-cal-appt-patient') || '';
       const patientName = calAppt.getAttribute('data-cal-appt-name') || '';
       if (patientId) {
@@ -7908,7 +8093,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     let primaryAction: 'agenda' | 'notas' | 'agente' | 'historial' = 'agente';
-    let primaryLabel = 'Abrir agente';
+    let primaryLabel = 'Informe IA';
     let nextTitle = unavailableModules.length ? 'Recuperar integridad del CRM' : 'Cerrar continuidad clinica';
     let nextMeta = unavailableModules.length
       ? 'Hay modulos de la ficha pendientes de migracion. Revisa readiness antes de tomar decisiones basadas en ausencia de datos.'
@@ -7970,7 +8155,7 @@ import Layout from '../layouts/Layout.astro';
     if (fichaRailNextMeta) fichaRailNextMeta.textContent = nextMeta;
     if (fichaRailPrimaryBtn) {
       fichaRailPrimaryBtn.dataset.caseAction = primaryAction;
-      fichaRailPrimaryBtn.innerHTML = `<span class="material-symbols-rounded">${primaryAction === 'agenda' ? 'calendar_today' : primaryAction === 'notas' ? 'clinical_notes' : primaryAction === 'historial' ? 'history' : 'psychology'}</span> ${primaryLabel}`;
+      fichaRailPrimaryBtn.innerHTML = `<span class="material-symbols-rounded">${primaryAction === 'agenda' ? 'calendar_today' : primaryAction === 'notas' ? 'clinical_notes' : primaryAction === 'historial' ? 'history' : 'exercise'}</span> ${primaryLabel}`;
     }
     if (fichaRailTelegramBtn) fichaRailTelegramBtn.disabled = !Boolean(fichaPatientId);
 
@@ -8068,10 +8253,12 @@ import Layout from '../layouts/Layout.astro';
   };
 
   fichaHeroCopilotBtn?.addEventListener('click', () => {
-    if (fichaPatientId) {
-      syncChatPatientSelection(fichaPatientId, fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}));
-    }
-    openAssistantRail();
+    openExerciseReportAssistant({
+      patientId: fichaPatientId,
+      patientName: fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}),
+      mode: 'new-plan',
+      seedText: 'Preparar informe de ejercicios domiciliarios para este caso. Revisa objetivo, tolerancia, contraindicaciones y progresion segura.',
+    });
   });
 
   fichaHeroAgendaBtn?.addEventListener('click', () => {
@@ -8136,10 +8323,12 @@ import Layout from '../layouts/Layout.astro';
   });
 
   fichaOpsCopilotBtn?.addEventListener('click', () => {
-    if (fichaPatientId) {
-      syncChatPatientSelection(fichaPatientId, fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}));
-    }
-    openAssistantRail();
+    openExerciseReportAssistant({
+      patientId: fichaPatientId,
+      patientName: fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}),
+      mode: 'new-plan',
+      seedText: 'Generar o progresar informe IA de ejercicios desde la ficha del paciente.',
+    });
   });
 
   fichaRailPrimaryBtn?.addEventListener('click', () => {
@@ -8158,10 +8347,12 @@ import Layout from '../layouts/Layout.astro';
       openPatientHistory(fichaPatientId, selectedPatientName || getPatientFullName(fichaData?.paciente || {}));
       return;
     }
-    if (fichaPatientId) {
-      syncChatPatientSelection(fichaPatientId, fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}));
-    }
-    openAssistantRail();
+    openExerciseReportAssistant({
+      patientId: fichaPatientId,
+      patientName: fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}),
+      mode: 'new-plan',
+      seedText: 'Preparar informe IA de ejercicios como siguiente accion del caso.',
+    });
   });
 
   fichaRailTelegramBtn?.addEventListener('click', () => {
@@ -23706,6 +23897,451 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   .page-section[data-page='historial'] .history-note-field textarea {
     min-height: 7rem !important;
     color: #142234 !important;
+  }
+
+  :global(.assistant-report-priority-card) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.85rem;
+    align-items: center;
+    margin: 0.85rem 0 0.95rem;
+    padding: 0.95rem;
+    border: 1px solid rgba(133, 218, 202, 0.68);
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #effbf8 0%, #ffffff 58%, #f6f8fb 100%);
+    box-shadow: 0 18px 38px -34px rgba(9, 34, 42, 0.34);
+  }
+
+  :global(.assistant-report-priority-card strong) {
+    display: block;
+    margin-top: 0.18rem;
+    color: #10232b;
+    font-size: 0.98rem;
+    font-weight: 820;
+    line-height: 1.24;
+  }
+
+  :global(.assistant-report-priority-card p) {
+    margin: 0.32rem 0 0;
+    color: #5d7078;
+    font-size: 0.84rem;
+    line-height: 1.42;
+  }
+
+  :global(.assistant-report-priority-card.is-linked) {
+    border-color: rgba(76, 137, 214, 0.28);
+    background: linear-gradient(135deg, #eef9f7 0%, #ffffff 54%, #f1f5ff 100%);
+  }
+
+  :global(.assistant-report-priority-icon) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.55rem;
+    height: 2.55rem;
+    border-radius: 0.88rem;
+    background: #11252d;
+    color: #a5eee1;
+    font-size: 1.28rem;
+    box-shadow: 0 14px 30px -22px rgba(17, 37, 45, 0.65);
+  }
+
+  /* Nuevo rumbo CRM: workspace + drawers contextuales tipo Schedulo/Zendenta. */
+  :global(.crm-drawer-shell) {
+    justify-content: flex-end !important;
+    align-items: stretch !important;
+    background: rgba(9, 20, 28, 0.34) !important;
+    backdrop-filter: blur(8px);
+  }
+
+  :global(.crm-drawer-shell .crm-drawer-panel) {
+    width: min(560px, 100vw) !important;
+    max-width: min(560px, 100vw) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 1.35rem 0 0 1.35rem !important;
+    border: 0 !important;
+    border-left: 1px solid rgba(190, 203, 213, 0.76) !important;
+    background: #fbfcfb !important;
+    box-shadow: -32px 0 70px -48px rgba(9, 20, 28, 0.68) !important;
+    transform: translateX(105%) !important;
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease !important;
+    overflow: hidden !important;
+  }
+
+  :global(.crm-drawer-shell.open .crm-drawer-panel) {
+    transform: translateX(0) !important;
+  }
+
+  :global(.crm-drawer-shell .modal-header) {
+    align-items: flex-start !important;
+    padding: 1.2rem 1.25rem 1rem !important;
+    border-bottom: 1px solid rgba(214, 223, 229, 0.9) !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f8f7 100%) !important;
+  }
+
+  :global(.crm-drawer-shell .modal-title-group) {
+    min-width: 0;
+  }
+
+  :global(.crm-drawer-shell .modal-eyebrow),
+  :global(.drawer-kicker) {
+    color: #49626c !important;
+    font-size: 0.72rem !important;
+    font-weight: 780 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+  }
+
+  :global(.crm-drawer-shell .modal-header h2) {
+    margin-top: 0.2rem !important;
+    color: #101c22 !important;
+    font-size: 1.28rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+  }
+
+  :global(.drawer-subtitle) {
+    max-width: 36rem;
+    margin: 0.34rem 0 0;
+    color: #62727c;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  :global(.crm-drawer-shell .patient-form),
+  :global(.crm-drawer-shell .drawer-body) {
+    padding: 1.15rem 1.25rem 1.25rem !important;
+    overflow-y: auto !important;
+  }
+
+  :global(.crm-drawer-shell .modal-actions) {
+    position: sticky;
+    bottom: 0;
+    margin: 1rem -1.25rem -1.25rem;
+    padding: 0.9rem 1.25rem 1.05rem;
+    padding-bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(214, 223, 229, 0.9);
+    background: rgba(251, 252, 251, 0.94);
+    backdrop-filter: blur(10px);
+  }
+
+  :global(.appointment-detail-body) {
+    display: grid;
+    gap: 0.95rem;
+  }
+
+  :global(.drawer-summary-card) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: 0.85rem;
+    align-items: start;
+    padding: 1rem;
+    border: 1px solid rgba(205, 218, 225, 0.96);
+    border-radius: 1.05rem;
+    background: #ffffff;
+  }
+
+  :global(.drawer-summary-main) {
+    display: grid;
+    gap: 0.24rem;
+    min-width: 0;
+  }
+
+  :global(.drawer-summary-main strong) {
+    color: #101c22;
+    font-size: 1.08rem;
+    font-weight: 820;
+    line-height: 1.2;
+  }
+
+  :global(.drawer-summary-main p),
+  :global(.drawer-clinical-note p) {
+    margin: 0;
+    color: #5e6e78;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  :global(.drawer-info-grid) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.68rem;
+  }
+
+  :global(.drawer-info-grid article) {
+    display: grid;
+    gap: 0.24rem;
+    min-height: 5.15rem;
+    padding: 0.82rem;
+    border: 1px solid rgba(215, 224, 230, 0.92);
+    border-radius: 0.92rem;
+    background: #f6f8f7;
+  }
+
+  :global(.drawer-info-grid span) {
+    color: #73828a;
+    font-size: 0.72rem;
+    font-weight: 760;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  :global(.drawer-info-grid strong) {
+    color: #13242c;
+    font-size: 0.94rem;
+    font-weight: 780;
+    line-height: 1.3;
+  }
+
+  :global(.drawer-action-stack) {
+    display: grid;
+    gap: 0.58rem;
+  }
+
+  :global(.drawer-action-stack .btn-primary),
+  :global(.drawer-action-stack .btn-secondary),
+  :global(.drawer-action-stack .btn-ghost) {
+    width: 100%;
+    justify-content: center;
+    min-height: 2.8rem;
+    border-radius: 0.82rem;
+  }
+
+  :global(.drawer-clinical-note) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.7rem;
+    align-items: start;
+    padding: 0.9rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(158, 219, 207, 0.72);
+    background: #eefbf8;
+  }
+
+  :global(.drawer-clinical-note .material-symbols-rounded) {
+    color: #12796e;
+    font-size: 1.25rem;
+  }
+
+  :global(.agenda-week-scroll) {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  :global(.agenda-week-table) {
+    width: 100%;
+    min-width: 640px;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  :global(.agenda-week-time-head),
+  :global(.agenda-day-head) {
+    padding: 0.75rem 0.55rem;
+    border-bottom: 1px solid #dfe8ed;
+    background: #f7f9f8;
+    color: #33434b;
+    text-align: center;
+    vertical-align: top;
+  }
+
+  :global(.agenda-week-time-head) {
+    width: 3.8rem;
+    color: #8a989f;
+  }
+
+  :global(.agenda-day-head.is-today) {
+    background: #edf8f6;
+    color: #0f5f67;
+  }
+
+  :global(.agenda-day-name),
+  :global(.agenda-day-number) {
+    display: block;
+    text-transform: capitalize;
+  }
+
+  :global(.agenda-day-name) {
+    font-size: 0.72rem;
+    font-weight: 620;
+    color: #73828a;
+  }
+
+  :global(.agenda-day-number) {
+    margin-top: 0.12rem;
+    font-size: 1.08rem;
+    font-weight: 820;
+  }
+
+  :global(.agenda-all-day-chip) {
+    margin-top: 0.34rem;
+    padding: 0.18rem 0.48rem;
+    border-radius: 999px;
+    border: 1px solid #95dacd;
+    background: #e6fbf7;
+    color: #11675f;
+    font-size: 0.64rem;
+    font-weight: 780;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.agenda-break-cell) {
+    padding: 0.34rem 0.55rem;
+    border-block: 1px dashed #d7e1e7;
+    background: #f9faf9;
+    color: #8a989f;
+    text-align: center;
+    font-size: 0.72rem;
+    font-style: italic;
+  }
+
+  :global(.agenda-time-cell) {
+    padding: 0.48rem 0.55rem;
+    border-right: 1px solid #dfe8ed;
+    border-bottom: 1px solid #edf2f4;
+    background: #f7f9f8;
+    color: #819098;
+    text-align: right;
+    vertical-align: top;
+    white-space: nowrap;
+    font-size: 0.74rem;
+    font-weight: 720;
+  }
+
+  :global(.agenda-week-cell) {
+    height: 4.1rem;
+    min-height: 4.1rem;
+    padding: 0.25rem;
+    border-right: 1px solid #eef2f4;
+    border-bottom: 1px solid #eef2f4;
+    background: #ffffff;
+    vertical-align: top;
+  }
+
+  :global(.agenda-week-cell.is-today) {
+    background: #fbfffe;
+  }
+
+  :global(.agenda-event-card) {
+    display: grid;
+    gap: 0.05rem;
+    margin-bottom: 0.2rem;
+    padding: 0.34rem 0.42rem;
+    border-left: 3px solid #d6a029;
+    border-radius: 0.42rem;
+    background: #fff8e4;
+    color: #7a4e0b;
+    cursor: pointer;
+    line-height: 1.25;
+    overflow: hidden;
+  }
+
+  :global(.agenda-event-card:hover) {
+    outline: 2px solid rgba(23, 97, 103, 0.12);
+    outline-offset: 1px;
+  }
+
+  :global(.agenda-event-time) {
+    font-size: 0.64rem;
+    font-weight: 800;
+    opacity: 0.82;
+  }
+
+  :global(.agenda-event-name) {
+    font-size: 0.74rem;
+    font-weight: 780;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.agenda-event-reason) {
+    font-size: 0.64rem;
+    opacity: 0.74;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.agenda-event-confirmada) {
+    border-left-color: #1aa67d;
+    background: #e6f8f2;
+    color: #0f604c;
+  }
+
+  :global(.agenda-event-completada) {
+    border-left-color: #5573d8;
+    background: #eef2ff;
+    color: #344899;
+  }
+
+  :global(.agenda-event-cancelada) {
+    border-left-color: #a9b5bd;
+    background: #f2f5f6;
+    color: #66757d;
+  }
+
+  :global(.agenda-event-no_show) {
+    border-left-color: #d94b69;
+    background: #fff0f3;
+    color: #9d1736;
+  }
+
+  :global(.agenda-event-block) {
+    border-left-color: #e58035;
+    background: #fff5ec;
+    color: #914c13;
+  }
+
+  :global(.agenda-block-holiday_reference) {
+    border-left-color: #9ba9b2;
+    background: #f4f7f8;
+    color: #596872;
+  }
+
+  :global(.agenda-block-managed_appointment) {
+    border-left-color: #3aa8c2;
+    background: #ecfbff;
+    color: #155f70;
+  }
+
+  @media (max-width: 720px) {
+    :global(.crm-drawer-shell .crm-drawer-panel) {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      min-height: 100dvh !important;
+      border-radius: 0 !important;
+    }
+
+    :global(.drawer-info-grid) {
+      grid-template-columns: 1fr;
+    }
+
+    :global(.drawer-summary-card) {
+      grid-template-columns: 1fr;
+    }
+
+    :global(.drawer-action-stack .btn-primary),
+    :global(.drawer-action-stack .btn-secondary),
+    :global(.drawer-action-stack .btn-ghost) {
+      min-height: 3rem;
+    }
+
+    :global(.assistant-report-priority-card) {
+      grid-template-columns: 1fr;
+      margin-top: 0.7rem;
+    }
+
+    :global(.assistant-report-priority-icon) {
+      display: none;
+    }
   }
 </style>
 

@@ -19,6 +19,16 @@ Principios de producto reforzados (benchmark funcional del mercado):
 - Interoperabilidad basada en datos estructurados y trazabilidad.
 - IA confiable: recomendaciones prudentes, auditables y con gobernanza de datos.
 
+Nuevo rumbo UX/UI (2026-05-05):
+
+- La referencia de diseno pasa a ser Fikri Studio aplicado a SaaS clinico: Zendenta para gestion sanitaria, Schedulo para agenda con paneles deslizantes, Chatform para inbox multicanal y RecruitSmart para arquitectura de informacion compleja.
+- El CRM debe evolucionar de paginas y modales aislados a workspaces continuos con drawers contextuales.
+- Agenda, ficha del paciente, mensajes, Copilot IA y finanzas deben mantener el contexto visible mientras el usuario crea, revisa o resuelve.
+- El agente IA de informes de ejercicios queda definido como pieza clave y diferenciadora: debe ser un flujo guiado premium para generar, archivar y entregar planes de ejercicios con trazabilidad clinica y PDF compartido.
+- Todo redisenio debe nacer compatible con web y movil: drawers adaptativos, acciones criticas visibles, sin overflow ni solapes en pantallas pequenas.
+- El frontend debe consolidar tokens visuales, estados, drawers y componentes base antes de una modularizacion profunda del monolito.
+- No se deben tocar contratos backend/n8n para este redisenio salvo que una mejora de UX requiera un contrato explicito y versionado.
+
 Checkpoint de producto actual (2026-04-23, Sesion 121):
 
 - El Copilot clinico del CRM queda reencauzado como componente con una unica fuente de verdad visual.

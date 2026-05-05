@@ -3,6 +3,41 @@
 ## Vision
 Plataforma clinica para fisioterapia con foco en 4 bucles: captacion, atencion, adherencia y cobro.
 
+## Nuevo rumbo de producto y diseno (2026-05-05)
+Fisio_IA_Agent pasa a tomar como referencia operativa la filosofia de Fikri Studio aplicada a productos SaaS: menos pantallas aisladas, mas workspace continuo; menos modales bloqueantes, mas paneles deslizantes contextuales; menos decoracion, mas claridad accionable.
+
+Referencias principales para esta fase:
+- Zendenta: gestion clinica limpia, simple y profesional para usuarios sanitarios.
+- Schedulo: calendario como centro de trabajo con drawers para crear, revisar y resolver citas sin perder el contexto.
+- Chatform: inbox multicanal con panel de contexto y acciones rapidas.
+- RecruitSmart: arquitectura de informacion para productos complejos usados por perfiles no tecnicos.
+
+Principios del nuevo redisenio:
+1. El CRM debe sentirse como una plataforma premium de operacion clinica, no como una suma de formularios.
+2. Agenda, ficha, mensajes, copilot y finanzas deben funcionar como workspaces con paneles laterales.
+3. El usuario nunca debe perder el contexto principal al crear una cita, revisar un paciente, responder Telegram o lanzar una accion IA.
+4. La IA debe aparecer como capa contextual y accionable, no como chat generico flotante.
+5. El agente IA de informes de ejercicios es pieza diferencial del producto: debe tratarse como flujo premium guiado para evaluar sintomas, seleccionar ejercicios, generar informe, archivar PDF y entregar por Telegram con trazabilidad.
+6. Cada pantalla debe tener una accion dominante y estados claros: pendiente, confirmado, riesgo, parcial, error y completado.
+7. Todo redisenio debe ser plenamente compatible con web y movil desde el primer bloque: sin solapes, sin overflow roto, acciones criticas accesibles y drawers adaptados a pantallas pequenas.
+8. La arquitectura frontend debe avanzar hacia componentes y tokens reutilizables antes de partir modulos grandes.
+
+Patron base adoptado:
+- workspace principal visible,
+- drawer derecho para detalle/accion,
+- paneles compactos de estado,
+- tablas solo cuando aportan densidad,
+- tarjetas solo para unidades funcionales reales,
+- motion sobria y rapida,
+- lenguaje clinico en espanol directo,
+- responsive real: desktop con drawer lateral, movil con panel a pantalla completa o bottom sheet cuando el flujo lo requiera.
+
+Prioridad diferencial IA:
+- Desde ficha: crear o progresar informe de ejercicios con contexto clinico cargado.
+- Desde agenda: abrir panel IA vinculado a la cita/paciente para preparar sesion o plan domiciliario.
+- Desde mensajes: convertir sintomas de Telegram en borrador de informe, con confirmacion profesional antes de enviar.
+- Desde documentos/biblioteca: consultar informes archivados, PDF y estado de entrega/adherencia.
+
 ## Referentes de mercado (benchmark rapido)
 - WebPT: suite completa (documentacion, agenda/front-office, billing, outcomes, AI).
 - Jane: UX simple en un solo flujo (booking, charting, pagos, telehealth, AI scribe).
