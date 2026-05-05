@@ -30,6 +30,28 @@ Nuevo rumbo UX/UI (2026-05-05):
 - El frontend debe consolidar tokens visuales, estados, drawers y componentes base antes de una modularizacion profunda del monolito.
 - No se deben tocar contratos backend/n8n para este redisenio salvo que una mejora de UX requiera un contrato explicito y versionado.
 
+Checkpoint de producto actual (2026-05-05, Sesion 123):
+
+- La sesion queda cerrada en GitHub con HEAD `1081a5e66729975151078b4f6916c6b7f5b4a523`.
+- Se documenta el punto exacto de continuidad en `docs/SESSION_2026-05-05_CRM_REDESIGN_CHECKPOINT.md`.
+- Se confirma el nuevo rumbo UX/UI:
+  - Fikri Studio como filosofia de calidad de producto SaaS,
+  - Refero Styles / Cycle como base visual clara y precisa,
+  - Public/Amie como apoyo de claridad editorial para superficies densas.
+- Cambios implementados:
+  - agenda semanal reestructurada como grid visual estable,
+  - nueva cita y detalle de cita en drawers contextuales,
+  - facturacion migrada a drawer lateral para evitar modal recortado,
+  - agente IA de ejercicios reenfocado como `Estudio de informe IA` con flujo `Contexto -> Plan -> Entrega`.
+- Estado tecnico:
+  - `npm.cmd run check`: OK,
+  - `npm.cmd run build`: OK,
+  - commits subidos a `main`: `9b5f4c7` y `1081a5e`.
+- Estado de producto:
+  - pendiente validar visualmente en EasyPanel tras deploy en `https://fisio-frontend.b5xbaf.easypanel.host/#`,
+  - si el agente sigue sin alcanzar el nivel esperado, la siguiente sesion debe extraer/replantear su markup en vez de seguir acumulando overrides CSS globales.
+- Modelo recomendado para continuar: GPT-5.5 o GPT-5.4 con razonamiento `high`.
+
 Checkpoint de producto actual (2026-04-23, Sesion 121):
 
 - El Copilot clinico del CRM queda reencauzado como componente con una unica fuente de verdad visual.

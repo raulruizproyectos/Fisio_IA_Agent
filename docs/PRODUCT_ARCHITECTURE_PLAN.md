@@ -40,6 +40,31 @@ Prioridad diferencial IA:
 - Desde mensajes: convertir sintomas de Telegram en borrador de informe, con confirmacion profesional antes de enviar.
 - Desde documentos/biblioteca: consultar informes archivados, PDF y estado de entrega/adherencia.
 
+## Checkpoint de cierre (2026-05-05)
+
+Sesion cerrada en `main` con HEAD `1081a5e66729975151078b4f6916c6b7f5b4a523`.
+
+Documento de continuidad exacta:
+- `docs/SESSION_2026-05-05_CRM_REDESIGN_CHECKPOINT.md`
+
+Commits de la sesion:
+- `9b5f4c7 feat: apply refero inspired crm redesign`
+- `1081a5e feat: refine ai exercise agent studio`
+
+Validacion realizada:
+- `npm.cmd run check`: OK
+- `npm.cmd run build`: OK
+
+Estado al continuar:
+- Hacer deploy en EasyPanel y validar visualmente `https://fisio-frontend.b5xbaf.easypanel.host/#`.
+- Revisar especialmente agenda, drawers y agente IA en desktop/movil.
+- Si el agente no alcanza nivel premium, continuar con reestructuracion de markup/componente, no solo CSS global.
+- Mantener el agente IA de informes de ejercicios como diferenciador principal del CRM.
+
+Modelo recomendado proxima sesion:
+- GPT-5.5 o GPT-5.4.
+- Razonamiento `high`.
+
 ## Referentes de mercado (benchmark rapido)
 - WebPT: suite completa (documentacion, agenda/front-office, billing, outcomes, AI).
 - Jane: UX simple en un solo flujo (booking, charting, pagos, telehealth, AI scribe).
