@@ -13955,71 +13955,6 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     color: var(--text-secondary);
     font-size: 0.9rem;
   }
-  .agenda-cal-grid {
-    display: grid;
-    grid-template-columns: 52px repeat(5, 1fr);
-    border-top: 1px solid var(--border);
-    border-left: 1px solid var(--border);
-    min-width: 560px;
-  }
-  .agenda-cal-grid > * {
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .agenda-cal-time-header { background: var(--bg-surface); }
-  .agenda-cal-day-header {
-    background: var(--bg-surface);
-    padding: 0.6rem 0.4rem;
-    text-align: center;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text-secondary);
-    text-transform: capitalize;
-  }
-  .agenda-cal-day-header.today {
-    background: var(--accent-soft);
-    color: var(--accent);
-  }
-  .agenda-cal-time {
-    background: var(--bg-surface);
-    padding: 0.4rem 0.35rem;
-    text-align: right;
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-    padding-top: 0.5rem;
-  }
-  .agenda-cal-cell {
-    background: #fff;
-    min-height: 56px;
-    padding: 2px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .agenda-cal-cell.closed {
-    background: repeating-linear-gradient(135deg, transparent, transparent 5px, #f8fafc 5px, #f8fafc 10px);
-  }
-  .agenda-appt {
-    border-radius: 4px;
-    padding: 2px 5px 3px;
-    font-size: 0.7rem;
-    line-height: 1.3;
-    overflow: hidden;
-    cursor: default;
-    border-left: 3px solid;
-  }
-  .agenda-appt .appt-time { display: block; font-weight: 700; font-size: 0.65rem; opacity: 0.8; }
-  .agenda-appt .appt-name { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .agenda-appt .appt-motivo { display: block; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.65rem; }
-  .agenda-appt.confirmada { background: #d1fae5; color: #065f46; border-color: #10b981; }
-  .agenda-appt.pendiente  { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
-  .agenda-appt.cancelada  { background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1; text-decoration: line-through; }
-  .agenda-appt.completada { background: #ede9fe; color: #4c1d95; border-color: #7c3aed; }
-  .agenda-appt.no_show    { background: #fff1f2; color: #be123c; border-color: #f43f5e; }
   .badge-week-count {
     display: inline-flex;
     align-items: center;
@@ -18522,21 +18457,6 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     border-color: rgba(181, 156, 115, 0.24);
     border-radius: 1rem;
     background: linear-gradient(180deg, rgba(255, 252, 247, 0.95), rgba(244, 249, 248, 0.92));
-  }
-
-  .agenda-cal-grid {
-    background:
-      linear-gradient(180deg, rgba(255, 251, 244, 0.92), rgba(247, 240, 228, 0.86));
-  }
-
-  .agenda-cal-day-header,
-  .agenda-cal-time-header {
-    background: rgba(252, 247, 239, 0.92);
-  }
-
-  .agenda-cal-day-header.today {
-    background: rgba(215, 236, 232, 0.92);
-    color: #144154;
   }
 
   .agenda-mobile-card {
@@ -24181,191 +24101,6 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     font-size: 1.25rem;
   }
 
-  :global(.agenda-week-scroll) {
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  :global(.agenda-week-table) {
-    width: 100%;
-    min-width: 640px;
-    table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-
-  :global(.agenda-week-time-head),
-  :global(.agenda-day-head) {
-    padding: 0.75rem 0.55rem;
-    border-bottom: 1px solid #dfe8ed;
-    background: #f7f9f8;
-    color: #33434b;
-    text-align: center;
-    vertical-align: top;
-  }
-
-  :global(.agenda-week-time-head) {
-    width: 3.8rem;
-    color: #8a989f;
-  }
-
-  :global(.agenda-day-head.is-today) {
-    background: #edf8f6;
-    color: #0f5f67;
-  }
-
-  :global(.agenda-day-name),
-  :global(.agenda-day-number) {
-    display: block;
-    text-transform: capitalize;
-  }
-
-  :global(.agenda-day-name) {
-    font-size: 0.72rem;
-    font-weight: 620;
-    color: #73828a;
-  }
-
-  :global(.agenda-day-number) {
-    margin-top: 0.12rem;
-    font-size: 1.08rem;
-    font-weight: 820;
-  }
-
-  :global(.agenda-all-day-chip) {
-    margin-top: 0.34rem;
-    padding: 0.18rem 0.48rem;
-    border-radius: 999px;
-    border: 1px solid #95dacd;
-    background: #e6fbf7;
-    color: #11675f;
-    font-size: 0.64rem;
-    font-weight: 780;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :global(.agenda-break-cell) {
-    padding: 0.34rem 0.55rem;
-    border-block: 1px dashed #d7e1e7;
-    background: #f9faf9;
-    color: #8a989f;
-    text-align: center;
-    font-size: 0.72rem;
-    font-style: italic;
-  }
-
-  :global(.agenda-time-cell) {
-    padding: 0.48rem 0.55rem;
-    border-right: 1px solid #dfe8ed;
-    border-bottom: 1px solid #edf2f4;
-    background: #f7f9f8;
-    color: #819098;
-    text-align: right;
-    vertical-align: top;
-    white-space: nowrap;
-    font-size: 0.74rem;
-    font-weight: 720;
-  }
-
-  :global(.agenda-week-cell) {
-    height: 4.1rem;
-    min-height: 4.1rem;
-    padding: 0.25rem;
-    border-right: 1px solid #eef2f4;
-    border-bottom: 1px solid #eef2f4;
-    background: #ffffff;
-    vertical-align: top;
-  }
-
-  :global(.agenda-week-cell.is-today) {
-    background: #fbfffe;
-  }
-
-  :global(.agenda-event-card) {
-    display: grid;
-    gap: 0.05rem;
-    margin-bottom: 0.2rem;
-    padding: 0.34rem 0.42rem;
-    border-left: 3px solid #d6a029;
-    border-radius: 0.42rem;
-    background: #fff8e4;
-    color: #7a4e0b;
-    cursor: pointer;
-    line-height: 1.25;
-    overflow: hidden;
-  }
-
-  :global(.agenda-event-card:hover) {
-    outline: 2px solid rgba(23, 97, 103, 0.12);
-    outline-offset: 1px;
-  }
-
-  :global(.agenda-event-time) {
-    font-size: 0.64rem;
-    font-weight: 800;
-    opacity: 0.82;
-  }
-
-  :global(.agenda-event-name) {
-    font-size: 0.74rem;
-    font-weight: 780;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :global(.agenda-event-reason) {
-    font-size: 0.64rem;
-    opacity: 0.74;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :global(.agenda-event-confirmada) {
-    border-left-color: #1aa67d;
-    background: #e6f8f2;
-    color: #0f604c;
-  }
-
-  :global(.agenda-event-completada) {
-    border-left-color: #5573d8;
-    background: #eef2ff;
-    color: #344899;
-  }
-
-  :global(.agenda-event-cancelada) {
-    border-left-color: #a9b5bd;
-    background: #f2f5f6;
-    color: #66757d;
-  }
-
-  :global(.agenda-event-no_show) {
-    border-left-color: #d94b69;
-    background: #fff0f3;
-    color: #9d1736;
-  }
-
-  :global(.agenda-event-block) {
-    border-left-color: #e58035;
-    background: #fff5ec;
-    color: #914c13;
-  }
-
-  :global(.agenda-block-holiday_reference) {
-    border-left-color: #9ba9b2;
-    background: #f4f7f8;
-    color: #596872;
-  }
-
-  :global(.agenda-block-managed_appointment) {
-    border-left-color: #3aa8c2;
-    background: #ecfbff;
-    color: #155f70;
-  }
-
   @media (max-width: 720px) {
     :global(.crm-drawer-shell .crm-drawer-panel) {
       width: 100vw !important;
@@ -24608,6 +24343,20 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     line-height: 1 !important;
   }
 
+  .agenda-all-day-chip {
+    margin-top: 0.34rem;
+    padding: 0.18rem 0.48rem;
+    border-radius: 999px;
+    border: 1px solid #95dacd;
+    background: #e6fbf7;
+    color: #11675f;
+    font-size: 0.64rem;
+    font-weight: 780;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .agenda-board-row {
     min-height: 5.45rem;
     border-bottom: 1px solid #edf2f4;
@@ -24754,6 +24503,18 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     border-left-color: var(--crm-gold) !important;
     background: #fbf5e5 !important;
     color: #6c4800 !important;
+  }
+
+  .agenda-block-holiday_reference {
+    border-left-color: #9ba9b2 !important;
+    background: #f4f7f8 !important;
+    color: #596872 !important;
+  }
+
+  .agenda-block-managed_appointment {
+    border-left-color: #3aa8c2 !important;
+    background: #ecfbff !important;
+    color: #155f70 !important;
   }
 
   .page-section[data-page='citas'] .table-card,
