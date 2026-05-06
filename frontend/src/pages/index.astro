@@ -2219,7 +2219,7 @@ import Layout from '../layouts/Layout.astro';
   const navItems = document.querySelectorAll('.nav-item[data-section]');
   const pages = document.querySelectorAll('.page-section');
   navItems.forEach((item) => {
-    const label = item.querySelector('.nav-label')?.textContent?.replace(/s+/g, ' ').trim();
+    const label = item.querySelector('.nav-label')?.textContent?.replace(/\s+/g, ' ').trim();
     if (label) item.setAttribute('data-nav-label', label);
   });
   const pageLoaders: Record<string, () => void> = {};
@@ -2988,6 +2988,13 @@ import Layout from '../layouts/Layout.astro';
 
   let activeSection = 'dashboard';
   const financeSections = new Set(['pagos', 'facturas', 'bonos', 'gestoria']);
+  const sectionAliases: Record<string, string> = {
+    inicio: 'dashboard',
+    home: 'dashboard',
+    finanzas: 'pagos',
+    payments: 'pagos',
+    documentos: 'documentos',
+  };
   const financeTabsMarkup = `
     <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
     <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
@@ -2998,21 +3005,58 @@ import Layout from '../layouts/Layout.astro';
     nav.innerHTML = financeTabsMarkup;
   });
 
+  const normalizeSection = (section: string) => {
+    const raw = String(section || 'dashboard').trim();
+    return sectionAliases[raw] || raw || 'dashboard';
+  };
+
+  const runPageLoader = (section: string) => {
+    const loader = pageLoaders[section];
+    if (!loader) return;
+    try {
+      const result = (loader as unknown as () => void | Promise<void>)();
+      if (result && typeof result.catch === 'function') {
+        result.catch((err: any) => {
+          console.warn(`[router] loader failed for ${section}:`, err?.message || err);
+        });
+      }
+    } catch (err: any) {
+      console.warn(`[router] loader failed for ${section}:`, err?.message || err);
+    }
+  };
+
   const navigateTo = (section: string) => {
-    const targetSection = section === 'finanzas' ? 'pagos' : section;
+    const targetSection = normalizeSection(section);
+    const targetPage = document.querySelector(`.page-section[data-page="${CSS.escape(targetSection)}"]`) as HTMLElement | null;
+    if (!targetPage) {
+      console.warn(`[router] page not found: ${targetSection}`);
+      return;
+    }
     activeSection = targetSection;
     const sidebarSection = financeSections.has(targetSection) ? 'finanzas' : targetSection;
     navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === sidebarSection));
     mobileDock?.setAttribute('data-active-section', targetSection);
-    mobileDockNavButtons.forEach((button) => button.classList.toggle('active', button.dataset.mobileNav === targetSection));
+    mobileDockNavButtons.forEach((button) => button.classList.toggle('active', normalizeSection(button.dataset.mobileNav || '') === targetSection));
     pages.forEach(p => {
       const isActive = (p as HTMLElement).dataset.page === targetSection;
       p.classList.toggle('active', isActive);
     });
-    if (pageLoaders[targetSection]) pageLoaders[targetSection]();
+    targetPage.classList.add('active');
+    document.body.dataset.activePage = targetSection;
+    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'auto' });
+    window.setTimeout(() => runPageLoader(targetSection), 0);
     syncAgendaAutoRefresh();
   };
-  navItems.forEach(n => n.addEventListener('click', (e: Event) => { e.preventDefault(); navigateTo(n.getAttribute('data-section') || 'dashboard'); }));
+  document.addEventListener('click', (event: MouseEvent) => {
+    const target = event.target as HTMLElement | null;
+    const sectionTrigger = target?.closest('.nav-item[data-section], [data-dashboard-nav]') as HTMLElement | null;
+    if (!sectionTrigger) return;
+    const section = sectionTrigger.getAttribute('data-section') || sectionTrigger.getAttribute('data-dashboard-nav');
+    if (!section) return;
+    event.preventDefault();
+    navigateTo(section);
+    if (isMobile()) closeSidebar();
+  });
 
   // === SIDEBAR TOGGLE (responsive) ===
   const sidebarBackdrop = document.getElementById('sidebarBackdrop') as HTMLElement | null;
