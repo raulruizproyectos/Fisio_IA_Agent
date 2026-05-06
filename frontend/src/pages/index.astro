@@ -1487,7 +1487,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </main>
 
-      <aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico" data-copilot-build="clinical-reset-20260422">
+      <aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico" data-copilot-build="clinical-studio-20260506">
         <section class="ai-clinical-module card assistant-rail-card">
           <header class="module-header assistant-module-header">
             <div class="assistant-rail-copy">
@@ -25044,94 +25044,244 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 
-<style is:global id="assistant-studio-winner-20260505">
+<style is:global id="assistant-clinical-studio-20260506">
   #assistantRail.assistant-rail,
   #assistantRail.assistant-rail-portal {
-    width: min(860px, calc(100vw - 1.5rem)) !important;
-    height: min(86dvh, 720px) !important;
-    max-height: min(86dvh, 720px) !important;
+    inset: clamp(0.7rem, 1.4vw, 1rem) clamp(0.7rem, 1.4vw, 1rem) auto auto !important;
+    width: min(980px, calc(100vw - 1.5rem)) !important;
+    height: min(88dvh, 760px) !important;
+    max-height: min(88dvh, 760px) !important;
+    color: #1b2430 !important;
+  }
+
+  #assistantRail.open {
+    transform: translateX(0) !important;
   }
 
   #assistantRail .assistant-rail-card {
-    border: 1px solid #dde4e2 !important;
-    border-radius: 22px !important;
-    background: #f7f7f4 !important;
-    box-shadow: 0 28px 80px -46px rgba(17, 22, 24, 0.72) !important;
-  }
-
-  #assistantRail .assistant-module-header,
-  #assistantRail .assistant-toolbar {
-    background: #ffffff !important;
-    border-color: #e0e6e4 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    border: 1px solid #d9e3e5 !important;
+    border-radius: 20px !important;
+    background: #f6f7f4 !important;
+    box-shadow: 0 30px 90px -48px rgba(13, 25, 31, 0.72) !important;
+    overflow: hidden !important;
   }
 
   #assistantRail .assistant-module-header {
-    min-height: 72px !important;
-    padding: 0.95rem 1.05rem !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+    min-height: 78px !important;
+    padding: 1rem 1.12rem !important;
+    border-bottom: 1px solid #dde7e9 !important;
+    background: #fbfcfc !important;
+  }
+
+  #assistantRail .assistant-rail-copy {
+    min-width: 0 !important;
+  }
+
+  #assistantRail .assistant-rail-header-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.8rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  #assistantRail .assistant-eyebrow {
+    color: #08716d !important;
+    font-size: 0.68rem !important;
+    font-weight: 860 !important;
+    letter-spacing: 0.12em !important;
+    line-height: 1.2 !important;
+  }
+
+  #assistantRail .assistant-connected-badge {
+    flex: 0 0 auto !important;
+    padding: 0.24rem 0.62rem !important;
+    border: 1px solid #bdebdc !important;
+    border-radius: 999px !important;
+    background: #eefcf5 !important;
+    box-shadow: none !important;
+  }
+
+  #assistantRail .assistant-connected-badge .status-text {
+    color: #116956 !important;
+    font-size: 0.68rem !important;
+    font-weight: 860 !important;
+    letter-spacing: 0.08em !important;
   }
 
   #assistantRail .assistant-module-header h2 {
-    margin-top: 0.28rem !important;
-    color: #171618 !important;
-    font-size: 1.16rem !important;
-    font-weight: 820 !important;
+    margin: 0.4rem 0 0 !important;
+    color: #1a1b1d !important;
+    font-size: clamp(1.05rem, 1.35vw, 1.32rem) !important;
+    font-weight: 860 !important;
+    line-height: 1.12 !important;
+    letter-spacing: 0 !important;
+  }
+
+  #assistantRail .assistant-rail-close {
+    flex: 0 0 auto !important;
+    width: 3rem !important;
+    height: 3rem !important;
+    border: 1px solid #d8e4e8 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #607086 !important;
+    box-shadow: none !important;
+  }
+
+  #assistantRail .assistant-rail-close:hover {
+    border-color: #aac9d0 !important;
+    background: #f2f8f8 !important;
+    color: #1f3445 !important;
+  }
+
+  #assistantRail .assistant-rail-body,
+  #assistantRail .assistant-console {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    background: #f6f7f4 !important;
+  }
+
+  #assistantRail .assistant-console {
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   #assistantRail .assistant-toolbar {
+    flex: 0 0 auto !important;
     display: grid !important;
-    grid-template-columns: minmax(15rem, 0.75fr) minmax(0, 1.25fr) !important;
+    grid-template-columns: minmax(15rem, 0.9fr) minmax(0, 1.1fr) !important;
     gap: 0.75rem !important;
-    padding: 0.82rem 1rem !important;
+    padding: 0.85rem 1rem !important;
+    border-bottom: 1px solid #e0e8ea !important;
+    background: #ffffff !important;
   }
 
-  #assistantRail .assistant-console,
-  #assistantRail .assistant-rail-body {
-    background: #f7f7f4 !important;
+  #assistantRail .assistant-console-selector,
+  #assistantRail .assistant-live-context {
+    min-width: 0 !important;
+  }
+
+  #assistantRail .patient-selector {
+    min-height: 3.1rem !important;
+    border: 1px solid #d7e4e8 !important;
+    border-radius: 14px !important;
+    background: #fffdfa !important;
+    color: #213246 !important;
+  }
+
+  #assistantRail .patient-selector select {
+    min-width: 0 !important;
+    color: #213246 !important;
+    -webkit-text-fill-color: #213246 !important;
+    font-size: 0.98rem !important;
+    font-weight: 720 !important;
+  }
+
+  #assistantRail .assistant-live-context {
+    position: static !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0.72rem 0.9rem !important;
+    margin: 0 !important;
+    clip: auto !important;
+    white-space: normal !important;
+    overflow: hidden !important;
+    border: 1px solid #e0e7e9 !important;
+    border-radius: 14px !important;
+    background: #fbfcfc !important;
+  }
+
+  #assistantRail .assistant-live-context strong {
+    display: block !important;
+    overflow: hidden !important;
+    color: #1d2f43 !important;
+    font-size: 0.92rem !important;
+    font-weight: 820 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #assistantRail .assistant-live-context p {
+    display: block !important;
+    margin: 0.18rem 0 0 !important;
+    color: #617384 !important;
+    font-size: 0.76rem !important;
+    line-height: 1.32 !important;
   }
 
   #assistantRail .assistant-report-priority-card {
+    flex: 0 0 auto !important;
     position: relative !important;
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto auto !important;
-    gap: 1rem !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
     align-items: center !important;
-    margin: 0.88rem 1rem 0 !important;
-    padding: 0.95rem !important;
-    border: 1px solid #dfe7e5 !important;
-    border-radius: 18px !important;
+    gap: 0.9rem !important;
+    margin: 0.86rem 1rem 0 !important;
+    padding: 0.9rem 1rem !important;
+    border: 1px solid #dbe7e5 !important;
+    border-radius: 16px !important;
     background: #ffffff !important;
-    color: #171618 !important;
-    box-shadow: rgba(239, 239, 239, 0.65) 0 2px 15px 0 !important;
+    color: #1a1b1d !important;
+    box-shadow: inset 4px 0 0 #004d60, 0 12px 28px -26px rgba(18, 30, 34, 0.34) !important;
+    overflow: hidden !important;
   }
 
   #assistantRail .assistant-report-priority-card::before {
-    content: '';
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: #004d60;
+    display: none !important;
+    content: none !important;
+  }
+
+  #assistantRail .assistant-report-copy {
+    min-width: 0 !important;
+  }
+
+  #assistantRail .assistant-report-priority-card .assistant-brief-kicker {
+    color: #7a5b12 !important;
+    font-size: 0.64rem !important;
+    font-weight: 860 !important;
+    letter-spacing: 0.12em !important;
   }
 
   #assistantRail .assistant-report-priority-card strong {
-    color: #171618 !important;
+    display: block !important;
+    margin-top: 0.2rem !important;
+    color: #181b20 !important;
     font-size: 1rem !important;
     font-weight: 860 !important;
+    line-height: 1.22 !important;
   }
 
   #assistantRail .assistant-report-priority-card p {
-    margin-top: 0.28rem !important;
-    color: #656a75 !important;
+    max-width: 58ch !important;
+    margin: 0.25rem 0 0 !important;
+    color: #626b73 !important;
     font-size: 0.8rem !important;
-    line-height: 1.45 !important;
+    line-height: 1.42 !important;
   }
 
   #assistantRail .assistant-report-flow {
     display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
     gap: 0.42rem !important;
+    min-width: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     list-style: none !important;
-    white-space: nowrap !important;
+    white-space: normal !important;
   }
 
   #assistantRail .assistant-report-flow li {
@@ -25139,16 +25289,19 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     align-items: center !important;
     gap: 0.34rem !important;
     min-height: 2rem !important;
-    padding: 0.28rem 0.52rem !important;
-    border: 1px solid #e3e7e5 !important;
+    padding: 0.28rem 0.58rem !important;
+    border: 1px solid #e0e6e4 !important;
     border-radius: 999px !important;
-    background: #f7f7f4 !important;
-    color: #42484c !important;
-    font-size: 0.72rem !important;
-    font-weight: 780 !important;
+    background: #f6f7f4 !important;
+    color: #3d454b !important;
+    font-size: 0.74rem !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
   }
 
   #assistantRail .assistant-report-flow span {
+    display: inline-grid !important;
+    place-items: center !important;
     width: 1.22rem !important;
     height: 1.22rem !important;
     border-radius: 999px !important;
@@ -25159,57 +25312,73 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   #assistantRail .assistant-report-priority-icon {
-    width: 2.4rem !important;
-    height: 2.4rem !important;
-    border: 1px solid #d5eeee !important;
-    border-radius: 14px !important;
-    background: #eaf8fa !important;
-    color: #004d60 !important;
-    box-shadow: none !important;
+    display: none !important;
   }
 
-  #assistantRail .assistant-dialog-surface {
-    margin: 0.85rem 1rem 1rem !important;
+  #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(24rem, 0.95fr) minmax(23rem, 1.05fr) !important;
+    grid-auto-rows: max-content !important;
+    align-content: start !important;
+    align-items: start !important;
+    gap: 0.82rem !important;
+    margin: 0.86rem 1rem 1rem !important;
+    padding: 0 !important;
     background: transparent !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    scrollbar-gutter: stable !important;
   }
 
   #assistantRail .assistant-dialog-scroll,
   html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-scroll,
   html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-scroll,
   html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-scroll {
-    display: grid !important;
-    grid-template-columns: minmax(17.5rem, 0.95fr) minmax(17.5rem, 1.05fr) !important;
-    gap: 0.9rem !important;
-    max-height: calc(86dvh - 15.8rem) !important;
-    overflow: auto !important;
+    display: contents !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
   }
 
   #assistantRail .assistant-mode-switch,
   #assistantRail .assistant-diagnostic-card,
   #assistantRail .ai-input-area,
   #assistantRail .chat-log {
+    min-width: 0 !important;
     border: 1px solid #dfe7e5 !important;
-    border-radius: 18px !important;
+    border-radius: 16px !important;
     background: #ffffff !important;
-    box-shadow: rgba(239, 239, 239, 0.65) 0 2px 15px 0 !important;
+    box-shadow: 0 12px 28px -26px rgba(18, 30, 34, 0.34) !important;
   }
 
   #assistantRail .assistant-mode-switch {
     grid-column: 1 / -1 !important;
+    order: 1 !important;
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 0.3rem !important;
+    gap: 0.32rem !important;
     padding: 0.32rem !important;
   }
 
   #assistantRail .assistant-mode-chip {
+    min-width: 0 !important;
     min-height: 2.38rem !important;
+    padding: 0.36rem 0.64rem !important;
     border: 0 !important;
     border-radius: 12px !important;
     background: transparent !important;
-    color: #42484c !important;
+    color: #3e4950 !important;
     font-size: 0.82rem !important;
     font-weight: 820 !important;
+    line-height: 1.12 !important;
+    white-space: normal !important;
   }
 
   #assistantRail .assistant-mode-chip.is-active {
@@ -25217,60 +25386,216 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     color: #ffffff !important;
   }
 
+  #assistantRail .assistant-mode-chip .material-symbols-rounded {
+    flex: 0 0 auto !important;
+  }
+
   #assistantRail .assistant-diagnostic-card,
-  #assistantRail .ai-input-area {
-    padding: 1rem !important;
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-diagnostic-card,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-diagnostic-card,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-diagnostic-card {
+    grid-column: 1 !important;
+    grid-row: 2 / span 2 !important;
+    order: 2 !important;
+    padding: 0.95rem !important;
+    overflow: visible !important;
+    background: #fffdfa !important;
+  }
+
+  #assistantRail .assistant-diagnostic-head {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 0.85rem !important;
+    margin: 0 0 0.72rem !important;
+  }
+
+  #assistantRail .assistant-diagnostic-copy {
+    min-width: 0 !important;
+  }
+
+  #assistantRail .assistant-diagnostic-copy strong {
+    display: block !important;
+    color: #1b2430 !important;
+    font-size: 0.96rem !important;
+    font-weight: 840 !important;
+    line-height: 1.22 !important;
+  }
+
+  #assistantRail .assistant-diagnostic-toggle {
+    flex: 0 0 auto !important;
+    min-height: 2rem !important;
+    padding: 0.34rem 0.78rem !important;
+    border: 1px solid #d0dce0 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #234c61 !important;
+    font-size: 0.75rem !important;
+    font-weight: 820 !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+  }
+
+  #assistantRail .assistant-diagnostic-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.56rem !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #assistantRail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-grid {
+    display: none !important;
   }
 
   #assistantRail .assistant-intake-field {
-    min-height: 4.2rem !important;
-    padding: 0.78rem 0.86rem !important;
-    border: 1px solid #ece8df !important;
-    border-radius: 14px !important;
-    background: #faf8f1 !important;
+    min-width: 0 !important;
+    min-height: 4rem !important;
+    height: auto !important;
+    padding: 0.72rem 0.78rem !important;
+    border: 1px solid #ece7dc !important;
+    border-radius: 13px !important;
+    background: #faf7ef !important;
+    overflow: visible !important;
+  }
+
+  #assistantRail .assistant-intake-field-wide,
+  #assistantRail .assistant-objective-field {
+    grid-column: 1 / -1 !important;
   }
 
   #assistantRail .assistant-intake-field span {
-    color: #6c4800 !important;
-    font-size: 0.64rem !important;
+    color: #75550f !important;
+    font-size: 0.62rem !important;
     font-weight: 860 !important;
     letter-spacing: 0.08em !important;
+    line-height: 1.05 !important;
+  }
+
+  #assistantRail .assistant-intake-field input,
+  #assistantRail .assistant-intake-field select,
+  #assistantRail .assistant-objective-field textarea {
+    width: 100% !important;
+    min-width: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #1b2430 !important;
+    -webkit-text-fill-color: #1b2430 !important;
+    font: inherit !important;
+    font-size: 0.9rem !important;
+    line-height: 1.25 !important;
+    outline: none !important;
+  }
+
+  #assistantRail .assistant-intake-field input,
+  #assistantRail .assistant-intake-field select {
+    min-height: 1.9rem !important;
+    height: 1.9rem !important;
+    padding: 0 !important;
+  }
+
+  #assistantRail .assistant-objective-field textarea {
+    min-height: 3rem !important;
+    max-height: 6.5rem !important;
+    padding: 0 !important;
+    resize: vertical !important;
+  }
+
+  #assistantRail .assistant-diagnostic-summary {
+    margin: 0.72rem 0 0 !important;
+    color: #657382 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.42 !important;
+  }
+
+  #assistantRail .ai-input-area,
+  html[data-assistant-mode='desktop'] #assistantRail .ai-input-area,
+  html[data-assistant-mode='compact'] #assistantRail .ai-input-area,
+  html[data-assistant-mode='mobile'] #assistantRail .ai-input-area {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    order: 3 !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0.95rem !important;
+    overflow: visible !important;
+  }
+
+  #assistantRail .assistant-composer-shell {
+    display: flex !important;
+    align-items: stretch !important;
+    gap: 0.62rem !important;
   }
 
   #assistantRail .ai-textarea-wrapper {
+    min-width: 0 !important;
     border: 1px solid #cfe2e5 !important;
-    border-radius: 16px !important;
+    border-radius: 15px !important;
     background: #fbfdfd !important;
+    box-shadow: none !important;
   }
 
   #assistantRail .ai-textarea-wrapper:focus-within {
-    border-color: #8fc9cf !important;
+    border-color: #88c4cb !important;
     box-shadow: 0 0 0 4px rgba(0, 77, 96, 0.08) !important;
   }
 
   #assistantRail .ai-textarea-wrapper textarea {
     min-height: 4.35rem !important;
     height: 4.35rem !important;
-    color: #171618 !important;
+    max-height: 8rem !important;
+    padding: 0.9rem 0.96rem !important;
+    color: #1b2430 !important;
+    -webkit-text-fill-color: #1b2430 !important;
     font-size: 0.94rem !important;
+    line-height: 1.46 !important;
+  }
+
+  #assistantRail .btn-send-compact {
+    flex: 0 0 3rem !important;
+    width: 3rem !important;
+    min-width: 3rem !important;
+    min-height: 3rem !important;
+    border-radius: 14px !important;
+    background: #004d60 !important;
+    border-color: #004d60 !important;
+    color: #ffffff !important;
+  }
+
+  #assistantRail .assistant-context-hint {
+    margin: 0.58rem 0 0 !important;
+    color: #667786 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.42 !important;
   }
 
   #assistantRail .assistant-action-grid {
+    display: grid !important;
     grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.94fr) minmax(0, 0.94fr) !important;
-    gap: 0.5rem !important;
+    gap: 0.54rem !important;
+    margin-top: 0.72rem !important;
   }
 
   #assistantRail .assistant-action-grid .btn-action {
-    min-height: 2.78rem !important;
+    min-width: 0 !important;
+    min-height: 2.85rem !important;
+    padding: 0.48rem 0.62rem !important;
     border-radius: 12px !important;
-    font-size: 0.82rem !important;
+    font-size: 0.84rem !important;
     font-weight: 820 !important;
-    white-space: nowrap !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
   }
 
   #assistantRail .assistant-action-grid .btn-generate {
     order: 1 !important;
     background: #004d60 !important;
+    border-color: #004d60 !important;
+    color: #ffffff !important;
+  }
+
+  #assistantRail .assistant-action-grid .btn-generate .material-symbols-rounded {
     color: #ffffff !important;
   }
 
@@ -25282,27 +25607,140 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     order: 3 !important;
   }
 
+  #assistantRail .chat-log,
+  html[data-assistant-mode='desktop'] #assistantRail .chat-log,
+  html[data-assistant-mode='compact'] #assistantRail .chat-log,
+  html[data-assistant-mode='mobile'] #assistantRail .chat-log {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+    order: 4 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.68rem !important;
+    min-height: 9rem !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 0.82rem !important;
+    overflow: visible !important;
+  }
+
+  #assistantRail .chat-log:empty,
+  html[data-assistant-mode='desktop'] #assistantRail .chat-log:empty,
+  html[data-assistant-mode='compact'] #assistantRail .chat-log:empty,
+  html[data-assistant-mode='mobile'] #assistantRail .chat-log:empty {
+    display: none !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    margin: 0 !important;
+  }
+
+  #assistantRail .chat-log:empty::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  #assistantRail .msg {
+    max-width: min(92%, 46rem) !important;
+  }
+
+  #assistantRail .msg-body {
+    overflow-wrap: anywhere !important;
+  }
+
+  @media (max-width: 1020px) {
+    #assistantRail .assistant-toolbar,
+    #assistantRail .assistant-report-priority-card,
+    #assistantRail .assistant-dialog-surface,
+    html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
+    html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+      grid-template-columns: 1fr !important;
+    }
+
+    #assistantRail .assistant-live-context p {
+      display: none !important;
+    }
+
+    #assistantRail .assistant-report-flow {
+      justify-content: flex-start !important;
+    }
+
+    #assistantRail .assistant-diagnostic-card,
+    #assistantRail .ai-input-area,
+    #assistantRail .chat-log {
+      grid-column: 1 !important;
+      grid-row: auto !important;
+    }
+  }
+
   @media (max-width: 820px) {
     #assistantRail.assistant-rail,
     #assistantRail.assistant-rail-portal {
       inset: auto 0 0 0 !important;
       width: 100vw !important;
-      height: 92dvh !important;
-      max-height: 92dvh !important;
+      height: min(94dvh, 780px) !important;
+      max-height: 94dvh !important;
+      transform: translateY(105%) !important;
     }
 
-    #assistantRail .assistant-toolbar,
-    #assistantRail .assistant-report-priority-card,
-    #assistantRail .assistant-dialog-scroll {
+    #assistantRail.open {
+      transform: translateY(0) !important;
+    }
+
+    #assistantRail .assistant-rail-card {
+      border-radius: 20px 20px 0 0 !important;
+    }
+
+    #assistantRail .assistant-module-header {
+      min-height: 68px !important;
+      padding: 0.82rem 0.9rem !important;
+    }
+
+    #assistantRail .assistant-rail-header-row {
+      gap: 0.52rem !important;
+    }
+
+    #assistantRail .assistant-module-header h2 {
+      font-size: 1rem !important;
+    }
+
+    #assistantRail .assistant-rail-close {
+      width: 2.65rem !important;
+      height: 2.65rem !important;
+    }
+
+    #assistantRail .assistant-toolbar {
+      padding: 0.72rem 0.82rem !important;
+    }
+
+    #assistantRail .assistant-report-priority-card {
+      margin: 0.72rem 0.82rem 0 !important;
+      padding: 0.82rem 0.9rem !important;
+    }
+
+    #assistantRail .assistant-report-priority-card p {
+      display: none !important;
+    }
+
+    #assistantRail .assistant-dialog-surface {
+      margin: 0.72rem 0.82rem 0.86rem !important;
+      gap: 0.68rem !important;
+    }
+
+    #assistantRail .assistant-mode-switch,
+    #assistantRail .assistant-diagnostic-grid,
+    #assistantRail .assistant-action-grid {
       grid-template-columns: 1fr !important;
     }
 
-    #assistantRail .assistant-report-flow {
-      flex-wrap: wrap !important;
+    #assistantRail .assistant-diagnostic-head {
+      flex-direction: column !important;
     }
 
-    #assistantRail .assistant-report-priority-icon {
-      display: none !important;
+    #assistantRail .assistant-diagnostic-toggle {
+      width: 100% !important;
+      justify-content: center !important;
     }
   }
 </style>
