@@ -1706,6 +1706,59 @@ import Layout from '../layouts/Layout.astro';
   </div>
 </Layout>
 
+<script is:inline>
+  (() => {
+    const aliases = {
+      inicio: 'dashboard',
+      home: 'dashboard',
+      finanzas: 'pagos',
+      payments: 'pagos',
+      documentos: 'documentos',
+    };
+    const financeSections = new Set(['pagos', 'facturas', 'bonos', 'gestoria']);
+    const normalize = (section) => {
+      const raw = String(section || 'dashboard').trim();
+      return aliases[raw] || raw || 'dashboard';
+    };
+    const showPage = (section) => {
+      const targetSection = normalize(section);
+      const pages = Array.from(document.querySelectorAll('.page-section'));
+      const targetPage = pages.find((page) => page.dataset.page === targetSection);
+      if (!targetPage) return;
+      pages.forEach((page) => {
+        const active = page === targetPage;
+        page.classList.toggle('active', active);
+        page.hidden = !active;
+        page.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+      const sidebarSection = financeSections.has(targetSection) ? 'finanzas' : targetSection;
+      document.querySelectorAll('.nav-item[data-section]').forEach((item) => {
+        item.classList.toggle('active', item.getAttribute('data-section') === sidebarSection);
+      });
+      const mobileDock = document.getElementById('mobileDock');
+      mobileDock?.setAttribute('data-active-section', targetSection);
+      document.querySelectorAll('[data-mobile-nav]').forEach((item) => {
+        item.classList.toggle('active', normalize(item.getAttribute('data-mobile-nav')) === targetSection);
+      });
+      document.body.dataset.activePage = targetSection;
+      document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'auto' });
+      document.dispatchEvent(new CustomEvent('fisio:shell-navigate', { detail: { section: targetSection } }));
+    };
+
+    window.__fisioShellNavigate = showPage;
+    showPage(document.querySelector('.page-section.active')?.getAttribute('data-page') || 'dashboard');
+    document.addEventListener('click', (event) => {
+      if (window.__fisioFullRouterReady) return;
+      const trigger = event.target?.closest?.('.nav-item[data-section], [data-dashboard-nav], [data-mobile-nav]');
+      if (!trigger) return;
+      const section = trigger.getAttribute('data-section') || trigger.getAttribute('data-dashboard-nav') || trigger.getAttribute('data-mobile-nav');
+      if (!section) return;
+      event.preventDefault();
+      showPage(section);
+    }, true);
+  })();
+</script>
+
 <script>
   // === CONFIG ===
   const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -3031,6 +3084,10 @@ import Layout from '../layouts/Layout.astro';
       console.warn(`[router] page not found: ${targetSection}`);
       return;
     }
+    const shellNavigate = (window as any).__fisioShellNavigate;
+    if (typeof shellNavigate === 'function') {
+      shellNavigate(targetSection);
+    }
     activeSection = targetSection;
     const sidebarSection = financeSections.has(targetSection) ? 'finanzas' : targetSection;
     navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === sidebarSection));
@@ -3039,13 +3096,18 @@ import Layout from '../layouts/Layout.astro';
     pages.forEach(p => {
       const isActive = (p as HTMLElement).dataset.page === targetSection;
       p.classList.toggle('active', isActive);
+      (p as HTMLElement).hidden = !isActive;
+      (p as HTMLElement).setAttribute('aria-hidden', isActive ? 'false' : 'true');
     });
     targetPage.classList.add('active');
+    targetPage.hidden = false;
+    targetPage.setAttribute('aria-hidden', 'false');
     document.body.dataset.activePage = targetSection;
     document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'auto' });
     window.setTimeout(() => runPageLoader(targetSection), 0);
     syncAgendaAutoRefresh();
   };
+  (window as any).__fisioFullRouterReady = true;
   document.addEventListener('click', (event: MouseEvent) => {
     const target = event.target as HTMLElement | null;
     const sectionTrigger = target?.closest('.nav-item[data-section], [data-dashboard-nav]') as HTMLElement | null;
@@ -11761,8 +11823,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     min-width: 0;
     animation: fadeIn 0.34s ease-out;
   }
+  .page-section[hidden],
+  .page-section:not(.active) {
+    display: none !important;
+  }
   .page-section.active {
-    display: block;
+    display: block !important;
   }
 
   @keyframes fadeIn {
