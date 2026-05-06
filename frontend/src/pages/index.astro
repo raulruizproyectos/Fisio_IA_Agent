@@ -1825,7 +1825,6 @@ import Layout from '../layouts/Layout.astro';
   const chatPatientSelect = document.getElementById('chatPatientSelect') as HTMLSelectElement | null;
   const heroAgendaShortcutBtn = document.getElementById('heroAgendaShortcutBtn') as HTMLButtonElement | null;
   const heroNewPatientShortcutBtn = document.getElementById('heroNewPatientShortcutBtn') as HTMLButtonElement | null;
-  const dashboardNavButtons = document.querySelectorAll('[data-dashboard-nav]') as NodeListOf<HTMLElement>;
   const dashboardActionButtons = document.querySelectorAll('[data-dashboard-action]') as NodeListOf<HTMLElement>;
   const dashboardLiveSummary = document.getElementById('dashboardLiveSummary') as HTMLElement | null;
   const dashboardNextSessionTitle = document.getElementById('dashboardNextSessionTitle') as HTMLElement | null;
@@ -3027,7 +3026,7 @@ import Layout from '../layouts/Layout.astro';
 
   const navigateTo = (section: string) => {
     const targetSection = normalizeSection(section);
-    const targetPage = document.querySelector(`.page-section[data-page="${CSS.escape(targetSection)}"]`) as HTMLElement | null;
+    const targetPage = Array.from(pages).find((page) => (page as HTMLElement).dataset.page === targetSection) as HTMLElement | null;
     if (!targetPage) {
       console.warn(`[router] page not found: ${targetSection}`);
       return;
@@ -3170,24 +3169,6 @@ import Layout from '../layouts/Layout.astro';
   });
   heroAgendaShortcutBtn?.addEventListener('click', () => navigateTo('citas'));
   heroNewPatientShortcutBtn?.addEventListener('click', () => openPatientModal());
-  dashboardNavButtons.forEach((button) => {
-    button.addEventListener('click', (event: Event) => {
-      event.preventDefault();
-      const section = (button as HTMLElement).dataset.dashboardNav;
-      if (!section) return;
-      navigateTo(section);
-      if (isMobile()) closeSidebar();
-    });
-  });
-  document.querySelectorAll<HTMLElement>('.finance-tabs .finance-tab[data-dashboard-nav]').forEach((button) => {
-    button.addEventListener('click', (event: Event) => {
-      event.preventDefault();
-      const section = button.dataset.dashboardNav;
-      if (!section) return;
-      navigateTo(section);
-      if (isMobile()) closeSidebar();
-    });
-  });
   dashboardActionButtons.forEach((button) => {
     button.addEventListener('click', (event: Event) => {
       event.preventDefault();
