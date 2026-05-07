@@ -1,11 +1,13 @@
 # Configuracion pendiente
 
 ## Estado vivo - 2026-05-07
-- GitHub: `main` sincronizado hasta `04c3fff`.
-- Frontend: fix de navegacion de `Finanzas` y `Documentos` subido y router con configuracion compartida entre fallback y router principal.
+- GitHub: `main` sincronizado hasta `53f4a2d`.
+- Frontend:
+  - fix de navegacion `Finanzas`/`Documentos` consolidado,
+  - ajustes de rail IA en commits `c519b13` y `53f4a2d` (chat-first + estado vacio util).
 - Backend: warning de lint eliminado en `professional.js`.
 - Pendiente manual: redeploy de `fisio-frontend` en EasyPanel.
-- Asset esperado tras deploy: nuevo HTML con `__fisioShellNavigate` y JS nuevo distinto de `Ct2KrhHS.js`.
+- Asset esperado tras deploy: HTML con `__fisioShellNavigate` y bundle IA nuevo (ultimo local: `...BT9OP7ob.js`).
 
 ## Validado localmente
 - `npm run lint` en `backend`: OK.
@@ -19,12 +21,15 @@
 3. Click en `Documentos`: debe abrir documentos, no Agenda.
 4. Click en `Agenda`: debe abrir agenda.
 5. Click en tabs de Finanzas: `Pagos`, `Facturas`, `Bonos`, `Gestoria`.
-6. Abrir agente IA y confirmar que no tapa la navegacion.
+6. Abrir agente IA y validar:
+   - no aparece hueco grande inutil bajo los controles,
+   - `chat-log` ocupa la mayor parte del rail,
+   - estado vacio del chat muestra sugerencias rapidas.
 
 ## Siguiente bloque recomendado
 1. Confirmar visualmente produccion tras redeploy.
-2. Si la navegacion queda bien, continuar Fase 1 premium.
-3. Prioridad: reducir el monolito `frontend/src/pages/index.astro` empezando por router/shell o finanzas.
+2. Si rail IA sigue inconsistente en produccion, hacer refactor estructural del rail (modulo separado) y retirar cascada legacy en vez de seguir apilando overrides.
+3. Prioridad de deuda: reducir el monolito `frontend/src/pages/index.astro` empezando por `assistant rail` y `router/shell`.
 
 ## Variables y servicios utiles
 - Frontend: `https://fisio-frontend.b5xbaf.easypanel.host/`

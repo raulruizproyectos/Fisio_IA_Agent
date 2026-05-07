@@ -2,6 +2,19 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-07 - Rail IA chat-first y cierre de sesion
+- `frontend/src/pages/index.astro`:
+  - compactacion agresiva del rail de asistente,
+  - priorizacion del area de chat frente a bloques ornamentales,
+  - inyeccion runtime para forzar layout en entorno con CSS legacy,
+  - estado vacio util con chips de prompts rapidos para eliminar hueco muerto.
+- Commits de sesion:
+  - `c519b13` - `fix: compact assistant rail and prioritize chat workspace`
+  - `53f4a2d` - `fix: make assistant rail chat-first with useful empty state`
+- Estado funcional:
+  - cambios subidos a `main`,
+  - pendiente confirmacion visual final en produccion tras redeploy de `fisio-frontend`.
+
 ## 2026-05-07 - Consistencia router + limpieza lint
 - `backend/src/routes/professional.js`: eliminado parametro sin uso en `buildCalendarEventPayload` para dejar `npm run lint` limpio.
 - `frontend/src/pages/index.astro`: alias de secciones y `financeSections` pasan a una configuracion compartida (`window.__fisioShellConfig`) usada por fallback temprano y router principal.

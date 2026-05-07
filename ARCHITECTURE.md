@@ -34,10 +34,14 @@ Fisio_IA_Agent usa arquitectura hibrida:
   - fallback temprano `__fisioShellNavigate`,
   - paginas no activas ocultas con `hidden`.
 - Siguiente refactor recomendado:
+  - extraer `assistant rail` a modulo dedicado (layout + estado + estilos),
   - extraer shell/router,
   - extraer finanzas,
   - extraer agenda,
   - extraer agente IA.
+- Estado del rail IA (2026-05-07):
+  - commits `c519b13` y `53f4a2d` aplican enfoque chat-first y estado vacio util,
+  - requiere confirmacion visual final en produccion tras redeploy para cerrar definitivamente el bloque.
 
 ## Contratos que no se deben romper
 - `/api/profesional/appointments`

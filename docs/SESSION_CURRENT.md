@@ -2,10 +2,12 @@
 
 ## Estado
 - Rama: `main`.
-- HEAD base remoto: `04c3fff`.
+- HEAD remoto actual: `53f4a2d`.
 - GitHub: sincronizado.
 - Pendiente manual: redeploy de `fisio-frontend` en EasyPanel.
-- Cambios locales sin commit: warning de lint eliminado en backend y router frontend con config compartida entre fallback y router principal.
+- Sesion cerrada con commits en `main`:
+  - `c519b13` - compactacion del rail del asistente y prioridad de chat.
+  - `53f4a2d` - rail chat-first con estado vacio util y prompts rapidos.
 
 ## Que se cerro
 - Navegacion de sidebar endurecida.
@@ -15,6 +17,7 @@
 - Router temprano de emergencia antes del script principal.
 - Limpieza de estilos muertos de agenda.
 - Documentacion compactada para evitar duplicados largos.
+- Ajustes fuertes del rail del asistente para reducir bloques ornamentales y priorizar chat.
 
 ## Validacion local
 - `npm run lint` en `backend`: OK.
@@ -24,8 +27,9 @@
 ## Proximo arranque
 1. Raul redeploya `fisio-frontend`.
 2. Verificar asset nuevo en produccion.
-3. Smoke test: `Finanzas`, `Documentos`, `Agenda`, tabs financieras.
-4. Si esta OK, continuar modularizacion por bloques (siguiente corte: shell/router externo o bloque finanzas).
+3. Verificar que produccion carga JS nuevo del asistente (bundle con hash posterior a `...CYLBuRoQ.js`, ultimo local: `...BT9OP7ob.js`).
+4. Smoke test: `Finanzas`, `Documentos`, `Agenda`, tabs financieras y rail de asistente.
+5. Si rail sigue con espacios muertos, pasar a refactor estructural (no mas parches CSS acumulados) separando `assistant rail` en modulo aislado.
 
 ## Nota
 Si produccion sigue mostrando Agenda al pulsar Finanzas/Documentos, primero confirmar que EasyPanel sirve el HTML con `__fisioShellNavigate`. Si no aparece, es deploy/cache, no codigo local.

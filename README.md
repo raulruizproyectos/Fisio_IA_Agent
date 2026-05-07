@@ -4,11 +4,13 @@ CRM y agentes para un centro de fisioterapia: pacientes, agenda, finanzas, docum
 
 ## Estado actual
 - Rama: `main`.
-- Ultimo cierre: `f627a31` - `fix: add resilient shell navigation fallback`.
+- Ultimo cierre remoto: `53f4a2d` - `fix: make assistant rail chat-first with useful empty state`.
+- Commit previo relevante: `c519b13` - `fix: compact assistant rail and prioritize chat workspace`.
 - Frontend productivo: `fisio-frontend` en EasyPanel.
 - Backend productivo: `fisio-backend` en EasyPanel.
 - Checkpoint vivo: `docs/SESSION_CURRENT.md`.
 - Checklist vivo: `configuracion_pendiente.md`.
+- Nota de continuidad: el rail IA fue ajustado de forma intensa, pero la validacion visual final depende de confirmar el redeploy/caché en produccion.
 
 ## Alcance activo
 - CRM web para operacion clinica y administrativa.
@@ -50,6 +52,7 @@ npm run lint
 2. Raul hace redeploy manual de `fisio-frontend` o `fisio-backend` en EasyPanel cuando corresponda.
 3. Verificar que la URL productiva sirve assets nuevos.
 4. Smoke test minimo: `Inicio`, `Agenda`, `Finanzas`, `Documentos`, ficha de paciente y agente IA.
+5. En cambios del rail IA, confirmar hash de bundle nuevo en `frontend/dist/_astro` y validar que no hay huecos muertos ni bloques duplicados.
 
 ## Reglas de continuidad
 - No tocar contratos backend/n8n salvo necesidad explicita.
