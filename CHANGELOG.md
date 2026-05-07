@@ -2,6 +2,14 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-07 - Consistencia router + limpieza lint
+- `backend/src/routes/professional.js`: eliminado parametro sin uso en `buildCalendarEventPayload` para dejar `npm run lint` limpio.
+- `frontend/src/pages/index.astro`: alias de secciones y `financeSections` pasan a una configuracion compartida (`window.__fisioShellConfig`) usada por fallback temprano y router principal.
+- Validado:
+  - `npm run lint` (backend): OK.
+  - `npm.cmd run check` (frontend): OK.
+  - `npm.cmd run build` (frontend): OK.
+
 ## 2026-05-06 - Cierre navegacion Finanzas/Documentos
 - Arreglado router SPA para `Finanzas` y `Documentos`.
 - `Finanzas` resuelve a `pagos`.

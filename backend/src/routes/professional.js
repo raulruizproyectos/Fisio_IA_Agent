@@ -480,7 +480,6 @@ function buildCalendarEventPayload({
   startAt,
   endAt,
   reason,
-  appointmentId,
 }) {
   const nameParts = formatCalendarNameParts(patientName, patientPhone, professionalName);
   const extraReason = String(reason || '').trim();
@@ -3283,5 +3282,4 @@ router.post('/video-jobs/:jobId/send', async (req, res, next) => {
   }
 });
 export default router;
-
 

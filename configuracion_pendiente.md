@@ -1,12 +1,14 @@
 # Configuracion pendiente
 
-## Estado vivo - 2026-05-06
-- GitHub: `main` sincronizado hasta `f627a31`.
-- Frontend: fix de navegacion de `Finanzas` y `Documentos` subido.
+## Estado vivo - 2026-05-07
+- GitHub: `main` sincronizado hasta `04c3fff`.
+- Frontend: fix de navegacion de `Finanzas` y `Documentos` subido y router con configuracion compartida entre fallback y router principal.
+- Backend: warning de lint eliminado en `professional.js`.
 - Pendiente manual: redeploy de `fisio-frontend` en EasyPanel.
 - Asset esperado tras deploy: nuevo HTML con `__fisioShellNavigate` y JS nuevo distinto de `Ct2KrhHS.js`.
 
 ## Validado localmente
+- `npm run lint` en `backend`: OK.
 - `npm.cmd run check` en `frontend`: OK.
 - `npm.cmd run build` en `frontend`: OK.
 - `git diff --check`: OK salvo aviso normal LF/CRLF.
