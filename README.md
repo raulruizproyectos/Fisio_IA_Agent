@@ -4,13 +4,14 @@ CRM y agentes para un centro de fisioterapia: pacientes, agenda, finanzas, docum
 
 ## Estado actual
 - Rama: `main`.
-- Ultimo cierre remoto: `53f4a2d` - `fix: make assistant rail chat-first with useful empty state`.
-- Commit previo relevante: `c519b13` - `fix: compact assistant rail and prioritize chat workspace`.
+- Ultimo HEAD remoto/local confirmado: `a354405` - `docs: close session and align project status`.
+- Ultimo cierre funcional relevante: `53f4a2d` - `fix: make assistant rail chat-first with useful empty state`.
 - Frontend productivo: `fisio-frontend` en EasyPanel.
 - Backend productivo: `fisio-backend` en EasyPanel.
 - Checkpoint vivo: `docs/SESSION_CURRENT.md`.
 - Checklist vivo: `configuracion_pendiente.md`.
-- Nota de continuidad: el rail IA fue ajustado de forma intensa, pero la validacion visual final depende de confirmar el redeploy/caché en produccion.
+- Nota de continuidad: deploy/cache de frontend verificado en produccion (2026-05-11) con `__fisioShellNavigate` y bundle `...BT9OP7ob.js`; queda pendiente smoke test visual/manual completo.
+- Modularizacion local en curso: shell frontend separado en componentes Astro para rail IA, dock movil, feedback global, sidebar, topbar y bootstrap temprano de navegacion.
 
 ## Alcance activo
 - CRM web para operacion clinica y administrativa.
@@ -59,3 +60,4 @@ npm run lint
 - Mantener cambios pequenos y verificables.
 - Si produccion muestra UI antigua, revisar deploy/cache antes de tocar codigo.
 - No duplicar checkpoints largos: actualizar `docs/SESSION_CURRENT.md`, `configuracion_pendiente.md` y una entrada breve en `CHANGELOG.md`.
+- Antes de deploy: ejecutar `npm.cmd run check`, `npm.cmd run build`, `npm.cmd run lint` en backend y validacion JSON n8n.

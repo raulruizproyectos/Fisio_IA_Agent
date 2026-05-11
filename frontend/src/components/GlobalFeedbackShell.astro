@@ -1,0 +1,22 @@
+<div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
+
+<div class="confirm-shell" id="confirmDialog" aria-hidden="true">
+  <div class="confirm-backdrop" data-confirm-cancel></div>
+  <section class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+    <div class="confirm-icon">
+      <span class="material-symbols-rounded" id="confirmIcon">help</span>
+    </div>
+    <div class="confirm-copy">
+      <h2 id="confirmTitle">Confirmar accion</h2>
+      <p id="confirmMessage">Revisa la accion antes de continuar.</p>
+      <label class="confirm-input-field" id="confirmInputField" hidden>
+        <span id="confirmInputLabel">Texto de confirmacion</span>
+        <input id="confirmInput" type="text" autocomplete="off" />
+      </label>
+    </div>
+    <div class="confirm-actions">
+      <button type="button" class="btn-ghost" id="confirmCancelBtn" data-confirm-cancel>Cancelar</button>
+      <button type="button" class="btn-primary" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </section>
+</div>

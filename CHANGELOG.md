@@ -2,6 +2,33 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-11 - Modularizacion inicial del shell frontend
+- `frontend/src/pages/index.astro` reduce markup inline extrayendo componentes Astro sin cambiar IDs ni contratos DOM.
+- Nuevos componentes:
+  - `frontend/src/components/AssistantRail.astro`
+  - `frontend/src/components/MobileDock.astro`
+  - `frontend/src/components/GlobalFeedbackShell.astro`
+  - `frontend/src/components/SidebarNav.astro`
+  - `frontend/src/components/Topbar.astro`
+  - `frontend/src/components/ShellNavigationBootstrap.astro`
+- Validado:
+  - `npm.cmd run check` en `frontend`: OK.
+  - `npm.cmd run build` en `frontend`: OK.
+  - `npm.cmd run preview` temporal: HTTP 200 con `__fisioShellNavigate`, `assistantRail`, `mobileDock` y `confirmDialog`.
+  - `npm.cmd run lint` en `backend`: OK.
+  - JSON de workflows n8n en `n8n/Fisio_IA_Agent`: OK.
+
+## 2026-05-11 - Verificacion de continuidad y produccion
+- Confirmado `main` sincronizado con `origin/main` en `a354405`.
+- Confirmada respuesta de produccion en `fisio-frontend` con:
+  - `__fisioShellNavigate` presente en HTML.
+  - bundle `/_astro/index.astro_astro_type_script_index_0_lang.BT9OP7ob.js` activo.
+- Documentacion de continuidad actualizada:
+  - `docs/SESSION_CURRENT.md`
+  - `configuracion_pendiente.md`
+  - `README.md`
+- Pendiente funcional: smoke test visual/manual completo de navegacion (`Finanzas`, `Documentos`, `Agenda`) y rail IA.
+
 ## 2026-05-07 - Rail IA chat-first y cierre de sesion
 - `frontend/src/pages/index.astro`:
   - compactacion agresiva del rail de asistente,
