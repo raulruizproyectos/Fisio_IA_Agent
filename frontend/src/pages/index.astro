@@ -23999,6 +23999,435 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 
+<style is:global id="production-shell-recovery-20260511">
+  /* Component extraction moved shell markup out of Astro's scoped styles.
+     This global pass restores the production chrome and keeps the assistant chat-first. */
+  .app-shell {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar {
+    position: relative !important;
+    z-index: 50 !important;
+    display: flex !important;
+    flex: 0 0 var(--sidebar-width) !important;
+    flex-direction: column !important;
+    width: var(--sidebar-width) !important;
+    min-width: var(--sidebar-width) !important;
+    height: 100vh !important;
+    padding: 1rem 0.8rem !important;
+    overflow: hidden auto !important;
+    color: var(--sidebar-text) !important;
+    background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg2) 100%) !important;
+    border-right: 1px solid var(--sidebar-border) !important;
+  }
+
+  .sidebar.collapsed {
+    flex-basis: var(--sidebar-collapsed) !important;
+    width: var(--sidebar-collapsed) !important;
+    min-width: var(--sidebar-collapsed) !important;
+  }
+
+  .sidebar-brand,
+  .sidebar-nav,
+  .sidebar-bottom {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  .sidebar-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+    min-height: 3rem !important;
+    padding: 0.2rem 0.45rem 1rem !important;
+  }
+
+  .brand-icon-wrapper {
+    display: grid !important;
+    flex: 0 0 2.25rem !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    place-items: center !important;
+    color: #f8fafc !important;
+    background: linear-gradient(135deg, #176b63, #a67c39) !important;
+    border-radius: 0.8rem !important;
+  }
+
+  .brand-icon {
+    font-size: 1.25rem !important;
+  }
+
+  .brand-text {
+    overflow: hidden !important;
+    color: #f8fafc !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .sidebar-nav,
+  .sidebar-bottom {
+    display: grid !important;
+    gap: 0.28rem !important;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto !important;
+    padding-top: 0.8rem !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+  }
+
+  .sidebar-section-label {
+    padding: 0.55rem 0.75rem 0.25rem !important;
+    color: rgba(184,199,216,0.62) !important;
+    font-size: 0.64rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+  }
+
+  .nav-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.62rem !important;
+    min-height: 2.45rem !important;
+    padding: 0.52rem 0.7rem !important;
+    color: var(--sidebar-text) !important;
+    border: 1px solid transparent !important;
+    border-radius: 0.7rem !important;
+    font-size: 0.88rem !important;
+    font-weight: 650 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+  }
+
+  .nav-item:hover,
+  .nav-item.active {
+    color: var(--sidebar-active-color) !important;
+    background: var(--sidebar-active-bg) !important;
+    border-color: rgba(255,255,255,0.08) !important;
+  }
+
+  .nav-item .material-symbols-rounded {
+    flex: 0 0 auto !important;
+    width: 1.25rem !important;
+    font-size: 1.2rem !important;
+  }
+
+  .badge {
+    margin-left: auto !important;
+    padding: 0.06rem 0.42rem !important;
+    color: #fff !important;
+    background: var(--danger) !important;
+    border-radius: 999px !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+  }
+
+  .main-area {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 30 !important;
+    display: flex !important;
+    flex: 0 0 var(--topbar-height) !important;
+    align-items: center !important;
+    gap: 0.8rem !important;
+    height: var(--topbar-height) !important;
+    padding: 0 1rem !important;
+    background: var(--glass) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.06) !important;
+    backdrop-filter: blur(14px) !important;
+  }
+
+  .sidebar-toggle,
+  .icon-btn {
+    display: inline-grid !important;
+    width: 2.3rem !important;
+    height: 2.3rem !important;
+    padding: 0 !important;
+    place-items: center !important;
+    color: var(--text-secondary) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0.75rem !important;
+    cursor: pointer !important;
+  }
+
+  .search-box {
+    position: relative !important;
+    flex: 1 1 24rem !important;
+    max-width: 28rem !important;
+    min-width: 12rem !important;
+  }
+
+  .search-icon {
+    position: absolute !important;
+    left: 0.8rem !important;
+    top: 50% !important;
+    color: var(--text-muted) !important;
+    font-size: 1.18rem !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+  }
+
+  .search-box input {
+    width: 100% !important;
+    min-height: 2.45rem !important;
+    padding: 0.52rem 0.8rem 0.52rem 2.35rem !important;
+    color: var(--text-primary) !important;
+    background: var(--bg-surface) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 999px !important;
+    font: inherit !important;
+    font-size: 0.9rem !important;
+  }
+
+  .search-results {
+    position: absolute !important;
+    top: calc(100% + 0.45rem) !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 70 !important;
+    max-height: min(420px, 60vh) !important;
+    overflow: auto !important;
+    padding: 0.45rem !important;
+    background: rgba(255,255,255,0.98) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 1rem !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+
+  .search-results[hidden] {
+    display: none !important;
+  }
+
+  .topbar-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin-left: auto !important;
+  }
+
+  .assistant-launch-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    min-height: 2.45rem !important;
+    padding: 0 0.9rem !important;
+    color: #fff !important;
+    background: linear-gradient(135deg, var(--accent), #0ea5a3) !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+  }
+
+  .user-pill {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    min-height: 2.45rem !important;
+    padding: 0.2rem 0.75rem 0.2rem 0.25rem !important;
+    background: var(--bg-card) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 999px !important;
+  }
+
+  .avatar {
+    display: grid !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    place-items: center !important;
+    color: #fff !important;
+    background: linear-gradient(135deg, #176b63, #0ea5a3) !important;
+    border-radius: 50% !important;
+    font-size: 0.78rem !important;
+    font-weight: 850 !important;
+  }
+
+  .workspace-shell {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .content {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: auto !important;
+  }
+
+  .mobile-dock {
+    display: none !important;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar {
+      position: fixed !important;
+      inset: var(--topbar-height) auto 0 0 !important;
+      height: calc(100dvh - var(--topbar-height)) !important;
+      transform: translateX(-100%) !important;
+      transition: transform var(--transition-slow) !important;
+    }
+
+    .sidebar.open {
+      transform: translateX(0) !important;
+    }
+
+    .user-pill {
+      display: none !important;
+    }
+
+    .mobile-dock {
+      position: fixed !important;
+      left: 0.75rem !important;
+      right: 0.75rem !important;
+      bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+      z-index: 60 !important;
+      display: grid !important;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 0.2rem !important;
+      padding: 0.4rem !important;
+      background: rgba(255,253,250,0.96) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 1rem !important;
+      box-shadow: var(--shadow-lg) !important;
+    }
+  }
+
+  #assistantRail .assistant-module-header {
+    min-height: 3.15rem !important;
+    padding: 0.48rem 0.72rem !important;
+  }
+
+  #assistantRail .assistant-toolbar {
+    padding: 0.45rem 0.62rem !important;
+  }
+
+  #assistantRail .patient-selector {
+    min-height: 2.25rem !important;
+    border-radius: 0.7rem !important;
+  }
+
+  #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
+  html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+    gap: 0.38rem !important;
+    margin: 0.42rem 0.55rem 0.55rem !important;
+    min-height: 0 !important;
+  }
+
+  #assistantRail .assistant-mode-switch {
+    min-height: 2.25rem !important;
+    padding: 0.24rem !important;
+    gap: 0.28rem !important;
+    border-radius: 0.9rem !important;
+  }
+
+  #assistantRail .assistant-mode-chip {
+    min-height: 1.72rem !important;
+    padding: 0.25rem 0.52rem !important;
+    border-radius: 0.65rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  #assistantRail .chat-log,
+  html[data-assistant-mode='desktop'] #assistantRail .chat-log,
+  html[data-assistant-mode='compact'] #assistantRail .chat-log,
+  html[data-assistant-mode='mobile'] #assistantRail .chat-log {
+    flex: 1 1 auto !important;
+    min-height: clamp(10rem, 34vh, 20rem) !important;
+    padding: 0.55rem !important;
+  }
+
+  #assistantRail .chat-log.is-empty-chat {
+    min-height: clamp(8rem, 22vh, 12rem) !important;
+  }
+
+  #assistantRail .assistant-chat-empty {
+    min-height: 0 !important;
+    padding: 0.65rem !important;
+    gap: 0.32rem !important;
+  }
+
+  #assistantRail .assistant-chat-empty-icon {
+    width: 1.9rem !important;
+    height: 1.9rem !important;
+    margin-bottom: 0.1rem !important;
+    font-size: 1.05rem !important;
+  }
+
+  #assistantRail .assistant-chat-empty strong {
+    font-size: 0.92rem !important;
+    line-height: 1.15 !important;
+  }
+
+  #assistantRail .assistant-chat-empty p {
+    max-width: 48ch !important;
+    margin: 0 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.25 !important;
+  }
+
+  #assistantRail .assistant-chat-empty-chips {
+    gap: 0.3rem !important;
+    margin-top: 0.15rem !important;
+  }
+
+  #assistantRail .assistant-chat-empty-chip {
+    min-height: 1.65rem !important;
+    padding: 0.24rem 0.55rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  #assistantRail .ai-input-area,
+  html[data-assistant-mode='desktop'] #assistantRail .ai-input-area,
+  html[data-assistant-mode='compact'] #assistantRail .ai-input-area,
+  html[data-assistant-mode='mobile'] #assistantRail .ai-input-area {
+    padding: 0.48rem !important;
+  }
+
+  #assistantRail .assistant-composer-shell {
+    min-height: 3.4rem !important;
+  }
+
+  #assistantRail .ai-textarea-wrapper textarea {
+    min-height: 2.7rem !important;
+    max-height: 5.8rem !important;
+    font-size: 0.88rem !important;
+    line-height: 1.28 !important;
+  }
+
+  #assistantRail .assistant-action-grid {
+    gap: 0.42rem !important;
+    margin-top: 0.42rem !important;
+  }
+
+  #assistantRail .assistant-action-grid .btn-action {
+    min-height: 2.35rem !important;
+    padding: 0.42rem 0.55rem !important;
+    font-size: 0.82rem !important;
+  }
+</style>
+
 <style is:global id="assistant-chat-first-20260507">
   #assistantRail .assistant-module-header {
     min-height: 44px !important;
