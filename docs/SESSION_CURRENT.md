@@ -2,9 +2,9 @@
 
 ## Estado
 - Rama: `main`.
-- HEAD remoto: `main` actualizado hasta el hotfix visual `723fcfe`.
-- Trabajo local en curso: compactacion final del rail IA y auditoria premium de plataforma.
-- GitHub: pendiente de nuevo commit/push de esta fase.
+- HEAD remoto: `main` actualizado hasta `141a60f`.
+- Trabajo cerrado y publicado: compactacion final del rail IA y auditoria premium de plataforma.
+- GitHub: sincronizado.
 - Produccion `fisio-frontend` verificada (HTTP 200) con:
   - `__fisioShellNavigate` presente en HTML.
   - bundle IA activo: `/_astro/index.astro_astro_type_script_index_0_lang.BT9OP7ob.js`.
@@ -15,6 +15,7 @@
 - Trabajo cerrado y publicado:
   - `3ddb77f` - `refactor: modularize frontend shell`.
   - `723fcfe` - `fix: restore shell styles and compact assistant rail`.
+  - `141a60f` - `fix: harden compact assistant layout`.
   - `index.astro` conserva la logica JS/CSS, pero delega markup estable en componentes Astro.
   - componentes extraidos: `AssistantRail`, `MobileDock`, `GlobalFeedbackShell`, `SidebarNav`, `Topbar`, `ShellNavigationBootstrap`.
 
@@ -45,16 +46,16 @@
 - Tras compactacion final del rail IA:
   - `npm.cmd run check`: OK.
   - `npm.cmd run build`: OK.
+  - `npm.cmd run preview`: HTTP 200 con bundle `B2y7oOhN.js`.
   - `git diff --check`: OK, solo aviso CRLF esperado en Windows.
 
 ## Proximo arranque
-1. Commit y push de la compactacion final + auditoria premium.
-2. Redeploy de `fisio-frontend` en EasyPanel.
-3. Smoke test visual/manual tras deploy:
+1. Redeploy de `fisio-frontend` en EasyPanel.
+2. Smoke test visual/manual tras deploy:
    - `Finanzas`, `Documentos`, `Agenda`,
    - tabs financieras,
    - rail de asistente (sin hueco muerto).
-4. Siguiente candidato de modularizacion: separar controlador JS del shell/router y controlador del rail IA.
+3. Siguiente candidato de modularizacion: separar controlador JS del shell/router y controlador del rail IA.
 
 ## Nota
 Si produccion sigue mostrando Agenda al pulsar Finanzas/Documentos, primero confirmar que EasyPanel sirve el HTML con `__fisioShellNavigate`. Si no aparece, es deploy/cache, no codigo local.
