@@ -4,7 +4,7 @@ CRM y agentes para un centro de fisioterapia: pacientes, agenda, finanzas, docum
 
 ## Estado actual
 - Rama: `main`.
-- Ultimo HEAD remoto/local confirmado: `3ddb77f` - `refactor: modularize frontend shell`.
+- Ultimo cierre funcional publicado: `3ddb77f` - `refactor: modularize frontend shell`.
 - Ultimo cierre funcional relevante: `53f4a2d` - `fix: make assistant rail chat-first with useful empty state`.
 - Frontend productivo: `fisio-frontend` en EasyPanel.
 - Backend productivo: `fisio-backend` en EasyPanel.

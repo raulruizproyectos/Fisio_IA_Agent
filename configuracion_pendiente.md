@@ -1,7 +1,7 @@
 # Configuracion pendiente
 
 ## Estado vivo - 2026-05-11
-- GitHub: `main` sincronizado hasta `3ddb77f`.
+- GitHub: `main` actualizado tras la modularizacion y handoff documental.
 - Frontend:
   - fix de navegacion `Finanzas`/`Documentos` consolidado,
   - ajustes de rail IA en commits `c519b13` y `53f4a2d` (chat-first + estado vacio util).

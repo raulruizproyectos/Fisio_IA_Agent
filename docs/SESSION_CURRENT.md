@@ -2,7 +2,7 @@
 
 ## Estado
 - Rama: `main`.
-- HEAD remoto actual: `3ddb77f`.
+- HEAD remoto: `main` actualizado tras la modularizacion y handoff documental.
 - GitHub: sincronizado.
 - Produccion `fisio-frontend` verificada (HTTP 200) con:
   - `__fisioShellNavigate` presente en HTML.
@@ -10,8 +10,7 @@
 - Sesion base cerrada con commits funcionales en `main`:
   - `c519b13` - compactacion del rail del asistente y prioridad de chat.
   - `53f4a2d` - rail chat-first con estado vacio util y prompts rapidos.
-- Cierre documental mas reciente:
-  - `a354405` - `docs: close session and align project status`.
+- Cierre documental: actualizado tras publicar la modularizacion.
 - Trabajo cerrado y publicado:
   - `3ddb77f` - `refactor: modularize frontend shell`.
   - `index.astro` conserva la logica JS/CSS, pero delega markup estable en componentes Astro.
