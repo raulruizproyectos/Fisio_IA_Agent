@@ -2,7 +2,7 @@
 
 ## Estado
 - Rama: `main`.
-- HEAD remoto: `main` actualizado hasta `d0a79f5`.
+- HEAD remoto: `main` actualizado tras esta fase premium; usar `git log -1 --oneline` para el hash exacto.
 - Trabajo cerrado y publicado: compactacion final del rail IA y auditoria premium de plataforma.
 - GitHub: sincronizado.
 - Produccion `fisio-frontend` verificada antes del redeploy de esta fase (HTTP 200) con:
@@ -16,7 +16,7 @@
   - `3ddb77f` - `refactor: modularize frontend shell`.
   - `723fcfe` - `fix: restore shell styles and compact assistant rail`.
   - `141a60f` - `fix: harden compact assistant layout`.
-  - `d0a79f5` - `docs: update premium phase handoff`.
+  - `docs:*` - actualizaciones de handoff premium.
   - `index.astro` conserva la logica JS/CSS, pero delega markup estable en componentes Astro.
   - componentes extraidos: `AssistantRail`, `MobileDock`, `GlobalFeedbackShell`, `SidebarNav`, `Topbar`, `ShellNavigationBootstrap`.
 
@@ -36,7 +36,7 @@
 - `npm run lint` en `backend`: OK.
 - `npm.cmd run check`: OK.
 - `npm.cmd run build`: OK.
-- `git rev-parse --short origin/main`: `d0a79f5`.
+- `git rev-parse --short origin/main`: coincide con HEAD local tras push.
 - `Invoke-WebRequest` a frontend de produccion: OK (2026-05-11).
 - Tras modularizacion frontend:
   - `npm.cmd run check`: OK.
