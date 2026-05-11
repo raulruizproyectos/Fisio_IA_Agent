@@ -2,12 +2,12 @@
 
 ## Estado
 - Rama: `main`.
-- HEAD remoto: `main` actualizado hasta `141a60f`.
+- HEAD remoto: `main` actualizado hasta `d0a79f5`.
 - Trabajo cerrado y publicado: compactacion final del rail IA y auditoria premium de plataforma.
 - GitHub: sincronizado.
-- Produccion `fisio-frontend` verificada (HTTP 200) con:
+- Produccion `fisio-frontend` verificada antes del redeploy de esta fase (HTTP 200) con:
   - `__fisioShellNavigate` presente en HTML.
-  - bundle IA activo: `/_astro/index.astro_astro_type_script_index_0_lang.BT9OP7ob.js`.
+  - bundle IA activo previo: `/_astro/index.astro_astro_type_script_index_0_lang.BT9OP7ob.js`.
 - Sesion base cerrada con commits funcionales en `main`:
   - `c519b13` - compactacion del rail del asistente y prioridad de chat.
   - `53f4a2d` - rail chat-first con estado vacio util y prompts rapidos.
@@ -16,6 +16,7 @@
   - `3ddb77f` - `refactor: modularize frontend shell`.
   - `723fcfe` - `fix: restore shell styles and compact assistant rail`.
   - `141a60f` - `fix: harden compact assistant layout`.
+  - `d0a79f5` - `docs: update premium phase handoff`.
   - `index.astro` conserva la logica JS/CSS, pero delega markup estable en componentes Astro.
   - componentes extraidos: `AssistantRail`, `MobileDock`, `GlobalFeedbackShell`, `SidebarNav`, `Topbar`, `ShellNavigationBootstrap`.
 
@@ -35,7 +36,7 @@
 - `npm run lint` en `backend`: OK.
 - `npm.cmd run check`: OK.
 - `npm.cmd run build`: OK.
-- `git fetch origin` + `git rev-parse --short HEAD/origin/main`: ambos en `a354405`.
+- `git rev-parse --short origin/main`: `d0a79f5`.
 - `Invoke-WebRequest` a frontend de produccion: OK (2026-05-11).
 - Tras modularizacion frontend:
   - `npm.cmd run check`: OK.
