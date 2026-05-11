@@ -1,62 +1,59 @@
-# Sesion actual - 2026-05-11
+# Sesion activa - 2026-05-11
 
-## Estado
-- Rama: `main`.
-- HEAD remoto: `main` actualizado tras esta fase premium; usar `git log -1 --oneline` para el hash exacto.
-- Trabajo cerrado y publicado: compactacion final del rail IA y auditoria premium de plataforma.
-- GitHub: sincronizado.
-- Produccion `fisio-frontend` verificada antes del redeploy de esta fase (HTTP 200) con:
-  - `__fisioShellNavigate` presente en HTML.
-  - bundle IA activo previo: `/_astro/index.astro_astro_type_script_index_0_lang.BT9OP7ob.js`.
-- Sesion base cerrada con commits funcionales en `main`:
-  - `c519b13` - compactacion del rail del asistente y prioridad de chat.
-  - `53f4a2d` - rail chat-first con estado vacio util y prompts rapidos.
-- Cierre documental: actualizado tras publicar la modularizacion.
-- Trabajo cerrado y publicado:
-  - `3ddb77f` - `refactor: modularize frontend shell`.
-  - `723fcfe` - `fix: restore shell styles and compact assistant rail`.
-  - `141a60f` - `fix: harden compact assistant layout`.
-  - `docs:*` - actualizaciones de handoff premium.
-  - `index.astro` conserva la logica JS/CSS, pero delega markup estable en componentes Astro.
-  - componentes extraidos: `AssistantRail`, `MobileDock`, `GlobalFeedbackShell`, `SidebarNav`, `Topbar`, `ShellNavigationBootstrap`.
+## Objetivo
+Convertir Fisio IA Agent en el CRM clinico mas premium del mercado para fisioterapia, con enfasis especial en que el agente IA sea una experiencia de diseño y usabilidad de referencia.
 
-## Que se cerro
-- Navegacion de sidebar endurecida.
-- `Finanzas` abre `pagos` y mantiene sidebar activo en `Finanzas`.
-- `Documentos` abre su vista global.
-- Agenda no debe quedar visible cuando no esta activa.
-- Router temprano de emergencia antes del script principal.
-- Limpieza de estilos muertos de agenda.
-- Documentacion compactada para evitar duplicados largos.
-- Ajustes fuertes del rail del asistente para reducir bloques ornamentales y priorizar chat.
-- Refuerzo local adicional: runtime compacto del agente, chat vacio limitado, textarea contenida y bloque CSS hard-stop final.
-- Auditoria premium creada en `docs/PREMIUM_PLATFORM_AUDIT_20260511.md`.
+## Trabajo completado en esta sesion
+- Fix del textarea del copiloto: max-height de 5.5rem a 12rem, auto-resize de 120px a 220px. Commit `0271806`.
+- Chat-log: min-height ampliado de clamp(11rem, 38vh, 24rem) a clamp(14rem, 46vh, 32rem).
+- Auditoria visual completa de produccion (dashboard, agenda, finanzas, copiloto).
+- Plan premium de 5 fases creado y documentado.
 
-## Validacion local
-- `npm run lint` en `backend`: OK.
-- `npm.cmd run check`: OK.
-- `npm.cmd run build`: OK.
-- `git rev-parse --short origin/main`: coincide con HEAD local tras push.
-- `Invoke-WebRequest` a frontend de produccion: OK (2026-05-11).
-- Tras modularizacion frontend:
-  - `npm.cmd run check`: OK.
-  - `npm.cmd run build`: OK.
-  - `npm.cmd run preview` temporal: HTTP 200 con marcadores criticos presentes.
-  - `npm.cmd run lint` en `backend`: OK.
-  - Validacion JSON de workflows n8n: OK.
-- Tras compactacion final del rail IA:
-  - `npm.cmd run check`: OK.
-  - `npm.cmd run build`: OK.
-  - `npm.cmd run preview`: HTTP 200 con bundle `B2y7oOhN.js`.
-  - `git diff --check`: OK, solo aviso CRLF esperado en Windows.
+## Estado actual
+- `main` sincronizado con `origin/main` en `0271806`.
+- Build y check: OK.
+- Produccion: bundle anterior `BT9OP7ob.js`, pendiente redeploy para activar `Bz3UFDZ0.js`.
 
-## Proximo arranque
-1. Redeploy de `fisio-frontend` en EasyPanel.
-2. Smoke test visual/manual tras deploy:
-   - `Finanzas`, `Documentos`, `Agenda`,
-   - tabs financieras,
-   - rail de asistente (sin hueco muerto).
-3. Siguiente candidato de modularizacion: separar controlador JS del shell/router y controlador del rail IA.
+## Proximos pasos (aprobacion pendiente)
+### Fase 1 - CSS Premium Polish (impacto visual inmediato)
+- Micro-animaciones de entrada en cards del dashboard (stagger).
+- Hover lift + glow en cards operativas.
+- Transicion de apertura del copiloto con spring feel.
+- Chat messages con animacion mejorada.
+- Textarea glow refinado al focus.
+- Gradient fade en top/bottom del chat-log como scroll indicator.
+- Botones con gradient shift al hover.
+- Tabla de pagos/pacientes con row hover y zebra.
 
-## Nota
-Si produccion sigue mostrando Agenda al pulsar Finanzas/Documentos, primero confirmar que EasyPanel sirve el HTML con `__fisioShellNavigate`. Si no aparece, es deploy/cache, no codigo local.
+### Fase 2 - Estabilizacion CSS global
+- Crear `global-shell.css` y `assistant-rail.css`.
+- Eliminar 100+ reglas `!important`.
+- Eliminar runtime injector `ensureAssistantCompactRuntimeStyles`.
+
+### Fase 3 - Modularizacion JS por dominio
+- Separar controladores: shell, assistant, patients, appointments, finance, documents.
+- Reducir `index.astro` de 27K a ~8K lineas.
+
+### Fase 4 - Experiencia clinica premium
+- Ficha paciente como "Case Command Center".
+- Timeline clinico.
+- Dashboard operativo con proximas 3 sesiones, seguimiento, cobros pendientes.
+- Empty states accionables.
+
+### Fase 5 - IA clinica diferencial
+- Prompt SOAP estructurado.
+- Red flags y derivacion.
+- Trazabilidad de planes.
+- Entrega PDF + Telegram desde estado de plan.
+
+## Prioridad destacada del usuario
+> El agente IA debe quedar premium a nivel diseño y usabilidad. Es el diferenciador del producto.
+
+## Directrices de diseño premium
+1. Densidad calmada: mas informacion util con menos volumen visual.
+2. Clinico-premium: sobrio, denso, limpio, rapido.
+3. Cada pantalla responde: que miro, que hago ahora, que puede esperar.
+4. IA con trazabilidad: plan, contexto, entrega y revision.
+5. Micro-animaciones que hagan la interfaz sentirse viva.
+6. Accesibilidad WCAG AA real.
+7. Performance: JS < 300 KB comprimido por ruta.

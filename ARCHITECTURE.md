@@ -55,7 +55,37 @@ Fisio_IA_Agent usa arquitectura hibrida:
 - `/api/telegram/*`
 
 ## Direccion producto
-- Premium clinico sobrio.
-- Menos ruido, mas accion directa.
+- Premium clinico de referencia para centros de fisioterapia.
+- Agente IA como diferenciador principal: diseño y usabilidad premium.
+- Densidad calmada: mas informacion util con menos volumen visual.
 - Cada pantalla debe responder: que miro, que hago ahora, que puede esperar.
+- IA con trazabilidad: plan, contexto, entrega, revision y seguimiento.
 - Evitar nuevas capas CSS correctivas sin retirar deuda antigua.
+- Accesibilidad WCAG AA en flujos criticos.
+
+## Estructura modular objetivo (frontend)
+```
+frontend/src/
+  styles/
+    global-shell.css        # Shell layout (sidebar, topbar, workspace)
+    assistant-rail.css      # Copiloto IA
+  controllers/
+    shellController.ts      # Router, sidebar, responsive, toasts, search
+    assistantController.ts  # Rail IA, chat, generacion, PDF, Telegram
+    patientsController.ts   # Listado, ficha, historial
+    appointmentsController.ts # Agenda, citas, Calendar sync
+    financeController.ts    # Pagos, bonos, facturas, gestoria
+    documentsController.ts  # Documentos clinicos, firmas
+  components/
+    AssistantRail.astro
+    SidebarNav.astro
+    Topbar.astro
+    MobileDock.astro
+    GlobalFeedbackShell.astro
+    ShellNavigationBootstrap.astro
+  layouts/
+    Layout.astro
+  pages/
+    index.astro             # Markup + CSS especifico (target: ~8K lineas)
+    reserva.astro
+```

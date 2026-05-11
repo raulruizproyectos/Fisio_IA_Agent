@@ -2,6 +2,17 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-11 - Fix textarea copiloto + auditoria premium
+- `frontend/src/pages/index.astro`:
+  - Textarea del copiloto: max-height de 5.5rem a 12rem, resize:none.
+  - Auto-resize JS: maxPx de 120 a 220, viewport de 12% a 22%.
+  - Chat-log: min-height de clamp(11rem, 38vh, 24rem) a clamp(14rem, 46vh, 32rem).
+- Commit: `0271806` - `fix: enlarge assistant textarea and chat-log for better conversation UX`.
+- Auditoria premium completa con capturas de produccion.
+- Plan de 5 fases documentado en `docs/SESSION_CURRENT.md` y `configuracion_pendiente.md`.
+- Directrices de producto actualizadas: premium clinico, agente IA como diferenciador, WCAG AA, modularizacion.
+- Validado: check OK, build OK, bundle `Bz3UFDZ0.js`.
+
 ## 2026-05-11 - Modularizacion inicial del shell frontend
 - `frontend/src/pages/index.astro` reduce markup inline extrayendo componentes Astro sin cambiar IDs ni contratos DOM.
 - Publicado en `main`:

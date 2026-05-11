@@ -1,44 +1,47 @@
 # Configuracion pendiente
 
 ## Estado vivo - 2026-05-11
-- GitHub: `main` actualizado tras la modularizacion y handoff documental.
+- GitHub: `main` actualizado en `0271806` con fix de textarea del copiloto.
 - Frontend:
-  - fix de navegacion `Finanzas`/`Documentos` consolidado,
-  - ajustes de rail IA en commits `c519b13` y `53f4a2d` (chat-first + estado vacio util).
-- Backend: warning de lint eliminado en `professional.js`.
-- Deploy/cache de frontend: verificado en produccion con HTML que contiene `__fisioShellNavigate` y bundle `...BT9OP7ob.js`.
-- Modularizacion inicial del shell frontend publicada en `3ddb77f` con componentes Astro para rail IA, dock movil, feedback global, sidebar, topbar y bootstrap temprano de navegacion.
-- Pendiente operativo: redeploy de `fisio-frontend` en EasyPanel y smoke test visual/manual completo.
+  - Fix textarea copiloto: max-height 12rem, auto-resize 220px, resize:none.
+  - Chat-log expandido: min-height clamp(14rem, 46vh, 32rem).
+  - Auditoria premium completada con capturas de produccion.
+  - Plan de 5 fases documentado en `docs/SESSION_CURRENT.md` y `docs/PREMIUM_PLATFORM_AUDIT_20260511.md`.
+- Backend: sin cambios en esta sesion.
+- Produccion: pendiente redeploy para activar bundle `Bz3UFDZ0.js`.
 
 ## Validado localmente
-- `npm run lint` en `backend`: OK.
-- `npm.cmd run check` en `frontend`: OK.
-- `npm.cmd run build` en `frontend`: OK.
-- `git diff --check`: OK salvo aviso normal LF/CRLF.
-- `git fetch origin` y `git rev-parse --short HEAD/origin/main`: ambos en `a354405`.
-- `Invoke-WebRequest` a `https://fisio-frontend.b5xbaf.easypanel.host/`: HTTP 200 y asset esperado presente.
-- Tras modularizacion frontend:
-  - `npm.cmd run check`: OK.
-  - `npm.cmd run build`: OK.
-  - `npm.cmd run preview` temporal: HTTP 200 con marcadores criticos presentes.
-  - `npm.cmd run lint` en `backend`: OK.
-  - Validacion JSON de workflows n8n: OK.
+- `npm.cmd run check` en `frontend`: 0 errores.
+- `npm.cmd run build` en `frontend`: OK, bundle `Bz3UFDZ0.js`.
+- `git push origin main`: OK.
 
-## Smoke test pendiente (visual/manual)
-1. Abrir produccion y refrescar fuerte.
-2. Click en `Finanzas`: debe abrir resumen de pagos, no Agenda.
-3. Click en `Documentos`: debe abrir documentos, no Agenda.
-4. Click en `Agenda`: debe abrir agenda.
-5. Click en tabs de Finanzas: `Pagos`, `Facturas`, `Bonos`, `Gestoria`.
-6. Abrir agente IA y validar:
-   - no aparece hueco grande inutil bajo los controles,
-   - `chat-log` ocupa la mayor parte del rail,
-   - estado vacio del chat muestra sugerencias rapidas.
-
-## Siguiente bloque recomendado
+## Pendiente operativo
 1. Redeploy de `fisio-frontend` en EasyPanel.
-2. Completar smoke test visual tras deploy.
-3. Siguiente deuda: extraer JS del shell/router y controlador del rail IA desde `frontend/src/pages/index.astro`.
+2. Smoke test visual tras deploy (textarea expandido, chat-log mas alto).
+3. Aprobacion del plan premium de 5 fases para iniciar ejecucion.
+
+## Directrices de producto (nuevas)
+- **Premium clinico**: el producto debe sentirse como el mejor CRM de fisioterapia del mercado.
+- **Agente IA premium**: el copiloto IA es el diferenciador. Debe tener diseño y usabilidad de referencia.
+- **Principios de diseño**:
+  - Densidad calmada.
+  - Micro-animaciones que hagan la interfaz sentirse viva.
+  - Chat-first: la conversacion IA ocupa la mayor parte del rail.
+  - Accesibilidad WCAG AA.
+  - Performance < 300 KB JS comprimido por ruta.
+- **Direccion tecnica**:
+  - Eliminar deuda CSS (100+ `!important`).
+  - Modularizar JS por dominio (shell, assistant, patients, etc).
+  - Reducir `index.astro` de 27K a ~8K lineas.
+
+## Roadmap premium aprobacion pendiente
+| Fase | Descripcion | Impacto |
+|------|-------------|---------|
+| 1 | CSS premium polish | Visual inmediato |
+| 2 | Estabilizacion CSS global | Mantenibilidad |
+| 3 | Modularizacion JS | Arquitectura |
+| 4 | Experiencia clinica premium | Valor clinico |
+| 5 | IA clinica diferencial | Diferenciador |
 
 ## Variables y servicios utiles
 - Frontend: `https://fisio-frontend.b5xbaf.easypanel.host/`
