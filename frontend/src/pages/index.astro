@@ -1471,28 +1471,35 @@ import Topbar from '../components/Topbar.astro';
       #assistantRail .assistant-toolbar { padding: 0.3rem 0.5rem !important; }
       #assistantRail .assistant-live-context { display: none !important; }
       #assistantRail .patient-selector { min-height: 2rem !important; border-radius: 10px !important; }
+      #assistantRail.is-chat-empty.assistant-rail,
+      #assistantRail.is-chat-empty.assistant-rail-portal { height: auto !important; max-height: calc(100dvh - 1.2rem) !important; }
+      #assistantRail.is-chat-empty .assistant-rail-card,
+      #assistantRail.is-chat-empty .assistant-rail-body,
+      #assistantRail.is-chat-empty .assistant-console,
+      #assistantRail.is-chat-empty .assistant-dialog-surface { flex: 0 0 auto !important; height: auto !important; }
       #assistantRail .assistant-dialog-surface,
       html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
       html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
-      html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface { display: flex !important; flex-direction: column !important; gap: 0.34rem !important; margin: 0.38rem 0.5rem 0.5rem !important; min-height: 0 !important; overflow: hidden !important; }
+      html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface { display: flex !important; flex-direction: column !important; gap: 0.3rem !important; margin: 0.38rem 0.5rem 0.5rem !important; min-height: 0 !important; overflow: hidden !important; }
       #assistantRail .assistant-dialog-scroll,
       html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-scroll,
       html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-scroll,
       html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-scroll { display: contents !important; }
-      #assistantRail .assistant-mode-switch { order: 1 !important; flex: 0 0 auto !important; min-height: 2rem !important; padding: 0.18rem !important; }
-      #assistantRail .assistant-mode-chip { min-height: 1.62rem !important; padding: 0.2rem 0.42rem !important; font-size: 0.7rem !important; }
+      #assistantRail .assistant-mode-switch { order: 1 !important; flex: 0 0 auto !important; min-height: 1.86rem !important; padding: 0.16rem !important; }
+      #assistantRail .assistant-mode-chip { min-height: 1.5rem !important; padding: 0.17rem 0.38rem !important; font-size: 0.68rem !important; }
       #assistantRail .chat-log,
       html[data-assistant-mode='desktop'] #assistantRail .chat-log,
       html[data-assistant-mode='compact'] #assistantRail .chat-log,
       html[data-assistant-mode='mobile'] #assistantRail .chat-log { order: 2 !important; flex: 1 1 auto !important; min-height: clamp(11rem, 38vh, 24rem) !important; padding: 0.55rem !important; overflow-y: auto !important; overflow-x: hidden !important; }
-      #assistantRail .chat-log.is-empty-chat { flex: 0 0 auto !important; min-height: 7.25rem !important; max-height: 8.5rem !important; padding: 0.52rem !important; }
+      #assistantRail .chat-log.is-empty-chat { flex: 0 0 auto !important; min-height: 3.9rem !important; max-height: 5.2rem !important; padding: 0.34rem 0.46rem !important; }
       #assistantRail .chat-log.is-empty-chat:empty::before,
       #assistantRail .chat-log:empty::before { content: none !important; display: none !important; }
-      #assistantRail .assistant-chat-empty { gap: 0.26rem !important; max-width: 42rem !important; min-height: 0 !important; padding: 0.45rem !important; }
-      #assistantRail .assistant-chat-empty-icon { width: 1.72rem !important; height: 1.72rem !important; font-size: 0.95rem !important; }
-      #assistantRail .assistant-chat-empty strong { font-size: 0.86rem !important; line-height: 1.15 !important; }
-      #assistantRail .assistant-chat-empty p { margin: 0 !important; font-size: 0.74rem !important; line-height: 1.28 !important; }
-      #assistantRail .assistant-chat-empty-chip { min-height: 1.55rem !important; padding: 0.18rem 0.46rem !important; font-size: 0.65rem !important; }
+      #assistantRail .assistant-chat-empty { display: flex !important; align-items: center !important; justify-content: center !important; gap: 0.44rem !important; max-width: 100% !important; min-height: 0 !important; padding: 0 !important; }
+      #assistantRail .assistant-chat-empty-icon,
+      #assistantRail .assistant-chat-empty p { display: none !important; }
+      #assistantRail .assistant-chat-empty strong { flex: 0 0 auto !important; font-size: 0.78rem !important; line-height: 1.1 !important; white-space: nowrap !important; }
+      #assistantRail .assistant-chat-empty-chips { display: flex !important; gap: 0.26rem !important; min-width: 0 !important; overflow: hidden !important; }
+      #assistantRail .assistant-chat-empty-chip { min-height: 1.42rem !important; padding: 0.15rem 0.42rem !important; font-size: 0.62rem !important; white-space: nowrap !important; }
       #assistantRail .ai-input-area,
       html[data-assistant-mode='desktop'] #assistantRail .ai-input-area,
       html[data-assistant-mode='compact'] #assistantRail .ai-input-area,
@@ -1835,6 +1842,8 @@ import Topbar from '../components/Topbar.astro';
 
   const applyAssistantChatDensity = (hasMessages: boolean) => {
     if (!log) return;
+    assistantRail?.classList.toggle('is-chat-empty', !hasMessages);
+    assistantRail?.classList.toggle('has-chat-messages', hasMessages);
     log.style.setProperty('order', '2', 'important');
     log.style.setProperty('overflow-y', 'auto', 'important');
     log.style.setProperty('overflow-x', 'hidden', 'important');
@@ -1848,8 +1857,8 @@ import Topbar from '../components/Topbar.astro';
       return;
     }
     log.style.setProperty('flex', '0 0 auto', 'important');
-    log.style.setProperty('min-height', '7.25rem', 'important');
-    log.style.setProperty('max-height', '8.5rem', 'important');
+    log.style.setProperty('min-height', '3.9rem', 'important');
+    log.style.setProperty('max-height', '5.2rem', 'important');
   };
 
   const ensureAssistantChatEmptyState = () => {
@@ -1867,8 +1876,8 @@ import Topbar from '../components/Topbar.astro';
       empty.className = 'assistant-chat-empty';
       empty.innerHTML = `
         <span class="material-symbols-rounded assistant-chat-empty-icon">chat</span>
-        <strong>Empieza una conversacion clinica</strong>
-        <p>Escribe el objetivo del paciente o usa un inicio rapido para generar un plan accionable.</p>
+        <strong>Inicio rapido</strong>
+        <p>Describe el caso o usa una plantilla para arrancar.</p>
         <div class="assistant-chat-empty-chips">
           <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias.">Dolor lumbar 3 semanas</button>
           <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Tras esguince de tobillo, preparar progresion segura para volver a correr en 4 semanas.">Vuelta a correr</button>
@@ -26937,6 +26946,197 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 <style is:global id="assistant-production-hard-stop-20260511">
+  .confirm-shell {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1000 !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+    pointer-events: none !important;
+  }
+
+  .confirm-shell.open {
+    display: flex !important;
+    pointer-events: auto !important;
+  }
+
+  .confirm-backdrop {
+    position: absolute !important;
+    inset: 0 !important;
+    background:
+      radial-gradient(circle at 50% 35%, rgba(19, 82, 96, 0.16), transparent 32%),
+      rgba(7, 18, 28, 0.48) !important;
+    backdrop-filter: blur(8px) !important;
+  }
+
+  .confirm-panel {
+    position: relative !important;
+    z-index: 1 !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 0.85rem !important;
+    width: min(26rem, calc(100vw - 2rem)) !important;
+    padding: 0.92rem !important;
+    border: 1px solid rgba(210, 222, 226, 0.96) !important;
+    border-radius: 1.1rem !important;
+    background: linear-gradient(180deg, #fffefa 0%, #f7faf9 100%) !important;
+    box-shadow: 0 34px 90px -46px rgba(6, 20, 31, 0.74) !important;
+    color: #17283b !important;
+    transform: translateY(0) !important;
+  }
+
+  .confirm-icon {
+    display: grid !important;
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+    place-items: center !important;
+    border: 1px solid rgba(20, 111, 106, 0.2) !important;
+    border-radius: 0.85rem !important;
+    background: #eaf7f5 !important;
+    color: #0b716b !important;
+  }
+
+  .confirm-icon .material-symbols-rounded {
+    font-size: 1.18rem !important;
+  }
+
+  .confirm-copy {
+    display: grid !important;
+    gap: 0.28rem !important;
+    min-width: 0 !important;
+  }
+
+  .confirm-copy h2 {
+    margin: 0 !important;
+    color: #14283c !important;
+    font-size: 1rem !important;
+    font-weight: 860 !important;
+    letter-spacing: -0.03em !important;
+    line-height: 1.15 !important;
+  }
+
+  .confirm-copy p {
+    margin: 0 !important;
+    color: #647386 !important;
+    font-size: 0.82rem !important;
+    line-height: 1.42 !important;
+  }
+
+  .confirm-input-field {
+    display: grid !important;
+    gap: 0.35rem !important;
+    margin-top: 0.3rem !important;
+  }
+
+  .confirm-input-field[hidden] {
+    display: none !important;
+  }
+
+  .confirm-input-field span {
+    color: #5a6a78 !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+  }
+
+  .confirm-input-field input {
+    min-height: 2.35rem !important;
+    padding: 0.55rem 0.7rem !important;
+    border: 1px solid #cfdde2 !important;
+    border-radius: 0.75rem !important;
+    outline: none !important;
+    background: #ffffff !important;
+    color: #14283c !important;
+    font: inherit !important;
+  }
+
+  .confirm-input-field input:focus {
+    border-color: #0f8b89 !important;
+    box-shadow: 0 0 0 4px rgba(15, 139, 137, 0.13) !important;
+  }
+
+  .confirm-actions {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 0.48rem !important;
+    margin-top: 0.18rem !important;
+  }
+
+  .confirm-actions .btn-ghost,
+  .confirm-actions .btn-primary {
+    min-height: 2.25rem !important;
+    padding: 0.45rem 0.76rem !important;
+    border-radius: 999px !important;
+    font-size: 0.78rem !important;
+    font-weight: 820 !important;
+    line-height: 1 !important;
+  }
+
+  .confirm-actions .btn-ghost {
+    border: 1px solid #cbdbe1 !important;
+    background: #ffffff !important;
+    color: #3f5263 !important;
+  }
+
+  .confirm-actions .btn-primary {
+    border: 1px solid #00586a !important;
+    background: #00586a !important;
+    color: #ffffff !important;
+  }
+
+  .confirm-actions .btn-primary[data-tone='error'] {
+    border-color: #b42318 !important;
+    background: #b42318 !important;
+  }
+
+  .toast-region {
+    position: fixed !important;
+    right: 1rem !important;
+    bottom: 1rem !important;
+    z-index: 980 !important;
+    display: grid !important;
+    gap: 0.6rem !important;
+    width: min(24rem, calc(100vw - 2rem)) !important;
+    pointer-events: none !important;
+  }
+
+  .toast-card {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    gap: 0.65rem !important;
+    align-items: start !important;
+    padding: 0.78rem 0.85rem !important;
+    border: 1px solid #d7e3e7 !important;
+    border-radius: 1rem !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0 24px 60px -38px rgba(6, 20, 31, 0.58) !important;
+    color: #17283b !important;
+    pointer-events: auto !important;
+  }
+
+  .toast-copy p {
+    margin: 0 !important;
+    color: #566878 !important;
+    font-size: 0.82rem !important;
+    line-height: 1.35 !important;
+  }
+
+  #assistantRail.is-chat-empty.assistant-rail,
+  #assistantRail.is-chat-empty.assistant-rail-portal {
+    height: auto !important;
+    max-height: calc(100dvh - 1.2rem) !important;
+  }
+
+  #assistantRail.is-chat-empty .assistant-rail-card,
+  #assistantRail.is-chat-empty .assistant-rail-body,
+  #assistantRail.is-chat-empty .assistant-console,
+  #assistantRail.is-chat-empty .assistant-dialog-surface {
+    flex: 0 0 auto !important;
+    height: auto !important;
+  }
+
   #assistantRail .assistant-report-priority-card,
   #assistantRail .assistant-live-context,
   #assistantRail .assistant-context-hint,
@@ -26959,7 +27159,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
     display: flex !important;
     flex-direction: column !important;
-    gap: 0.34rem !important;
+    gap: 0.3rem !important;
     margin: 0.38rem 0.5rem 0.5rem !important;
     min-height: 0 !important;
     overflow: hidden !important;
@@ -26975,14 +27175,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   #assistantRail .assistant-mode-switch {
     order: 1 !important;
     flex: 0 0 auto !important;
-    min-height: 2rem !important;
-    padding: 0.18rem !important;
+    min-height: 1.86rem !important;
+    padding: 0.16rem !important;
   }
 
   #assistantRail .assistant-mode-chip {
-    min-height: 1.62rem !important;
-    padding: 0.2rem 0.42rem !important;
-    font-size: 0.7rem !important;
+    min-height: 1.5rem !important;
+    padding: 0.17rem 0.38rem !important;
+    font-size: 0.68rem !important;
   }
 
   #assistantRail .chat-log,
@@ -27011,10 +27211,10 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     display: grid !important;
     place-items: center !important;
     flex: 0 0 auto !important;
-    min-height: 7.25rem !important;
-    max-height: 8.5rem !important;
+    min-height: 3.9rem !important;
+    max-height: 5.2rem !important;
     height: auto !important;
-    padding: 0.52rem !important;
+    padding: 0.34rem 0.46rem !important;
     margin: 0 !important;
   }
 
@@ -27028,33 +27228,39 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   #assistantRail .assistant-chat-empty {
-    gap: 0.26rem !important;
-    max-width: 42rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.44rem !important;
+    max-width: 100% !important;
     min-height: 0 !important;
-    padding: 0.45rem !important;
+    padding: 0 !important;
   }
 
-  #assistantRail .assistant-chat-empty-icon {
-    width: 1.72rem !important;
-    height: 1.72rem !important;
-    font-size: 0.95rem !important;
+  #assistantRail .assistant-chat-empty-icon,
+  #assistantRail .assistant-chat-empty p {
+    display: none !important;
   }
 
   #assistantRail .assistant-chat-empty strong {
-    font-size: 0.86rem !important;
-    line-height: 1.15 !important;
+    flex: 0 0 auto !important;
+    font-size: 0.78rem !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
   }
 
-  #assistantRail .assistant-chat-empty p {
-    margin: 0 !important;
-    font-size: 0.74rem !important;
-    line-height: 1.28 !important;
+  #assistantRail .assistant-chat-empty-chips {
+    display: flex !important;
+    gap: 0.26rem !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
   }
 
   #assistantRail .assistant-chat-empty-chip {
-    min-height: 1.55rem !important;
-    padding: 0.18rem 0.46rem !important;
-    font-size: 0.65rem !important;
+    min-height: 1.42rem !important;
+    padding: 0.15rem 0.42rem !important;
+    font-size: 0.62rem !important;
+    white-space: nowrap !important;
   }
 
   #assistantRail .ai-input-area,
@@ -27111,7 +27317,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   html[data-assistant-mode='mobile'] #assistantRail .assistant-diagnostic-card {
     order: 4 !important;
     flex: 0 0 auto !important;
-    padding: 0.3rem 0.4rem !important;
+    padding: 0.24rem 0.36rem !important;
     border-radius: 10px !important;
   }
 
@@ -27141,6 +27347,15 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     #assistantRail .assistant-action-grid {
       grid-template-columns: 1fr !important;
+    }
+
+    .confirm-panel {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .confirm-actions {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
     }
   }
 </style>
