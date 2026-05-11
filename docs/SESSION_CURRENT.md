@@ -2,7 +2,7 @@
 
 ## Estado
 - Rama: `main`.
-- HEAD remoto actual: `a354405`.
+- HEAD remoto actual: `3ddb77f`.
 - GitHub: sincronizado.
 - Produccion `fisio-frontend` verificada (HTTP 200) con:
   - `__fisioShellNavigate` presente en HTML.
@@ -12,8 +12,8 @@
   - `53f4a2d` - rail chat-first con estado vacio util y prompts rapidos.
 - Cierre documental mas reciente:
   - `a354405` - `docs: close session and align project status`.
-- Trabajo en curso local:
-  - modularizacion inicial del shell frontend.
+- Trabajo cerrado y publicado:
+  - `3ddb77f` - `refactor: modularize frontend shell`.
   - `index.astro` conserva la logica JS/CSS, pero delega markup estable en componentes Astro.
   - componentes extraidos: `AssistantRail`, `MobileDock`, `GlobalFeedbackShell`, `SidebarNav`, `Topbar`, `ShellNavigationBootstrap`.
 
@@ -41,7 +41,7 @@
   - Validacion JSON de workflows n8n: OK.
 
 ## Proximo arranque
-1. Crear commit atomico de la modularizacion y validacion de produccion.
+1. Redeploy de `fisio-frontend` en EasyPanel.
 2. Smoke test visual/manual tras deploy:
    - `Finanzas`, `Documentos`, `Agenda`,
    - tabs financieras,

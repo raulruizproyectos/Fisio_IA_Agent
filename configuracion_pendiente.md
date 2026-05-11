@@ -1,14 +1,14 @@
 # Configuracion pendiente
 
 ## Estado vivo - 2026-05-11
-- GitHub: `main` sincronizado hasta `a354405`.
+- GitHub: `main` sincronizado hasta `3ddb77f`.
 - Frontend:
   - fix de navegacion `Finanzas`/`Documentos` consolidado,
   - ajustes de rail IA en commits `c519b13` y `53f4a2d` (chat-first + estado vacio util).
 - Backend: warning de lint eliminado en `professional.js`.
 - Deploy/cache de frontend: verificado en produccion con HTML que contiene `__fisioShellNavigate` y bundle `...BT9OP7ob.js`.
-- Trabajo local en curso: modularizacion inicial del shell frontend con componentes Astro para rail IA, dock movil, feedback global, sidebar, topbar y bootstrap temprano de navegacion.
-- Pendiente operativo: revisar/commitear modularizacion y smoke test visual/manual completo.
+- Modularizacion inicial del shell frontend publicada en `3ddb77f` con componentes Astro para rail IA, dock movil, feedback global, sidebar, topbar y bootstrap temprano de navegacion.
+- Pendiente operativo: redeploy de `fisio-frontend` en EasyPanel y smoke test visual/manual completo.
 
 ## Validado localmente
 - `npm run lint` en `backend`: OK.
@@ -36,7 +36,7 @@
    - estado vacio del chat muestra sugerencias rapidas.
 
 ## Siguiente bloque recomendado
-1. Crear commit atomico de la modularizacion frontend.
+1. Redeploy de `fisio-frontend` en EasyPanel.
 2. Completar smoke test visual tras deploy.
 3. Siguiente deuda: extraer JS del shell/router y controlador del rail IA desde `frontend/src/pages/index.astro`.
 

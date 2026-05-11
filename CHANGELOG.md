@@ -4,6 +4,8 @@ Solo se conserva el historial operativo reciente. Para detalles antiguos, usar e
 
 ## 2026-05-11 - Modularizacion inicial del shell frontend
 - `frontend/src/pages/index.astro` reduce markup inline extrayendo componentes Astro sin cambiar IDs ni contratos DOM.
+- Publicado en `main`:
+  - `3ddb77f` - `refactor: modularize frontend shell`
 - Nuevos componentes:
   - `frontend/src/components/AssistantRail.astro`
   - `frontend/src/components/MobileDock.astro`

@@ -4,14 +4,14 @@ CRM y agentes para un centro de fisioterapia: pacientes, agenda, finanzas, docum
 
 ## Estado actual
 - Rama: `main`.
-- Ultimo HEAD remoto/local confirmado: `a354405` - `docs: close session and align project status`.
+- Ultimo HEAD remoto/local confirmado: `3ddb77f` - `refactor: modularize frontend shell`.
 - Ultimo cierre funcional relevante: `53f4a2d` - `fix: make assistant rail chat-first with useful empty state`.
 - Frontend productivo: `fisio-frontend` en EasyPanel.
 - Backend productivo: `fisio-backend` en EasyPanel.
 - Checkpoint vivo: `docs/SESSION_CURRENT.md`.
 - Checklist vivo: `configuracion_pendiente.md`.
 - Nota de continuidad: deploy/cache de frontend verificado en produccion (2026-05-11) con `__fisioShellNavigate` y bundle `...BT9OP7ob.js`; queda pendiente smoke test visual/manual completo.
-- Modularizacion local en curso: shell frontend separado en componentes Astro para rail IA, dock movil, feedback global, sidebar, topbar y bootstrap temprano de navegacion.
+- Modularizacion publicada: shell frontend separado en componentes Astro para rail IA, dock movil, feedback global, sidebar, topbar y bootstrap temprano de navegacion.
 
 ## Alcance activo
 - CRM web para operacion clinica y administrativa.
