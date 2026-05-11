@@ -1477,6 +1477,14 @@ import Topbar from '../components/Topbar.astro';
       #assistantRail.is-chat-empty .assistant-rail-body,
       #assistantRail.is-chat-empty .assistant-console,
       #assistantRail.is-chat-empty .assistant-dialog-surface { flex: 0 0 auto !important; height: auto !important; }
+      #assistantRail.is-chat-empty .chat-log { display: none !important; }
+      #assistantRail.has-chat-messages .assistant-agent-canvas { display: none !important; }
+      #assistantRail .assistant-agent-canvas { display: grid !important; grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr) !important; gap: 0.55rem !important; align-items: center !important; margin-bottom: 0.4rem !important; padding: 0.52rem 0.62rem !important; border: 1px solid #d5e5e7 !important; border-radius: 14px !important; background: linear-gradient(135deg, #f8fcfb, #fffaf1) !important; }
+      #assistantRail .assistant-agent-canvas-copy { display: grid !important; gap: 0.1rem !important; min-width: 0 !important; }
+      #assistantRail .assistant-agent-canvas-copy span { color: #08716d !important; font-size: 0.62rem !important; font-weight: 860 !important; letter-spacing: 0.12em !important; text-transform: uppercase !important; }
+      #assistantRail .assistant-agent-canvas-copy strong { color: #17283b !important; font-size: 0.86rem !important; line-height: 1.1 !important; }
+      #assistantRail .assistant-agent-prompts { display: flex !important; flex-wrap: wrap !important; justify-content: flex-end !important; gap: 0.3rem !important; min-width: 0 !important; }
+      #assistantRail .assistant-agent-prompts button { min-height: 1.72rem !important; padding: 0.18rem 0.52rem !important; border: 1px solid #c7dfe5 !important; border-radius: 999px !important; background: #ffffff !important; color: #234c61 !important; font: inherit !important; font-size: 0.66rem !important; font-weight: 820 !important; cursor: pointer !important; }
       #assistantRail .assistant-dialog-surface,
       html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
       html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
@@ -1494,6 +1502,7 @@ import Topbar from '../components/Topbar.astro';
       #assistantRail .chat-log.is-empty-chat { flex: 0 0 auto !important; min-height: 3.9rem !important; max-height: 5.2rem !important; padding: 0.34rem 0.46rem !important; }
       #assistantRail .chat-log.is-empty-chat:empty::before,
       #assistantRail .chat-log:empty::before { content: none !important; display: none !important; }
+      #assistantRail.is-chat-empty .assistant-dialog-surface > .chat-log { display: none !important; min-height: 0 !important; max-height: 0 !important; height: 0 !important; padding: 0 !important; margin: 0 !important; border: 0 !important; }
       #assistantRail .assistant-chat-empty { display: flex !important; align-items: center !important; justify-content: center !important; gap: 0.44rem !important; max-width: 100% !important; min-height: 0 !important; padding: 0 !important; }
       #assistantRail .assistant-chat-empty-icon,
       #assistantRail .assistant-chat-empty p { display: none !important; }
@@ -1844,6 +1853,8 @@ import Topbar from '../components/Topbar.astro';
     if (!log) return;
     assistantRail?.classList.toggle('is-chat-empty', !hasMessages);
     assistantRail?.classList.toggle('has-chat-messages', hasMessages);
+    inputArea?.classList.toggle('is-chat-empty', !hasMessages);
+    inputArea?.classList.toggle('has-chat-messages', hasMessages);
     log.style.setProperty('order', '2', 'important');
     log.style.setProperty('overflow-y', 'auto', 'important');
     log.style.setProperty('overflow-x', 'hidden', 'important');
@@ -27137,6 +27148,74 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     height: auto !important;
   }
 
+  #assistantRail.is-chat-empty .chat-log {
+    display: none !important;
+  }
+
+  #assistantRail.has-chat-messages .assistant-agent-canvas {
+    display: none !important;
+  }
+
+  #assistantRail .assistant-agent-canvas {
+    display: grid !important;
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr) !important;
+    gap: 0.55rem !important;
+    align-items: center !important;
+    margin-bottom: 0.4rem !important;
+    padding: 0.52rem 0.62rem !important;
+    border: 1px solid #d5e5e7 !important;
+    border-radius: 14px !important;
+    background:
+      radial-gradient(circle at top right, rgba(197, 226, 229, 0.62), transparent 42%),
+      linear-gradient(135deg, #f8fcfb 0%, #fffaf1 100%) !important;
+  }
+
+  #assistantRail .assistant-agent-canvas-copy {
+    display: grid !important;
+    gap: 0.1rem !important;
+    min-width: 0 !important;
+  }
+
+  #assistantRail .assistant-agent-canvas-copy span {
+    color: #08716d !important;
+    font-size: 0.62rem !important;
+    font-weight: 860 !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+  }
+
+  #assistantRail .assistant-agent-canvas-copy strong {
+    color: #17283b !important;
+    font-size: 0.86rem !important;
+    line-height: 1.1 !important;
+  }
+
+  #assistantRail .assistant-agent-prompts {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+    gap: 0.3rem !important;
+    min-width: 0 !important;
+  }
+
+  #assistantRail .assistant-agent-prompts button {
+    min-height: 1.72rem !important;
+    padding: 0.18rem 0.52rem !important;
+    border: 1px solid #c7dfe5 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #234c61 !important;
+    font: inherit !important;
+    font-size: 0.66rem !important;
+    font-weight: 820 !important;
+    cursor: pointer !important;
+  }
+
+  #assistantRail .assistant-agent-prompts button:hover {
+    border-color: #8ebec9 !important;
+    background: #eff9f9 !important;
+  }
+
   #assistantRail .assistant-report-priority-card,
   #assistantRail .assistant-live-context,
   #assistantRail .assistant-context-hint,
@@ -27225,6 +27304,16 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   html[data-assistant-mode='mobile'] #assistantRail .chat-log:empty::before {
     content: none !important;
     display: none !important;
+  }
+
+  #assistantRail.is-chat-empty .assistant-dialog-surface > .chat-log {
+    display: none !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
   }
 
   #assistantRail .assistant-chat-empty {
@@ -27356,6 +27445,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     .confirm-actions {
       display: grid !important;
       grid-template-columns: 1fr 1fr !important;
+    }
+
+    #assistantRail .assistant-agent-canvas {
+      grid-template-columns: 1fr !important;
+    }
+
+    #assistantRail .assistant-agent-prompts {
+      justify-content: flex-start !important;
     }
   }
 </style>

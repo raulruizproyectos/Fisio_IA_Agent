@@ -142,6 +142,17 @@
           </div>
 
           <form id="agentForm" class="ai-input-area">
+            <div class="assistant-agent-canvas" id="assistantAgentCanvas" aria-label="Inicios rapidos del agente clinico">
+              <div class="assistant-agent-canvas-copy">
+                <span>Copilot clinico</span>
+                <strong>Que quieres resolver ahora?</strong>
+              </div>
+              <div class="assistant-agent-prompts">
+                <button type="button" data-assistant-mode="new-plan" data-assistant-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias. Genera un plan domiciliario progresivo, seguro y facil de explicar.">Plan lumbar</button>
+                <button type="button" data-assistant-mode="update-plan" data-assistant-prompt="Revisa el plan activo del paciente. Propon ajuste segun dolor, adherencia, progresion y criterios para avanzar o bajar carga.">Ajustar plan</button>
+                <button type="button" data-assistant-mode="next-session" data-assistant-prompt="Prepara una checklist breve para la proxima visita: que preguntar, que medir, que ejercicio revisar y que decision tomar.">Proxima visita</button>
+              </div>
+            </div>
             <div class="assistant-composer-shell">
               <div class="ai-textarea-wrapper">
                 <textarea id="agentInput" rows="1" placeholder="Anade objetivo, limitaciones o preferencias para completar la ficha estructurada..."></textarea>
