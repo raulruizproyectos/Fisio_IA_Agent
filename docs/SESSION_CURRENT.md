@@ -2,8 +2,9 @@
 
 ## Estado
 - Rama: `main`.
-- HEAD remoto: `main` actualizado tras la modularizacion y handoff documental.
-- GitHub: sincronizado.
+- HEAD remoto: `main` actualizado hasta el hotfix visual `723fcfe`.
+- Trabajo local en curso: compactacion final del rail IA y auditoria premium de plataforma.
+- GitHub: pendiente de nuevo commit/push de esta fase.
 - Produccion `fisio-frontend` verificada (HTTP 200) con:
   - `__fisioShellNavigate` presente en HTML.
   - bundle IA activo: `/_astro/index.astro_astro_type_script_index_0_lang.BT9OP7ob.js`.
@@ -13,6 +14,7 @@
 - Cierre documental: actualizado tras publicar la modularizacion.
 - Trabajo cerrado y publicado:
   - `3ddb77f` - `refactor: modularize frontend shell`.
+  - `723fcfe` - `fix: restore shell styles and compact assistant rail`.
   - `index.astro` conserva la logica JS/CSS, pero delega markup estable en componentes Astro.
   - componentes extraidos: `AssistantRail`, `MobileDock`, `GlobalFeedbackShell`, `SidebarNav`, `Topbar`, `ShellNavigationBootstrap`.
 
@@ -25,6 +27,8 @@
 - Limpieza de estilos muertos de agenda.
 - Documentacion compactada para evitar duplicados largos.
 - Ajustes fuertes del rail del asistente para reducir bloques ornamentales y priorizar chat.
+- Refuerzo local adicional: runtime compacto del agente, chat vacio limitado, textarea contenida y bloque CSS hard-stop final.
+- Auditoria premium creada en `docs/PREMIUM_PLATFORM_AUDIT_20260511.md`.
 
 ## Validacion local
 - `npm run lint` en `backend`: OK.
@@ -38,14 +42,19 @@
   - `npm.cmd run preview` temporal: HTTP 200 con marcadores criticos presentes.
   - `npm.cmd run lint` en `backend`: OK.
   - Validacion JSON de workflows n8n: OK.
+- Tras compactacion final del rail IA:
+  - `npm.cmd run check`: OK.
+  - `npm.cmd run build`: OK.
+  - `git diff --check`: OK, solo aviso CRLF esperado en Windows.
 
 ## Proximo arranque
-1. Redeploy de `fisio-frontend` en EasyPanel.
-2. Smoke test visual/manual tras deploy:
+1. Commit y push de la compactacion final + auditoria premium.
+2. Redeploy de `fisio-frontend` en EasyPanel.
+3. Smoke test visual/manual tras deploy:
    - `Finanzas`, `Documentos`, `Agenda`,
    - tabs financieras,
    - rail de asistente (sin hueco muerto).
-3. Siguiente candidato de modularizacion: separar controlador JS del shell/router y controlador del rail IA.
+4. Siguiente candidato de modularizacion: separar controlador JS del shell/router y controlador del rail IA.
 
 ## Nota
 Si produccion sigue mostrando Agenda al pulsar Finanzas/Documentos, primero confirmar que EasyPanel sirve el HTML con `__fisioShellNavigate`. Si no aparece, es deploy/cache, no codigo local.
