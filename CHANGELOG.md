@@ -2,6 +2,18 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-12 - Correccion visual CRM premium calmado
+- `frontend/src/styles/premium-clinic-ui.css`:
+  - Rehecha la capa visual tras feedback real de EasyPanel: menos cajas, menos bordes, mas separadores y superficies continuas.
+  - Eliminada la direccion editorial con serif; titulos, cuerpo, botones y controles vuelven a una sola voz tipografica (`Manrope`).
+  - Dashboard: hero sin contenedor duro, senales y metricas como bandas compactas con separadores finos.
+  - Pacientes: header mas sobrio, estadisticas como lista lateral, barra de busqueda/filtros sin caja exterior y acciones `Abrir ficha`/`Seguimiento` como pildoras compactas.
+  - Copiloto IA: mantiene formato grande, pero con panel mas calmado y menos borde visible.
+- `frontend/src/layouts/Layout.astro`:
+  - Retirada la carga de `Newsreader`.
+  - `--font-display` pasa a `Manrope` para evitar mezcla tipografica.
+- Validado: `npm.cmd run check` OK, `npm.cmd run build` OK.
+
 ## 2026-05-12 - Fase 2: CSS del copiloto fuera del runtime
 - `frontend/src/styles/premium-clinic-ui.css`:
   - Nueva capa final de redisenio premium usando la skill `frontend-design`.

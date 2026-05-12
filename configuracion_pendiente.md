@@ -1,12 +1,12 @@
 # Configuracion pendiente
 
 ## Estado vivo - 2026-05-12
-- GitHub: Fase 2 CSS premium lista para publicar en `main`.
+- GitHub: correccion visual premium calmada lista para publicar en `main`.
 - Frontend:
   - Creado `frontend/src/styles/assistant-rail.css` para sacar el override del copiloto fuera del runtime JS.
   - Creado `frontend/src/styles/global-shell.css` para sacar la recuperacion global de sidebar/topbar/workspace fuera del monolito.
-  - Creado `frontend/src/styles/premium-clinic-ui.css` para redisenar el CRM y el agente IA con menos cajas y aspecto mas premium.
-  - `Layout.astro` carga `Newsreader` como fuente display premium.
+  - Rehecho `frontend/src/styles/premium-clinic-ui.css` tras feedback de EasyPanel: menos cajas, menos bordes, mas listas y separadores finos.
+  - `Layout.astro` ya no carga `Newsreader`; el sistema visual queda unificado en `Manrope`.
   - Eliminado `ensureAssistantCompactRuntimeStyles` de `frontend/src/pages/index.astro`.
   - Se mantiene el copiloto chat-first: chat-log 55vh, textarea 3.5rem, fuente 0.92rem.
   - Auditoria premium completada con capturas de produccion.
@@ -20,7 +20,7 @@
 - `git push origin main`: listo tras commit de Fase 2.
 
 ## Pendiente operativo
-1. Redeploy de `fisio-frontend` en EasyPanel.
+1. Redeploy de `fisio-frontend` en EasyPanel con la correccion visual calmada.
 2. Smoke test visual tras deploy (shell, dashboard, pacientes, agenda, finanzas, documentos y copiloto IA).
 3. Ajustar fino segun captura real de EasyPanel: densidad, contrastes, altura del copiloto y exceso de cajas restantes.
 
