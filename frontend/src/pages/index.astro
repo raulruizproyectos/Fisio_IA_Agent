@@ -23,224 +23,226 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
       <div class="workspace-shell">
         <main class="content">
         <!-- === PAGE: DASHBOARD === -->
-                <div class="page-section active" data-page="dashboard">
-          <div class="dashboard-layout">
-            <section class="hero-section cockpit-hero">
-              <div class="hero-panel-main">
-                <div class="hero-heading-stack">
-                  <span class="hero-eyebrow">Centro operativo del dia</span>
-                  <h1 class="hero-title">Hoy en la clinica</h1>
-                  <p class="hero-subtitle" id="dashboardLiveSummary">Resumen diario en tiempo real.</p>
-                  <div class="hero-runtime-strip" aria-label="Principios del trabajo diario">
-                    <span class="hero-runtime-chip">Agenda viva</span>
-                    <span class="hero-runtime-chip">Seguimiento trazable</span>
-                    <span class="hero-runtime-chip">Cobro y documentacion al dia</span>
-                  </div>
+        <div class="page-section active" data-page="dashboard">
+          <div class="ops-dashboard">
+            <section class="ops-hero" aria-labelledby="dashboardTitle">
+              <div class="ops-hero-copy">
+                <span class="ops-kicker">Centro operativo del dia</span>
+                <h1 class="ops-title" id="dashboardTitle">Hoy en la clinica</h1>
+                <p class="ops-subtitle" id="dashboardLiveSummary">Resumen diario en tiempo real.</p>
+                <div class="ops-chips" aria-label="Principios del trabajo diario">
+                  <span>Agenda viva</span>
+                  <span>Seguimiento trazable</span>
+                  <span>Cobro y documentacion al dia</span>
                 </div>
-                <div class="hero-actions hero-action-row">
-                  <button class="btn-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
-                </div>
-                <div class="hero-signal-grid">
-                  <article class="signal-card signal-card-live" id="dashboardNextSessionCard">
-                    <div class="signal-live-head">
-                      <span class="signal-kicker">Proxima sesion</span>
-                      <span class="status-chip pendiente" id="dashboardNextSessionStatus">Agenda</span>
-                    </div>
-                    <strong class="signal-value" id="dashboardNextSessionTitle">Cargando agenda...</strong>
-                    <p id="dashboardNextSessionMeta">Cargando...</p>
-                    <button class="btn-link-inline" id="dashboardNextSessionBtn" type="button"><span class="material-symbols-rounded">event_available</span> Abrir agenda</button>
-                  </article>
-                  <article class="signal-card signal-card-live">
-                    <div class="signal-live-head">
-                      <span class="signal-kicker">Triage operativo</span>
-                    <span class="status-chip pendiente" id="dashboardIntakeStatus">Entrada</span>
-                    </div>
-                    <strong class="signal-value" id="dashboardIntakeTitle">Bandeja en revisión</strong>
-                    <p id="dashboardIntakeMeta">Actualizando mensajes de pacientes desde Telegram y formulario web.</p>
-                    <button class="btn-link-inline" type="button" data-dashboard-nav="intakes"><span class="material-symbols-rounded">forward_to_inbox</span> Abrir bandeja</button>
-                  </article>
-                  <article class="signal-card signal-card-live">
-                    <div class="signal-live-head">
-                      <span class="signal-kicker">Google Calendar</span>
-                      <span class="status-chip pendiente" id="dashboardSyncChip">Comprobando</span>
-                    </div>
-                    <strong class="signal-value" id="dashboardSyncTitle">Sincronizacion de agenda</strong>
-                    <p id="dashboardSyncMeta">Esperando estado del lector y escritor de calendar.</p>
-                    <div class="agenda-sync-facts dashboard-sync-facts" id="dashboardSyncFacts" hidden></div>
-                  </article>
-                  <article class="signal-card signal-card-live signal-card-booking">
-                    <div class="signal-live-head">
-                      <span class="signal-kicker">Reserva online</span>
-                      <span class="status-chip aprobado">Activa</span>
-                    </div>
-                    <strong class="signal-value">Reserva online activa</strong>
-                    <p id="dashboardBookingMeta">Enlace publico disponible.</p>
-                    <div class="signal-card-actions">
-                      <button class="btn-link-inline" id="dashboardBookingOpenBtn" type="button"><span class="material-symbols-rounded">open_in_new</span> Abrir reserva</button>
-                      <button class="btn-link-inline" id="dashboardBookingCopyBtn" type="button"><span class="material-symbols-rounded">content_copy</span> Copiar enlace</button>
-                    </div>
-                    <span id="dashboardBookingFeedback" class="form-feedback" hidden></span>
-                  </article>
-                </div>
+                <button class="ops-pill ops-pill-primary" id="heroAgentShortcutBtn" type="button"><span class="material-symbols-rounded">psychology</span> Generar plan guiado</button>
               </div>
-              <div class="hero-panel-side">
-                <article class="cockpit-side-card priorities-side-card">
-                  <span class="cockpit-side-kicker">Foco operativo</span>
-                  <div class="priority-list" id="dashboardPriorityList">
-                    <article class="priority-item priority-item-loading">
-                      <div class="priority-copy">
-                        <span>Cargando</span>
-                        <strong>Calculando...</strong>
-                      </div>
-                    </article>
-                  </div>
-                </article>
-              </div>
+
+              <aside class="ops-focus" aria-label="Foco operativo">
+                <span class="ops-kicker">Foco operativo</span>
+                <div class="priority-list ops-priority-list" id="dashboardPriorityList">
+                  <article class="priority-item priority-item-loading">
+                    <div class="priority-copy">
+                      <span>Cargando</span>
+                      <strong>Calculando...</strong>
+                    </div>
+                  </article>
+                </div>
+              </aside>
             </section>
 
-            <section class="metrics-row clinical-metrics">
-              <div class="metric-card"><div class="metric-icon metric-icon-teal"><span class="material-symbols-rounded">group</span></div><div class="metric-data"><span class="metric-value" id="metricPacientes">&mdash;</span><span class="metric-label">Pacientes activos</span></div></div>
-              <div class="metric-card"><div class="metric-icon metric-icon-mint"><span class="material-symbols-rounded">event_available</span></div><div class="metric-data"><span class="metric-value" id="metricSesiones">&mdash;</span><span class="metric-label">Citas hoy</span></div></div>
-              <div class="metric-card"><div class="metric-icon metric-icon-emerald"><span class="material-symbols-rounded">euro</span></div><div class="metric-data"><span class="metric-value" id="metricIngresosMes">0 &euro;</span><span class="metric-label">Ingresos este mes</span></div></div>
-              <div class="metric-card"><div class="metric-icon metric-icon-amber"><span class="material-symbols-rounded">receipt_long</span></div><div class="metric-data"><span class="metric-value" id="metricSesionesMes">0</span><span class="metric-label">Sesiones este mes</span></div></div>
+            <section class="ops-signals" aria-label="Estado operativo">
+              <article class="ops-signal" id="dashboardNextSessionCard">
+                <div class="ops-signal-head">
+                  <span>Proxima sesion</span>
+                  <span class="status-chip pendiente" id="dashboardNextSessionStatus">Agenda</span>
+                </div>
+                <strong id="dashboardNextSessionTitle">Cargando agenda...</strong>
+                <p id="dashboardNextSessionMeta">Cargando...</p>
+                <button class="ops-text-action" id="dashboardNextSessionBtn" type="button"><span class="material-symbols-rounded">event_available</span> Abrir agenda</button>
+              </article>
+
+              <article class="ops-signal">
+                <div class="ops-signal-head">
+                  <span>Triage operativo</span>
+                  <span class="status-chip pendiente" id="dashboardIntakeStatus">Entrada</span>
+                </div>
+                <strong id="dashboardIntakeTitle">Bandeja en revision</strong>
+                <p id="dashboardIntakeMeta">Actualizando mensajes de pacientes desde Telegram y formulario web.</p>
+                <button class="ops-text-action" type="button" data-dashboard-nav="intakes"><span class="material-symbols-rounded">forward_to_inbox</span> Abrir bandeja</button>
+              </article>
+
+              <article class="ops-signal">
+                <div class="ops-signal-head">
+                  <span>Google Calendar</span>
+                  <span class="status-chip pendiente" id="dashboardSyncChip">Comprobando</span>
+                </div>
+                <strong id="dashboardSyncTitle">Sincronizacion de agenda</strong>
+                <p id="dashboardSyncMeta">Esperando estado del lector y escritor de calendar.</p>
+                <div class="agenda-sync-facts dashboard-sync-facts" id="dashboardSyncFacts" hidden></div>
+              </article>
+
+              <article class="ops-signal">
+                <div class="ops-signal-head">
+                  <span>Reserva online</span>
+                  <span class="status-chip aprobado">Activa</span>
+                </div>
+                <strong>Reserva online activa</strong>
+                <p id="dashboardBookingMeta">Enlace publico disponible.</p>
+                <div class="ops-inline-actions">
+                  <button class="ops-text-action" id="dashboardBookingOpenBtn" type="button"><span class="material-symbols-rounded">open_in_new</span> Abrir reserva</button>
+                  <button class="ops-text-action" id="dashboardBookingCopyBtn" type="button"><span class="material-symbols-rounded">content_copy</span> Copiar enlace</button>
+                </div>
+                <span id="dashboardBookingFeedback" class="form-feedback" hidden></span>
+              </article>
             </section>
 
-            <!-- Grafico ingresos mensuales -->
-            <section class="card widget-card dashboard-chart-card">
-              <header class="card-header">
-                <h2>Ingresos mensuales</h2>
+            <section class="ops-metrics" aria-label="Metricas clave">
+              <div><span class="material-symbols-rounded">group</span><strong id="metricPacientes">&mdash;</strong><small>Pacientes activos</small></div>
+              <div><span class="material-symbols-rounded">event_available</span><strong id="metricSesiones">&mdash;</strong><small>Citas hoy</small></div>
+              <div><span class="material-symbols-rounded">euro</span><strong id="metricIngresosMes">0 &euro;</strong><small>Ingresos este mes</small></div>
+              <div><span class="material-symbols-rounded">receipt_long</span><strong id="metricSesionesMes">0</strong><small>Sesiones este mes</small></div>
+            </section>
+
+            <section class="ops-section ops-chart-section">
+              <header class="ops-section-head">
+                <div>
+                  <span class="ops-kicker">Finanzas</span>
+                  <h2>Ingresos mensuales</h2>
+                </div>
                 <span class="dashboard-year-meta" id="dashChartYear"></span>
               </header>
-              <div class="dashboard-chart-wrap">
+              <div class="dashboard-chart-wrap ops-chart-wrap">
                 <canvas id="dashIncomeChart" height="150"></canvas>
               </div>
             </section>
 
-            <section class="dashboard-ops-grid">
-              <article class="cockpit-block">
-                <header class="cockpit-block-head">
-                  <div class="cockpit-block-copy">
-                    <h2>Flujos clave</h2>
-                    <p>Accesos directos para resolver la operativa diaria sin pasos de sobra.</p>
-                  </div>
-                </header>
-                <div class="command-grid">
-                  <button type="button" class="command-tile" data-dashboard-action="new-patient"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">person_add</span></span><span class="command-tile-kicker">Admision</span><strong>Alta de paciente</strong><p>Ficha lista en segundos.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="citas"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">calendar_month</span></span><span class="command-tile-kicker">Agenda</span><strong>Semana clínica</strong><p>Gestiona huecos y cambios rápido.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-nav="intakes"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">forward_to_inbox</span></span><span class="command-tile-kicker">Telegram</span><strong>Mensajes y triage</strong><p>Prioriza y responde sin friccion.</p></button>
-                  <button type="button" class="command-tile" data-dashboard-action="open-copilot"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span><span class="command-tile-kicker">Ejercicios</span><strong>Plan de ejercicios</strong><p>Genera, entrega y guarda trazabilidad.</p></button>
-                  <button type="button" class="command-tile command-tile-accent" data-dashboard-nav="pagos"><span class="command-tile-icon" aria-hidden="true"><span class="material-symbols-rounded">payments</span></span><span class="command-tile-kicker">Cobros</span><strong>Pagos y bonos</strong><p>Revisa cobros, bonos y sesiones pendientes.</p></button>
+            <section class="ops-section">
+              <header class="ops-section-head">
+                <div>
+                  <span class="ops-kicker">Flujos clave</span>
+                  <h2>Accesos de trabajo</h2>
                 </div>
-              </article>
+                <p>Resolver operativa diaria sin pasar por pantallas intermedias.</p>
+              </header>
+              <div class="ops-command-row">
+                <button type="button" class="ops-command" data-dashboard-action="new-patient"><span class="material-symbols-rounded">person_add</span><span>Admision</span><strong>Alta de paciente</strong></button>
+                <button type="button" class="ops-command" data-dashboard-nav="citas"><span class="material-symbols-rounded">calendar_month</span><span>Agenda</span><strong>Semana clinica</strong></button>
+                <button type="button" class="ops-command" data-dashboard-nav="intakes"><span class="material-symbols-rounded">forward_to_inbox</span><span>Telegram</span><strong>Mensajes y triage</strong></button>
+                <button type="button" class="ops-command" data-dashboard-action="open-copilot"><span class="material-symbols-rounded">psychology</span><span>IA</span><strong>Plan de ejercicios</strong></button>
+                <button type="button" class="ops-command" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span><span>Cobros</span><strong>Pagos y bonos</strong></button>
+              </div>
             </section>
 
-            <div class="dashboard-bottom-row">
-              <section class="card widget-card">
-                <header class="card-header">
-                  <h2>Agenda inmediata</h2>
-                  <button class="btn-ghost" type="button" data-dashboard-nav="citas"><span class="material-symbols-rounded">arrow_forward</span> Ver todas</button>
+            <section class="ops-live-grid">
+              <article class="ops-section">
+                <header class="ops-section-head">
+                  <div>
+                    <span class="ops-kicker">Agenda</span>
+                    <h2>Agenda inmediata</h2>
+                  </div>
+                  <button class="ops-text-action" type="button" data-dashboard-nav="citas"><span class="material-symbols-rounded">arrow_forward</span> Ver todas</button>
                 </header>
-                <div class="widget-body list-clean" id="dashCitasBody">
+                <div class="widget-body list-clean ops-list" id="dashCitasBody">
                   <div class="empty-state-sm state-loading">
                     <span class="material-symbols-rounded">update</span>
                     <p>Actualizando agenda...</p>
                   </div>
                 </div>
-              </section>
+              </article>
 
-              <section class="card widget-card">
-                <header class="card-header">
-                  <h2>Mensajes de pacientes</h2>
-                  <button class="btn-ghost" id="refreshIntakes"><span class="material-symbols-rounded">refresh</span></button>
+              <article class="ops-section">
+                <header class="ops-section-head">
+                  <div>
+                    <span class="ops-kicker">Comunicacion</span>
+                    <h2>Mensajes de pacientes</h2>
+                  </div>
+                  <button class="ops-text-action" id="refreshIntakes" type="button"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
                 </header>
-                <div class="widget-body list-clean" id="intakeBody">
+                <div class="widget-body list-clean ops-list" id="intakeBody">
                   <div class="empty-state-sm state-loading">
                     <span class="material-symbols-rounded">update</span>
                     <p>Actualizando bandeja...</p>
                   </div>
                 </div>
-              </section>
-            </div>
+              </article>
+            </section>
           </div>
         </div>
 
         <!-- === PAGE: PACIENTES === -->
         <div class="page-section" data-page="pacientes">
-          <div class="page-header-row patients-header-row">
-            <div>
-              <h1 class="page-title"><span class="material-symbols-rounded">group</span> Pacientes</h1>
-              <p class="page-subtitle patients-page-subtitle">Busca y actua sobre cada paciente en un clic.</p>
-            </div>
-            <button class="btn-primary" id="addPatientBtn"><span class="material-symbols-rounded">person_add</span> Nuevo paciente</button>
-          </div>
-
-          <section class="patients-hero-shell">
-            <article class="patients-hero-main">
-              <span class="patients-kicker">CRM CLINICO ACTIVO</span>
-              <h2>Pacientes claros y ordenados.</h2>
-              <p>Todo el equipo sabe que hacer en cada ficha.</p>
-              <div class="patients-hero-actions">
-                <button type="button" class="btn-primary" id="patientsHeroAddBtn"><span class="material-symbols-rounded">person_add</span> Alta rapida</button>
-                <button type="button" class="btn-ghost" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Sincronizar listado</button>
+          <section class="ops-patients">
+            <header class="ops-patients-head">
+              <div>
+                <span class="ops-kicker">CRM clinico activo</span>
+                <h1 class="ops-title">Pacientes</h1>
+                <p class="ops-subtitle patients-page-subtitle">Busca, filtra y abre cada caso sin ruido visual.</p>
               </div>
-            </article>
+              <div class="ops-inline-actions">
+                <button class="ops-pill ops-pill-primary" id="addPatientBtn" type="button"><span class="material-symbols-rounded">person_add</span> Nuevo paciente</button>
+                <button type="button" class="ops-pill" id="patientsHeroAddBtn"><span class="material-symbols-rounded">bolt</span> Alta rapida</button>
+                <button type="button" class="ops-text-action" id="refreshPacientes"><span class="material-symbols-rounded">refresh</span> Sincronizar</button>
+              </div>
+            </header>
 
-            <div class="patients-hero-stats">
-              <article class="patients-stat-card">
+            <div class="ops-patient-stats" aria-label="Resumen de pacientes">
+              <article>
                 <span>Total activo</span>
                 <strong id="patientsTotalValue">0</strong>
-                <p id="patientsTotalMeta">Cargando base clínica...</p>
+                <p id="patientsTotalMeta">Cargando base clinica...</p>
               </article>
-              <article class="patients-stat-card patients-stat-card-accent">
+              <article>
                 <span>Contacto util</span>
                 <strong id="patientsReachValue">0%</strong>
                 <p id="patientsReachMeta">Midiendo email y telefono disponibles.</p>
               </article>
-              <article class="patients-stat-card">
+              <article>
                 <span>Altas recientes</span>
                 <strong id="patientsRecentValue">0</strong>
                 <p id="patientsRecentMeta">Sin lectura todavia.</p>
               </article>
             </div>
-          </section>
 
-          <section class="card patients-command-bar">
-            <div class="patients-filter-field">
-              <span class="material-symbols-rounded">search</span>
-              <input type="text" id="patientsFilterInput" placeholder="Buscar por nombre, email, telefono o ID..." autocomplete="off" />
-            </div>
-            <div class="patients-toolbar-right">
-              <div class="patients-segmented" id="patientsSegmented">
-                <button type="button" class="patients-segment is-active" data-patient-filter="all">Todos</button>
-                <button type="button" class="patients-segment" data-patient-filter="contactable">Contactables</button>
-                <button type="button" class="patients-segment" data-patient-filter="incomplete">Incompletos</button>
-                <button type="button" class="patients-segment" data-patient-filter="recent">Recientes</button>
-              </div>
-              <label class="patients-sort-field" for="patientsSortSelect">
-                <span class="material-symbols-rounded" aria-hidden="true">sort</span>
-                <select id="patientsSortSelect" aria-label="Orden de pacientes">
-                  <option value="recent_desc">Más recientes</option>
-                  <option value="readiness">Priorizar incompletos</option>
-                  <option value="name_asc">Nombre A-Z</option>
-                  <option value="name_desc">Nombre Z-A</option>
-                </select>
+            <section class="ops-patient-toolbar" aria-label="Filtros de pacientes">
+              <label class="ops-search-line" for="patientsFilterInput">
+                <span class="material-symbols-rounded">search</span>
+                <input type="text" id="patientsFilterInput" placeholder="Buscar por nombre, email, telefono o ID..." autocomplete="off" />
               </label>
-            </div>
-          </section>
 
-          <section class="card patients-directory-card">
-            <header class="patients-directory-head">
-              <div>
-                <span class="patients-kicker">DIRECTORIO OPERATIVO</span>
-                <h2>Listado listo para trabajar</h2>
-                <p id="patientsListMeta">Cargando pacientes del CRM...</p>
+              <div class="ops-patient-controls">
+                <div class="patients-segmented ops-tabs" id="patientsSegmented">
+                  <button type="button" class="patients-segment is-active" data-patient-filter="all">Todos</button>
+                  <button type="button" class="patients-segment" data-patient-filter="contactable">Contactables</button>
+                  <button type="button" class="patients-segment" data-patient-filter="incomplete">Incompletos</button>
+                  <button type="button" class="patients-segment" data-patient-filter="recent">Recientes</button>
+                </div>
+                <label class="ops-sort-line" for="patientsSortSelect">
+                  <span class="material-symbols-rounded" aria-hidden="true">sort</span>
+                  <select id="patientsSortSelect" aria-label="Orden de pacientes">
+                    <option value="recent_desc">Mas recientes</option>
+                    <option value="readiness">Priorizar incompletos</option>
+                    <option value="name_asc">Nombre A-Z</option>
+                    <option value="name_desc">Nombre Z-A</option>
+                  </select>
+                </label>
               </div>
-              <span class="patients-directory-chip" id="patientsFilterChip">Todos los pacientes</span>
-            </header>
+            </section>
 
-            <div class="patients-directory-list" id="pacientesBody">
-              <div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pacientes...</p></div>
-            </div>
+            <section class="ops-patient-directory">
+              <header class="ops-section-head">
+                <div>
+                  <span class="ops-kicker">Directorio operativo</span>
+                  <h2>Listado listo para trabajar</h2>
+                  <p id="patientsListMeta">Cargando pacientes del CRM...</p>
+                </div>
+                <span class="ops-filter-chip" id="patientsFilterChip">Todos los pacientes</span>
+              </header>
+
+              <div class="ops-patient-list" id="pacientesBody">
+                <div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pacientes...</p></div>
+              </div>
+            </section>
           </section>
         </div>
 

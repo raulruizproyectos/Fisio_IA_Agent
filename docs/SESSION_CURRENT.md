@@ -5,6 +5,14 @@ Convertir Fisio IA Agent en el CRM clinico mas premium del mercado para fisioter
 
 ## Trabajo completado
 
+### Sesion 2026-05-12 - Redisenio real con markup `ops-*`
+- Feedback del usuario: las correcciones por CSS seguian mostrando cajas y desajustes en produccion.
+- Decision de diseno: dejar de pelear contra el layout heredado y rehacer las zonas visibles con una estructura nueva `ops-*`.
+- `index.astro`: Dashboard y Pacientes ya no usan `card`, `signal-card`, `metric-card`, `patients-directory-card` ni wrappers heredados en las zonas principales.
+- Se conservan IDs/eventos (`dashboardNextSessionTitle`, `metricPacientes`, `patientsFilterInput`, `pacientesBody`, etc.) para mantener la funcionalidad actual.
+- `premium-clinic-ui.css`: nueva capa final para `ops-*`, con workspace abierto, divisores finos, acciones compactas y sin tarjetas grandes.
+- Validado: `npm.cmd run check` OK y `npm.cmd run build` OK.
+
 ### Sesion 2026-05-12 - Redisenio sin cajas en Dashboard y Pacientes
 - Feedback del usuario: seguia habiendo demasiadas cajas y varias no quedaban bien ajustadas.
 - Se anadio una capa "Unboxed workspace" al final de `premium-clinic-ui.css`.

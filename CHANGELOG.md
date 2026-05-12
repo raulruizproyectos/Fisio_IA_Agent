@@ -2,6 +2,17 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-12 - Redisenio real con markup `ops-*`
+- `frontend/src/pages/index.astro`:
+  - Rehecho el markup visible de Dashboard y Pacientes con una estructura nueva `ops-*`.
+  - Eliminadas de esas zonas las clases heredadas que arrastraban cajas (`hero-section`, `card`, `signal-card`, `metric-card`, `patients-directory-card`, etc.).
+  - Conservados los IDs y `data-*` usados por el JS para no romper carga de datos, filtros, agenda, triage, reservas ni acciones.
+- `frontend/src/styles/premium-clinic-ui.css`:
+  - Nueva capa final para el sistema `ops-*`: layout abierto, sin tarjetas grandes, con tipografia, divisores finos y acciones compactas.
+  - Dashboard: hero + foco operativo + senales + metricas + flujos + listas, todo sin contenedores redondeados.
+  - Pacientes: cabecera, stats, buscador, filtros y directorio como workspace continuo.
+- Validado: `npm.cmd run check` OK, `npm.cmd run build` OK.
+
 ## 2026-05-12 - Redisenio sin cajas en Dashboard y Pacientes
 - `frontend/src/styles/premium-clinic-ui.css`:
   - Nueva correccion "Unboxed workspace": las clases heredadas `card`, `metric-card`, `signal-card`, `cockpit-block` y `patients-directory-card` dejan de pintar cajas en dashboard y pacientes.

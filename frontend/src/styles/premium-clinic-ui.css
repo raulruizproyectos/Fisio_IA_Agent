@@ -1141,3 +1141,603 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
     flex-wrap: wrap !important;
   }
 }
+
+/*
+ * Real redesign layer.
+ * These ops-* blocks intentionally avoid legacy card classes.
+ */
+.ops-dashboard,
+.ops-patients {
+  width: min(1500px, calc(100vw - clamp(1.5rem, 4vw, 5rem))) !important;
+  margin: 0 auto !important;
+  padding: clamp(1.5rem, 3vw, 3rem) 0 clamp(2.5rem, 4vw, 4rem) !important;
+  color: var(--ink) !important;
+}
+
+.ops-dashboard *,
+.ops-patients * {
+  box-sizing: border-box !important;
+}
+
+.ops-kicker {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  color: var(--teal) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+.ops-title {
+  margin: 0 !important;
+  color: #0b1519 !important;
+  font-family: var(--font-ui) !important;
+  font-size: clamp(2.6rem, 5.4vw, 6.6rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.075em !important;
+  line-height: 0.88 !important;
+}
+
+.ops-subtitle {
+  max-width: 48rem !important;
+  margin: 0.8rem 0 0 !important;
+  color: var(--ink-soft) !important;
+  font-size: clamp(1rem, 1.2vw, 1.18rem) !important;
+  line-height: 1.6 !important;
+}
+
+.ops-hero,
+.ops-patients-head {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.28fr) !important;
+  gap: clamp(1.5rem, 4vw, 4.25rem) !important;
+  align-items: end !important;
+  padding: clamp(1rem, 2vw, 1.75rem) 0 clamp(1.4rem, 2.5vw, 2.3rem) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(16, 29, 34, 0.13) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ops-hero::before,
+.ops-patients-head::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: -1.2rem auto auto -2rem !important;
+  width: min(46vw, 42rem) !important;
+  height: min(28vw, 24rem) !important;
+  pointer-events: none !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(12, 111, 102, 0.18), transparent 62%),
+    radial-gradient(circle at 78% 54%, rgba(180, 138, 79, 0.11), transparent 56%) !important;
+  filter: blur(16px) !important;
+  opacity: 0.85 !important;
+  z-index: 0 !important;
+}
+
+.ops-hero-copy,
+.ops-focus,
+.ops-patients-head > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.ops-chips,
+.ops-inline-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.55rem !important;
+  align-items: center !important;
+}
+
+.ops-chips {
+  margin: 1rem 0 1.2rem !important;
+}
+
+.ops-chips span,
+.ops-filter-chip,
+.status-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 1.9rem !important;
+  padding: 0.25rem 0.72rem !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(12, 111, 102, 0.08) !important;
+  color: var(--teal-deep) !important;
+  font-size: 0.76rem !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.ops-pill,
+.ops-text-action,
+.ops-command,
+.ops-tabs .patients-segment {
+  appearance: none !important;
+  border: 0 !important;
+  font-family: var(--font-ui) !important;
+  cursor: pointer !important;
+}
+
+.ops-pill {
+  display: inline-flex !important;
+  min-height: 2.75rem !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0 1rem !important;
+  border-radius: 999px !important;
+  background: rgba(16, 29, 34, 0.06) !important;
+  color: var(--ink) !important;
+  font-size: 0.92rem !important;
+  font-weight: 850 !important;
+}
+
+.ops-pill-primary {
+  background: linear-gradient(135deg, #093f3c, #0c6f66) !important;
+  color: #fffefa !important;
+}
+
+.ops-text-action {
+  display: inline-flex !important;
+  width: fit-content !important;
+  min-height: auto !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--teal-deep) !important;
+  font-size: 0.9rem !important;
+  font-weight: 850 !important;
+  text-decoration: none !important;
+  box-shadow: inset 0 -1px 0 rgba(12, 111, 102, 0.24) !important;
+}
+
+.ops-text-action:hover,
+.ops-command:hover,
+.ops-tabs .patients-segment:hover {
+  transform: none !important;
+  color: var(--teal) !important;
+}
+
+.ops-focus {
+  align-self: stretch !important;
+  padding-left: clamp(1rem, 2vw, 1.6rem) !important;
+  border-left: 1px solid rgba(16, 29, 34, 0.14) !important;
+}
+
+.ops-priority-list,
+.ops-priority-list .priority-item {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ops-priority-list .priority-item {
+  padding: 1rem 0 !important;
+  border-top: 1px solid rgba(16, 29, 34, 0.12) !important;
+}
+
+.ops-priority-list .priority-item:first-child {
+  border-top: 0 !important;
+}
+
+.ops-signals,
+.ops-metrics,
+.ops-patient-stats {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(16, 29, 34, 0.13) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ops-signals {
+  border-top: 1px solid rgba(16, 29, 34, 0.13) !important;
+}
+
+.ops-signal,
+.ops-metrics > div,
+.ops-patient-stats > article {
+  min-width: 0 !important;
+  padding: clamp(1rem, 1.6vw, 1.45rem) clamp(1rem, 1.7vw, 1.55rem) !important;
+  border: 0 !important;
+  border-right: 1px solid rgba(16, 29, 34, 0.12) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ops-signal:first-child,
+.ops-metrics > div:first-child,
+.ops-patient-stats > article:first-child {
+  padding-left: 0 !important;
+}
+
+.ops-signal:last-child,
+.ops-metrics > div:last-child,
+.ops-patient-stats > article:last-child {
+  border-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+.ops-signal-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.ops-signal-head > span:first-child,
+.ops-patient-stats span,
+.ops-command span:not(.material-symbols-rounded) {
+  color: #0c6f66 !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.ops-signal strong,
+.ops-metrics strong,
+.ops-patient-stats strong {
+  display: block !important;
+  color: var(--ink) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.05em !important;
+  line-height: 1 !important;
+}
+
+.ops-signal strong {
+  margin-bottom: 0.65rem !important;
+  font-size: clamp(1.05rem, 1.2vw, 1.28rem) !important;
+}
+
+.ops-signal p,
+.ops-patient-stats p,
+.ops-section-head p {
+  margin: 0 !important;
+  color: var(--ink-soft) !important;
+  line-height: 1.55 !important;
+}
+
+.ops-signal .ops-text-action {
+  margin-top: 1rem !important;
+}
+
+.ops-inline-actions .ops-text-action {
+  margin-top: 0.8rem !important;
+}
+
+.ops-metrics > div {
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  column-gap: 0.85rem !important;
+  row-gap: 0.25rem !important;
+  align-items: center !important;
+}
+
+.ops-metrics .material-symbols-rounded {
+  grid-row: span 2 !important;
+  width: 2.45rem !important;
+  height: 2.45rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  background: rgba(12, 111, 102, 0.08) !important;
+  color: var(--teal) !important;
+}
+
+.ops-metrics strong {
+  font-size: clamp(1.8rem, 2.2vw, 2.55rem) !important;
+}
+
+.ops-metrics small {
+  color: var(--ink-muted) !important;
+  font-size: 0.9rem !important;
+  font-weight: 750 !important;
+}
+
+.ops-section,
+.ops-patient-directory {
+  padding: clamp(1.35rem, 2.2vw, 2.15rem) 0 0 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(16, 29, 34, 0.13) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ops-section-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 1.25rem !important;
+  align-items: end !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.ops-section-head h2 {
+  margin: 0.2rem 0 0 !important;
+  color: var(--ink) !important;
+  font-size: clamp(1.35rem, 1.7vw, 2rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.ops-chart-wrap {
+  margin-top: 1rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.ops-command-row {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  margin-top: 1rem !important;
+  border-top: 1px solid rgba(16, 29, 34, 0.12) !important;
+  border-bottom: 1px solid rgba(16, 29, 34, 0.12) !important;
+}
+
+.ops-command {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 9rem !important;
+  padding: 1rem 1.15rem !important;
+  border-right: 1px solid rgba(16, 29, 34, 0.12) !important;
+  background: transparent !important;
+  text-align: left !important;
+  color: var(--ink) !important;
+}
+
+.ops-command:first-child {
+  padding-left: 0 !important;
+}
+
+.ops-command:last-child {
+  border-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+.ops-command .material-symbols-rounded {
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  background: rgba(12, 111, 102, 0.08) !important;
+  color: var(--teal) !important;
+}
+
+.ops-command strong {
+  font-size: 1.02rem !important;
+  letter-spacing: -0.035em !important;
+}
+
+.ops-live-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: clamp(1.5rem, 3vw, 3rem) !important;
+}
+
+.ops-list,
+.ops-patient-list {
+  margin-top: 1rem !important;
+  border-top: 1px solid rgba(16, 29, 34, 0.12) !important;
+  background: transparent !important;
+}
+
+.ops-patients-head {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.ops-patients-head .ops-title {
+  font-size: clamp(2.6rem, 5vw, 5.8rem) !important;
+}
+
+.ops-patient-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  border-top: 1px solid rgba(16, 29, 34, 0.13) !important;
+}
+
+.ops-patient-stats strong {
+  margin: 0.55rem 0 0.45rem !important;
+  font-size: clamp(1.8rem, 2.3vw, 2.9rem) !important;
+}
+
+.ops-patient-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(18rem, 1fr) auto !important;
+  gap: clamp(1rem, 2vw, 1.8rem) !important;
+  align-items: end !important;
+  padding: clamp(1rem, 1.8vw, 1.6rem) 0 !important;
+  border-bottom: 1px solid rgba(16, 29, 34, 0.13) !important;
+}
+
+.ops-search-line,
+.ops-sort-line {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  min-height: 3rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(16, 29, 34, 0.24) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.ops-search-line input,
+.ops-sort-line select {
+  width: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink) !important;
+}
+
+.ops-patient-controls {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.7rem !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+
+.ops-tabs {
+  display: flex !important;
+  gap: 0.18rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.ops-tabs .patients-segment {
+  min-height: 2.5rem !important;
+  padding: 0 0.85rem !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+  font-weight: 850 !important;
+}
+
+.ops-tabs .patients-segment.is-active {
+  background: #101d22 !important;
+  color: #fffefa !important;
+}
+
+.ops-patient-directory {
+  border-top: 0 !important;
+}
+
+.ops-patient-list > *,
+.ops-patient-list .clean-list-item {
+  border: 0 !important;
+  border-top: 1px solid rgba(16, 29, 34, 0.11) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ops-patient-list > *:first-child,
+.ops-patient-list .clean-list-item:first-child {
+  border-top: 0 !important;
+}
+
+.ops-patient-list .clean-list-item {
+  padding: 1.1rem 0 !important;
+}
+
+.ops-patient-list .clean-list-action {
+  gap: 0.45rem !important;
+}
+
+.ops-patient-list .btn-secondary,
+.ops-patient-list .btn-ghost,
+.ops-patient-list .btn-sm {
+  min-height: 2rem !important;
+  padding: 0.35rem 0.72rem !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(16, 29, 34, 0.06) !important;
+  color: var(--ink) !important;
+  box-shadow: none !important;
+}
+
+.ops-patient-list .btn-secondary {
+  background: var(--teal) !important;
+  color: #fffefa !important;
+}
+
+@media (max-width: 1180px) {
+  .ops-hero,
+  .ops-patients-head,
+  .ops-patient-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ops-focus {
+    padding-left: 0 !important;
+    border-left: 0 !important;
+  }
+
+  .ops-signals,
+  .ops-metrics,
+  .ops-command-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .ops-command:nth-child(2n),
+  .ops-signal:nth-child(2n),
+  .ops-metrics > div:nth-child(2n) {
+    border-right: 0 !important;
+  }
+
+  .ops-command-row {
+    border-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .ops-dashboard,
+  .ops-patients {
+    width: min(100%, calc(100vw - 1.25rem)) !important;
+    padding-top: 1rem !important;
+  }
+
+  .ops-title,
+  .ops-patients-head .ops-title {
+    font-size: clamp(2.3rem, 16vw, 4rem) !important;
+  }
+
+  .ops-signals,
+  .ops-metrics,
+  .ops-command-row,
+  .ops-live-grid,
+  .ops-patient-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ops-signal,
+  .ops-metrics > div,
+  .ops-command,
+  .ops-patient-stats > article {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-right: 0 !important;
+  }
+
+  .ops-signal,
+  .ops-command,
+  .ops-patient-stats > article {
+    border-bottom: 1px solid rgba(16, 29, 34, 0.11) !important;
+  }
+
+  .ops-signal:last-child,
+  .ops-command:last-child,
+  .ops-patient-stats > article:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .ops-section-head,
+  .ops-patient-controls {
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+}

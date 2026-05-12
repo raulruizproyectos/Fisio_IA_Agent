@@ -5,7 +5,8 @@
 - Frontend:
   - Creado `frontend/src/styles/assistant-rail.css` para sacar el override del copiloto fuera del runtime JS.
   - Creado `frontend/src/styles/global-shell.css` para sacar la recuperacion global de sidebar/topbar/workspace fuera del monolito.
-  - Rehecho `frontend/src/styles/premium-clinic-ui.css` tras feedback de EasyPanel: dashboard y pacientes pasan a workspace abierto sin cajas visibles.
+  - Rehecho el markup visible de Dashboard y Pacientes con estructura `ops-*`, sin las clases heredadas que generaban cajas.
+  - Rehecho `frontend/src/styles/premium-clinic-ui.css`: dashboard y pacientes pasan a workspace abierto con divisores finos.
   - `Layout.astro` ya no carga `Newsreader`; el sistema visual queda unificado en `Manrope`.
   - Eliminado `ensureAssistantCompactRuntimeStyles` de `frontend/src/pages/index.astro`.
   - Se mantiene el copiloto chat-first: chat-log 55vh, textarea 3.5rem, fuente 0.92rem.
@@ -20,7 +21,7 @@
 - `git push origin main`: listo tras commit de Fase 2.
 
 ## Pendiente operativo
-1. Redeploy de `fisio-frontend` en EasyPanel con el redisenio sin cajas.
+1. Redeploy de `fisio-frontend` en EasyPanel con el redisenio real `ops-*`.
 2. Smoke test visual tras deploy (shell, dashboard, pacientes, agenda, finanzas, documentos y copiloto IA).
 3. Ajustar fino segun captura real de EasyPanel: densidad, contrastes, altura del copiloto y exceso de cajas restantes.
 
