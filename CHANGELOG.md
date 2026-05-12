@@ -2,6 +2,17 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-12 - Copiloto IA Full Height y Legibilidad Premium (Runtime Override)
+- `frontend/src/pages/index.astro`:
+  - Se reescribió el CSS de runtime (`ensureAssistantCompactRuntimeStyles`) para sobreescribir las reglas conflictivas del build anterior.
+  - El rail del copiloto ahora ocupa toda la altura de la pantalla (94dvh) en todo momento (eliminado el colapso al estar vacío).
+  - El `chat-log` absorbe todo el espacio vertical (`flex: 1 1 auto`) y tiene un tamaño de al menos 55vh.
+  - El input textarea se hizo significativamente más grande (`min-height: 3.5rem`) para poder redactar notas clínicas con comodidad.
+  - El tamaño de fuente de la conversación y del input se subió a 0.92rem para mejor ergonomía visual.
+- Commit: `89b894b`
+- Estado: Pruebas visuales validadas. Listo para extraer el CSS de runtime en Fase 2.
+
+
 ## 2026-05-12 - Copiloto IA mas grande y legible
 - `frontend/src/pages/index.astro`:
   - Rail portal: de 900×760px a 1000×880px (94dvh).
