@@ -2,6 +2,14 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-12 - Redisenio sin cajas en Dashboard y Pacientes
+- `frontend/src/styles/premium-clinic-ui.css`:
+  - Nueva correccion "Unboxed workspace": las clases heredadas `card`, `metric-card`, `signal-card`, `cockpit-block` y `patients-directory-card` dejan de pintar cajas en dashboard y pacientes.
+  - Dashboard pasa a secciones abiertas: hero sin marco, senales operativas con divisores, metricas como banda, chart/flujos como bloques de lectura sin contenedor.
+  - Pacientes pasa a workspace abierto: header con linea, stats laterales sin tarjetas, buscador subrayado, filtros como tabs y listado con filas separadas.
+  - Copiloto IA reduce contenedores internos: chat-log/input/modos usan divisores en vez de cajas redondeadas.
+- Validado: `npm.cmd run check` OK, `npm.cmd run build` OK.
+
 ## 2026-05-12 - Correccion visual CRM premium calmado
 - `frontend/src/styles/premium-clinic-ui.css`:
   - Rehecha la capa visual tras feedback real de EasyPanel: menos cajas, menos bordes, mas separadores y superficies continuas.

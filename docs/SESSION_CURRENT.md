@@ -5,6 +5,14 @@ Convertir Fisio IA Agent en el CRM clinico mas premium del mercado para fisioter
 
 ## Trabajo completado
 
+### Sesion 2026-05-12 - Redisenio sin cajas en Dashboard y Pacientes
+- Feedback del usuario: seguia habiendo demasiadas cajas y varias no quedaban bien ajustadas.
+- Se anadio una capa "Unboxed workspace" al final de `premium-clinic-ui.css`.
+- Dashboard: los wrappers heredados `card`, `metric-card`, `signal-card` y `cockpit-block` pasan a secciones abiertas con divisores finos.
+- Pacientes: se elimina la sensacion de paneles encajados; header, stats, filtros y listado quedan como workspace abierto con filas y lineas.
+- Copiloto IA: chat-log, input y paneles auxiliares reducen bordes/redondeos internos para no parecer una sucesion de cajas.
+- Validado: `npm.cmd run check` OK y `npm.cmd run build` OK.
+
 ### Sesion 2026-05-12 - Correccion visual premium calmada tras feedback de EasyPanel
 - Feedback de produccion: la UI seguia con demasiadas cajas y la combinacion tipografica no transmitia sensacion premium.
 - Retirada la direccion editorial con `Newsreader`; todo el sistema visual queda sobre `Manrope` para coherencia entre CRM, dashboard y agente IA.

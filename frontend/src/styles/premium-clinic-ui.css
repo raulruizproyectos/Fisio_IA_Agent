@@ -705,3 +705,439 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
     border-bottom: 1px solid var(--line) !important;
   }
 }
+
+/*
+ * Unboxed workspace correction.
+ * The app legacy markup uses many `.card` wrappers; for the main CRM views
+ * those wrappers should behave like flow sections, not visible containers.
+ */
+.page-section[data-page='dashboard'],
+.page-section[data-page='pacientes'] {
+  --workspace-line: rgba(16, 29, 34, 0.11);
+  --workspace-line-strong: rgba(16, 29, 34, 0.2);
+  --workspace-panel: rgba(255, 254, 250, 0.44);
+}
+
+.page-section[data-page='dashboard'] .card,
+.page-section[data-page='dashboard'] .widget-card,
+.page-section[data-page='dashboard'] .cockpit-block,
+.page-section[data-page='dashboard'] .cockpit-side-card,
+.page-section[data-page='dashboard'] .metric-card,
+.page-section[data-page='dashboard'] .command-grid,
+.page-section[data-page='dashboard'] .command-tile,
+.page-section[data-page='dashboard'] .hero-signal-grid,
+.page-section[data-page='dashboard'] .signal-card,
+.page-section[data-page='pacientes'] .card,
+.page-section[data-page='pacientes'] .patients-hero-shell,
+.page-section[data-page='pacientes'] .patients-hero-main,
+.page-section[data-page='pacientes'] .patients-hero-stats,
+.page-section[data-page='pacientes'] .patients-stat-card,
+.page-section[data-page='pacientes'] .patients-command-bar,
+.page-section[data-page='pacientes'] .patients-directory-card,
+.page-section[data-page='pacientes'] .patients-directory-list,
+.page-section[data-page='pacientes'] .clean-list-item {
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.page-section[data-page='dashboard'] .dashboard-layout,
+.page-section[data-page='pacientes'] {
+  gap: clamp(1.35rem, 2vw, 2rem) !important;
+}
+
+.page-section[data-page='dashboard'] .cockpit-hero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.28fr) !important;
+  gap: clamp(1.5rem, 3vw, 3.2rem) !important;
+  padding: clamp(1rem, 2vw, 1.6rem) 0 clamp(1.3rem, 2.4vw, 2rem) !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='dashboard'] .hero-section::before,
+.page-section[data-page='pacientes'] .patients-hero-shell::before {
+  inset: 0 0 auto 0 !important;
+  height: 11rem !important;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(12, 111, 102, 0.13), transparent 22rem),
+    linear-gradient(105deg, rgba(255, 254, 250, 0.74), rgba(237, 246, 241, 0.22), transparent 78%) !important;
+  border-radius: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .hero-panel-main,
+.page-section[data-page='dashboard'] .hero-panel-side,
+.page-section[data-page='pacientes'] .patients-hero-main,
+.page-section[data-page='pacientes'] .patients-hero-stats {
+  padding: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .hero-title {
+  max-width: 18ch !important;
+  margin-bottom: 0.25rem !important;
+  font-size: clamp(2.15rem, 3.8vw, 4.4rem) !important;
+  line-height: 0.94 !important;
+}
+
+.page-section[data-page='dashboard'] .hero-subtitle {
+  max-width: 44rem !important;
+  font-size: clamp(1rem, 1.1vw, 1.12rem) !important;
+}
+
+.page-section[data-page='dashboard'] .hero-runtime-strip {
+  gap: 0.45rem !important;
+}
+
+.page-section[data-page='dashboard'] .hero-runtime-chip,
+.page-section[data-page='dashboard'] .status-chip,
+.page-section[data-page='pacientes'] .patients-directory-chip,
+.page-section[data-page='pacientes'] .patients-segment {
+  border: 0 !important;
+  background: rgba(12, 111, 102, 0.08) !important;
+}
+
+.page-section[data-page='dashboard'] .hero-signal-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  margin-top: clamp(1.25rem, 2vw, 1.8rem) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='dashboard'] .hero-signal-grid .signal-card {
+  min-height: 8.2rem !important;
+  padding: 1.05rem 1.1rem 1.05rem 0 !important;
+  border: 0 !important;
+  border-right: 1px solid var(--workspace-line) !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='dashboard'] .hero-signal-grid .signal-card:nth-child(2n) {
+  padding-left: 1.1rem !important;
+  border-right: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .hero-signal-grid .signal-card:nth-last-child(-n+2) {
+  border-bottom: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .signal-card:hover,
+.page-section[data-page='dashboard'] .command-tile:hover,
+.page-section[data-page='pacientes'] .clean-list-item:hover {
+  background: linear-gradient(90deg, rgba(12, 111, 102, 0.045), transparent 70%) !important;
+}
+
+.page-section[data-page='dashboard'] .priorities-side-card {
+  border: 0 !important;
+  border-left: 1px solid var(--workspace-line) !important;
+  padding: 0.25rem 0 0.25rem 1.3rem !important;
+}
+
+.page-section[data-page='dashboard'] .priority-list {
+  display: grid !important;
+  gap: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .priority-item {
+  padding: 0.95rem 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--workspace-line) !important;
+  background: transparent !important;
+}
+
+.page-section[data-page='dashboard'] .priority-item:first-child {
+  border-top: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .clinical-metrics {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--workspace-line) !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+  background: transparent !important;
+}
+
+.page-section[data-page='dashboard'] .clinical-metrics .metric-card {
+  min-height: auto !important;
+  padding: 1.1rem 1.35rem !important;
+  border: 0 !important;
+  border-right: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='dashboard'] .clinical-metrics .metric-card:first-child {
+  padding-left: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .clinical-metrics .metric-card:last-child {
+  border-right: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .metric-icon {
+  width: 2.35rem !important;
+  height: 2.35rem !important;
+  border-radius: 999px !important;
+  background: rgba(12, 111, 102, 0.075) !important;
+}
+
+.page-section[data-page='dashboard'] .dashboard-chart-card,
+.page-section[data-page='dashboard'] .dashboard-ops-grid .cockpit-block,
+.page-section[data-page='dashboard'] .dashboard-bottom-row .cockpit-block {
+  border: 0 !important;
+  border-top: 1px solid var(--workspace-line) !important;
+  padding: clamp(1.15rem, 2vw, 1.75rem) 0 0 !important;
+}
+
+.page-section[data-page='dashboard'] .card-header,
+.page-section[data-page='dashboard'] .cockpit-block-head {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.page-section[data-page='dashboard'] .dashboard-chart-wrap {
+  margin-top: 1rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.page-section[data-page='dashboard'] .command-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  margin-top: 1rem !important;
+  border: 0 !important;
+  border-top: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='dashboard'] .command-tile {
+  min-height: 9rem !important;
+  padding: 1rem 1rem 1rem 0 !important;
+  border: 0 !important;
+  border-right: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='dashboard'] .command-tile:last-child {
+  border-right: 0 !important;
+}
+
+.page-section[data-page='dashboard'] .command-tile-icon {
+  border-radius: 999px !important;
+}
+
+.page-section[data-page='pacientes'] .patients-header-row {
+  align-items: end !important;
+  padding: clamp(1rem, 2vw, 1.5rem) 0 1rem !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='pacientes'] .page-title {
+  font-size: clamp(2rem, 3.2vw, 3.75rem) !important;
+  line-height: 0.95 !important;
+}
+
+.page-section[data-page='pacientes'] .patients-hero-shell {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.32fr) !important;
+  gap: clamp(1.4rem, 3vw, 3rem) !important;
+  align-items: start !important;
+  padding: 0.25rem 0 1.25rem !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-hero-main h2 {
+  margin: 0.2rem 0 0.3rem !important;
+  font-size: clamp(1.55rem, 2.3vw, 2.45rem) !important;
+  letter-spacing: -0.045em !important;
+}
+
+.page-section[data-page='pacientes'] .patients-hero-actions {
+  margin-top: 1rem !important;
+}
+
+.page-section[data-page='pacientes'] .patients-hero-stats {
+  border-left: 1px solid var(--workspace-line) !important;
+  padding-left: clamp(1rem, 2vw, 1.6rem) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-stat-card {
+  padding: 0.85rem 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-stat-card:first-child {
+  padding-top: 0 !important;
+}
+
+.page-section[data-page='pacientes'] .patients-stat-card:last-child {
+  border-bottom: 0 !important;
+}
+
+.page-section[data-page='pacientes'] .patients-command-bar {
+  display: grid !important;
+  grid-template-columns: minmax(18rem, 1fr) auto !important;
+  gap: clamp(0.9rem, 1.5vw, 1.35rem) !important;
+  padding: 0 0 1rem !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-filter-field,
+.page-section[data-page='pacientes'] .patients-segmented,
+.page-section[data-page='pacientes'] .patients-sort-field {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.page-section[data-page='pacientes'] .patients-filter-field {
+  min-height: 3.25rem !important;
+  padding: 0 !important;
+  border-bottom: 1px solid var(--workspace-line-strong) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-filter-field input {
+  padding-left: 0.35rem !important;
+}
+
+.page-section[data-page='pacientes'] .patients-toolbar-right {
+  gap: 0.45rem !important;
+}
+
+.page-section[data-page='pacientes'] .patients-segmented {
+  gap: 0.25rem !important;
+  padding: 0 !important;
+}
+
+.page-section[data-page='pacientes'] .patients-segment {
+  min-height: 2.6rem !important;
+  padding: 0 0.9rem !important;
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-segment.is-active {
+  background: var(--ink) !important;
+  color: #fffefa !important;
+}
+
+.page-section[data-page='pacientes'] .patients-sort-field {
+  min-height: 2.6rem !important;
+  border-bottom: 1px solid var(--workspace-line-strong) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-directory-card {
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+.page-section[data-page='pacientes'] .patients-directory-head {
+  padding: 0 0 0.95rem !important;
+  border-bottom: 1px solid var(--workspace-line-strong) !important;
+  background: transparent !important;
+}
+
+.page-section[data-page='pacientes'] .patients-directory-head h2 {
+  font-size: clamp(1.65rem, 2.2vw, 2.6rem) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-directory-chip {
+  background: rgba(16, 29, 34, 0.06) !important;
+}
+
+.page-section[data-page='pacientes'] .patients-directory-list {
+  padding: 0 !important;
+}
+
+.page-section[data-page='pacientes'] .clean-list-item,
+.page-section[data-page='pacientes'] .patients-directory-list > * {
+  padding: 1.05rem 0 !important;
+  border-top: 1px solid var(--workspace-line) !important;
+}
+
+.page-section[data-page='pacientes'] .clean-list-item:first-child,
+.page-section[data-page='pacientes'] .patients-directory-list > *:first-child {
+  border-top: 0 !important;
+}
+
+.page-section[data-page='pacientes'] .patients-directory-card .clean-list-action .btn-secondary,
+.page-section[data-page='pacientes'] .patients-directory-card .clean-list-action .btn-ghost,
+.page-section[data-page='pacientes'] .patients-directory-card .btn-secondary.btn-sm,
+.page-section[data-page='pacientes'] .patients-directory-card .btn-ghost.btn-sm {
+  min-height: 2rem !important;
+  padding: 0.35rem 0.7rem !important;
+  border-radius: 999px !important;
+}
+
+.page-section[data-page='pacientes'] .patients-directory-card .clean-list-action .btn-ghost,
+.page-section[data-page='pacientes'] .patients-directory-card .btn-ghost.btn-sm {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px var(--workspace-line-strong) !important;
+}
+
+#assistantRail .assistant-rail-card {
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(251, 252, 248, 0.98), rgba(241, 247, 244, 0.96)) !important;
+}
+
+#assistantRail .chat-log,
+html[data-assistant-mode='desktop'] #assistantRail .chat-log,
+html[data-assistant-mode='compact'] #assistantRail .chat-log,
+html[data-assistant-mode='mobile'] #assistantRail .chat-log {
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+#assistantRail .ai-input-area,
+#assistantRail .assistant-mode-switch,
+#assistantRail .assistant-diagnostic-card,
+#assistantRail .assistant-agent-canvas {
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  background: transparent !important;
+}
+
+@media (max-width: 1180px) {
+  .page-section[data-page='dashboard'] .cockpit-hero,
+  .page-section[data-page='pacientes'] .patients-hero-shell,
+  .page-section[data-page='pacientes'] .patients-command-bar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-section[data-page='dashboard'] .priorities-side-card,
+  .page-section[data-page='pacientes'] .patients-hero-stats {
+    border-left: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  .page-section[data-page='dashboard'] .clinical-metrics,
+  .page-section[data-page='dashboard'] .command-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-section[data-page='dashboard'] .hero-signal-grid,
+  .page-section[data-page='dashboard'] .clinical-metrics,
+  .page-section[data-page='dashboard'] .command-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-section[data-page='dashboard'] .hero-signal-grid .signal-card,
+  .page-section[data-page='dashboard'] .clinical-metrics .metric-card,
+  .page-section[data-page='dashboard'] .command-tile {
+    padding-left: 0 !important;
+    border-right: 0 !important;
+  }
+
+  .page-section[data-page='pacientes'] .patients-toolbar-right {
+    flex-wrap: wrap !important;
+  }
+}
