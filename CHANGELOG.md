@@ -2,6 +2,31 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-12 - Copiloto IA mas grande y legible
+- `frontend/src/pages/index.astro`:
+  - Rail portal: de 900×760px a 1000×880px (94dvh).
+  - Rail-card desktop: de 980×900px a 1000×920px.
+  - Rail-card compact: de 780×860px a 860×900px.
+  - Chat-log: min-height de clamp(14rem, 46vh, 32rem) a clamp(18rem, 52vh, 42rem).
+  - Mensajes: font-size de 0.82rem a 0.92rem, line-height de 1.55 a 1.6, padding aumentado.
+  - Overrides desktop/compact/mobile: unificados a 0.92rem/1.6.
+- Commit: `e42d156`.
+- Validado: check OK, build OK, bundle `CYppe4RU.js` (244 KB / 64 KB gzip).
+
+## 2026-05-11 - Fase 1 CSS Premium Polish
+- `frontend/src/pages/index.astro`:
+  - Rail copiloto: animacion spring (cubic-bezier 0.32, 0.72, 0, 1) + opacity fade.
+  - Chat messages: animacion de entrada con blur + scale + slide.
+  - Textarea: double glow teal al focus + caret color teal.
+  - Chat-log: gradient fade mask top/bottom para indicar scroll.
+  - Signal cards: stagger animation de entrada con delays progresivos.
+  - Cards: hover lift translateY(-2px) + glow ring.
+  - Tablas: zebra stripes + row hover highlight.
+  - Botones: gradient shift al hover + scale active.
+  - Metricas: tabular-nums para alineacion profesional.
+- Commit: `85d9c27`.
+- Validado: check OK, build OK, bundle `Bz3UFDZ0.js` (244 KB / 64 KB gzip).
+
 ## 2026-05-11 - Fix textarea copiloto + auditoria premium
 - `frontend/src/pages/index.astro`:
   - Textarea del copiloto: max-height de 5.5rem a 12rem, resize:none.
