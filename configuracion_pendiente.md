@@ -1,24 +1,28 @@
 # Configuracion pendiente
 
-## Estado vivo - 2026-05-11
-- GitHub: `main` actualizado en `0271806` con fix de textarea del copiloto.
+## Estado vivo - 2026-05-12
+- GitHub: Fase 2 CSS premium lista para publicar en `main`.
 - Frontend:
-  - Fix textarea copiloto: max-height 12rem, auto-resize 220px, resize:none.
-  - Chat-log expandido: min-height clamp(14rem, 46vh, 32rem).
+  - Creado `frontend/src/styles/assistant-rail.css` para sacar el override del copiloto fuera del runtime JS.
+  - Creado `frontend/src/styles/global-shell.css` para sacar la recuperacion global de sidebar/topbar/workspace fuera del monolito.
+  - Creado `frontend/src/styles/premium-clinic-ui.css` para redisenar el CRM y el agente IA con menos cajas y aspecto mas premium.
+  - `Layout.astro` carga `Newsreader` como fuente display premium.
+  - Eliminado `ensureAssistantCompactRuntimeStyles` de `frontend/src/pages/index.astro`.
+  - Se mantiene el copiloto chat-first: chat-log 55vh, textarea 3.5rem, fuente 0.92rem.
   - Auditoria premium completada con capturas de produccion.
   - Plan de 5 fases documentado en `docs/SESSION_CURRENT.md` y `docs/PREMIUM_PLATFORM_AUDIT_20260511.md`.
 - Backend: sin cambios en esta sesion.
-- Produccion: pendiente redeploy para activar bundle `Bz3UFDZ0.js`.
+- Produccion: pendiente redeploy de `fisio-frontend` para activar bundle `8Xqq_Vbu.js`.
 
 ## Validado localmente
 - `npm.cmd run check` en `frontend`: 0 errores.
-- `npm.cmd run build` en `frontend`: OK, bundle `Bz3UFDZ0.js`.
-- `git push origin main`: OK.
+- `npm.cmd run build` en `frontend`: OK, bundle `8Xqq_Vbu.js` (236.10 KB / 62.77 KB gzip).
+- `git push origin main`: listo tras commit de Fase 2.
 
 ## Pendiente operativo
 1. Redeploy de `fisio-frontend` en EasyPanel.
-2. Smoke test visual tras deploy (textarea expandido, chat-log mas alto).
-3. Aprobacion del plan premium de 5 fases para iniciar ejecucion.
+2. Smoke test visual tras deploy (shell, dashboard, pacientes, agenda, finanzas, documentos y copiloto IA).
+3. Ajustar fino segun captura real de EasyPanel: densidad, contrastes, altura del copiloto y exceso de cajas restantes.
 
 ## Directrices de producto (nuevas)
 - **Premium clinico**: el producto debe sentirse como el mejor CRM de fisioterapia del mercado.

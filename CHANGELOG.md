@@ -2,6 +2,26 @@
 
 Solo se conserva el historial operativo reciente. Para detalles antiguos, usar el historial de Git.
 
+## 2026-05-12 - Fase 2: CSS del copiloto fuera del runtime
+- `frontend/src/styles/premium-clinic-ui.css`:
+  - Nueva capa final de redisenio premium usando la skill `frontend-design`.
+  - Reduce sensacion de "cajas" con superficies continuas, bordes mas finos, sombras suaves, textura clinica sutil y jerarquia mas editorial.
+  - Amplia el copiloto IA a estudio clinico (`1040px`, `94dvh`) y refuerza el chat-log como area principal.
+- `frontend/src/layouts/Layout.astro`:
+  - Anade `Newsreader` como display font premium para titulos y jerarquia clinica.
+- `frontend/src/styles/global-shell.css`:
+  - Nueva hoja global temporal para la recuperacion de sidebar, topbar, buscador, workspace y mobile dock tras extraer componentes Astro.
+  - Se inyecta inline desde `index.astro` en el mismo punto de cascada del bloque anterior.
+- `frontend/src/styles/assistant-rail.css`:
+  - Nueva hoja global temporal para el override del copiloto IA.
+  - Mantiene las reglas de altura, chat-log 55vh, textarea 3.5rem y controles compactos sin inyectar CSS desde JavaScript.
+- `frontend/src/pages/index.astro`:
+  - Eliminado `ensureAssistantCompactRuntimeStyles`.
+  - Importados `global-shell.css`, `assistant-rail.css` y `premium-clinic-ui.css` con `?inline` para preservar el orden de cascada.
+  - `index.astro` reducido hasta 27.060 lineas.
+- Validado: `npm.cmd run check` OK, `npm.cmd run build` OK.
+- Bundle: `index.astro_astro_type_script_index_0_lang.8Xqq_Vbu.js` (236.10 KB / 62.77 KB gzip).
+
 ## 2026-05-12 - Copiloto IA Full Height y Legibilidad Premium (Runtime Override)
 - `frontend/src/pages/index.astro`:
   - Se reescribió el CSS de runtime (`ensureAssistantCompactRuntimeStyles`) para sobreescribir las reglas conflictivas del build anterior.

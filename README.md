@@ -4,7 +4,8 @@ CRM y agentes para un centro de fisioterapia: pacientes, agenda, finanzas, docum
 
 ## Estado actual
 - Rama: `main`.
-- Ultimo commit: `0271806` - `fix: enlarge assistant textarea and chat-log for better conversation UX`.
+- Ultimo commit remoto leido: `17993c7` - `docs: session checkpoint and changelog update`.
+- Fase 2 CSS premium preparada: `global-shell.css`, `assistant-rail.css` y `premium-clinic-ui.css`.
 - Frontend productivo: `fisio-frontend` en EasyPanel.
 - Backend productivo: `fisio-backend` en EasyPanel.
 - Checkpoint vivo: `docs/SESSION_CURRENT.md`.
@@ -12,7 +13,7 @@ CRM y agentes para un centro de fisioterapia: pacientes, agenda, finanzas, docum
 - Auditoria premium: `docs/PREMIUM_PLATFORM_AUDIT_20260511.md`.
 - Directriz de producto: **CRM clinico premium de referencia** con agente IA como diferenciador principal.
 - Roadmap: 5 fases (CSS polish, estabilizacion, modularizacion JS, UX clinica, IA diferencial).
-- Pendiente: redeploy en EasyPanel para activar bundle `Bz3UFDZ0.js`.
+- Pendiente: redeploy en EasyPanel para activar bundle `8Xqq_Vbu.js`.
 
 ## Alcance activo
 - CRM web para operacion clinica y administrativa.

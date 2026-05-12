@@ -1,0 +1,385 @@
+/*
+ * Premium clinic pass: less boxed, more continuous clinical workspace.
+ * Final cascade layer for visual direction only; no DOM contracts change here.
+ */
+:root {
+  --bg-base: #eef3f1;
+  --bg-card: rgba(255, 255, 252, 0.78);
+  --bg-card-hover: rgba(255, 255, 252, 0.94);
+  --bg-elevated: rgba(255, 255, 252, 0.98);
+  --bg-surface: rgba(238, 246, 242, 0.88);
+  --accent: #0c6f66;
+  --accent-hover: #084f4a;
+  --accent-soft: rgba(12, 111, 102, 0.1);
+  --accent-glow: rgba(12, 111, 102, 0.18);
+  --premium: #2f6f88;
+  --premium-soft: rgba(47, 111, 136, 0.12);
+  --text-primary: #101820;
+  --text-secondary: #4a5b63;
+  --text-muted: #76858b;
+  --border: rgba(91, 119, 126, 0.18);
+  --border-light: rgba(91, 119, 126, 0.12);
+  --border-strong: rgba(39, 81, 91, 0.26);
+  --font-display: 'Newsreader', 'Sora', serif;
+  --font-ui: 'Manrope', 'Segoe UI', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 10px 30px rgba(16, 24, 32, 0.045);
+  --shadow-md: 0 18px 46px rgba(16, 24, 32, 0.07);
+  --shadow-lg: 0 26px 70px rgba(16, 24, 32, 0.1);
+  --shadow-xl: 0 34px 92px rgba(16, 24, 32, 0.13);
+  --glass: rgba(247, 250, 248, 0.9);
+  --glass-border: rgba(91, 119, 126, 0.16);
+  --sidebar-bg: #101820;
+  --sidebar-bg2: #142226;
+  --sidebar-border: rgba(170, 214, 205, 0.13);
+  --sidebar-active-bg: linear-gradient(135deg, rgba(13, 125, 113, 0.34), rgba(47, 111, 136, 0.18));
+}
+
+body {
+  background:
+    linear-gradient(90deg, rgba(13, 125, 113, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(47, 111, 136, 0.04) 1px, transparent 1px),
+    linear-gradient(135deg, #edf4f1 0%, #f8faf7 44%, #e9f0f2 100%) !important;
+  background-size: 36px 36px, 36px 36px, auto !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+.page-title,
+.hero-title {
+  letter-spacing: 0 !important;
+}
+
+.content {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), transparent 18rem),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.04)) !important;
+}
+
+.workspace-shell {
+  background: transparent !important;
+}
+
+.page-section {
+  animation: premiumReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card,
+.widget-card,
+.metric-card,
+.cockpit-block,
+.cockpit-side-card,
+.patients-command-bar,
+.patients-directory-card,
+.table-wrap,
+.config-card-full,
+.modal-panel,
+.drawer-panel,
+.documentos-summary-card,
+.patients-stat-card,
+.ficha-overview-card,
+.ficha-rail-card,
+.ficha-progress-metric,
+.ficha-progress-point,
+.ficha-progress-next,
+.ficha-decision-card,
+.ficha-channel-item,
+.ficha-check-item {
+  border-color: var(--border-light) !important;
+  border-radius: var(--radius-lg) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 252, 0.82), rgba(248, 251, 249, 0.66)) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 18px 48px rgba(16, 24, 32, 0.045) !important;
+}
+
+.card:hover,
+.widget-card:hover,
+.metric-card:hover,
+.cockpit-block:hover,
+.patients-directory-card:hover,
+.documentos-summary-card:hover,
+.patients-stat-card:hover {
+  border-color: rgba(12, 111, 102, 0.2) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92) inset, 0 22px 56px rgba(16, 24, 32, 0.07) !important;
+}
+
+.dashboard-layout,
+.patients-hero-shell,
+.dashboard-ops-grid,
+.dashboard-bottom-row,
+.config-grid,
+.ficha-case-shell {
+  gap: 1.1rem !important;
+}
+
+.hero-section,
+.cockpit-hero,
+.patients-hero-shell {
+  position: relative !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(91, 119, 126, 0.14) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 252, 0.9) 0%, rgba(236, 247, 244, 0.72) 48%, rgba(232, 241, 244, 0.88) 100%) !important;
+  box-shadow: 0 30px 80px rgba(16, 24, 32, 0.075) !important;
+}
+
+.hero-section::before,
+.patients-hero-shell::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(115deg, transparent 0 58%, rgba(12, 111, 102, 0.09) 58.2% 58.8%, transparent 59%),
+    repeating-linear-gradient(90deg, rgba(16, 24, 32, 0.032) 0 1px, transparent 1px 18px) !important;
+  mix-blend-mode: multiply !important;
+}
+
+.hero-panel-main,
+.hero-panel-side,
+.patients-hero-main,
+.patients-hero-stats {
+  position: relative !important;
+  z-index: 1 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.hero-title,
+.page-title {
+  color: #0f1b23 !important;
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 3vw, 3.25rem) !important;
+  line-height: 0.98 !important;
+}
+
+.page-title {
+  font-size: clamp(1.55rem, 2vw, 2.15rem) !important;
+}
+
+.hero-eyebrow,
+.patients-kicker,
+.signal-kicker,
+.cockpit-side-kicker,
+.ficha-section-kicker,
+.ficha-rail-label {
+  color: #0c6f66 !important;
+  letter-spacing: 0.14em !important;
+}
+
+.signal-card,
+.priority-item,
+.command-tile,
+.clean-list-item,
+.patients-directory-list > *,
+.agenda-event-card,
+.documentos-mobile-card {
+  border: 0 !important;
+  border-top: 1px solid rgba(91, 119, 126, 0.14) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.signal-card:first-child,
+.priority-item:first-child,
+.clean-list-item:first-child,
+.patients-directory-list > *:first-child {
+  border-top-color: transparent !important;
+}
+
+.command-grid {
+  gap: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(91, 119, 126, 0.14) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 252, 0.54) !important;
+}
+
+.command-tile {
+  min-height: 8rem !important;
+  padding: 1rem !important;
+}
+
+.command-tile:hover,
+.clean-list-item:hover,
+.patients-directory-list > *:hover {
+  background: rgba(234, 247, 244, 0.58) !important;
+}
+
+.metrics-row {
+  gap: 0.75rem !important;
+}
+
+.metric-card {
+  align-items: center !important;
+  min-height: 6.2rem !important;
+  padding: 0.95rem 1rem !important;
+}
+
+.metric-icon,
+.command-tile-icon {
+  border-radius: 10px !important;
+  background: rgba(12, 111, 102, 0.1) !important;
+  color: #0c6f66 !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-action,
+.assistant-launch-btn,
+.btn-link-inline {
+  border-radius: 10px !important;
+}
+
+.btn-primary,
+.assistant-launch-btn,
+.btn-generate {
+  background: linear-gradient(135deg, #0b5d57 0%, #0d7d71 58%, #2f6f88 100%) !important;
+  box-shadow: 0 12px 30px rgba(12, 111, 102, 0.2) !important;
+}
+
+.sidebar {
+  box-shadow: 12px 0 44px rgba(16, 24, 32, 0.08) !important;
+}
+
+.topbar {
+  background: rgba(247, 250, 248, 0.82) !important;
+  border-bottom-color: rgba(91, 119, 126, 0.14) !important;
+}
+
+.search-box input,
+input,
+select,
+textarea {
+  border-color: rgba(91, 119, 126, 0.18) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 252, 0.86) !important;
+}
+
+.search-box input {
+  border-radius: 999px !important;
+}
+
+#assistantRail.assistant-rail,
+#assistantRail.assistant-rail-portal {
+  width: min(1040px, calc(100vw - 1.25rem)) !important;
+  height: min(94dvh, 920px) !important;
+  max-height: 94dvh !important;
+}
+
+#assistantRail .assistant-rail-card {
+  border: 1px solid rgba(91, 119, 126, 0.22) !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(250, 252, 250, 0.98), rgba(237, 246, 243, 0.95)) !important;
+  box-shadow: 0 34px 100px rgba(16, 24, 32, 0.24) !important;
+}
+
+#assistantRail .assistant-module-header {
+  min-height: 54px !important;
+  border-bottom: 1px solid rgba(91, 119, 126, 0.16) !important;
+  background: rgba(255, 255, 252, 0.86) !important;
+}
+
+#assistantRail .assistant-dialog-surface {
+  gap: 0.5rem !important;
+}
+
+#assistantRail .chat-log,
+html[data-assistant-mode='desktop'] #assistantRail .chat-log,
+html[data-assistant-mode='compact'] #assistantRail .chat-log,
+html[data-assistant-mode='mobile'] #assistantRail .chat-log {
+  min-height: clamp(22rem, 58vh, 52rem) !important;
+  border: 1px solid rgba(91, 119, 126, 0.14) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 252, 0.9), rgba(247, 251, 249, 0.9)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+#assistantRail .ai-input-area {
+  border: 1px solid rgba(91, 119, 126, 0.14) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 252, 0.82) !important;
+}
+
+#assistantRail .ai-textarea-wrapper {
+  border-radius: 12px !important;
+}
+
+#assistantRail .ai-textarea-wrapper textarea {
+  min-height: 4rem !important;
+  height: 4rem !important;
+  font-size: 0.95rem !important;
+}
+
+#assistantRail .assistant-mode-switch,
+#assistantRail .assistant-diagnostic-card {
+  border-color: rgba(91, 119, 126, 0.14) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 252, 0.62) !important;
+  box-shadow: none !important;
+}
+
+#assistantRail .assistant-mode-chip {
+  border-radius: 9px !important;
+}
+
+#assistantRail .assistant-agent-canvas {
+  border-color: rgba(91, 119, 126, 0.16) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(135deg, rgba(235, 247, 243, 0.9), rgba(248, 252, 250, 0.92)) !important;
+}
+
+#assistantRail .msg-body {
+  border-radius: 12px !important;
+}
+
+@keyframes premiumReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 820px) {
+  #assistantRail.assistant-rail,
+  #assistantRail.assistant-rail-portal {
+    width: 100vw !important;
+    height: 94dvh !important;
+    max-height: 94dvh !important;
+  }
+
+  .hero-section,
+  .cockpit-hero,
+  .patients-hero-shell {
+    border-radius: 14px !important;
+  }
+
+  .card,
+  .widget-card,
+  .metric-card,
+  .cockpit-block {
+    border-radius: 12px !important;
+  }
+}
