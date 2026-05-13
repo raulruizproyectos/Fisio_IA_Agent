@@ -1181,13 +1181,14 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
 .ops-hero,
 .ops-patients-head {
   position: relative !important;
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.28fr) !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
   gap: clamp(1.5rem, 4vw, 4.25rem) !important;
-  align-items: end !important;
+  align-items: flex-end !important;
   padding: clamp(1rem, 2vw, 1.75rem) 0 clamp(1.4rem, 2.5vw, 2.3rem) !important;
   border: 0 !important;
-  border-bottom: 1px solid rgba(16, 29, 34, 0.13) !important;
+  border-bottom: 1px solid rgba(16, 29, 34, 0.08) !important;
   background: transparent !important;
   box-shadow: none !important;
 }
@@ -1311,40 +1312,28 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
 .ops-metrics,
 .ops-patient-stats {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 0 !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: clamp(1.5rem, 3vw, 3rem) !important;
   border: 0 !important;
-  border-bottom: 1px solid rgba(16, 29, 34, 0.13) !important;
   background: transparent !important;
   box-shadow: none !important;
+  padding: 1.5rem 0 !important;
 }
 
 .ops-signals {
-  border-top: 1px solid rgba(16, 29, 34, 0.13) !important;
+  border-top: 1px solid rgba(16, 29, 34, 0.08) !important;
+  border-bottom: 1px solid rgba(16, 29, 34, 0.08) !important;
 }
 
 .ops-signal,
 .ops-metrics > div,
 .ops-patient-stats > article {
   min-width: 0 !important;
-  padding: 1.25rem 0 !important;
+  padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-}
-
-.ops-signal:not(:first-child),
-.ops-metrics > div:not(:first-child),
-.ops-patient-stats > article:not(:first-child) {
-  border-left: 1px solid var(--line) !important;
-  padding-left: clamp(1rem, 1.7vw, 1.55rem) !important;
-}
-
-.ops-signal:not(:last-child),
-.ops-metrics > div:not(:last-child),
-.ops-patient-stats > article:not(:last-child) {
-  padding-right: clamp(1rem, 1.7vw, 1.55rem) !important;
 }
 
 .ops-signal-head {
