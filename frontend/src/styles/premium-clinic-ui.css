@@ -208,17 +208,18 @@ textarea:focus {
 .ficha-decision-card,
 .ficha-channel-item,
 .ficha-check-item {
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius-lg) !important;
-  background: rgba(255, 254, 250, 0.72) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
+  border-bottom: 1px solid var(--line) !important;
 }
 
 .card:hover,
 .widget-card:hover,
 .cockpit-block:hover,
 .documentos-summary-card:hover {
-  border-color: var(--line-strong) !important;
+  border-color: var(--line) !important;
   transform: none !important;
   box-shadow: none !important;
 }
@@ -1193,19 +1194,7 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
 
 .ops-hero::before,
 .ops-patients-head::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: -1.2rem auto auto -2rem !important;
-  width: min(46vw, 42rem) !important;
-  height: min(28vw, 24rem) !important;
-  pointer-events: none !important;
-  border-radius: 999px !important;
-  background:
-    radial-gradient(circle at 18% 22%, rgba(12, 111, 102, 0.18), transparent 62%),
-    radial-gradient(circle at 78% 54%, rgba(180, 138, 79, 0.11), transparent 56%) !important;
-  filter: blur(16px) !important;
-  opacity: 0.85 !important;
-  z-index: 0 !important;
+  display: none !important;
 }
 
 .ops-hero-copy,
@@ -1338,25 +1327,24 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
 .ops-metrics > div,
 .ops-patient-stats > article {
   min-width: 0 !important;
-  padding: clamp(1rem, 1.6vw, 1.45rem) clamp(1rem, 1.7vw, 1.55rem) !important;
+  padding: 1.25rem 0 !important;
   border: 0 !important;
-  border-right: 1px solid rgba(16, 29, 34, 0.12) !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
-.ops-signal:first-child,
-.ops-metrics > div:first-child,
-.ops-patient-stats > article:first-child {
-  padding-left: 0 !important;
+.ops-signal:not(:first-child),
+.ops-metrics > div:not(:first-child),
+.ops-patient-stats > article:not(:first-child) {
+  border-left: 1px solid var(--line) !important;
+  padding-left: clamp(1rem, 1.7vw, 1.55rem) !important;
 }
 
-.ops-signal:last-child,
-.ops-metrics > div:last-child,
-.ops-patient-stats > article:last-child {
-  border-right: 0 !important;
-  padding-right: 0 !important;
+.ops-signal:not(:last-child),
+.ops-metrics > div:not(:last-child),
+.ops-patient-stats > article:not(:last-child) {
+  padding-right: clamp(1rem, 1.7vw, 1.55rem) !important;
 }
 
 .ops-signal-head {
@@ -1370,10 +1358,10 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
 .ops-signal-head > span:first-child,
 .ops-patient-stats span,
 .ops-command span:not(.material-symbols-rounded) {
-  color: #0c6f66 !important;
+  color: var(--teal) !important;
   font-size: 0.72rem !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.14em !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
 }
 
@@ -1382,9 +1370,9 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
 .ops-patient-stats strong {
   display: block !important;
   color: var(--ink) !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.05em !important;
-  line-height: 1 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.1 !important;
 }
 
 .ops-signal strong {

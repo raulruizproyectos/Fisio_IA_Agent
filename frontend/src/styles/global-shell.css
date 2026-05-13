@@ -23,9 +23,9 @@
     height: 100vh !important;
     padding: 1rem 0.8rem !important;
     overflow: hidden auto !important;
-    color: var(--sidebar-text) !important;
-    background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg2) 100%) !important;
-    border-right: 1px solid var(--sidebar-border) !important;
+    color: var(--ink-soft) !important;
+    background: var(--bg-paper) !important;
+    border-right: 1px solid var(--line) !important;
   }
 
   .sidebar.collapsed {
@@ -55,8 +55,8 @@
     width: 2.25rem !important;
     height: 2.25rem !important;
     place-items: center !important;
-    color: #f8fafc !important;
-    background: linear-gradient(135deg, #176b63, #a67c39) !important;
+    color: #ffffff !important;
+    background: var(--teal-deep) !important;
     border-radius: 0.8rem !important;
   }
 
@@ -66,7 +66,7 @@
 
   .brand-text {
     overflow: hidden !important;
-    color: #f8fafc !important;
+    color: var(--ink) !important;
     font-weight: 800 !important;
     white-space: nowrap !important;
     text-overflow: ellipsis !important;
@@ -86,7 +86,7 @@
 
   .sidebar-section-label {
     padding: 0.55rem 0.75rem 0.25rem !important;
-    color: rgba(184,199,216,0.62) !important;
+    color: var(--ink-muted) !important;
     font-size: 0.64rem !important;
     font-weight: 800 !important;
     letter-spacing: 0.12em !important;
@@ -99,20 +99,25 @@
     gap: 0.62rem !important;
     min-height: 2.45rem !important;
     padding: 0.52rem 0.7rem !important;
-    color: var(--sidebar-text) !important;
+    color: var(--ink-soft) !important;
     border: 1px solid transparent !important;
     border-radius: 0.7rem !important;
     font-size: 0.88rem !important;
     font-weight: 650 !important;
     text-decoration: none !important;
     white-space: nowrap !important;
+    transition: all 0.2s ease !important;
   }
 
-  .nav-item:hover,
+  .nav-item:hover {
+    background: var(--bg-soft) !important;
+    color: var(--ink) !important;
+  }
+
   .nav-item.active {
-    color: var(--sidebar-active-color) !important;
-    background: var(--sidebar-active-bg) !important;
-    border-color: rgba(255,255,255,0.08) !important;
+    color: var(--teal-deep) !important;
+    background: var(--teal-soft) !important;
+    border-color: transparent !important;
   }
 
   .nav-item .material-symbols-rounded {
