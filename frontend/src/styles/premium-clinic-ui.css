@@ -2,6 +2,12 @@
  * Premium calm clinic pass.
  * Direction: fewer boxes, one typographic voice, operational luxury.
  */
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+
 :root {
   /* Stitch Design System - Fisio IA Agent */
   --bg-base: #f9faf7;
@@ -1138,9 +1144,10 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
  */
 .ops-dashboard,
 .ops-patients {
-  width: min(1500px, calc(100vw - clamp(1.5rem, 4vw, 5rem))) !important;
+  width: 100% !important;
+  max-width: 1500px !important;
   margin: 0 auto !important;
-  padding: clamp(1.5rem, 3vw, 3rem) 0 clamp(2.5rem, 4vw, 4rem) !important;
+  padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 3vw, 2.5rem) clamp(2.5rem, 4vw, 4rem) !important;
   color: var(--ink) !important;
 }
 
