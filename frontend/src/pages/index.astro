@@ -1328,32 +1328,48 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
               <button class="btn-ghost" id="refreshDocumentos"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
             </div>
           </div>
-          <section class="card table-card">
-            <header class="card-header"><h2>Consentimientos y firmas digitales</h2></header>
-            <div class="documentos-summary-strip" id="documentosSummaryStrip">
-              <article class="documentos-summary-card">
-                <span>Total</span>
-                <strong id="documentosCountValue">0</strong>
-                <p id="documentosCountMeta">Sin lectura.</p>
+          <section class="ops-patient-directory" style="margin-top: 1rem;">
+            <header class="ops-patients-head" style="padding-top: 0 !important; border: 0 !important;">
+              <h2 class="ops-title" style="font-size: clamp(2rem, 3.5vw, 2.8rem) !important;">Consentimientos</h2>
+            </header>
+            
+            <div class="ops-signals" id="documentosSummaryStrip" style="margin-bottom: 2.5rem; border-bottom: 1px solid rgba(16, 29, 34, 0.08); padding-bottom: 2.5rem;">
+              <article class="ops-signal">
+                <span class="ops-signal-label">Total</span>
+                <strong class="ops-signal-value" id="documentosCountValue">0</strong>
+                <span class="ops-signal-hint" id="documentosCountMeta">Registros</span>
               </article>
-              <article class="documentos-summary-card documentos-summary-card-ready">
-                <span>Firmados</span>
-                <strong id="documentosSignedValue">0</strong>
-                <p id="documentosSignedMeta">Sin firmas.</p>
+              <article class="ops-signal">
+                <span class="ops-signal-label">Firmados</span>
+                <strong class="ops-signal-value" style="color: #0c6f66;" id="documentosSignedValue">0</strong>
+                <span class="ops-signal-hint" id="documentosSignedMeta">Completados</span>
               </article>
-              <article class="documentos-summary-card documentos-summary-card-pending">
-                <span>Pendientes</span>
-                <strong id="documentosPendingValue">0</strong>
-                <p id="documentosPendingMeta">Sin pendientes.</p>
+              <article class="ops-signal">
+                <span class="ops-signal-label">Pendientes</span>
+                <strong class="ops-signal-value" style="color: #b45309;" id="documentosPendingValue">0</strong>
+                <span class="ops-signal-hint" id="documentosPendingMeta">Requieren firma</span>
               </article>
             </div>
+
             <div class="documentos-mobile-list" id="documentosMobileList">
               <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando documentos...</p></div>
             </div>
-            <div class="table-wrap documentos-table-wrap">
-              <table>
-                <thead><tr><th>Paciente</th><th>Tipo</th><th>T&iacute;tulo</th><th>Estado</th><th>Fecha firma</th><th>Acciones</th></tr></thead>
-                <tbody id="documentosBody"><tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando documentos...</p></div></td></tr></tbody>
+            
+            <div class="ops-patient-list documentos-table-wrap" style="width: 100%;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                  <tr style="font-size: 0.72rem; letter-spacing: 0.16em; font-weight: 900; text-transform: uppercase; color: var(--teal); border-bottom: 1px solid rgba(16, 29, 34, 0.11);">
+                    <th style="padding: 1rem 0;">Paciente</th>
+                    <th style="padding: 1rem 0;">Tipo</th>
+                    <th style="padding: 1rem 0;">T&iacute;tulo</th>
+                    <th style="padding: 1rem 0;">Estado</th>
+                    <th style="padding: 1rem 0;">Fecha firma</th>
+                    <th style="padding: 1rem 0; text-align: right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="documentosBody">
+                  <tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando documentos...</p></div></td></tr>
+                </tbody>
               </table>
             </div>
           </section>
