@@ -1328,12 +1328,12 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
               <button class="btn-ghost" id="refreshDocumentos"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
             </div>
           </div>
-          <section class="ops-patient-directory" style="margin-top: 1rem;">
-            <header class="ops-patients-head" style="padding-top: 0 !important; border: 0 !important;">
-              <h2 class="ops-title" style="font-size: clamp(2rem, 3.5vw, 2.8rem) !important;">Consentimientos</h2>
+          <section class="ops-patient-directory documentos-workbench">
+            <header class="ops-patients-head documentos-workbench-head">
+              <h2 class="ops-title documentos-workbench-title">Consentimientos</h2>
             </header>
             
-            <div class="ops-signals" id="documentosSummaryStrip" style="margin-bottom: 2.5rem; border-bottom: 1px solid rgba(16, 29, 34, 0.08); padding-bottom: 2.5rem;">
+            <div class="ops-signals documentos-summary" id="documentosSummaryStrip">
               <article class="ops-signal">
                 <span class="ops-signal-label">Total</span>
                 <strong class="ops-signal-value" id="documentosCountValue">0</strong>
@@ -1341,12 +1341,12 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
               </article>
               <article class="ops-signal">
                 <span class="ops-signal-label">Firmados</span>
-                <strong class="ops-signal-value" style="color: #0c6f66;" id="documentosSignedValue">0</strong>
+                <strong class="ops-signal-value documentos-value-ok" id="documentosSignedValue">0</strong>
                 <span class="ops-signal-hint" id="documentosSignedMeta">Completados</span>
               </article>
               <article class="ops-signal">
                 <span class="ops-signal-label">Pendientes</span>
-                <strong class="ops-signal-value" style="color: #b45309;" id="documentosPendingValue">0</strong>
+                <strong class="ops-signal-value documentos-value-warn" id="documentosPendingValue">0</strong>
                 <span class="ops-signal-hint" id="documentosPendingMeta">Requieren firma</span>
               </article>
             </div>
@@ -1355,16 +1355,16 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
               <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando documentos...</p></div>
             </div>
             
-            <div class="ops-patient-list documentos-table-wrap" style="width: 100%;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <div class="ops-patient-list documentos-table-wrap">
+              <table class="documentos-table">
                 <thead>
-                  <tr style="font-size: 0.72rem; letter-spacing: 0.16em; font-weight: 900; text-transform: uppercase; color: var(--teal); border-bottom: 1px solid rgba(16, 29, 34, 0.11);">
-                    <th style="padding: 1rem 0;">Paciente</th>
-                    <th style="padding: 1rem 0;">Tipo</th>
-                    <th style="padding: 1rem 0;">T&iacute;tulo</th>
-                    <th style="padding: 1rem 0;">Estado</th>
-                    <th style="padding: 1rem 0;">Fecha firma</th>
-                    <th style="padding: 1rem 0; text-align: right;">Acciones</th>
+                  <tr>
+                    <th>Paciente</th>
+                    <th>Tipo</th>
+                    <th>T&iacute;tulo</th>
+                    <th>Estado</th>
+                    <th>Fecha firma</th>
+                    <th class="text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody id="documentosBody">

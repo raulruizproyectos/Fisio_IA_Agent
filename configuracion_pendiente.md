@@ -6,6 +6,11 @@
 - Backend: sin cambios en esta sesion.
 - Produccion: pendiente redeploy manual de `fisio-frontend` en EasyPanel.
 
+## Actualizacion 2026-05-18
+- Redisenio premium aplicado en shell, navegacion, topbar, documentos, tablas, formularios y copiloto IA.
+- Validado localmente: `frontend` check/build OK y `backend` lint OK.
+- Pendiente recomendado: smoke test visual en navegador sobre Inicio, Pacientes, Agenda, Finanzas, Documentos y Copiloto IA antes de redeploy.
+
 ## Validado
 - `frontend`: `npm.cmd run check` OK.
 - `frontend`: `npm.cmd run build` OK.

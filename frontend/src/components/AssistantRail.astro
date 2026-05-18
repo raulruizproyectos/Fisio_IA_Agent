@@ -1,14 +1,15 @@
-<aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico" data-copilot-build="clinical-studio-20260506">
-  <section class="ai-clinical-module card assistant-rail-card">
+<aside class="assistant-rail" id="assistantRail" aria-label="Copilot clinico" data-copilot-build="clinical-studio-20260518">
+  <section class="ai-clinical-module assistant-rail-card assistant-copilot-studio">
     <header class="module-header assistant-module-header">
       <div class="assistant-rail-copy">
         <div class="assistant-rail-header-row">
-          <span class="assistant-eyebrow">LABORATORIO TERAP&Eacute;UTICO</span>
+          <span class="assistant-eyebrow">Copiloto clinico</span>
           <div class="assistant-connected-badge">
             <span class="status-dot connected pulse-dot" id="agentDot"></span>
             <span class="status-text" id="agentStatusText">CONECTADO</span>
           </div>
         </div>
+        <h2>Plan, revisi&oacute;n y entrega en un solo flujo</h2>
       </div>
       <div class="assistant-rail-tools">
         <button type="button" class="assistant-rail-close" id="assistantRailClose" aria-label="Cerrar copilot">
@@ -32,11 +33,11 @@
           </div>
         </div>
 
-        <section class="assistant-report-priority-card" aria-label="Flujo diferencial de informe IA">
+        <section class="assistant-report-priority-card assistant-clinical-brief" aria-label="Flujo diferencial de informe IA">
           <div class="assistant-report-copy">
-            <span class="assistant-brief-kicker">Estudio de informe IA</span>
-            <strong>Ejercicios revisables, PDF clinico y entrega por Telegram</strong>
-            <p>Sintomas, objetivo y contexto del paciente se convierten en un borrador clinico listo para validar antes de enviarlo.</p>
+            <span class="assistant-brief-kicker">Flujo seguro</span>
+            <strong>Contexto, plan revisable, PDF y Telegram</strong>
+            <p>El agente trabaja con el paciente seleccionado y deja el plan listo para validar antes de exportar.</p>
           </div>
           <ol class="assistant-report-flow" aria-label="Proceso del informe">
             <li><span>1</span>Contexto</li>
@@ -144,8 +145,8 @@
           <form id="agentForm" class="ai-input-area">
             <div class="assistant-agent-canvas" id="assistantAgentCanvas" aria-label="Inicios rapidos del agente clinico">
               <div class="assistant-agent-canvas-copy">
-                <span>Copilot clinico</span>
-                <strong>Que quieres resolver ahora?</strong>
+                <span>Atajos clinicos</span>
+                <strong>Arranca con contexto real</strong>
               </div>
               <div class="assistant-agent-prompts">
                 <button type="button" data-assistant-mode="new-plan" data-assistant-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias. Genera un plan domiciliario progresivo, seguro y facil de explicar.">Plan lumbar</button>
@@ -155,7 +156,7 @@
             </div>
             <div class="assistant-composer-shell">
               <div class="ai-textarea-wrapper">
-                <textarea id="agentInput" rows="1" placeholder="Anade objetivo, limitaciones o preferencias para completar la ficha estructurada..."></textarea>
+                <textarea id="agentInput" rows="1" placeholder="Describe objetivo, restricciones, dolor, material disponible o progresion deseada..."></textarea>
               </div>
               <button type="submit" class="btn-action btn-chat btn-send-compact" id="sendBtn" aria-label="Preguntar a IA" title="Pregunta general (Chat)">
                 <span class="material-symbols-rounded">arrow_upward</span>

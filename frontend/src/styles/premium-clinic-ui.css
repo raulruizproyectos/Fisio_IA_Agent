@@ -1730,3 +1730,359 @@ html[data-assistant-mode='mobile'] #assistantRail .chat-log {
     justify-content: flex-start !important;
   }
 }
+
+/* 2026-05-18 product redesign layer: premium clinical SaaS */
+:root {
+  --bg-base: #f7f6f0;
+  --bg-soft: #eeeee6;
+  --bg-paper: #fffefa;
+  --bg-ink: #111817;
+  --ink: #141b19;
+  --ink-soft: #44504c;
+  --ink-muted: #78837d;
+  --line: rgba(34, 48, 45, 0.12);
+  --line-strong: rgba(34, 48, 45, 0.22);
+  --teal: #145a50;
+  --teal-deep: #103d38;
+  --sage: #dce9df;
+  --sage-strong: #bdd6c8;
+  --amber: #a9762a;
+  --amber-soft: #f0dfbd;
+  --blue: #276076;
+  --blue-soft: #d9edf3;
+  --danger: #b94a48;
+  --success: #257a5f;
+  --font-ui: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Sora', 'Manrope', 'Segoe UI', system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --shadow-soft: 0 14px 34px rgba(23, 32, 29, 0.07);
+}
+
+html {
+  font-size: 15px !important;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  letter-spacing: 0 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+.page-title,
+.ops-title,
+.hero-title {
+  letter-spacing: 0 !important;
+}
+
+.content {
+  background:
+    linear-gradient(90deg, rgba(20, 90, 80, 0.035) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, #fbfaf5 0%, #f7f6f0 100%) !important;
+  background-size: 42px 42px, auto !important;
+}
+
+.page-section {
+  max-width: 1520px !important;
+  margin: 0 auto !important;
+  padding: 1.35rem 1.5rem 3rem !important;
+}
+
+.ops-dashboard,
+.ops-patients {
+  max-width: none !important;
+  padding: 0 0 2.5rem !important;
+}
+
+.page-header-row {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  margin: 0 0 1.1rem !important;
+  padding: 0 0 1rem !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.page-title,
+.ops-title {
+  color: var(--ink) !important;
+  font-family: var(--font-display) !important;
+  font-size: 2.15rem !important;
+  font-weight: 800 !important;
+  line-height: 1.05 !important;
+}
+
+.ops-title {
+  font-size: 4.2rem !important;
+  line-height: 0.96 !important;
+}
+
+.page-subtitle,
+.ops-subtitle {
+  max-width: 58rem !important;
+  color: var(--ink-soft) !important;
+  font-size: 0.96rem !important;
+}
+
+.ops-kicker,
+.finance-kicker,
+.ficha-section-kicker,
+.modal-eyebrow {
+  color: var(--teal) !important;
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.08em !important;
+}
+
+.card,
+.table-card,
+.config-card-full,
+.agenda-cal-card,
+.agenda-mobile-card,
+.ficha-command-shell,
+.ficha-overview-card,
+.ficha-rail-card {
+  border: 0 !important;
+  border-top: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.card-header,
+.card-header-stack {
+  padding: 0.95rem 0 0.75rem !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.card-header h2,
+.ops-section-head h2,
+.ficha-section-head h2 {
+  color: var(--ink) !important;
+  font-size: 1rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+.table-wrap {
+  overflow: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+table,
+.documentos-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  text-align: left !important;
+}
+
+thead tr {
+  border-bottom: 1px solid var(--line-strong) !important;
+}
+
+th {
+  padding: 0.78rem 0.65rem !important;
+  color: #596861 !important;
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+td {
+  padding: 0.82rem 0.65rem !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.08) !important;
+  color: #202b28 !important;
+  font-size: 0.9rem !important;
+  vertical-align: middle !important;
+}
+
+tbody tr:hover td {
+  background: rgba(220, 233, 223, 0.38) !important;
+}
+
+.ops-signals,
+.ops-metrics,
+.ops-command-row,
+.ops-patient-stats,
+.finance-overview-grid,
+.template-kpi-grid,
+.bonos-summary-strip,
+.facturas-summary-strip,
+.documentos-summary {
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: rgba(255, 254, 250, 0.3) !important;
+}
+
+.ops-signal,
+.ops-metrics > div,
+.ops-command,
+.ops-patient-stats > article,
+.finance-overview-card,
+.template-kpi-card,
+.bonos-summary-card,
+.facturas-summary-card {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.finance-workbench,
+.finance-subview-strip,
+.pagos-toolbar {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-lg) !important;
+  background: rgba(255, 254, 250, 0.62) !important;
+  box-shadow: none !important;
+}
+
+.finance-action-card,
+.finance-priority-panel {
+  border: 0 !important;
+  border-left: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-action,
+.btn-outline,
+.ops-pill,
+.topbar-action {
+  border-radius: var(--radius-md) !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+}
+
+.btn-primary,
+.ops-pill-primary,
+.finance-action-grid .finance-action-card:hover {
+  background: #123f3a !important;
+  color: #fffefa !important;
+}
+
+.btn-secondary,
+.btn-ghost,
+.btn-outline,
+.ops-pill:not(.ops-pill-primary) {
+  border: 1px solid var(--line) !important;
+  background: rgba(255, 254, 250, 0.72) !important;
+  color: #263330 !important;
+}
+
+.status-chip {
+  border-radius: 999px !important;
+  letter-spacing: 0 !important;
+}
+
+.field span,
+.config-label,
+.pagos-stat-label {
+  color: #67736e !important;
+  font-size: 0.72rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+}
+
+input,
+select,
+textarea {
+  border-radius: var(--radius-md) !important;
+  background: #fffefa !important;
+}
+
+.modal-panel,
+.crm-drawer-panel {
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  background: #fffefa !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+.documentos-workbench {
+  margin-top: 1rem !important;
+}
+
+.documentos-workbench-head {
+  padding-top: 0 !important;
+  border: 0 !important;
+}
+
+.documentos-workbench-title {
+  font-size: 2.15rem !important;
+}
+
+.documentos-summary {
+  margin-bottom: 1.5rem !important;
+  padding-bottom: 0 !important;
+}
+
+.documentos-table-wrap {
+  width: 100% !important;
+}
+
+.documentos-value-ok {
+  color: var(--success) !important;
+}
+
+.documentos-value-warn {
+  color: var(--amber) !important;
+}
+
+.ficha-case-shell,
+.template-library-grid,
+.config-grid {
+  gap: 1rem !important;
+}
+
+.empty-state,
+.empty-state-sm {
+  border: 0 !important;
+  border-radius: var(--radius-lg) !important;
+  background: rgba(220, 233, 223, 0.42) !important;
+  color: #53625c !important;
+}
+
+@media (max-width: 900px) {
+  html {
+    font-size: 14px !important;
+  }
+
+  .page-section {
+    padding: 1rem 0.85rem 5.5rem !important;
+  }
+
+  .page-header-row {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .ops-title {
+    font-size: 3rem !important;
+  }
+
+  .page-title {
+    font-size: 1.65rem !important;
+  }
+
+  th,
+  td {
+    padding: 0.75rem 0.5rem !important;
+  }
+}

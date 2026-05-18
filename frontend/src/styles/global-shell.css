@@ -433,3 +433,200 @@
     padding: 0.42rem 0.55rem !important;
     font-size: 0.82rem !important;
   }
+
+/* 2026-05-18 premium clinical shell */
+.app-shell {
+  background:
+    linear-gradient(180deg, rgba(250, 249, 244, 0.96), rgba(243, 245, 239, 0.98)),
+    var(--bg-base) !important;
+}
+
+.sidebar {
+  gap: 0.55rem !important;
+  padding: 1rem 0.65rem !important;
+  color: #24302e !important;
+  background: #fbfaf5 !important;
+  border-right: 1px solid rgba(34, 48, 45, 0.1) !important;
+}
+
+.sidebar-brand {
+  min-height: 3.35rem !important;
+  padding: 0.25rem 0.55rem 0.85rem !important;
+}
+
+.brand-icon-wrapper {
+  border-radius: 10px !important;
+  background: #123f3a !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14) !important;
+}
+
+.brand-copy,
+.sidebar-profile > div,
+.sidebar-status > div {
+  display: grid !important;
+  min-width: 0 !important;
+}
+
+.brand-text {
+  color: #121917 !important;
+  font-size: 0.9rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+.brand-subtitle,
+.sidebar-status span,
+.sidebar-profile span {
+  color: #73807b !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.sidebar-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.62rem !important;
+  margin: 0 0.18rem 0.5rem !important;
+  padding: 0.62rem !important;
+  border: 1px solid rgba(18, 63, 58, 0.1) !important;
+  border-radius: 8px !important;
+  background: rgba(234, 242, 235, 0.62) !important;
+}
+
+.sidebar-status strong,
+.sidebar-profile strong {
+  overflow: hidden !important;
+  color: #17211e !important;
+  font-size: 0.78rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.sidebar-status-dot {
+  flex: 0 0 0.5rem !important;
+  width: 0.5rem !important;
+  height: 0.5rem !important;
+  border-radius: 999px !important;
+  background: #2b9b76 !important;
+  box-shadow: 0 0 0 4px rgba(43, 155, 118, 0.14) !important;
+}
+
+.sidebar-section-label {
+  padding: 0.65rem 0.65rem 0.2rem !important;
+  color: #8a7d67 !important;
+  font-size: 0.62rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.08em !important;
+}
+
+.nav-item {
+  min-height: 2.25rem !important;
+  padding: 0.44rem 0.62rem !important;
+  color: #46524f !important;
+  border-radius: 8px !important;
+  font-size: 0.84rem !important;
+  font-weight: 720 !important;
+  letter-spacing: 0 !important;
+}
+
+.nav-item:hover {
+  background: rgba(22, 32, 29, 0.055) !important;
+  color: #121917 !important;
+}
+
+.nav-item.active {
+  color: #0d3e38 !important;
+  background: #dceee6 !important;
+}
+
+.nav-item-copilot {
+  color: #173f57 !important;
+  background: rgba(199, 228, 240, 0.52) !important;
+}
+
+.sidebar-bottom {
+  border-top: 1px solid rgba(34, 48, 45, 0.09) !important;
+}
+
+.sidebar-profile {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.58rem !important;
+  margin: 0.7rem 0.12rem 0 !important;
+  padding: 0.55rem !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+}
+
+.sidebar.collapsed .brand-copy,
+.sidebar.collapsed .sidebar-status,
+.sidebar.collapsed .sidebar-section-label,
+.sidebar.collapsed .sidebar-profile,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .badge {
+  display: none !important;
+}
+
+.topbar {
+  gap: 0.75rem !important;
+  height: 58px !important;
+  padding: 0 1rem !important;
+  background: rgba(251, 250, 245, 0.9) !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
+  box-shadow: none !important;
+}
+
+.topbar-clinic-pulse {
+  display: grid !important;
+  min-width: 8.8rem !important;
+  padding-right: 0.8rem !important;
+  border-right: 1px solid rgba(34, 48, 45, 0.1) !important;
+}
+
+.topbar-clinic-pulse span {
+  color: #70807a !important;
+  font-size: 0.64rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.topbar-clinic-pulse strong {
+  color: #16201d !important;
+  font-size: 0.82rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+.topbar-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  min-height: 2.25rem !important;
+  padding: 0.45rem 0.72rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  color: #263330 !important;
+  font: inherit !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.assistant-launch-btn {
+  min-height: 2.25rem !important;
+  padding: 0.45rem 0.82rem !important;
+  border-radius: 8px !important;
+  background: #123f3a !important;
+}
+
+@media (max-width: 900px) {
+  .topbar-clinic-pulse,
+  .topbar-action {
+    display: none !important;
+  }
+}

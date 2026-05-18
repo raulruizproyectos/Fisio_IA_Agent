@@ -283,3 +283,278 @@ html[data-assistant-mode='mobile'] #assistantRail .assistant-diagnostic-card {
   padding: 0.18rem 0.52rem !important;
   font-size: 0.66rem !important;
 }
+
+/* 2026-05-18 clinical copilot studio */
+#assistantRail.assistant-rail,
+#assistantRail.assistant-rail-portal {
+  width: min(760px, calc(100vw - 1.2rem)) !important;
+  max-width: min(760px, calc(100vw - 1.2rem)) !important;
+  color: #14201d !important;
+}
+
+#assistantRail .assistant-copilot-studio,
+#assistantRail .assistant-rail-card {
+  border: 1px solid rgba(34, 48, 45, 0.12) !important;
+  border-radius: 12px !important;
+  background: #fffefa !important;
+  box-shadow: 0 24px 70px rgba(19, 30, 27, 0.14) !important;
+}
+
+#assistantRail .assistant-module-header {
+  min-height: auto !important;
+  padding: 0.8rem 0.9rem !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
+  background: linear-gradient(180deg, #fffefa, #f8f6ee) !important;
+}
+
+#assistantRail .assistant-module-header h2 {
+  display: block !important;
+  margin: 0.18rem 0 0 !important;
+  color: #13201d !important;
+  font-size: 1rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.18 !important;
+}
+
+#assistantRail .assistant-eyebrow,
+#assistantRail .assistant-brief-kicker {
+  color: #145a50 !important;
+  font-size: 0.66rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+#assistantRail .assistant-connected-badge {
+  border: 1px solid rgba(37, 122, 95, 0.16) !important;
+  border-radius: 999px !important;
+  background: rgba(220, 233, 223, 0.7) !important;
+  color: #195b46 !important;
+}
+
+#assistantRail .assistant-rail-close {
+  width: 2.15rem !important;
+  height: 2.15rem !important;
+  border-radius: 8px !important;
+}
+
+#assistantRail .assistant-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.1fr) !important;
+  gap: 0.7rem !important;
+  padding: 0.75rem 0.85rem 0.45rem !important;
+}
+
+#assistantRail .patient-selector {
+  min-height: 2.55rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.12) !important;
+  border-radius: 8px !important;
+  background: #fbfaf5 !important;
+}
+
+#assistantRail .assistant-live-context {
+  display: grid !important;
+  min-height: 2.55rem !important;
+  padding: 0.52rem 0.65rem !important;
+  border-left: 1px solid rgba(34, 48, 45, 0.12) !important;
+  background: transparent !important;
+}
+
+#assistantRail .assistant-live-context strong {
+  color: #14201d !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0 !important;
+}
+
+#assistantRail .assistant-live-context p {
+  display: block !important;
+  margin: 0.08rem 0 0 !important;
+  color: #687670 !important;
+  font-size: 0.72rem !important;
+  line-height: 1.25 !important;
+}
+
+#assistantRail .assistant-report-priority-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 0.8rem !important;
+  margin: 0.35rem 0.85rem 0 !important;
+  padding: 0.75rem 0 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+#assistantRail .assistant-report-priority-card strong {
+  color: #14201d !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0 !important;
+}
+
+#assistantRail .assistant-report-priority-card p {
+  display: block !important;
+  max-width: 48rem !important;
+  margin: 0.12rem 0 0 !important;
+  color: #5c6964 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.35 !important;
+}
+
+#assistantRail .assistant-report-flow {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+}
+
+#assistantRail .assistant-report-flow li {
+  min-height: 1.85rem !important;
+  padding: 0.22rem 0.5rem !important;
+  border-radius: 999px !important;
+  background: rgba(220, 233, 223, 0.72) !important;
+  color: #24423b !important;
+  font-size: 0.68rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+}
+
+#assistantRail .assistant-report-priority-icon {
+  display: none !important;
+}
+
+#assistantRail .assistant-dialog-surface,
+html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
+html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
+html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+  gap: 0.55rem !important;
+  margin: 0.5rem 0.85rem 0.85rem !important;
+}
+
+#assistantRail .assistant-mode-switch {
+  gap: 0.22rem !important;
+  min-height: 2.25rem !important;
+  padding: 0.2rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 9px !important;
+  background: #f6f5ee !important;
+}
+
+#assistantRail .assistant-mode-chip {
+  min-height: 1.82rem !important;
+  border-radius: 7px !important;
+  font-size: 0.74rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+}
+
+#assistantRail .assistant-mode-chip.is-active {
+  background: #123f3a !important;
+  color: #fffefa !important;
+}
+
+#assistantRail .chat-log,
+html[data-assistant-mode='desktop'] #assistantRail .chat-log,
+html[data-assistant-mode='compact'] #assistantRail .chat-log,
+html[data-assistant-mode='mobile'] #assistantRail .chat-log {
+  min-height: 24rem !important;
+  padding: 0.75rem 0 !important;
+  border-top: 1px solid rgba(34, 48, 45, 0.08) !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.08) !important;
+}
+
+#assistantRail .ai-input-area,
+html[data-assistant-mode='desktop'] #assistantRail .ai-input-area,
+html[data-assistant-mode='compact'] #assistantRail .ai-input-area,
+html[data-assistant-mode='mobile'] #assistantRail .ai-input-area {
+  padding: 0.7rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.12) !important;
+  border-radius: 10px !important;
+  background: #fbfaf5 !important;
+}
+
+#assistantRail .assistant-agent-canvas {
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr) !important;
+  padding: 0 0 0.58rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+#assistantRail .assistant-agent-prompts button {
+  border-color: rgba(39, 96, 118, 0.18) !important;
+  border-radius: 999px !important;
+  background: #eef7f5 !important;
+  color: #173f57 !important;
+  letter-spacing: 0 !important;
+}
+
+#assistantRail .assistant-composer-shell {
+  min-height: 3rem !important;
+  border-radius: 9px !important;
+}
+
+#assistantRail .ai-textarea-wrapper textarea {
+  min-height: 3rem !important;
+  height: 3rem !important;
+  border-radius: 8px !important;
+  background: #fffefa !important;
+}
+
+#assistantRail .btn-send-compact {
+  border-radius: 8px !important;
+  background: #123f3a !important;
+}
+
+#assistantRail .assistant-action-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0.4rem !important;
+}
+
+#assistantRail .assistant-action-grid .btn-action {
+  min-height: 2.3rem !important;
+  border-radius: 8px !important;
+  font-size: 0.76rem !important;
+  letter-spacing: 0 !important;
+}
+
+#assistantRail .assistant-action-grid .btn-generate {
+  background: #123f3a !important;
+}
+
+#assistantRail .assistant-diagnostic-card,
+html[data-assistant-mode='desktop'] #assistantRail .assistant-diagnostic-card,
+html[data-assistant-mode='compact'] #assistantRail .assistant-diagnostic-card,
+html[data-assistant-mode='mobile'] #assistantRail .assistant-diagnostic-card {
+  padding: 0.55rem 0 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+#assistantRail .assistant-diagnostic-toggle {
+  border-radius: 999px !important;
+  background: rgba(220, 233, 223, 0.72) !important;
+  color: #123f3a !important;
+}
+
+@media (max-width: 720px) {
+  #assistantRail .assistant-toolbar,
+  #assistantRail .assistant-report-priority-card,
+  #assistantRail .assistant-agent-canvas,
+  #assistantRail .assistant-action-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #assistantRail .assistant-live-context {
+    border-left: 0 !important;
+    border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
+  }
+
+  #assistantRail .assistant-report-flow {
+    flex-wrap: wrap !important;
+  }
+}

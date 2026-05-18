@@ -2,6 +2,13 @@
 
 Historial operativo compacto. Para detalle completo, usar `git log` y diffs.
 
+## 2026-05-18 - Redisenio premium CRM
+- Reforzada la direccion SaaS clinico premium en shell, sidebar, topbar, tablas, formularios y estados.
+- Copiloto IA redisenado como estudio clinico: contexto de paciente, flujo seguro, atajos y compositor compacto.
+- Documentos elimina estilos inline visibles y adopta tabla/summary coherente con el sistema `ops-*`.
+- Validado frontend: `npm.cmd run check` OK y `npm.cmd run build` OK.
+- Validado backend: `npm.cmd run lint` OK.
+
 ## 2026-05-12 - Cierre de sesion
 - Publicado en `main` el redisenio funcional `f589384` (`feat: redesign crm workspace without cards`).
 - Dashboard y Pacientes pasan a markup `ops-*`, evitando las clases heredadas que generaban cajas (`card`, `signal-card`, `metric-card`, etc.).

@@ -2,23 +2,27 @@
   <button class="sidebar-toggle" id="sidebarToggle" aria-label="Men&uacute;">
     <span class="material-symbols-rounded">menu</span>
   </button>
+  <div class="topbar-clinic-pulse">
+    <span>Hoy</span>
+    <strong>Operativa cl&iacute;nica</strong>
+  </div>
   <div class="search-box">
     <span class="material-symbols-rounded search-icon">search</span>
-    <input type="text" id="searchInput" placeholder="Buscar paciente o email..." autocomplete="off" />
+    <input type="text" id="searchInput" placeholder="Buscar paciente, cita, factura o documento..." autocomplete="off" />
     <div class="search-results" id="searchResults" hidden></div>
   </div>
   <div class="topbar-right">
+    <button class="topbar-action" type="button" data-dashboard-nav="citas">
+      <span class="material-symbols-rounded">calendar_today</span>
+      <span>Agenda</span>
+    </button>
     <button class="assistant-launch-btn" id="assistantRailToggle" type="button" aria-label="Abrir copilot cl&iacute;nico" aria-controls="assistantRail" aria-expanded="false">
-      <span class="material-symbols-rounded">right_panel_open</span>
-      <span>Copiloto</span>
+      <span class="material-symbols-rounded">psychology</span>
+      <span>Copiloto IA</span>
     </button>
     <button class="icon-btn topbar-notif-btn" aria-label="Notificaciones" id="notifBtn">
       <span class="material-symbols-rounded">notifications</span>
       <span class="dot-indicator"></span>
     </button>
-    <div class="user-pill">
-      <div class="avatar">RR</div>
-      <span class="user-name">Dr. Ra&uacute;l Ruiz</span>
-    </div>
   </div>
 </header>
