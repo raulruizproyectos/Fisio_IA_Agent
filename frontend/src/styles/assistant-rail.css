@@ -1,560 +1,877 @@
 /*
- * Fase 2: hoja global temporal del copiloto.
- * Mantiene la prioridad del hotfix anterior sin inyectar CSS desde JavaScript.
+ * Clinical copilot redesign.
+ * Conversation first, compact patient context, fixed composer.
  */
+#assistantRail.assistant-rail,
+#assistantRail.assistant-rail-portal {
+  position: fixed !important;
+  inset: 0.65rem 0.65rem 0.65rem auto !important;
+  z-index: 120 !important;
+  display: flex !important;
+  width: min(1120px, calc(100vw - 1.3rem)) !important;
+  max-width: min(1120px, calc(100vw - 1.3rem)) !important;
+  height: calc(100dvh - 1.3rem) !important;
+  max-height: calc(100dvh - 1.3rem) !important;
+  color: #13201d !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateX(1rem) scale(0.985) !important;
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+#assistantRail.open,
+#assistantRail.assistant-rail.open,
+#assistantRail.assistant-rail-portal.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateX(0) scale(1) !important;
+}
+
+#assistantRail *,
+#assistantRail *::before,
+#assistantRail *::after {
+  box-sizing: border-box !important;
+}
+
+#assistantRail [hidden] {
+  display: none !important;
+}
+
+#assistantRail .assistant-rail-card {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(34, 48, 45, 0.12) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(248, 247, 240, 0.98)),
+    #fffefa !important;
+  box-shadow: 0 28px 90px rgba(17, 28, 25, 0.22) !important;
+}
+
 #assistantRail .assistant-module-header {
-  min-height: 44px !important;
-  padding: 0.34rem 0.58rem !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  min-height: 58px !important;
+  padding: 0.8rem 0.95rem !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
+  background: rgba(255, 254, 250, 0.92) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+#assistantRail .assistant-rail-copy {
+  display: grid !important;
+  gap: 0.16rem !important;
+  min-width: 0 !important;
+}
+
+#assistantRail .assistant-rail-header-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+}
+
+#assistantRail .assistant-eyebrow,
+#assistantRail .assistant-brief-kicker {
+  color: #0f665c !important;
+  font-size: 0.66rem !important;
+  font-weight: 860 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
 }
 
 #assistantRail .assistant-module-header h2 {
-  display: none !important;
+  display: block !important;
+  margin: 0 !important;
+  color: #15211f !important;
+  font-family: var(--font-ui, 'Manrope', system-ui, sans-serif) !important;
+  font-size: 1rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+}
+
+#assistantRail .assistant-connected-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.34rem !important;
+  min-height: 1.42rem !important;
+  padding: 0.14rem 0.48rem !important;
+  border: 1px solid rgba(37, 122, 95, 0.16) !important;
+  border-radius: 999px !important;
+  background: #e7f4ed !important;
+  color: #175d48 !important;
+  font-size: 0.62rem !important;
+  font-weight: 840 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+#assistantRail .status-dot {
+  flex: 0 0 0.44rem !important;
+  width: 0.44rem !important;
+  height: 0.44rem !important;
+  border-radius: 999px !important;
+  background: #278d6a !important;
+  box-shadow: 0 0 0 3px rgba(39, 141, 106, 0.14) !important;
 }
 
 #assistantRail .assistant-rail-close {
-  width: 2rem !important;
-  height: 2rem !important;
+  display: inline-grid !important;
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  padding: 0 !important;
+  place-items: center !important;
+  border: 1px solid rgba(34, 48, 45, 0.12) !important;
+  border-radius: 10px !important;
+  background: #fffefa !important;
+  color: #52605b !important;
+  cursor: pointer !important;
 }
 
-#assistantRail .assistant-toolbar {
-  padding: 0.3rem 0.5rem !important;
+#assistantRail .assistant-rail-body,
+#assistantRail .assistant-console {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
 }
 
-#assistantRail .assistant-live-context,
-#assistantRail .assistant-report-priority-card,
-#assistantRail .assistant-context-hint,
-#assistantRail .assistant-disclaimer {
-  display: none !important;
+#assistantRail .assistant-workspace {
+  display: grid !important;
+  flex: 1 1 auto !important;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 315px) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#assistantRail .assistant-chat-pane,
+#assistantRail .assistant-clinical-panel {
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+#assistantRail .assistant-chat-pane {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  background: #fbfaf5 !important;
+}
+
+#assistantRail .assistant-chat-topline {
+  display: grid !important;
+  flex: 0 0 auto !important;
+  grid-template-columns: minmax(14rem, 1fr) auto !important;
+  gap: 0.7rem !important;
+  align-items: center !important;
+  padding: 0.72rem 0.85rem !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.08) !important;
 }
 
 #assistantRail .patient-selector {
-  min-height: 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  min-height: 2.35rem !important;
+  padding: 0 0.62rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.12) !important;
   border-radius: 10px !important;
+  background: #fffefa !important;
 }
 
-#assistantRail.is-chat-empty.assistant-rail,
-#assistantRail.is-chat-empty.assistant-rail-portal {
-  max-height: calc(100dvh - 1rem) !important;
+#assistantRail .patient-selector .material-symbols-rounded {
+  flex: 0 0 auto !important;
+  color: #0f665c !important;
+  font-size: 1.08rem !important;
 }
 
-#assistantRail.is-chat-empty .assistant-rail-card,
-#assistantRail.is-chat-empty .assistant-rail-body,
-#assistantRail.is-chat-empty .assistant-console,
-#assistantRail.is-chat-empty .assistant-dialog-surface {
+#assistantRail .patient-selector select,
+#assistantRail .assistant-intake-field input,
+#assistantRail .assistant-intake-field select,
+#assistantRail .assistant-objective-field textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: #17231f !important;
+  font: inherit !important;
+  font-size: 0.82rem !important;
+  font-weight: 720 !important;
+}
+
+#assistantRail .assistant-mode-switch {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.18rem !important;
+  min-height: 2.35rem !important;
+  padding: 0.2rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 10px !important;
+  background: #f0efe7 !important;
+}
+
+#assistantRail .assistant-mode-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.28rem !important;
+  min-height: 1.86rem !important;
+  padding: 0.3rem 0.55rem !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #53605b !important;
+  font: inherit !important;
+  font-size: 0.74rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+  cursor: pointer !important;
+}
+
+#assistantRail .assistant-mode-chip.is-active,
+#assistantRail .assistant-mode-chip[aria-pressed='true'] {
+  background: #123f3a !important;
+  color: #fffefa !important;
+}
+
+#assistantRail .assistant-mode-chip .material-symbols-rounded {
+  font-size: 1rem !important;
+}
+
+#assistantRail .assistant-dialog-surface {
+  display: flex !important;
   flex: 1 1 auto !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#assistantRail .assistant-dialog-scroll {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#assistantRail .chat-log {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  gap: 0.82rem !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 1.05rem 1rem 1.25rem !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scroll-behavior: smooth !important;
+  overscroll-behavior: contain !important;
+  background:
+    linear-gradient(180deg, rgba(255, 254, 250, 0.55), rgba(255, 254, 250, 0)),
+    #fbfaf5 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
 }
 
 #assistantRail.is-chat-empty .chat-log {
-  display: flex !important;
-  flex: 1 1 auto !important;
-  min-height: 10rem !important;
-  align-items: center !important;
   justify-content: center !important;
-  opacity: 0.5 !important;
+}
+
+#assistantRail .assistant-chat-empty {
+  display: grid !important;
+  max-width: 580px !important;
+  margin: auto !important;
+  padding: 1.2rem !important;
+  place-items: center !important;
+  text-align: center !important;
+  color: #52605b !important;
+}
+
+#assistantRail .assistant-chat-empty-icon {
+  display: inline-grid !important;
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+  margin-bottom: 0.7rem !important;
+  place-items: center !important;
+  border-radius: 12px !important;
+  background: #e3f0ea !important;
+  color: #0f665c !important;
+}
+
+#assistantRail .assistant-chat-empty strong {
+  color: #16231f !important;
+  font-size: 1.05rem !important;
+  font-weight: 860 !important;
+  letter-spacing: 0 !important;
+}
+
+#assistantRail .assistant-chat-empty p {
+  display: block !important;
+  max-width: 42ch !important;
+  margin: 0.25rem 0 0.85rem !important;
+  color: #69766f !important;
+  font-size: 0.88rem !important;
+  line-height: 1.45 !important;
+}
+
+#assistantRail .assistant-chat-empty-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+}
+
+#assistantRail .assistant-chat-empty-chip,
+#assistantRail .assistant-agent-prompts button,
+#assistantRail .assistant-side-shortcuts button {
+  min-height: 1.95rem !important;
+  padding: 0.34rem 0.62rem !important;
+  border: 1px solid rgba(15, 102, 92, 0.16) !important;
+  border-radius: 999px !important;
+  background: #eef7f3 !important;
+  color: #174d44 !important;
+  font: inherit !important;
+  font-size: 0.72rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+  cursor: pointer !important;
+}
+
+#assistantRail .msg {
+  display: flex !important;
+  gap: 0.55rem !important;
+  max-width: min(90%, 760px) !important;
+  animation: assistantMessageIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+#assistantRail .msg.agent {
+  align-self: flex-start !important;
+}
+
+#assistantRail .msg.user {
+  align-self: flex-end !important;
+  flex-direction: row-reverse !important;
+}
+
+#assistantRail .msg-avatar {
+  display: grid !important;
+  flex: 0 0 1.75rem !important;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  margin-top: 0.2rem !important;
+  place-items: center !important;
+  border-radius: 8px !important;
+  background: #e3f0ea !important;
+  color: #0f665c !important;
+}
+
+#assistantRail .msg-avatar .material-symbols-rounded {
+  font-size: 1rem !important;
+}
+
+#assistantRail .msg.user .msg-avatar {
+  display: none !important;
+}
+
+#assistantRail .msg-body {
+  min-width: 0 !important;
+  padding: 0.72rem 0.86rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 13px !important;
+  background: #fffefa !important;
+  color: #18231f !important;
+  box-shadow: 0 8px 24px rgba(17, 28, 25, 0.045) !important;
+}
+
+#assistantRail .msg.agent .msg-body {
+  border-top-left-radius: 5px !important;
+}
+
+#assistantRail .msg.user .msg-body,
+#assistantRail .msg-body.user-msg {
+  border: 0 !important;
+  border-top-right-radius: 5px !important;
+  background: #123f3a !important;
+  color: #fffefa !important;
+  box-shadow: 0 10px 24px rgba(18, 63, 58, 0.18) !important;
+}
+
+#assistantRail .msg-sender {
+  display: block !important;
+  margin-bottom: 0.28rem !important;
+  color: #60716b !important;
+  font-size: 0.68rem !important;
+  font-weight: 840 !important;
+  letter-spacing: 0.02em !important;
+}
+
+#assistantRail .msg-body p {
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 0.92rem !important;
+  line-height: 1.55 !important;
+  white-space: pre-line !important;
+}
+
+#assistantRail .msg-progress .msg-avatar .material-symbols-rounded {
+  animation: assistantSpin 1s linear infinite !important;
+}
+
+#assistantRail .msg-progress .msg-body {
+  border-color: rgba(15, 102, 92, 0.18) !important;
+  background: #eef7f3 !important;
+}
+
+#assistantRail .ai-input-area {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: column !important;
+  gap: 0.54rem !important;
+  padding: 0.7rem 0.85rem 0.82rem !important;
+  border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
+  background:
+    linear-gradient(180deg, rgba(251, 250, 245, 0.76), #fbfaf5 32%),
+    #fbfaf5 !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+#assistantRail .assistant-agent-canvas {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  gap: 0.6rem !important;
+  align-items: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
 }
 
 #assistantRail.has-chat-messages .assistant-agent-canvas {
   display: none !important;
 }
 
-#assistantRail .assistant-agent-canvas {
-  display: grid !important;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr) !important;
-  gap: 0.55rem !important;
-  align-items: center !important;
-  margin-bottom: 0.4rem !important;
-  padding: 0.52rem 0.62rem !important;
-  border: 1px solid #d5e5e7 !important;
-  border-radius: 14px !important;
-  background: linear-gradient(135deg, #f8fcfb, #fffaf1) !important;
-}
-
 #assistantRail .assistant-agent-canvas-copy {
   display: grid !important;
-  gap: 0.1rem !important;
-  min-width: 0 !important;
+  gap: 0.02rem !important;
 }
 
 #assistantRail .assistant-agent-canvas-copy span {
-  color: #08716d !important;
+  color: #0f665c !important;
   font-size: 0.62rem !important;
   font-weight: 860 !important;
-  letter-spacing: 0.12em !important;
+  letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
 }
 
 #assistantRail .assistant-agent-canvas-copy strong {
-  color: #17283b !important;
-  font-size: 0.86rem !important;
-  line-height: 1.1 !important;
+  color: #17231f !important;
+  font-size: 0.78rem !important;
+  font-weight: 860 !important;
+  letter-spacing: 0 !important;
 }
 
 #assistantRail .assistant-agent-prompts {
   display: flex !important;
   flex-wrap: wrap !important;
   justify-content: flex-end !important;
-  gap: 0.3rem !important;
+  gap: 0.34rem !important;
   min-width: 0 !important;
-}
-
-#assistantRail .assistant-agent-prompts button {
-  min-height: 1.72rem !important;
-  padding: 0.18rem 0.52rem !important;
-  border: 1px solid #c7dfe5 !important;
-  border-radius: 999px !important;
-  background: #ffffff !important;
-  color: #234c61 !important;
-  font: inherit !important;
-  font-size: 0.66rem !important;
-  font-weight: 820 !important;
-  cursor: pointer !important;
-}
-
-#assistantRail .assistant-dialog-surface,
-html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
-html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
-html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.3rem !important;
-  margin: 0.38rem 0.5rem 0.5rem !important;
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-}
-
-#assistantRail .assistant-dialog-scroll,
-html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-scroll,
-html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-scroll,
-html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-scroll {
-  display: contents !important;
-}
-
-#assistantRail .assistant-mode-switch {
-  order: 1 !important;
-  flex: 0 0 auto !important;
-  min-height: 1.86rem !important;
-  padding: 0.16rem !important;
-}
-
-#assistantRail .assistant-mode-chip {
-  min-height: 1.5rem !important;
-  padding: 0.17rem 0.38rem !important;
-  font-size: 0.68rem !important;
-}
-
-#assistantRail .chat-log,
-html[data-assistant-mode='desktop'] #assistantRail .chat-log,
-html[data-assistant-mode='compact'] #assistantRail .chat-log,
-html[data-assistant-mode='mobile'] #assistantRail .chat-log {
-  order: 2 !important;
-  flex: 1 1 auto !important;
-  min-height: clamp(20rem, 55vh, 50rem) !important;
-  padding: 0.75rem !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
-
-#assistantRail .chat-log.is-empty-chat {
-  flex: 1 1 auto !important;
-  min-height: 10rem !important;
-  max-height: none !important;
-  padding: 0.5rem !important;
-}
-
-#assistantRail .chat-log.is-empty-chat:empty::before,
-#assistantRail .chat-log:empty::before {
-  content: none !important;
-  display: none !important;
-}
-
-#assistantRail.is-chat-empty .assistant-dialog-surface > .chat-log {
-  min-height: 8rem !important;
-  max-height: none !important;
-  height: auto !important;
-  padding: 0.5rem !important;
-}
-
-#assistantRail .assistant-chat-empty {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.44rem !important;
-  max-width: 100% !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-}
-
-#assistantRail .assistant-chat-empty-icon,
-#assistantRail .assistant-chat-empty p {
-  display: none !important;
-}
-
-#assistantRail .assistant-chat-empty strong {
-  flex: 0 0 auto !important;
-  font-size: 0.78rem !important;
-  line-height: 1.1 !important;
-  white-space: nowrap !important;
-}
-
-#assistantRail .assistant-chat-empty-chips {
-  display: flex !important;
-  gap: 0.26rem !important;
-  min-width: 0 !important;
-  overflow: hidden !important;
-}
-
-#assistantRail .assistant-chat-empty-chip {
-  min-height: 1.42rem !important;
-  padding: 0.15rem 0.42rem !important;
-  font-size: 0.62rem !important;
-  white-space: nowrap !important;
-}
-
-#assistantRail .ai-input-area,
-html[data-assistant-mode='desktop'] #assistantRail .ai-input-area,
-html[data-assistant-mode='compact'] #assistantRail .ai-input-area,
-html[data-assistant-mode='mobile'] #assistantRail .ai-input-area {
-  order: 3 !important;
-  flex: 0 0 auto !important;
-  padding: 0.5rem !important;
 }
 
 #assistantRail .assistant-composer-shell {
-  min-height: 3.2rem !important;
-  align-items: stretch !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 2.55rem !important;
+  gap: 0.48rem !important;
+  align-items: end !important;
+  min-height: 2.8rem !important;
 }
 
-#assistantRail .ai-textarea-wrapper textarea {
-  min-height: 3.5rem !important;
-  height: 3.5rem !important;
-  max-height: 14rem !important;
-  padding: 0.6rem 0.75rem !important;
-  font-size: 0.92rem !important;
-  line-height: 1.45 !important;
-  resize: none !important;
-}
-
-#assistantRail .btn-send-compact {
-  flex: 0 0 2.6rem !important;
-  width: 2.6rem !important;
-  min-width: 2.6rem !important;
-}
-
-#assistantRail .assistant-action-grid {
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.75fr) minmax(0, 0.75fr) !important;
-  gap: 0.3rem !important;
-  margin-top: 0.3rem !important;
-}
-
-#assistantRail .assistant-action-grid .btn-action {
-  min-height: 2.1rem !important;
-  padding: 0.28rem 0.48rem !important;
-  font-size: 0.74rem !important;
-  line-height: 1.1 !important;
-}
-
-#assistantRail .assistant-action-grid .btn-pdf,
-#assistantRail .assistant-action-grid .btn-telegram {
+#assistantRail .ai-textarea-wrapper {
   min-width: 0 !important;
-}
-
-#assistantRail .assistant-diagnostic-card,
-html[data-assistant-mode='desktop'] #assistantRail .assistant-diagnostic-card,
-html[data-assistant-mode='compact'] #assistantRail .assistant-diagnostic-card,
-html[data-assistant-mode='mobile'] #assistantRail .assistant-diagnostic-card {
-  order: 4 !important;
-  flex: 0 0 auto !important;
-  padding: 0.3rem 0.4rem !important;
-}
-
-#assistantRail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-summary,
-#assistantRail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-copy .assistant-brief-kicker {
-  display: none !important;
-}
-
-#assistantRail .assistant-diagnostic-card.is-collapsed .assistant-diagnostic-copy strong {
-  font-size: 0.74rem !important;
-  line-height: 1.08 !important;
-}
-
-#assistantRail .assistant-diagnostic-toggle {
-  min-height: 1.62rem !important;
-  padding: 0.18rem 0.52rem !important;
-  font-size: 0.66rem !important;
-}
-
-/* 2026-05-18 clinical copilot studio */
-#assistantRail.assistant-rail,
-#assistantRail.assistant-rail-portal {
-  width: min(760px, calc(100vw - 1.2rem)) !important;
-  max-width: min(760px, calc(100vw - 1.2rem)) !important;
-  color: #14201d !important;
-}
-
-#assistantRail .assistant-copilot-studio,
-#assistantRail .assistant-rail-card {
   border: 1px solid rgba(34, 48, 45, 0.12) !important;
   border-radius: 12px !important;
   background: #fffefa !important;
-  box-shadow: 0 24px 70px rgba(19, 30, 27, 0.14) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
-#assistantRail .assistant-module-header {
-  min-height: auto !important;
-  padding: 0.8rem 0.9rem !important;
-  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
-  background: linear-gradient(180deg, #fffefa, #f8f6ee) !important;
+#assistantRail .ai-textarea-wrapper:focus-within {
+  border-color: rgba(15, 102, 92, 0.34) !important;
+  box-shadow: 0 0 0 4px rgba(15, 102, 92, 0.08) !important;
 }
 
-#assistantRail .assistant-module-header h2 {
-  display: block !important;
-  margin: 0.18rem 0 0 !important;
-  color: #13201d !important;
-  font-size: 1rem !important;
-  font-weight: 850 !important;
+#assistantRail #agentInput {
+  width: 100% !important;
+  min-height: 2.65rem !important;
+  max-height: 10rem !important;
+  padding: 0.72rem 0.82rem !important;
+  border: 0 !important;
+  outline: 0 !important;
+  resize: none !important;
+  background: transparent !important;
+  color: #17231f !important;
+  font: inherit !important;
+  font-size: 0.92rem !important;
+  line-height: 1.35 !important;
+}
+
+#assistantRail .btn-send-compact {
+  display: inline-grid !important;
+  width: 2.55rem !important;
+  min-width: 2.55rem !important;
+  height: 2.55rem !important;
+  min-height: 2.55rem !important;
+  padding: 0 !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 11px !important;
+  background: #123f3a !important;
+  color: #fffefa !important;
+  box-shadow: 0 10px 20px rgba(18, 63, 58, 0.18) !important;
+}
+
+#assistantRail .btn-send-compact .material-symbols-rounded {
+  font-size: 1.22rem !important;
+}
+
+#assistantRail .assistant-action-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0.38rem !important;
+}
+
+#assistantRail .assistant-action-grid .btn-action {
+  display: inline-flex !important;
+  min-width: 0 !important;
+  min-height: 2.12rem !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.28rem !important;
+  padding: 0.32rem 0.46rem !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(34, 48, 45, 0.11) !important;
+  border-radius: 9px !important;
+  background: #fffefa !important;
+  color: #364541 !important;
+  font: inherit !important;
+  font-size: 0.7rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#assistantRail .assistant-action-grid .btn-generate {
+  border-color: transparent !important;
+  background: #123f3a !important;
+  color: #fffefa !important;
+}
+
+#assistantRail .assistant-action-grid .btn-action .material-symbols-rounded {
+  flex: 0 0 auto !important;
+  font-size: 0.98rem !important;
+}
+
+#assistantRail .assistant-action-grid .btn-action.is-loading .material-symbols-rounded {
+  animation: assistantSpin 1s linear infinite !important;
+}
+
+#assistantRail .assistant-action-grid .btn-action:disabled,
+#assistantRail .assistant-action-grid .btn-action.is-pending {
+  opacity: 0.56 !important;
+}
+
+#assistantRail .assistant-clinical-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.72rem !important;
+  padding: 0.85rem !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  border-left: 1px solid rgba(34, 48, 45, 0.1) !important;
+  background: #f3f2eb !important;
+}
+
+#assistantRail .assistant-live-context,
+#assistantRail .assistant-report-priority-card,
+#assistantRail .assistant-patient-brief,
+#assistantRail .assistant-mode-card,
+#assistantRail .assistant-flow-card,
+#assistantRail .assistant-diagnostic-card,
+#assistantRail .assistant-delivery-card,
+#assistantRail .assistant-side-shortcuts {
+  display: grid !important;
+  gap: 0.5rem !important;
+  padding: 0.72rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.09) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 254, 250, 0.72) !important;
+  box-shadow: none !important;
+}
+
+#assistantRail .assistant-live-context strong,
+#assistantRail .assistant-report-priority-card strong,
+#assistantRail .assistant-mode-card strong,
+#assistantRail .assistant-flow-card strong,
+#assistantRail .assistant-diagnostic-copy strong,
+#assistantRail .assistant-delivery-card strong {
+  color: #14201d !important;
+  font-size: 0.88rem !important;
+  font-weight: 860 !important;
   letter-spacing: 0 !important;
   line-height: 1.18 !important;
 }
 
-#assistantRail .assistant-eyebrow,
-#assistantRail .assistant-brief-kicker {
-  color: #145a50 !important;
-  font-size: 0.66rem !important;
-  font-weight: 850 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-}
-
-#assistantRail .assistant-connected-badge {
-  border: 1px solid rgba(37, 122, 95, 0.16) !important;
-  border-radius: 999px !important;
-  background: rgba(220, 233, 223, 0.7) !important;
-  color: #195b46 !important;
-}
-
-#assistantRail .assistant-rail-close {
-  width: 2.15rem !important;
-  height: 2.15rem !important;
-  border-radius: 8px !important;
-}
-
-#assistantRail .assistant-toolbar {
-  display: grid !important;
-  grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.1fr) !important;
-  gap: 0.7rem !important;
-  padding: 0.75rem 0.85rem 0.45rem !important;
-}
-
-#assistantRail .patient-selector {
-  min-height: 2.55rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.12) !important;
-  border-radius: 8px !important;
-  background: #fbfaf5 !important;
-}
-
-#assistantRail .assistant-live-context {
-  display: grid !important;
-  min-height: 2.55rem !important;
-  padding: 0.52rem 0.65rem !important;
-  border-left: 1px solid rgba(34, 48, 45, 0.12) !important;
-  background: transparent !important;
-}
-
-#assistantRail .assistant-live-context strong {
-  color: #14201d !important;
-  font-size: 0.82rem !important;
-  letter-spacing: 0 !important;
-}
-
-#assistantRail .assistant-live-context p {
-  display: block !important;
-  margin: 0.08rem 0 0 !important;
-  color: #687670 !important;
-  font-size: 0.72rem !important;
-  line-height: 1.25 !important;
-}
-
-#assistantRail .assistant-report-priority-card {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  gap: 0.8rem !important;
-  margin: 0.35rem 0.85rem 0 !important;
-  padding: 0.75rem 0 !important;
-  border: 0 !important;
-  border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-}
-
-#assistantRail .assistant-report-priority-card strong {
-  color: #14201d !important;
-  font-size: 0.92rem !important;
-  letter-spacing: 0 !important;
-}
-
-#assistantRail .assistant-report-priority-card p {
-  display: block !important;
-  max-width: 48rem !important;
-  margin: 0.12rem 0 0 !important;
-  color: #5c6964 !important;
-  font-size: 0.78rem !important;
-  line-height: 1.35 !important;
+#assistantRail .assistant-live-context p,
+#assistantRail .assistant-report-priority-card p,
+#assistantRail .assistant-mode-card p,
+#assistantRail .assistant-flow-card p,
+#assistantRail .assistant-diagnostic-summary,
+#assistantRail .assistant-delivery-summary {
+  margin: 0 !important;
+  color: #61716a !important;
+  font-size: 0.76rem !important;
+  line-height: 1.38 !important;
 }
 
 #assistantRail .assistant-report-flow {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.35rem !important;
+  display: grid !important;
+  gap: 0.32rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
 }
 
 #assistantRail .assistant-report-flow li {
-  min-height: 1.85rem !important;
-  padding: 0.22rem 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.36rem !important;
+  color: #394844 !important;
+  font-size: 0.72rem !important;
+  font-weight: 780 !important;
+}
+
+#assistantRail .assistant-report-flow span {
+  display: inline-grid !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  place-items: center !important;
   border-radius: 999px !important;
-  background: rgba(220, 233, 223, 0.72) !important;
-  color: #24423b !important;
+  background: #e3f0ea !important;
+  color: #0f665c !important;
   font-size: 0.68rem !important;
-  font-weight: 820 !important;
-  letter-spacing: 0 !important;
+  font-weight: 860 !important;
 }
 
 #assistantRail .assistant-report-priority-icon {
   display: none !important;
 }
 
-#assistantRail .assistant-dialog-surface,
-html[data-assistant-mode='desktop'] #assistantRail .assistant-dialog-surface,
-html[data-assistant-mode='compact'] #assistantRail .assistant-dialog-surface,
-html[data-assistant-mode='mobile'] #assistantRail .assistant-dialog-surface {
+#assistantRail .assistant-diagnostic-head,
+#assistantRail .assistant-delivery-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
   gap: 0.55rem !important;
-  margin: 0.5rem 0.85rem 0.85rem !important;
 }
 
-#assistantRail .assistant-mode-switch {
-  gap: 0.22rem !important;
-  min-height: 2.25rem !important;
-  padding: 0.2rem !important;
+#assistantRail .assistant-diagnostic-grid {
+  display: none !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0.46rem !important;
+}
+
+#assistantRail .assistant-diagnostic-card.is-expanded .assistant-diagnostic-grid {
+  display: grid !important;
+}
+
+#assistantRail .assistant-intake-field {
+  display: grid !important;
+  gap: 0.18rem !important;
+  min-width: 0 !important;
+  padding: 0.48rem 0.56rem !important;
   border: 1px solid rgba(34, 48, 45, 0.1) !important;
   border-radius: 9px !important;
-  background: #f6f5ee !important;
-}
-
-#assistantRail .assistant-mode-chip {
-  min-height: 1.82rem !important;
-  border-radius: 7px !important;
-  font-size: 0.74rem !important;
-  font-weight: 820 !important;
-  letter-spacing: 0 !important;
-}
-
-#assistantRail .assistant-mode-chip.is-active {
-  background: #123f3a !important;
-  color: #fffefa !important;
-}
-
-#assistantRail .chat-log,
-html[data-assistant-mode='desktop'] #assistantRail .chat-log,
-html[data-assistant-mode='compact'] #assistantRail .chat-log,
-html[data-assistant-mode='mobile'] #assistantRail .chat-log {
-  min-height: 24rem !important;
-  padding: 0.75rem 0 !important;
-  border-top: 1px solid rgba(34, 48, 45, 0.08) !important;
-  border-bottom: 1px solid rgba(34, 48, 45, 0.08) !important;
-}
-
-#assistantRail .ai-input-area,
-html[data-assistant-mode='desktop'] #assistantRail .ai-input-area,
-html[data-assistant-mode='compact'] #assistantRail .ai-input-area,
-html[data-assistant-mode='mobile'] #assistantRail .ai-input-area {
-  padding: 0.7rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.12) !important;
-  border-radius: 10px !important;
   background: #fbfaf5 !important;
 }
 
-#assistantRail .assistant-agent-canvas {
-  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr) !important;
-  padding: 0 0 0.58rem !important;
-  border: 0 !important;
-  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
+#assistantRail .assistant-intake-field-wide {
+  grid-column: 1 / -1 !important;
 }
 
-#assistantRail .assistant-agent-prompts button {
-  border-color: rgba(39, 96, 118, 0.18) !important;
-  border-radius: 999px !important;
-  background: #eef7f5 !important;
-  color: #173f57 !important;
-  letter-spacing: 0 !important;
+#assistantRail .assistant-intake-field span {
+  color: #8a7044 !important;
+  font-size: 0.58rem !important;
+  font-weight: 860 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
 }
 
-#assistantRail .assistant-composer-shell {
-  min-height: 3rem !important;
-  border-radius: 9px !important;
-}
-
-#assistantRail .ai-textarea-wrapper textarea {
-  min-height: 3rem !important;
-  height: 3rem !important;
-  border-radius: 8px !important;
-  background: #fffefa !important;
-}
-
-#assistantRail .btn-send-compact {
-  border-radius: 8px !important;
-  background: #123f3a !important;
-}
-
-#assistantRail .assistant-action-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 0.4rem !important;
-}
-
-#assistantRail .assistant-action-grid .btn-action {
-  min-height: 2.3rem !important;
-  border-radius: 8px !important;
-  font-size: 0.76rem !important;
-  letter-spacing: 0 !important;
-}
-
-#assistantRail .assistant-action-grid .btn-generate {
-  background: #123f3a !important;
-}
-
-#assistantRail .assistant-diagnostic-card,
-html[data-assistant-mode='desktop'] #assistantRail .assistant-diagnostic-card,
-html[data-assistant-mode='compact'] #assistantRail .assistant-diagnostic-card,
-html[data-assistant-mode='mobile'] #assistantRail .assistant-diagnostic-card {
-  padding: 0.55rem 0 !important;
-  border: 0 !important;
-  border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
+#assistantRail .assistant-objective-field textarea {
+  min-height: 4.2rem !important;
+  resize: vertical !important;
 }
 
 #assistantRail .assistant-diagnostic-toggle {
+  flex: 0 0 auto !important;
+  min-height: 1.72rem !important;
+  padding: 0.24rem 0.55rem !important;
+  border: 0 !important;
   border-radius: 999px !important;
-  background: rgba(220, 233, 223, 0.72) !important;
-  color: #123f3a !important;
+  background: #e3f0ea !important;
+  color: #0f665c !important;
+  font: inherit !important;
+  font-size: 0.66rem !important;
+  font-weight: 840 !important;
+  cursor: pointer !important;
 }
 
-@media (max-width: 720px) {
-  #assistantRail .assistant-toolbar,
-  #assistantRail .assistant-report-priority-card,
+#assistantRail .assistant-delivery-pills,
+#assistantRail .assistant-flow-steps {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.28rem !important;
+}
+
+#assistantRail .assistant-delivery-pill,
+#assistantRail .assistant-flow-steps span,
+#assistantRail .assistant-mode-card span {
+  display: inline-flex !important;
+  width: fit-content !important;
+  min-height: 1.5rem !important;
+  align-items: center !important;
+  padding: 0.2rem 0.44rem !important;
+  border-radius: 999px !important;
+  background: #e3f0ea !important;
+  color: #174d44 !important;
+  font-size: 0.66rem !important;
+  font-weight: 820 !important;
+}
+
+#assistantRail .assistant-side-shortcuts {
+  grid-template-columns: 1fr !important;
+}
+
+#assistantRail .assistant-side-shortcuts button {
+  display: flex !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+
+#assistantRail .assistant-side-shortcuts .material-symbols-rounded {
+  font-size: 1rem !important;
+}
+
+#assistantRailBackdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 110 !important;
+  background: rgba(10, 16, 14, 0.22) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 180ms ease !important;
+}
+
+#assistantRailBackdrop.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+#assistantRailFab {
+  border-radius: 999px !important;
+  background: #123f3a !important;
+  color: #fffefa !important;
+  box-shadow: 0 16px 42px rgba(18, 63, 58, 0.22) !important;
+}
+
+@keyframes assistantMessageIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes assistantSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 980px) {
+  #assistantRail.assistant-rail,
+  #assistantRail.assistant-rail-portal {
+    inset: 0.45rem !important;
+    width: calc(100vw - 0.9rem) !important;
+    max-width: calc(100vw - 0.9rem) !important;
+    height: calc(100dvh - 0.9rem) !important;
+    max-height: calc(100dvh - 0.9rem) !important;
+  }
+
+  #assistantRail .assistant-workspace {
+    grid-template-columns: 1fr !important;
+  }
+
+  #assistantRail .assistant-clinical-panel {
+    display: none !important;
+  }
+
+  #assistantRail .assistant-chat-topline {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 620px) {
+  #assistantRail.assistant-rail,
+  #assistantRail.assistant-rail-portal {
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+
+  #assistantRail .assistant-rail-card {
+    border-radius: 0 !important;
+  }
+
+  #assistantRail .assistant-module-header h2 {
+    white-space: normal !important;
+    font-size: 0.9rem !important;
+  }
+
+  #assistantRail .assistant-chat-topline,
+  #assistantRail .chat-log,
+  #assistantRail .ai-input-area {
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
   #assistantRail .assistant-agent-canvas,
   #assistantRail .assistant-action-grid {
     grid-template-columns: 1fr !important;
   }
 
-  #assistantRail .assistant-live-context {
-    border-left: 0 !important;
-    border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
+  #assistantRail .assistant-agent-prompts {
+    justify-content: flex-start !important;
   }
 
-  #assistantRail .assistant-report-flow {
-    flex-wrap: wrap !important;
+  #assistantRail .msg {
+    max-width: 96% !important;
   }
 }

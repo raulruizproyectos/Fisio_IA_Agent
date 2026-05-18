@@ -1486,23 +1486,12 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     const rail = document.getElementById('assistantRail');
     if (!rail) return;
 
-    const headerTitle = rail.querySelector('.assistant-module-header h2') as HTMLElement | null;
-    const liveContext = rail.querySelector('.assistant-live-context') as HTMLElement | null;
-    const priorityCard = rail.querySelector('.assistant-report-priority-card') as HTMLElement | null;
     const card = rail.querySelector('.assistant-rail-card') as HTMLElement | null;
     const body = rail.querySelector('.assistant-rail-body') as HTMLElement | null;
     const consolePanel = rail.querySelector('.assistant-console') as HTMLElement | null;
     const surface = rail.querySelector('.assistant-dialog-surface') as HTMLElement | null;
     const chat = rail.querySelector('#chatLog') as HTMLElement | null;
     const form = rail.querySelector('#agentForm') as HTMLElement | null;
-    const diagnostic = rail.querySelector('#assistantDiagnosticCard') as HTMLElement | null;
-
-    if (headerTitle) headerTitle.style.setProperty('display', 'none', 'important');
-    if (liveContext) {
-      liveContext.hidden = true;
-      liveContext.style.setProperty('display', 'none', 'important');
-    }
-    if (priorityCard) priorityCard.style.setProperty('display', 'none', 'important');
 
     [card, body, consolePanel].forEach((node) => {
       if (!node) return;
@@ -1517,37 +1506,29 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     if (surface) {
       surface.style.setProperty('display', 'flex', 'important');
       surface.style.setProperty('flex-direction', 'column', 'important');
-      surface.style.setProperty('gap', '0.42rem', 'important');
-      surface.style.removeProperty('overflow');
-      surface.style.setProperty('overflow-y', 'auto', 'important');
+      surface.style.setProperty('gap', '0', 'important');
+      surface.style.setProperty('overflow', 'hidden', 'important');
+      surface.style.removeProperty('overflow-y');
       surface.style.setProperty('overflow-x', 'hidden', 'important');
       surface.style.setProperty('overscroll-behavior', 'contain', 'important');
       surface.style.setProperty('min-height', '0', 'important');
       surface.style.setProperty('max-height', '100%', 'important');
-      surface.style.setProperty('padding-bottom', 'max(6rem, env(safe-area-inset-bottom))', 'important');
-      if (chat) surface.appendChild(chat);
-      if (form) surface.appendChild(form);
-      if (diagnostic) surface.appendChild(diagnostic);
+      surface.style.removeProperty('padding-bottom');
     }
 
     if (chat) {
       const hasMessages = Boolean(chat.querySelector('.msg'));
-      chat.style.setProperty('order', '2', 'important');
+      chat.style.setProperty('order', '1', 'important');
       chat.style.setProperty('flex', hasMessages ? '1 1 auto' : '0 0 auto', 'important');
-      chat.style.setProperty('min-height', hasMessages ? 'clamp(11rem, 38vh, 24rem)' : '3.9rem', 'important');
-      chat.style.setProperty('max-height', hasMessages ? 'none' : '5.2rem', 'important');
-      chat.style.setProperty('overflow-y', 'visible', 'important');
-      chat.style.setProperty('overflow-x', 'visible', 'important');
+      chat.style.removeProperty('min-height');
+      chat.style.removeProperty('max-height');
+      chat.style.setProperty('overflow-y', 'auto', 'important');
+      chat.style.setProperty('overflow-x', 'hidden', 'important');
     }
 
     if (form) {
-      form.style.setProperty('order', '3', 'important');
+      form.style.setProperty('order', '2', 'important');
       form.style.setProperty('flex', '0 0 auto', 'important');
-    }
-
-    if (diagnostic) {
-      diagnostic.style.setProperty('order', '4', 'important');
-      diagnostic.style.setProperty('flex', '0 0 auto', 'important');
     }
   };
   enforceAssistantChatFirstLayout();
@@ -1823,21 +1804,15 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     assistantRail?.classList.toggle('has-chat-messages', hasMessages);
     inputArea?.classList.toggle('is-chat-empty', !hasMessages);
     inputArea?.classList.toggle('has-chat-messages', hasMessages);
-    log.style.setProperty('order', '2', 'important');
-    log.style.setProperty('overflow-y', 'visible', 'important');
-    log.style.setProperty('overflow-x', 'visible', 'important');
-    log.style.setProperty('background', '#ffffff', 'important');
-    log.style.setProperty('border', '1px solid #dbe6ea', 'important');
-    log.style.setProperty('border-radius', '12px', 'important');
-    if (hasMessages) {
-      log.style.setProperty('flex', '1 1 auto', 'important');
-      log.style.setProperty('min-height', 'clamp(11rem, 38vh, 24rem)', 'important');
-      log.style.removeProperty('max-height');
-      return;
-    }
-    log.style.setProperty('flex', '0 0 auto', 'important');
-    log.style.setProperty('min-height', '3.9rem', 'important');
-    log.style.setProperty('max-height', '5.2rem', 'important');
+    log.style.setProperty('order', '1', 'important');
+    log.style.setProperty('flex', hasMessages ? '1 1 auto' : '0 0 auto', 'important');
+    log.style.setProperty('overflow-y', 'auto', 'important');
+    log.style.setProperty('overflow-x', 'hidden', 'important');
+    log.style.removeProperty('background');
+    log.style.removeProperty('border');
+    log.style.removeProperty('border-radius');
+    log.style.removeProperty('min-height');
+    log.style.removeProperty('max-height');
   };
 
   const ensureAssistantChatEmptyState = () => {
@@ -1880,23 +1855,22 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
   };
 
   const enforceAssistantStructuredLayout = () => {
-    assistantShortcuts?.setAttribute('hidden', '');
-    assistantPatientBrief?.setAttribute('hidden', '');
-    assistantReportPriorityCard?.style.setProperty('display', 'none', 'important');
-    assistantDialogScroll?.style.setProperty('display', 'contents', 'important');
-    assistantModeSwitch?.style.setProperty('order', '1', 'important');
+    assistantShortcuts?.removeAttribute('hidden');
+    assistantPatientBrief?.removeAttribute('style');
+    assistantReportPriorityCard?.removeAttribute('style');
+    assistantDialogScroll?.removeAttribute('style');
+    assistantModeSwitch?.removeAttribute('style');
     applyAssistantChatDensity(Boolean(log?.querySelector('.msg')));
-    inputArea?.style.setProperty('order', '3', 'important');
+    inputArea?.style.setProperty('order', '2', 'important');
     inputArea?.style.setProperty('flex', '0 0 auto', 'important');
-    assistantDiagnosticCard?.style.setProperty('order', '4', 'important');
-    assistantDiagnosticCard?.style.setProperty('flex', '0 0 auto', 'important');
+    assistantDiagnosticCard?.removeAttribute('style');
     if (assistantDiagnosticCard && !assistantDiagnosticCard.classList.contains('is-expanded')) {
       assistantDiagnosticCard.classList.add('is-collapsed');
       assistantDiagnosticCard.classList.remove('is-expanded');
     }
     if (assistantPatientMeta) {
-      assistantPatientMeta.hidden = true;
-      assistantPatientMeta.style.setProperty('display', 'none', 'important');
+      assistantPatientMeta.hidden = false;
+      assistantPatientMeta.style.removeProperty('display');
     }
     ensureAssistantChatEmptyState();
   };
@@ -3209,7 +3183,7 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
 
   // === CHAT ===
   const scrollAssistantRailToBottom = () => {
-    const scrollTarget = (document.querySelector('#assistantRail .assistant-dialog-surface') as HTMLElement | null) || log;
+    const scrollTarget = log || (document.querySelector('#assistantRail .assistant-dialog-surface') as HTMLElement | null);
     if (!scrollTarget) return;
     window.requestAnimationFrame(() => {
       scrollTarget.scrollTop = scrollTarget.scrollHeight;
@@ -3451,7 +3425,7 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
   const resizeAgentInput = () => {
     if (!input) return;
     input.style.height = 'auto';
-    const maxPx = Math.min(Math.max(Math.round(window.innerHeight * 0.22), 84), 220);
+    const maxPx = Math.min(Math.max(Math.round(window.innerHeight * 0.18), 72), 160);
     input.style.height = `${Math.min(input.scrollHeight, maxPx)}px`;
   };
 
@@ -3479,11 +3453,12 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     syncAssistantDiagnosticPanel();
   });
 
-  assistantShortcuts?.addEventListener('click', (event: Event) => {
+  document.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
     const shortcut = target?.closest('[data-agent-shortcut]') as HTMLButtonElement | null;
     const prompt = shortcut?.getAttribute('data-agent-shortcut')?.trim();
     if (!prompt || !input) return;
+    event.preventDefault();
     input.value = prompt;
     resizeAgentInput();
     input.focus();
@@ -27107,6 +27082,6 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 </style>
 
-<style is:global set:html={assistantRailStyles}></style>
-
 <style is:global set:html={premiumClinicUiStyles}></style>
+
+<style is:global set:html={assistantRailStyles}></style>

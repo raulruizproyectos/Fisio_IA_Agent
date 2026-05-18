@@ -9,6 +9,14 @@ Historial operativo compacto. Para detalle completo, usar `git log` y diffs.
 - Validado frontend: `npm.cmd run check` OK y `npm.cmd run build` OK.
 - Validado backend: `npm.cmd run lint` OK.
 
+## 2026-05-18 - Copiloto clinico conversacional
+- Rehecho el modulo IA desde cero con layout conversacional, input fijo y scroll independiente.
+- Movido el contexto clinico a rail lateral compacto para no invadir la conversacion.
+- Acciones rapidas conectadas a prompts existentes: plan lumbar, ajuste, proxima visita, evolucion y reescritura para paciente.
+- Retirados hotfixes de layout que ocultaban contexto, reordenaban nodos y provocaban scroll/cortes.
+- Validado frontend: `npm.cmd run check` OK y `npm.cmd run build` OK.
+- Validado backend: `npm.cmd run lint` OK.
+
 ## 2026-05-12 - Cierre de sesion
 - Publicado en `main` el redisenio funcional `f589384` (`feat: redesign crm workspace without cards`).
 - Dashboard y Pacientes pasan a markup `ops-*`, evitando las clases heredadas que generaban cajas (`card`, `signal-card`, `metric-card`, etc.).

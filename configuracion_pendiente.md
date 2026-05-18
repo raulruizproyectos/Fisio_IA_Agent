@@ -10,6 +10,7 @@
 - Redisenio premium aplicado en shell, navegacion, topbar, documentos, tablas, formularios y copiloto IA.
 - Validado localmente: `frontend` check/build OK y `backend` lint OK.
 - Pendiente recomendado: smoke test visual en navegador sobre Inicio, Pacientes, Agenda, Finanzas, Documentos y Copiloto IA antes de redeploy.
+- Copiloto IA rehecho despues del deploy: conversacion con scroll propio, composer fijo, rail clinico compacto y acciones rapidas. Requiere redeploy frontend tras push.
 
 ## Validado
 - `frontend`: `npm.cmd run check` OK.
