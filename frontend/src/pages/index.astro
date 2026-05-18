@@ -2184,9 +2184,7 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     const selected = patientCatalog.find((patient) => patient.id === selectedPatientId);
     const displayName = selected?.nombre_completo || selectedPatientName || `Paciente ${selectedPatientId}`;
     assistantPatientLabel.textContent = displayName;
-    assistantPatientMeta.textContent = selected?.email
-      ? `Informe y conversacion vinculados a ${selected.email}.`
-      : 'Informe, PDF y seguimiento vinculados al historial del paciente.';
+    assistantPatientMeta.textContent = 'Contexto cargado';
   };
 
   const trimAgentBriefText = (value: any, maxLength = 118) => {
@@ -2265,6 +2263,10 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     const itemExercises = Array.isArray(latestRecommendation?.crm_recomendacion_items)
       ? latestRecommendation.crm_recomendacion_items
       : [];
+    const exerciseAreas = reportExercises
+      .map((exercise: any) => String(exercise?.zona_corporal || exercise?.body_area || '').trim())
+      .filter(Boolean);
+    const uniqueExerciseAreas = Array.from(new Set(exerciseAreas)).slice(0, 2);
 
     return {
       patientId: selectedPatientId,
@@ -2279,6 +2281,18 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
       latestRecommendationState: String(latestRecommendation?.estado || 'sin_plan'),
       latestPainScale: latestFollowUp?.pain_scale ?? null,
       exerciseCount: reportExercises.length || itemExercises.length || 0,
+      latestAilment: trimAgentBriefText(
+        reportSnapshot?.symptom_summary ||
+        latestRecommendation?.symptom_summary ||
+        latestNote?.dolencia ||
+        latestNote?.motivo ||
+        latestNote?.texto_nota ||
+        '',
+        92
+      ),
+      latestExerciseType: uniqueExerciseAreas.length
+        ? uniqueExerciseAreas.join(', ')
+        : (reportExercises.length || itemExercises.length ? 'Plan terapeutico' : 'Sin ejercicios'),
       therapistNote: trimAgentBriefText(reportSnapshot?.message_to_therapist || latestRecommendation?.message_to_therapist_es || ''),
       patientMessage: trimAgentBriefText(reportSnapshot?.message_to_patient || latestRecommendation?.message_to_patient_es || '', 110),
       redFlagsPresent: Boolean(latestRecommendation?.red_flags_present || reportSnapshot?.red_flags?.present),
@@ -2584,7 +2598,7 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
 
     if (!selectedPatientId && !brief) {
       currentAssistantPatientBrief = null;
-      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>Selecciona un paciente para cargar contexto clinico util.</strong><p>Veras seguimiento reciente, estado del plan y accesos rapidos para pedir mejores ejercicios.</p></div>';
+      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>Sin paciente seleccionado</strong></div>';
       assistantPatientBrief.removeAttribute('data-state');
       return;
     }
@@ -2592,64 +2606,55 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     if (loading) {
       const loadingName = escapeHtml(brief?.patientName || selectedPatientName || 'Paciente seleccionado');
       assistantPatientBrief.setAttribute('data-state', 'loading');
-      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>Cargando contexto de ${loadingName}...</strong><p>Recuperando seguimiento, recomendaciones y estado del ultimo plan.</p></div>`;
+      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>Cargando ${loadingName}...</strong></div>`;
       return;
     }
 
     if (error) {
       const errorName = escapeHtml(brief?.patientName || selectedPatientName || 'el paciente seleccionado');
       assistantPatientBrief.setAttribute('data-state', 'error');
-      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>No se pudo cargar el contexto de ${errorName}.</strong><p>Puedes seguir usando el copilot, pero sin resumen clinico guiado todavia.</p></div>`;
+      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>No se pudo cargar ${errorName}.</strong></div>`;
       return;
     }
 
     if (!brief) {
-      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Briefing clinico</span><strong>Sin contexto clinico disponible todavia.</strong><p>Selecciona un paciente con historial para obtener mejores prompts guiados.</p></div>';
+      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>Sin contexto disponible</strong></div>';
       assistantPatientBrief.removeAttribute('data-state');
       return;
     }
 
-    const latestNoteDate = brief.latestNoteDate ? fmtDate(brief.latestNoteDate) : 'Sin fecha';
     const latestPlanDate = brief.latestRecommendationDate ? fmtDate(brief.latestRecommendationDate) : 'Sin plan';
-    const latestPain = brief.latestPainScale !== null && brief.latestPainScale !== undefined ? `${escapeHtml(String(brief.latestPainScale))}/10` : 'Sin dato';
     const latestNote = escapeHtml(brief.latestNoteText || 'Sin seguimiento reciente');
-    const therapistNote = escapeHtml(brief.therapistNote || 'Sin nota clinica del ultimo plan');
-    const planState = escapeHtml(brief.latestRecommendationState || 'sin_plan');
     const planCount = brief.recommendationsCount || 0;
-    const notesCount = brief.notesCount || 0;
+    const latestAilment = escapeHtml(brief.latestAilment || brief.therapistNote || 'Sin dolencia registrada');
+    const latestExerciseType = escapeHtml(brief.latestExerciseType || 'Sin ejercicios');
+    const telegramActionLabel = hasLinkedTelegramPatient() ? 'Telegram' : 'Vincular Telegram';
 
     assistantPatientBrief.removeAttribute('data-state');
     assistantPatientBrief.innerHTML = `
-      <div class="assistant-brief-head">
-        <span class="assistant-brief-kicker">Briefing clinico</span>
-        <span class="assistant-brief-pill">${planCount} plan(es) / ${notesCount} seguimiento(s)</span>
+      <div class="assistant-brief-head assistant-brief-head-compact">
+        <span class="assistant-brief-kicker">Ultimo plan</span>
+        <strong>${planCount ? escapeHtml(latestPlanDate) : 'Sin plan'}</strong>
+        <small>${planCount ? `${brief.exerciseCount || 0} ejercicio(s)` : 'Aun no generado'}</small>
       </div>
-      <strong class="assistant-brief-title">${escapeHtml(brief.patientName)} listo para trabajar con contexto real.</strong>
-      <div class="assistant-brief-grid">
-        <article class="assistant-brief-item">
+      <div class="assistant-brief-actions assistant-brief-actions-primary">
+        <button type="button" class="assistant-chip" data-assistant-brief-action="update-plan"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
+        <button type="button" class="assistant-chip" data-report-action="pdf"><span class="material-symbols-rounded">picture_as_pdf</span> Exportar PDF</button>
+        <button type="button" class="assistant-chip" data-report-action="telegram"><span class="material-symbols-rounded">send</span> ${telegramActionLabel}</button>
+      </div>
+      <div class="assistant-brief-history">
+        <div>
           <span>Ultimo seguimiento</span>
           <strong>${latestNote}</strong>
-          <small>${escapeHtml(latestNoteDate)}</small>
-        </article>
-        <article class="assistant-brief-item">
-          <span>Ultimo plan</span>
-          <strong>${planCount ? `${escapeHtml(latestPlanDate)} - ${planState}` : 'Sin plan previo'}</strong>
-          <small>${planCount ? `${brief.exerciseCount || 0} ejercicio(s) en la ultima propuesta` : 'Genera una primera propuesta guiada'}</small>
-        </article>
-        <article class="assistant-brief-item assistant-brief-item-secondary">
-          <span>Dolor / alertas</span>
-          <strong>${latestPain}${brief.redFlagsPresent ? ' - revisar alertas' : ''}</strong>
-          <small>${brief.redFlagsPresent ? 'El ultimo informe marco alertas rojas.' : 'Sin alertas rojas en el ultimo informe.'}</small>
-        </article>
-        <article class="assistant-brief-item assistant-brief-item-secondary">
-          <span>Nota clinica del plan</span>
-          <strong>${therapistNote}</strong>
-          <small>${brief.patientMessage ? escapeHtml(brief.patientMessage) : 'Sin mensaje previo al paciente.'}</small>
-        </article>
-      </div>
-      <div class="assistant-brief-actions">
-        <button type="button" class="assistant-chip" data-assistant-brief-action="update-plan"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
-        <button type="button" class="assistant-chip" data-assistant-brief-action="next-session"><span class="material-symbols-rounded">event_available</span> Checklist visita</button>
+        </div>
+        <div>
+          <span>Ultima dolencia</span>
+          <strong>${latestAilment}</strong>
+        </div>
+        <div>
+          <span>Tipo ejercicios</span>
+          <strong>${latestExerciseType}</strong>
+        </div>
       </div>
     `;
   };
@@ -3479,6 +3484,20 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
 
   assistantPatientBrief?.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement | null;
+    const reportAction = target?.closest('[data-report-action]') as HTMLButtonElement | null;
+    const reportActionName = String(reportAction?.getAttribute('data-report-action') || '').trim();
+    if (reportActionName) {
+      event.preventDefault();
+      if (reportActionName === 'pdf') {
+        exercisePdfBtn?.click();
+        return;
+      }
+      if (reportActionName === 'telegram') {
+        exerciseTelegramBtn?.click();
+        return;
+      }
+    }
+
     const actionBtn = target?.closest('[data-assistant-brief-action]') as HTMLButtonElement | null;
     if (!actionBtn || !input) return;
 

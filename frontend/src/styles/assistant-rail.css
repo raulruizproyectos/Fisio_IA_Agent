@@ -148,7 +148,7 @@
 #assistantRail .assistant-workspace {
   display: grid !important;
   flex: 1 1 auto !important;
-  grid-template-columns: minmax(0, 1fr) minmax(250px, 315px) !important;
+  grid-template-columns: minmax(0, 7fr) minmax(240px, 3fr) !important;
   min-height: 0 !important;
   overflow: hidden !important;
 }
@@ -349,6 +349,8 @@
   display: flex !important;
   gap: 0.55rem !important;
   max-width: min(90%, 760px) !important;
+  min-width: 0 !important;
+  writing-mode: horizontal-tb !important;
   animation: assistantMessageIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
 }
 
@@ -382,6 +384,7 @@
 }
 
 #assistantRail .msg-body {
+  display: block !important;
   min-width: 0 !important;
   padding: 0.72rem 0.86rem !important;
   border: 1px solid rgba(34, 48, 45, 0.1) !important;
@@ -389,6 +392,9 @@
   background: #fffefa !important;
   color: #18231f !important;
   box-shadow: 0 8px 24px rgba(17, 28, 25, 0.045) !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  writing-mode: horizontal-tb !important;
 }
 
 #assistantRail .msg.agent .msg-body {
@@ -419,6 +425,9 @@
   font-size: 0.92rem !important;
   line-height: 1.55 !important;
   white-space: pre-line !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  writing-mode: horizontal-tb !important;
 }
 
 #assistantRail .msg-progress .msg-avatar .material-symbols-rounded {
@@ -433,10 +442,12 @@
 #assistantRail .msg-report {
   width: min(100%, 780px) !important;
   max-width: min(96%, 780px) !important;
+  min-width: min(100%, 24rem) !important;
 }
 
 #assistantRail .msg-report .msg-body {
   width: 100% !important;
+  min-width: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -456,9 +467,12 @@
 }
 
 #assistantRail .exercise-report-kicker,
-#assistantRail .exercise-report-section span,
-#assistantRail .exercise-report-section-head span,
-#assistantRail .exercise-report-foot span {
+#assistantRail .exercise-report-section > span,
+#assistantRail .exercise-report-section-head > span,
+#assistantRail .exercise-report-foot > span,
+#assistantRail .exercise-report-notes > div > span,
+#assistantRail .exercise-report-summary > div > span,
+#assistantRail .exercise-report-review > div > span {
   display: block !important;
   color: #0f665c !important;
   font-size: 0.62rem !important;
@@ -720,15 +734,16 @@
 }
 
 #assistantRail .exercise-report-review {
-  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-columns: 1fr !important;
   align-items: center !important;
 }
 
 #assistantRail .exercise-report-actions {
   display: flex !important;
   flex-wrap: wrap !important;
-  justify-content: flex-end !important;
+  justify-content: flex-start !important;
   gap: 0.36rem !important;
+  min-width: 0 !important;
 }
 
 #assistantRail .exercise-report-action {
@@ -736,6 +751,7 @@
   align-items: center !important;
   gap: 0.28rem !important;
   min-height: 1.9rem !important;
+  min-width: max-content !important;
   padding: 0.28rem 0.54rem !important;
   border: 1px solid rgba(34, 48, 45, 0.11) !important;
   border-radius: 8px !important;
@@ -744,6 +760,10 @@
   font: inherit !important;
   font-size: 0.7rem !important;
   font-weight: 830 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
   cursor: pointer !important;
 }
 
@@ -754,6 +774,8 @@
 }
 
 #assistantRail .exercise-report-action .material-symbols-rounded {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
   font-size: 0.95rem !important;
 }
 
@@ -948,19 +970,30 @@
 
 #assistantRail .assistant-report-priority-card,
 #assistantRail .assistant-mode-card,
-#assistantRail .assistant-flow-card {
+#assistantRail .assistant-flow-card,
+#assistantRail .assistant-diagnostic-card,
+#assistantRail .assistant-delivery-card,
+#assistantRail .assistant-side-shortcuts {
   display: none !important;
 }
 
 #assistantRail .assistant-live-context,
 #assistantRail .assistant-patient-brief,
-#assistantRail .assistant-diagnostic-card,
-#assistantRail .assistant-delivery-card,
-#assistantRail .assistant-side-shortcuts {
+#assistantRail .assistant-patient-brief {
   display: grid !important;
-  gap: 0.5rem !important;
+  gap: 0.74rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#assistantRail .assistant-live-context {
+  display: grid !important;
+  gap: 0.22rem !important;
   padding: 0.72rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.09) !important;
+  border: 1px solid rgba(34, 48, 45, 0.08) !important;
   border-radius: 10px !important;
   background: rgba(255, 254, 250, 0.72) !important;
   box-shadow: none !important;
@@ -983,6 +1016,108 @@
   color: #61716a !important;
   font-size: 0.76rem !important;
   line-height: 1.38 !important;
+}
+
+#assistantRail .assistant-brief-head-compact,
+#assistantRail .assistant-brief-history {
+  display: grid !important;
+  gap: 0.42rem !important;
+  padding: 0.72rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.08) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 254, 250, 0.72) !important;
+}
+
+#assistantRail .assistant-brief-head-compact strong {
+  color: #14201d !important;
+  font-size: 0.96rem !important;
+  font-weight: 880 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.18 !important;
+}
+
+#assistantRail .assistant-brief-head-compact small {
+  color: #62726d !important;
+  font-size: 0.76rem !important;
+  font-weight: 760 !important;
+}
+
+#assistantRail .assistant-brief-actions-primary {
+  display: grid !important;
+  gap: 0.4rem !important;
+}
+
+#assistantRail .assistant-brief-actions-primary .assistant-chip {
+  display: inline-flex !important;
+  width: 100% !important;
+  min-height: 2.26rem !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.42rem !important;
+  padding: 0.34rem 0.62rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.1) !important;
+  border-radius: 9px !important;
+  background: #fffefa !important;
+  color: #23342f !important;
+  font: inherit !important;
+  font-size: 0.76rem !important;
+  font-weight: 840 !important;
+  line-height: 1.1 !important;
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+#assistantRail .assistant-brief-actions-primary .assistant-chip:first-child {
+  background: #123f3a !important;
+  border-color: #123f3a !important;
+  color: #fffefa !important;
+}
+
+#assistantRail .assistant-brief-actions-primary .material-symbols-rounded {
+  flex: 0 0 auto !important;
+  font-size: 1rem !important;
+}
+
+#assistantRail .assistant-brief-history div {
+  display: grid !important;
+  gap: 0.14rem !important;
+  padding-bottom: 0.42rem !important;
+  border-bottom: 1px solid rgba(34, 48, 45, 0.07) !important;
+}
+
+#assistantRail .assistant-brief-history div:last-child {
+  padding-bottom: 0 !important;
+  border-bottom: 0 !important;
+}
+
+#assistantRail .assistant-brief-history span {
+  color: #0f665c !important;
+  font-size: 0.6rem !important;
+  font-weight: 880 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+#assistantRail .assistant-brief-history strong {
+  color: #1a2a26 !important;
+  font-size: 0.8rem !important;
+  font-weight: 790 !important;
+  line-height: 1.35 !important;
+}
+
+#assistantRail .assistant-patient-brief-empty {
+  display: grid !important;
+  gap: 0.24rem !important;
+  padding: 0.72rem !important;
+  border: 1px solid rgba(34, 48, 45, 0.08) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 254, 250, 0.72) !important;
+}
+
+#assistantRail .assistant-patient-brief-empty strong {
+  color: #14201d !important;
+  font-size: 0.86rem !important;
+  font-weight: 840 !important;
 }
 
 #assistantRail .assistant-report-flow {
