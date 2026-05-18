@@ -2155,6 +2155,8 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
   let currentPatientTelegramLinkState: any = null;
   let pendingHistoryAnchor: 'telegram' | 'recommendations' | null = null;
   let lastExerciseReportPayload: any = null;
+  let lastExerciseRequestText = '';
+  let lastExerciseVisibleText = '';
   let pendingExerciseRecommendationJobId: string | null = null;
   const exerciseOpsStats = {
     timeouts: 0,
@@ -2776,6 +2778,8 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     const activeReportPatientId = String(lastExerciseReportPayload?.patient_id || '').trim();
     if (!nextId || (activeReportPatientId && activeReportPatientId !== nextId)) {
       lastExerciseReportPayload = null;
+      lastExerciseRequestText = '';
+      lastExerciseVisibleText = '';
       updateExercisePdfButton();
     }
 
@@ -3428,6 +3432,14 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     const maxPx = Math.min(Math.max(Math.round(window.innerHeight * 0.18), 72), 160);
     input.style.height = `${Math.min(input.scrollHeight, maxPx)}px`;
   };
+  const clearAssistantComposer = () => {
+    if (!input) return;
+    input.value = '';
+    resizeAgentInput();
+    renderAssistantModeCard();
+    renderAssistantFlowCard();
+    renderAssistantDiagnosticSummary();
+  };
 
   updateExercisePdfButton();
   updateExerciseTelegramButton();
@@ -3722,7 +3734,45 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     renderSearchResults(query);
   };
 
-  // Render exercise recommendation as rich HTML with image cards
+  const toReportTextList = (value: any, limit = 4) => {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => String(item || '').replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .slice(0, limit);
+    }
+    const raw = String(value || '').replace(/\s+/g, ' ').trim();
+    if (!raw) return [];
+    return raw
+      .split(/(?:\n|;|\.\s+)/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, limit);
+  };
+
+  const getExerciseDoseLabel = (exercise: any) => {
+    const dose = [
+      exercise?.series ? `${exercise.series} series` : '',
+      exercise?.repeticiones ? `${exercise.repeticiones} repeticiones` : '',
+      exercise?.duracion_segundos ? `${exercise.duracion_segundos}s` : '',
+    ].filter(Boolean);
+    return dose.length ? dose.join(' | ') : 'Dosificacion a revisar en consulta';
+  };
+
+  const renderReportActionButton = (action: string, icon: string, label: string, primary = false) => {
+    return `<button type="button" class="exercise-report-action${primary ? ' is-primary' : ''}" data-report-action="${escapeAttr(action)}"><span class="material-symbols-rounded">${escapeHtml(icon)}</span>${escapeHtml(label)}</button>`;
+  };
+
+  const renderExerciseImage = (exercise: any) => {
+    const name = String(exercise?.nombre || exercise?.name || 'Ejercicio').trim();
+    const imageUrl = String(exercise?.imagen_url || exercise?.image_url || '').trim();
+    if (!imageUrl) {
+      return `<div class="exercise-thumb exercise-thumb-empty" aria-label="Sin imagen disponible"><span class="material-symbols-rounded">image_not_supported</span></div>`;
+    }
+    return `<a class="exercise-thumb" href="${escapeAttr(imageUrl)}" target="_blank" rel="noopener" aria-label="Ampliar imagen de ${escapeAttr(name)}"><img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(name)}" loading="lazy" /></a>`;
+  };
+
+  // Render exercise recommendation as a complete clinical plan inside the conversation.
   const addExerciseReport = (payload: any) => {
     if (!log) return;
     lastExerciseReportPayload = payload;
@@ -3737,42 +3787,129 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     updateExercisePdfButton();
     renderAssistantFlowCard();
     renderAssistantDeliveryCard();
+
     const exercises = Array.isArray(payload?.exercises) ? payload.exercises : [];
     const coverage = payload?.image_coverage || {};
-    const briefClinicalNote = trimAgentBriefText(payload?.message_to_therapist || '', 180)
-      || 'Plan inicial generado. Revisa el resumen y exporta el PDF para ver el informe clinico completo.';
-    const exerciseNames = exercises
-      .map((exercise: any) => String(exercise?.nombre || '').trim())
-      .filter(Boolean)
-      .slice(0, 3);
+    const recommendationId = String(payload?.recommendation_id || '').trim();
+    const patientName = selectedPatientName || currentAssistantPatientBrief?.patientName || 'Paciente';
+    const symptomSummary = trimAgentBriefText(
+      payload?.symptom_summary || payload?.selection_rationale || lastExerciseVisibleText || '',
+      340
+    );
+    const therapistNote = trimAgentBriefText(payload?.message_to_therapist || payload?.selection_rationale || '', 420);
+    const patientMessage = trimAgentBriefText(payload?.message_to_patient || '', 420);
+    const imageLabel = coverage?.total !== undefined
+      ? `${Number(coverage.with_image || 0)}/${Number(coverage.total || exercises.length)} imagenes`
+      : `${exercises.filter((exercise: any) => exercise?.imagen_url).length}/${exercises.length} imagenes`;
+    const redFlagItems = toReportTextList(payload?.red_flags?.items || [], 5);
+    const reportDate = fmtDate(new Date().toISOString());
 
-    const metaBits = [`${exercises.length} ejercicio(s)`];
-    if (coverage.with_image !== undefined && coverage.total !== undefined) {
-      metaBits.push(`${coverage.with_image}/${coverage.total} imagenes`);
-    }
-    if (payload?.red_flags?.present) {
-      metaBits.push('revisar alertas');
-    }
+    const metaPills = [
+      `${exercises.length} ejercicio(s)`,
+      imageLabel,
+      recommendationId ? 'Guardado en historial' : 'Pendiente de historial',
+    ];
+    if (payload?.red_flags?.present) metaPills.push('Revisar alertas');
 
     let html = '<div class="msg-avatar"><span class="material-symbols-rounded">psychology</span></div>';
     html += '<div class="msg-body"><span class="msg-sender">Agente IA</span>';
-    html += '<div class="exercise-report exercise-report-compact">';
-    html += '<div class="exercise-report-head">';
-    html += '<strong>Plan listo para revisar</strong>';
-    html += `<span class="exercise-report-pill">${escapeHtml(metaBits.join(' | '))}</span>`;
+    html += '<article class="exercise-report exercise-report-full">';
+    html += '<header class="exercise-report-hero">';
+    html += '<div>';
+    html += '<span class="exercise-report-kicker">Plan terapeutico generado</span>';
+    html += `<strong>Propuesta revisable para ${escapeHtml(patientName)}</strong>`;
+    html += `<p>${escapeHtml(symptomSummary || 'Caso procesado con el contexto clinico disponible.')}</p>`;
     html += '</div>';
+    html += '<div class="exercise-report-status">';
+    html += metaPills.map((pill) => `<span class="exercise-report-pill">${escapeHtml(pill)}</span>`).join('');
+    html += '</div>';
+    html += '</header>';
+
     if (payload?.red_flags?.present) {
-      html += '<div class="exercise-alert"><span class="material-symbols-rounded">&#xe002;</span> Revisa alertas antes de prescribir el programa.</div>';
+      html += '<section class="exercise-alert"><span class="material-symbols-rounded">warning</span><div><strong>Revisa antes de entregar</strong>';
+      html += redFlagItems.length
+        ? `<p>${escapeHtml(redFlagItems.join(' | '))}</p>`
+        : '<p>El motor ha marcado posibles alertas clinicas. Valida el caso antes de enviar el plan.</p>';
+      html += '</div></section>';
     }
-    html += `<p class="exercise-note exercise-note-compact">${escapeHtml(briefClinicalNote)}</p>`;
-    if (exerciseNames.length) {
-      html += `<div class="exercise-summary exercise-summary-compact"><strong>Ejercicios clave:</strong> ${escapeHtml(exerciseNames.join(', '))}</div>`;
+
+    html += '<section class="exercise-report-section exercise-report-summary">';
+    html += '<div><span>Resumen clinico usado</span>';
+    html += `<p>${escapeHtml(symptomSummary || therapistNote || 'Sin resumen clinico estructurado devuelto por el motor.')}</p></div>`;
+    html += '<dl>';
+    html += `<div><dt>Fecha</dt><dd>${escapeHtml(reportDate)}</dd></div>`;
+    html += `<div><dt>Paciente</dt><dd>${escapeHtml(patientName)}</dd></div>`;
+    html += `<div><dt>Historial</dt><dd>${recommendationId ? 'Registrado' : 'No confirmado'}</dd></div>`;
+    html += '</dl>';
+    html += '</section>';
+
+    if (therapistNote || patientMessage) {
+      html += '<section class="exercise-report-section exercise-report-notes">';
+      if (therapistNote) {
+        html += '<div><span>Nota para fisio</span>';
+        html += `<p>${escapeHtml(therapistNote)}</p></div>`;
+      }
+      if (patientMessage) {
+        html += '<div><span>Explicacion para paciente</span>';
+        html += `<p>${escapeHtml(patientMessage)}</p></div>`;
+      }
+      html += '</section>';
     }
-    html += '<p class="exercise-report-meta">El detalle completo del informe queda reservado para el PDF y el historial.</p>';
-    html += '</div></div>';
+
+    html += '<section class="exercise-report-section">';
+    html += '<div class="exercise-report-section-head">';
+    html += '<span>Ejercicios recomendados</span>';
+    html += `<small>${escapeHtml(imageLabel)} disponibles para PDF y revision visual</small>`;
+    html += '</div>';
+
+    if (!exercises.length) {
+      html += '<div class="exercise-empty-result"><span class="material-symbols-rounded">info</span><p>El motor no devolvio ejercicios para este caso. Revisa el briefing o regenera el plan.</p></div>';
+    } else {
+      html += '<div class="exercise-plan-grid">';
+      exercises.forEach((exercise: any, index: number) => {
+        const name = String(exercise?.nombre || exercise?.name || `Ejercicio ${index + 1}`).trim();
+        const zone = String(exercise?.zona_corporal || exercise?.body_area || '').trim();
+        const procedure = trimAgentBriefText(exercise?.procedimiento || exercise?.descripcion || exercise?.description || '', 240);
+        const why = trimAgentBriefText(exercise?.why || exercise?.reason || '', 180);
+        const cautions = toReportTextList(exercise?.cautions || [], 3);
+        html += '<article class="exercise-card-pro">';
+        html += renderExerciseImage(exercise);
+        html += '<div class="exercise-card-pro-body">';
+        html += `<div class="exercise-card-pro-top"><span>${index + 1}</span><strong>${escapeHtml(name)}</strong></div>`;
+        html += '<div class="exercise-dose-line">';
+        html += `<span>${escapeHtml(getExerciseDoseLabel(exercise))}</span>`;
+        if (zone) html += `<span>${escapeHtml(zone)}</span>`;
+        html += '</div>';
+        if (procedure) html += `<p>${escapeHtml(procedure)}</p>`;
+        if (why) html += `<small><strong>Motivo:</strong> ${escapeHtml(why)}</small>`;
+        if (cautions.length) html += `<small class="exercise-cautions"><strong>Precauciones:</strong> ${escapeHtml(cautions.join(' | '))}</small>`;
+        html += '</div>';
+        html += '</article>';
+      });
+      html += '</div>';
+    }
+    html += '</section>';
+
+    html += '<section class="exercise-report-section exercise-report-review">';
+    html += '<div><span>Revision y entrega</span>';
+    html += `<p>${recommendationId ? 'El plan ya quedo asociado al historial del paciente. Puedes editar el briefing, regenerar, exportar PDF o enviarlo por Telegram.' : 'El plan se genero, pero el backend no confirmo recommendation_id. Exporta si procede y revisa la persistencia.'}</p></div>`;
+    html += '<div class="exercise-report-actions">';
+    html += renderReportActionButton('edit', 'edit_note', 'Editar briefing');
+    html += renderReportActionButton('regenerate', 'refresh', 'Regenerar');
+    html += renderReportActionButton('pdf', 'picture_as_pdf', 'Exportar PDF', true);
+    html += renderReportActionButton('telegram', 'send', 'Enviar');
+    html += '</div>';
+    html += '</section>';
+
+    if (recommendationId) {
+      html += '<footer class="exercise-report-foot">';
+      html += `<span>Historial clinico actualizado</span><code>${escapeHtml(recommendationId)}</code>`;
+      html += '</footer>';
+    }
+    html += '</article></div>';
 
     const article = document.createElement('article');
-    article.className = 'msg agent';
+    article.className = 'msg agent msg-report';
     article.innerHTML = html;
     log.appendChild(article);
     scrollAssistantRailToBottom();
@@ -3802,7 +3939,7 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
 
   const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const requestExerciseRecommendation = async (text: string, maxAttempts = 2) => {
+  const requestExerciseRecommendation = async (text: string, maxAttempts = 2, patientId: string | null = selectedPatientId) => {
     let lastError: any = null;
     const safeMaxAttempts = Math.max(1, maxAttempts);
     let localTimeoutCount = 0;
@@ -3816,7 +3953,7 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              patient_id: selectedPatientId || null,
+              patient_id: patientId || null,
               symptoms: text,
               channel: 'crm_web',
               fisioterapeuta_id: PROF_ID,
@@ -3868,14 +4005,14 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     );
   };
 
-  const startExerciseRecommendationAsync = async (text: string) => {
+  const startExerciseRecommendationAsync = async (text: string, patientId: string | null = selectedPatientId) => {
     return await fetchJson(
       `${BACKEND_BASE}/api/exercises/recommend/async`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          patient_id: selectedPatientId || null,
+          patient_id: patientId || null,
           symptoms: text,
           channel: 'crm_web',
           fisioterapeuta_id: PROF_ID,
@@ -3957,22 +4094,38 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     }
 
     if (payload.action === 'exercise') {
-      handleExerciseRecommend(payload.requestText, payload.visibleText);
+      const activePatientId = selectedPatientId || chatPatientSelect?.value || null;
+      if (!activePatientId) {
+        addMessage('Selecciona un paciente en "Paciente del informe" antes de generar ejercicios.', 'agent');
+        return;
+      }
+      clearAssistantComposer();
+      await handleExerciseRecommend(payload.requestText, payload.visibleText, { patientId: activePatientId });
       return;
     }
 
+    clearAssistantComposer();
     await handleAssistantChat(payload.requestText, payload.visibleText, 'exercise');
   };
 
   // W3: Exercise recommendation via CRM
-  const handleExerciseRecommend = async (text: string, visibleText = text) => {
-    const activePatientId = selectedPatientId || chatPatientSelect?.value || null;
+  const handleExerciseRecommend = async (
+    text: string,
+    visibleText = text,
+    options: { patientId?: string | null; showUserMessage?: boolean } = {}
+  ) => {
+    const activePatientId = options.patientId || selectedPatientId || chatPatientSelect?.value || null;
     if (!activePatientId) {
       addMessage('Selecciona un paciente en "Paciente del informe" antes de generar ejercicios.', 'agent');
       return;
     }
     syncChatPatientSelection(activePatientId);
-    upsertAgentProgress(`Preparando plan para: ${visibleText}`);
+    lastExerciseRequestText = text;
+    lastExerciseVisibleText = visibleText;
+    if (options.showUserMessage !== false) {
+      addMessage(visibleText, 'user');
+    }
+    upsertAgentProgress('Analizando caso clinico...');
     setSending(true, 'exercise');
     try {
       let payload: any = null;
@@ -3983,14 +4136,14 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
         payload = await pollExerciseRecommendationJob(pendingExerciseRecommendationJobId, 45, 1500);
       } else {
         try {
-          const job = await startExerciseRecommendationAsync(text);
+          const job = await startExerciseRecommendationAsync(text, activePatientId);
           pendingExerciseRecommendationJobId = String(job?.job_id || '').trim() || null;
-          upsertAgentProgress(job?.progress_message || 'Solicitud enviada. Generando informe en segundo plano...');
+          upsertAgentProgress(job?.progress_message || 'Generando ejercicios recomendados...');
           payload = await pollExerciseRecommendationJob(String(job?.job_id || ''), 90, 1500);
         } catch (asyncErr: any) {
           if (!shouldFallbackToSyncExerciseRequest(asyncErr)) throw asyncErr;
-          upsertAgentProgress('El backend aun no expone polling persistente. Reintentando por via directa...');
-          const directResponse = await requestExerciseRecommendation(text, 2);
+          upsertAgentProgress('Generando ejercicios por via directa...');
+          const directResponse = await requestExerciseRecommendation(text, 2, activePatientId);
           payload = directResponse.payload;
           retriesUsed = directResponse.retriesUsed;
         }
@@ -4004,10 +4157,11 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
       }
 
       syncEngineOpsFromPayload(payload);
+      upsertAgentProgress('Preparando informe y guardando historial...');
       clearAgentProgress();
       addExerciseReport(payload);
       if (payload?.recommendation_id) {
-        addMessage('Plan generado y guardado en el historial del paciente.', 'agent');
+        void loadAssistantPatientBrief(activePatientId, true);
         if (activeSection === 'historial') {
           pendingHistoryAnchor = 'recommendations';
           await loadHistorial();
@@ -4037,6 +4191,54 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
       setSending(false);
     }
   };
+
+  log?.addEventListener('click', (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    const actionButton = target?.closest('[data-report-action]') as HTMLButtonElement | null;
+    const action = String(actionButton?.getAttribute('data-report-action') || '').trim();
+    if (!action) return;
+    event.preventDefault();
+
+    if (action === 'pdf') {
+      exercisePdfBtn?.click();
+      return;
+    }
+
+    if (action === 'telegram') {
+      exerciseTelegramBtn?.click();
+      return;
+    }
+
+    if (action === 'edit') {
+      setAssistantMode('update-plan', { focus: false });
+      if (input) {
+        const base = lastExerciseRequestText || lastExerciseVisibleText || '';
+        input.value = base
+          ? `Ajusta este plan. Mantener lo que funcione y cambia dosis, ejercicios o precauciones segun este briefing:\n\n${base}`
+          : 'Ajusta el plan actual segun dolor, adherencia, progresion y tolerancia.';
+        resizeAgentInput();
+        renderAssistantModeCard();
+        renderAssistantFlowCard();
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+      return;
+    }
+
+    if (action === 'regenerate') {
+      const requestText = lastExerciseRequestText || lastExerciseVisibleText;
+      if (!requestText) {
+        addMessage('No tengo un briefing anterior para regenerar. Escribe el caso clinico y vuelve a generar.', 'agent');
+        return;
+      }
+      void handleExerciseRecommend(
+        requestText,
+        `Regenerar plan con el mismo briefing: ${trimAgentBriefText(lastExerciseVisibleText || requestText, 110)}`,
+        { showUserMessage: true }
+      );
+    }
+  });
+
   // Primary assistant action
   exerciseBtn?.addEventListener('click', () => {
     void handleAssistantPrimaryAction();
@@ -4201,6 +4403,7 @@ import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
+    clearAssistantComposer();
     await handleAssistantChat(text, text, 'chat');
   });
 
