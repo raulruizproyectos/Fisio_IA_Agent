@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
+import { EXERCISE_AGENT_PROMPT, EXERCISE_AGENT_PROMPT_VERSION } from '../lib/exercise-agent-prompt.js';
 
 const router = Router();
 
@@ -223,6 +224,8 @@ router.post('/recommend', async (req, res) => {
 
     const n8nPayload = {
       request_id: requestId,
+      prompt_version: EXERCISE_AGENT_PROMPT_VERSION,
+      system_prompt: EXERCISE_AGENT_PROMPT,
       patient_id: patId,
       symptoms,
       channel,
@@ -312,9 +315,15 @@ router.post('/recommend', async (req, res) => {
       red_flags_present = false,
       red_flags_items = [],
       selected_exercises: rawSelectedExercises = [],
+      clinical_interpretation = '',
+      main_goal = '',
+      patient_cover_message = '',
       selection_rationale = '',
+      home_recommendations = [],
       message_to_patient_es = '',
       message_to_therapist_es = '',
+      follow_up_focus = '',
+      estimated_adherence_difficulty = '',
       escalation_recommend_medical_attention = false,
       escalation_reason = '',
     } = recommendation;
@@ -454,6 +463,12 @@ router.post('/recommend', async (req, res) => {
         series: ex.series ?? metadata.series_defecto ?? null,
         repeticiones: ex.repeticiones ?? metadata.repeticiones_defecto ?? null,
         duracion_segundos: ex.duracion_segundos ?? metadata.duracion_segundos_defecto ?? null,
+        frecuencia: ex.frecuencia || ex.frequency || null,
+        effort_level: ex.effort_level || ex.effort || null,
+        expected_sensation: ex.expected_sensation || null,
+        common_mistakes: Array.isArray(ex.common_mistakes) ? ex.common_mistakes : [],
+        stop_if: ex.stop_if || null,
+        progression_tip: ex.progression_tip || null,
         imagen_url: getExerciseImageUrl(ex, mediaMap) || getExerciseImageUrl(catalogEntry, mediaMap),
         orden: idx + 1,
       };
@@ -461,8 +476,13 @@ router.post('/recommend', async (req, res) => {
 
     const informeClinico = composeClinicalReport({
       symptomSummary: symptom_summary,
+      clinicalInterpretation: clinical_interpretation,
+      mainGoal: main_goal,
+      patientCoverMessage: patient_cover_message,
       messageToTherapist: message_to_therapist_es,
       messageToPatient: message_to_patient_es,
+      homeRecommendations: home_recommendations,
+      followUpFocus: follow_up_focus,
       escalation: escalation_recommend_medical_attention,
       exercises,
       recommendationId,
@@ -481,7 +501,11 @@ router.post('/recommend', async (req, res) => {
       request_id: requestId,
       patient_id: patId,
       recommendation_id: recommendationId,
+      prompt_version: EXERCISE_AGENT_PROMPT_VERSION,
       symptom_summary,
+      clinical_interpretation,
+      main_goal,
+      patient_cover_message,
       red_flags: { present: red_flags_present, items: red_flags_items },
       escalation: {
         recommend_medical_attention: escalation_recommend_medical_attention,
@@ -493,6 +517,9 @@ router.post('/recommend', async (req, res) => {
       message_to_patient: message_to_patient_es,
       message_to_therapist: message_to_therapist_es,
       selection_rationale,
+      home_recommendations: Array.isArray(home_recommendations) ? home_recommendations : [],
+      follow_up_focus,
+      estimated_adherence_difficulty,
       informe_clinico: informeClinico,
       persistence_skipped: !persistRecommendation || Boolean(persistenceWarning),
       persistence_warning: persistenceWarning,
@@ -512,8 +539,15 @@ router.post('/recommend', async (req, res) => {
           report: {
             request_id: requestId,
             recommendation_id: recommendationId,
+            prompt_version: EXERCISE_AGENT_PROMPT_VERSION,
             symptom_summary,
+            clinical_interpretation,
+            main_goal,
+            patient_cover_message,
             selection_rationale,
+            home_recommendations: Array.isArray(home_recommendations) ? home_recommendations : [],
+            follow_up_focus,
+            estimated_adherence_difficulty,
             red_flags: { present: red_flags_present, items: red_flags_items },
             escalation: {
               recommend_medical_attention: escalation_recommend_medical_attention,
@@ -1055,8 +1089,13 @@ async function resolveRecommendationIdentity(input = {}) {
 
 function composeClinicalReport({
   symptomSummary,
+  clinicalInterpretation,
+  mainGoal,
+  patientCoverMessage,
   messageToTherapist,
   messageToPatient,
+  homeRecommendations,
+  followUpFocus,
   escalation,
   exercises,
   recommendationId,
@@ -1066,6 +1105,9 @@ function composeClinicalReport({
   lines.push('');
   lines.push('RESUMEN CLINICO');
   lines.push(`- Sintomas: ${symptomSummary || 'No informado'}`);
+  if (clinicalInterpretation) lines.push(`- Interpretacion funcional: ${clinicalInterpretation}`);
+  if (mainGoal) lines.push(`- Objetivo principal: ${mainGoal}`);
+  if (patientCoverMessage) lines.push(`- Mensaje inicial: ${patientCoverMessage}`);
 
   if (escalation) {
     lines.push('- Revision medica recomendada antes de enviar el plan.');
@@ -1094,13 +1136,27 @@ function composeClinicalReport({
       lines.push(`   Dosificacion: ${pauta.join(' | ')}`);
     }
     if (ex.why) lines.push(`   Motivo clinico: ${ex.why}`);
+    if (ex.expected_sensation) lines.push(`   Sensacion esperada: ${ex.expected_sensation}`);
+    if (ex.stop_if) lines.push(`   Parar o reducir si: ${ex.stop_if}`);
+    if (ex.progression_tip) lines.push(`   Progresion: ${ex.progression_tip}`);
     if (Array.isArray(ex.cautions) && ex.cautions.length) lines.push(`   Precauciones: ${ex.cautions.join('; ')}`);
     lines.push(`   Imagen de referencia: ${ex.imagen_url ? 'Disponible en PDF/CRM' : 'No disponible'}`);
   });
 
+  if (Array.isArray(homeRecommendations) && homeRecommendations.length) {
+    lines.push('');
+    lines.push('RECOMENDACIONES EN CASA');
+    homeRecommendations.forEach((item) => lines.push(`- ${item}`));
+  }
+
   lines.push('');
   lines.push('MENSAJE PARA PACIENTE');
   lines.push(messageToPatient || 'No generado');
+  if (followUpFocus) {
+    lines.push('');
+    lines.push('FOCO DE SEGUIMIENTO');
+    lines.push(followUpFocus);
+  }
   lines.push('');
   lines.push('TRAZABILIDAD');
   lines.push(`- Recomendacion: ${recommendationId || '-'}`);
