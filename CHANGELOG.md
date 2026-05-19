@@ -2,6 +2,18 @@
 
 Historial operativo compacto. Para detalle completo, usar `git log` y diffs.
 
+## 2026-05-19 - Cierre alineado GitHub + n8n
+- Prompt del agente de ejercicios versionado en backend como `fisio_exercise_premium_v2_2026-05-18`.
+- Backend envia `system_prompt` y `prompt_version` al workflow W2 de n8n.
+- Workflow vivo de n8n `Fisio IA | Ejercicios` actualizado y verificado: reenvia `system_prompt` al motor de ejercicios.
+- Renombrados en n8n produccion los 11 workflows del proyecto a nombres breves `Fisio IA | ...`.
+- Renombrados nodos principales para lectura rapida: `Entrada`, `Normalizar`, `Validar`, `Generar plan`, `Responder`, etc.
+- JSON versionados de `n8n/Fisio_IA_Agent/production/` y `n8n/Fisio_IA_Agent/vnext/` alineados con produccion.
+- Verificado remoto: los 11 workflows de `Fisio IA | ...` quedan activos.
+- Validado repo n8n: JSON parse OK y conexiones sin nodos faltantes.
+- Ultimo commit publicado antes de este cierre docs: `bfb88dc` (`chore(n8n): simplify workflow and node names`).
+- Pendiente operativo: redeploy en EasyPanel de frontend/backend desde `main`; n8n ya fue actualizado via API.
+
 ## 2026-05-18 - Redisenio premium CRM
 - Reforzada la direccion SaaS clinico premium en shell, sidebar, topbar, tablas, formularios y estados.
 - Copiloto IA redisenado como estudio clinico: contexto de paciente, flujo seguro, atajos y compositor compacto.

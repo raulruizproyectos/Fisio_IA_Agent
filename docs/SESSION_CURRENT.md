@@ -1,34 +1,41 @@
-﻿# Sesion actual - Cierre 2026-05-12
+# Sesion actual - Cierre 2026-05-19
 
 ## Objetivo
 Fisio IA Agent debe sentirse como CRM clinico premium para fisioterapia, con el copiloto IA como diferenciador principal.
 
 ## Estado final
 - Rama: `main`.
-- Ultimo commit funcional antes del cierre docs: `f589384`.
-- Frontend validado: `npm.cmd run check` OK, `npm.cmd run build` OK.
-- Produccion: pendiente redeploy `fisio-frontend` en EasyPanel.
+- Ultimo commit publicado antes de este cierre docs: `bfb88dc` (`chore(n8n): simplify workflow and node names`).
+- GitHub: `main` limpio y alineado con `origin/main`.
+- Frontend validado durante la sesion: `npm.cmd run check` OK, `npm.cmd run build` OK.
+- Backend validado durante la sesion: `npm.cmd run lint` OK.
+- n8n produccion: actualizado directamente por API y verificado activo.
+- Produccion app: pendiente redeploy `fisio-frontend` y `fisio-backend` en EasyPanel desde `main`.
 
 ## Hecho hoy
-- Instalada/actualizada skill `frontend-design`.
-- Extraido CSS global: `global-shell.css`, `assistant-rail.css`, `premium-clinic-ui.css`.
-- Eliminado inyector runtime `ensureAssistantCompactRuntimeStyles`.
-- Copiloto IA mantiene experiencia chat-first amplia.
-- Retirada `Newsreader`; tipografia unificada en `Manrope`.
-- Rehecho Dashboard y Pacientes con markup `ops-*` para evitar cajas heredadas.
-- Conservados IDs/eventos JS criticos: metricas, agenda, triage, reservas, filtros y listado de pacientes.
+- Copiloto IA estabilizado visualmente: chat legible, input inferior fijo, panel derecho simplificado.
+- Prompt premium de ejercicios versionado en `backend/src/lib/exercise-agent-prompt.js`.
+- Backend envia `system_prompt` y `prompt_version` al workflow de ejercicios.
+- Workflow n8n `Fisio IA | Ejercicios` actualizado en produccion y verificado.
+- Renombrados 11 workflows de n8n produccion a formato breve `Fisio IA | ...`.
+- Renombrados nodos n8n para lectura rapida: `Entrada`, `Normalizar`, `Validar`, `Generar plan`, `Responder`.
+- JSON locales de n8n `production/` y `vnext/` alineados con produccion.
+- Script de mantenimiento creado: `scripts/rename-n8n-fisio.mjs`.
 
 ## Decisiones clave
 - No seguir parcheando solo CSS sobre clases heredadas.
 - Usar `ops-*` como base nueva visual para las pantallas principales.
 - Mantener funcionalidad antes que refactor profundo.
+- No cambiar rutas webhook de n8n al renombrar workflows/nodos.
+- Tratar prompts como codigo versionado.
 - Si produccion muestra UI antigua, revisar cache/deploy antes de tocar codigo.
 
 ## Proximo arranque
-1. Redeploy `fisio-frontend` en EasyPanel.
+1. Confirmar en EasyPanel que frontend y backend estan desplegados desde `main` con commit igual o posterior a `bfb88dc`.
 2. Hard refresh en produccion.
-3. Revisar Inicio, Pacientes y Copiloto IA con capturas.
-4. Ajustar fino solo despues de confirmar que `ops-*` esta desplegado.
+3. Probar Copiloto IA: escribir caso, generar plan, comprobar historial y PDF.
+4. Revisar Inicio, Pacientes, Agenda, Finanzas, Documentos y Copiloto IA con capturas.
+5. Ajustar fino solo despues de confirmar que el commit desplegado es el correcto.
 
 ## Siguientes fases
 - Fase 2: estabilizar CSS y reducir `!important` legacy.
