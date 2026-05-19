@@ -2,7 +2,7 @@
   "updatedAt": "2026-03-11T20:29:18.221Z",
   "createdAt": "2026-03-11T20:26:45.979Z",
   "id": "f1PcLN8s9YiOXj3w",
-  "name": "Fisio_IA_Agent / Bot Pacientes",
+  "name": "Fisio IA | Bot paciente",
   "description": null,
   "active": true,
   "isArchived": false,
@@ -15,7 +15,7 @@
         "additionalFields": {}
       },
       "id": "TelegramTrigger",
-      "name": "Telegram Trigger",
+      "name": "Telegram",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
@@ -75,7 +75,7 @@
         "options": {}
       },
       "id": "PrepareInput",
-      "name": "Prepare Input",
+      "name": "Preparar",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
@@ -96,7 +96,7 @@
         "jsonBody": "={{ $json }}"
       },
       "id": "BackendCommandResolver",
-      "name": "Backend Command Resolver",
+      "name": "Resolver backend",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -106,14 +106,14 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Prepare Input').item.json.chat_id }}",
+        "chatId": "={{ $('Preparar').item.json.chat_id }}",
         "text": "={{ $json.reply_text }}",
         "additionalFields": {
           "appendAttribution": false
         }
       },
       "id": "TelegramReply",
-      "name": "Telegram Reply",
+      "name": "Enviar Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
@@ -133,7 +133,7 @@
         "jsCode": "const input = $json || {};\nconst statusCode = Number(input.statusCode || input.code || 0);\n\nlet reply = '';\nif (typeof input.reply_text === 'string' && input.reply_text.trim()) {\n  reply = input.reply_text.trim();\n} else if (typeof input.message_to_patient_es === 'string' && input.message_to_patient_es.trim()) {\n  reply = input.message_to_patient_es.trim();\n} else if (typeof input.message === 'string' && input.message.trim()) {\n  reply = input.message.trim();\n}\n\nif (!reply && statusCode >= 400) {\n  reply = 'He recibido tu mensaje. Ahora mismo hay una incidencia tecnica y te respondere en breve.';\n}\n\nif (!reply) {\n  reply = 'He recibido tu mensaje. Enseguida te doy respuesta.';\n}\n\nreturn [{\n  json: {\n    reply_text: reply.slice(0, 3500),\n    response_status: statusCode || null,\n    backend_ok: statusCode ? statusCode < 400 : true\n  }\n}];"
       },
       "id": "BuildSafeTelegramReply",
-      "name": "Build Safe Telegram Reply",
+      "name": "Preparar respuesta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -143,44 +143,44 @@
     }
   ],
   "connections": {
-    "Telegram Trigger": {
+    "Telegram": {
       "main": [
         [
           {
-            "node": "Prepare Input",
+            "node": "Preparar",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prepare Input": {
+    "Preparar": {
       "main": [
         [
           {
-            "node": "Backend Command Resolver",
+            "node": "Resolver backend",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Backend Command Resolver": {
+    "Resolver backend": {
       "main": [
         [
           {
-            "node": "Build Safe Telegram Reply",
+            "node": "Preparar respuesta",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Safe Telegram Reply": {
+    "Preparar respuesta": {
       "main": [
         [
           {
-            "node": "Telegram Reply",
+            "node": "Enviar Telegram",
             "type": "main",
             "index": 0
           }
@@ -236,7 +236,7 @@
           "additionalFields": {}
         },
         "id": "TelegramTrigger",
-        "name": "Telegram Trigger",
+        "name": "Telegram",
         "type": "n8n-nodes-base.telegramTrigger",
         "typeVersion": 1,
         "position": [
@@ -296,7 +296,7 @@
           "options": {}
         },
         "id": "PrepareInput",
-        "name": "Prepare Input",
+        "name": "Preparar",
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
@@ -316,7 +316,7 @@
           }
         },
         "id": "BackendCommandResolver",
-        "name": "Backend Command Resolver",
+        "name": "Resolver backend",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
@@ -326,14 +326,14 @@
       },
       {
         "parameters": {
-          "chatId": "={{ $('Prepare Input').item.json.chat_id }}",
+          "chatId": "={{ $('Preparar').item.json.chat_id }}",
           "text": "={{ $json.reply_text }}",
           "additionalFields": {
             "appendAttribution": false
           }
         },
         "id": "TelegramReply",
-        "name": "Telegram Reply",
+        "name": "Enviar Telegram",
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
         "position": [
@@ -353,7 +353,7 @@
           "jsCode": "const input = $json || {};\nconst statusCode = Number(input.statusCode || input.code || 0);\n\nlet reply = '';\nif (typeof input.reply_text === 'string' && input.reply_text.trim()) {\n  reply = input.reply_text.trim();\n} else if (typeof input.message_to_patient_es === 'string' && input.message_to_patient_es.trim()) {\n  reply = input.message_to_patient_es.trim();\n} else if (typeof input.message === 'string' && input.message.trim()) {\n  reply = input.message.trim();\n}\n\nif (!reply && statusCode >= 400) {\n  reply = 'He recibido tu mensaje. Ahora mismo hay una incidencia tecnica y te respondere en breve.';\n}\n\nif (!reply) {\n  reply = 'He recibido tu mensaje. Enseguida te doy respuesta.';\n}\n\nreturn [{\n  json: {\n    reply_text: reply.slice(0, 3500),\n    response_status: statusCode || null,\n    backend_ok: statusCode ? statusCode < 400 : true\n  }\n}];"
         },
         "id": "BuildSafeTelegramReply",
-        "name": "Build Safe Telegram Reply",
+        "name": "Preparar respuesta",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
@@ -363,44 +363,44 @@
       }
     ],
     "connections": {
-      "Telegram Trigger": {
+      "Telegram": {
         "main": [
           [
             {
-              "node": "Prepare Input",
+              "node": "Preparar",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Prepare Input": {
+      "Preparar": {
         "main": [
           [
             {
-              "node": "Backend Command Resolver",
+              "node": "Resolver backend",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Backend Command Resolver": {
+      "Resolver backend": {
         "main": [
           [
             {
-              "node": "Build Safe Telegram Reply",
+              "node": "Preparar respuesta",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Build Safe Telegram Reply": {
+      "Preparar respuesta": {
         "main": [
           [
             {
-              "node": "Telegram Reply",
+              "node": "Enviar Telegram",
               "type": "main",
               "index": 0
             }
@@ -409,7 +409,7 @@
       }
     },
     "authors": "Raúl Ruiz",
-    "name": null,
+    "name": "",
     "description": null,
     "autosaved": true,
     "workflowPublishHistory": [

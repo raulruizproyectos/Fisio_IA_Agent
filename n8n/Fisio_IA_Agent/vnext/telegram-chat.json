@@ -1,351 +1,341 @@
 {
-    "name":  "Fisio_IA_Agent / Bot Pacientes",
-    "nodes":  [
-                  {
-                      "parameters":  {
-                                         "updates":  [
-                                                         "message"
-                                                     ],
-                                         "additionalFields":  {
-
-                                                              }
-                                     },
-                      "id":  "TelegramTrigger",
-                      "name":  "Telegram Trigger",
-                      "type":  "n8n-nodes-base.telegramTrigger",
-                      "typeVersion":  1,
-                      "position":  [
-                                       240,
-                                       300
-                                   ],
-                      "credentials":  {
-                                          "telegramApi":  {
-                                                              "id":  "Y2lad9wx7Ifpxm4z",
-                                                              "name":  "citas_fisioterapia_bot"
-                                                          }
-                                      },
-                      "webhookId":  "44766c45-5dca-4c61-ae29-6c1e7027850e"
-                  },
-                  {
-                      "parameters":  {
-                                         "assignments":  {
-                                                             "assignments":  [
-                                                                                 {
-                                                                                     "id":  "chat_id",
-                                                                                     "name":  "chat_id",
-                                                                                     "value":  "={{ $json.message.chat.id }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "username",
-                                                                                     "name":  "username",
-                                                                                     "value":  "={{ $json.message.from.username || \"\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "texto_mensaje",
-                                                                                     "name":  "texto_mensaje",
-                                                                                     "value":  "={{ $json.message.text || $json.message.caption || \"\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "request_id",
-                                                                                     "name":  "request_id",
-                                                                                     "value":  "={{ \"req_\" + Date.now() + \"_\" + Math.floor(Math.random() * 100000) }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "agent_mode",
-                                                                                     "name":  "agent_mode",
-                                                                                     "value":  "patient_appointments",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "bot_username",
-                                                                                     "name":  "bot_username",
-                                                                                     "value":  "fisioterapia_CarlaJL",
-                                                                                     "type":  "string"
-                                                                                 }
-                                                                             ]
-                                                         },
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "PrepareInput",
-                      "name":  "Prepare Input",
-                      "type":  "n8n-nodes-base.set",
-                      "typeVersion":  3.4,
-                      "position":  [
-                                       460,
-                                       300
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "operation":  "get",
-                                         "tableId":  "vinculos_telegram_pacientes",
-                                         "filters":  {
-                                                         "conditions":  [
-                                                                            {
-                                                                                "keyName":  "telegram_chat_id",
-                                                                                "keyValue":  "={{ $(\u0027Prepare Input\u0027).item.json.chat_id }}"
-                                                                            }
-                                                                        ]
-                                                     }
-                                     },
-                      "id":  "LookupTelegramLink",
-                      "name":  "Lookup Telegram Link",
-                      "type":  "n8n-nodes-base.supabase",
-                      "typeVersion":  1,
-                      "position":  [
-                                       700,
-                                       140
-                                   ],
-                      "alwaysOutputData":  true,
-                      "credentials":  {
-                                          "supabaseApi":  {
-                                                              "id":  "ZGMUGmHKgN4LJ7sL",
-                                                              "name":  "Supabase account"
-                                                          }
-                                      }
-                  },
-                  {
-                      "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
-                                         "sendBody":  true,
-                                         "specifyBody":  "json",
-                                         "jsonBody":  "={{ ({ request_id: $json.request_id, chat_id: $json.chat_id, username: $json.username, texto_mensaje: $json.texto_mensaje, agent_mode: $json.agent_mode, bot_username: $json.bot_username }) }}",
-                                         "options":  {
-                                                         "ignoreResponseCode":  true,
-                                                         "timeout":  15000
-                                                     }
-                                     },
-                      "id":  "BackendCommandResolver",
-                      "name":  "Backend Command Resolver",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       700,
-                                       300
-                                   ],
-                      "continueOnFail":  true
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const input = $json || {};\nconst original = $(\u0027Prepare Input\u0027).first().json || {};\nconst link = $(\u0027Lookup Telegram Link\u0027).first()?.json || {};\nconst rawText = String(original.texto_mensaje || \u0027\u0027).trim();\nconst normalizedText = rawText.toLowerCase().normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027);\nconst statusCode = Number(input.statusCode || input.responseCode || input.code || input.status || 0);\nconst backendReply = [input.reply_text, input.message_to_patient_es, input.message].find((value) =\u003e typeof value === \u0027string\u0027 \u0026\u0026 value.trim()) || \u0027\u0027;\nconst linkedPatientId = link.paciente_id || link.patient_id || null;\nconst linkedProfessionalId = link.profesional_id || link.professional_id || null;\n\nfunction parseRequestedSlot(text) {\n  const normalized = String(text || \u0027\u0027).toLowerCase().normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027);\n  const now = new Date();\n  let target = null;\n\n  if (/\\bmanana\\b/.test(normalized)) {\n    target = new Date(now);\n    target.setDate(target.getDate() + 1);\n  } else if (/\\bhoy\\b/.test(normalized)) {\n    target = new Date(now);\n  } else {\n    const dowMap = { domingo: 0, lunes: 1, martes: 2, miercoles: 3, jueves: 4, viernes: 5, sabado: 6 };\n    for (const [name, targetDow] of Object.entries(dowMap)) {\n      if (normalized.includes(name)) {\n        target = new Date(now);\n        let daysAhead = targetDow - target.getDay();\n        if (daysAhead \u003c= 0) daysAhead += 7;\n        target.setDate(target.getDate() + daysAhead);\n        break;\n      }\n    }\n  }\n\n  const timeMatchFull = normalized.match(/a\\s+las?\\s+(\\d{1,2})(?::(\\d{2}))?/);\n  const timeMatchStd = !timeMatchFull \u0026\u0026 normalized.match(/(?\u003c!\\d)(\\d{1,2}):(\\d{2})(?!\\d)/);\n  const timeMatchH = !timeMatchFull \u0026\u0026 !timeMatchStd \u0026\u0026 normalized.match(/(?\u003c!\\d)(\\d{1,2})\\s*h(?:horas?)?(?!\\d)/);\n  const tm = timeMatchFull || timeMatchStd || timeMatchH;\n  if (!target || !tm) return null;\n\n  const hour = Number(tm[1]);\n  const minute = Number(tm[2] || 0);\n  if (Number.isNaN(hour) || Number.isNaN(minute)) return null;\n\n  const totalMin = hour * 60 + minute;\n  const withinHours = (totalMin \u003e= 9 * 60 \u0026\u0026 totalMin \u003c 13 * 60) || (totalMin \u003e= 15 * 60 \u0026\u0026 totalMin \u003c 19 * 60);\n\n  const pad = (n) =\u003e String(n).padStart(2, \u00270\u0027);\n  const year = target.getFullYear();\n  const month = target.getMonth() + 1;\n  const day = target.getDate();\n  const refDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));\n  const tzParts = new Intl.DateTimeFormat(\u0027en\u0027, { timeZone: \u0027Europe/Madrid\u0027, timeZoneName: \u0027shortOffset\u0027 }).formatToParts(refDate);\n  const tzName = tzParts.find((p) =\u003e p.type === \u0027timeZoneName\u0027)?.value || \u0027GMT+1\u0027;\n  const offsetMatch = tzName.match(/GMT([+-])(\\d+)(?::(\\d+))?/);\n  const offsetSign = offsetMatch?.[1] || \u0027+\u0027;\n  const offsetH = pad(parseInt(offsetMatch?.[2] || \u00271\u0027, 10));\n  const offsetM = pad(parseInt(offsetMatch?.[3] || \u00270\u0027, 10));\n  const tzOffset = `${offsetSign}${offsetH}:${offsetM}`;\n  const slotStart = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00${tzOffset}`;\n  let endHour = hour;\n  let endMinute = minute + 60;\n  if (endMinute \u003e= 60) { endHour += 1; endMinute -= 60; }\n  const slotEnd = `${year}-${pad(month)}-${pad(day)}T${pad(endHour)}:${pad(endMinute)}:00${tzOffset}`;\n\n  const dayLabel = /\\bmanana\\b/.test(normalized)\n    ? \u0027manana\u0027\n    : /\\bhoy\\b/.test(normalized)\n      ? \u0027hoy\u0027\n      : `${pad(day)}/${pad(month)}/${year}`;\n\n  return {\n    slotStart,\n    slotEnd,\n    hour,\n    minute,\n    withinHours,\n    humanLabel: `${dayLabel} a las ${pad(hour)}:${pad(minute)}`,\n  };\n}\n\nfunction hasClinicalReason(text = \u0027\u0027) {\n  const normalized = String(text || \u0027\u0027).toLowerCase().normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027);\n  return /\\b(dolor|molestia|lesion|contractura|cervical|lumbar|espalda|hombro|rodilla|tobillo|cadera|cuello|seguimiento|revision|rehabilitacion|ciatica)\\b/.test(normalized);\n}\n\nfunction isGreeting(text = \u0027\u0027) {\n  const normalized = String(text || \u0027\u0027).toLowerCase().normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027);\n  return /^(hola|holaa+|buenas|buenos dias|buenas tardes|buenas noches|hey|ey)\\b/.test(normalized);\n}\n\nfunction looksLikeAppointmentRequest(text = \u0027\u0027, requestedSlot = null) {\n  const normalized = String(text || \u0027\u0027).toLowerCase().normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027);\n  return Boolean(requestedSlot) || /\\b(cita|agendar|agenda|reservar|reserva|hueco|hora|disponibilidad|confirmar|confirmo|vale|ok)\\b/.test(normalized);\n}\n\nconst slotFromRawText = parseRequestedSlot(rawText);\nconst slotFromBackendReply = parseRequestedSlot(backendReply);\nconst effectiveSlot = slotFromRawText || slotFromBackendReply;\nconst rawClinicalReason = hasClinicalReason(rawText);\nconst replyClinicalReason = hasClinicalReason(backendReply);\nconst effectiveReasonText = rawClinicalReason ? rawText : (replyClinicalReason ? backendReply : rawText);\nconst appointmentIntent = looksLikeAppointmentRequest(rawText, effectiveSlot);\nconst backendFailed = Boolean(input.error) || Boolean(statusCode \u0026\u0026 statusCode \u003e= 400);\nconst contradictoryOutsideHours = Boolean(effectiveSlot?.withinHours) \u0026\u0026 /(horario disponible comienza a las 9:00|elige un horario dentro de esos rangos|dentro de esos rangos|sin embargo, el horario disponible comienza)/i.test(backendReply);\nconst backendSuggestsPendingConfirmation = /(solo necesito confirmar|te parece bien|voy a registrar tu cita|un momento, por favor)/i.test(backendReply);\nconst readyToBook = Boolean(effectiveSlot?.withinHours) \u0026\u0026 (rawClinicalReason || replyClinicalReason) \u0026\u0026 linkedPatientId \u0026\u0026 linkedProfessionalId \u0026\u0026 (contradictoryOutsideHours || backendFailed || backendSuggestsPendingConfirmation);\n\nlet reply = String(backendReply || \u0027\u0027).trim();\nlet forceW1 = false;\n\nif (readyToBook) {\n  forceW1 = true;\n  reply = `Perfecto, ${effectiveSlot.humanLabel}. Estoy tramitando tu cita ahora mismo.`;\n} else if (contradictoryOutsideHours \u0026\u0026 effectiveSlot?.withinHours) {\n  reply = `Perfecto, ${effectiveSlot.humanLabel} encaja dentro del horario. Para gestionarlo bien, dime brevemente el motivo de la consulta.`;\n} else if (isGreeting(rawText)) {\n  reply = \u0027Hola. Soy Carla, la asistente de citas de la clinica. Dime que dia y hora te vendria bien y el motivo de la consulta.\u0027;\n} else if (slotFromRawText?.withinHours \u0026\u0026 !rawClinicalReason) {\n  reply = `Perfecto, ${slotFromRawText.humanLabel} me encaja. Para dejar la cita bien registrada, dime brevemente el motivo de la consulta.`;\n} else if (slotFromRawText \u0026\u0026 !slotFromRawText.withinHours) {\n  reply = \u0027Puedo ayudarte con la cita, pero esa hora queda fuera del horario habitual. Dime una franja entre 9:00 y 13:00 o entre 15:00 y 19:00.\u0027;\n} else if (!reply \u0026\u0026 appointmentIntent \u0026\u0026 !effectiveSlot) {\n  reply = \u0027Claro. Dime por favor que dia te viene bien, a que hora y el motivo de la consulta.\u0027;\n} else if (!reply \u0026\u0026 backendFailed) {\n  reply = \u0027He recibido tu mensaje. Ahora mismo hay una incidencia tecnica y te respondere en breve.\u0027;\n} else if (!reply) {\n  reply = \u0027He recibido tu mensaje. Enseguida te doy respuesta.\u0027;\n}\n\nreturn [{\n  json: {\n    reply_text: reply.slice(0, 3500),\n    response_status: statusCode || null,\n    backend_ok: !backendFailed,\n    force_w1: forceW1,\n    force_w1_payload: forceW1\n      ? {\n          request_id: `${original.request_id || \u0027req\u0027}_w1_guardrail`,\n          source: \u0027telegram_guardrail\u0027,\n          channel: \u0027telegram\u0027,\n          patient_id: linkedPatientId,\n          professional_id: linkedProfessionalId,\n          chat_id: String(original.chat_id || \u0027\u0027),\n          username: original.username || null,\n          message_text: effectiveReasonText,\n          slot_start: effectiveSlot.slotStart,\n          slot_end: effectiveSlot.slotEnd,\n          timezone: \u0027Europe/Madrid\u0027,\n        }\n      : null,\n    guardrail_slot_label: effectiveSlot?.humanLabel || null,\n  }\n}];"
-                                     },
-                      "id":  "BuildSafeTelegramReply",
-                      "name":  "Build Safe Telegram Reply",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       930,
-                                       300
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "conditions":  {
-                                                            "options":  {
-                                                                            "caseSensitive":  true,
-                                                                            "leftValue":  "",
-                                                                            "typeValidation":  "strict",
-                                                                            "version":  2
-                                                                        },
-                                                            "conditions":  [
-                                                                               {
-                                                                                   "id":  "force-w1",
-                                                                                   "leftValue":  "={{ $json.force_w1 }}",
-                                                                                   "rightValue":  true,
-                                                                                   "operator":  {
-                                                                                                    "type":  "boolean",
-                                                                                                    "operation":  "true",
-                                                                                                    "singleValue":  true
-                                                                                                }
-                                                                               }
-                                                                           ],
-                                                            "combinator":  "and"
-                                                        },
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "ShouldForceW1",
-                      "name":  "Should Force W1?",
-                      "type":  "n8n-nodes-base.if",
-                      "typeVersion":  2.2,
-                      "position":  [
-                                       1160,
-                                       300
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w1/appointment",
-                                         "sendBody":  true,
-                                         "specifyBody":  "json",
-                                         "jsonBody":  "={{ $json.force_w1_payload }}",
-                                         "options":  {
-                                                         "ignoreResponseCode":  true,
-                                                         "timeout":  15000
-                                                     }
-                                     },
-                      "id":  "ForceW1Booking",
-                      "name":  "Force W1 Booking",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       1390,
-                                       220
-                                   ],
-                      "continueOnFail":  true
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const original = $(\u0027Build Safe Telegram Reply\u0027).first().json || {};\nconst input = $json || {};\nlet reply = \u0027\u0027;\nif (typeof input.message_to_patient_es === \u0027string\u0027 \u0026\u0026 input.message_to_patient_es.trim()) {\n  reply = input.message_to_patient_es.trim();\n} else if (typeof input.reply_text === \u0027string\u0027 \u0026\u0026 input.reply_text.trim()) {\n  reply = input.reply_text.trim();\n} else if (typeof original.reply_text === \u0027string\u0027 \u0026\u0026 original.reply_text.trim()) {\n  reply = original.reply_text.trim();\n}\nif (!reply) {\n  reply = \u0027Estoy revisando tu solicitud de cita y te confirmo en breve.\u0027;\n}\nreturn [{ json: { reply_text: reply.slice(0, 3500) } }];"
-                                     },
-                      "id":  "BuildForceW1Reply",
-                      "name":  "Build Force W1 Reply",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1620,
-                                       220
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "chatId":  "={{ $(\u0027Prepare Input\u0027).item.json.chat_id }}",
-                                         "text":  "={{ $json.reply_text }}",
-                                         "additionalFields":  {
-                                                                  "appendAttribution":  false
-                                                              }
-                                     },
-                      "id":  "TelegramReply",
-                      "name":  "Telegram Reply",
-                      "type":  "n8n-nodes-base.telegram",
-                      "typeVersion":  1.2,
-                      "position":  [
-                                       940,
-                                       300
-                                   ],
-                      "credentials":  {
-                                          "telegramApi":  {
-                                                              "id":  "Y2lad9wx7Ifpxm4z",
-                                                              "name":  "citas_fisioterapia_bot"
-                                                          }
-                                      },
-                      "webhookId":  "6688abb0-7b7a-4d83-94b4-ef6f5c835f65"
-                  }
-              ],
-    "connections":  {
-                        "Telegram Trigger":  {
-                                                 "main":  [
-                                                              [
-                                                                  {
-                                                                      "node":  "Prepare Input",
-                                                                      "type":  "main",
-                                                                      "index":  0
-                                                                  }
-                                                              ]
-                                                          ]
-                                             },
-                        "Prepare Input":  {
-                                              "main":  [
-                                                           [
-                                                               {
-                                                                   "node":  "Lookup Telegram Link",
-                                                                   "type":  "main",
-                                                                   "index":  0
-                                                               },
-                                                               {
-                                                                   "node":  "Backend Command Resolver",
-                                                                   "type":  "main",
-                                                                   "index":  0
-                                                               }
-                                                           ]
-                                                       ]
-                                          },
-                        "Lookup Telegram Link":  {
-                                                     "main":  [
-                                                                  [
-
-                                                                  ]
-                                                              ]
-                                                 },
-                        "Backend Command Resolver":  {
-                                                         "main":  [
-                                                                      [
-                                                                          {
-                                                                              "node":  "Build Safe Telegram Reply",
-                                                                              "type":  "main",
-                                                                              "index":  0
-                                                                          }
-                                                                      ]
-                                                                  ]
-                                                     },
-                        "Build Safe Telegram Reply":  {
-                                                          "main":  [
-                                                                       [
-                                                                           {
-                                                                               "node":  "Should Force W1?",
-                                                                               "type":  "main",
-                                                                               "index":  0
-                                                                           }
-                                                                       ]
-                                                                   ]
-                                                      },
-                        "Should Force W1?":  {
-                                                 "main":  [
-                                                              [
-                                                                  {
-                                                                      "node":  "Force W1 Booking",
-                                                                      "type":  "main",
-                                                                      "index":  0
-                                                                  }
-                                                              ],
-                                                              [
-                                                                  {
-                                                                      "node":  "Telegram Reply",
-                                                                      "type":  "main",
-                                                                      "index":  0
-                                                                  }
-                                                              ]
-                                                          ]
-                                             },
-                        "Force W1 Booking":  {
-                                                 "main":  [
-                                                              [
-                                                                  {
-                                                                      "node":  "Build Force W1 Reply",
-                                                                      "type":  "main",
-                                                                      "index":  0
-                                                                  }
-                                                              ]
-                                                          ]
-                                             },
-                        "Build Force W1 Reply":  {
-                                                     "main":  [
-                                                                  [
-                                                                      {
-                                                                          "node":  "Telegram Reply",
-                                                                          "type":  "main",
-                                                                          "index":  0
-                                                                      }
-                                                                  ]
-                                                              ]
-                                                 }
-                    },
-    "settings":  {
-                     "executionOrder":  "v1"
-                 },
-    "pinData":  {
-
-                },
-    "meta":  {
-                 "templateCredsSetupCompleted":  false
-             }
+  "name": "Fisio IA | Bot paciente",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "TelegramTrigger",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "Y2lad9wx7Ifpxm4z",
+          "name": "citas_fisioterapia_bot"
+        }
+      },
+      "webhookId": "44766c45-5dca-4c61-ae29-6c1e7027850e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "chat_id",
+              "name": "chat_id",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            },
+            {
+              "id": "username",
+              "name": "username",
+              "value": "={{ $json.message.from.username || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "texto_mensaje",
+              "name": "texto_mensaje",
+              "value": "={{ $json.message.text || $json.message.caption || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "request_id",
+              "name": "request_id",
+              "value": "={{ \"req_\" + Date.now() + \"_\" + Math.floor(Math.random() * 100000) }}",
+              "type": "string"
+            },
+            {
+              "id": "agent_mode",
+              "name": "agent_mode",
+              "value": "patient_appointments",
+              "type": "string"
+            },
+            {
+              "id": "bot_username",
+              "name": "bot_username",
+              "value": "fisioterapia_CarlaJL",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "PrepareInput",
+      "name": "Preparar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "vinculos_telegram_pacientes",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_chat_id",
+              "keyValue": "={{ $('Preparar').item.json.chat_id }}"
+            }
+          ]
+        }
+      },
+      "id": "LookupTelegramLink",
+      "name": "Buscar vinculo",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        700,
+        140
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "ZGMUGmHKgN4LJ7sL",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({ request_id: $json.request_id, chat_id: $json.chat_id, username: $json.username, texto_mensaje: $json.texto_mensaje, agent_mode: $json.agent_mode, bot_username: $json.bot_username }) }}",
+        "options": {
+          "ignoreResponseCode": true,
+          "timeout": 15000
+        }
+      },
+      "id": "BackendCommandResolver",
+      "name": "Resolver backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        300
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json || {};\nconst original = $('Preparar').first().json || {};\nconst link = $('Buscar vinculo').first()?.json || {};\nconst rawText = String(original.texto_mensaje || '').trim();\nconst normalizedText = rawText.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\nconst statusCode = Number(input.statusCode || input.responseCode || input.code || input.status || 0);\nconst backendReply = [input.reply_text, input.message_to_patient_es, input.message].find((value) => typeof value === 'string' && value.trim()) || '';\nconst linkedPatientId = link.paciente_id || link.patient_id || null;\nconst linkedProfessionalId = link.profesional_id || link.professional_id || null;\n\nfunction parseRequestedSlot(text) {\n  const normalized = String(text || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  const now = new Date();\n  let target = null;\n\n  if (/\\bmanana\\b/.test(normalized)) {\n    target = new Date(now);\n    target.setDate(target.getDate() + 1);\n  } else if (/\\bhoy\\b/.test(normalized)) {\n    target = new Date(now);\n  } else {\n    const dowMap = { domingo: 0, lunes: 1, martes: 2, miercoles: 3, jueves: 4, viernes: 5, sabado: 6 };\n    for (const [name, targetDow] of Object.entries(dowMap)) {\n      if (normalized.includes(name)) {\n        target = new Date(now);\n        let daysAhead = targetDow - target.getDay();\n        if (daysAhead <= 0) daysAhead += 7;\n        target.setDate(target.getDate() + daysAhead);\n        break;\n      }\n    }\n  }\n\n  const timeMatchFull = normalized.match(/a\\s+las?\\s+(\\d{1,2})(?::(\\d{2}))?/);\n  const timeMatchStd = !timeMatchFull && normalized.match(/(?<!\\d)(\\d{1,2}):(\\d{2})(?!\\d)/);\n  const timeMatchH = !timeMatchFull && !timeMatchStd && normalized.match(/(?<!\\d)(\\d{1,2})\\s*h(?:horas?)?(?!\\d)/);\n  const tm = timeMatchFull || timeMatchStd || timeMatchH;\n  if (!target || !tm) return null;\n\n  const hour = Number(tm[1]);\n  const minute = Number(tm[2] || 0);\n  if (Number.isNaN(hour) || Number.isNaN(minute)) return null;\n\n  const totalMin = hour * 60 + minute;\n  const withinHours = (totalMin >= 9 * 60 && totalMin < 13 * 60) || (totalMin >= 15 * 60 && totalMin < 19 * 60);\n\n  const pad = (n) => String(n).padStart(2, '0');\n  const year = target.getFullYear();\n  const month = target.getMonth() + 1;\n  const day = target.getDate();\n  const refDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));\n  const tzParts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', timeZoneName: 'shortOffset' }).formatToParts(refDate);\n  const tzName = tzParts.find((p) => p.type === 'timeZoneName')?.value || 'GMT+1';\n  const offsetMatch = tzName.match(/GMT([+-])(\\d+)(?::(\\d+))?/);\n  const offsetSign = offsetMatch?.[1] || '+';\n  const offsetH = pad(parseInt(offsetMatch?.[2] || '1', 10));\n  const offsetM = pad(parseInt(offsetMatch?.[3] || '0', 10));\n  const tzOffset = `${offsetSign}${offsetH}:${offsetM}`;\n  const slotStart = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00${tzOffset}`;\n  let endHour = hour;\n  let endMinute = minute + 60;\n  if (endMinute >= 60) { endHour += 1; endMinute -= 60; }\n  const slotEnd = `${year}-${pad(month)}-${pad(day)}T${pad(endHour)}:${pad(endMinute)}:00${tzOffset}`;\n\n  const dayLabel = /\\bmanana\\b/.test(normalized)\n    ? 'manana'\n    : /\\bhoy\\b/.test(normalized)\n      ? 'hoy'\n      : `${pad(day)}/${pad(month)}/${year}`;\n\n  return {\n    slotStart,\n    slotEnd,\n    hour,\n    minute,\n    withinHours,\n    humanLabel: `${dayLabel} a las ${pad(hour)}:${pad(minute)}`,\n  };\n}\n\nfunction hasClinicalReason(text = '') {\n  const normalized = String(text || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  return /\\b(dolor|molestia|lesion|contractura|cervical|lumbar|espalda|hombro|rodilla|tobillo|cadera|cuello|seguimiento|revision|rehabilitacion|ciatica)\\b/.test(normalized);\n}\n\nfunction isGreeting(text = '') {\n  const normalized = String(text || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  return /^(hola|holaa+|buenas|buenos dias|buenas tardes|buenas noches|hey|ey)\\b/.test(normalized);\n}\n\nfunction looksLikeAppointmentRequest(text = '', requestedSlot = null) {\n  const normalized = String(text || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  return Boolean(requestedSlot) || /\\b(cita|agendar|agenda|reservar|reserva|hueco|hora|disponibilidad|confirmar|confirmo|vale|ok)\\b/.test(normalized);\n}\n\nconst slotFromRawText = parseRequestedSlot(rawText);\nconst slotFromBackendReply = parseRequestedSlot(backendReply);\nconst effectiveSlot = slotFromRawText || slotFromBackendReply;\nconst rawClinicalReason = hasClinicalReason(rawText);\nconst replyClinicalReason = hasClinicalReason(backendReply);\nconst effectiveReasonText = rawClinicalReason ? rawText : (replyClinicalReason ? backendReply : rawText);\nconst appointmentIntent = looksLikeAppointmentRequest(rawText, effectiveSlot);\nconst backendFailed = Boolean(input.error) || Boolean(statusCode && statusCode >= 400);\nconst contradictoryOutsideHours = Boolean(effectiveSlot?.withinHours) && /(horario disponible comienza a las 9:00|elige un horario dentro de esos rangos|dentro de esos rangos|sin embargo, el horario disponible comienza)/i.test(backendReply);\nconst backendSuggestsPendingConfirmation = /(solo necesito confirmar|te parece bien|voy a registrar tu cita|un momento, por favor)/i.test(backendReply);\nconst readyToBook = Boolean(effectiveSlot?.withinHours) && (rawClinicalReason || replyClinicalReason) && linkedPatientId && linkedProfessionalId && (contradictoryOutsideHours || backendFailed || backendSuggestsPendingConfirmation);\n\nlet reply = String(backendReply || '').trim();\nlet forceW1 = false;\n\nif (readyToBook) {\n  forceW1 = true;\n  reply = `Perfecto, ${effectiveSlot.humanLabel}. Estoy tramitando tu cita ahora mismo.`;\n} else if (contradictoryOutsideHours && effectiveSlot?.withinHours) {\n  reply = `Perfecto, ${effectiveSlot.humanLabel} encaja dentro del horario. Para gestionarlo bien, dime brevemente el motivo de la consulta.`;\n} else if (isGreeting(rawText)) {\n  reply = 'Hola. Soy Carla, la asistente de citas de la clinica. Dime que dia y hora te vendria bien y el motivo de la consulta.';\n} else if (slotFromRawText?.withinHours && !rawClinicalReason) {\n  reply = `Perfecto, ${slotFromRawText.humanLabel} me encaja. Para dejar la cita bien registrada, dime brevemente el motivo de la consulta.`;\n} else if (slotFromRawText && !slotFromRawText.withinHours) {\n  reply = 'Puedo ayudarte con la cita, pero esa hora queda fuera del horario habitual. Dime una franja entre 9:00 y 13:00 o entre 15:00 y 19:00.';\n} else if (!reply && appointmentIntent && !effectiveSlot) {\n  reply = 'Claro. Dime por favor que dia te viene bien, a que hora y el motivo de la consulta.';\n} else if (!reply && backendFailed) {\n  reply = 'He recibido tu mensaje. Ahora mismo hay una incidencia tecnica y te respondere en breve.';\n} else if (!reply) {\n  reply = 'He recibido tu mensaje. Enseguida te doy respuesta.';\n}\n\nreturn [{\n  json: {\n    reply_text: reply.slice(0, 3500),\n    response_status: statusCode || null,\n    backend_ok: !backendFailed,\n    force_w1: forceW1,\n    force_w1_payload: forceW1\n      ? {\n          request_id: `${original.request_id || 'req'}_w1_guardrail`,\n          source: 'telegram_guardrail',\n          channel: 'telegram',\n          patient_id: linkedPatientId,\n          professional_id: linkedProfessionalId,\n          chat_id: String(original.chat_id || ''),\n          username: original.username || null,\n          message_text: effectiveReasonText,\n          slot_start: effectiveSlot.slotStart,\n          slot_end: effectiveSlot.slotEnd,\n          timezone: 'Europe/Madrid',\n        }\n      : null,\n    guardrail_slot_label: effectiveSlot?.humanLabel || null,\n  }\n}];"
+      },
+      "id": "BuildSafeTelegramReply",
+      "name": "Preparar respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        930,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "force-w1",
+              "leftValue": "={{ $json.force_w1 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ShouldForceW1",
+      "name": "Forzar cita?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1160,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w1/appointment",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.force_w1_payload }}",
+        "options": {
+          "ignoreResponseCode": true,
+          "timeout": 15000
+        }
+      },
+      "id": "ForceW1Booking",
+      "name": "Crear cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1390,
+        220
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const original = $('Preparar respuesta').first().json || {};\nconst input = $json || {};\nlet reply = '';\nif (typeof input.message_to_patient_es === 'string' && input.message_to_patient_es.trim()) {\n  reply = input.message_to_patient_es.trim();\n} else if (typeof input.reply_text === 'string' && input.reply_text.trim()) {\n  reply = input.reply_text.trim();\n} else if (typeof original.reply_text === 'string' && original.reply_text.trim()) {\n  reply = original.reply_text.trim();\n}\nif (!reply) {\n  reply = 'Estoy revisando tu solicitud de cita y te confirmo en breve.';\n}\nreturn [{ json: { reply_text: reply.slice(0, 3500) } }];"
+      },
+      "id": "BuildForceW1Reply",
+      "name": "Respuesta cita",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1620,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Preparar').item.json.chat_id }}",
+        "text": "={{ $json.reply_text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "TelegramReply",
+      "name": "Enviar Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        940,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "Y2lad9wx7Ifpxm4z",
+          "name": "citas_fisioterapia_bot"
+        }
+      },
+      "webhookId": "6688abb0-7b7a-4d83-94b4-ef6f5c835f65"
+    }
+  ],
+  "connections": {
+    "Telegram": {
+      "main": [
+        [
+          {
+            "node": "Preparar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar": {
+      "main": [
+        [
+          {
+            "node": "Buscar vinculo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resolver backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar vinculo": {
+      "main": [
+        []
+      ]
+    },
+    "Resolver backend": {
+      "main": [
+        [
+          {
+            "node": "Preparar respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar respuesta": {
+      "main": [
+        [
+          {
+            "node": "Forzar cita?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forzar cita?": {
+      "main": [
+        [
+          {
+            "node": "Crear cita",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear cita": {
+      "main": [
+        [
+          {
+            "node": "Respuesta cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta cita": {
+      "main": [
+        [
+          {
+            "node": "Enviar Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
 }

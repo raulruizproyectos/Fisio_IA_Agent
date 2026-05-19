@@ -1,10 +1,10 @@
 {
-  "name": "Fisio_IA_Agent / W6 Calendar Sync",
+  "name": "Fisio IA | Calendario sync",
   "nodes": [
     {
       "parameters": {},
       "id": "ManualTrigger",
-      "name": "Manual Trigger",
+      "name": "Manual",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         }
       },
       "id": "ScheduleTrigger",
-      "name": "Schedule Trigger",
+      "name": "Programado",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -37,7 +37,7 @@
         "jsCode": "const now = new Date();\nconst from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();\nconst to = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();\nreturn [{ json: { from, to, lookback_days: 7, lookahead_days: 30 } }];"
       },
       "id": "BuildSyncWindow",
-      "name": "Build Sync Window",
+      "name": "Preparar ventana",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -57,7 +57,7 @@
         }
       },
       "id": "TriggerCalendarSync",
-      "name": "Trigger Calendar Sync",
+      "name": "Sincronizar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -70,7 +70,7 @@
         "jsCode": "const payload = $json?.data || {};\nconst summary = $json?.calendar_sync || {};\nreturn [{ json: { ok: true, professional_id: payload.professional_id || null, desde: payload.desde || null, hasta: payload.hasta || null, appointments_considered: payload.appointments_considered || 0, fetched: summary.fetched || 0, updated: summary.updated || 0, cancelled: summary.cancelled || 0, restored: summary.restored || 0, persisted: summary.persisted || 0, synthetic: summary.synthetic || 0, source: summary.source || null } }];"
       },
       "id": "SummarizeSync",
-      "name": "Summarize Sync",
+      "name": "Resumen",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -80,44 +80,44 @@
     }
   ],
   "connections": {
-    "Manual Trigger": {
+    "Manual": {
       "main": [
         [
           {
-            "node": "Build Sync Window",
+            "node": "Preparar ventana",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Schedule Trigger": {
+    "Programado": {
       "main": [
         [
           {
-            "node": "Build Sync Window",
+            "node": "Preparar ventana",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Sync Window": {
+    "Preparar ventana": {
       "main": [
         [
           {
-            "node": "Trigger Calendar Sync",
+            "node": "Sincronizar",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Trigger Calendar Sync": {
+    "Sincronizar": {
       "main": [
         [
           {
-            "node": "Summarize Sync",
+            "node": "Resumen",
             "type": "main",
             "index": 0
           }

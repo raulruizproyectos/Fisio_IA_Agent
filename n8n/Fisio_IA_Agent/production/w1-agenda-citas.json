@@ -1,1 +1,586 @@
-{"updatedAt":"2026-04-01T17:54:43.939Z","createdAt":"2026-03-11T19:54:33.924Z","id":"cTp8bORuSL9hsdDk","name":"Fisio_IA_Agent / W1 Agenda de Citas","description":null,"active":true,"isArchived":false,"nodes":[{"parameters":{"path":"fisio/w1/appointment","responseMode":"responseNode","options":{},"httpMethod":"POST"},"id":"WebhookW1Appointment","name":"Webhook W1 Appointment","type":"n8n-nodes-base.webhook","typeVersion":2.1,"position":[220,300],"webhookId":"fisio-w1-appointment"},{"parameters":{"jsCode":"const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.message_text || '').trim();\nconst isoMatches = text.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2})?/g) || [];\n\nconst parseIso = (value) => {\n  if (!value) return null;\n  const d = new Date(String(value));\n  return Number.isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst rawSlotStart = input.slot_start || input.start_at || isoMatches[0] || null;\nconst rawSlotEnd = input.slot_end || input.end_at || isoMatches[1] || null;\nconst slotStart = parseIso(rawSlotStart);\nconst slotEnd = parseIso(rawSlotEnd);\nconst hasSlotWindow = !!slotStart && !!slotEnd && (new Date(slotStart).getTime() < new Date(slotEnd).getTime());\n\nreturn [{\n  json: {\n    request_id: input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`,\n    patient_id: input.patient_id || input.paciente_id || null,\n    professional_id: input.professional_id || input.profesional_id || null,\n    channel: input.channel || input.source || 'telegram',\n    timezone: input.timezone || 'Europe/Madrid',\n    chat_id: input.chat_id || null,\n    username: input.username || null,\n    message_text: text,\n    slot_start: hasSlotWindow ? slotStart : null,\n    slot_end: hasSlotWindow ? slotEnd : null,\n    duration_minutes: Number(input.duration_minutes || 45),\n    has_slot_window: hasSlotWindow,\n    patient_label: input.patient_label || input.patient_name || input.nombre_paciente || `Paciente ${input.patient_id || input.paciente_id || 'telegram'}`\n  }\n}];"},"id":"NormalizeRequest","name":"Normalize Request","type":"n8n-nodes-base.code","typeVersion":2,"position":[460,300]},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"has-patient","leftValue":"={{ $json.patient_id }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}},{"id":"has-professional","leftValue":"={{ $json.professional_id }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}},{"id":"has-start","leftValue":"={{ $json.slot_start }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}},{"id":"has-end","leftValue":"={{ $json.slot_end }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}}],"combinator":"and"},"options":{}},"id":"HasSlotAndIds","name":"Tiene Slot e IDs","type":"n8n-nodes-base.if","typeVersion":2.2,"position":[700,300]},{"parameters":{"jsCode":"const request = $('Normalize Request').first().json;\n\n// Generar UUID válido para request_id\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {\n    const r = Math.random() * 16 | 0;\n    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);\n  });\n}\nconst requestId = request.request_id?.match(/^[0-9a-f-]{36}$/) ? request.request_id : uuid();\n\nreturn [{\n  json: {\n    request_id: requestId,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    patient_label: request.patient_label,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"},"id":"BuildBackendPayload","name":"Build Backend Payload","type":"n8n-nodes-base.code","typeVersion":2,"position":[1920,80]},{"parameters":{"method":"POST","url":"https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments","sendBody":true,"specifyBody":"json","jsonBody":"={{ ({ patient_id: $json.patient_id, professional_id: $json.professional_id, start_at: $json.start_at, end_at: $json.end_at, channel: $json.channel || 'telegram', reason: $json.reason, request_id: $json.request_id }) }}","options":{"timeout":15000,"response":{"response":{"neverError":true}}}},"id":"CreateAppointmentInBackend","name":"Crear Cita en Backend","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[2160,80],"continueOnFail":true},{"parameters":{"jsCode":"const input = $json || {};\nconst rawBody = input.body || input;\nconst payload = rawBody.data || rawBody;\nconst request = $('Build Backend Payload').first().json;\nconst appointmentId = payload.id || payload.appointment_id || payload?.data?.id || null;\n\n// Extraer status_code de múltiples fuentes (neverError body, continueOnFail error object, o mensaje de error)\nconst msgStatusMatch = String(input.error || input.message || '').match(/status code (d{3})/i);\nconst statusFromMsg = msgStatusMatch ? Number(msgStatusMatch[1]) : 0;\nconst statusCode = Number(input.status || input.statusCode || rawBody.status_code || rawBody.statusCode || payload.status_code || statusFromMsg || 0);\nconst backendErrorRaw = payload.error || payload.message || rawBody.error || input.error || input.message || null;\nconst backendError = typeof backendErrorRaw === 'object' ? JSON.stringify(backendErrorRaw) : String(backendErrorRaw || '');\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      message_to_patient_es: 'Perfecto, tu cita ha quedado registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409 || backendError.toLowerCase().includes('conflicto de agenda') || backendError.toLowerCase().includes('status code 409');\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    backend_error: backendError,\n    message_to_patient_es: becameBusy\n      ? 'Ese horario ya no está disponible. Dime otra franja y lo reviso contigo.'\n      : 'No he podido cerrar la reserva automáticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'\n  }\n}];"},"id":"BuildBackendResponse","name":"Build Backend Response","type":"n8n-nodes-base.code","typeVersion":2,"position":[2400,80]},{"parameters":{"jsCode":"return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para reservar tu cita necesito fecha y hora completas. Por ejemplo: 2026-04-03T10:00 a 2026-04-03T11:00.'\n  }\n}];"},"id":"BuildNeedSlotResponse","name":"Build Need Slot Response","type":"n8n-nodes-base.code","typeVersion":2,"position":[960,420]},{"parameters":{"respondWith":"json","responseBody":"={{ $json }}"},"id":"RespondW1","name":"Respond W1","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.1,"position":[3380,180]}],"connections":{"Webhook W1 Appointment":{"main":[[{"node":"Normalize Request","type":"main","index":0}]]},"Normalize Request":{"main":[[{"node":"Tiene Slot e IDs","type":"main","index":0}]]},"Tiene Slot e IDs":{"main":[[{"node":"Build Backend Payload","type":"main","index":0}],[{"node":"Build Need Slot Response","type":"main","index":0}]]},"Build Backend Payload":{"main":[[{"node":"Crear Cita en Backend","type":"main","index":0}]]},"Crear Cita en Backend":{"main":[[{"node":"Build Backend Response","type":"main","index":0}]]},"Build Backend Response":{"main":[[{"node":"Respond W1","type":"main","index":0}]]},"Build Need Slot Response":{"main":[[{"node":"Respond W1","type":"main","index":0}]]}},"settings":{"executionOrder":"v1","callerPolicy":"workflowsFromSameOwner","availableInMCP":false,"binaryMode":"separate"},"staticData":null,"meta":{"templateCredsSetupCompleted":true},"pinData":{},"versionId":"033a7c6f-9afd-4226-9656-f7c355575fec","activeVersionId":"033a7c6f-9afd-4226-9656-f7c355575fec","versionCounter":108,"triggerCount":1,"shared":[{"updatedAt":"2026-03-11T19:54:33.928Z","createdAt":"2026-03-11T19:54:33.928Z","role":"workflow:owner","workflowId":"cTp8bORuSL9hsdDk","projectId":"SMJKJOy6zCKUIsqO","project":{"updatedAt":"2025-12-02T21:01:16.195Z","createdAt":"2025-12-02T20:50:48.096Z","id":"SMJKJOy6zCKUIsqO","name":"Raúl Ruiz <raul.ruiz.diaz.bcn@gmail.com>","type":"personal","icon":null,"description":null,"creatorId":"d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"}}],"tags":[],"activeVersion":{"updatedAt":"2026-04-01T17:54:43.939Z","createdAt":"2026-04-01T17:54:43.939Z","versionId":"033a7c6f-9afd-4226-9656-f7c355575fec","workflowId":"cTp8bORuSL9hsdDk","nodes":[{"parameters":{"path":"fisio/w1/appointment","responseMode":"responseNode","options":{},"httpMethod":"POST"},"id":"WebhookW1Appointment","name":"Webhook W1 Appointment","type":"n8n-nodes-base.webhook","typeVersion":2.1,"position":[220,300],"webhookId":"fisio-w1-appointment"},{"parameters":{"jsCode":"const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.message_text || '').trim();\nconst isoMatches = text.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2})?/g) || [];\n\nconst parseIso = (value) => {\n  if (!value) return null;\n  const d = new Date(String(value));\n  return Number.isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst rawSlotStart = input.slot_start || input.start_at || isoMatches[0] || null;\nconst rawSlotEnd = input.slot_end || input.end_at || isoMatches[1] || null;\nconst slotStart = parseIso(rawSlotStart);\nconst slotEnd = parseIso(rawSlotEnd);\nconst hasSlotWindow = !!slotStart && !!slotEnd && (new Date(slotStart).getTime() < new Date(slotEnd).getTime());\n\nreturn [{\n  json: {\n    request_id: input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`,\n    patient_id: input.patient_id || input.paciente_id || null,\n    professional_id: input.professional_id || input.profesional_id || null,\n    channel: input.channel || input.source || 'telegram',\n    timezone: input.timezone || 'Europe/Madrid',\n    chat_id: input.chat_id || null,\n    username: input.username || null,\n    message_text: text,\n    slot_start: hasSlotWindow ? slotStart : null,\n    slot_end: hasSlotWindow ? slotEnd : null,\n    duration_minutes: Number(input.duration_minutes || 45),\n    has_slot_window: hasSlotWindow,\n    patient_label: input.patient_label || input.patient_name || input.nombre_paciente || `Paciente ${input.patient_id || input.paciente_id || 'telegram'}`\n  }\n}];"},"id":"NormalizeRequest","name":"Normalize Request","type":"n8n-nodes-base.code","typeVersion":2,"position":[460,300]},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"has-patient","leftValue":"={{ $json.patient_id }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}},{"id":"has-professional","leftValue":"={{ $json.professional_id }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}},{"id":"has-start","leftValue":"={{ $json.slot_start }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}},{"id":"has-end","leftValue":"={{ $json.slot_end }}","rightValue":"","operator":{"type":"string","operation":"notEmpty"}}],"combinator":"and"},"options":{}},"id":"HasSlotAndIds","name":"Tiene Slot e IDs","type":"n8n-nodes-base.if","typeVersion":2.2,"position":[700,300]},{"parameters":{"jsCode":"const request = $('Normalize Request').first().json;\n\n// Generar UUID válido para request_id\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {\n    const r = Math.random() * 16 | 0;\n    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);\n  });\n}\nconst requestId = request.request_id?.match(/^[0-9a-f-]{36}$/) ? request.request_id : uuid();\n\nreturn [{\n  json: {\n    request_id: requestId,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    patient_label: request.patient_label,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"},"id":"BuildBackendPayload","name":"Build Backend Payload","type":"n8n-nodes-base.code","typeVersion":2,"position":[1920,80]},{"parameters":{"method":"POST","url":"https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments","sendBody":true,"specifyBody":"json","jsonBody":"={{ ({ patient_id: $json.patient_id, professional_id: $json.professional_id, start_at: $json.start_at, end_at: $json.end_at, channel: $json.channel || 'telegram', reason: $json.reason, request_id: $json.request_id }) }}","options":{"timeout":15000,"response":{"response":{"neverError":true}}}},"id":"CreateAppointmentInBackend","name":"Crear Cita en Backend","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[2160,80],"continueOnFail":true},{"parameters":{"jsCode":"const input = $json || {};\nconst rawBody = input.body || input;\nconst payload = rawBody.data || rawBody;\nconst request = $('Build Backend Payload').first().json;\nconst appointmentId = payload.id || payload.appointment_id || payload?.data?.id || null;\n\n// Extraer status_code de múltiples fuentes (neverError body, continueOnFail error object, o mensaje de error)\nconst msgStatusMatch = String(input.error || input.message || '').match(/status code (d{3})/i);\nconst statusFromMsg = msgStatusMatch ? Number(msgStatusMatch[1]) : 0;\nconst statusCode = Number(input.status || input.statusCode || rawBody.status_code || rawBody.statusCode || payload.status_code || statusFromMsg || 0);\nconst backendErrorRaw = payload.error || payload.message || rawBody.error || input.error || input.message || null;\nconst backendError = typeof backendErrorRaw === 'object' ? JSON.stringify(backendErrorRaw) : String(backendErrorRaw || '');\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      message_to_patient_es: 'Perfecto, tu cita ha quedado registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409 || backendError.toLowerCase().includes('conflicto de agenda') || backendError.toLowerCase().includes('status code 409');\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    backend_error: backendError,\n    message_to_patient_es: becameBusy\n      ? 'Ese horario ya no está disponible. Dime otra franja y lo reviso contigo.'\n      : 'No he podido cerrar la reserva automáticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'\n  }\n}];"},"id":"BuildBackendResponse","name":"Build Backend Response","type":"n8n-nodes-base.code","typeVersion":2,"position":[2400,80]},{"parameters":{"jsCode":"return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para reservar tu cita necesito fecha y hora completas. Por ejemplo: 2026-04-03T10:00 a 2026-04-03T11:00.'\n  }\n}];"},"id":"BuildNeedSlotResponse","name":"Build Need Slot Response","type":"n8n-nodes-base.code","typeVersion":2,"position":[960,420]},{"parameters":{"respondWith":"json","responseBody":"={{ $json }}"},"id":"RespondW1","name":"Respond W1","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.1,"position":[3380,180]}],"connections":{"Webhook W1 Appointment":{"main":[[{"node":"Normalize Request","type":"main","index":0}]]},"Normalize Request":{"main":[[{"node":"Tiene Slot e IDs","type":"main","index":0}]]},"Tiene Slot e IDs":{"main":[[{"node":"Build Backend Payload","type":"main","index":0}],[{"node":"Build Need Slot Response","type":"main","index":0}]]},"Build Backend Payload":{"main":[[{"node":"Crear Cita en Backend","type":"main","index":0}]]},"Crear Cita en Backend":{"main":[[{"node":"Build Backend Response","type":"main","index":0}]]},"Build Backend Response":{"main":[[{"node":"Respond W1","type":"main","index":0}]]},"Build Need Slot Response":{"main":[[{"node":"Respond W1","type":"main","index":0}]]}},"authors":"Raúl Ruiz","name":null,"description":null,"autosaved":false,"workflowPublishHistory":[{"createdAt":"2026-04-01T17:54:43.980Z","id":345,"workflowId":"cTp8bORuSL9hsdDk","versionId":"033a7c6f-9afd-4226-9656-f7c355575fec","event":"activated","userId":"d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"},{"createdAt":"2026-04-01T17:54:43.966Z","id":344,"workflowId":"cTp8bORuSL9hsdDk","versionId":"033a7c6f-9afd-4226-9656-f7c355575fec","event":"deactivated","userId":"d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"}]}}
+{
+  "updatedAt": "2026-04-01T17:54:43.939Z",
+  "createdAt": "2026-03-11T19:54:33.924Z",
+  "id": "cTp8bORuSL9hsdDk",
+  "name": "Fisio IA | Citas",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "fisio/w1/appointment",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "id": "WebhookW1Appointment",
+      "name": "Entrada cita",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "fisio-w1-appointment"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.message_text || '').trim();\nconst isoMatches = text.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2})?/g) || [];\n\nconst parseIso = (value) => {\n  if (!value) return null;\n  const d = new Date(String(value));\n  return Number.isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst rawSlotStart = input.slot_start || input.start_at || isoMatches[0] || null;\nconst rawSlotEnd = input.slot_end || input.end_at || isoMatches[1] || null;\nconst slotStart = parseIso(rawSlotStart);\nconst slotEnd = parseIso(rawSlotEnd);\nconst hasSlotWindow = !!slotStart && !!slotEnd && (new Date(slotStart).getTime() < new Date(slotEnd).getTime());\n\nreturn [{\n  json: {\n    request_id: input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`,\n    patient_id: input.patient_id || input.paciente_id || null,\n    professional_id: input.professional_id || input.profesional_id || null,\n    channel: input.channel || input.source || 'telegram',\n    timezone: input.timezone || 'Europe/Madrid',\n    chat_id: input.chat_id || null,\n    username: input.username || null,\n    message_text: text,\n    slot_start: hasSlotWindow ? slotStart : null,\n    slot_end: hasSlotWindow ? slotEnd : null,\n    duration_minutes: Number(input.duration_minutes || 45),\n    has_slot_window: hasSlotWindow,\n    patient_label: input.patient_label || input.patient_name || input.nombre_paciente || `Paciente ${input.patient_id || input.paciente_id || 'telegram'}`\n  }\n}];"
+      },
+      "id": "NormalizeRequest",
+      "name": "Normalizar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-patient",
+              "leftValue": "={{ $json.patient_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-professional",
+              "leftValue": "={{ $json.professional_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-start",
+              "leftValue": "={{ $json.slot_start }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-end",
+              "leftValue": "={{ $json.slot_end }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "HasSlotAndIds",
+      "name": "Validar cita",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const request = $('Normalizar').first().json;\n\n// Generar UUID válido para request_id\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {\n    const r = Math.random() * 16 | 0;\n    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);\n  });\n}\nconst requestId = request.request_id?.match(/^[0-9a-f-]{36}$/) ? request.request_id : uuid();\n\nreturn [{\n  json: {\n    request_id: requestId,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    patient_label: request.patient_label,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"
+      },
+      "id": "BuildBackendPayload",
+      "name": "Preparar backend",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({ patient_id: $json.patient_id, professional_id: $json.professional_id, start_at: $json.start_at, end_at: $json.end_at, channel: $json.channel || 'telegram', reason: $json.reason, request_id: $json.request_id }) }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "CreateAppointmentInBackend",
+      "name": "Guardar cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        80
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json || {};\nconst rawBody = input.body || input;\nconst payload = rawBody.data || rawBody;\nconst request = $('Preparar backend').first().json;\nconst appointmentId = payload.id || payload.appointment_id || payload?.data?.id || null;\n\n// Extraer status_code de múltiples fuentes (neverError body, continueOnFail error object, o mensaje de error)\nconst msgStatusMatch = String(input.error || input.message || '').match(/status code (d{3})/i);\nconst statusFromMsg = msgStatusMatch ? Number(msgStatusMatch[1]) : 0;\nconst statusCode = Number(input.status || input.statusCode || rawBody.status_code || rawBody.statusCode || payload.status_code || statusFromMsg || 0);\nconst backendErrorRaw = payload.error || payload.message || rawBody.error || input.error || input.message || null;\nconst backendError = typeof backendErrorRaw === 'object' ? JSON.stringify(backendErrorRaw) : String(backendErrorRaw || '');\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      message_to_patient_es: 'Perfecto, tu cita ha quedado registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409 || backendError.toLowerCase().includes('conflicto de agenda') || backendError.toLowerCase().includes('status code 409');\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    backend_error: backendError,\n    message_to_patient_es: becameBusy\n      ? 'Ese horario ya no está disponible. Dime otra franja y lo reviso contigo.'\n      : 'No he podido cerrar la reserva automáticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'\n  }\n}];"
+      },
+      "id": "BuildBackendResponse",
+      "name": "Respuesta OK",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para reservar tu cita necesito fecha y hora completas. Por ejemplo: 2026-04-03T10:00 a 2026-04-03T11:00.'\n  }\n}];"
+      },
+      "id": "BuildNeedSlotResponse",
+      "name": "Falta horario",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "RespondW1",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3380,
+        180
+      ]
+    }
+  ],
+  "connections": {
+    "Entrada cita": {
+      "main": [
+        [
+          {
+            "node": "Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar": {
+      "main": [
+        [
+          {
+            "node": "Validar cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar cita": {
+      "main": [
+        [
+          {
+            "node": "Preparar backend",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Falta horario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar backend": {
+      "main": [
+        [
+          {
+            "node": "Guardar cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar cita": {
+      "main": [
+        [
+          {
+            "node": "Respuesta OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta OK": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Falta horario": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "033a7c6f-9afd-4226-9656-f7c355575fec",
+  "activeVersionId": "033a7c6f-9afd-4226-9656-f7c355575fec",
+  "versionCounter": 108,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-11T19:54:33.928Z",
+      "createdAt": "2026-03-11T19:54:33.928Z",
+      "role": "workflow:owner",
+      "workflowId": "cTp8bORuSL9hsdDk",
+      "projectId": "SMJKJOy6zCKUIsqO",
+      "project": {
+        "updatedAt": "2025-12-02T21:01:16.195Z",
+        "createdAt": "2025-12-02T20:50:48.096Z",
+        "id": "SMJKJOy6zCKUIsqO",
+        "name": "Raúl Ruiz <raul.ruiz.diaz.bcn@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-01T17:54:43.939Z",
+    "createdAt": "2026-04-01T17:54:43.939Z",
+    "versionId": "033a7c6f-9afd-4226-9656-f7c355575fec",
+    "workflowId": "cTp8bORuSL9hsdDk",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "fisio/w1/appointment",
+          "responseMode": "responseNode",
+          "options": {},
+          "httpMethod": "POST"
+        },
+        "id": "WebhookW1Appointment",
+        "name": "Entrada cita",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          220,
+          300
+        ],
+        "webhookId": "fisio-w1-appointment"
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.message_text || '').trim();\nconst isoMatches = text.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2})?/g) || [];\n\nconst parseIso = (value) => {\n  if (!value) return null;\n  const d = new Date(String(value));\n  return Number.isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst rawSlotStart = input.slot_start || input.start_at || isoMatches[0] || null;\nconst rawSlotEnd = input.slot_end || input.end_at || isoMatches[1] || null;\nconst slotStart = parseIso(rawSlotStart);\nconst slotEnd = parseIso(rawSlotEnd);\nconst hasSlotWindow = !!slotStart && !!slotEnd && (new Date(slotStart).getTime() < new Date(slotEnd).getTime());\n\nreturn [{\n  json: {\n    request_id: input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`,\n    patient_id: input.patient_id || input.paciente_id || null,\n    professional_id: input.professional_id || input.profesional_id || null,\n    channel: input.channel || input.source || 'telegram',\n    timezone: input.timezone || 'Europe/Madrid',\n    chat_id: input.chat_id || null,\n    username: input.username || null,\n    message_text: text,\n    slot_start: hasSlotWindow ? slotStart : null,\n    slot_end: hasSlotWindow ? slotEnd : null,\n    duration_minutes: Number(input.duration_minutes || 45),\n    has_slot_window: hasSlotWindow,\n    patient_label: input.patient_label || input.patient_name || input.nombre_paciente || `Paciente ${input.patient_id || input.paciente_id || 'telegram'}`\n  }\n}];"
+        },
+        "id": "NormalizeRequest",
+        "name": "Normalizar",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          460,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "has-patient",
+                "leftValue": "={{ $json.patient_id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty"
+                }
+              },
+              {
+                "id": "has-professional",
+                "leftValue": "={{ $json.professional_id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty"
+                }
+              },
+              {
+                "id": "has-start",
+                "leftValue": "={{ $json.slot_start }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty"
+                }
+              },
+              {
+                "id": "has-end",
+                "leftValue": "={{ $json.slot_end }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "HasSlotAndIds",
+        "name": "Validar cita",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          700,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const request = $('Normalizar').first().json;\n\n// Generar UUID válido para request_id\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {\n    const r = Math.random() * 16 | 0;\n    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);\n  });\n}\nconst requestId = request.request_id?.match(/^[0-9a-f-]{36}$/) ? request.request_id : uuid();\n\nreturn [{\n  json: {\n    request_id: requestId,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    patient_label: request.patient_label,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"
+        },
+        "id": "BuildBackendPayload",
+        "name": "Preparar backend",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1920,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ ({ patient_id: $json.patient_id, professional_id: $json.professional_id, start_at: $json.start_at, end_at: $json.end_at, channel: $json.channel || 'telegram', reason: $json.reason, request_id: $json.request_id }) }}",
+          "options": {
+            "timeout": 15000,
+            "response": {
+              "response": {
+                "neverError": true
+              }
+            }
+          }
+        },
+        "id": "CreateAppointmentInBackend",
+        "name": "Guardar cita",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2160,
+          80
+        ],
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = $json || {};\nconst rawBody = input.body || input;\nconst payload = rawBody.data || rawBody;\nconst request = $('Preparar backend').first().json;\nconst appointmentId = payload.id || payload.appointment_id || payload?.data?.id || null;\n\n// Extraer status_code de múltiples fuentes (neverError body, continueOnFail error object, o mensaje de error)\nconst msgStatusMatch = String(input.error || input.message || '').match(/status code (d{3})/i);\nconst statusFromMsg = msgStatusMatch ? Number(msgStatusMatch[1]) : 0;\nconst statusCode = Number(input.status || input.statusCode || rawBody.status_code || rawBody.statusCode || payload.status_code || statusFromMsg || 0);\nconst backendErrorRaw = payload.error || payload.message || rawBody.error || input.error || input.message || null;\nconst backendError = typeof backendErrorRaw === 'object' ? JSON.stringify(backendErrorRaw) : String(backendErrorRaw || '');\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      message_to_patient_es: 'Perfecto, tu cita ha quedado registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409 || backendError.toLowerCase().includes('conflicto de agenda') || backendError.toLowerCase().includes('status code 409');\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    backend_error: backendError,\n    message_to_patient_es: becameBusy\n      ? 'Ese horario ya no está disponible. Dime otra franja y lo reviso contigo.'\n      : 'No he podido cerrar la reserva automáticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'\n  }\n}];"
+        },
+        "id": "BuildBackendResponse",
+        "name": "Respuesta OK",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2400,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para reservar tu cita necesito fecha y hora completas. Por ejemplo: 2026-04-03T10:00 a 2026-04-03T11:00.'\n  }\n}];"
+        },
+        "id": "BuildNeedSlotResponse",
+        "name": "Falta horario",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          960,
+          420
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}"
+        },
+        "id": "RespondW1",
+        "name": "Responder",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          3380,
+          180
+        ]
+      }
+    ],
+    "connections": {
+      "Entrada cita": {
+        "main": [
+          [
+            {
+              "node": "Normalizar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalizar": {
+        "main": [
+          [
+            {
+              "node": "Validar cita",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validar cita": {
+        "main": [
+          [
+            {
+              "node": "Preparar backend",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Falta horario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar backend": {
+        "main": [
+          [
+            {
+              "node": "Guardar cita",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar cita": {
+        "main": [
+          [
+            {
+              "node": "Respuesta OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respuesta OK": {
+        "main": [
+          [
+            {
+              "node": "Responder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Falta horario": {
+        "main": [
+          [
+            {
+              "node": "Responder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Raúl Ruiz",
+    "name": "",
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-01T17:54:43.980Z",
+        "id": 345,
+        "workflowId": "cTp8bORuSL9hsdDk",
+        "versionId": "033a7c6f-9afd-4226-9656-f7c355575fec",
+        "event": "activated",
+        "userId": "d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"
+      },
+      {
+        "createdAt": "2026-04-01T17:54:43.966Z",
+        "id": 344,
+        "workflowId": "cTp8bORuSL9hsdDk",
+        "versionId": "033a7c6f-9afd-4226-9656-f7c355575fec",
+        "event": "deactivated",
+        "userId": "d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"
+      }
+    ]
+  }
+}

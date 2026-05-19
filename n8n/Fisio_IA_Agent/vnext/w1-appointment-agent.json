@@ -1,5 +1,5 @@
 {
-  "name": "Fisio_IA_Agent / W1 Agenda de Citas",
+  "name": "Fisio IA | Citas",
   "nodes": [
     {
       "parameters": {
@@ -9,7 +9,7 @@
         "httpMethod": "POST"
       },
       "id": "WebhookW1Appointment",
-      "name": "Webhook W1 Appointment",
+      "name": "Entrada cita",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
@@ -23,7 +23,7 @@
         "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst text = String(input.message_text || '').trim();\nconst isoMatches = text.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2})?/g) || [];\n\nconst parseIso = (value) => {\n  if (!value) return null;\n  const d = new Date(String(value));\n  return Number.isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst rawSlotStart = input.slot_start || input.start_at || isoMatches[0] || null;\nconst rawSlotEnd = input.slot_end || input.end_at || isoMatches[1] || null;\nconst slotStart = parseIso(rawSlotStart);\nconst slotEnd = parseIso(rawSlotEnd);\nconst hasSlotWindow = !!slotStart && !!slotEnd && (new Date(slotStart).getTime() < new Date(slotEnd).getTime());\n\nreturn [{\n  json: {\n    request_id: input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`,\n    patient_id: input.patient_id || input.paciente_id || null,\n    professional_id: input.professional_id || input.profesional_id || null,\n    channel: input.channel || input.source || 'telegram',\n    timezone: input.timezone || 'Europe/Madrid',\n    chat_id: input.chat_id || null,\n    username: input.username || null,\n    message_text: text,\n    slot_start: hasSlotWindow ? slotStart : null,\n    slot_end: hasSlotWindow ? slotEnd : null,\n    duration_minutes: Number(input.duration_minutes || 45),\n    has_slot_window: hasSlotWindow,\n    patient_label: input.patient_label || input.patient_name || input.nombre_paciente || `Paciente ${input.patient_id || input.paciente_id || 'telegram'}`\n  }\n}];"
       },
       "id": "NormalizeRequest",
-      "name": "Normalize Request",
+      "name": "Normalizar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -83,7 +83,7 @@
         "options": {}
       },
       "id": "HasSlotAndIds",
-      "name": "Tiene Slot e IDs",
+      "name": "Validar cita",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
@@ -93,10 +93,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const request = $('Normalize Request').first().json;\nreturn [{\n  json: {\n    request_id: request.request_id,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    timezone: request.timezone || 'Europe/Madrid',\n    patient_label: request.patient_label,\n    patient_name: request.patient_name || null,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"
+        "jsCode": "const request = $('Normalizar').first().json;\nreturn [{\n  json: {\n    request_id: request.request_id,\n    patient_id: request.patient_id,\n    professional_id: request.professional_id,\n    start_at: request.slot_start,\n    end_at: request.slot_end,\n    channel: request.channel || 'telegram',\n    reason: request.message_text,\n    timezone: request.timezone || 'Europe/Madrid',\n    patient_label: request.patient_label,\n    patient_name: request.patient_name || null,\n    message_text: request.message_text,\n    chat_id: request.chat_id || null,\n    username: request.username || null\n  }\n}];"
       },
       "id": "BuildBackendPayload",
-      "name": "Build Backend Payload",
+      "name": "Preparar backend",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -117,7 +117,7 @@
         }
       },
       "id": "CreateAppointmentInBackend",
-      "name": "Crear Cita en Backend",
+      "name": "Guardar cita",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -128,10 +128,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $json || {};\nconst rawBody = input.body || input;\nconst payload = rawBody.data || rawBody;\nconst request = $('Build Backend Payload').first().json;\nconst appointmentId = payload.id || payload.appointment_id || payload?.data?.id || null;\nconst statusCode = Number(input.status || input.statusCode || rawBody.status_code || rawBody.statusCode || payload.status_code || 0);\nconst backendError = payload.error || payload.message || rawBody.error || input.error || input.message || null;\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      message_to_patient_es: 'Perfecto, tu cita ha quedado registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409 || String(backendError || '').toLowerCase().includes('conflicto de agenda');\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    backend_error: backendError || `backend_http_${statusCode || 'unknown'}`,\n    message_to_patient_es: becameBusy\n      ? 'Ese horario ya no est? disponible. Dime otra franja y lo reviso contigo.'\n      : 'No he podido cerrar la reserva autom?ticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'\n  }\n}];"
+        "jsCode": "const input = $json || {};\nconst rawBody = input.body || input;\nconst payload = rawBody.data || rawBody;\nconst request = $('Preparar backend').first().json;\nconst appointmentId = payload.id || payload.appointment_id || payload?.data?.id || null;\nconst statusCode = Number(input.status || input.statusCode || rawBody.status_code || rawBody.statusCode || payload.status_code || 0);\nconst backendError = payload.error || payload.message || rawBody.error || input.error || input.message || null;\n\nif (appointmentId) {\n  return [{\n    json: {\n      request_id: request.request_id,\n      status: 'confirmed',\n      appointment_id: appointmentId,\n      message_to_patient_es: 'Perfecto, tu cita ha quedado registrada correctamente. Te confirmamos la franja solicitada.'\n    }\n  }];\n}\n\nconst becameBusy = statusCode === 409 || String(backendError || '').toLowerCase().includes('conflicto de agenda');\nreturn [{\n  json: {\n    request_id: request.request_id,\n    status: becameBusy ? 'slot_not_available' : 'error',\n    appointment_id: null,\n    backend_error: backendError || `backend_http_${statusCode || 'unknown'}`,\n    message_to_patient_es: becameBusy\n      ? 'Ese horario ya no est? disponible. Dime otra franja y lo reviso contigo.'\n      : 'No he podido cerrar la reserva autom?ticamente en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.'\n  }\n}];"
       },
       "id": "BuildBackendResponse",
-      "name": "Build Backend Response",
+      "name": "Respuesta OK",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -144,7 +144,7 @@
         "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    status: 'needs_slot_data',\n    appointment_id: null,\n    message_to_patient_es: 'Para reservar tu cita necesito fecha y hora completas. Por ejemplo: 2026-04-03T10:00 a 2026-04-03T11:00.'\n  }\n}];"
       },
       "id": "BuildNeedSlotResponse",
-      "name": "Build Need Slot Response",
+      "name": "Falta horario",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -158,7 +158,7 @@
         "responseBody": "={{ $json }}"
       },
       "id": "RespondW1",
-      "name": "Respond W1",
+      "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
@@ -168,84 +168,84 @@
     }
   ],
   "connections": {
-    "Webhook W1 Appointment": {
+    "Entrada cita": {
       "main": [
         [
           {
-            "node": "Normalize Request",
+            "node": "Normalizar",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize Request": {
+    "Normalizar": {
       "main": [
         [
           {
-            "node": "Tiene Slot e IDs",
+            "node": "Validar cita",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Tiene Slot e IDs": {
+    "Validar cita": {
       "main": [
         [
           {
-            "node": "Build Backend Payload",
+            "node": "Preparar backend",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Build Need Slot Response",
+            "node": "Falta horario",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Backend Payload": {
+    "Preparar backend": {
       "main": [
         [
           {
-            "node": "Crear Cita en Backend",
+            "node": "Guardar cita",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Crear Cita en Backend": {
+    "Guardar cita": {
       "main": [
         [
           {
-            "node": "Build Backend Response",
+            "node": "Respuesta OK",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Backend Response": {
+    "Respuesta OK": {
       "main": [
         [
           {
-            "node": "Respond W1",
+            "node": "Responder",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Need Slot Response": {
+    "Falta horario": {
       "main": [
         [
           {
-            "node": "Respond W1",
+            "node": "Responder",
             "type": "main",
             "index": 0
           }

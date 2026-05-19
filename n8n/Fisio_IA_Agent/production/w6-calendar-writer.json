@@ -1,15 +1,18 @@
 {
-  "name": "Fisio_IA_Agent / W6 Calendar Writer",
+  "name": "Fisio IA | Calendario guardar",
   "description": "Webhook que permite al backend crear, actualizar y eliminar eventos en Google Calendar usando OAuth2 de n8n.",
   "active": true,
   "isArchived": false,
   "nodes": [
     {
       "id": "W6Webhook",
-      "name": "Webhook",
+      "name": "Entrada",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "httpMethod": "POST",
         "path": "fisio/w6/calendar-write",
@@ -20,29 +23,45 @@
     },
     {
       "id": "W6Parse",
-      "name": "Parse Request",
+      "name": "Leer peticion",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "jsCode": "const body = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst action = body.action || 'create';\nconst eventId = body.event_id || body.google_calendar_event_id || null;\nconst summary = body.summary || 'Cita fisioterapia';\nconst description = body.description || '';\nconst startDateTime = body.start || body.inicio_en || null;\nconst endDateTime = body.end || body.fin_en || null;\nconst calendarId = body.calendar_id || 'raul.ruiz.diaz.bcn@gmail.com';\n\nif (!startDateTime && action !== 'cancel') {\n  return [{ json: { error: 'start/inicio_en es obligatorio', action, ok: false } }];\n}\n\nreturn [{ json: { action, eventId, summary, description, startDateTime, endDateTime, calendarId, ok: true } }];"
       }
     },
     {
       "id": "W6Router",
-      "name": "Route by Action",
+      "name": "Elegir accion",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
-      "position": [680, 300],
+      "position": [
+        680,
+        300
+      ],
       "parameters": {
         "rules": {
           "rules": [
             {
               "outputKey": "create",
               "conditions": {
-                "options": { "version": 2, "combinator": "and" },
+                "options": {
+                  "version": 2,
+                  "combinator": "and"
+                },
                 "conditions": [
-                  { "leftValue": "={{ $json.action }}", "rightValue": "create", "operator": { "type": "string", "operation": "equals" } }
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
                 ]
               },
               "renameOutput": true
@@ -50,9 +69,19 @@
             {
               "outputKey": "update",
               "conditions": {
-                "options": { "version": 2, "combinator": "and" },
+                "options": {
+                  "version": 2,
+                  "combinator": "and"
+                },
                 "conditions": [
-                  { "leftValue": "={{ $json.action }}", "rightValue": "update", "operator": { "type": "string", "operation": "equals" } }
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
                 ]
               },
               "renameOutput": true
@@ -60,9 +89,19 @@
             {
               "outputKey": "cancel",
               "conditions": {
-                "options": { "version": 2, "combinator": "and" },
+                "options": {
+                  "version": 2,
+                  "combinator": "and"
+                },
                 "conditions": [
-                  { "leftValue": "={{ $json.action }}", "rightValue": "cancel", "operator": { "type": "string", "operation": "equals" } }
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
                 ]
               },
               "renameOutput": true
@@ -76,10 +115,13 @@
     },
     {
       "id": "W6Create",
-      "name": "Create Event",
+      "name": "Crear evento",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
-      "position": [920, 160],
+      "position": [
+        920,
+        160
+      ],
       "parameters": {
         "resource": "event",
         "operation": "create",
@@ -104,10 +146,13 @@
     },
     {
       "id": "W6Update",
-      "name": "Update Event",
+      "name": "Editar evento",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
-      "position": [920, 300],
+      "position": [
+        920,
+        300
+      ],
       "parameters": {
         "resource": "event",
         "operation": "update",
@@ -133,10 +178,13 @@
     },
     {
       "id": "W6Delete",
-      "name": "Delete Event",
+      "name": "Borrar evento",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
-      "position": [920, 440],
+      "position": [
+        920,
+        440
+      ],
       "parameters": {
         "resource": "event",
         "operation": "delete",
@@ -156,20 +204,26 @@
     },
     {
       "id": "W6FormatOk",
-      "name": "Format OK",
+      "name": "Preparar OK",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1160, 240],
+      "position": [
+        1160,
+        240
+      ],
       "parameters": {
         "jsCode": "const item = $input.first().json;\nconst eventId = item.id || item.eventId || null;\nreturn [{ json: { ok: true, event_id: eventId, action: 'done' } }];"
       }
     },
     {
       "id": "W6Respond",
-      "name": "Respond",
+      "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1380, 300],
+      "position": [
+        1380,
+        300
+      ],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ $json }}",
@@ -178,31 +232,103 @@
     }
   ],
   "connections": {
-    "Webhook": {
-      "main": [[{ "node": "Parse Request", "type": "main", "index": 0 }]]
-    },
-    "Parse Request": {
-      "main": [[{ "node": "Route by Action", "type": "main", "index": 0 }]]
-    },
-    "Route by Action": {
+    "Entrada": {
       "main": [
-        [{ "node": "Create Event", "type": "main", "index": 0 }],
-        [{ "node": "Update Event", "type": "main", "index": 0 }],
-        [{ "node": "Delete Event", "type": "main", "index": 0 }],
-        [{ "node": "Respond", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Leer peticion",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "Create Event": {
-      "main": [[{ "node": "Format OK", "type": "main", "index": 0 }]]
+    "Leer peticion": {
+      "main": [
+        [
+          {
+            "node": "Elegir accion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Update Event": {
-      "main": [[{ "node": "Format OK", "type": "main", "index": 0 }]]
+    "Elegir accion": {
+      "main": [
+        [
+          {
+            "node": "Crear evento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Editar evento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Borrar evento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Delete Event": {
-      "main": [[{ "node": "Format OK", "type": "main", "index": 0 }]]
+    "Crear evento": {
+      "main": [
+        [
+          {
+            "node": "Preparar OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Format OK": {
-      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    "Editar evento": {
+      "main": [
+        [
+          {
+            "node": "Preparar OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Borrar evento": {
+      "main": [
+        [
+          {
+            "node": "Preparar OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar OK": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {

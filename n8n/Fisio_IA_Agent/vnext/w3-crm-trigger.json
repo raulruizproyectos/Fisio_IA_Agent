@@ -1,5 +1,5 @@
 {
-  "name": "Fisio_IA_Agent / W3 Disparador CRM",
+  "name": "Fisio IA | CRM a plan",
   "nodes": [
     {
       "parameters": {
@@ -9,7 +9,7 @@
         "options": {}
       },
       "id": "WebhookW3CrmTrigger",
-      "name": "Webhook W3 CRM Trigger",
+      "name": "Entrada CRM",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
@@ -23,7 +23,7 @@
         "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst requestId = input.request_id || `req_${Date.now()}_${Math.floor(Math.random() * 100000)}`;\nconst patientId = input.patient_id || input.paciente_id || null;\nconst therapistId = input.therapist_id || input.fisioterapeuta_id || input.professional_id || null;\nconst symptomsText = String(input.symptoms_text || input.symptoms || input.text || '').trim();\nconst painLevelRaw = input?.context?.pain_level ?? input.pain_level ?? null;\nconst painLevelNum = Number(painLevelRaw);\n\nreturn [{\n  json: {\n    request_id: requestId,\n    source: input.source || 'crm_web',\n    patient_id: patientId,\n    therapist_id: therapistId,\n    symptoms_text: symptomsText,\n    context: {\n      latest_session_note: input?.context?.latest_session_note || input.latest_session_note || null,\n      pain_level: Number.isFinite(painLevelNum) ? painLevelNum : null\n    }\n  }\n}];"
       },
       "id": "NormalizeRequest",
-      "name": "Normalize Request",
+      "name": "Normalizar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -65,7 +65,7 @@
         "options": {}
       },
       "id": "HasRequiredInput",
-      "name": "Tiene Input Requerido",
+      "name": "Validar entrada",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
@@ -95,7 +95,7 @@
         }
       },
       "id": "TriggerBackendW2",
-      "name": "Trigger Backend W2",
+      "name": "Lanzar plan",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -108,7 +108,7 @@
         "jsCode": "const input = $json || {};\nconst statusCode = Number(input.statusCode || input.code || 0);\nconst accepted = Number.isFinite(statusCode) && statusCode > 0\n  ? statusCode < 400\n  : !!input.accepted || !!input.ok;\nconst status = String(input.status || (accepted ? 'queued' : 'error'));\n\nreturn [{\n  json: {\n    request_id: input.tracking_request_id || input.request_id || null,\n    accepted,\n    workflow: 'W2',\n    tracking_status: accepted ? status : 'error',\n    job_id: input.job_id || null,\n    tracking_request_id: input.tracking_request_id || null,\n    poll_url: input.poll_url || null,\n    progress_message: input.progress_message || null,\n    recommendation_id: input.recommendation_id || null,\n    error: accepted ? null : (input.error || input.message || 'w3_backend_error')\n  }\n}];"
       },
       "id": "BuildAckResponse",
-      "name": "Build Ack Response",
+      "name": "Confirmar cola",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -121,7 +121,7 @@
         "jsCode": "return [{\n  json: {\n    request_id: $json.request_id || null,\n    accepted: false,\n    workflow: 'W2',\n    tracking_status: 'error',\n    job_id: null,\n    tracking_request_id: null,\n    poll_url: null,\n    progress_message: null,\n    recommendation_id: null,\n    error: 'missing_required_input'\n  }\n}];"
       },
       "id": "BuildValidationError",
-      "name": "Build Validation Error",
+      "name": "Faltan datos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -135,7 +135,7 @@
         "responseBody": "={{ $json }}"
       },
       "id": "RespondW3",
-      "name": "Respond W3",
+      "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
@@ -145,73 +145,73 @@
     }
   ],
   "connections": {
-    "Webhook W3 CRM Trigger": {
+    "Entrada CRM": {
       "main": [
         [
           {
-            "node": "Normalize Request",
+            "node": "Normalizar",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize Request": {
+    "Normalizar": {
       "main": [
         [
           {
-            "node": "Tiene Input Requerido",
+            "node": "Validar entrada",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Tiene Input Requerido": {
+    "Validar entrada": {
       "main": [
         [
           {
-            "node": "Trigger Backend W2",
+            "node": "Lanzar plan",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Build Validation Error",
+            "node": "Faltan datos",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Trigger Backend W2": {
+    "Lanzar plan": {
       "main": [
         [
           {
-            "node": "Build Ack Response",
+            "node": "Confirmar cola",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Ack Response": {
+    "Confirmar cola": {
       "main": [
         [
           {
-            "node": "Respond W3",
+            "node": "Responder",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Validation Error": {
+    "Faltan datos": {
       "main": [
         [
           {
-            "node": "Respond W3",
+            "node": "Responder",
             "type": "main",
             "index": 0
           }

@@ -1,10 +1,10 @@
 {
-  "name": "Fisio_IA_Agent / SW Intakes Pendientes",
+  "name": "Fisio IA | Pendientes",
   "nodes": [
     {
       "parameters": {},
       "id": "ExecuteWorkflowTrigger",
-      "name": "Execute Workflow Trigger",
+      "name": "Inicio subflujo",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
@@ -37,7 +37,7 @@
         "options": {}
       },
       "id": "HasProfessionalId",
-      "name": "Tiene Profesional Id",
+      "name": "Validar fisio",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
@@ -52,7 +52,7 @@
         "options": {}
       },
       "id": "FetchPendingIntakes",
-      "name": "Obtener Ingestas Pendientes",
+      "name": "Buscar pendientes",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -65,7 +65,7 @@
         "jsCode": "throw new Error('profesional_id es obligatorio para consultar intakes pendientes');"
       },
       "id": "ThrowMissingProfessionalId",
-      "name": "Error Falta Profesional Id",
+      "name": "Falta fisio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -75,29 +75,29 @@
     }
   ],
   "connections": {
-    "Execute Workflow Trigger": {
+    "Inicio subflujo": {
       "main": [
         [
           {
-            "node": "Tiene Profesional Id",
+            "node": "Validar fisio",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Tiene Profesional Id": {
+    "Validar fisio": {
       "main": [
         [
           {
-            "node": "Obtener Ingestas Pendientes",
+            "node": "Buscar pendientes",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Error Falta Profesional Id",
+            "node": "Falta fisio",
             "type": "main",
             "index": 0
           }
@@ -109,6 +109,3 @@
     "executionOrder": "v1"
   }
 }
-
-
-
