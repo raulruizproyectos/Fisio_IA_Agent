@@ -321,80 +321,35 @@ import ConfigView from '../components/views/ConfigView.astro';
     inputPlaceholder?: string;
   };
   let resolveConfirmDialog: ((value: boolean | string | null) => void) | null = null;
-  const closeConfirmDialog = (value: boolean | string | null) => {
-    confirmDialog?.classList.remove('opacity-100', 'pointer-events-auto');
-    confirmDialog?.classList.add('opacity-0', 'pointer-events-none');
-    confirmDialog?.setAttribute('aria-hidden', 'true');
-    const inner = confirmDialog?.querySelector('div');
-    inner?.classList.remove('scale-100');
-    inner?.classList.add('scale-95');
+  
+  document.addEventListener('fisio:close-confirm', (e: Event) => {
+    const customEvent = e as CustomEvent<{ value: boolean | string | null }>;
     const resolver = resolveConfirmDialog;
     resolveConfirmDialog = null;
-    resolver?.(value);
-  };
+    resolver?.(customEvent.detail.value);
+  });
+
   const openConfirmDialog = (options: ConfirmOptions, expectsText = false) =>
     new Promise<boolean | string | null>((resolve) => {
-      if (!confirmDialog || !confirmOkBtn || !confirmCancelBtn) {
-        resolve(expectsText ? null : false);
-        return;
-      }
       resolveConfirmDialog?.(expectsText ? null : false);
       resolveConfirmDialog = resolve;
-      const tone = options.tone || 'warning';
-      if (confirmTitle) confirmTitle.textContent = options.title;
-      if (confirmMessage) confirmMessage.textContent = options.message;
-      if (confirmIcon) confirmIcon.textContent = tone === 'error' ? 'warning' : tone === 'success' ? 'check_circle' : 'help';
-      if (confirmOkBtn) {
-        confirmOkBtn.textContent = options.confirmLabel || 'Confirmar';
-        if (tone === 'error') {
-          confirmOkBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-          confirmOkBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-        } else {
-          confirmOkBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-          confirmOkBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+      
+      const customEvent = new CustomEvent('fisio:open-confirm', {
+        detail: {
+            options: {
+                ...options,
+                expectsText
+            }
         }
-      }
-      if (confirmCancelBtn) confirmCancelBtn.textContent = options.cancelLabel || 'Cancelar';
-      if (confirmInputField && confirmInput && confirmInputLabel) {
-        confirmInputField.hidden = !expectsText;
-        confirmInput.value = '';
-        confirmInput.placeholder = options.inputPlaceholder || '';
-        confirmInputLabel.textContent = options.inputLabel || 'Texto de confirmacion';
-      }
-      confirmDialog.classList.remove('opacity-0', 'pointer-events-none');
-      confirmDialog.classList.add('opacity-100', 'pointer-events-auto');
-      confirmDialog.setAttribute('aria-hidden', 'false');
-      const inner = confirmDialog.querySelector('div');
-      inner?.classList.remove('scale-95');
-      inner?.classList.add('scale-100');
-      window.setTimeout(() => (expectsText ? confirmInput : confirmOkBtn)?.focus(), 20);
+      });
+      document.dispatchEvent(customEvent);
     });
+    
   const requestConfirm = async (options: ConfirmOptions) => Boolean(await openConfirmDialog(options, false));
   const requestTextInput = async (options: ConfirmOptions) => {
     const value = await openConfirmDialog(options, true);
     return typeof value === 'string' && value.trim() ? value.trim() : null;
   };
-  confirmOkBtn?.addEventListener('click', () => {
-    if (confirmInputField && !confirmInputField.hidden) {
-      closeConfirmDialog(confirmInput?.value || '');
-      return;
-    }
-    closeConfirmDialog(true);
-  });
-  confirmCancelBtn?.addEventListener('click', () => closeConfirmDialog(confirmInputField && !confirmInputField.hidden ? null : false));
-  confirmDialog?.querySelectorAll('[data-confirm-cancel]').forEach((node) => {
-    node.addEventListener('click', () => closeConfirmDialog(confirmInputField && !confirmInputField.hidden ? null : false));
-  });
-  confirmDialog?.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeConfirmDialog(confirmInputField && !confirmInputField.hidden ? null : false);
-    }
-    if (event.key === 'Enter' && confirmInputField && !confirmInputField.hidden) {
-      event.preventDefault();
-      closeConfirmDialog(confirmInput?.value || '');
-    }
-  });
   const appointmentPatientSelect = document.getElementById('appointmentPatientSelect') as HTMLSelectElement | null;
   const appointmentStartInput = document.getElementById('appointmentStartInput') as HTMLInputElement | null;
   const appointmentEndInput = document.getElementById('appointmentEndInput') as HTMLInputElement | null;
@@ -3623,18 +3578,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   addPatientBtn?.addEventListener('click', openPatientModal);
-  closePatientModalBtn?.addEventListener('click', closePatientModal);
-  patientModalDismiss?.addEventListener('click', closePatientModal);
-  patientModal?.addEventListener('click', (event: Event) => {
-    if (event.target === patientModal) {
-      closePatientModal();
-    }
-  });
-  document.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && patientModal?.classList.contains('opacity-100')) {
-      closePatientModal();
-    }
-  });
   patientForm?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
 
@@ -8777,7 +8720,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     });
 </script>
 
-<style>
+<style is:global>
   /* === EXERCISE REPORT CARDS === */
   .exercise-report {
     margin-top: 0.5rem;

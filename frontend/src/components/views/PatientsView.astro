@@ -181,6 +181,18 @@
   document.getElementById('closePatientModalBtn')?.addEventListener('click', closeHandler);
   document.getElementById('patientModalDismiss')?.addEventListener('click', closeHandler);
 
+  patientModal?.addEventListener('click', (event: Event) => {
+    if (event.target === patientModal) {
+      closeHandler();
+    }
+  });
+
+  document.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && modalState.get().patientForm.isOpen) {
+      closeHandler();
+    }
+  });
+
   document.addEventListener('fisio:open-patient-modal', () => {
     const current = modalState.get();
     modalState.set({ ...current, patientForm: { isOpen: true } });
