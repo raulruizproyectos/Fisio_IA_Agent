@@ -1,44 +1,36 @@
-# Sesion actual - Cierre 2026-05-19
+# Sesion actual - Cierre 2026-05-20
 
 ## Objetivo
 Fisio IA Agent debe sentirse como CRM clinico premium para fisioterapia, con el copiloto IA como diferenciador principal.
 
 ## Estado final
 - Rama: `main`.
-- Ultimo commit publicado antes de este cierre docs: `bfb88dc` (`chore(n8n): simplify workflow and node names`).
-- GitHub: `main` limpio y alineado con `origin/main`.
-- Frontend validado durante la sesion: `npm.cmd run check` OK, `npm.cmd run build` OK.
-- Backend validado durante la sesion: `npm.cmd run lint` OK.
-- n8n produccion: actualizado directamente por API y verificado activo.
-- Produccion app: pendiente redeploy `fisio-frontend` y `fisio-backend` en EasyPanel desde `main`.
+- Ultimo commit publicado: `0428d53` (`feat: migrar ConfirmDialog y PatientModal a Nanostores y desacoplar de index.astro`).
+- GitHub: `main` limpio y alineado con `origin/main` (subido a Github).
+- Frontend validado durante la sesion: `npm run build` OK.
+- Produccion app: pendiente redeploy automático/manual `fisio-frontend` en EasyPanel desde `main` (se ha hecho push a GitHub).
 
 ## Hecho hoy
-- Copiloto IA estabilizado visualmente: chat legible, input inferior fijo, panel derecho simplificado.
-- Prompt premium de ejercicios versionado en `backend/src/lib/exercise-agent-prompt.js`.
-- Backend envia `system_prompt` y `prompt_version` al workflow de ejercicios.
-- Workflow n8n `Fisio IA | Ejercicios` actualizado en produccion y verificado.
-- Renombrados 11 workflows de n8n produccion a formato breve `Fisio IA | ...`.
-- Renombrados nodos n8n para lectura rapida: `Entrada`, `Normalizar`, `Validar`, `Generar plan`, `Responder`.
-- JSON locales de n8n `production/` y `vnext/` alineados con produccion.
-- Script de mantenimiento creado: `scripts/rename-n8n-fisio.mjs`.
+- Componente `ConfirmDialog.astro` modularizado y desacoplado del archivo `index.astro`.
+- Integración de visibilidad de `ConfirmDialog` a Nanostores (`modalState.confirm`).
+- Creación de comunicación con CustomEvents (`fisio:open-confirm` y `fisio:close-confirm`) para interactuar con la lógica imperativa existente.
+- Migración y desacoplamiento de `PatientModal` en `PatientsView.astro` para manejar su estado reactivo a través de `modalState.patientForm`.
+- Eliminadas por completo todas las referencias directas a `classList` de modales e interactividad de visibilidad en el monolito `index.astro`.
+- Solucionadas las referencias relativas de imports en vistas (`../../store`).
+- Verificado y compilado el proyecto exitosamente (`npm run build` OK).
 
 ## Decisiones clave
-- No seguir parcheando solo CSS sobre clases heredadas.
-- Usar `ops-*` como base nueva visual para las pantallas principales.
-- Mantener funcionalidad antes que refactor profundo.
-- No cambiar rutas webhook de n8n al renombrar workflows/nodos.
-- Tratar prompts como codigo versionado.
-- Si produccion muestra UI antigua, revisar cache/deploy antes de tocar codigo.
+- Mantener compatibilidad asíncrona de las promesas de confirmación (`requestConfirm` / `requestTextInput`) usando un puente de eventos personalizados con el nuevo componente Reactivo.
+- Evitar manipulaciones de DOM imperativas directamente en el archivo `index.astro` para reducir la deuda técnica visual.
+- Centralizar todos los estados de overlays en el store global de Nanostores (`modalState`).
 
 ## Proximo arranque
-1. Confirmar en EasyPanel que frontend y backend estan desplegados desde `main` con commit igual o posterior a `bfb88dc`.
-2. Hard refresh en produccion.
-3. Probar Copiloto IA: escribir caso, generar plan, comprobar historial y PDF.
-4. Revisar Inicio, Pacientes, Agenda, Finanzas, Documentos y Copiloto IA con capturas.
-5. Ajustar fino solo despues de confirmar que el commit desplegado es el correcto.
+1. Validar en Easypanel que el frontend de producción se ha construido y desplegado correctamente desde el commit `0428d53`.
+2. Probar la funcionalidad de creación de paciente (`PatientModal`) en producción y verificar que abre, guarda y cierra reactivamente.
+3. Probar los diálogos de confirmación (`ConfirmDialog`) al realizar acciones como borrar o editar planes, asegurando que bloquean e interactúan correctamente.
+4. Comenzar con la Fase 3 del plan: modularizar el JS del monolito `index.astro` por dominio (canvas anatómico, peticiones HTTP API, suscripciones de eventos).
 
 ## Siguientes fases
-- Fase 2: estabilizar CSS y reducir `!important` legacy.
-- Fase 3: modularizar JS de `index.astro` por dominio.
+- Fase 3: modularizar JS de `index.astro` por dominio (API, Canvas, utilidades).
 - Fase 4: ficha paciente como case command center.
 - Fase 5: IA clinica diferencial con trazabilidad, red flags y entrega PDF/Telegram.

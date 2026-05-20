@@ -1,30 +1,24 @@
-# Session Checkpoint - 2026-05-19
+# Session Checkpoint - 2026-05-20
 
 ## Retoma rapida
 - Proyecto: `Fisio_IA_Agent`.
 - Rama: `main`.
-- Commit publicado antes de este cierre docs: `bfb88dc`.
-- Estado: GitHub alineado, n8n produccion actualizado, pendiente redeploy frontend/backend en EasyPanel.
+- Commit publicado: `0428d53` (`feat: migrar ConfirmDialog y PatientModal a Nanostores y desacoplar de index.astro`).
+- Estado: GitHub actualizado con push exitoso, compilación local testeada (`npm run build` OK).
 
 ## Cambios relevantes
-- CRM y copiloto IA redisenados hacia SaaS clinico premium.
-- Copiloto IA estabilizado con chat legible, input fijo y panel clinico compacto.
-- Prompt premium del agente de ejercicios versionado y enviado como `system_prompt`.
-- n8n produccion actualizado: workflows renombrados a `Fisio IA | ...` y nodos simplificados.
-- Workflow `Fisio IA | Ejercicios` verificado con `system_prompt` y `prompt_version`.
+- Modales desacoplados de `index.astro`:
+  - `ConfirmDialog.astro` se independizó con un puente de `CustomEvent` y suscripción reactiva a `modalState.confirm`.
+  - `PatientModal` en `PatientsView.astro` ahora se abre y cierra mediante `modalState.patientForm`.
+- Cero manipulaciones directas de DOM en `index.astro` relacionadas con la visibilidad de los modales.
+- Imports corregidos (`../../store`) en vistas anidadas para evitar errores de compilación de Astro.
 
 ## Validacion
-- `cd frontend && npm.cmd run check`: OK.
-- `cd frontend && npm.cmd run build`: OK.
-- `cd backend && npm.cmd run lint`: OK.
-- n8n remoto: 11 workflows `Fisio IA | ...` activos.
-- n8n local: JSON parse OK y conexiones sin nodos faltantes.
+- `cd frontend && npm run build`: OK.
 
 ## Siguiente sesion
-1. Redeploy EasyPanel de `fisio-frontend` y `fisio-backend` desde `main`.
-2. Hard refresh.
-3. Probar generacion de plan IA, PDF e historial.
-4. Si no aparece el redisenio, revisar cache/commit desplegado.
-5. Si aparece, ajuste fino visual con capturas.
+1. Validar despliegue de Easypanel (frontend) con commit igual o superior a `0428d53`.
+2. Probar modales de confirmación (`ConfirmDialog`) y creación de pacientes (`PatientModal`) en producción.
+3. Iniciar la Fase 3 del plan: modularizar la lógica restante en `index.astro` (Canvas, API fetcher, Eventos) separándola del archivo principal.
 
 Detalles antiguos: usar Git.
