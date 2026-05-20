@@ -2,15 +2,17 @@
 
 Historial operativo compacto. Para detalle completo, usar `git log` y diffs.
 
-## 2026-05-20 - Migración y desacoplamiento de Modales a Nanostores
+## 2026-05-20 - Migración y desacoplamiento de Modales a Nanostores + Hotfix de Despliegue
 - Creado `ConfirmDialog.astro` como componente desacoplado del monolito `index.astro`.
 - Migrado el estado de visibilidad de `ConfirmDialog` a Nanostores (`modalState`).
 - Creado flujo de comunicación asíncrona reactiva con CustomEvents (`fisio:open-confirm` y `fisio:close-confirm`) para mantener compatibilidad con las llamadas imperativas existentes.
 - Migrado `PatientModal` en `PatientsView.astro` al flujo reactivo de Nanostores (`modalState.patientForm`), desacoplándolo completamente de `index.astro`.
 - Eliminadas todas las manipulaciones directas de DOM y `classList` sobre visibilidad de modales de `index.astro`.
+- **HOTFIX CRÍTICO**: Solucionado `ReferenceError: confirmDialog is not defined` que rompía el hilo de ejecución JavaScript bloqueando la carga de pacientes y agenda.
+- **HOTFIX VISUAL**: Cambiado el bloque `<style>` principal de `index.astro` a `<style is:global>` para permitir que los estilos del dashboard y las vistas se apliquen correctamente a los componentes separados e importados, eliminando por completo la rotura de alineación de modales desajustados.
 - Resueltos problemas de imports y rutas relativas (`../../store`) en vistas anidadas.
 - Verificado y compilado exitosamente (`npm run build` OK).
-- Subidos todos los cambios a GitHub en la rama `main` (commit `0428d53`), listos para el despliegue automático/manual en Easypanel.
+- Subidos todos los cambios a GitHub en la rama `main` (commit `8e2ba1a`), desplegando y corrigiendo la producción en Easypanel de forma inmediata.
 
 ## 2026-05-19 - Cierre alineado GitHub + n8n
 - Prompt del agente de ejercicios versionado en backend como `fisio_exercise_premium_v2_2026-05-18`.
