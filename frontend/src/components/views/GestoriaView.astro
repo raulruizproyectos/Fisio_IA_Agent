@@ -1,0 +1,77 @@
+        <!-- === PAGE: GESTORIA === -->
+        <div class="page-section" data-page="gestoria">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Cierre anual, detalle mensual y resumen para gestoria.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" type="button" data-dashboard-nav="pagos"><span class="material-symbols-rounded">arrow_back</span> Resumen</button>
+              <select id="gestoriaAnioFilter" title="A&ntilde;o"></select>
+            </div>
+          </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
+          <section class="finance-subview-strip">
+            <div>
+              <span>Vista financiera</span>
+              <strong>Gestoria y cierre</strong>
+              <p>Revisa el acumulado anual, el detalle mensual y lo que conviene exportar o contrastar antes de cerrar caja.</p>
+            </div>
+            <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Ver facturas</button>
+          </section>
+
+          <!-- Gran total -->
+          <div class="pagos-summary-row finance-annual-summary">
+            <div class="pagos-stat"><span class="pagos-stat-label">Facturaci&oacute;n total</span><span class="pagos-stat-value" id="gestoriaGranTotal">0,00 &euro;</span></div>
+            <div class="pagos-stat"><span class="pagos-stat-label">Sesiones</span><span class="pagos-stat-value" id="gestoriaGranSesiones">0</span></div>
+            <div class="pagos-stat pagos-stat-cash"><span class="pagos-stat-label">Efectivo</span><span class="pagos-stat-value" id="gestoriaGranEfectivo">0,00 &euro;</span></div>
+            <div class="pagos-stat pagos-stat-card"><span class="pagos-stat-label">Tarjeta</span><span class="pagos-stat-value" id="gestoriaGranTarjeta">0,00 &euro;</span></div>
+          </div>
+
+          <div class="gestoria-mobile-list" id="gestoriaMobileList">
+            <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando resumen de gestor&iacute;a...</p></div>
+          </div>
+
+          <!-- Tabla desglose por paciente x mes -->
+          <section class="card table-card">
+            <div class="table-wrap gestoria-table-wrap">
+              <table class="gestoria-table">
+                <thead id="gestoriaHead"></thead>
+                <tbody id="gestoriaBody">
+                  <tr class="empty-row"><td colspan="16"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando datos...</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Informe mensual detallado -->
+          <section class="card table-card gestoria-month-card">
+            <header class="card-header">
+              <h2><span class="material-symbols-rounded card-title-icon">receipt_long</span> Informe mensual</h2>
+              <select id="gestoriaMesFilter" title="Mes" class="gestoria-mes-select">
+                <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+              </select>
+            </header>
+            <!-- Totales del mes -->
+            <div class="gestoria-mes-totals" id="gestoriaMesTotals">
+              <span class="gestoria-mes-chip">Total: <strong id="gestoriaMesTotal">0,00 &euro;</strong></span>
+              <span class="gestoria-mes-chip gestoria-mes-cash">Efectivo: <strong id="gestoriaMesEfectivo">0,00 &euro;</strong></span>
+              <span class="gestoria-mes-chip gestoria-mes-card">Tarjeta: <strong id="gestoriaMesTarjeta">0,00 &euro;</strong></span>
+              <span class="gestoria-mes-chip">Sesiones: <strong id="gestoriaMesSesiones">0</strong></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Fecha</th><th>Paciente</th><th>M&eacute;todo</th><th class="text-right">Importe</th></tr>
+                </thead>
+                <tbody id="gestoriaMesBody">
+                  <tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">calendar_month</span><p>Selecciona un mes</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+

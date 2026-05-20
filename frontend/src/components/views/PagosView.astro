@@ -1,0 +1,169 @@
+        <!-- === PAGE: PAGOS === -->
+        <div class="page-section" data-page="pagos">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Caja diaria, facturas pendientes y bonos en una vista de trabajo.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" id="financeInvoiceBtn" type="button">
+                <span class="material-symbols-rounded">receipt_long</span> Emitir factura
+              </button>
+              <button class="btn-primary" id="addPagoBtn">
+                <span class="material-symbols-rounded">add_card</span> Registrar pago
+              </button>
+            </div>
+          </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
+
+          <section class="finance-workbench" aria-label="Panel operativo de finanzas">
+            <article class="finance-priority-panel">
+              <span class="finance-kicker">Prioridad ahora</span>
+              <strong id="financePriorityTitle">Cargando caja...</strong>
+              <p id="financePriorityMeta">Calculando cobros, facturas pendientes y bonos activos.</p>
+              <div class="finance-priority-actions">
+                <button class="btn-primary btn-sm" id="financePrimaryActionBtn" type="button" data-finance-action="pago"><span class="material-symbols-rounded">arrow_forward</span> Registrar pago</button>
+                <button class="btn-ghost btn-sm" id="financeSecondaryActionBtn" type="button" data-finance-action="facturas"><span class="material-symbols-rounded">receipt_long</span> Ver facturas</button>
+              </div>
+            </article>
+            <div class="finance-action-grid">
+              <button class="finance-action-card" type="button" id="financeNewPaymentBtn">
+                <span class="material-symbols-rounded">add_card</span>
+                <strong>Registrar cobro</strong>
+                <small>Entrada rapida de caja.</small>
+              </button>
+              <button class="finance-action-card" type="button" id="financeNewInvoiceBtn">
+                <span class="material-symbols-rounded">receipt_long</span>
+                <strong>Emitir factura</strong>
+                <small>Desde pagos pendientes.</small>
+              </button>
+              <button class="finance-action-card" type="button" id="financeNewBonoBtn">
+                <span class="material-symbols-rounded">confirmation_number</span>
+                <strong>Crear bono</strong>
+                <small>Paquetes de sesiones.</small>
+              </button>
+              <button class="finance-action-card" type="button" id="financeOpenGestoriaBtn">
+                <span class="material-symbols-rounded">account_balance</span>
+                <strong>Gestoria</strong>
+                <small>Resumen para cierre.</small>
+              </button>
+            </div>
+          </section>
+
+          <!-- Resumen + filtros compactos -->
+          <div class="pagos-toolbar">
+            <div class="pagos-summary-row">
+              <div class="pagos-stat"><span class="pagos-stat-label">Total</span><span class="pagos-stat-value" id="pagosTotalImporte">0,00 &euro;</span></div>
+              <div class="pagos-stat"><span class="pagos-stat-label">Sesiones</span><span class="pagos-stat-value" id="pagosTotalSesiones">0</span></div>
+              <div class="pagos-stat pagos-stat-cash"><span class="pagos-stat-label">Efectivo</span><span class="pagos-stat-value" id="pagosTotalEfectivo">0,00 &euro;</span></div>
+              <div class="pagos-stat pagos-stat-card"><span class="pagos-stat-label">Tarjeta</span><span class="pagos-stat-value" id="pagosTotalTarjeta">0,00 &euro;</span></div>
+            </div>
+            <div class="pagos-filters-row">
+              <select id="pagosMesFilter" title="Mes">
+                <option value="">Todo el a&ntilde;o</option>
+                <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+              </select>
+              <select id="pagosAnioFilter" title="A&ntilde;o"></select>
+            </div>
+          </div>
+
+          <section class="finance-overview-grid" id="financeOverviewGrid" aria-live="polite">
+            <article class="finance-overview-card">
+              <span>Cobrado</span>
+              <strong id="financePaidValue">0,00 &euro;</strong>
+              <p id="financePaidMeta">Pagos del filtro actual.</p>
+            </article>
+            <article class="finance-overview-card finance-overview-card-warn">
+              <span>Pendiente</span>
+              <strong id="financePendingValue">0,00 &euro;</strong>
+              <p id="financePendingMeta">Facturas pendientes de cobro.</p>
+            </article>
+            <article class="finance-overview-card">
+              <span>Bonos activos</span>
+              <strong id="financeBonosValue">0</strong>
+              <p id="financeBonosMeta">Sesiones disponibles.</p>
+            </article>
+            <article class="finance-overview-card">
+              <span>Tendencia mensual</span>
+              <strong id="financeTrendValue">0,00 &euro;</strong>
+              <p id="financeTrendMeta">Comparativa mes actual vs mes anterior.</p>
+            </article>
+          </section>
+
+          <p class="form-feedback" id="pagosAvailabilityNotice" hidden></p>
+          <div class="pagos-mobile-list" id="pagosMobileList">
+            <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando pagos...</p></div>
+          </div>
+          <!-- Tabla de pagos -->
+          <section class="card table-card">
+            <div class="table-wrap pagos-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Paciente</th>
+                    <th>M&eacute;todo</th>
+                    <th class="text-right">Importe</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="pagosBody">
+                  <tr class="empty-row"><td colspan="5"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando pagos...</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- Modal: Nuevo/Editar Pago -->
+        <div class="modal-shell" id="pagoModal" aria-hidden="true">
+          <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pagoModalTitle">
+            <div class="modal-header">
+              <div class="modal-title-group">
+                <h2 id="pagoModalTitle">Registrar pago</h2>
+              </div>
+              <button type="button" class="modal-close" id="closePagoModalBtn" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+            </div>
+            <form id="pagoForm" class="patient-form">
+              <input type="hidden" id="pagoEditId" value="" />
+              <div class="form-grid">
+                <label class="field field-full">
+                  <span>Paciente</span>
+                  <select id="pagoPacienteSelect" required>
+                    <option value="">-- Selecciona paciente --</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Importe (&euro;)</span>
+                  <input id="pagoImporteInput" name="importe" type="number" step="0.01" min="0.01" placeholder="35.00" required />
+                </label>
+                <label class="field">
+                  <span>M&eacute;todo</span>
+                  <div class="pagos-metodo-toggle">
+                    <label class="pagos-toggle-opt"><input type="radio" name="metodo_pago" value="efectivo" checked /><span class="pagos-chip pagos-chip-cash">Efectivo</span></label>
+                    <label class="pagos-toggle-opt"><input type="radio" name="metodo_pago" value="tarjeta" /><span class="pagos-chip pagos-chip-card">Tarjeta</span></label>
+                  </div>
+                </label>
+                <label class="field">
+                  <span>Fecha</span>
+                  <input id="pagoFechaInput" name="fecha" type="date" required />
+                </label>
+                <label class="field field-full">
+                  <span>Notas (opcional)</span>
+                  <input id="pagoNotasInput" name="notas" type="text" placeholder="Ej: Sesi&oacute;n extra, bono 10 sesiones..." />
+                </label>
+              </div>
+              <p class="form-feedback" id="pagoFormFeedback" hidden></p>
+              <div class="modal-actions">
+                <button type="button" class="btn-ghost" id="pagoModalDismiss">Cancelar</button>
+                <button type="submit" class="btn-primary" id="pagoSubmitBtn">
+                  <span class="material-symbols-rounded">check</span> Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+

@@ -1,0 +1,348 @@
+---
+// FichaPacienteView.astro
+---
+
+<!-- === PAGE: FICHA PACIENTE (detalle) === -->
+<div class="page-section bg-[#FAFAF8] min-h-full py-6 px-4 md:px-8 lg:px-12 flex flex-col space-y-6" data-page="ficha-paciente">
+  
+  <!-- Minimalist Topbar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+    <div class="flex items-center gap-4">
+      <button class="flex items-center gap-1 text-[#687076] hover:text-[#11181C] transition-colors font-medium" id="fichaBackBtn">
+        <span class="material-symbols-rounded">arrow_back</span> Volver
+      </button>
+      <h1 class="text-2xl font-medium text-[#11181C] flex items-center gap-2" id="fichaTitulo">
+        <span class="material-symbols-rounded text-emerald-600">person</span> Ficha de paciente
+      </h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="flex items-center gap-2 text-sm font-medium text-[#11181C] bg-white border border-gray-200 hover:bg-gray-50 px-4 py-2 rounded-full shadow-sm transition-all" id="fichaEditToggle">
+        <span class="material-symbols-rounded text-[18px]">edit</span> Editar datos
+      </button>
+    </div>
+  </div>
+
+  <!-- Clinical Context (Flotante y Minimalista) -->
+  <section class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col lg:flex-row gap-8">
+    <div class="flex-1 space-y-4">
+      <div>
+        <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Contexto Clínico</span>
+        <h2 class="text-3xl font-medium text-[#11181C] mt-1" id="fichaHeroName">Paciente no cargado</h2>
+        <p class="text-[#687076] font-light mt-2" id="fichaHeroSummary">Selecciona un paciente para ver un resumen ejecutivo del caso, continuidad clínica y próximas acciones.</p>
+      </div>
+      <div class="flex flex-wrap gap-4 text-sm text-[#687076]">
+        <span class="flex items-center gap-1"><span class="material-symbols-rounded text-[18px]">mail</span><span id="fichaHeroEmail">Sin email</span></span>
+        <span class="flex items-center gap-1"><span class="material-symbols-rounded text-[18px]">call</span><span id="fichaHeroPhone">Sin teléfono</span></span>
+        <span class="flex items-center gap-1"><span class="material-symbols-rounded text-[18px]">person</span><span id="fichaHeroProfile">Sin datos clave</span></span>
+      </div>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <button class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full font-medium transition-colors" type="button" id="fichaHeroCopilotBtn">
+          <span class="material-symbols-rounded text-[20px]">exercise</span> Informe IA
+        </button>
+        <button class="flex items-center gap-2 bg-[#11181C] hover:bg-black text-white px-5 py-2.5 rounded-full font-medium transition-colors" type="button" id="fichaHeroAgendaBtn">
+          <span class="material-symbols-rounded text-[20px]">calendar_today</span> Agenda
+        </button>
+        <button class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-[#11181C] px-5 py-2.5 rounded-full font-medium transition-colors" type="button" id="fichaHeroDocsBtn">
+          <span class="material-symbols-rounded text-[20px]">description</span> Documentos
+        </button>
+      </div>
+    </div>
+    
+    <!-- Quick Facts Grid -->
+    <div class="flex-1 grid grid-cols-2 gap-4">
+      <article class="bg-gray-50 p-4 rounded-2xl flex flex-col gap-1">
+        <span class="text-xs font-medium text-[#687076] uppercase tracking-wider">Cadencia clínica</span>
+        <strong class="text-lg font-medium text-[#11181C]" id="fichaHeroLastSession">Sin citas</strong>
+        <p class="text-xs text-[#687076]" id="fichaHeroLastSessionMeta">Todavía no hay actividad.</p>
+      </article>
+      <article class="bg-gray-50 p-4 rounded-2xl flex flex-col gap-1">
+        <span class="text-xs font-medium text-[#687076] uppercase tracking-wider">Seguimiento</span>
+        <strong class="text-lg font-medium text-[#11181C]" id="fichaHeroNotesCount">0 notas</strong>
+        <p class="text-xs text-[#687076] truncate" id="fichaHeroLatestNote">La línea temporal aparecerá aquí.</p>
+      </article>
+      <article class="bg-gray-50 p-4 rounded-2xl flex flex-col gap-1">
+        <span class="text-xs font-medium text-[#687076] uppercase tracking-wider">Economía</span>
+        <strong class="text-lg font-medium text-[#11181C]" id="fichaHeroPaymentsTotal">0,00 €</strong>
+        <p class="text-xs text-[#687076]" id="fichaHeroPaymentsMeta">Sin pagos.</p>
+      </article>
+      <article class="bg-emerald-50 p-4 rounded-2xl flex flex-col gap-1 border border-emerald-100">
+        <span class="text-xs font-medium text-emerald-700 uppercase tracking-wider">Continuidad</span>
+        <strong class="text-lg font-medium text-emerald-900" id="fichaHeroContinuity">Listo para revisar</strong>
+        <p class="text-xs text-emerald-700" id="fichaHeroContinuityMeta">Usa el agente, documentos y agenda.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Commands & Risk -->
+  <section class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col lg:flex-row gap-6 justify-between items-center hidden" aria-hidden="true">
+    <!-- Preserved IDs for JS but visually hidden or integrated differently to reduce clutter -->
+    <strong id="fichaOpsRiskTitle"></strong><p id="fichaOpsRiskMeta"></p>
+    <strong id="fichaOpsNextTitle"></strong><p id="fichaOpsNextMeta"></p>
+    <strong id="fichaOpsPlanTitle"></strong><p id="fichaOpsPlanMeta"></p>
+    <strong id="fichaOpsBillingTitle"></strong><p id="fichaOpsBillingMeta"></p>
+    <button id="fichaOpsAgendarBtn"></button>
+    <button id="fichaOpsNotaBtn"></button>
+    <button id="fichaOpsHistoriaBtn"></button>
+    <button id="fichaOpsCopilotBtn"></button>
+  </section>
+
+  <!-- Main Workspace (Tabs) -->
+  <section class="flex-1 flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+    
+    <!-- Tabs Navigation -->
+    <div class="flex overflow-x-auto border-b border-gray-100 p-2 gap-2 hide-scrollbar">
+      <button class="ficha-tab active px-5 py-2.5 rounded-full text-sm font-medium transition-all" data-ficha-tab="resumen">Resumen de caso</button>
+      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-50 transition-all" data-ficha-tab="datos">Datos personales</button>
+      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-50 transition-all" data-ficha-tab="notas">Notas clínicas</button>
+      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-50 transition-all" data-ficha-tab="citas">Historial citas</button>
+      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-50 transition-all" data-ficha-tab="pagos">Historial pagos</button>
+      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-50 transition-all" data-ficha-tab="documentos">Documentos</button>
+    </div>
+
+    <p class="text-sm text-red-600 bg-red-50 p-3 m-4 rounded-lg" id="fichaAvailabilityNotice" hidden></p>
+
+    <div class="p-6 overflow-y-auto">
+      
+      <!-- Panel: Resumen -->
+      <div class="ficha-panel active space-y-8" data-ficha-panel="resumen">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <section class="bg-gray-50 p-6 rounded-2xl">
+            <header class="mb-4">
+              <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Lectura rápida</span>
+              <h2 class="text-xl font-medium text-[#11181C]">Todo el caso en un vistazo</h2>
+            </header>
+            <div class="text-[#687076] text-sm" id="fichaOverviewStats">El resumen ejecutivo del caso aparecerá aquí.</div>
+          </section>
+
+          <section class="bg-gray-50 p-6 rounded-2xl">
+            <header class="mb-4">
+              <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Pulso terapéutico</span>
+              <h2 class="text-xl font-medium text-[#11181C]">Progreso del paciente</h2>
+            </header>
+            <div class="text-[#687076] text-sm" id="fichaProgressPanel">Cuando haya dolor, adherencia o entregas registradas, verás aquí la lectura rápida del progreso clínico.</div>
+          </section>
+
+          <section class="bg-gray-50 p-6 rounded-2xl">
+            <header class="mb-4">
+              <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Movimiento reciente</span>
+              <h2 class="text-xl font-medium text-[#11181C]">Clínica, agenda y decisiones</h2>
+            </header>
+            <div class="text-[#687076] text-sm" id="fichaOverviewStream">La actividad reciente del caso aparecerá aquí.</div>
+          </section>
+
+          <section class="bg-gray-50 p-6 rounded-2xl">
+            <header class="mb-4">
+              <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Siguiente mejor acción</span>
+              <h2 class="text-xl font-medium text-[#11181C]">Prioridades del caso</h2>
+            </header>
+            <div class="text-[#687076] text-sm" id="fichaDecisionList">Todavía no hay decisiones sugeridas para este caso.</div>
+          </section>
+
+          <section class="bg-gray-50 p-6 rounded-2xl lg:col-span-2">
+            <header class="mb-4">
+              <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Motor IA clínico</span>
+              <h2 class="text-xl font-medium text-[#11181C]">Circuito del plan</h2>
+            </header>
+            <div class="text-[#687076] text-sm" id="fichaPlanInsights">Cuando exista un plan IA, verás aquí el circuito: plan, entrega, feedback y ajuste recomendado.</div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Panel: Datos -->
+      <div class="ficha-panel hidden" data-ficha-panel="datos">
+        <div id="fichaDatosView" class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 text-sm text-[#11181C]">
+          <!-- Rendered by JS -->
+        </div>
+        <form id="fichaDatosForm" class="hidden space-y-6 max-w-3xl">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Nombre</span><input name="nombre" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" required /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Apellidos</span><input name="apellidos" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Email</span><input name="email" type="email" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Teléfono</span><input name="telefono" type="tel" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">DNI/NIF</span><input name="dni" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Fecha nac.</span><input name="fecha_nacimiento" type="date" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Dirección</span><input name="direccion" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Profesión</span><input name="profesion" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Médico derivador</span><input name="medico_derivador" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2"><span class="text-sm font-medium text-[#11181C]">Aseguradora</span><input name="aseguradora" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2" /></label>
+            <label class="block space-y-2 md:col-span-2"><span class="text-sm font-medium text-[#11181C]">Alergias</span><textarea name="alergias" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2"></textarea></label>
+            <label class="block space-y-2 md:col-span-2"><span class="text-sm font-medium text-[#11181C]">Antecedentes</span><textarea name="antecedentes" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2"></textarea></label>
+            <label class="block space-y-2 md:col-span-2"><span class="text-sm font-medium text-[#11181C]">Observaciones</span><textarea name="observaciones" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2"></textarea></label>
+          </div>
+          <div class="flex gap-3 justify-end">
+            <button type="button" class="px-5 py-2 rounded-full text-[#687076] hover:bg-gray-100" id="fichaCancelEdit">Cancelar</button>
+            <button type="submit" class="bg-emerald-600 text-white px-6 py-2 rounded-full flex items-center gap-2"><span class="material-symbols-rounded text-sm">save</span> Guardar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Panel: Notas -->
+      <div class="ficha-panel hidden space-y-6" data-ficha-panel="notas">
+        <header class="flex justify-between items-center">
+          <h2 class="text-xl font-medium text-[#11181C]">Notas de evolución</h2>
+          <button class="bg-[#11181C] text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm" id="fichaAddNota"><span class="material-symbols-rounded text-[18px]">add</span> Nueva nota</button>
+        </header>
+        <div id="fichaNotasSummary" class="text-sm text-[#687076]"></div>
+        <div id="fichaNotasTimeline" class="space-y-4">
+          <p class="text-[#687076] italic">Sin notas clínicas registradas</p>
+        </div>
+
+        <section id="fichaNotaFormCard" class="bg-gray-50 p-6 rounded-2xl hidden mt-8">
+          <header class="mb-4"><h2 id="fichaNotaFormTitle" class="text-lg font-medium">Nueva nota clínica</h2></header>
+          <form id="fichaNotaForm" class="space-y-4 max-w-2xl">
+            <input type="hidden" name="nota_id" />
+            <div class="grid grid-cols-2 gap-4">
+              <label class="block space-y-1"><span class="text-sm font-medium">Fecha</span><input name="fecha" type="date" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2" required /></label>
+              <label class="block space-y-1"><span class="text-sm font-medium">Dolor (EVA 0-10)</span><input name="dolor_eva" type="number" min="0" max="10" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2" /></label>
+            </div>
+            <label class="block space-y-1"><span class="text-sm font-medium">Zona corporal</span>
+              <select name="zona_corporal" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2">
+                <option value="">-- Seleccionar --</option>
+                <option value="cervical">Cervical</option>
+                <option value="espalda">Espalda</option>
+                <option value="lumbar">Lumbar</option>
+                <option value="hombro_brazo">Hombro/Brazo</option>
+                <option value="pierna">Pierna</option>
+              </select>
+            </label>
+            <label class="block space-y-1"><span class="text-sm font-medium">Nota de sesión</span><textarea name="nota" rows="4" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2" required></textarea></label>
+            <label class="block space-y-1"><span class="text-sm font-medium">Pruebas realizadas</span><textarea name="pruebas_realizadas" rows="2" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2"></textarea></label>
+            <div class="flex gap-3 justify-end pt-2">
+              <button type="button" class="px-4 py-2 text-[#687076] hover:bg-gray-200 rounded-lg" id="fichaNotaCancel">Cancelar</button>
+              <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"><span class="material-symbols-rounded text-[18px]">save</span> Guardar nota</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <!-- Panel: Citas -->
+      <div class="ficha-panel hidden space-y-6" data-ficha-panel="citas">
+        <h2 class="text-xl font-medium text-[#11181C]">Historial de citas</h2>
+        <div id="fichaCitasSummary" class="text-sm text-[#687076]"></div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-gray-200"><th class="py-3 px-4 font-medium">Fecha</th><th class="py-3 px-4 font-medium">Estado</th><th class="py-3 px-4 font-medium">Motivo</th></tr>
+            </thead>
+            <tbody id="fichaCitasBody" class="divide-y divide-gray-100">
+              <tr><td colspan="3" class="py-8 text-center text-[#687076]"><span class="material-symbols-rounded block mb-2 text-3xl">event_busy</span> Sin citas registradas</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Panel: Pagos -->
+      <div class="ficha-panel hidden space-y-6" data-ficha-panel="pagos">
+        <h2 class="text-xl font-medium text-[#11181C]">Historial de pagos</h2>
+        <div id="fichaPagosSummary" class="text-sm text-[#687076]"></div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-gray-200"><th class="py-3 px-4 font-medium">Fecha</th><th class="py-3 px-4 font-medium">Importe</th><th class="py-3 px-4 font-medium">Método</th><th class="py-3 px-4 font-medium">Concepto</th></tr>
+            </thead>
+            <tbody id="fichaPagosBody" class="divide-y divide-gray-100">
+              <tr><td colspan="4" class="py-8 text-center text-[#687076]"><span class="material-symbols-rounded block mb-2 text-3xl">payments</span> Sin pagos registrados</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="fichaPagosTotal" class="text-right text-lg font-medium text-[#11181C] pt-4"></div>
+      </div>
+
+      <!-- Panel: Documentos -->
+      <div class="ficha-panel hidden space-y-6" data-ficha-panel="documentos">
+        <header class="flex justify-between items-center">
+          <h2 class="text-xl font-medium text-[#11181C]">Documentación legal</h2>
+          <div class="flex gap-2">
+            <button class="border border-gray-200 text-sm px-3 py-1.5 rounded-full hover:bg-gray-50" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
+            <button class="border border-gray-200 text-sm px-3 py-1.5 rounded-full hover:bg-gray-50" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
+            <button class="border border-gray-200 text-sm px-3 py-1.5 rounded-full hover:bg-gray-50" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocación</button>
+          </div>
+        </header>
+        <div id="fichaDocsSummary" class="text-sm text-[#687076]"></div>
+        <div id="fichaDocsList" class="space-y-3">
+          <p class="text-[#687076] italic py-8 text-center">Sin documentación clínica registrada</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Preserved IDs from Sidebar (Hidden for JS compatibility) -->
+  <div class="hidden" aria-hidden="true">
+    <strong id="fichaRailNextTitle"></strong><p id="fichaRailNextMeta"></p>
+    <button id="fichaRailPrimaryBtn"></button>
+    <button id="fichaRailTelegramBtn"></button>
+    <div id="fichaRailChannels"></div><div id="fichaRailChecklist"></div>
+  </div>
+</div>
+
+<!-- Modal Firma -->
+<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="firmaModal" aria-hidden="true">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+      <div>
+        <p class="text-xs font-medium text-emerald-600 uppercase tracking-wider">FIRMA DIGITAL</p>
+        <h2 id="firmaModalTitle" class="text-xl font-medium text-[#11181C]">Consentimiento</h2>
+      </div>
+      <button type="button" class="text-[#687076] hover:bg-gray-200 p-2 rounded-full" id="firmaModalClose"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <div id="firmaDocContenido" class="p-6 overflow-y-auto text-sm text-[#687076] space-y-4 flex-1"></div>
+    <div class="p-6 border-t border-gray-100 bg-gray-50 space-y-4">
+      <div class="flex justify-between items-end">
+        <p class="text-sm font-medium text-[#11181C]">Firma del paciente <span class="text-xs font-normal text-[#687076]">(Dibuja con ratón o dedo)</span></p>
+        <button type="button" class="text-xs text-[#687076] hover:text-[#11181C] flex items-center gap-1" id="firmaClearBtn"><span class="material-symbols-rounded text-[16px]">restart_alt</span> Borrar</button>
+      </div>
+      <div class="border border-gray-300 rounded-xl bg-white overflow-hidden shadow-inner">
+        <canvas id="firmaCanvas" class="w-full h-[160px] touch-none cursor-crosshair"></canvas>
+      </div>
+      <div class="flex justify-between items-center">
+        <span id="firmaStatus" class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">Sin firma</span>
+        <p class="text-sm text-red-600" id="firmaFeedback" hidden></p>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-white border-t border-gray-100 flex justify-end gap-3">
+      <button type="button" class="px-5 py-2.5 rounded-full text-[#687076] hover:bg-gray-100 font-medium" id="firmaModalDismiss">Cancelar</button>
+      <button type="button" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium" id="firmaGuardarBtn">
+        <span class="material-symbols-rounded text-[20px]">draw</span> Guardar y generar PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { modalState } from '../../store';
+
+  const firmaModal = document.getElementById('firmaModal');
+  const firmaModalInner = firmaModal?.querySelector('div');
+
+  modalState.subscribe((state) => {
+    if (state.firma.isOpen) {
+      firmaModal?.classList.remove('opacity-0', 'pointer-events-none');
+      firmaModal?.classList.add('opacity-100', 'pointer-events-auto');
+      firmaModal?.setAttribute('aria-hidden', 'false');
+      firmaModalInner?.classList.remove('scale-95');
+      firmaModalInner?.classList.add('scale-100');
+    } else {
+      firmaModal?.classList.remove('opacity-100', 'pointer-events-auto');
+      firmaModal?.classList.add('opacity-0', 'pointer-events-none');
+      firmaModal?.setAttribute('aria-hidden', 'true');
+      firmaModalInner?.classList.remove('scale-100');
+      firmaModalInner?.classList.add('scale-95');
+    }
+  });
+
+  const closeFirmaModal = () => {
+    const current = modalState.get();
+    modalState.set({ ...current, firma: { ...current.firma, isOpen: false } });
+  };
+
+  document.getElementById('firmaModalClose')?.addEventListener('click', closeFirmaModal);
+  document.getElementById('firmaModalDismiss')?.addEventListener('click', closeFirmaModal);
+
+  document.addEventListener('fisio:open-firma-modal', () => {
+    const current = modalState.get();
+    modalState.set({ ...current, firma: { ...current.firma, isOpen: true } });
+  });
+
+  document.addEventListener('fisio:close-firma-modal', closeFirmaModal);
+</script>

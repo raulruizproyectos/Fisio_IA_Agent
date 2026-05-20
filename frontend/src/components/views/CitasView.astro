@@ -1,0 +1,113 @@
+        <!-- === PAGE: CITAS === -->
+        <div class="page-section" data-page="citas">
+          <div class="page-header-row agenda-header-row">
+            <div class="agenda-header-copy">
+              <h1 class="page-title"><span class="material-symbols-rounded">&#xebcc;</span> Agenda</h1>
+              <div class="agenda-sync-status" id="agendaSyncStatus" aria-live="polite">
+                <span class="status-chip pendiente" id="agendaSyncChip">Comprobando</span>
+                <div class="agenda-sync-copy">
+                  <strong id="agendaSyncTitle">Sync Google Calendar</strong>
+                  <p id="agendaSyncMeta">Esperando estado del sincronizador...</p>
+                  <div class="agenda-sync-facts" id="agendaSyncFacts" hidden></div>
+                </div>
+              </div>
+            </div>
+            <div class="week-nav-bar">
+              <button class="btn-ghost btn-icon" id="prevWeek" title="Semana anterior"><span class="material-symbols-rounded">chevron_left</span></button>
+              <span id="weekLabel" class="week-label">Cargando...</span>
+              <button class="btn-ghost btn-icon" id="nextWeek" title="Semana siguiente"><span class="material-symbols-rounded">chevron_right</span></button>
+              <button class="btn-ghost" id="thisWeek">Hoy</button>
+              <button class="btn-ghost btn-icon" id="refreshCitas" title="Actualizar"><span class="material-symbols-rounded">refresh</span></button>
+              <button class="btn-primary" id="openNewAppointmentBtn"><span class="material-symbols-rounded">add</span> Nueva cita</button>
+            </div>
+          </div>
+          <p id="agendaCalendarMeta" class="agenda-calendar-meta" hidden></p>
+          <section class="card agenda-cal-card">
+            <div id="agendaCalendar" class="agenda-calendar">
+              <div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>
+            </div>
+          </section>
+          <section class="card agenda-mobile-card">
+            <header class="agenda-mobile-head">
+              <div>
+                <span class="agenda-mobile-kicker">Agenda movil</span>
+                <h2>Semana clínica en formato táctil</h2>
+              </div>
+              <p id="agendaMobileSummary">Preparando timeline semanal...</p>
+            </header>
+            <div class="agenda-mobile-list" id="agendaMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando timeline movil...</p></div>
+            </div>
+          </section>
+          <section class="card table-card">
+            <header class="card-header">
+              <h2>Pacientes esta semana <span class="badge-week-count" id="weekPatientCount"></span></h2>
+            </header>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Paciente</th><th>Dia</th><th>Hora</th><th>Motivo</th><th>Canal</th><th>Espejo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="citasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando agenda...</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- DRAWER: Nueva Cita -->
+        <div class="modal-shell crm-drawer-shell appointment-create-drawer" id="appointmentModal" aria-hidden="true">
+          <div class="modal-panel crm-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="appointmentModalTitle">
+            <div class="modal-header">
+              <div class="modal-title-group">
+                <p class="modal-eyebrow">Agenda contextual</p>
+                <h2 id="appointmentModalTitle">Nueva cita</h2>
+                <p class="drawer-subtitle">Crea la cita sin salir de la semana clinica. El calendario queda como referencia de disponibilidad.</p>
+              </div>
+              <button type="button" class="modal-close" id="closeAppointmentModalBtn" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+            </div>
+            <form id="appointmentForm" class="patient-form">
+              <div class="form-grid">
+                <label class="field field-full">
+                  <span>Paciente</span>
+                  <select id="appointmentPatientSelect" required><option value="">Selecciona paciente</option></select>
+                </label>
+                <label class="field">
+                  <span>Inicio</span>
+                  <input id="appointmentStartInput" type="datetime-local" required />
+                </label>
+                <label class="field">
+                  <span>Fin</span>
+                  <input id="appointmentEndInput" type="datetime-local" required />
+                </label>
+                <label class="field field-full">
+                  <span>Motivo</span>
+                  <textarea id="appointmentReasonInput" rows="2" placeholder="Ej.: Sesion de fisioterapia lumbar"></textarea>
+                </label>
+              </div>
+              <p class="form-feedback" id="appointmentFormFeedback" hidden></p>
+              <div class="modal-actions">
+                <button type="button" class="btn-ghost" id="appointmentModalDismiss">Cancelar</button>
+                <button type="submit" class="btn-primary" id="appointmentSubmitBtn">
+                  <span class="material-symbols-rounded">event_available</span>
+                  Crear cita
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- DRAWER: Detalle de Cita -->
+        <div class="modal-shell crm-drawer-shell appointment-detail-drawer" id="appointmentDetailDrawer" aria-hidden="true">
+          <aside class="modal-panel crm-drawer-panel appointment-detail-panel" role="dialog" aria-modal="true" aria-labelledby="appointmentDetailTitle">
+            <div class="modal-header">
+              <div class="modal-title-group">
+                <p class="modal-eyebrow">Cita seleccionada</p>
+                <h2 id="appointmentDetailTitle">Detalle de agenda</h2>
+                <p class="drawer-subtitle" id="appointmentDetailSubtitle">Revisa el contexto y decide el siguiente paso sin perder la semana.</p>
+              </div>
+              <button type="button" class="modal-close" id="closeAppointmentDetailDrawerBtn" aria-label="Cerrar detalle"><span class="material-symbols-rounded">close</span></button>
+            </div>
+            <div class="drawer-body appointment-detail-body" id="appointmentDetailBody">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">event_note</span><p>Selecciona una cita para ver su contexto.</p></div>
+            </div>
+          </aside>
+        </div>
+

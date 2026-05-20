@@ -1,77 +1,128 @@
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-icon-wrapper">
-      <span class="brand-icon material-symbols-rounded">medical_services</span>
-    </div>
-    <div class="brand-copy">
-      <span class="brand-text">Fisio_IA_Agent</span>
-      <span class="brand-subtitle">Clinical OS</span>
-    </div>
-  </div>
-
-  <div class="sidebar-status">
-    <span class="sidebar-status-dot"></span>
-    <div>
-      <strong>Consulta activa</strong>
-      <span>Agenda, IA y CRM sincronizados</span>
-    </div>
-  </div>
-
-  <div class="sidebar-section-label">Trabajo</div>
-  <nav class="sidebar-nav">
-    <a href="#" class="nav-item active" data-section="dashboard">
-      <span class="material-symbols-rounded">home</span>
-      <span class="nav-label">Inicio</span>
-    </a>
-    <a href="#" class="nav-item" data-section="pacientes">
-      <span class="material-symbols-rounded">group</span>
-      <span class="nav-label">Pacientes</span>
-    </a>
-    <a href="#" class="nav-item" data-section="citas">
-      <span class="material-symbols-rounded">calendar_today</span>
-      <span class="nav-label">Agenda</span>
-    </a>
-    <a href="#" class="nav-item nav-item-copilot" data-section="plantillas">
-      <span class="material-symbols-rounded">psychology</span>
-      <span class="nav-label">Planes IA</span>
-    </a>
-  </nav>
-
-  <div class="sidebar-section-label">Operacion</div>
-  <nav class="sidebar-nav sidebar-nav-secondary">
-    <a href="#" class="nav-item" data-section="finanzas">
-      <span class="material-symbols-rounded">payments</span>
-      <span class="nav-label">Finanzas</span>
-    </a>
-    <a href="#" class="nav-item" data-section="documentos">
-      <span class="material-symbols-rounded">description</span>
-      <span class="nav-label">Documentos</span>
-    </a>
-  </nav>
-
-  <div class="sidebar-bottom">
-    <div class="sidebar-section-label">Comunicaci&oacute;n</div>
-    <a href="#" class="nav-item has-badge" data-section="intakes">
-      <span class="material-symbols-rounded">forward_to_inbox</span>
-      <span class="nav-label">Mensajes</span>
-      <span class="badge" id="intakeBadge">0</span>
-    </a>
-    <a href="#" class="nav-item" data-section="historial">
-      <span class="material-symbols-rounded">folder_open</span>
-      <span class="nav-label">Historial</span>
-    </a>
-    <a href="#" class="nav-item" data-section="config">
-      <span class="material-symbols-rounded">settings</span>
-      <span class="nav-label">Ajustes</span>
-    </a>
-    <div class="sidebar-profile">
-      <div class="avatar">RR</div>
+<aside class="sidebar fixed inset-y-0 left-0 z-40 w-64 bg-[#FAFAF8] border-r border-gray-200 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0" id="sidebar">
+  <div class="p-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+        <span class="material-symbols-rounded text-[22px]">medical_services</span>
+      </div>
       <div>
-        <strong>Dr. Ra&uacute;l Ruiz</strong>
-        <span>Fisioterapia</span>
+        <h1 class="text-base font-semibold text-[#11181C] tracking-tight leading-tight">Fisio_IA_Agent</h1>
+        <p class="text-[11px] font-medium text-emerald-600 uppercase tracking-widest mt-0.5">Clinical OS</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-6 mb-6">
+    <div class="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-3 shadow-sm">
+      <span class="relative flex h-2.5 w-2.5 mt-1">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+      </span>
+      <div class="flex flex-col">
+        <strong class="text-xs font-semibold text-[#11181C]">Consulta activa</strong>
+        <span class="text-[10px] text-[#687076] leading-tight mt-0.5">Agenda, IA y CRM sincronizados</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto px-4 space-y-6 pb-6">
+    <div>
+      <h3 class="px-3 text-xs font-medium text-[#687076] uppercase tracking-wider mb-2">Trabajo</h3>
+      <nav class="space-y-1">
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#11181C] bg-white border border-gray-200 shadow-sm transition-all" data-section="dashboard">
+          <span class="material-symbols-rounded text-[20px] text-emerald-600">home</span>
+          <span class="nav-label">Inicio</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="pacientes">
+          <span class="material-symbols-rounded text-[20px]">group</span>
+          <span class="nav-label">Pacientes</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="citas">
+          <span class="material-symbols-rounded text-[20px]">calendar_today</span>
+          <span class="nav-label">Agenda</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors" data-section="plantillas">
+          <span class="material-symbols-rounded text-[20px]">psychology</span>
+          <span class="nav-label">Planes IA</span>
+        </a>
+      </nav>
+    </div>
+
+    <div>
+      <h3 class="px-3 text-xs font-medium text-[#687076] uppercase tracking-wider mb-2">Operación</h3>
+      <nav class="space-y-1">
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="finanzas">
+          <span class="material-symbols-rounded text-[20px]">payments</span>
+          <span class="nav-label">Finanzas</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="documentos">
+          <span class="material-symbols-rounded text-[20px]">description</span>
+          <span class="nav-label">Documentos</span>
+        </a>
+      </nav>
+    </div>
+
+    <div>
+      <h3 class="px-3 text-xs font-medium text-[#687076] uppercase tracking-wider mb-2">Comunicación</h3>
+      <nav class="space-y-1">
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="intakes">
+          <span class="material-symbols-rounded text-[20px]">forward_to_inbox</span>
+          <span class="nav-label flex-1">Mensajes</span>
+          <span class="badge bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-bold" id="intakeBadge">0</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="historial">
+          <span class="material-symbols-rounded text-[20px]">folder_open</span>
+          <span class="nav-label">Historial</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="config">
+          <span class="material-symbols-rounded text-[20px]">settings</span>
+          <span class="nav-label">Ajustes</span>
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="p-4 border-t border-gray-200">
+    <div class="flex items-center gap-3 px-2">
+      <div class="w-9 h-9 rounded-full bg-[#11181C] text-white flex items-center justify-center text-sm font-medium">RR</div>
+      <div class="flex flex-col">
+        <strong class="text-sm font-medium text-[#11181C]">Dr. Raúl Ruiz</strong>
+        <span class="text-xs text-[#687076]">Fisioterapia</span>
       </div>
     </div>
   </div>
 </aside>
 
-<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<div class="sidebar-backdrop fixed inset-0 bg-black/40 backdrop-blur-sm z-30 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden" id="sidebarBackdrop"></div>
+
+<script>
+  import { isSidebarOpen } from '../store';
+
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+
+  isSidebarOpen.subscribe((isOpen) => {
+    if (isOpen) {
+      sidebar?.classList.remove('-translate-x-full');
+      sidebar?.classList.add('translate-x-0');
+      backdrop?.classList.remove('opacity-0', 'pointer-events-none');
+      backdrop?.classList.add('opacity-100', 'pointer-events-auto');
+      // On mobile, block body scroll
+      if (window.innerWidth <= 768) {
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      sidebar?.classList.remove('translate-x-0');
+      sidebar?.classList.add('-translate-x-full');
+      backdrop?.classList.remove('opacity-100', 'pointer-events-auto');
+      backdrop?.classList.add('opacity-0', 'pointer-events-none');
+      document.body.style.overflow = '';
+    }
+  });
+
+  backdrop?.addEventListener('click', () => {
+    isSidebarOpen.set(false);
+  });
+
+  document.addEventListener('fisio:open-sidebar', () => isSidebarOpen.set(true));
+  document.addEventListener('fisio:close-sidebar', () => isSidebarOpen.set(false));
+</script>

@@ -1,10 +1,11 @@
-﻿---
+---
 interface Props {
   title: string;
   description?: string;
 }
 
 const { title, description = 'Plataforma inteligente de prescripcion y seguimiento para fisioterapeutas' } = Astro.props;
+import '../styles/global.css';
 ---
 
 <!doctype html>

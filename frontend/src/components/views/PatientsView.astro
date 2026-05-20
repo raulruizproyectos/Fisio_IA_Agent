@@ -1,0 +1,190 @@
+---
+// PatientsView.astro
+---
+
+<!-- === PAGE: PACIENTES === -->
+<div class="page-section bg-[#FAFAF8] min-h-full py-12 px-6 lg:px-12" data-page="pacientes">
+  <section class="max-w-5xl mx-auto space-y-12">
+    
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div class="space-y-2">
+        <span class="text-sm font-medium tracking-wider text-emerald-600/80 uppercase">Directorio Clínico</span>
+        <h1 class="text-4xl font-medium text-[#11181C] tracking-tight">Pacientes</h1>
+        <p class="text-lg text-[#687076] font-light">Busca, filtra y abre cada caso sin ruido visual.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="addPatientBtn" type="button" class="flex items-center gap-2 bg-[#11181C] hover:bg-black text-white px-5 py-2.5 rounded-full font-medium transition-all shadow-sm">
+          <span class="material-symbols-rounded text-xl">person_add</span> Nuevo paciente
+        </button>
+        <button id="patientsHeroAddBtn" type="button" class="flex items-center gap-2 bg-white hover:bg-gray-50 text-[#11181C] border border-gray-200 px-5 py-2.5 rounded-full font-medium transition-all shadow-sm hidden">
+          <span class="material-symbols-rounded text-xl text-amber-500">bolt</span> Alta rápida
+        </button>
+        <button id="refreshPacientes" type="button" class="flex items-center gap-2 text-[#687076] hover:text-[#11181C] px-3 py-2 rounded-full font-medium transition-colors">
+          <span class="material-symbols-rounded text-xl">refresh</span> Sincronizar
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" aria-label="Resumen de pacientes">
+      <article class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-1">
+        <span class="text-sm font-medium text-[#687076] uppercase tracking-wide">Total activo</span>
+        <strong id="patientsTotalValue" class="text-4xl font-light text-[#11181C]">0</strong>
+        <p id="patientsTotalMeta" class="text-sm text-[#687076]">Cargando base clínica...</p>
+      </article>
+      <article class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-1">
+        <span class="text-sm font-medium text-[#687076] uppercase tracking-wide">Contacto útil</span>
+        <strong id="patientsReachValue" class="text-4xl font-light text-[#11181C]">0%</strong>
+        <p id="patientsReachMeta" class="text-sm text-[#687076]">Midiendo email y teléfono disponibles.</p>
+      </article>
+      <article class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-1">
+        <span class="text-sm font-medium text-[#687076] uppercase tracking-wide">Altas recientes</span>
+        <strong id="patientsRecentValue" class="text-4xl font-light text-[#11181C]">0</strong>
+        <p id="patientsRecentMeta" class="text-sm text-[#687076]">Sin lectura todavía.</p>
+      </article>
+    </div>
+
+    <!-- Toolbar -->
+    <section class="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white p-2 rounded-full border border-gray-200 shadow-sm" aria-label="Filtros de pacientes">
+      
+      <label class="flex-1 flex items-center gap-3 px-4 w-full" for="patientsFilterInput">
+        <span class="material-symbols-rounded text-[#687076]">search</span>
+        <input type="text" id="patientsFilterInput" class="w-full bg-transparent border-none focus:ring-0 text-[#11181C] placeholder-[#687076]" placeholder="Buscar por nombre, email, teléfono o ID..." autocomplete="off" />
+      </label>
+
+      <div class="flex items-center gap-2 w-full lg:w-auto px-2 lg:px-0 lg:pr-2 pb-2 lg:pb-0 overflow-x-auto">
+        <div class="flex items-center bg-gray-100 p-1 rounded-full" id="patientsSegmented">
+          <button type="button" class="px-4 py-1.5 rounded-full text-sm font-medium text-[#11181C] bg-white shadow-sm transition-all" data-patient-filter="all">Todos</button>
+          <button type="button" class="px-4 py-1.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] transition-all" data-patient-filter="contactable">Contactables</button>
+          <button type="button" class="px-4 py-1.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] transition-all" data-patient-filter="incomplete">Incompletos</button>
+          <button type="button" class="px-4 py-1.5 rounded-full text-sm font-medium text-[#687076] hover:text-[#11181C] transition-all" data-patient-filter="recent">Recientes</button>
+        </div>
+        
+        <label class="relative flex items-center shrink-0" for="patientsSortSelect">
+          <select id="patientsSortSelect" class="appearance-none bg-gray-100 hover:bg-gray-200 text-[#11181C] text-sm font-medium py-1.5 pl-4 pr-10 rounded-full border-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-colors" aria-label="Orden de pacientes">
+            <option value="recent_desc">Más recientes</option>
+            <option value="readiness">Priorizar incompletos</option>
+            <option value="name_asc">Nombre A-Z</option>
+            <option value="name_desc">Nombre Z-A</option>
+          </select>
+          <span class="material-symbols-rounded absolute right-3 text-[#687076] pointer-events-none text-sm" aria-hidden="true">expand_more</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Directory List -->
+    <section class="space-y-6">
+      <header class="flex items-center justify-between px-2">
+        <div>
+          <h2 class="text-xl font-medium text-[#11181C]">Listado listo para trabajar</h2>
+          <p id="patientsListMeta" class="text-sm text-[#687076]">Cargando pacientes del CRM...</p>
+        </div>
+        <span class="bg-gray-100 text-[#687076] text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider" id="patientsFilterChip">Todos los pacientes</span>
+      </header>
+
+      <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden" id="pacientesBody">
+        <div class="flex flex-col items-center justify-center py-20 text-[#687076]">
+          <span class="material-symbols-rounded text-4xl mb-3 animate-pulse">hourglass_empty</span>
+          <p>Cargando pacientes...</p>
+        </div>
+      </div>
+    </section>
+  </section>
+</div>
+
+<!-- Modal -->
+<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="patientModal" aria-hidden="true">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden transform scale-95 transition-transform duration-300" role="dialog" aria-modal="true" aria-labelledby="patientModalTitle">
+    
+    <div class="px-8 py-6 border-b border-gray-100 flex items-start justify-between">
+      <div class="space-y-1">
+        <p class="text-xs font-medium text-emerald-600 uppercase tracking-wider">CRM</p>
+        <h2 id="patientModalTitle" class="text-2xl font-medium text-[#11181C]">Alta de paciente</h2>
+        <p class="text-sm text-[#687076]">Registra un paciente y déjalo listo para historial, chat clínico y plantillas.</p>
+      </div>
+      <button type="button" class="text-[#687076] hover:text-[#11181C] p-2 rounded-full hover:bg-gray-100 transition-colors" id="closePatientModalBtn" aria-label="Cerrar formulario de paciente">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+
+    <form id="patientForm" class="p-8 space-y-6">
+      <div class="space-y-5">
+        <label class="block space-y-2">
+          <span class="text-sm font-medium text-[#11181C]">Nombre completo</span>
+          <input id="patientNameInput" name="nombre_completo" type="text" class="w-full bg-gray-50 border border-gray-200 text-[#11181C] rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" placeholder="Ej.: María López García" autocomplete="name" required />
+        </label>
+        
+        <label class="block space-y-2">
+          <span class="text-sm font-medium text-[#11181C]">Email</span>
+          <input id="patientEmailInput" name="email" type="email" class="w-full bg-gray-50 border border-gray-200 text-[#11181C] rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" placeholder="paciente@correo.com" autocomplete="email" />
+        </label>
+        
+        <label class="block space-y-2">
+          <span class="text-sm font-medium text-[#11181C]">Teléfono</span>
+          <input id="patientPhoneInput" name="phone" type="tel" class="w-full bg-gray-50 border border-gray-200 text-[#11181C] rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" placeholder="+34 600 123 456" autocomplete="tel" />
+        </label>
+        
+        <label class="block space-y-2">
+          <span class="text-sm font-medium text-[#11181C]">Fecha de nacimiento</span>
+          <input id="patientBirthDateInput" name="fecha_nacimiento" type="date" class="w-full bg-gray-50 border border-gray-200 text-[#11181C] rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" autocomplete="bday" />
+        </label>
+      </div>
+
+      <p class="text-sm text-red-600 bg-red-50 p-3 rounded-lg" id="patientFormFeedback" hidden></p>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+        <button type="button" class="px-5 py-2.5 rounded-full text-[#687076] hover:text-[#11181C] hover:bg-gray-100 font-medium transition-colors" id="patientModalDismiss">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors shadow-sm" id="patientSubmitBtn">
+          <span class="material-symbols-rounded text-[20px]">save</span>
+          Guardar paciente
+        </button>
+      </div>
+    </form>
+    
+  </div>
+</div>
+
+<script>
+  import { modalState } from '../../store';
+
+  const patientModal = document.getElementById('patientModal');
+  const inner = patientModal?.querySelector('div');
+  const patientNameInput = document.getElementById('patientNameInput') as HTMLInputElement;
+
+  modalState.subscribe((state) => {
+    if (!patientModal || !inner) return;
+
+    if (state.patientForm.isOpen) {
+      patientModal.classList.remove('opacity-0', 'pointer-events-none');
+      patientModal.classList.add('opacity-100', 'pointer-events-auto');
+      patientModal.setAttribute('aria-hidden', 'false');
+      inner.classList.remove('scale-95');
+      inner.classList.add('scale-100');
+      document.body.classList.add('has-modal-open');
+      window.setTimeout(() => patientNameInput?.focus(), 25);
+    } else {
+      patientModal.classList.remove('opacity-100', 'pointer-events-auto');
+      patientModal.classList.add('opacity-0', 'pointer-events-none');
+      patientModal.setAttribute('aria-hidden', 'true');
+      inner.classList.remove('scale-100');
+      inner.classList.add('scale-95');
+      document.body.classList.remove('has-modal-open');
+    }
+  });
+
+  const closeHandler = () => {
+    const current = modalState.get();
+    modalState.set({ ...current, patientForm: { isOpen: false } });
+  };
+
+  document.getElementById('closePatientModalBtn')?.addEventListener('click', closeHandler);
+  document.getElementById('patientModalDismiss')?.addEventListener('click', closeHandler);
+
+  document.addEventListener('fisio:open-patient-modal', () => {
+    const current = modalState.get();
+    modalState.set({ ...current, patientForm: { isOpen: true } });
+  });
+
+  document.addEventListener('fisio:close-patient-modal', closeHandler);
+</script>

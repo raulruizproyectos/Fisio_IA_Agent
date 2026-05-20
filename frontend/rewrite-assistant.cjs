@@ -1,4 +1,7 @@
----
+const fs = require('fs');
+const file = 'src/components/AssistantRail.astro';
+
+const newContent = `---
 // AssistantRail.astro
 ---
 
@@ -168,79 +171,7 @@
   <span class="material-symbols-rounded">robot_2</span>
   <span class="font-medium">Copiloto</span>
 </button>
+`;
 
-<script>
-  import { assistantState } from '../store';
-
-  const assistantRail = document.getElementById('assistantRail');
-  const assistantRailBackdrop = document.getElementById('assistantRailBackdrop');
-
-  const updateRailStyles = (isOpen: boolean) => {
-    if (isOpen) {
-      const isMobile = window.innerWidth <= 768;
-      assistantRail?.classList.add('open');
-      assistantRail?.classList.remove('translate-x-full');
-      assistantRail?.classList.add('translate-x-0');
-      assistantRailBackdrop?.classList.remove('opacity-0', 'pointer-events-none');
-      assistantRailBackdrop?.classList.add('opacity-100', 'pointer-events-auto');
-      assistantRail?.setAttribute('aria-hidden', 'false');
-      
-      assistantRail?.style.setProperty('position', 'fixed', 'important');
-      assistantRail?.style.setProperty('top', 'max(0.75rem, env(safe-area-inset-top))', 'important');
-      assistantRail?.style.setProperty('right', 'max(0.75rem, env(safe-area-inset-right))', 'important');
-      assistantRail?.style.setProperty('bottom', 'max(0.75rem, env(safe-area-inset-bottom))', 'important');
-      assistantRail?.style.setProperty('left', isMobile ? 'max(0.375rem, env(safe-area-inset-left))' : 'auto', 'important');
-      assistantRail?.style.setProperty('width', isMobile ? 'auto' : 'min(1040px, calc(100vw - 1.5rem))', 'important');
-      assistantRail?.style.setProperty('height', 'auto', 'important');
-      
-      if (isMobile) document.body.style.overflow = 'hidden';
-    } else {
-      assistantRail?.classList.remove('open');
-      assistantRail?.classList.remove('translate-x-0');
-      assistantRail?.classList.add('translate-x-full');
-      assistantRailBackdrop?.classList.remove('opacity-100', 'pointer-events-auto');
-      assistantRailBackdrop?.classList.add('opacity-0', 'pointer-events-none');
-      assistantRail?.setAttribute('aria-hidden', 'true');
-      
-      assistantRail?.style.removeProperty('position');
-      assistantRail?.style.removeProperty('top');
-      assistantRail?.style.removeProperty('right');
-      assistantRail?.style.removeProperty('bottom');
-      assistantRail?.style.removeProperty('left');
-      assistantRail?.style.removeProperty('width');
-      assistantRail?.style.removeProperty('height');
-
-      if (window.innerWidth <= 768) {
-        document.body.style.overflow = '';
-      }
-    }
-  };
-
-  assistantState.subscribe((state) => {
-    updateRailStyles(state.isOpen);
-  });
-
-  const closeAssistant = () => {
-    const current = assistantState.get();
-    assistantState.set({ ...current, isOpen: false });
-  };
-
-  const openAssistant = () => {
-    const current = assistantState.get();
-    assistantState.set({ ...current, isOpen: true });
-  };
-
-  document.getElementById('assistantRailClose')?.addEventListener('click', closeAssistant);
-  document.getElementById('assistantRailBackdrop')?.addEventListener('click', closeAssistant);
-  document.getElementById('assistantRailFab')?.addEventListener('click', openAssistant);
-
-  document.addEventListener('fisio:open-assistant', openAssistant);
-  document.addEventListener('fisio:close-assistant', closeAssistant);
-
-  // Resize listener to maintain styles if opened
-  window.addEventListener('resize', () => {
-    if (assistantState.get().isOpen) {
-      updateRailStyles(true);
-    }
-  });
-</script>
+fs.writeFileSync(file, newContent, 'utf8');
+console.log('AssistantRail.astro written successfully.');

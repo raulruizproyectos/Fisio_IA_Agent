@@ -1,0 +1,61 @@
+        <!-- === PAGE: CONFIG === -->
+        <div class="page-section" data-page="config">
+          <div class="page-header-row">
+            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Configuraci&oacute;n</h1>
+          </div>
+          <div class="config-grid">
+            <section class="card config-card-full">
+              <header class="card-header">
+                <h2>Datos de la cl&iacute;nica</h2>
+                <span class="config-card-hint">Usados en facturas PDF y consentimientos</span>
+              </header>
+              <form id="clinicConfigForm" class="section-body">
+                <div class="form-grid">
+                  <label class="field field-full"><span>Nombre de la cl&iacute;nica *</span><input id="cfgClinicNombre" type="text" placeholder="Cl&iacute;nica de Fisioterapia" /></label>
+                  <label class="field"><span>NIF / CIF</span><input id="cfgClinicNif" type="text" placeholder="B12345678" /></label>
+                  <label class="field"><span>Tel&eacute;fono</span><input id="cfgClinicTelefono" type="text" placeholder="+34 600 000 000" /></label>
+                  <label class="field field-full"><span>Direcci&oacute;n</span><input id="cfgClinicDireccion" type="text" placeholder="Calle Mayor 1, 08001 Barcelona" /></label>
+                  <label class="field"><span>Email</span><input id="cfgClinicEmail" type="email" placeholder="clinica@ejemplo.com" /></label>
+                  <label class="field"><span>Web (opcional)</span><input id="cfgClinicWeb" type="text" placeholder="www.miclinica.com" /></label>
+                </div>
+                <div class="config-form-actions">
+                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar datos</button>
+                  <span id="clinicConfigFeedback" class="config-feedback-inline" hidden></span>
+                </div>
+              </form>
+            </section>
+            <section class="card">
+              <header class="card-header"><h2>Conexiones</h2></header>
+              <div class="section-body">
+                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">Detectando...</span></div>
+                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">Detectando...</span></div>
+                <div class="config-item"><span class="config-label">Readiness DB</span><span class="config-value" id="cfgReadiness">Comprobando...</span><span class="status-chip pendiente" id="cfgReadinessStatus">Comprobando</span></div>
+                <p class="form-feedback config-readiness-detail" id="cfgReadinessDetail" hidden></p>
+              </div>
+            </section>
+            <section class="card">
+              <header class="card-header"><h2>Reserva online</h2></header>
+              <div class="section-body booking-link-card">
+                <p class="booking-link-hint">Comparte esta pagina publica para que el paciente reserve usando la disponibilidad real del calendario activo.</p>
+                <label class="booking-link-stack" for="cfgBookingUrl">
+                  <span class="config-label">URL publica</span>
+                  <input id="cfgBookingUrl" class="booking-link-input" type="text" readonly />
+                </label>
+                <div class="booking-link-actions">
+                  <button type="button" class="btn-secondary" id="cfgBookingOpenBtn"><span class="material-symbols-rounded">open_in_new</span> Abrir pagina</button>
+                  <button type="button" class="btn-ghost" id="cfgBookingCopyBtn"><span class="material-symbols-rounded">content_copy</span> Copiar enlace</button>
+                </div>
+                <span id="cfgBookingFeedback" class="form-feedback" hidden></span>
+              </div>
+            </section>
+            <section class="card">
+              <header class="card-header"><h2>Proyecto</h2></header>
+              <div class="section-body">
+                <div class="config-item"><span class="config-label">Versi&oacute;n</span><span class="config-value">1.0.0</span></div>
+                <div class="config-item"><span class="config-label">Stack</span><span class="config-value">Astro + Express + Supabase + n8n</span></div>
+                <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub &#x2197;</a></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>

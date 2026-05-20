@@ -1,0 +1,70 @@
+---
+// PlantillasView.astro
+---
+
+<!-- === PAGE: PLANTILLAS === -->
+<div class="page-section" data-page="plantillas">
+  <div class="page-header-row template-library-header">
+    <div>
+      <h1 class="page-title"><span class="material-symbols-rounded">library_books</span> Biblioteca clínica</h1>
+      <p class="page-subtitle">Gestiona planes IA, entregas archivadas y plantillas reutilizables en una sola vista.</p>
+    </div>
+    <button class="btn-ghost" id="refreshTemplates" type="button"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
+  </div>
+
+  <div class="template-library-shell">
+    <section class="template-kpi-grid" id="templateLibrarySummary">
+      <article class="template-kpi-card">
+        <span>Planes visibles</span>
+        <strong>--</strong>
+        <p>Cargando biblioteca clínica...</p>
+      </article>
+      <article class="template-kpi-card">
+        <span>Entregas visibles</span>
+        <strong>--</strong>
+        <p>Esperando historial archivado...</p>
+      </article>
+      <article class="template-kpi-card">
+        <span>Pacientes con seguimiento</span>
+        <strong>--</strong>
+        <p>Preparando resumen operativo...</p>
+      </article>
+    </section>
+
+    <div class="template-library-grid">
+      <section class="card table-card template-history-card">
+        <header class="card-header card-header-stack">
+          <div>
+            <h2>Planes generados</h2>
+            <p class="card-subtitle">Historial real de ejercicios enviados o archivados para seguimiento domiciliario.</p>
+          </div>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Plan</th>
+                <th>Ejercicios</th>
+                <th>Entregas</th>
+                <th>Ultimo movimiento</th>
+                <th>Accion</th>
+              </tr>
+            </thead>
+            <tbody id="templateHistoryBody">
+              <tr class="empty-row">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <span class="material-symbols-rounded">hourglass_empty</span>
+                    <p>Cargando biblioteca clínica...</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>

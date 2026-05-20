@@ -1,0 +1,63 @@
+        <!-- === PAGE: DOCUMENTOS === -->
+        <div class="page-section" data-page="documentos">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">description</span> Documentos y Consentimientos</h1>
+              <p class="page-subtitle">Vista global para firmas y consentimientos. Para trabajar un caso concreto, entra en la ficha del paciente y abre la pestana Documentos.</p>
+            </div>
+            <div class="page-tools">
+              <select id="documentosEstadoFilter" title="Estado">
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente firma</option>
+                <option value="firmado">Firmados</option>
+              </select>
+              <button class="btn-ghost" id="refreshDocumentos"><span class="material-symbols-rounded">refresh</span> Actualizar</button>
+            </div>
+          </div>
+          <section class="ops-patient-directory documentos-workbench">
+            <header class="ops-patients-head documentos-workbench-head">
+              <h2 class="ops-title documentos-workbench-title">Consentimientos</h2>
+            </header>
+            
+            <div class="ops-signals documentos-summary" id="documentosSummaryStrip">
+              <article class="ops-signal">
+                <span class="ops-signal-label">Total</span>
+                <strong class="ops-signal-value" id="documentosCountValue">0</strong>
+                <span class="ops-signal-hint" id="documentosCountMeta">Registros</span>
+              </article>
+              <article class="ops-signal">
+                <span class="ops-signal-label">Firmados</span>
+                <strong class="ops-signal-value documentos-value-ok" id="documentosSignedValue">0</strong>
+                <span class="ops-signal-hint" id="documentosSignedMeta">Completados</span>
+              </article>
+              <article class="ops-signal">
+                <span class="ops-signal-label">Pendientes</span>
+                <strong class="ops-signal-value documentos-value-warn" id="documentosPendingValue">0</strong>
+                <span class="ops-signal-hint" id="documentosPendingMeta">Requieren firma</span>
+              </article>
+            </div>
+
+            <div class="documentos-mobile-list" id="documentosMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando documentos...</p></div>
+            </div>
+            
+            <div class="ops-patient-list documentos-table-wrap">
+              <table class="documentos-table">
+                <thead>
+                  <tr>
+                    <th>Paciente</th>
+                    <th>Tipo</th>
+                    <th>T&iacute;tulo</th>
+                    <th>Estado</th>
+                    <th>Fecha firma</th>
+                    <th class="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="documentosBody">
+                  <tr class="empty-row"><td colspan="6"><div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span><p>Cargando documentos...</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+

@@ -1,0 +1,98 @@
+        <!-- === PAGE: FACTURACION === -->
+        <div class="page-section" data-page="facturas">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Facturas emitidas, pendiente de cobro y PDF listos para compartir.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" type="button" data-dashboard-nav="pagos"><span class="material-symbols-rounded">arrow_back</span> Resumen</button>
+              <button class="btn-primary" id="nuevaFacturaBtn"><span class="material-symbols-rounded">add</span> Nueva factura</button>
+            </div>
+          </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
+          <section class="finance-subview-strip">
+            <div>
+              <span>Vista financiera</span>
+              <strong>Facturacion</strong>
+              <p>Revisa lo emitido y lo pendiente antes de registrar cobros o preparar el cierre.</p>
+            </div>
+            <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestoria</button>
+          </section>
+
+          <section class="card table-card">
+            <header class="card-header">
+              <h2>Facturas emitidas</h2>
+              <div class="pagos-filters-row">
+                <select id="facturasAnioFilter" title="A&ntilde;o"></select>
+                <button class="btn-ghost btn-sm" id="refreshFacturas"><span class="material-symbols-rounded">refresh</span></button>
+              </div>
+            </header>
+            <div class="facturas-summary-strip" id="facturasSummaryStrip">
+              <article class="facturas-summary-card">
+                <span>Emitidas</span>
+                <strong id="facturasCountValue">0</strong>
+                <p id="facturasCountMeta">Sin lectura todavia.</p>
+              </article>
+              <article class="facturas-summary-card">
+                <span>Total facturado</span>
+                <strong id="facturasTotalValue">0 EUR</strong>
+                <p id="facturasTotalMeta">Esperando datos del ejercicio.</p>
+              </article>
+              <article class="facturas-summary-card facturas-summary-card-accent">
+                <span>Pendiente de cobro</span>
+                <strong id="facturasPendingValue">0 EUR</strong>
+                <p id="facturasPendingMeta">Sin facturas pendientes.</p>
+              </article>
+            </div>
+            <p class="form-feedback" id="facturaAvailabilityNotice" hidden></p>
+            <div class="facturas-mobile-list" id="facturasMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando facturacion...</p></div>
+            </div>
+            <div class="table-wrap facturas-table-wrap">
+              <table><thead><tr><th>N&uacute;mero</th><th>Fecha</th><th>Paciente</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="facturasBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">receipt_long</span><p>Sin facturas emitidas</p></div></td></tr></tbody></table>
+            </div>
+          </section>
+
+          <!-- Modal nueva factura -->
+          <div class="modal-shell crm-drawer-shell finance-drawer-shell" id="facturaModal" aria-hidden="true">
+            <div class="modal-panel crm-drawer-panel" role="dialog" aria-modal="true">
+              <div class="modal-header">
+                <div class="modal-title-group">
+                  <p class="modal-eyebrow">FACTURACI&Oacute;N</p>
+                  <h2>Generar factura</h2>
+                  <p>Selecciona un paciente para facturar sus pagos pendientes.</p>
+                </div>
+                <button type="button" class="modal-close" id="facturaModalClose" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+              </div>
+              <form id="facturaForm">
+                <div class="form-grid">
+                  <label class="field field-full"><span>Paciente</span>
+                    <select id="facturaPacienteSelect" required>
+                      <option value="">-- Selecciona paciente --</option>
+                    </select>
+                  </label>
+                  <label class="field"><span>IVA (%)</span>
+                    <select id="facturaIvaPct">
+                      <option value="0">0% (Exento)</option>
+                      <option value="4">4%</option>
+                      <option value="10">10%</option>
+                      <option value="21" selected>21%</option>
+                    </select>
+                  </label>
+                  <label class="field field-full"><span>Notas</span>
+                    <textarea id="facturaNotas" rows="2" placeholder="Notas adicionales (opcional)"></textarea>
+                  </label>
+                </div>
+                <div id="facturaPreview" class="factura-preview" hidden></div>
+                <p class="form-feedback" id="facturaFeedback" hidden></p>
+                <div class="modal-actions">
+                  <button type="button" class="btn-ghost" id="facturaModalDismiss">Cancelar</button>
+                  <button type="submit" class="btn-primary" id="facturaSubmitBtn"><span class="material-symbols-rounded">receipt</span> Generar factura</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+

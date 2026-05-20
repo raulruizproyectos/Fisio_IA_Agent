@@ -1,0 +1,106 @@
+        <!-- === PAGE: BONOS === -->
+        <div class="page-section" data-page="bonos">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
+              <p class="page-subtitle">Bonos activos, sesiones restantes y renovaciones faciles de detectar.</p>
+            </div>
+            <div class="page-tools">
+              <button class="btn-secondary" type="button" data-dashboard-nav="pagos"><span class="material-symbols-rounded">arrow_back</span> Resumen</button>
+              <button class="btn-primary" id="nuevoBonoBtn"><span class="material-symbols-rounded">add</span> Nuevo bono</button>
+            </div>
+          </div>
+          <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
+          <section class="finance-subview-strip">
+            <div>
+              <span>Vista financiera</span>
+              <strong>Bonos de sesiones</strong>
+              <p>Controla consumo, valor pendiente y bonos que necesitan renovacion antes de la siguiente visita.</p>
+            </div>
+            <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
+          </section>
+          <section class="card table-card">
+            <header class="card-header">
+              <h2>Bonos activos y hist&oacute;rico</h2>
+              <div class="pagos-filters-row">
+                <select id="bonosEstadoFilter" title="Estado">
+                  <option value="">Todos</option>
+                  <option value="activo" selected>Activos</option>
+                  <option value="agotado">Agotados</option>
+                  <option value="anulado">Anulados</option>
+                </select>
+                <button class="btn-ghost btn-sm" id="refreshBonos"><span class="material-symbols-rounded">refresh</span></button>
+              </div>
+            </header>
+            <div class="bonos-summary-strip" id="bonosSummaryStrip">
+              <article class="bonos-summary-card">
+                <span>Bonos visibles</span>
+                <strong id="bonosCountValue">0</strong>
+                <p id="bonosCountMeta">Sin lectura.</p>
+              </article>
+              <article class="bonos-summary-card">
+                <span>Sesiones restantes</span>
+                <strong id="bonosRemainingValue">0</strong>
+                <p id="bonosRemainingMeta">Sin consumo.</p>
+              </article>
+              <article class="bonos-summary-card bonos-summary-card-accent">
+                <span>Valor pendiente</span>
+                <strong id="bonosPendingValue">0,00 &euro;</strong>
+                <p id="bonosPendingMeta">Sin valor pendiente.</p>
+              </article>
+            </div>
+            <p class="form-feedback" id="bonosAvailabilityNotice" hidden></p>
+            <div class="bonos-mobile-list" id="bonosMobileList">
+              <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando bonos...</p></div>
+            </div>
+            <div class="table-wrap bonos-table-wrap">
+              <table><thead><tr><th>Paciente</th><th>Bono</th><th>Sesiones</th><th>Precio</th><th>Inicio</th><th>Caducidad</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="bonosBody"><tr class="empty-row"><td colspan="8"><div class="empty-state"><span class="material-symbols-rounded">confirmation_number</span><p>Sin bonos registrados</p></div></td></tr></tbody></table>
+            </div>
+          </section>
+
+          <!-- Modal nuevo bono -->
+          <div class="modal-shell" id="bonoModal" aria-hidden="true">
+            <div class="modal-panel" role="dialog" aria-modal="true">
+              <div class="modal-header">
+                <div class="modal-title-group">
+                  <p class="modal-eyebrow">BONOS</p>
+                  <h2 id="bonoModalTitle">Nuevo bono</h2>
+                </div>
+                <button type="button" class="modal-close" id="bonoModalClose"><span class="material-symbols-rounded">close</span></button>
+              </div>
+              <form id="bonoForm" class="form-grid">
+                <input type="hidden" id="bonoEditId" />
+                <label class="field field-full"><span>Paciente</span>
+                  <select id="bonoPacienteSelect" required>
+                    <option value="">-- Selecciona paciente --</option>
+                  </select>
+                </label>
+                <label class="field field-full"><span>Nombre del bono</span>
+                  <input id="bonoNombre" type="text" placeholder="Ej: Bono 10 sesiones" required />
+                </label>
+                <label class="field"><span>N&uacute;mero de sesiones</span>
+                  <input id="bonoSesiones" type="number" min="1" max="100" value="10" required />
+                </label>
+                <label class="field"><span>Precio total (EUR)</span>
+                  <input id="bonoPrecio" type="number" min="0" step="0.01" placeholder="0.00" required />
+                </label>
+                <label class="field"><span>Fecha inicio</span>
+                  <input id="bonoFechaInicio" type="date" />
+                </label>
+                <label class="field"><span>Fecha caducidad (opcional)</span>
+                  <input id="bonoFechaCaducidad" type="date" />
+                </label>
+                <label class="field field-full"><span>Notas</span>
+                  <textarea id="bonoNotas" rows="2" placeholder="Observaciones..."></textarea>
+                </label>
+                <p class="form-feedback" id="bonoFeedback" hidden></p>
+                <div class="modal-actions modal-actions-full">
+                  <button type="button" class="btn-ghost" id="bonoModalDismiss">Cancelar</button>
+                  <button type="submit" class="btn-primary" id="bonoSubmitBtn"><span class="material-symbols-rounded">save</span> Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
