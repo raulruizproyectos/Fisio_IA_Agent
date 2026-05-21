@@ -95,6 +95,24 @@ import ConfigView from '../components/views/ConfigView.astro';
     return str ? `?${str}` : '';
   };
 
+  // === RESPONSIVE & LAYOUT UTILS ===
+  const isMobile = () => window.innerWidth <= 768;
+
+  const closeSidebar = () => {
+    document.dispatchEvent(new CustomEvent('fisio:close-sidebar'));
+  };
+
+  const openSidebar = () => {
+    document.dispatchEvent(new CustomEvent('fisio:open-sidebar'));
+  };
+
+  const syncResponsiveViewportState = () => {
+    const width = window.innerWidth;
+    const mode = width <= 768 ? 'mobile' : width <= 1200 ? 'laptop' : 'desktop';
+    document.documentElement.setAttribute('data-viewport-mode', mode);
+    document.documentElement.setAttribute('data-assistant-mode', width <= 992 ? 'compact' : 'expanded');
+  };
+
   // Assistant rail sizing now lives in src/styles/assistant-rail.css.
 
   const enforceAssistantChatFirstLayout = () => {
