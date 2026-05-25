@@ -1,33 +1,30 @@
 /*
- * Clinical copilot redesign.
- * Conversation first, compact patient context, fixed composer.
+ * Assistant rail canonical layer.
+ * Loaded last from index.astro to neutralize legacy assistant overrides.
  */
+
+#assistantRail,
 #assistantRail.assistant-rail,
 #assistantRail.assistant-rail-portal {
   position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: auto !important;
-  z-index: 120 !important;
+  inset: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) auto !important;
+  z-index: 50 !important;
   display: flex !important;
-  width: 100% !important;
-  max-width: 480px !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  color: #13201d !important;
+  width: 420px !important;
+  max-width: calc(100vw - 1.5rem) !important;
+  height: auto !important;
+  max-height: calc(100dvh - 1.5rem) !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: -18px 0 42px -30px rgba(15, 23, 42, 0.42), 0 10px 30px -24px rgba(15, 23, 42, 0.32) !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  transform: translateX(100%) !important;
-  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: -6px 0 30px rgba(17, 28, 25, 0.16) !important;
-}
-
-@media (min-width: 1024px) {
-  #assistantRail.assistant-rail,
-  #assistantRail.assistant-rail-portal {
-    max-width: 760px !important;
-  }
+  transform: translateX(calc(100% + 1rem)) !important;
+  transition: opacity 160ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 #assistantRail.open,
@@ -48,214 +45,130 @@
   display: none !important;
 }
 
-#assistantRail .assistant-rail-card {
-  display: flex !important;
-  flex: 1 1 auto !important;
-  flex-direction: column !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-  border: 1px solid rgba(34, 48, 45, 0.12) !important;
-  border-radius: 14px !important;
-  background:
-    linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(248, 247, 240, 0.98)),
-    #fffefa !important;
-  box-shadow: 0 28px 90px rgba(17, 28, 25, 0.22) !important;
-}
-
-#assistantRail .assistant-module-header {
+#assistantRail > header {
   display: flex !important;
   flex: 0 0 auto !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 1rem !important;
+  gap: 0.75rem !important;
   min-height: 58px !important;
-  padding: 0.8rem 0.95rem !important;
-  border-bottom: 1px solid rgba(34, 48, 45, 0.1) !important;
-  background: rgba(255, 254, 250, 0.92) !important;
-  backdrop-filter: blur(18px) !important;
+  padding: 0.85rem 1rem !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
-#assistantRail .assistant-rail-copy {
-  display: grid !important;
-  gap: 0.16rem !important;
-  min-width: 0 !important;
-}
-
-#assistantRail .assistant-rail-header-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.55rem !important;
-}
-
-#assistantRail .assistant-eyebrow,
-#assistantRail .assistant-brief-kicker {
-  color: #0f665c !important;
-  font-size: 0.66rem !important;
-  font-weight: 860 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-}
-
-#assistantRail .assistant-module-header h2 {
+#assistantRail > header h2 {
   display: block !important;
   margin: 0 !important;
-  color: #15211f !important;
-  font-family: var(--font-ui, 'Manrope', system-ui, sans-serif) !important;
-  font-size: 1rem !important;
-  font-weight: 820 !important;
+  color: #0f172a !important;
+  font: 760 0.98rem/1.2 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
   letter-spacing: 0 !important;
-  line-height: 1.18 !important;
+  white-space: normal !important;
+}
+
+#assistantRail > header span:not(.material-symbols-rounded) {
+  letter-spacing: 0.04em !important;
+}
+
+#assistantRailClose {
+  display: inline-grid !important;
+  flex: 0 0 2.2rem !important;
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  place-items: center !important;
+  padding: 0 !important;
+  color: #475569 !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+}
+
+#assistantRail > div {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: #f8fafc !important;
+}
+
+#assistantRail main[aria-label*="copiloto"] {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: hidden !important;
+  border-right: 0 !important;
+}
+
+#assistantRail main[aria-label*="copiloto"] > div:first-child {
+  display: grid !important;
+  flex: 0 0 auto !important;
+  gap: 0.65rem !important;
+  padding: 0.75rem !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+#assistantRail .patient-selector,
+#assistantRail main[aria-label*="copiloto"] > div:first-child > div:first-child {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 2.5rem !important;
+  overflow: hidden !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+#assistantRail #chatPatientSelect {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 2.45rem !important;
+  padding-top: 0.45rem !important;
+  padding-bottom: 0.45rem !important;
+  color: #0f172a !important;
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  font: 650 0.86rem/1.25 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
+}
+
+#assistantRail #assistantModeSwitch {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0.25rem !important;
+  min-height: 2.45rem !important;
+  padding: 0.25rem !important;
+  overflow: hidden !important;
+  background: #eef2f7 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+#assistantRail #assistantModeSwitch button {
+  justify-content: center !important;
+  min-width: 0 !important;
+  min-height: 1.9rem !important;
+  padding: 0.3rem 0.4rem !important;
+  color: #475569 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font: 760 0.78rem/1 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
   white-space: nowrap !important;
 }
 
-#assistantRail .assistant-connected-badge {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.34rem !important;
-  min-height: 1.42rem !important;
-  padding: 0.14rem 0.48rem !important;
-  border: 1px solid rgba(37, 122, 95, 0.16) !important;
-  border-radius: 999px !important;
-  background: #e7f4ed !important;
-  color: #175d48 !important;
-  font-size: 0.62rem !important;
-  font-weight: 840 !important;
-  letter-spacing: 0 !important;
-  text-transform: none !important;
-}
-
-#assistantRail .status-dot {
-  flex: 0 0 0.44rem !important;
-  width: 0.44rem !important;
-  height: 0.44rem !important;
-  border-radius: 999px !important;
-  background: #278d6a !important;
-  box-shadow: 0 0 0 3px rgba(39, 141, 106, 0.14) !important;
-}
-
-#assistantRail .assistant-rail-close {
-  display: inline-grid !important;
-  width: 2.2rem !important;
-  height: 2.2rem !important;
-  padding: 0 !important;
-  place-items: center !important;
-  border: 1px solid rgba(34, 48, 45, 0.12) !important;
-  border-radius: 10px !important;
-  background: #fffefa !important;
-  color: #52605b !important;
-  cursor: pointer !important;
-}
-
-#assistantRail .assistant-rail-body,
-#assistantRail .assistant-console {
-  display: flex !important;
-  flex: 1 1 auto !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-}
-
-#assistantRail .assistant-workspace {
-  display: grid !important;
-  flex: 1 1 auto !important;
-  grid-template-columns: minmax(0, 7fr) minmax(240px, 3fr) !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-}
-
-#assistantRail .assistant-chat-pane,
-#assistantRail .assistant-clinical-panel {
-  min-width: 0 !important;
-  min-height: 0 !important;
-}
-
-#assistantRail .assistant-chat-pane {
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  background: #fbfaf5 !important;
-}
-
-#assistantRail .assistant-chat-topline {
-  display: grid !important;
-  flex: 0 0 auto !important;
-  grid-template-columns: minmax(14rem, 1fr) auto !important;
-  gap: 0.7rem !important;
-  align-items: center !important;
-  padding: 0.72rem 0.85rem !important;
-  border-bottom: 1px solid rgba(34, 48, 45, 0.08) !important;
-}
-
-#assistantRail .patient-selector {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.45rem !important;
-  min-height: 2.35rem !important;
-  padding: 0 0.62rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.12) !important;
-  border-radius: 10px !important;
-  background: #fffefa !important;
-}
-
-#assistantRail .patient-selector .material-symbols-rounded {
-  flex: 0 0 auto !important;
-  color: #0f665c !important;
-  font-size: 1.08rem !important;
-}
-
-#assistantRail .patient-selector select,
-#assistantRail .assistant-intake-field input,
-#assistantRail .assistant-intake-field select,
-#assistantRail .assistant-objective-field textarea {
-  width: 100% !important;
-  min-width: 0 !important;
-  border: 0 !important;
-  outline: 0 !important;
-  background: transparent !important;
-  color: #17231f !important;
-  font: inherit !important;
-  font-size: 0.82rem !important;
-  font-weight: 720 !important;
-}
-
-#assistantRail .assistant-mode-switch {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.18rem !important;
-  min-height: 2.35rem !important;
-  padding: 0.2rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-radius: 10px !important;
-  background: #f0efe7 !important;
-}
-
-#assistantRail .assistant-mode-chip {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.28rem !important;
-  min-height: 1.86rem !important;
-  padding: 0.3rem 0.55rem !important;
-  border: 0 !important;
-  border-radius: 8px !important;
-  background: transparent !important;
-  color: #53605b !important;
-  font: inherit !important;
-  font-size: 0.74rem !important;
-  font-weight: 820 !important;
-  letter-spacing: 0 !important;
-  cursor: pointer !important;
-}
-
-#assistantRail .assistant-mode-chip.is-active,
-#assistantRail .assistant-mode-chip[aria-pressed='true'] {
-  background: #123f3a !important;
-  color: #fffefa !important;
-}
-
-#assistantRail .assistant-mode-chip .material-symbols-rounded {
-  font-size: 1rem !important;
+#assistantRail #assistantModeSwitch button[aria-pressed="true"],
+#assistantRail #assistantModeSwitch button.is-active {
+  color: #0f766e !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
 }
 
 #assistantRail .assistant-dialog-surface {
@@ -264,73 +177,73 @@
   flex-direction: column !important;
   min-height: 0 !important;
   overflow: hidden !important;
+  background: #f8fafc !important;
 }
 
 #assistantRail .assistant-dialog-scroll {
-  display: flex !important;
+  display: block !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
-  overflow: hidden !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0.85rem !important;
+  scrollbar-gutter: stable !important;
 }
 
+#assistantRail #chatLog,
 #assistantRail .chat-log {
   display: flex !important;
   flex: 1 1 auto !important;
   flex-direction: column !important;
-  gap: 0.82rem !important;
-  min-height: 0 !important;
+  gap: 0.72rem !important;
+  min-height: 100% !important;
   max-height: none !important;
-  padding: 1.05rem 1rem 1.25rem !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  scroll-behavior: smooth !important;
-  overscroll-behavior: contain !important;
-  background:
-    linear-gradient(180deg, rgba(255, 254, 250, 0.55), rgba(255, 254, 250, 0)),
-    #fbfaf5 !important;
+  height: auto !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
   border: 0 !important;
-  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
-#assistantRail.is-chat-empty .chat-log {
+#assistantRail #chatLog.is-empty-chat {
   justify-content: center !important;
 }
 
 #assistantRail .assistant-chat-empty {
   display: grid !important;
-  max-width: 580px !important;
-  margin: auto !important;
-  padding: 1.2rem !important;
-  place-items: center !important;
+  justify-items: center !important;
+  gap: 0.65rem !important;
+  padding: 1rem !important;
+  color: #475569 !important;
   text-align: center !important;
-  color: #52605b !important;
 }
 
 #assistantRail .assistant-chat-empty-icon {
-  display: inline-grid !important;
-  width: 2.8rem !important;
-  height: 2.8rem !important;
-  margin-bottom: 0.7rem !important;
+  display: grid !important;
+  width: 2.35rem !important;
+  height: 2.35rem !important;
   place-items: center !important;
-  border-radius: 12px !important;
-  background: #e3f0ea !important;
-  color: #0f665c !important;
+  color: #0d9488 !important;
+  background: #ccfbf1 !important;
+  border-radius: 999px !important;
 }
 
 #assistantRail .assistant-chat-empty strong {
-  color: #16231f !important;
-  font-size: 1.05rem !important;
-  font-weight: 860 !important;
-  letter-spacing: 0 !important;
+  color: #0f172a !important;
+  font-size: 0.95rem !important;
+  line-height: 1.2 !important;
 }
 
 #assistantRail .assistant-chat-empty p {
-  display: block !important;
-  max-width: 42ch !important;
-  margin: 0.25rem 0 0.85rem !important;
-  color: #69766f !important;
-  font-size: 0.88rem !important;
-  line-height: 1.45 !important;
+  max-width: 28ch !important;
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.82rem !important;
+  line-height: 1.4 !important;
 }
 
 #assistantRail .assistant-chat-empty-chips {
@@ -340,941 +253,190 @@
   gap: 0.4rem !important;
 }
 
-#assistantRail .assistant-chat-empty-chip,
-#assistantRail .assistant-agent-prompts button,
-#assistantRail .assistant-side-shortcuts button {
-  min-height: 1.95rem !important;
-  padding: 0.34rem 0.62rem !important;
-  border: 1px solid rgba(15, 102, 92, 0.16) !important;
+#assistantRail .assistant-chat-empty-chip {
+  min-height: 1.85rem !important;
+  padding: 0.24rem 0.58rem !important;
+  color: #0f766e !important;
+  background: #ffffff !important;
+  border: 1px solid #99f6e4 !important;
   border-radius: 999px !important;
-  background: #eef7f3 !important;
-  color: #174d44 !important;
-  font: inherit !important;
-  font-size: 0.72rem !important;
-  font-weight: 820 !important;
-  letter-spacing: 0 !important;
+  font: 760 0.72rem/1 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
   cursor: pointer !important;
 }
 
 #assistantRail .msg {
   display: flex !important;
   gap: 0.55rem !important;
-  max-width: min(90%, 760px) !important;
-  min-width: 0 !important;
-  writing-mode: horizontal-tb !important;
-  animation: assistantMessageIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
-}
-
-#assistantRail .msg.agent {
-  align-self: flex-start !important;
+  align-items: flex-start !important;
+  max-width: 100% !important;
 }
 
 #assistantRail .msg.user {
-  align-self: flex-end !important;
-  flex-direction: row-reverse !important;
+  justify-content: flex-end !important;
 }
 
 #assistantRail .msg-avatar {
   display: grid !important;
-  flex: 0 0 1.75rem !important;
-  width: 1.75rem !important;
-  height: 1.75rem !important;
-  margin-top: 0.2rem !important;
+  flex: 0 0 2rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
   place-items: center !important;
+  color: #0f766e !important;
+  background: #ccfbf1 !important;
+  border-radius: 999px !important;
+}
+
+#assistantRail .msg-body,
+#assistantRail .msg-body.user-msg {
+  max-width: min(100%, 31rem) !important;
+  padding: 0.68rem 0.78rem !important;
+  color: #1e293b !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 8px !important;
-  background: #e3f0ea !important;
-  color: #0f665c !important;
-}
-
-#assistantRail .msg-avatar .material-symbols-rounded {
-  font-size: 1rem !important;
-}
-
-#assistantRail .msg.user .msg-avatar {
-  display: none !important;
-}
-
-#assistantRail .msg-body {
-  display: block !important;
-  min-width: 0 !important;
-  padding: 0.72rem 0.86rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-radius: 13px !important;
-  background: #fffefa !important;
-  color: #18231f !important;
-  box-shadow: 0 8px 24px rgba(17, 28, 25, 0.045) !important;
-  overflow-wrap: break-word !important;
-  word-break: normal !important;
-  writing-mode: horizontal-tb !important;
-}
-
-#assistantRail .msg.agent .msg-body {
-  border-top-left-radius: 5px !important;
+  box-shadow: 0 10px 28px -24px rgba(15, 23, 42, 0.28) !important;
 }
 
 #assistantRail .msg.user .msg-body,
 #assistantRail .msg-body.user-msg {
-  border: 0 !important;
-  border-top-right-radius: 5px !important;
-  background: #123f3a !important;
-  color: #fffefa !important;
-  box-shadow: 0 10px 24px rgba(18, 63, 58, 0.18) !important;
-}
-
-#assistantRail .msg-sender {
-  display: block !important;
-  margin-bottom: 0.28rem !important;
-  color: #60716b !important;
-  font-size: 0.68rem !important;
-  font-weight: 840 !important;
-  letter-spacing: 0.02em !important;
+  color: #ffffff !important;
+  background: #0f766e !important;
+  border-color: #0f766e !important;
 }
 
 #assistantRail .msg-body p {
   margin: 0 !important;
-  color: inherit !important;
-  font-size: 0.92rem !important;
-  line-height: 1.55 !important;
-  white-space: pre-line !important;
-  overflow-wrap: break-word !important;
-  word-break: normal !important;
-  writing-mode: horizontal-tb !important;
+  font-size: 0.86rem !important;
+  line-height: 1.48 !important;
 }
 
-#assistantRail .msg-progress .msg-avatar .material-symbols-rounded {
-  animation: assistantSpin 1s linear infinite !important;
-}
-
-#assistantRail .msg-progress .msg-body {
-  border-color: rgba(15, 102, 92, 0.18) !important;
-  background: #eef7f3 !important;
-}
-
-#assistantRail .msg-report {
-  width: min(100%, 780px) !important;
-  max-width: min(96%, 780px) !important;
-  min-width: min(100%, 24rem) !important;
-}
-
-#assistantRail .msg-report .msg-body {
-  width: 100% !important;
-  min-width: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-
-#assistantRail .exercise-report-full {
-  display: grid !important;
-  gap: 0.78rem !important;
-  padding: 0.9rem !important;
-  background: #fffefa !important;
-}
-
-#assistantRail .exercise-report-hero {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  gap: 0.85rem !important;
-  align-items: start !important;
-}
-
-#assistantRail .exercise-report-kicker,
-#assistantRail .exercise-report-section > span,
-#assistantRail .exercise-report-section-head > span,
-#assistantRail .exercise-report-foot > span,
-#assistantRail .exercise-report-notes > div > span,
-#assistantRail .exercise-report-summary > div > span,
-#assistantRail .exercise-report-review > div > span {
+#assistantRail .msg-sender {
   display: block !important;
-  color: #0f665c !important;
-  font-size: 0.62rem !important;
-  font-weight: 880 !important;
-  letter-spacing: 0.08em !important;
+  margin-bottom: 0.2rem !important;
+  color: #64748b !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
   text-transform: uppercase !important;
 }
 
-#assistantRail .exercise-report-hero strong {
-  display: block !important;
-  margin-top: 0.16rem !important;
-  color: #14201d !important;
-  font-size: 1rem !important;
-  font-weight: 880 !important;
-  letter-spacing: 0 !important;
-  line-height: 1.2 !important;
+#assistantRail #agentForm {
+  display: grid !important;
+  flex: 0 0 auto !important;
+  gap: 0.65rem !important;
+  padding: 0.85rem !important;
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
 }
 
-#assistantRail .exercise-report-hero p,
-#assistantRail .exercise-report-section p {
-  margin: 0.32rem 0 0 !important;
-  color: #52635d !important;
-  font-size: 0.84rem !important;
-  line-height: 1.45 !important;
-  white-space: normal !important;
-}
-
-#assistantRail .exercise-report-status {
+#assistantRail .ai-textarea-wrapper,
+#assistantRail #agentForm > div:has(#agentInput) {
   display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-end !important;
-  gap: 0.3rem !important;
-  max-width: 13rem !important;
-}
-
-#assistantRail .exercise-report-pill {
-  display: inline-flex !important;
-  width: fit-content !important;
-  min-height: 1.45rem !important;
-  align-items: center !important;
-  padding: 0.22rem 0.46rem !important;
-  border: 1px solid rgba(15, 102, 92, 0.13) !important;
-  border-radius: 999px !important;
-  background: #eef7f3 !important;
-  color: #174d44 !important;
-  font-size: 0.65rem !important;
-  font-weight: 820 !important;
-  white-space: nowrap !important;
-}
-
-#assistantRail .exercise-alert {
-  display: grid !important;
-  grid-template-columns: 1.45rem minmax(0, 1fr) !important;
-  gap: 0.5rem !important;
-  align-items: start !important;
-  padding: 0.62rem 0.68rem !important;
-  border: 1px solid rgba(184, 94, 20, 0.2) !important;
-  border-radius: 10px !important;
-  background: #fff7ed !important;
-  color: #6f3b10 !important;
-}
-
-#assistantRail .exercise-alert .material-symbols-rounded {
-  font-size: 1.1rem !important;
-}
-
-#assistantRail .exercise-alert strong {
-  display: block !important;
-  color: #6f3b10 !important;
-  font-size: 0.78rem !important;
-  font-weight: 880 !important;
-}
-
-#assistantRail .exercise-alert p {
-  margin: 0.14rem 0 0 !important;
-  color: #7d4b20 !important;
-  font-size: 0.76rem !important;
-  line-height: 1.4 !important;
-}
-
-#assistantRail .exercise-report-section {
-  display: grid !important;
-  gap: 0.58rem !important;
-  padding-top: 0.78rem !important;
-  border-top: 1px solid rgba(34, 48, 45, 0.08) !important;
-}
-
-#assistantRail .exercise-report-summary {
-  grid-template-columns: minmax(0, 1fr) minmax(11rem, 16rem) !important;
-  align-items: start !important;
-}
-
-#assistantRail .exercise-report-summary dl {
-  display: grid !important;
-  gap: 0.34rem !important;
-  margin: 0 !important;
-}
-
-#assistantRail .exercise-report-summary dl div {
-  display: grid !important;
-  grid-template-columns: 4.7rem minmax(0, 1fr) !important;
-  gap: 0.42rem !important;
-  align-items: baseline !important;
-}
-
-#assistantRail .exercise-report-summary dt {
-  margin: 0 !important;
-  color: #7a837f !important;
-  font-size: 0.68rem !important;
-  font-weight: 760 !important;
-}
-
-#assistantRail .exercise-report-summary dd {
-  margin: 0 !important;
-  color: #1e2d29 !important;
-  font-size: 0.72rem !important;
-  font-weight: 830 !important;
-}
-
-#assistantRail .exercise-report-notes {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-}
-
-#assistantRail .exercise-report-section-head {
-  display: flex !important;
-  align-items: baseline !important;
-  justify-content: space-between !important;
-  gap: 0.7rem !important;
-}
-
-#assistantRail .exercise-report-section-head small {
-  color: #718078 !important;
-  font-size: 0.7rem !important;
-  font-weight: 720 !important;
-  text-align: right !important;
-}
-
-#assistantRail .exercise-plan-grid {
-  display: grid !important;
-  gap: 0.55rem !important;
-}
-
-#assistantRail .exercise-card-pro {
-  display: grid !important;
-  grid-template-columns: 4.9rem minmax(0, 1fr) !important;
-  gap: 0.62rem !important;
-  align-items: stretch !important;
-  padding: 0.52rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.08) !important;
-  border-radius: 11px !important;
-  background: #fbfaf5 !important;
-}
-
-#assistantRail .exercise-thumb {
-  display: grid !important;
-  width: 4.9rem !important;
-  min-height: 4.9rem !important;
-  place-items: center !important;
-  overflow: hidden !important;
-  border-radius: 9px !important;
-  background: #e7efe9 !important;
-  color: #527269 !important;
-  text-decoration: none !important;
-}
-
-#assistantRail .exercise-thumb img {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 4.9rem !important;
-  object-fit: cover !important;
-}
-
-#assistantRail .exercise-thumb-empty .material-symbols-rounded {
-  font-size: 1.35rem !important;
-}
-
-#assistantRail .exercise-card-pro-body {
-  display: grid !important;
-  gap: 0.34rem !important;
-  min-width: 0 !important;
-}
-
-#assistantRail .exercise-card-pro-top {
-  display: flex !important;
-  gap: 0.42rem !important;
-  align-items: baseline !important;
-}
-
-#assistantRail .exercise-card-pro-top span {
-  display: inline-grid !important;
-  flex: 0 0 1.32rem !important;
-  width: 1.32rem !important;
-  height: 1.32rem !important;
-  place-items: center !important;
-  border-radius: 999px !important;
-  background: #123f3a !important;
-  color: #fffefa !important;
-  font-size: 0.68rem !important;
-  font-weight: 860 !important;
-}
-
-#assistantRail .exercise-card-pro-top strong {
-  min-width: 0 !important;
-  color: #16231f !important;
-  font-size: 0.88rem !important;
-  font-weight: 870 !important;
-  letter-spacing: 0 !important;
-}
-
-#assistantRail .exercise-dose-line {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.28rem !important;
-}
-
-#assistantRail .exercise-dose-line span {
-  display: inline-flex !important;
-  width: fit-content !important;
-  min-height: 1.28rem !important;
-  align-items: center !important;
-  padding: 0.16rem 0.38rem !important;
-  border-radius: 999px !important;
-  background: #edf2ef !important;
-  color: #3d514b !important;
-  font-size: 0.65rem !important;
-  font-weight: 790 !important;
-}
-
-#assistantRail .exercise-card-pro-body p,
-#assistantRail .exercise-card-pro-body small {
-  margin: 0 !important;
-  color: #52635d !important;
-  font-size: 0.76rem !important;
-  line-height: 1.4 !important;
-  white-space: normal !important;
-}
-
-#assistantRail .exercise-card-pro-body small strong {
-  color: #23342f !important;
-}
-
-#assistantRail .exercise-cautions {
-  color: #7b4b19 !important;
-}
-
-#assistantRail .exercise-empty-result {
-  display: flex !important;
-  gap: 0.5rem !important;
-  align-items: center !important;
-  padding: 0.68rem !important;
-  border-radius: 10px !important;
-  background: #f1f0e8 !important;
-  color: #52635d !important;
-}
-
-#assistantRail .exercise-empty-result p {
-  margin: 0 !important;
-  font-size: 0.8rem !important;
-}
-
-#assistantRail .exercise-report-review {
-  grid-template-columns: 1fr !important;
-  align-items: center !important;
-}
-
-#assistantRail .exercise-report-actions {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-start !important;
-  gap: 0.36rem !important;
-  min-width: 0 !important;
-}
-
-#assistantRail .exercise-report-action {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.28rem !important;
-  min-height: 1.9rem !important;
-  min-width: max-content !important;
-  padding: 0.28rem 0.54rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.11) !important;
+  align-items: flex-end !important;
+  gap: 0.45rem !important;
+  min-height: 3rem !important;
+  padding: 0.25rem !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
   border-radius: 8px !important;
-  background: #fffefa !important;
-  color: #344743 !important;
-  font: inherit !important;
-  font-size: 0.7rem !important;
-  font-weight: 830 !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-  overflow-wrap: normal !important;
-  word-break: normal !important;
-  cursor: pointer !important;
-}
-
-#assistantRail .exercise-report-action.is-primary {
-  border-color: transparent !important;
-  background: #123f3a !important;
-  color: #fffefa !important;
-}
-
-#assistantRail .exercise-report-action .material-symbols-rounded {
-  display: inline-flex !important;
-  flex: 0 0 auto !important;
-  font-size: 0.95rem !important;
-}
-
-#assistantRail .exercise-report-foot {
-  display: flex !important;
-  justify-content: space-between !important;
-  gap: 0.7rem !important;
-  align-items: center !important;
-  padding-top: 0.65rem !important;
-  border-top: 1px solid rgba(34, 48, 45, 0.08) !important;
-}
-
-#assistantRail .exercise-report-foot code {
-  overflow: hidden !important;
-  color: #5d6d67 !important;
-  font-size: 0.68rem !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
-
-#assistantRail .ai-input-area {
-  position: sticky !important;
-  bottom: 0 !important;
-  z-index: 2 !important;
-  display: flex !important;
-  flex: 0 0 auto !important;
-  flex-direction: column !important;
-  gap: 0.54rem !important;
-  padding: 0.7rem 0.85rem 0.82rem !important;
-  border-top: 1px solid rgba(34, 48, 45, 0.1) !important;
-  background:
-    linear-gradient(180deg, rgba(251, 250, 245, 0.76), #fbfaf5 32%),
-    #fbfaf5 !important;
-  backdrop-filter: blur(16px) !important;
-}
-
-#assistantRail .assistant-agent-canvas {
-  display: grid !important;
-  grid-template-columns: auto minmax(0, 1fr) !important;
-  gap: 0.6rem !important;
-  align-items: center !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-}
-
-#assistantRail.has-chat-messages .assistant-agent-canvas {
-  display: none !important;
-}
-
-#assistantRail .assistant-agent-canvas-copy {
-  display: grid !important;
-  gap: 0.02rem !important;
-}
-
-#assistantRail .assistant-agent-canvas-copy span {
-  color: #0f665c !important;
-  font-size: 0.62rem !important;
-  font-weight: 860 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-}
-
-#assistantRail .assistant-agent-canvas-copy strong {
-  color: #17231f !important;
-  font-size: 0.78rem !important;
-  font-weight: 860 !important;
-  letter-spacing: 0 !important;
-}
-
-#assistantRail .assistant-agent-prompts {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-end !important;
-  gap: 0.34rem !important;
-  min-width: 0 !important;
-}
-
-#assistantRail .assistant-composer-shell {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) 2.55rem !important;
-  gap: 0.48rem !important;
-  align-items: end !important;
-  min-height: 2.8rem !important;
-}
-
-#assistantRail .ai-textarea-wrapper {
-  min-width: 0 !important;
-  border: 1px solid rgba(34, 48, 45, 0.12) !important;
-  border-radius: 12px !important;
-  background: #fffefa !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-}
-
-#assistantRail .ai-textarea-wrapper:focus-within {
-  border-color: rgba(15, 102, 92, 0.34) !important;
-  box-shadow: 0 0 0 4px rgba(15, 102, 92, 0.08) !important;
+  box-shadow: none !important;
 }
 
 #assistantRail #agentInput {
   width: 100% !important;
-  min-height: 2.65rem !important;
-  max-height: 10rem !important;
-  padding: 0.72rem 0.82rem !important;
+  min-height: 2.4rem !important;
+  max-height: 8rem !important;
+  padding: 0.62rem 0.72rem !important;
+  color: #0f172a !important;
+  background: transparent !important;
   border: 0 !important;
   outline: 0 !important;
   resize: none !important;
-  background: transparent !important;
-  color: #17231f !important;
-  font: inherit !important;
-  font-size: 0.92rem !important;
-  line-height: 1.35 !important;
+  font: 500 0.9rem/1.4 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
 }
 
-#assistantRail .btn-send-compact {
-  display: inline-grid !important;
-  width: 2.55rem !important;
-  min-width: 2.55rem !important;
-  height: 2.55rem !important;
-  min-height: 2.55rem !important;
-  padding: 0 !important;
+#assistantRail #sendBtn {
+  display: grid !important;
+  flex: 0 0 2.4rem !important;
+  width: 2.4rem !important;
+  height: 2.4rem !important;
   place-items: center !important;
-  border: 0 !important;
-  border-radius: 11px !important;
-  background: #123f3a !important;
-  color: #fffefa !important;
-  box-shadow: 0 10px 20px rgba(18, 63, 58, 0.18) !important;
-}
-
-#assistantRail .btn-send-compact .material-symbols-rounded {
-  font-size: 1.22rem !important;
-}
-
-#assistantRail .assistant-action-grid {
-  display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 0.38rem !important;
-}
-
-#assistantRail .assistant-action-grid .btn-action {
-  display: inline-flex !important;
-  min-width: 0 !important;
-  min-height: 2.12rem !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.28rem !important;
-  padding: 0.32rem 0.46rem !important;
-  overflow: hidden !important;
-  border: 1px solid rgba(34, 48, 45, 0.11) !important;
-  border-radius: 9px !important;
-  background: #fffefa !important;
-  color: #364541 !important;
-  font: inherit !important;
-  font-size: 0.7rem !important;
-  font-weight: 820 !important;
-  letter-spacing: 0 !important;
-  line-height: 1.1 !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
-
-#assistantRail .assistant-action-grid .btn-generate {
-  border-color: transparent !important;
-  background: #123f3a !important;
-  color: #fffefa !important;
-}
-
-#assistantRail .assistant-action-grid .btn-action .material-symbols-rounded {
-  flex: 0 0 auto !important;
-  font-size: 0.98rem !important;
-}
-
-#assistantRail .assistant-action-grid .btn-action.is-loading .material-symbols-rounded {
-  animation: assistantSpin 1s linear infinite !important;
-}
-
-#assistantRail .assistant-action-grid .btn-action:disabled,
-#assistantRail .assistant-action-grid .btn-action.is-pending {
-  opacity: 0.56 !important;
-}
-
-#assistantRail .assistant-clinical-panel {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.72rem !important;
-  padding: 0.85rem !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  border-left: 1px solid rgba(34, 48, 45, 0.1) !important;
-  background: #f3f2eb !important;
-}
-
-#assistantRail .assistant-report-priority-card,
-#assistantRail .assistant-mode-card,
-#assistantRail .assistant-flow-card,
-#assistantRail .assistant-diagnostic-card,
-#assistantRail .assistant-delivery-card,
-#assistantRail .assistant-side-shortcuts {
-  display: none !important;
-}
-
-#assistantRail .assistant-live-context,
-#assistantRail .assistant-patient-brief,
-#assistantRail .assistant-patient-brief {
-  display: grid !important;
-  gap: 0.74rem !important;
   padding: 0 !important;
+  color: #ffffff !important;
+  background: #0f172a !important;
   border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-#assistantRail .assistant-live-context {
-  display: grid !important;
-  gap: 0.22rem !important;
-  padding: 0.72rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.08) !important;
-  border-radius: 10px !important;
-  background: rgba(255, 254, 250, 0.72) !important;
-  box-shadow: none !important;
-}
-
-#assistantRail .assistant-live-context strong,
-#assistantRail .assistant-diagnostic-copy strong,
-#assistantRail .assistant-delivery-card strong {
-  color: #14201d !important;
-  font-size: 0.88rem !important;
-  font-weight: 860 !important;
-  letter-spacing: 0 !important;
-  line-height: 1.18 !important;
-}
-
-#assistantRail .assistant-live-context p,
-#assistantRail .assistant-diagnostic-summary,
-#assistantRail .assistant-delivery-summary {
-  margin: 0 !important;
-  color: #61716a !important;
-  font-size: 0.76rem !important;
-  line-height: 1.38 !important;
-}
-
-#assistantRail .assistant-brief-head-compact,
-#assistantRail .assistant-brief-history {
-  display: grid !important;
-  gap: 0.42rem !important;
-  padding: 0.72rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.08) !important;
-  border-radius: 10px !important;
-  background: rgba(255, 254, 250, 0.72) !important;
-}
-
-#assistantRail .assistant-brief-head-compact strong {
-  color: #14201d !important;
-  font-size: 0.96rem !important;
-  font-weight: 880 !important;
-  letter-spacing: 0 !important;
-  line-height: 1.18 !important;
-}
-
-#assistantRail .assistant-brief-head-compact small {
-  color: #62726d !important;
-  font-size: 0.76rem !important;
-  font-weight: 760 !important;
-}
-
-#assistantRail .assistant-brief-actions-primary {
-  display: grid !important;
-  gap: 0.4rem !important;
-}
-
-#assistantRail .assistant-brief-actions-primary .assistant-chip {
-  display: inline-flex !important;
-  width: 100% !important;
-  min-height: 2.26rem !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 0.42rem !important;
-  padding: 0.34rem 0.62rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-radius: 9px !important;
-  background: #fffefa !important;
-  color: #23342f !important;
-  font: inherit !important;
-  font-size: 0.76rem !important;
-  font-weight: 840 !important;
-  line-height: 1.1 !important;
-  text-align: left !important;
-  white-space: normal !important;
-}
-
-#assistantRail .assistant-brief-actions-primary .assistant-chip:first-child {
-  background: #123f3a !important;
-  border-color: #123f3a !important;
-  color: #fffefa !important;
-}
-
-#assistantRail .assistant-brief-actions-primary .material-symbols-rounded {
-  flex: 0 0 auto !important;
-  font-size: 1rem !important;
-}
-
-#assistantRail .assistant-brief-history div {
-  display: grid !important;
-  gap: 0.14rem !important;
-  padding-bottom: 0.42rem !important;
-  border-bottom: 1px solid rgba(34, 48, 45, 0.07) !important;
-}
-
-#assistantRail .assistant-brief-history div:last-child {
-  padding-bottom: 0 !important;
-  border-bottom: 0 !important;
-}
-
-#assistantRail .assistant-brief-history span {
-  color: #0f665c !important;
-  font-size: 0.6rem !important;
-  font-weight: 880 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-}
-
-#assistantRail .assistant-brief-history strong {
-  color: #1a2a26 !important;
-  font-size: 0.8rem !important;
-  font-weight: 790 !important;
-  line-height: 1.35 !important;
-}
-
-#assistantRail .assistant-patient-brief-empty {
-  display: grid !important;
-  gap: 0.24rem !important;
-  padding: 0.72rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.08) !important;
-  border-radius: 10px !important;
-  background: rgba(255, 254, 250, 0.72) !important;
-}
-
-#assistantRail .assistant-patient-brief-empty strong {
-  color: #14201d !important;
-  font-size: 0.86rem !important;
-  font-weight: 840 !important;
-}
-
-#assistantRail .assistant-report-flow {
-  display: grid !important;
-  gap: 0.32rem !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-}
-
-#assistantRail .assistant-report-flow li {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.36rem !important;
-  color: #394844 !important;
-  font-size: 0.72rem !important;
-  font-weight: 780 !important;
-}
-
-#assistantRail .assistant-report-flow span {
-  display: inline-grid !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-  place-items: center !important;
-  border-radius: 999px !important;
-  background: #e3f0ea !important;
-  color: #0f665c !important;
-  font-size: 0.68rem !important;
-  font-weight: 860 !important;
-}
-
-#assistantRail .assistant-report-priority-icon {
-  display: none !important;
-}
-
-#assistantRail .assistant-diagnostic-head,
-#assistantRail .assistant-delivery-head {
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 0.55rem !important;
-}
-
-#assistantRail .assistant-diagnostic-grid {
-  display: none !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 0.46rem !important;
-}
-
-#assistantRail .assistant-diagnostic-card.is-expanded .assistant-diagnostic-grid {
-  display: grid !important;
-}
-
-#assistantRail .assistant-intake-field {
-  display: grid !important;
-  gap: 0.18rem !important;
-  min-width: 0 !important;
-  padding: 0.48rem 0.56rem !important;
-  border: 1px solid rgba(34, 48, 45, 0.1) !important;
-  border-radius: 9px !important;
-  background: #fbfaf5 !important;
-}
-
-#assistantRail .assistant-intake-field-wide {
-  grid-column: 1 / -1 !important;
-}
-
-#assistantRail .assistant-intake-field span {
-  color: #8a7044 !important;
-  font-size: 0.58rem !important;
-  font-weight: 860 !important;
-  letter-spacing: 0.06em !important;
-  text-transform: uppercase !important;
-}
-
-#assistantRail .assistant-objective-field textarea {
-  min-height: 4.2rem !important;
-  resize: vertical !important;
-}
-
-#assistantRail .assistant-diagnostic-toggle {
-  flex: 0 0 auto !important;
-  min-height: 1.72rem !important;
-  padding: 0.24rem 0.55rem !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  background: #e3f0ea !important;
-  color: #0f665c !important;
-  font: inherit !important;
-  font-size: 0.66rem !important;
-  font-weight: 840 !important;
+  border-radius: 8px !important;
   cursor: pointer !important;
 }
 
-#assistantRail .assistant-delivery-pills,
-#assistantRail .assistant-flow-steps {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.28rem !important;
-}
-
-#assistantRail .assistant-delivery-pill,
-#assistantRail .assistant-flow-steps span,
-#assistantRail .assistant-mode-card span {
-  display: inline-flex !important;
-  width: fit-content !important;
-  min-height: 1.5rem !important;
+#assistantRail #agentForm > div[aria-label="Acciones rapidas del copiloto"],
+#assistantRail .assistant-action-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, auto)) !important;
+  gap: 0.45rem !important;
   align-items: center !important;
-  padding: 0.2rem 0.44rem !important;
-  border-radius: 999px !important;
-  background: #e3f0ea !important;
-  color: #174d44 !important;
-  font-size: 0.66rem !important;
-  font-weight: 820 !important;
 }
 
-#assistantRail .assistant-side-shortcuts {
-  grid-template-columns: 1fr !important;
-}
-
-#assistantRail .assistant-side-shortcuts button {
-  display: flex !important;
-  width: 100% !important;
-  justify-content: flex-start !important;
+#assistantRail #exerciseRecoBtn,
+#assistantRail #exercisePdfBtn,
+#assistantRail #exerciseTelegramBtn {
+  justify-content: center !important;
+  min-width: 0 !important;
+  min-height: 2.2rem !important;
+  padding: 0.42rem 0.62rem !important;
   border-radius: 8px !important;
-  background: transparent !important;
+  font: 760 0.78rem/1.1 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
+  white-space: nowrap !important;
 }
 
-#assistantRail .assistant-side-shortcuts .material-symbols-rounded {
-  font-size: 1rem !important;
+#assistantRail #exerciseRecoBtn {
+  color: #ffffff !important;
+  background: #0d9488 !important;
+  border: 1px solid #0d9488 !important;
 }
 
-#assistantRailBackdrop {
+#assistantRail #exercisePdfBtn,
+#assistantRail #exerciseTelegramBtn {
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+#assistantRail button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.55 !important;
+}
+
+#assistantRail aside[aria-label*="Contexto"] {
+  display: none !important;
+}
+
+#assistantRailBackdrop,
+#assistantRailBackdrop.assistant-rail-backdrop,
+#assistantRailBackdrop.assistant-rail-backdrop-portal {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 110 !important;
-  background: rgba(10, 16, 14, 0.22) !important;
+  z-index: 40 !important;
+  display: block !important;
+  background: rgba(15, 23, 42, 0.28) !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 180ms ease !important;
 }
 
-#assistantRailBackdrop.open,
-#assistantRailBackdrop.opacity-100 {
-  opacity: 1 !important;
-  pointer-events: auto !important;
+@media (min-width: 1024px) {
+  #assistantRailBackdrop,
+  #assistantRailBackdrop.visible {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  #assistantRailBackdrop.visible {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 }
 
 @media (min-width: 769px) {
@@ -1286,118 +448,46 @@
 }
 
 #assistantRailFab {
+  position: fixed !important;
+  right: max(1.25rem, env(safe-area-inset-right)) !important;
+  bottom: max(1.25rem, env(safe-area-inset-bottom)) !important;
+  z-index: 45 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  min-height: 2.75rem !important;
+  padding: 0.65rem 0.95rem !important;
+  color: #ffffff !important;
+  background: #0d9488 !important;
+  border: 0 !important;
   border-radius: 999px !important;
-  background: #123f3a !important;
-  color: #fffefa !important;
-  box-shadow: 0 16px 42px rgba(18, 63, 58, 0.22) !important;
+  box-shadow: 0 18px 34px -22px rgba(13, 148, 136, 0.72) !important;
+  cursor: pointer !important;
 }
 
-@keyframes assistantMessageIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes assistantSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 980px) {
+@media (max-width: 767px) {
+  #assistantRail,
   #assistantRail.assistant-rail,
   #assistantRail.assistant-rail-portal {
-    inset: 0.45rem !important;
-    width: calc(100vw - 0.9rem) !important;
-    max-width: calc(100vw - 0.9rem) !important;
-    height: calc(100dvh - 0.9rem) !important;
-    max-height: calc(100dvh - 0.9rem) !important;
-  }
-
-  #assistantRail .assistant-workspace {
-    grid-template-columns: 1fr !important;
-  }
-
-  #assistantRail .assistant-clinical-panel {
-    display: none !important;
-  }
-
-  #assistantRail .assistant-chat-topline {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 620px) {
-  #assistantRail.assistant-rail,
-  #assistantRail.assistant-rail-portal {
-    inset: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-  }
-
-  #assistantRail .assistant-rail-card {
-    border-radius: 0 !important;
-  }
-
-  #assistantRail .assistant-module-header h2 {
-    white-space: normal !important;
-    font-size: 0.9rem !important;
-  }
-
-  #assistantRail .assistant-chat-topline,
-  #assistantRail .chat-log,
-  #assistantRail .ai-input-area {
-    padding-left: 0.65rem !important;
-    padding-right: 0.65rem !important;
-  }
-
-  #assistantRail .msg-report {
-    max-width: 100% !important;
-  }
-
-  #assistantRail .exercise-report-hero,
-  #assistantRail .exercise-report-summary,
-  #assistantRail .exercise-report-notes,
-  #assistantRail .exercise-report-review {
-    grid-template-columns: 1fr !important;
-  }
-
-  #assistantRail .exercise-report-status,
-  #assistantRail .exercise-report-actions {
-    justify-content: flex-start !important;
+    inset: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left)) !important;
+    width: auto !important;
     max-width: none !important;
+    max-height: calc(100dvh - 1rem) !important;
+    border-radius: 8px !important;
   }
 
-  #assistantRail .exercise-card-pro {
-    grid-template-columns: 4.2rem minmax(0, 1fr) !important;
+  #assistantRail #assistantModeSwitch {
+    grid-template-columns: 1fr !important;
   }
 
-  #assistantRail .exercise-thumb {
-    width: 4.2rem !important;
-    min-height: 4.2rem !important;
-  }
-
-  #assistantRail .exercise-thumb img {
-    min-height: 4.2rem !important;
-  }
-
-  #assistantRail .assistant-agent-canvas,
+  #assistantRail #agentForm > div[aria-label="Acciones rapidas del copiloto"],
   #assistantRail .assistant-action-grid {
     grid-template-columns: 1fr !important;
   }
 
-  #assistantRail .assistant-agent-prompts {
-    justify-content: flex-start !important;
-  }
-
-  #assistantRail .msg {
-    max-width: 96% !important;
+  #assistantRail #exerciseRecoBtn,
+  #assistantRail #exercisePdfBtn,
+  #assistantRail #exerciseTelegramBtn {
+    width: 100% !important;
   }
 }

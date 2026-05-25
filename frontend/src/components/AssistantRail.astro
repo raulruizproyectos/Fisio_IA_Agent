@@ -2,7 +2,7 @@
 // AssistantRail.astro
 ---
 
-<aside class="fixed inset-y-0 right-0 z-50 w-full md:w-[480px] lg:w-[560px] bg-white border-l border-gray-200 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col assistant-rail" id="assistantRail" aria-label="Copiloto clinico" data-copilot-build="clinical-copilot-20260518">
+<aside class="fixed inset-y-0 right-0 z-50 w-full md:w-[480px] lg:w-[560px] bg-white border-l border-gray-200 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col assistant-rail" id="assistantRail" aria-label="Copiloto clinico" aria-hidden="true" data-copilot-build="clinical-copilot-20260518">
   
   <header class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
     <div>
@@ -178,7 +178,7 @@
   </div>
 </aside>
 
-<div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300 assistant-rail-backdrop" id="assistantRailBackdrop"></div>
+<div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300 assistant-rail-backdrop" id="assistantRailBackdrop" aria-hidden="true"></div>
 
 <button class="fixed bottom-6 right-6 z-30 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl hover:shadow-2xl flex items-center gap-2 px-5 py-3 rounded-full transition-all transform hover:-translate-y-1 assistant-fab" id="assistantRailFab" type="button" aria-label="Abrir copiloto clinico" aria-controls="assistantRail" aria-expanded="false">
   <span class="material-symbols-rounded">robot_2</span>
@@ -193,26 +193,19 @@
 
   const updateRailStyles = (isOpen: boolean) => {
     if (isOpen) {
-      const isMobile = window.innerWidth <= 768;
       assistantRail?.classList.add('open');
       assistantRail?.classList.remove('translate-x-full');
       assistantRail?.classList.add('translate-x-0');
-      assistantRailBackdrop?.classList.remove('opacity-0', 'pointer-events-none');
-      assistantRailBackdrop?.classList.add('opacity-100', 'pointer-events-auto');
+      assistantRailBackdrop?.classList.add('visible');
       assistantRail?.setAttribute('aria-hidden', 'false');
-      
-      if (isMobile) document.body.style.overflow = 'hidden';
+      if (window.innerWidth < 1024) document.body.style.overflow = 'hidden';
     } else {
       assistantRail?.classList.remove('open');
       assistantRail?.classList.remove('translate-x-0');
       assistantRail?.classList.add('translate-x-full');
-      assistantRailBackdrop?.classList.remove('opacity-100', 'pointer-events-auto');
-      assistantRailBackdrop?.classList.add('opacity-0', 'pointer-events-none');
+      assistantRailBackdrop?.classList.remove('visible');
       assistantRail?.setAttribute('aria-hidden', 'true');
-
-      if (window.innerWidth <= 768) {
-        document.body.style.overflow = '';
-      }
+      document.body.style.overflow = '';
     }
   };
 

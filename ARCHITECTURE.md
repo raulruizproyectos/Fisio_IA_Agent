@@ -34,14 +34,16 @@ Fisio_IA_Agent usa arquitectura hibrida:
   - fallback temprano `__fisioShellNavigate`,
   - paginas no activas ocultas con `hidden`.
 - Siguiente refactor recomendado:
-  - extraer `assistant rail` a modulo dedicado (layout + estado + estilos),
+  - extraer controlador JS del `assistant rail`; el layout y estilos ya viven en `assistant-rail.css`,
   - extraer shell/router,
   - extraer finanzas,
   - extraer agenda,
   - extraer agente IA.
-- Estado del rail IA (2026-05-07):
-  - commits `c519b13` y `53f4a2d` aplican enfoque chat-first y estado vacio util,
-  - requiere confirmacion visual final en produccion tras redeploy para cerrar definitivamente el bloque.
+- Estado del rail IA (2026-05-25):
+  - `assistant-rail.css` es la fuente canonica del drawer,
+  - `index.astro`, `global-shell.css` y `premium-clinic-ui.css` no deben definir layout del `#assistantRail`,
+  - JS solo debe abrir/cerrar y sincronizar estado accesible; no debe usar `style.setProperty(..., 'important')` para layout,
+  - requiere smoke visual final en navegador y produccion tras redeploy.
 
 ## Contratos que no se deben romper
 - `/api/profesional/appointments`
@@ -61,6 +63,7 @@ Fisio_IA_Agent usa arquitectura hibrida:
 - Cada pantalla debe responder: que miro, que hago ahora, que puede esperar.
 - IA con trazabilidad: plan, contexto, entrega, revision y seguimiento.
 - Evitar nuevas capas CSS correctivas sin retirar deuda antigua.
+- Evitar nuevos bloques `<style id="assistant-*">` en `index.astro`; cualquier ajuste del Copiloto debe ir en `frontend/src/styles/assistant-rail.css`.
 - Accesibilidad WCAG AA en flujos criticos.
 
 ## Estructura modular objetivo (frontend)

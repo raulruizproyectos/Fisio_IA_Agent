@@ -113,60 +113,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     document.documentElement.setAttribute('data-assistant-mode', width <= 992 ? 'compact' : 'expanded');
   };
 
-  // Assistant rail sizing now lives in src/styles/assistant-rail.css.
-
-  const enforceAssistantChatFirstLayout = () => {
-    const rail = document.getElementById('assistantRail');
-    if (!rail) return;
-
-    const card = rail.querySelector('.assistant-rail-card') as HTMLElement | null;
-    const body = rail.querySelector('.assistant-rail-body') as HTMLElement | null;
-    const consolePanel = rail.querySelector('.assistant-console') as HTMLElement | null;
-    const surface = rail.querySelector('.assistant-dialog-surface') as HTMLElement | null;
-    const chat = rail.querySelector('#chatLog') as HTMLElement | null;
-    const form = rail.querySelector('#agentForm') as HTMLElement | null;
-
-    [card, body, consolePanel].forEach((node) => {
-      if (!node) return;
-      node.style.setProperty('display', 'flex', 'important');
-      node.style.setProperty('flex-direction', 'column', 'important');
-      node.style.setProperty('flex', '1 1 auto', 'important');
-      node.style.setProperty('min-height', '0', 'important');
-      node.style.setProperty('max-height', '100%', 'important');
-      node.style.setProperty('overflow', 'hidden', 'important');
-    });
-
-    if (surface) {
-      surface.style.setProperty('display', 'flex', 'important');
-      surface.style.setProperty('flex-direction', 'column', 'important');
-      surface.style.setProperty('gap', '0', 'important');
-      surface.style.setProperty('overflow', 'hidden', 'important');
-      surface.style.removeProperty('overflow-y');
-      surface.style.setProperty('overflow-x', 'hidden', 'important');
-      surface.style.setProperty('overscroll-behavior', 'contain', 'important');
-      surface.style.setProperty('min-height', '0', 'important');
-      surface.style.setProperty('max-height', '100%', 'important');
-      surface.style.removeProperty('padding-bottom');
-    }
-
-    if (chat) {
-      const hasMessages = Boolean(chat.querySelector('.msg'));
-      chat.style.setProperty('order', '1', 'important');
-      chat.style.setProperty('flex', hasMessages ? '1 1 auto' : '0 0 auto', 'important');
-      chat.style.removeProperty('min-height');
-      chat.style.removeProperty('max-height');
-      chat.style.setProperty('overflow-y', 'auto', 'important');
-      chat.style.setProperty('overflow-x', 'hidden', 'important');
-    }
-
-    if (form) {
-      form.style.setProperty('order', '2', 'important');
-      form.style.setProperty('flex', '0 0 auto', 'important');
-    }
-  };
-  enforceAssistantChatFirstLayout();
-  window.setTimeout(enforceAssistantChatFirstLayout, 80);
-  window.setTimeout(enforceAssistantChatFirstLayout, 320);
+  // Assistant rail layout and sizing live in src/styles/assistant-rail.css.
 
   // === DOM REFS ===
   const form = document.getElementById('agentForm') as HTMLFormElement | null;
@@ -193,6 +140,61 @@ import ConfigView from '../components/views/ConfigView.astro';
   const mobileDockNavButtons = document.querySelectorAll('[data-mobile-nav]') as NodeListOf<HTMLButtonElement>;
   const mobileDockActionButtons = document.querySelectorAll('[data-mobile-action]') as NodeListOf<HTMLButtonElement>;
   const toastRegion = document.getElementById('toastRegion') as HTMLElement | null;
+
+  const syncOverlayBodyLock = () => {
+    const sidebarOpen = Boolean(sidebar?.classList.contains('translate-x-0'));
+    const assistantOpen = Boolean(assistantRail?.classList.contains('open'));
+    document.body.style.overflow = sidebarOpen || (assistantOpen && window.innerWidth < 1024) ? 'hidden' : '';
+  };
+
+  const openAssistantRail = () => {
+    document.dispatchEvent(new CustomEvent('fisio:open-assistant'));
+    assistantRail?.classList.add('open');
+    assistantRailBackdrop?.classList.add('visible');
+    assistantRail?.setAttribute('aria-hidden', 'false');
+    assistantRailToggle?.setAttribute('aria-expanded', 'true');
+    assistantRailFab?.setAttribute('aria-expanded', 'true');
+    syncOverlayBodyLock();
+  };
+
+  const closeAssistantRail = () => {
+    document.dispatchEvent(new CustomEvent('fisio:close-assistant'));
+    assistantRail?.classList.remove('open');
+    assistantRailBackdrop?.classList.remove('visible');
+    assistantRail?.setAttribute('aria-hidden', 'true');
+    assistantRailToggle?.setAttribute('aria-expanded', 'false');
+    assistantRailFab?.setAttribute('aria-expanded', 'false');
+    syncOverlayBodyLock();
+  };
+
+  const requestOpenAssistantRail = () => {
+    openAssistantRail();
+    input?.focus();
+  };
+
+  sidebarToggle?.addEventListener('click', () => {
+    if (isMobile()) {
+      const sidebarEl = document.getElementById('sidebar');
+      const isOpen = sidebarEl?.classList.contains('translate-x-0');
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    } else {
+      sidebar?.classList.toggle('collapsed');
+    }
+    syncOverlayBodyLock();
+  });
+  assistantRailToggle?.addEventListener('click', requestOpenAssistantRail);
+  assistantRailFab?.addEventListener('click', requestOpenAssistantRail);
+  assistantRailClose?.addEventListener('click', closeAssistantRail);
+  assistantRailBackdrop?.addEventListener('click', closeAssistantRail);
+  focusAgentNav?.addEventListener('click', (event: Event) => {
+    event.preventDefault();
+    requestOpenAssistantRail();
+  });
+  heroAgentShortcutBtn?.addEventListener('click', requestOpenAssistantRail);
 
   const assistantPatientLabel = document.getElementById('assistantPatientLabel') as HTMLElement | null;
   const assistantPatientMeta = document.getElementById('assistantPatientMeta') as HTMLElement | null;
@@ -286,7 +288,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   const historialContent = document.getElementById('historialContent') as HTMLElement | null;
   const historyOpenFichaBtn = document.getElementById('historyOpenFichaBtn') as HTMLButtonElement | null;
   const addPatientBtn = document.getElementById('addPatientBtn') as HTMLButtonElement | null;
-  const patientModal = document.getElementById('patientModal') as HTMLElement | null;
   const patientForm = document.getElementById('patientForm') as HTMLFormElement | null;
   const patientNameInput = document.getElementById('patientNameInput') as HTMLInputElement | null;
   const patientEmailInput = document.getElementById('patientEmailInput') as HTMLInputElement | null;
@@ -294,8 +295,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   const patientBirthDateInput = document.getElementById('patientBirthDateInput') as HTMLInputElement | null;
   const patientFormFeedback = document.getElementById('patientFormFeedback') as HTMLElement | null;
   const patientSubmitBtn = document.getElementById('patientSubmitBtn') as HTMLButtonElement | null;
-  const closePatientModalBtn = document.getElementById('closePatientModalBtn') as HTMLButtonElement | null;
-  const patientModalDismiss = document.getElementById('patientModalDismiss') as HTMLButtonElement | null;
   const searchBox = document.querySelector('.search-box') as HTMLElement | null;
   const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
   const searchResults = document.getElementById('searchResults') as HTMLElement | null;
@@ -398,15 +397,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     assistantRail?.classList.toggle('has-chat-messages', hasMessages);
     inputArea?.classList.toggle('is-chat-empty', !hasMessages);
     inputArea?.classList.toggle('has-chat-messages', hasMessages);
-    log.style.setProperty('order', '1', 'important');
-    log.style.setProperty('flex', hasMessages ? '1 1 auto' : '0 0 auto', 'important');
-    log.style.setProperty('overflow-y', 'auto', 'important');
-    log.style.setProperty('overflow-x', 'hidden', 'important');
-    log.style.removeProperty('background');
-    log.style.removeProperty('border');
-    log.style.removeProperty('border-radius');
-    log.style.removeProperty('min-height');
-    log.style.removeProperty('max-height');
   };
 
   const ensureAssistantChatEmptyState = () => {
@@ -455,8 +445,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     assistantDialogScroll?.removeAttribute('style');
     assistantModeSwitch?.removeAttribute('style');
     applyAssistantChatDensity(Boolean(log?.querySelector('.msg')));
-    inputArea?.style.setProperty('order', '2', 'important');
-    inputArea?.style.setProperty('flex', '0 0 auto', 'important');
     assistantDiagnosticCard?.removeAttribute('style');
     if (assistantDiagnosticCard && !assistantDiagnosticCard.classList.contains('is-expanded')) {
       assistantDiagnosticCard.classList.add('is-collapsed');
@@ -7894,7 +7882,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   let firmaDocId: string | null = null;
   let firmaDrawing = false;
   let firmaHasSig = false;
-  const firmaModal = document.getElementById('firmaModal');
   const firmaCanvas = document.getElementById('firmaCanvas') as HTMLCanvasElement | null;
   const firmaStatus = document.getElementById('firmaStatus');
   const firmaFeedback = document.getElementById('firmaFeedback') as HTMLElement | null;

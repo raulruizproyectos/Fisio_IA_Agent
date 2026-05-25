@@ -2,6 +2,16 @@
 
 Historial operativo compacto. Para detalle completo, usar `git log` y diffs.
 
+## 2026-05-25 - Saneamiento del Copiloto IA y limpieza de cascada
+- Reescrito `frontend/src/styles/assistant-rail.css` como fuente canonica del drawer del Copiloto IA.
+- El Copiloto pasa a drawer derecho de 420px en desktop, con backdrop solo en tablet/movil y scroll interno estable.
+- Eliminados los enforcers JS de layout que usaban `style.setProperty(..., 'important')` en `index.astro` y `AssistantRail.astro`.
+- Retirados bloques globales redundantes `assistant-*` de `index.astro` para evitar que el monolito vuelva a pisar el CSS canonico.
+- Eliminadas reglas del `#assistantRail` de `global-shell.css` y `premium-clinic-ui.css`.
+- Consolidado `premium-clinic-ui.css` a un unico bloque `:root` con tokens slate/teal/rose/indigo.
+- Limpiadas constantes DOM sin uso detectadas por `astro check`.
+- Validado frontend: `npm.cmd run check` OK y `npm.cmd run build` OK.
+
 ## 2026-05-20 - Migración y desacoplamiento de Modales a Nanostores + Hotfix de Despliegue
 - Creado `ConfirmDialog.astro` como componente desacoplado del monolito `index.astro`.
 - Migrado el estado de visibilidad de `ConfirmDialog` a Nanostores (`modalState`).

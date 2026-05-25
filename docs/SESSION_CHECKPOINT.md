@@ -1,24 +1,27 @@
-# Session Checkpoint - 2026-05-20
+# Session Checkpoint - 2026-05-25
 
 ## Retoma rapida
 - Proyecto: `Fisio_IA_Agent`.
 - Rama: `main`.
-- Commit publicado: `0428d53` (`feat: migrar ConfirmDialog y PatientModal a Nanostores y desacoplar de index.astro`).
-- Estado: GitHub actualizado con push exitoso, compilación local testeada (`npm run build` OK).
+- Estado: cambios locales sin publicar.
+- Problema abordado: Copiloto IA ocupaba toda la pantalla por conflictos CSS y estilos inline forzados desde JS.
 
 ## Cambios relevantes
-- Modales desacoplados de `index.astro`:
-  - `ConfirmDialog.astro` se independizó con un puente de `CustomEvent` y suscripción reactiva a `modalState.confirm`.
-  - `PatientModal` en `PatientsView.astro` ahora se abre y cierra mediante `modalState.patientForm`.
-- Cero manipulaciones directas de DOM en `index.astro` relacionadas con la visibilidad de los modales.
-- Imports corregidos (`../../store`) en vistas anidadas para evitar errores de compilación de Astro.
+- `frontend/src/styles/assistant-rail.css` reescrito como drawer canonico.
+- Retiradas reglas `#assistantRail` de `global-shell.css` y `premium-clinic-ui.css`.
+- Eliminados bloques `<style is:global id="assistant-*">` redundantes del monolito `index.astro`.
+- Eliminado uso de `style.setProperty(..., 'important')` para el layout del Copiloto.
+- Consolidado `premium-clinic-ui.css` a un solo bloque `:root`.
+- Limpieza de referencias DOM sin uso en `index.astro`.
+- Actualizados `README.md`, `CHANGELOG.md`, `docs/SESSION_CURRENT.md`, `docs/SESSION_CHECKPOINT.md`, `ARCHITECTURE.md` y `configuracion_pendiente.md`.
 
 ## Validacion
-- `cd frontend && npm run build`: OK.
+- `cd frontend && npm.cmd run check`: OK.
+- `cd frontend && npm.cmd run build`: OK.
+- Pendiente: verificacion visual real en navegador. El intento local no pudo completarse porque no hay herramienta Browser disponible y `playwright` no esta instalado.
 
 ## Siguiente sesion
-1. Validar despliegue de Easypanel (frontend) con commit igual o superior a `0428d53`.
-2. Probar modales de confirmación (`ConfirmDialog`) y creación de pacientes (`PatientModal`) en producción.
-3. Iniciar la Fase 3 del plan: modularizar la lógica restante en `index.astro` (Canvas, API fetcher, Eventos) separándola del archivo principal.
-
-Detalles antiguos: usar Git.
+1. Smoke visual del Copiloto IA en desktop/tablet/movil.
+2. Publicar a GitHub si el usuario confirma.
+3. Redeploy frontend en EasyPanel.
+4. Seguir reduciendo deuda: modularizar el JS de `index.astro` por dominios.
