@@ -56,6 +56,22 @@
           <div class="flex flex-col gap-4" id="chatLog"></div>
         </div>
 
+        <!-- TARJETAS DE ACCION RAPIDA (COPILOT QUICK ACTIONS) -->
+        <div class="assistant-quick-actions" id="assistantQuickActions">
+          <span class="quick-actions-label">Atajos del Copilot:</span>
+          <div class="quick-action-chips">
+            <button type="button" class="quick-action-chip" data-prompt="Diseña un plan de ejercicios para hernia discal lumbar L5-S1 con foco en core (Bird-Dog, planchas laterales y puentes glúteos). Habilita el PDF para casa.">
+              <span class="material-symbols-rounded">fitness_center</span> Hernia L5-S1
+            </button>
+            <button type="button" class="quick-action-chip" data-prompt="Genera una nota SOAP evolutiva para un esguince de tobillo grado II. Incluye progresión en rango de movimiento, movilizaciones manuales y propiocepción.">
+              <span class="material-symbols-rounded">edit_note</span> Nota SOAP Tobillo
+            </button>
+            <button type="button" class="quick-action-chip" data-prompt="Optimiza mi agenda de mañana: analiza solapamientos de citas, propón descansos operativos de 10 minutos y sugiere huecos ideales.">
+              <span class="material-symbols-rounded">schedule</span> Optimizar Agenda
+            </button>
+          </div>
+        </div>
+
         <form id="agentForm" class="bg-white border-t border-gray-100 p-4 flex flex-col gap-3 z-10 ai-input-area relative">
           
           <div class="hidden flex-col gap-2 mb-2" id="assistantAgentCanvas" aria-label="Prompts rapidos del agente clinico">

@@ -8736,6 +8736,154 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         chatPatientSelect.innerHTML = '<option value="">No se pudieron cargar pacientes</option>';
       }
     });
+
+  // =======================================================
+  // INTERACTIVE ANATOMICAL PAIN MAP LOGIC
+  // =======================================================
+  (window as any).updatePainMapVisuals = function(notas: any[]) {
+    const paths = document.querySelectorAll('.pain-zone-path');
+    paths.forEach(p => {
+      p.classList.remove('has-pain');
+      (p as HTMLElement).style.fill = '';
+      p.removeAttribute('title');
+    });
+
+    if (!Array.isArray(notas) || notas.length === 0) return;
+
+    // Find the latest note for each body zone to see active pain
+    const latestByZone: Record<string, { eva: number | null, fecha: string, note: string }> = {};
+    const sorted = [...notas].sort((a, b) => new Date(a.fecha || '').getTime() - new Date(b.fecha || '').getTime());
+    sorted.forEach(n => {
+      if (n.zona_corporal) {
+        latestByZone[n.zona_corporal] = {
+          eva: n.dolor_eva != null ? Number(n.dolor_eva) : null,
+          fecha: n.fecha,
+          note: n.nota || ''
+        };
+      }
+    });
+
+    // Color code paths based on pain intensity (EVA)
+    paths.forEach(p => {
+      const path = p as SVGElement;
+      const zone = path.getAttribute('data-zone');
+      if (!zone) return;
+      
+      const data = latestByZone[zone];
+      if (data && data.eva !== null && data.eva > 0) {
+        path.classList.add('has-pain');
+        const intensity = data.eva; // 1-10
+        const lightness = 80 - (intensity * 4); // Higher pain -> darker/brighter crimson
+        path.style.fill = `hsl(350, 70%, ${lightness}%)`;
+        path.setAttribute('title', `${zonaLabels[zone] || zone}: EVA ${intensity}/10 (${fmtDate(data.fecha)})`);
+      }
+    });
+  };
+
+  // Pain Map Event Listeners
+  const painMapSvg = document.getElementById('painMapSvg');
+  const painMapEditor = document.getElementById('painMapEditor');
+  const painMapSelectedZone = document.getElementById('painMapSelectedZone');
+  const painEvaSlider = document.getElementById('painEvaSlider') as HTMLInputElement | null;
+  const painEvaValue = document.getElementById('painEvaValue');
+  const painZoneNotes = document.getElementById('painZoneNotes') as HTMLInputElement | null;
+  const btnSavePainZone = document.getElementById('btnSavePainZone');
+
+  let activeSelectedZone: string | null = null;
+
+  if (painMapSvg) {
+    painMapSvg.addEventListener('click', (e: Event) => {
+      const target = e.target as SVGElement;
+      const path = target.closest('.pain-zone-path') as SVGElement | null;
+      if (!path) return;
+
+      const zone = path.getAttribute('data-zone');
+      if (!zone) return;
+
+      // Reset selection highlights
+      document.querySelectorAll('.pain-zone-path').forEach(p => p.classList.remove('active-selected'));
+      
+      // Highlight new choice
+      path.classList.add('active-selected');
+      activeSelectedZone = zone;
+
+      // Show editor
+      if (painMapEditor) painMapEditor.hidden = false;
+      if (painMapSelectedZone) painMapSelectedZone.textContent = zonaLabels[zone] || zone;
+
+      // Reset values in editor
+      if (painEvaSlider) {
+        painEvaSlider.value = '5';
+        if (painEvaValue) painEvaValue.textContent = '5';
+      }
+      if (painZoneNotes) painZoneNotes.value = '';
+    });
+  }
+
+  if (painEvaSlider) {
+    painEvaSlider.addEventListener('input', () => {
+      if (painEvaValue) painEvaValue.textContent = painEvaSlider.value;
+    });
+  }
+
+  if (btnSavePainZone) {
+    btnSavePainZone.addEventListener('click', async () => {
+      if (!fichaPatientId || !activeSelectedZone) return;
+      
+      const eva = painEvaSlider ? Number(painEvaSlider.value) : 5;
+      const notes = painZoneNotes ? painZoneNotes.value.trim() : '';
+      
+      const body = {
+        paciente_id: fichaPatientId,
+        fecha: new Date().toISOString().slice(0, 10),
+        zona_corporal: activeSelectedZone,
+        dolor_eva: eva,
+        nota: notes || `Dolor en zona ${zonaLabels[activeSelectedZone] || activeSelectedZone} registrado desde el mapa anatómico.`,
+        pruebas_realizadas: null
+      };
+
+      try {
+        // Save note in Express database
+        await fetchJson(`${BACKEND_BASE}/api/notas-clinicas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        // Hide editor and reset selection
+        if (painMapEditor) painMapEditor.hidden = true;
+        document.querySelectorAll('.pain-zone-path').forEach(p => p.classList.remove('active-selected'));
+
+        // Refresh notes timeline & Ficha workspace
+        const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
+        if (fichaData) fichaData.notas = notasPayload.data || [];
+        
+        renderFichaHero(fichaData || {});
+        renderFichaWorkspace(fichaData || {});
+        renderFichaNotas(fichaData?.notas || []);
+      } catch (err: any) {
+        alert(`Error al guardar zona de dolor: ${err?.message || 'inténtelo de nuevo'}`);
+      }
+    });
+  }
+
+  // =======================================================
+  // GEMINI COPILOT QUICK ACTION CARDS LOGIC
+  // =======================================================
+  const quickActionChips = document.querySelectorAll('.quick-action-chip');
+  quickActionChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const prompt = chip.getAttribute('data-prompt');
+      if (!prompt) return;
+
+      if (input) {
+        input.value = prompt;
+        // Trigger height adjustment of textarea if auto-growing
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+      }
+    });
+  });
 </script>
 
 <style is:global>
@@ -13505,9 +13653,142 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }
   }
 </style><style is:global>
+  /* =======================================================
+     PAIN MAP & COPILOT QUICK ACTIONS STYLES
+     ======================================================= */
+  .pain-map-card {
+    background: var(--bg-card, #fffdfa);
+    border: 1px solid var(--border-light, #eee6d9);
+    border-radius: var(--radius-md, 14px);
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  .pain-map-container {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-top: 0.5rem;
+  }
+  .pain-map-visual {
+    width: 80px;
+    height: 180px;
+    flex-shrink: 0;
+    background: var(--bg-base, #f6f1e8);
+    border-radius: var(--radius-sm, 10px);
+    padding: 0.35rem;
+    border: 1px solid var(--border-light, #eee6d9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .pain-map-svg {
+    width: 100%;
+    height: 100%;
+  }
+  .pain-zone-path {
+    fill: #cbd5e1; /* slate-300 */
+    stroke: var(--bg-base, #f6f1e8);
+    stroke-width: 1.5;
+    cursor: pointer;
+    transition: fill var(--transition), filter var(--transition);
+  }
+  .pain-zone-path:hover {
+    fill: #94a3b8; /* slate-400 */
+  }
+  .pain-zone-path.active-selected {
+    fill: var(--accent, #176b63) !important;
+    filter: drop-shadow(0 0 4px var(--accent-glow));
+  }
+  .pain-zone-path.has-pain {
+    fill: var(--danger, #dc4f52);
+  }
+  .pain-zone-path.has-pain:hover {
+    fill: hsl(350, 70%, 40%);
+  }
+  .pain-map-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    flex: 1;
+    min-width: 0;
+    animation: painMapFadeIn 0.2s ease;
+  }
+  .pain-map-editor strong {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--accent-soft);
+    padding-bottom: 0.15rem;
+  }
+  .pain-intensity-slider {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .pain-intensity-slider label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .pain-intensity-slider input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  @keyframes painMapFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Copilot Quick Actions Styles --- */
+  .assistant-quick-actions {
+    padding: 0.75rem 0.85rem;
+    background: #f1f5f9;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .quick-actions-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .quick-action-chips {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+  .quick-action-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .quick-action-chip:hover {
+    background: var(--accent-soft, #eef7f8);
+    border-color: var(--accent, #176b63);
+    color: var(--accent, #176b63);
+    transform: translateY(-1px);
+  }
+  .quick-action-chip .material-symbols-rounded {
+    font-size: 0.9rem;
+  }
+
   /* -----------------------------------------------
-     ASSISTANT RAIL Premium Redesign v2
-     Clean, compact, professional
+     ASSISTANT RAILal
      ----------------------------------------------- */
 
   /* --- Container --- */

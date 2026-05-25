@@ -114,6 +114,42 @@
             <div class="text-[#687076] text-sm" id="fichaOverviewStats">El resumen ejecutivo del caso aparecerá aquí.</div>
           </section>
 
+          <!-- MAPA ANATOMICO DE DOLOR INTERACTIVO -->
+          <section class="bg-gray-50 p-6 rounded-2xl pain-map-card">
+            <header class="mb-4">
+              <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Lectura evolutiva</span>
+              <h2 class="text-xl font-medium text-[#11181C]">Mapa Anat&oacute;mico de Dolor</h2>
+            </header>
+            <div class="pain-map-container">
+              <div class="pain-map-visual">
+                <svg viewBox="0 0 100 220" id="painMapSvg" class="pain-map-svg">
+                  <path id="zone-cervical" class="pain-zone-path" data-zone="cervical" d="M42,20 C42,10 58,10 58,20 C58,28 54,32 54,36 L46,36 C46,32 42,28 42,20 Z" />
+                  <path id="zone-hombro_izq" class="pain-zone-path" data-zone="hombro_brazo" d="M38,38 C28,40 22,48 18,58 L24,60 C26,52 32,46 38,44 Z" />
+                  <path id="zone-hombro_der" class="pain-zone-path" data-zone="hombro_brazo" d="M62,38 C72,40 78,48 82,58 L76,60 C74,52 68,46 62,44 Z" />
+                  <path id="zone-espalda" class="pain-zone-path" data-zone="espalda" d="M40,38 L60,38 L58,80 L42,80 Z" />
+                  <path id="zone-abdomen" class="pain-zone-path" data-zone="abdomen_core" d="M42,82 L58,82 L56,105 L44,105 Z" />
+                  <path id="zone-cadera" class="pain-zone-path" data-zone="cadera" d="M38,107 L62,107 L60,125 L40,125 Z" />
+                  <path id="zone-rodilla_izq" class="pain-zone-path" data-zone="rodilla" d="M38,127 L48,127 L46,165 L36,165 Z" />
+                  <path id="zone-rodilla_der" class="pain-zone-path" data-zone="rodilla" d="M52,127 L62,127 L64,165 L54,165 Z" />
+                  <path id="zone-tobillo_izq" class="pain-zone-path" data-zone="tobillo_pie" d="M36,167 L46,167 L44,205 C40,210 32,210 30,205 Z" />
+                  <path id="zone-tobillo_der" class="pain-zone-path" data-zone="tobillo_pie" d="M54,167 L64,167 L70,205 C68,210 60,210 56,205 Z" />
+                </svg>
+              </div>
+              <div class="pain-map-editor" id="painMapEditor" hidden>
+                <strong id="painMapSelectedZone">Cervical</strong>
+                <div class="pain-intensity-slider">
+                  <label>EVA: <span id="painEvaValue">5</span>/10</label>
+                  <input type="range" id="painEvaSlider" min="0" max="10" value="5" step="1" />
+                </div>
+                <label class="block space-y-1">
+                  <span class="text-sm font-medium">Notas de dolor</span>
+                  <input type="text" id="painZoneNotes" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Contractura, punzante..." />
+                </label>
+                <button type="button" class="btn-primary btn-sm bg-[#11181C] text-white rounded-full py-2 hover:bg-[#202830] transition-colors flex items-center gap-1.5 justify-center text-xs font-semibold" id="btnSavePainZone" style="width:100%;"><span class="material-symbols-rounded text-sm">check</span> Guardar Nota</button>
+              </div>
+            </div>
+          </section>
+
           <section class="bg-gray-50 p-6 rounded-2xl">
             <header class="mb-4">
               <span class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Pulso terapéutico</span>
