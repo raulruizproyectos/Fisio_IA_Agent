@@ -1,7 +1,8 @@
 # Configuracion pendiente
 
 ## Estado vivo - 2026-05-25
-- GitHub: cambios locales del saneamiento del Copiloto IA pendientes de publicar.
+- GitHub: saneamiento del Copiloto IA publicado en `origin/main`.
+- Commit publicado: `14790592fed128fd38e4eef4c252c8cb25c4870b`.
 - Frontend: Copiloto IA corregido como drawer lateral canonico en `assistant-rail.css`; pendiente smoke visual real y redeploy EasyPanel.
 - Backend: sin cambios en esta intervencion.
 - n8n produccion: actualizado directamente por API. Los 11 workflows del proyecto estan activos y renombrados como `Fisio IA | ...`.
@@ -14,6 +15,7 @@
 - `global-shell.css` y `premium-clinic-ui.css` ya no definen reglas `#assistantRail`.
 - `premium-clinic-ui.css` conserva un unico bloque `:root`.
 - Validado localmente: `frontend` check/build OK.
+- Rebase sobre `origin/main` resuelto antes del push; se conserva el `index.astro` compacto del remoto.
 
 ## Actualizacion 2026-05-18
 - Redisenio premium aplicado en shell, navegacion, topbar, documentos, tablas, formularios y copiloto IA.
@@ -29,12 +31,11 @@
 
 ## Pendiente operativo
 1. Smoke visual local o en preview del Copiloto IA.
-2. Publicar cambios a GitHub.
-3. Redeploy `fisio-frontend` en EasyPanel desde `main`.
-4. Hard refresh y comprobar que el Copiloto no cubre el dashboard en desktop.
-5. Smoke test: Inicio, Pacientes, Copiloto IA, generar plan de ejercicios, Agenda, Finanzas, Documentos.
-6. Confirmar que el plan IA devuelve contenido con el prompt premium y queda registrado en historial.
-7. Si se ve UI antigua: revisar cache/commit desplegado antes de cambiar codigo.
+2. Redeploy `fisio-frontend` en EasyPanel desde `main`.
+3. Hard refresh y comprobar que el Copiloto no cubre el dashboard en desktop.
+4. Smoke test: Inicio, Pacientes, Copiloto IA, generar plan de ejercicios, Agenda, Finanzas, Documentos.
+5. Confirmar que el plan IA devuelve contenido con el prompt premium y queda registrado en historial.
+6. Si se ve UI antigua: revisar cache/commit desplegado antes de cambiar codigo.
 
 ## Servicios
 - Frontend: `https://fisio-frontend.b5xbaf.easypanel.host/`

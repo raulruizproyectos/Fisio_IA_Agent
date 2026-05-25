@@ -3,7 +3,9 @@
 ## Retoma rapida
 - Proyecto: `Fisio_IA_Agent`.
 - Rama: `main`.
-- Estado: cambios locales sin publicar.
+- Estado: fix del Copiloto publicado en `origin/main`.
+- Commit publicado: `14790592fed128fd38e4eef4c252c8cb25c4870b` (`fix(frontend): sane assistant rail layout`).
+- Nota de workspace: existen cambios locales no relacionados restaurados tras el push en backend/auth/sidebar; no mezclarlos con este cierre.
 - Problema abordado: Copiloto IA ocupaba toda la pantalla por conflictos CSS y estilos inline forzados desde JS.
 
 ## Cambios relevantes
@@ -22,6 +24,7 @@
 
 ## Siguiente sesion
 1. Smoke visual del Copiloto IA en desktop/tablet/movil.
-2. Publicar a GitHub si el usuario confirma.
-3. Redeploy frontend en EasyPanel.
-4. Seguir reduciendo deuda: modularizar el JS de `index.astro` por dominios.
+2. Redeploy frontend en EasyPanel desde `main`.
+3. Hard refresh en produccion.
+4. Probar plan IA, PDF y registro en historial.
+5. Seguir reduciendo deuda: modularizar el JS de `index.astro` por dominios.

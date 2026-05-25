@@ -5,9 +5,10 @@ CRM clinico para fisioterapia: pacientes, agenda, finanzas, documentos y copilot
 ## Estado actual
 - Rama: `main`.
 - Estado local 2026-05-25: saneado el Copiloto IA para que vuelva a ser drawer lateral y no overlay de pantalla completa.
+- Commit publicado en GitHub: `14790592fed128fd38e4eef4c252c8cb25c4870b`.
 - Frontend productivo: `https://fisio-frontend.b5xbaf.easypanel.host/`.
 - Backend productivo: `https://fisio-backend.b5xbaf.easypanel.host`.
-- Pendiente inmediato: publicar los cambios a GitHub, redeploy manual de `fisio-frontend` en EasyPanel desde `main`, hard refresh y smoke test visual/funcional.
+- Pendiente inmediato: redeploy manual de `fisio-frontend` en EasyPanel desde `main`, hard refresh y smoke test visual/funcional.
 
 ## Contexto clave
 - Dashboard y Pacientes fueron rehechos con markup `ops-*` para escapar del layout heredado lleno de cajas.
@@ -32,13 +33,12 @@ npm.cmd run lint
 Resultado 2026-05-25 frontend: `npm.cmd run check` OK, `npm.cmd run build` OK.
 
 ## Retomar
-1. Publicar cambios a GitHub desde `main`.
-2. Redeploy `fisio-frontend` en EasyPanel desde `main`.
-3. Hard refresh en produccion.
-4. Revisar `Inicio`, `Pacientes`, `Copiloto IA`, `Agenda`, `Finanzas`, `Documentos`.
-5. Probar apertura/cierre del Copiloto IA en desktop, tablet y movil.
-6. Probar generacion de plan IA, PDF e historial del paciente.
-7. Si se ve UI antigua, revisar cache/commit desplegado antes de tocar codigo.
+1. Redeploy `fisio-frontend` en EasyPanel desde `main`.
+2. Hard refresh en produccion.
+3. Revisar `Inicio`, `Pacientes`, `Copiloto IA`, `Agenda`, `Finanzas`, `Documentos`.
+4. Probar apertura/cierre del Copiloto IA en desktop, tablet y movil.
+5. Probar generacion de plan IA, PDF e historial del paciente.
+6. Si se ve UI antigua, revisar cache/commit desplegado antes de tocar codigo.
 
 ## Archivos de seguimiento minimos
 - `docs/SESSION_CURRENT.md`: estado vivo para retomar.

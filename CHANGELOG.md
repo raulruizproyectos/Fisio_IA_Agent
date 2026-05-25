@@ -3,6 +3,7 @@
 Historial operativo compacto. Para detalle completo, usar `git log` y diffs.
 
 ## 2026-05-25 - Saneamiento del Copiloto IA y limpieza de cascada
+- Publicado en `main`: `14790592fed128fd38e4eef4c252c8cb25c4870b`.
 - Reescrito `frontend/src/styles/assistant-rail.css` como fuente canonica del drawer del Copiloto IA.
 - El Copiloto pasa a drawer derecho de 420px en desktop, con backdrop solo en tablet/movil y scroll interno estable.
 - Eliminados los enforcers JS de layout que usaban `style.setProperty(..., 'important')` en `index.astro` y `AssistantRail.astro`.
