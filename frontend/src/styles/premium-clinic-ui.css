@@ -4122,3 +4122,390 @@ td .btn-outline {
     padding: 0.85rem !important;
   }
 }
+
+/* Global responsive hardening */
+html,
+body {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.app-shell,
+.main-area,
+.workspace-shell,
+.content,
+.page-section,
+.page-section > *,
+.card,
+.table-card,
+.modal-panel,
+.crm-drawer-panel,
+.finance-workbench,
+.finance-action-grid,
+.finance-overview-grid,
+.pagos-toolbar,
+.pagos-summary-row,
+.pagos-filters-row,
+.clinic-dashboard,
+.clinic-dashboard-hero,
+.clinic-dashboard-grid,
+.clinic-dashboard-grid-secondary,
+.clinic-panel,
+.ops-patient-directory,
+.ops-patient-list,
+.documentos-workbench,
+.agenda-cal-card,
+.agenda-mobile-card,
+.ficha-command-shell {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.content {
+  overflow-x: hidden !important;
+}
+
+.page-section {
+  width: 100% !important;
+}
+
+.page-header-row,
+.agenda-header-row,
+.page-tools,
+.week-nav-bar,
+.finance-priority-actions,
+.modal-actions,
+.card-header,
+.card-header-stack,
+.ops-section-head,
+.ops-patient-controls,
+.pagos-filters-row {
+  flex-wrap: wrap !important;
+  min-width: 0 !important;
+}
+
+.page-header-row > *,
+.agenda-header-row > *,
+.page-tools > *,
+.week-nav-bar > *,
+.finance-priority-actions > *,
+.modal-actions > *,
+.card-header > *,
+.ops-section-head > *,
+.ops-patient-controls > * {
+  min-width: 0 !important;
+}
+
+.page-tools,
+.week-nav-bar {
+  justify-content: flex-end !important;
+}
+
+.table-wrap,
+.ops-patient-list,
+.documentos-table-wrap,
+.pagos-table-wrap,
+.facturas-table-wrap,
+.bonos-table-wrap,
+.gestoria-table-wrap,
+.intakes-table-wrap,
+.overflow-x-auto {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+table,
+.documentos-table,
+.intakes-table {
+  max-width: 100% !important;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100% !important;
+}
+
+input,
+select,
+textarea {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.form-grid,
+.grid,
+.clinic-metric-grid,
+.finance-overview-grid,
+.template-kpi-grid,
+.bonos-summary-strip,
+.facturas-summary-strip,
+.documentos-summary,
+.ops-signals,
+.ops-metrics {
+  min-width: 0 !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-outline,
+.btn-sm,
+.finance-action-card,
+.topbar-action,
+.assistant-launch-btn {
+  max-width: 100% !important;
+}
+
+@media (max-width: 1600px) {
+  .page-section[data-page="intakes"] {
+    max-width: 100% !important;
+    padding: 1.1rem !important;
+  }
+
+  .intakes-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .intakes-card {
+    overflow: visible !important;
+  }
+
+  .intakes-table-wrap {
+    overflow-x: visible !important;
+  }
+
+  .intakes-table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: auto !important;
+  }
+
+  .intakes-table thead {
+    display: none !important;
+  }
+
+  .intakes-table tbody {
+    display: grid !important;
+    gap: 0.75rem !important;
+    padding: 1rem !important;
+  }
+
+  .intakes-table tr {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1.65fr)
+      minmax(6.5rem, 0.55fr)
+      minmax(6.75rem, 0.6fr)
+      minmax(0, 1fr)
+      minmax(6.75rem, 0.6fr)
+      minmax(6.75rem, 0.6fr) !important;
+    gap: 0.8rem 1rem !important;
+    padding: 1rem !important;
+    border: 1px solid var(--clinic-line-soft) !important;
+    border-radius: var(--clinic-radius) !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 24px rgba(16, 24, 40, 0.04) !important;
+  }
+
+  .intakes-table tr.empty-row {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  .intakes-table td {
+    display: grid !important;
+    gap: 0.28rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    vertical-align: top !important;
+  }
+
+  .intakes-table tr.empty-row td {
+    display: block !important;
+  }
+
+  .intakes-table td::before {
+    color: var(--clinic-muted) !important;
+    font-size: 0.68rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.1 !important;
+    text-transform: uppercase !important;
+  }
+
+  .intakes-table tr.empty-row td::before {
+    display: none !important;
+  }
+
+  .intakes-table td:nth-child(1)::before {
+    content: "Paciente";
+  }
+
+  .intakes-table td:nth-child(2)::before {
+    content: "Canal";
+  }
+
+  .intakes-table td:nth-child(3)::before {
+    content: "Prioridad";
+  }
+
+  .intakes-table td:nth-child(4)::before {
+    content: "Mensaje";
+  }
+
+  .intakes-table td:nth-child(5)::before {
+    content: "Fecha";
+  }
+
+  .intakes-table td:nth-child(6)::before {
+    content: "Estado";
+  }
+
+  .intakes-table td:nth-child(7) {
+    grid-column: 1 / -1 !important;
+  }
+
+  .intakes-table td:nth-child(7)::before {
+    content: "Acciones";
+  }
+
+  .intakes-table th:nth-child(n),
+  .intakes-table td:nth-child(n) {
+    width: auto !important;
+  }
+
+  .intake-row-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .intake-row-actions .btn-sm,
+  .intake-row-actions .btn-sm[data-mark-triage] {
+    flex: 0 1 auto !important;
+    min-width: min(100%, 7.25rem) !important;
+    justify-self: auto !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .page-section {
+    padding: 1rem 1rem 3rem !important;
+  }
+
+  .page-title,
+  .ops-title {
+    font-size: clamp(1.75rem, 3.4vw, 2.7rem) !important;
+    line-height: 1.04 !important;
+  }
+
+  .page-subtitle,
+  .ops-subtitle {
+    max-width: 100% !important;
+  }
+
+  .topbar-clinic-pulse {
+    min-width: 7.25rem !important;
+  }
+
+  .search-box {
+    flex-basis: clamp(12rem, 34vw, 28rem) !important;
+    min-width: 0 !important;
+  }
+
+  .intakes-table tr {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .page-header-row,
+  .agenda-header-row {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .page-tools,
+  .week-nav-bar {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .topbar {
+    gap: 0.5rem !important;
+  }
+
+  .topbar-right {
+    gap: 0.35rem !important;
+  }
+
+  .topbar-action span:not(.material-symbols-rounded),
+  .assistant-launch-btn span:not(.material-symbols-rounded) {
+    display: none !important;
+  }
+
+  .intakes-table tr {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell,
+  .main-area {
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+  }
+
+  .page-section {
+    padding: 0.85rem 0.75rem 5.8rem !important;
+  }
+
+  .page-tools,
+  .week-nav-bar,
+  .modal-actions,
+  .finance-priority-actions,
+  .pagos-filters-row {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-tools > *,
+  .week-nav-bar > *,
+  .modal-actions > *,
+  .finance-priority-actions > *,
+  .pagos-filters-row > * {
+    width: 100% !important;
+  }
+
+  .intakes-hero h1,
+  .page-title,
+  .ops-title,
+  .clinic-dashboard-copy h1 {
+    font-size: clamp(1.9rem, 10vw, 2.55rem) !important;
+    line-height: 1.02 !important;
+  }
+
+  .intakes-table tbody {
+    padding: 0.75rem !important;
+  }
+
+  .intakes-table tr {
+    grid-template-columns: 1fr !important;
+    padding: 0.9rem !important;
+  }
+
+  .intake-row-actions .btn-sm,
+  .intake-row-actions .btn-sm[data-mark-triage] {
+    flex: 1 1 8.5rem !important;
+  }
+}
