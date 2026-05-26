@@ -2,54 +2,190 @@
 // DashboardView.astro
 ---
 
-<!-- === PAGE: DASHBOARD (COPILOT ZERO-STATE) === -->
-<div class="page-section active bg-[#FAFAF8] min-h-full flex flex-col items-center justify-center py-20 px-4" data-page="dashboard">
-  
-  <div class="w-full max-w-3xl flex flex-col items-center space-y-12">
-    
-    <!-- Hero / Zero State Greeting -->
-    <div class="text-center space-y-4">
-      <h1 class="text-4xl md:text-5xl font-medium text-[#11181C] tracking-tight">Buenos días, Dr.</h1>
-      <p class="text-lg text-[#687076] max-w-xl mx-auto font-light leading-relaxed">
-        ¿En qué paciente o tarea nos enfocamos hoy? Puedes escribir directamente o elegir una de las acciones rápidas.
-      </p>
-    </div>
-
-    <!-- Quick Actions (Zero-State Inteligente) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-      <button class="flex flex-col items-start p-6 bg-white rounded-2xl hover:bg-gray-50 transition-colors duration-200 text-left group" data-dashboard-nav="citas">
-        <span class="material-symbols-rounded text-[#687076] group-hover:text-emerald-600 transition-colors mb-3">calendar_today</span>
-        <span class="text-[#11181C] font-medium mb-1">Revisar agenda de hoy</span>
-        <span class="text-[#687076] text-sm">3 pacientes programados</span>
-      </button>
-
-      <button class="flex flex-col items-start p-6 bg-white rounded-2xl hover:bg-gray-50 transition-colors duration-200 text-left group" data-dashboard-nav="intakes">
-        <span class="material-symbols-rounded text-[#687076] group-hover:text-emerald-600 transition-colors mb-3">mark_email_unread</span>
-        <span class="text-[#11181C] font-medium mb-1">Mensajes pendientes</span>
-        <span class="text-[#687076] text-sm">2 nuevos mensajes de Telegram</span>
-      </button>
-
-      <button class="flex flex-col items-start p-6 bg-white rounded-2xl hover:bg-gray-50 transition-colors duration-200 text-left group" data-dashboard-action="new-patient">
-        <span class="material-symbols-rounded text-[#687076] group-hover:text-emerald-600 transition-colors mb-3">person_add</span>
-        <span class="text-[#11181C] font-medium mb-1">Alta de paciente</span>
-        <span class="text-[#687076] text-sm">Crear nueva ficha clínica</span>
-      </button>
-    </div>
-
-    <!-- Conversational Input (Copilot Placeholder) -->
-    <div class="w-full relative mt-8">
-      <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-        <span class="material-symbols-rounded text-emerald-600/80">psychology</span>
+<!-- === PAGE: DASHBOARD === -->
+<div class="page-section active" data-page="dashboard">
+  <section class="clinic-dashboard" aria-labelledby="dashboardTitle">
+    <header class="clinic-dashboard-hero">
+      <div class="clinic-dashboard-copy">
+        <span class="clinic-kicker">Clinical OS</span>
+        <h1 id="dashboardTitle">Buenos dias, Dr.</h1>
+        <p id="dashboardLiveSummary">Cargando agenda, mensajes y sincronizacion clinica...</p>
+        <div class="clinic-hero-actions">
+          <button class="btn-primary" type="button" id="heroAgendaShortcutBtn" data-dashboard-nav="citas">
+            <span class="material-symbols-rounded">calendar_today</span>
+            Revisar agenda
+          </button>
+          <button class="btn-secondary" type="button" id="heroNewPatientShortcutBtn" data-dashboard-action="new-patient">
+            <span class="material-symbols-rounded">person_add</span>
+            Alta de paciente
+          </button>
+          <button class="btn-ghost" type="button" id="heroAgentShortcutBtn" data-dashboard-action="open-copilot">
+            <span class="material-symbols-rounded">psychology</span>
+            Copiloto IA
+          </button>
+        </div>
       </div>
-      <input type="text" 
-             class="w-full bg-white text-[#11181C] placeholder-[#687076] rounded-full py-5 pl-14 pr-16 shadow-sm border-0 focus:ring-2 focus:ring-emerald-500/20 text-lg transition-all"
-             placeholder="Describe síntomas, crea una cita o busca un paciente..." 
-             id="mainCopilotInput"
-             autocomplete="off">
-      <button class="absolute inset-y-2 right-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-3 flex items-center justify-center transition-colors">
-        <span class="material-symbols-rounded text-xl">arrow_upward</span>
+
+      <aside class="clinic-focus-card" aria-label="Siguiente paso recomendado">
+        <div class="clinic-card-head">
+          <span class="clinic-kicker">Ahora</span>
+          <span class="status-chip pendiente" id="dashboardNextSessionStatus">Cargando</span>
+        </div>
+        <strong id="dashboardNextSessionTitle">Leyendo proxima sesion...</strong>
+        <p id="dashboardNextSessionMeta">La agenda se actualiza en segundo plano.</p>
+        <button class="btn-ghost btn-sm" type="button" id="dashboardNextSessionBtn">
+          <span class="material-symbols-rounded">calendar_today</span>
+          Ver agenda
+        </button>
+      </aside>
+    </header>
+
+    <section class="clinic-command-search" aria-label="Acceso rapido">
+      <span class="material-symbols-rounded" aria-hidden="true">search</span>
+      <input
+        type="text"
+        id="mainCopilotInput"
+        placeholder="Busca paciente, crea una cita o abre el copiloto clinico..."
+        autocomplete="off"
+      />
+      <button class="btn-primary" type="button" data-dashboard-action="open-copilot" aria-label="Abrir copiloto">
+        <span class="material-symbols-rounded">arrow_upward</span>
       </button>
-    </div>
-    
-  </div>
+    </section>
+
+    <section class="clinic-metric-grid" aria-label="Indicadores de la clinica">
+      <article>
+        <span class="material-symbols-rounded">group</span>
+        <div>
+          <strong id="metricPacientes">0</strong>
+          <p>Pacientes activos</p>
+        </div>
+      </article>
+      <article>
+        <span class="material-symbols-rounded">event_available</span>
+        <div>
+          <strong id="metricSesiones">0</strong>
+          <p>Sesiones hoy</p>
+        </div>
+      </article>
+      <article>
+        <span class="material-symbols-rounded">clinical_notes</span>
+        <div>
+          <strong id="metricInformes">0</strong>
+          <p>Planes IA generados</p>
+        </div>
+      </article>
+      <article>
+        <span class="material-symbols-rounded">payments</span>
+        <div>
+          <strong id="metricIngresosMes">0,00 €</strong>
+          <p>Ingresos del mes</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="clinic-dashboard-grid">
+      <article class="clinic-panel clinic-panel-primary">
+        <div class="clinic-card-head">
+          <div>
+            <span class="clinic-kicker">Agenda</span>
+            <h2>Semana clinica</h2>
+          </div>
+          <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="citas">
+            <span class="material-symbols-rounded">arrow_forward</span>
+            Abrir
+          </button>
+        </div>
+        <div class="clinic-list" id="dashCitasBody">
+          <div class="empty-state-sm state-loading">
+            <span class="material-symbols-rounded">sync</span>
+            <p>Cargando citas...</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="clinic-panel">
+        <div class="clinic-card-head">
+          <div>
+            <span class="clinic-kicker">Triage</span>
+            <h2>Bandeja de entrada</h2>
+          </div>
+          <span class="status-chip pendiente" id="dashboardIntakeStatus">Cargando</span>
+        </div>
+        <strong class="clinic-panel-title" id="dashboardIntakeTitle">Leyendo mensajes...</strong>
+        <p id="dashboardIntakeMeta">Telegram y formulario web se revisan automaticamente.</p>
+        <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="intakes">
+          <span class="material-symbols-rounded">forward_to_inbox</span>
+          Ver mensajes
+        </button>
+      </article>
+
+      <article class="clinic-panel">
+        <div class="clinic-card-head">
+          <div>
+            <span class="clinic-kicker">Sync</span>
+            <h2>Google Calendar</h2>
+          </div>
+          <span class="status-chip pendiente" id="dashboardSyncChip">Revision</span>
+        </div>
+        <strong class="clinic-panel-title" id="dashboardSyncTitle">Comprobando estado...</strong>
+        <p id="dashboardSyncMeta">Esperando lectura del sincronizador.</p>
+        <div class="clinic-facts" id="dashboardSyncFacts" hidden></div>
+      </article>
+    </section>
+
+    <section class="clinic-dashboard-grid clinic-dashboard-grid-secondary">
+      <article class="clinic-panel">
+        <div class="clinic-card-head">
+          <div>
+            <span class="clinic-kicker">Prioridades</span>
+            <h2>Lista de trabajo</h2>
+          </div>
+        </div>
+        <div class="clinic-priority-list" id="dashboardPriorityList">
+          <div class="empty-state-sm state-loading">
+            <span class="material-symbols-rounded">sync</span>
+            <p>Ordenando prioridades...</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="clinic-panel clinic-booking-card">
+        <div class="clinic-card-head">
+          <div>
+            <span class="clinic-kicker">Reservas</span>
+            <h2>Pagina publica</h2>
+          </div>
+        </div>
+        <p id="dashboardBookingMeta">Comparte la pagina publica para captar nuevas altas y completar huecos de agenda.</p>
+        <p class="form-feedback" id="dashboardBookingFeedback" hidden></p>
+        <div class="clinic-inline-actions">
+          <button class="btn-primary btn-sm" type="button" id="dashboardBookingOpenBtn">
+            <span class="material-symbols-rounded">open_in_new</span>
+            Abrir pagina
+          </button>
+          <button class="btn-ghost btn-sm" type="button" id="dashboardBookingCopyBtn">
+            <span class="material-symbols-rounded">content_copy</span>
+            Copiar enlace
+          </button>
+        </div>
+      </article>
+    </section>
+
+    <section class="clinic-finance-strip" aria-label="Resumen financiero">
+      <article>
+        <span>Sesiones mes</span>
+        <strong id="metricSesionesMes">0</strong>
+      </article>
+      <article>
+        <span>Motor IA</span>
+        <strong id="metricEngineOps">0/0</strong>
+      </article>
+      <article>
+        <span>Grafico anual</span>
+        <strong id="dashChartYear">2026</strong>
+      </article>
+      <canvas id="dashIncomeChart" aria-label="Ingresos por mes" role="img"></canvas>
+    </section>
+  </section>
 </div>

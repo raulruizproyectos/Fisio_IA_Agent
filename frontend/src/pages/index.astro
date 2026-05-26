@@ -277,6 +277,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const chatPatientSelect = document.getElementById('chatPatientSelect') as HTMLSelectElement | null;
   const heroAgendaShortcutBtn = document.getElementById('heroAgendaShortcutBtn') as HTMLButtonElement | null;
   const heroNewPatientShortcutBtn = document.getElementById('heroNewPatientShortcutBtn') as HTMLButtonElement | null;
+  const mainCopilotInput = document.getElementById('mainCopilotInput') as HTMLInputElement | null;
   const dashboardActionButtons = document.querySelectorAll('[data-dashboard-action]') as NodeListOf<HTMLElement>;
   const dashboardLiveSummary = document.getElementById('dashboardLiveSummary') as HTMLElement | null;
   const dashboardNextSessionTitle = document.getElementById('dashboardNextSessionTitle') as HTMLElement | null;
@@ -1580,6 +1581,19 @@ import ConfigView from '../components/views/ConfigView.astro';
         openPatientModal();
       }
     });
+  });
+  mainCopilotInput?.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Enter') return;
+    const prompt = mainCopilotInput.value.trim();
+    if (!prompt) return;
+    requestOpenAssistantRail();
+    if (input) {
+      input.value = prompt;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+    mainCopilotInput.value = '';
   });
   mobileDockNavButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -4753,13 +4767,13 @@ import ConfigView from '../components/views/ConfigView.astro';
   // === APPOINTMENT MODAL ===
   const appointmentModal = document.getElementById('appointmentModal') as HTMLElement | null;
   const openAppointmentModal = async () => {
+    appointmentModal?.classList.add('open');
+    appointmentModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
     await ensurePatientCatalog();
     renderAppointmentPatientOptions();
     setAppointmentFormDefaults(true);
     setAppointmentFormFeedback();
-    appointmentModal?.classList.add('open');
-    appointmentModal?.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('has-modal-open');
     window.setTimeout(() => appointmentPatientSelect?.focus(), 25);
   };
   const closeAppointmentModal = () => {
@@ -5777,6 +5791,9 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const openPagoModal = async (editData?: any) => {
     if (pagosUnavailableMessage) { setPagoFeedback(pagosUnavailableMessage); return; }
+    pagoModal?.classList.add('open');
+    pagoModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
     pagoForm?.reset();
     setPagoFeedback();
     if (pagoEditId) pagoEditId.value = '';
@@ -5795,9 +5812,6 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (pagoModalTitle) pagoModalTitle.textContent = 'Registrar pago';
     }
 
-    pagoModal?.classList.add('open');
-    pagoModal?.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('has-modal-open');
     window.setTimeout(() => pagoPacienteSelect?.focus(), 25);
   };
 
@@ -7568,6 +7582,9 @@ import ConfigView from '../components/views/ConfigView.astro';
   // Modal
   const openFacturaModal = async () => {
     if (facturasUnavailableMessage) { setFacturaFeedback(facturasUnavailableMessage); return; }
+    facturaModal?.classList.add('open');
+    facturaModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
     facturaForm?.reset();
     setFacturaFeedback();
     if (facturaPreview) facturaPreview.hidden = true;
@@ -7578,12 +7595,11 @@ import ConfigView from '../components/views/ConfigView.astro';
       facturaPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
         crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'Sin nombre')}</option>`).join('');
     }
-    facturaModal?.classList.add('open');
-    facturaModal?.setAttribute('aria-hidden', 'false');
   };
   const closeFacturaModal = () => {
     facturaModal?.classList.remove('open');
     facturaModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('has-modal-open');
   };
 
   nuevaFacturaBtn?.addEventListener('click', openFacturaModal);
@@ -7814,6 +7830,9 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const openBonoModal = async (editData?: any) => {
     if (bonosUnavailableMessage) { setBonoFeedback(bonosUnavailableMessage); return; }
+    bonoModal?.classList.add('open');
+    bonoModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
     bonoForm?.reset();
     setBonoFeedback();
     if (bonoEditId) bonoEditId.value = '';
@@ -7836,9 +7855,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     } else {
       if (bonoModalTitle) bonoModalTitle.textContent = 'Nuevo bono';
     }
-    bonoModal?.classList.add('open'); bonoModal?.setAttribute('aria-hidden', 'false');
   };
-  const closeBonoModal = () => { bonoModal?.classList.remove('open'); bonoModal?.setAttribute('aria-hidden', 'true'); };
+  const closeBonoModal = () => { bonoModal?.classList.remove('open'); bonoModal?.setAttribute('aria-hidden', 'true'); document.body.classList.remove('has-modal-open'); };
 
   nuevoBonoBtn?.addEventListener('click', () => openBonoModal());
   document.getElementById('bonoModalClose')?.addEventListener('click', closeBonoModal);

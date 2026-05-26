@@ -1973,3 +1973,1203 @@ textarea {
     padding: 0.75rem 0.5rem !important;
   }
 }
+
+/*
+ * Clinic SaaS polish layer.
+ * Final cascade pass for the deployed CRM: consistent typography, hidden drawers,
+ * readable tables and a calmer clinical workspace.
+ */
+:root {
+  --clinic-bg: #f7faf9;
+  --clinic-surface: #ffffff;
+  --clinic-surface-soft: #f4f8f7;
+  --clinic-ink: #101828;
+  --clinic-ink-soft: #344054;
+  --clinic-muted: #667085;
+  --clinic-line: #d9e4e2;
+  --clinic-line-soft: #edf2f1;
+  --clinic-teal: #0f9488;
+  --clinic-teal-deep: #0b5f59;
+  --clinic-teal-soft: #e6f7f4;
+  --clinic-green-soft: #edf7f1;
+  --clinic-radius: 8px;
+  --clinic-shadow: 0 18px 44px rgba(16, 24, 40, 0.08);
+  --clinic-shadow-soft: 0 10px 28px rgba(16, 24, 40, 0.05);
+  --font-ui: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+}
+
+html {
+  font-size: 15px !important;
+  overflow-x: hidden !important;
+}
+
+body {
+  color: var(--clinic-ink) !important;
+  background: var(--clinic-bg) !important;
+  font-family: var(--font-ui) !important;
+  letter-spacing: 0 !important;
+}
+
+body.has-modal-open {
+  overflow: hidden !important;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+p,
+span,
+strong,
+small,
+label,
+th,
+td {
+  font-family: var(--font-ui) !important;
+  letter-spacing: 0 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+.page-title,
+.hero-title,
+.ops-title {
+  font-family: var(--font-display) !important;
+  letter-spacing: 0 !important;
+}
+
+.content {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(15, 148, 136, 0.08), transparent 26rem),
+    linear-gradient(180deg, #fbfdfc 0%, #f6faf8 46%, #f4f8f6 100%) !important;
+  background-size: auto !important;
+}
+
+.page-section {
+  width: 100% !important;
+  max-width: 1500px !important;
+  min-height: 100% !important;
+  margin: 0 auto !important;
+  padding: clamp(1.15rem, 2vw, 2rem) clamp(1rem, 2.4vw, 2.4rem) 5rem !important;
+  color: var(--clinic-ink) !important;
+}
+
+.page-section[hidden] {
+  display: none !important;
+}
+
+.app-shell {
+  background: var(--clinic-bg) !important;
+}
+
+.sidebar {
+  width: 244px !important;
+  min-width: 244px !important;
+  flex-basis: 244px !important;
+  gap: 0.65rem !important;
+  padding: 1rem 0.7rem !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-right: 1px solid var(--clinic-line) !important;
+  box-shadow: 8px 0 32px rgba(16, 24, 40, 0.025) !important;
+}
+
+.sidebar > .p-6 {
+  padding: 0.6rem 0.55rem 0.35rem !important;
+}
+
+.sidebar > .px-6 {
+  padding-inline: 0.35rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.sidebar .bg-white.border,
+.sidebar [class*="bg-white"][class*="border"] {
+  border-color: var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.04) !important;
+}
+
+.sidebar h1 {
+  color: var(--clinic-ink) !important;
+  font-size: 0.95rem !important;
+  font-weight: 850 !important;
+  line-height: 1.08 !important;
+}
+
+.sidebar h3,
+.sidebar-section-label {
+  padding: 0.55rem 0.6rem 0.25rem !important;
+  color: #475467 !important;
+  font-size: 0.67rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.sidebar .nav-item {
+  min-height: 2.45rem !important;
+  padding: 0.56rem 0.72rem !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--clinic-radius) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--clinic-ink-soft) !important;
+  font-size: 0.88rem !important;
+  font-weight: 780 !important;
+}
+
+.sidebar .nav-item:hover {
+  background: var(--clinic-surface-soft) !important;
+  color: var(--clinic-ink) !important;
+}
+
+.sidebar .nav-item.active,
+.sidebar .nav-item[aria-current="page"] {
+  background: linear-gradient(135deg, #e5f6f1, #d9f1ea) !important;
+  border-color: #c5e4dd !important;
+  color: #064e49 !important;
+  box-shadow: inset 3px 0 0 var(--clinic-teal) !important;
+}
+
+.sidebar .nav-item .material-symbols-rounded {
+  color: currentColor !important;
+  font-size: 1.18rem !important;
+}
+
+.sidebar .badge,
+#intakeBadge {
+  min-width: 1.25rem !important;
+  min-height: 1.25rem !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  background: var(--clinic-teal-soft) !important;
+  color: var(--clinic-teal-deep) !important;
+  border-radius: 999px !important;
+  font-size: 0.72rem !important;
+}
+
+.sidebar > .p-4 {
+  padding: 0.75rem 0.4rem 0.15rem !important;
+  border-top: 1px solid var(--clinic-line) !important;
+}
+
+.topbar {
+  height: 58px !important;
+  flex-basis: 58px !important;
+  padding: 0 1.15rem !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid var(--clinic-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.search-box {
+  max-width: 420px !important;
+  margin-inline: auto !important;
+}
+
+.search-box input {
+  min-height: 2.35rem !important;
+  padding: 0.55rem 0.9rem 0.55rem 2.55rem !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: var(--clinic-ink) !important;
+  font-size: 0.88rem !important;
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.035) !important;
+}
+
+.topbar button,
+.topbar-action,
+.assistant-launch-btn {
+  min-height: 2.35rem !important;
+  border-radius: var(--clinic-radius) !important;
+  font-weight: 820 !important;
+}
+
+.topbar [id="assistantRailToggle"] {
+  background: var(--clinic-teal-soft) !important;
+  color: var(--clinic-teal-deep) !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-outline,
+.btn-action,
+.btn-sm,
+.modal-close,
+.finance-action-card,
+.clinic-command-search button {
+  border-radius: var(--clinic-radius) !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-generate {
+  border: 1px solid var(--clinic-teal-deep) !important;
+  background: var(--clinic-teal-deep) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px rgba(11, 95, 89, 0.16) !important;
+}
+
+.btn-ghost,
+.btn-outline,
+.btn-link-inline {
+  border: 1px solid var(--clinic-line) !important;
+  background: #ffffff !important;
+  color: var(--clinic-ink-soft) !important;
+}
+
+.btn-icon {
+  width: 2.75rem !important;
+  min-width: 2.75rem !important;
+  padding-inline: 0 !important;
+}
+
+.clinic-dashboard {
+  display: grid !important;
+  gap: clamp(1rem, 1.8vw, 1.55rem) !important;
+}
+
+.clinic-dashboard-hero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px) !important;
+  gap: clamp(1.2rem, 3vw, 3rem) !important;
+  align-items: stretch !important;
+  padding: clamp(1.4rem, 3vw, 2.6rem) !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(238, 248, 245, 0.86)) !important;
+  box-shadow: var(--clinic-shadow-soft) !important;
+}
+
+.clinic-kicker {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  color: var(--clinic-teal) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.clinic-dashboard-copy h1 {
+  max-width: 16ch !important;
+  margin: 0.35rem 0 0.75rem !important;
+  color: var(--clinic-ink) !important;
+  font-size: clamp(2.35rem, 4.2vw, 4.85rem) !important;
+  font-weight: 900 !important;
+  line-height: 0.98 !important;
+}
+
+.clinic-dashboard-copy p,
+.clinic-focus-card p,
+.clinic-panel p,
+.clinic-booking-card p {
+  margin: 0 !important;
+  color: var(--clinic-muted) !important;
+  line-height: 1.55 !important;
+}
+
+.clinic-hero-actions,
+.clinic-inline-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.6rem !important;
+  margin-top: 1.25rem !important;
+}
+
+.clinic-focus-card,
+.clinic-panel,
+.clinic-command-search,
+.clinic-finance-strip {
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: var(--clinic-shadow-soft) !important;
+}
+
+.clinic-focus-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.9rem !important;
+  padding: 1.15rem !important;
+}
+
+.clinic-focus-card > strong,
+.clinic-panel-title {
+  display: block !important;
+  color: var(--clinic-ink) !important;
+  font-size: 1.12rem !important;
+  font-weight: 850 !important;
+  line-height: 1.25 !important;
+}
+
+.clinic-card-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+}
+
+.clinic-card-head h2 {
+  margin: 0.2rem 0 0 !important;
+  color: var(--clinic-ink) !important;
+  font-size: 1.05rem !important;
+  font-weight: 850 !important;
+}
+
+.clinic-command-search {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  gap: 0.75rem !important;
+  align-items: center !important;
+  min-height: 4rem !important;
+  padding: 0.55rem 0.7rem 0.55rem 1rem !important;
+}
+
+.clinic-command-search > .material-symbols-rounded {
+  color: var(--clinic-teal) !important;
+}
+
+.clinic-command-search input {
+  width: 100% !important;
+  min-height: 2.8rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--clinic-ink) !important;
+  font-size: 1rem !important;
+}
+
+.clinic-metric-grid,
+.clinic-dashboard-grid,
+.clinic-dashboard-grid-secondary {
+  display: grid !important;
+  gap: 1rem !important;
+}
+
+.clinic-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.clinic-metric-grid article,
+.clinic-finance-strip article {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  min-width: 0 !important;
+  padding: 1rem !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+  box-shadow: var(--clinic-shadow-soft) !important;
+}
+
+.clinic-metric-grid .material-symbols-rounded {
+  width: 2.45rem !important;
+  height: 2.45rem !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: var(--clinic-radius) !important;
+  background: var(--clinic-teal-soft) !important;
+  color: var(--clinic-teal-deep) !important;
+}
+
+.clinic-metric-grid strong,
+.clinic-finance-strip strong {
+  display: block !important;
+  color: var(--clinic-ink) !important;
+  font-size: 1.35rem !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+}
+
+.clinic-metric-grid p,
+.clinic-finance-strip span {
+  margin: 0 !important;
+  color: var(--clinic-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 720 !important;
+}
+
+.clinic-dashboard-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.7fr) minmax(280px, 0.7fr) !important;
+}
+
+.clinic-dashboard-grid-secondary {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.48fr) !important;
+}
+
+.clinic-panel {
+  display: flex !important;
+  min-width: 0 !important;
+  min-height: 15rem !important;
+  flex-direction: column !important;
+  gap: 0.9rem !important;
+  padding: 1.15rem !important;
+}
+
+.clinic-panel-primary {
+  min-height: 20rem !important;
+}
+
+.clinic-list,
+.clinic-priority-list {
+  display: grid !important;
+  gap: 0.65rem !important;
+  min-height: 0 !important;
+}
+
+.clinic-list .dash-cita-item,
+.clinic-priority-list .priority-item {
+  display: grid !important;
+  gap: 0.25rem !important;
+  padding: 0.8rem 0 !important;
+  border-top: 1px solid var(--clinic-line-soft) !important;
+  background: transparent !important;
+}
+
+.clinic-list .dash-section-label,
+.clinic-priority-list .priority-title {
+  color: var(--clinic-teal-deep) !important;
+  font-size: 0.74rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.clinic-facts {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.45rem !important;
+}
+
+.clinic-finance-strip {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(240px, 0.8fr) !important;
+  gap: 0.85rem !important;
+  padding: 0.85rem !important;
+}
+
+#dashIncomeChart {
+  width: 100% !important;
+  min-height: 8rem !important;
+  max-height: 10rem !important;
+}
+
+.status-chip,
+.badge-week-count,
+.patients-filter-chip,
+#patientsFilterChip {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 1.75rem !important;
+  padding: 0.2rem 0.65rem !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  background: var(--clinic-teal-soft) !important;
+  color: var(--clinic-teal-deep) !important;
+  font-size: 0.74rem !important;
+  font-weight: 850 !important;
+}
+
+.status-chip.pendiente {
+  background: #fff7e6 !important;
+  color: #9a5b00 !important;
+}
+
+.status-chip.aprobado,
+.status-chip.confirmada {
+  background: #e8f7ef !important;
+  color: #087443 !important;
+}
+
+.status-chip.rechazado {
+  background: #ffecef !important;
+  color: #b42318 !important;
+}
+
+.page-header-row {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 1.2rem !important;
+  margin-bottom: 1.2rem !important;
+  padding-bottom: 1rem !important;
+  border-bottom: 1px solid var(--clinic-line) !important;
+}
+
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  color: var(--clinic-ink) !important;
+  font-size: clamp(1.9rem, 2.6vw, 2.55rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.05 !important;
+}
+
+.page-title .material-symbols-rounded {
+  color: var(--clinic-teal) !important;
+}
+
+.page-subtitle {
+  margin-top: 0.35rem !important;
+  color: var(--clinic-muted) !important;
+  font-size: 0.98rem !important;
+}
+
+.card,
+.table-card,
+.agenda-cal-card,
+.agenda-mobile-card,
+.config-card-full,
+.documentos-summary-card,
+.finance-workbench,
+.pagos-toolbar,
+.finance-overview-card,
+.template-kpi-card,
+.bonos-summary-card,
+.facturas-summary-card {
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: var(--clinic-shadow-soft) !important;
+}
+
+.card,
+.table-card,
+.agenda-cal-card,
+.agenda-mobile-card {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.card-header,
+.card-header-stack,
+.agenda-mobile-head {
+  padding: 1rem 1.1rem !important;
+  border-bottom: 1px solid var(--clinic-line-soft) !important;
+  background: #ffffff !important;
+}
+
+.card-header h2,
+.agenda-mobile-head h2 {
+  color: var(--clinic-ink) !important;
+  font-size: 1rem !important;
+  font-weight: 860 !important;
+}
+
+.table-wrap {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+thead tr {
+  border-bottom: 1px solid var(--clinic-line) !important;
+}
+
+th {
+  padding: 0.85rem 1rem !important;
+  color: #667085 !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  background: #fbfdfc !important;
+}
+
+td {
+  padding: 0.9rem 1rem !important;
+  border-bottom: 1px solid var(--clinic-line-soft) !important;
+  color: var(--clinic-ink-soft) !important;
+  font-size: 0.9rem !important;
+}
+
+tbody tr:hover td {
+  background: var(--clinic-green-soft) !important;
+}
+
+.empty-state,
+.empty-state-sm {
+  display: grid !important;
+  place-items: center !important;
+  gap: 0.45rem !important;
+  padding: 1.25rem !important;
+  border: 1px dashed #cfe0dc !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #f4fbf8 !important;
+  color: var(--clinic-muted) !important;
+  text-align: center !important;
+}
+
+.agenda-header-row {
+  align-items: flex-start !important;
+}
+
+.agenda-header-copy {
+  display: grid !important;
+  gap: 0.65rem !important;
+}
+
+.agenda-sync-status {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  gap: 0.7rem !important;
+  align-items: start !important;
+  max-width: 760px !important;
+  padding: 0.8rem !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+}
+
+.agenda-sync-copy strong,
+.agenda-sync-copy p,
+.agenda-calendar-meta,
+.agenda-mobile-head p {
+  margin: 0 !important;
+  color: var(--clinic-muted) !important;
+  line-height: 1.45 !important;
+}
+
+.agenda-sync-copy strong {
+  color: var(--clinic-ink) !important;
+}
+
+.week-nav-bar,
+.page-tools {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 0.55rem !important;
+  align-items: center !important;
+}
+
+.week-label {
+  min-height: 2.45rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 0.75rem !important;
+  color: var(--clinic-ink-soft) !important;
+  font-weight: 780 !important;
+}
+
+.agenda-calendar {
+  min-height: 18rem !important;
+  padding: 1rem !important;
+}
+
+.agenda-cal-loading {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  min-height: 8rem !important;
+  color: var(--clinic-muted) !important;
+}
+
+.finance-tabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.45rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.finance-tab {
+  min-height: 2.35rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  padding: 0.5rem 0.85rem !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+  color: var(--clinic-ink-soft) !important;
+  font-weight: 800 !important;
+}
+
+.finance-tab.active {
+  background: var(--clinic-teal-soft) !important;
+  color: var(--clinic-teal-deep) !important;
+  border-color: #b8e0d9 !important;
+}
+
+.finance-workbench {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.4fr) !important;
+  gap: 1rem !important;
+  padding: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.finance-priority-panel,
+.finance-action-card {
+  border: 1px solid var(--clinic-line-soft) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.finance-priority-panel {
+  display: grid !important;
+  gap: 0.75rem !important;
+  padding: 1rem !important;
+}
+
+.finance-action-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0.75rem !important;
+}
+
+.finance-action-card {
+  display: grid !important;
+  gap: 0.35rem !important;
+  min-height: 7.2rem !important;
+  padding: 0.9rem !important;
+  color: var(--clinic-ink) !important;
+  text-align: left !important;
+}
+
+.finance-action-card .material-symbols-rounded {
+  color: var(--clinic-teal) !important;
+}
+
+.pagos-toolbar,
+.pagos-summary-row,
+.finance-overview-grid,
+.template-kpi-grid,
+.bonos-summary-strip,
+.facturas-summary-strip {
+  display: grid !important;
+  gap: 0.85rem !important;
+}
+
+.pagos-toolbar {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  padding: 0.85rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.pagos-summary-row,
+.finance-overview-grid,
+.template-kpi-grid,
+.bonos-summary-strip,
+.facturas-summary-strip {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.pagos-stat,
+.finance-overview-card,
+.template-kpi-card,
+.bonos-summary-card,
+.facturas-summary-card {
+  padding: 0.9rem !important;
+}
+
+.pagos-stat-label,
+.finance-kicker,
+.template-kpi-card span {
+  color: var(--clinic-teal) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.pagos-stat-value,
+.finance-overview-card strong,
+.template-kpi-card strong {
+  color: var(--clinic-ink) !important;
+  font-size: 1.35rem !important;
+  font-weight: 900 !important;
+}
+
+input,
+select,
+textarea {
+  min-height: 2.45rem !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+  color: var(--clinic-ink) !important;
+  box-shadow: none !important;
+}
+
+textarea {
+  min-height: 5rem !important;
+  padding: 0.75rem 0.85rem !important;
+  resize: vertical !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #96d6ce !important;
+  box-shadow: 0 0 0 4px rgba(15, 148, 136, 0.09) !important;
+  outline: none !important;
+}
+
+.modal-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 110 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+  background: rgba(16, 24, 40, 0.34) !important;
+  backdrop-filter: blur(8px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transition: opacity 160ms ease, visibility 160ms ease !important;
+}
+
+.modal-shell.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+.modal-shell[aria-hidden="true"]:not(.open) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+.modal-panel {
+  width: min(100%, 620px) !important;
+  max-height: min(780px, calc(100dvh - 2rem)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+  box-shadow: var(--clinic-shadow) !important;
+}
+
+.crm-drawer-shell {
+  justify-content: flex-end !important;
+  padding: 0 !important;
+}
+
+.crm-drawer-panel {
+  width: clamp(420px, 34vw, 560px) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  transform: translateX(100%) !important;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.crm-drawer-shell.open .crm-drawer-panel {
+  transform: translateX(0) !important;
+}
+
+.modal-header {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  padding: 1rem 1.1rem !important;
+  border-bottom: 1px solid var(--clinic-line) !important;
+  background: #ffffff !important;
+}
+
+.modal-title-group h2 {
+  margin: 0.15rem 0 0 !important;
+  color: var(--clinic-ink) !important;
+  font-size: 1.25rem !important;
+  font-weight: 900 !important;
+}
+
+.modal-eyebrow {
+  margin: 0 !important;
+  color: var(--clinic-teal) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.drawer-subtitle {
+  margin-top: 0.35rem !important;
+  color: var(--clinic-muted) !important;
+  font-size: 0.9rem !important;
+  line-height: 1.45 !important;
+}
+
+.modal-close {
+  width: 2.55rem !important;
+  min-width: 2.55rem !important;
+  height: 2.55rem !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 1px solid var(--clinic-line) !important;
+  background: #ffffff !important;
+  color: var(--clinic-ink-soft) !important;
+  cursor: pointer !important;
+}
+
+.patient-form,
+.drawer-body {
+  display: grid !important;
+  gap: 1rem !important;
+  padding: 1.1rem !important;
+  overflow: auto !important;
+}
+
+.form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.9rem !important;
+}
+
+.field,
+.patient-form label {
+  display: grid !important;
+  gap: 0.35rem !important;
+}
+
+.field-full {
+  grid-column: 1 / -1 !important;
+}
+
+.field span,
+.patient-form label > span,
+.config-label {
+  color: var(--clinic-muted) !important;
+  font-size: 0.74rem !important;
+  font-weight: 850 !important;
+  text-transform: uppercase !important;
+}
+
+.modal-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 0.7rem !important;
+  padding-top: 0.8rem !important;
+  border-top: 1px solid var(--clinic-line-soft) !important;
+}
+
+#patientModal > div,
+#firmaModal > div {
+  border-radius: var(--clinic-radius) !important;
+  border: 1px solid var(--clinic-line) !important;
+  background: #ffffff !important;
+  box-shadow: var(--clinic-shadow) !important;
+}
+
+.page-section[data-page="pacientes"] > section {
+  max-width: 1240px !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  gap: 1.15rem !important;
+}
+
+.page-section[data-page="pacientes"] header,
+.page-section[data-page="pacientes"] section {
+  letter-spacing: 0 !important;
+}
+
+.page-section[data-page="pacientes"] > section > header,
+.page-section[data-page="pacientes"] > section > .grid,
+.page-section[data-page="pacientes"] > section > section {
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: var(--clinic-shadow-soft) !important;
+}
+
+.page-section[data-page="pacientes"] > section > header {
+  padding: 1.25rem !important;
+}
+
+.page-section[data-page="pacientes"] > section > .grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+}
+
+.page-section[data-page="pacientes"] > section > .grid article {
+  border: 0 !important;
+  border-right: 1px solid var(--clinic-line-soft) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.page-section[data-page="pacientes"] > section > .grid article:last-child {
+  border-right: 0 !important;
+}
+
+.page-section[data-page="pacientes"] [aria-label="Filtros de pacientes"] {
+  padding: 0.65rem !important;
+  border-radius: var(--clinic-radius) !important;
+}
+
+#pacientesBody {
+  border: 0 !important;
+  border-top: 1px solid var(--clinic-line-soft) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.clean-list-item,
+.patient-directory-row {
+  border-radius: var(--clinic-radius) !important;
+}
+
+@media (max-width: 1280px) {
+  .clinic-dashboard-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr) !important;
+  }
+
+  .clinic-dashboard-grid .clinic-panel:nth-child(3) {
+    grid-column: 1 / -1 !important;
+  }
+
+  .finance-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: min(86vw, 280px) !important;
+    min-width: 0 !important;
+    flex-basis: auto !important;
+  }
+
+  .clinic-dashboard-hero,
+  .clinic-dashboard-grid,
+  .clinic-dashboard-grid-secondary,
+  .finance-workbench,
+  .pagos-toolbar,
+  .clinic-finance-strip {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clinic-metric-grid,
+  .pagos-summary-row,
+  .finance-overview-grid,
+  .template-kpi-grid,
+  .bonos-summary-strip,
+  .facturas-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    gap: 0.55rem !important;
+    padding-inline: 0.75rem !important;
+  }
+
+  .search-box {
+    max-width: none !important;
+    min-width: 0 !important;
+    margin-inline: 0 !important;
+  }
+
+  .topbar > div:first-child .hidden,
+  .topbar button[data-dashboard-nav] {
+    display: none !important;
+  }
+
+  .page-section {
+    padding: 0.85rem 0.75rem 5.8rem !important;
+  }
+
+  .page-header-row,
+  .agenda-header-row {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .clinic-dashboard-hero,
+  .clinic-panel,
+  .clinic-command-search,
+  .clinic-metric-grid article,
+  .clinic-finance-strip,
+  .finance-workbench,
+  .pagos-toolbar {
+    padding: 0.9rem !important;
+  }
+
+  .clinic-dashboard-copy h1 {
+    font-size: clamp(2.2rem, 13vw, 3.6rem) !important;
+  }
+
+  .clinic-metric-grid,
+  .pagos-summary-row,
+  .finance-overview-grid,
+  .template-kpi-grid,
+  .bonos-summary-strip,
+  .facturas-summary-strip,
+  .finance-action-grid,
+  .page-section[data-page="pacientes"] > section > .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-section[data-page="pacientes"] > section > .grid article {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--clinic-line-soft) !important;
+  }
+
+  .page-section[data-page="pacientes"] > section > .grid article:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-shell,
+  .crm-drawer-shell {
+    padding: 0 !important;
+  }
+
+  .modal-panel,
+  .crm-drawer-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  .modal-actions,
+  .week-nav-bar,
+  .page-tools {
+    justify-content: stretch !important;
+  }
+
+  .modal-actions > *,
+  .week-nav-bar > *,
+  .page-tools > * {
+    flex: 1 1 auto !important;
+  }
+}
