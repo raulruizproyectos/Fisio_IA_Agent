@@ -3,11 +3,11 @@
 ---
 
 <!-- === PAGE: INTAKES === -->
-<div class="page-section bg-[#FAFAF8] min-h-full py-12 px-6 lg:px-12" data-page="intakes">
-  <div class="max-w-5xl mx-auto space-y-8">
+<div class="page-section intakes-page bg-[#FAFAF8] min-h-full py-12 px-6 lg:px-12" data-page="intakes">
+  <div class="intakes-shell max-w-5xl mx-auto space-y-8">
     
     <!-- Header -->
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="intakes-hero flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div class="space-y-2">
         <span class="text-sm font-medium tracking-wider text-emerald-600/80 uppercase">Triage Clínico</span>
         <h1 class="text-4xl font-medium text-[#11181C] tracking-tight">Mensajes pendientes</h1>
@@ -15,13 +15,13 @@
       </div>
     </header>
 
-    <section class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+    <section class="intakes-card bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
       <!-- Toolbar -->
-      <div class="p-6 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div class="intakes-toolbar p-6 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <h2 class="text-lg font-medium text-[#11181C]">Bandeja por revisar</h2>
         
-        <div class="flex flex-wrap items-center gap-3">
-          <label class="relative flex items-center shrink-0" for="intakesSourceFilter">
+        <div class="intakes-filterbar flex flex-wrap items-center gap-3">
+          <label class="intakes-filter-field intakes-filter-source relative flex items-center shrink-0" for="intakesSourceFilter">
             <span class="material-symbols-rounded absolute left-3 text-[#687076] pointer-events-none text-sm">filter_alt</span>
             <select id="intakesSourceFilter" class="appearance-none bg-gray-50 hover:bg-gray-100 text-[#11181C] text-sm font-medium py-2 pl-10 pr-10 rounded-full border-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-colors" aria-label="Filtrar mensajes por canal">
               <option value="all">Todos los canales</option>
@@ -32,7 +32,7 @@
             <span class="material-symbols-rounded absolute right-3 text-[#687076] pointer-events-none text-sm" aria-hidden="true">expand_more</span>
           </label>
           
-          <label class="relative flex items-center shrink-0" for="intakesPriorityFilter">
+          <label class="intakes-filter-field intakes-filter-priority relative flex items-center shrink-0" for="intakesPriorityFilter">
             <span class="material-symbols-rounded absolute left-3 text-[#687076] pointer-events-none text-sm">priority_high</span>
             <select id="intakesPriorityFilter" class="appearance-none bg-gray-50 hover:bg-gray-100 text-[#11181C] text-sm font-medium py-2 pl-10 pr-10 rounded-full border-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-colors" aria-label="Filtrar mensajes por prioridad">
               <option value="all">Todas las prioridades</option>
@@ -42,7 +42,7 @@
             <span class="material-symbols-rounded absolute right-3 text-[#687076] pointer-events-none text-sm" aria-hidden="true">expand_more</span>
           </label>
           
-          <label class="relative flex items-center shrink-0" for="intakesAgeSort">
+          <label class="intakes-filter-field intakes-filter-sort relative flex items-center shrink-0" for="intakesAgeSort">
             <span class="material-symbols-rounded absolute left-3 text-[#687076] pointer-events-none text-sm">schedule</span>
             <select id="intakesAgeSort" class="appearance-none bg-gray-50 hover:bg-gray-100 text-[#11181C] text-sm font-medium py-2 pl-10 pr-10 rounded-full border-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-colors" aria-label="Ordenar mensajes por antigüedad">
               <option value="oldest">Más antiguos primero</option>
@@ -60,8 +60,8 @@
       <div class="px-6 py-2 bg-gray-50 text-sm text-[#687076] hidden empty:hidden" id="intakesSourceSummary" aria-live="polite"></div>
       
       <!-- Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[800px]">
+      <div class="intakes-table-wrap overflow-x-auto">
+        <table class="intakes-table w-full text-left border-collapse min-w-[800px]">
           <thead>
             <tr class="bg-gray-50 border-b border-gray-100">
               <th class="px-6 py-4 text-xs font-medium text-[#687076] uppercase tracking-wider">Paciente</th>

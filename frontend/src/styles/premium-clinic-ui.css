@@ -3738,3 +3738,387 @@ td .btn-outline {
     flex: 1 1 9rem !important;
   }
 }
+
+/* Messages inbox alignment */
+.page-section[data-page="intakes"] {
+  padding: clamp(1.25rem, 2.4vw, 2.5rem) clamp(1rem, 2.8vw, 3rem) !important;
+}
+
+.intakes-shell {
+  width: min(100%, 1480px) !important;
+  max-width: 1480px !important;
+  margin-inline: auto !important;
+  display: grid !important;
+  gap: 1.15rem !important;
+}
+
+.intakes-hero {
+  min-width: 0 !important;
+  padding: clamp(1.35rem, 2.6vw, 2rem) !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background:
+    radial-gradient(circle at 4% 0%, rgba(15, 148, 136, 0.12), transparent 34%),
+    rgba(255, 255, 255, 0.92) !important;
+  box-shadow: var(--clinic-shadow-soft) !important;
+}
+
+.intakes-hero > div {
+  min-width: 0 !important;
+}
+
+.intakes-hero span {
+  display: inline-flex !important;
+  margin-bottom: 0.3rem !important;
+  color: var(--clinic-teal) !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.06em !important;
+  line-height: 1.1 !important;
+}
+
+.intakes-hero h1 {
+  max-width: 15ch !important;
+  margin: 0 !important;
+  color: var(--clinic-ink) !important;
+  font-size: clamp(2.2rem, 3.2vw, 3.65rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
+  line-height: 0.98 !important;
+}
+
+.intakes-hero p {
+  max-width: 66ch !important;
+  margin: 0.55rem 0 0 !important;
+  color: var(--clinic-muted) !important;
+  font-size: clamp(1rem, 1.2vw, 1.13rem) !important;
+  line-height: 1.45 !important;
+}
+
+.intakes-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+  box-shadow: var(--clinic-shadow) !important;
+}
+
+.intakes-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(14rem, 1fr) auto !important;
+  gap: 1rem !important;
+  align-items: center !important;
+  padding: 1.05rem 1.15rem !important;
+  border-bottom: 1px solid var(--clinic-line) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.intakes-toolbar h2 {
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: var(--clinic-ink) !important;
+  font-size: clamp(1.08rem, 1.25vw, 1.28rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.18 !important;
+}
+
+.intakes-filterbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 0.55rem !important;
+  min-width: 0 !important;
+}
+
+.intakes-filter-field {
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-width: 12rem !important;
+  height: 2.75rem !important;
+  border: 1px solid var(--clinic-line) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.04) !important;
+}
+
+.intakes-filter-source {
+  min-width: 11.25rem !important;
+}
+
+.intakes-filter-priority {
+  min-width: 13.25rem !important;
+}
+
+.intakes-filter-sort {
+  min-width: 13.75rem !important;
+}
+
+.intakes-filter-field .material-symbols-rounded {
+  z-index: 1 !important;
+  color: var(--clinic-muted) !important;
+  font-size: 1.16rem !important;
+  line-height: 1 !important;
+}
+
+.intakes-filter-field select {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  padding: 0 2.45rem 0 2.55rem !important;
+  border: 0 !important;
+  border-radius: calc(var(--clinic-radius) - 1px) !important;
+  background: transparent !important;
+  color: var(--clinic-ink) !important;
+  font-size: 0.9rem !important;
+  font-weight: 780 !important;
+  line-height: 1.1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+#refreshIntakesFull {
+  min-width: 8.4rem !important;
+  min-height: 2.75rem !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  padding: 0 0.95rem !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--clinic-radius) !important;
+  color: var(--clinic-ink-soft) !important;
+  font-size: 0.94rem !important;
+  font-weight: 820 !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+}
+
+#refreshIntakesFull:hover {
+  border-color: var(--clinic-line) !important;
+  background: var(--clinic-surface-soft) !important;
+  color: var(--clinic-ink) !important;
+}
+
+#intakesSourceSummary {
+  min-height: 2.35rem !important;
+  padding: 0.55rem 1.15rem !important;
+  border-bottom: 1px solid var(--clinic-line-soft) !important;
+  background: var(--clinic-surface-soft) !important;
+  color: var(--clinic-muted) !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
+}
+
+#intakesSourceSummary:not(:empty) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.45rem !important;
+  align-items: center !important;
+}
+
+.intakes-source-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  min-height: 1.6rem !important;
+  padding: 0.22rem 0.55rem !important;
+  border: 1px solid var(--clinic-line-soft) !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: var(--clinic-ink-soft) !important;
+  font-size: 0.76rem !important;
+  font-weight: 760 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.intakes-source-chip strong {
+  color: var(--clinic-ink) !important;
+  font-weight: 900 !important;
+}
+
+.intakes-source-chip-urgent {
+  border-color: #ffd6dc !important;
+  background: #fff1f3 !important;
+  color: #b4232c !important;
+}
+
+.intakes-table-wrap {
+  width: 100% !important;
+  overflow-x: auto !important;
+  scrollbar-width: thin !important;
+}
+
+.intakes-table {
+  min-width: 1080px !important;
+  table-layout: fixed !important;
+}
+
+.intakes-table th,
+.intakes-table td {
+  padding: 1rem 1.1rem !important;
+  border-bottom: 1px solid var(--clinic-line-soft) !important;
+  vertical-align: top !important;
+}
+
+.intakes-table th {
+  background: #fbfdfc !important;
+  color: var(--clinic-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1.1 !important;
+  text-transform: uppercase !important;
+}
+
+.intakes-table td {
+  color: var(--clinic-ink-soft) !important;
+  font-size: 0.96rem !important;
+  line-height: 1.45 !important;
+}
+
+.intakes-table tbody tr {
+  background: #ffffff !important;
+}
+
+.intakes-table tbody tr:hover {
+  background: #fbfdfc !important;
+}
+
+.intakes-table th:nth-child(1),
+.intakes-table td:nth-child(1) {
+  width: 27% !important;
+}
+
+.intakes-table th:nth-child(2),
+.intakes-table td:nth-child(2) {
+  width: 8.5% !important;
+}
+
+.intakes-table th:nth-child(3),
+.intakes-table td:nth-child(3) {
+  width: 9.5% !important;
+}
+
+.intakes-table th:nth-child(4),
+.intakes-table td:nth-child(4) {
+  width: 12.5% !important;
+}
+
+.intakes-table th:nth-child(5),
+.intakes-table td:nth-child(5) {
+  width: 8.5% !important;
+}
+
+.intakes-table th:nth-child(6),
+.intakes-table td:nth-child(6) {
+  width: 10% !important;
+}
+
+.intakes-table th:nth-child(7),
+.intakes-table td:nth-child(7) {
+  width: 24% !important;
+}
+
+.intakes-table .td-patient {
+  color: var(--clinic-ink-soft) !important;
+  font-weight: 680 !important;
+  line-height: 1.42 !important;
+  overflow-wrap: anywhere !important;
+}
+
+.intakes-table .status-chip {
+  min-height: 2rem !important;
+  padding: 0.38rem 0.75rem !important;
+  font-size: 0.78rem !important;
+  white-space: nowrap !important;
+}
+
+.intake-row-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(4.75rem, auto)) !important;
+  justify-content: end !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.intake-row-actions .btn-sm {
+  min-width: 0 !important;
+  min-height: 2.35rem !important;
+  padding: 0.5rem 0.75rem !important;
+  justify-content: center !important;
+  border-radius: var(--clinic-radius) !important;
+  font-size: 0.88rem !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+}
+
+.intake-row-actions .btn-sm:first-child {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--clinic-ink-soft) !important;
+  box-shadow: none !important;
+}
+
+.intake-row-actions .btn-sm[data-mark-triage] {
+  grid-column: 1 / -1 !important;
+  justify-self: end !important;
+  min-width: 9.3rem !important;
+}
+
+@media (max-width: 1280px) {
+  .intakes-toolbar {
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+  }
+
+  .intakes-filterbar {
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-section[data-page="intakes"] {
+    padding: 1rem !important;
+  }
+
+  .intakes-hero {
+    padding: 1.05rem !important;
+  }
+
+  .intakes-hero h1 {
+    font-size: clamp(2rem, 10vw, 2.55rem) !important;
+  }
+
+  .intakes-toolbar {
+    padding: 0.9rem !important;
+  }
+
+  .intakes-filterbar {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .intakes-filter-field,
+  #refreshIntakesFull {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #refreshIntakesFull {
+    justify-content: center !important;
+  }
+
+  .intakes-table {
+    min-width: 980px !important;
+  }
+
+  .intakes-table th,
+  .intakes-table td {
+    padding: 0.85rem !important;
+  }
+}
