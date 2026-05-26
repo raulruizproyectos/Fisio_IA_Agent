@@ -4444,7 +4444,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!agendaMobileList || !agendaMobileSummary) return;
 
     const calendarOnlySummary = summarizeCalendarOnlyBlocks(allCitas);
-    const sorted = [...operationalCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+    const sorted = [...allCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
     const weekDays = Array.from({ length: 5 }, (_, idx) => {
       const date = new Date(weekStart);
       date.setDate(date.getDate() + idx);
@@ -4455,7 +4455,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       agendaMobileSummary.textContent = calendarOnlySummary.total
         ? `Sin citas clinicas en esta semana. Google Calendar aporta ${calendarOnlySummary.total} bloqueo(s) de contexto.`
         : 'Sin citas clinicas en esta semana.';
-      setListState(agendaMobileList, 'event_busy', 'No hay citas clinicas para mostrar en timeline movil.');
+      setListState(agendaMobileList, 'event_busy', 'No hay citas ni bloqueos para mostrar en timeline movil.');
       return;
     }
 
@@ -4467,7 +4467,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
 
     const todayItems = sorted.filter((cita: any) => isTodayDate(cita.inicio_en || ''));
-    agendaMobileSummary.textContent = `${sorted.length} cita(s) esta semana | ${todayItems.length} hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
+    const clinicalCount = operationalCitas.length;
+    agendaMobileSummary.textContent = `${clinicalCount} cita(s) clinicas | ${todayItems.length} evento(s) hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
 
     agendaMobileList.innerHTML = weekDays.map((date) => {
       const key = date.toDateString();
@@ -4495,22 +4496,30 @@ import ConfigView from '../components/views/ConfigView.astro';
           </header>
           <div class="agenda-mobile-items">
             ${dayItems.map((cita: any) => {
-              const estado = String(cita?.estado || 'pendiente');
+              const calendarOnly = isCalendarOnlyAppointment(cita);
+              const blockMeta = calendarOnly ? getAgendaCalendarBlockMeta(cita) : null;
+              const estado = calendarOnly ? String(getCalendarBlockKind(cita)) : String(cita?.estado || 'pendiente');
               const mirror = getAgendaMirrorMeta(cita);
-              const patientName = String(cita?.nombre_paciente || 'Paciente');
+              const patientName = calendarOnly
+                ? String(cita?.motivo || cita?.nombre_paciente || blockMeta?.label || 'Google Calendar')
+                : String(cita?.nombre_paciente || 'Paciente');
               const patientId = String(cita?.paciente_id || '');
               const hour = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita?.inicio_en);
-              const canal = cita?.canal_origen === 'crm_web' ? 'CRM Web' : cita?.canal_origen === 'telegram' ? 'Telegram' : String(cita?.canal_origen || 'Canal CRM');
-              const apptId = escapeAttr(cita?.id || '');
-              const canConfirm = estado === 'pendiente';
+              const canal = calendarOnly
+                ? 'Google Calendar'
+                : cita?.canal_origen === 'crm_web' ? 'CRM Web' : cita?.canal_origen === 'telegram' ? 'Telegram' : String(cita?.canal_origen || 'Canal CRM');
+              const apptId = escapeAttr(cita?.id || cita?.appointment_id || '');
+              const canConfirm = !calendarOnly && estado === 'pendiente';
+              const statusLabel = calendarOnly ? (blockMeta?.shortLabel || mirror.label) : estado;
+              const itemClass = calendarOnly ? ` is-calendar-only agenda-mobile-${escapeAttr(getCalendarBlockKind(cita))}` : '';
               return `
-                <article class="agenda-mobile-item">
+                <article class="agenda-mobile-item${itemClass}">
                   <div class="agenda-mobile-item-main">
                     <div class="agenda-mobile-item-top">
                       <strong>${escapeHtml(hour)} | ${escapeHtml(patientName)}</strong>
-                      <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(estado)}</span>
+                      <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(statusLabel)}</span>
                     </div>
-                    <p>${escapeHtml(cita?.motivo || 'Sesion clinica sin motivo especificado.')}</p>
+                    <p>${escapeHtml(calendarOnly ? (blockMeta?.note || 'Evento procedente de Google Calendar.') : (cita?.motivo || 'Sesion clinica sin motivo especificado.'))}</p>
                     <div class="agenda-mobile-item-meta">
                       <span class="agenda-mobile-meta-pill">${escapeHtml(canal)}</span>
                       <span class="agenda-mobile-meta-pill">${escapeHtml(mirror.label)}</span>
@@ -4519,7 +4528,7 @@ import ConfigView from '../components/views/ConfigView.astro';
                   <div class="agenda-mobile-item-actions">
                     <button type="button" class="btn-sm btn-outline" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle de la cita"><span class="material-symbols-rounded">right_panel_open</span> Detalle</button>
                     ${canConfirm ? `<button type="button" class="btn-sm" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar cita"><span class="material-symbols-rounded">check</span> Confirmar</button>` : ''}
-                    <button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>
+                    ${calendarOnly ? '' : `<button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>`}
                   </div>
                 </article>
               `;
