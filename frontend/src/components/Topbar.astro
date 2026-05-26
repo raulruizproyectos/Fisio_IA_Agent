@@ -34,7 +34,7 @@
 </header>
 
 <script>
-  import { isSidebarOpen, assistantState } from '../store';
+  import { isSidebarOpen } from '../store';
 
   const sidebarToggle = document.getElementById('sidebarToggle');
   sidebarToggle?.addEventListener('click', () => {
@@ -43,7 +43,6 @@
 
   const assistantRailToggle = document.getElementById('assistantRailToggle');
   assistantRailToggle?.addEventListener('click', () => {
-    const current = assistantState.get();
-    assistantState.set({ ...current, isOpen: !current.isOpen });
+    document.dispatchEvent(new CustomEvent('fisio:open-assistant'));
   });
 </script>

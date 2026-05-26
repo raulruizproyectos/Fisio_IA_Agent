@@ -190,22 +190,38 @@
 
   const assistantRail = document.getElementById('assistantRail');
   const assistantRailBackdrop = document.getElementById('assistantRailBackdrop');
+  const assistantRailFab = document.getElementById('assistantRailFab');
+  const assistantRailToggle = document.getElementById('assistantRailToggle');
 
   const updateRailStyles = (isOpen: boolean) => {
+    const isMobile = window.innerWidth <= 768;
+    const mode = isOpen ? (isMobile ? 'open-mobile' : 'open-desktop') : 'closed';
+    document.documentElement.setAttribute('data-assistant-state', mode);
+    document.body.classList.toggle('assistant-rail-is-open', isOpen);
+    document.body.classList.toggle('assistant-rail-is-mobile', isOpen && isMobile);
+    document.body.classList.toggle('assistant-rail-is-desktop', isOpen && !isMobile);
+
     if (isOpen) {
       assistantRail?.classList.add('open');
+      assistantRail?.classList.toggle('is-open-mobile', isMobile);
+      assistantRail?.classList.toggle('is-open-desktop', !isMobile);
       assistantRail?.classList.remove('translate-x-full');
       assistantRail?.classList.add('translate-x-0');
-      assistantRailBackdrop?.classList.add('visible');
+      assistantRailBackdrop?.classList.toggle('visible', isMobile);
       assistantRail?.setAttribute('aria-hidden', 'false');
-      if (window.innerWidth < 1024) document.body.style.overflow = 'hidden';
+      assistantRailFab?.setAttribute('aria-expanded', 'true');
+      assistantRailToggle?.setAttribute('aria-expanded', 'true');
+      assistantRailFab?.toggleAttribute('hidden', true);
     } else {
       assistantRail?.classList.remove('open');
+      assistantRail?.classList.remove('is-open-mobile', 'is-open-desktop');
       assistantRail?.classList.remove('translate-x-0');
       assistantRail?.classList.add('translate-x-full');
       assistantRailBackdrop?.classList.remove('visible');
       assistantRail?.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
+      assistantRailFab?.setAttribute('aria-expanded', 'false');
+      assistantRailToggle?.setAttribute('aria-expanded', 'false');
+      assistantRailFab?.toggleAttribute('hidden', false);
     }
   };
 

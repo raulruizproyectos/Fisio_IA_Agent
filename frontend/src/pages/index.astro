@@ -141,35 +141,57 @@ import ConfigView from '../components/views/ConfigView.astro';
   const mobileDockActionButtons = document.querySelectorAll('[data-mobile-action]') as NodeListOf<HTMLButtonElement>;
   const toastRegion = document.getElementById('toastRegion') as HTMLElement | null;
 
+  const isAssistantMobileViewport = () => window.innerWidth <= 768;
+
+  const syncAssistantRailState = (isOpen = Boolean(assistantRail?.classList.contains('open'))) => {
+    const mode = isOpen ? (isAssistantMobileViewport() ? 'open-mobile' : 'open-desktop') : 'closed';
+    document.documentElement.setAttribute('data-assistant-state', mode);
+    document.body.classList.toggle('assistant-rail-is-open', isOpen);
+    document.body.classList.toggle('assistant-rail-is-mobile', isOpen && mode === 'open-mobile');
+    document.body.classList.toggle('assistant-rail-is-desktop', isOpen && mode === 'open-desktop');
+
+    assistantRail?.classList.toggle('open', isOpen);
+    assistantRail?.classList.toggle('is-open-mobile', isOpen && mode === 'open-mobile');
+    assistantRail?.classList.toggle('is-open-desktop', isOpen && mode === 'open-desktop');
+    assistantRail?.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+
+    assistantRailBackdrop?.classList.toggle('visible', isOpen && mode === 'open-mobile');
+    assistantRailToggle?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    assistantRailFab?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    assistantRailFab?.toggleAttribute('hidden', isOpen);
+  };
+
   const syncOverlayBodyLock = () => {
     const sidebarOpen = Boolean(sidebar?.classList.contains('translate-x-0'));
     const assistantOpen = Boolean(assistantRail?.classList.contains('open'));
-    document.body.style.overflow = sidebarOpen || (assistantOpen && window.innerWidth < 1024) ? 'hidden' : '';
+    document.body.style.overflow = sidebarOpen || (assistantOpen && isAssistantMobileViewport()) ? 'hidden' : '';
   };
 
   const openAssistantRail = () => {
-    document.dispatchEvent(new CustomEvent('fisio:open-assistant'));
-    assistantRail?.classList.add('open');
-    assistantRailBackdrop?.classList.add('visible');
-    assistantRail?.setAttribute('aria-hidden', 'false');
-    assistantRailToggle?.setAttribute('aria-expanded', 'true');
-    assistantRailFab?.setAttribute('aria-expanded', 'true');
+    if (assistantRail?.classList.contains('open')) {
+      syncAssistantRailState(true);
+      syncOverlayBodyLock();
+      return;
+    }
+    syncAssistantRailState(true);
     syncOverlayBodyLock();
+    document.dispatchEvent(new CustomEvent('fisio:open-assistant'));
   };
 
   const closeAssistantRail = () => {
-    document.dispatchEvent(new CustomEvent('fisio:close-assistant'));
-    assistantRail?.classList.remove('open');
-    assistantRailBackdrop?.classList.remove('visible');
-    assistantRail?.setAttribute('aria-hidden', 'true');
-    assistantRailToggle?.setAttribute('aria-expanded', 'false');
-    assistantRailFab?.setAttribute('aria-expanded', 'false');
+    if (!assistantRail?.classList.contains('open')) {
+      syncAssistantRailState(false);
+      syncOverlayBodyLock();
+      return;
+    }
+    syncAssistantRailState(false);
     syncOverlayBodyLock();
+    document.dispatchEvent(new CustomEvent('fisio:close-assistant'));
   };
 
   const requestOpenAssistantRail = () => {
     openAssistantRail();
-    input?.focus();
+    window.requestAnimationFrame(() => input?.focus());
   };
 
   sidebarToggle?.addEventListener('click', () => {
@@ -190,6 +212,14 @@ import ConfigView from '../components/views/ConfigView.astro';
   assistantRailFab?.addEventListener('click', requestOpenAssistantRail);
   assistantRailClose?.addEventListener('click', closeAssistantRail);
   assistantRailBackdrop?.addEventListener('click', closeAssistantRail);
+  document.addEventListener('fisio:open-assistant', () => {
+    syncAssistantRailState(true);
+    syncOverlayBodyLock();
+  });
+  document.addEventListener('fisio:close-assistant', () => {
+    syncAssistantRailState(false);
+    syncOverlayBodyLock();
+  });
   focusAgentNav?.addEventListener('click', (event: Event) => {
     event.preventDefault();
     requestOpenAssistantRail();
@@ -1646,8 +1676,10 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   // Clean up on resize
   syncResponsiveViewportState();
+  syncAssistantRailState(false);
   window.addEventListener('resize', () => {
     syncResponsiveViewportState();
+    syncAssistantRailState();
     if (!isMobile()) closeSidebar();
     syncOverlayBodyLock();
     queueAssistantLayoutEnforce();
@@ -1655,7 +1687,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   // === CHAT ===
   const scrollAssistantRailToBottom = () => {
-    const scrollTarget = log || (document.querySelector('#assistantRail .assistant-dialog-surface') as HTMLElement | null);
+    const scrollTarget = assistantDialogScroll || log || (document.querySelector('#assistantRail .assistant-dialog-surface') as HTMLElement | null);
     if (!scrollTarget) return;
     window.requestAnimationFrame(() => {
       scrollTarget.scrollTop = scrollTarget.scrollHeight;

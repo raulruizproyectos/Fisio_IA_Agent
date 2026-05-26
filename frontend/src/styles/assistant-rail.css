@@ -6,25 +6,32 @@
 #assistantRail,
 #assistantRail.assistant-rail,
 #assistantRail.assistant-rail-portal {
+  --assistant-rail-width: clamp(420px, 32vw, 560px);
+  --assistant-rail-z: 90;
+  --assistant-backdrop-z: 80;
+  --assistant-fab-z: 75;
   position: fixed !important;
-  inset: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) auto !important;
-  z-index: 50 !important;
+  inset: 0 0 0 auto !important;
+  z-index: var(--assistant-rail-z) !important;
   display: flex !important;
-  width: 420px !important;
-  max-width: calc(100vw - 1.5rem) !important;
-  height: auto !important;
-  max-height: calc(100dvh - 1.5rem) !important;
+  width: var(--assistant-rail-width) !important;
+  max-width: calc(100vw - 1rem) !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   min-width: 0 !important;
   overflow: hidden !important;
   color: #0f172a !important;
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 8px !important;
-  box-shadow: -18px 0 42px -30px rgba(15, 23, 42, 0.42), 0 10px 30px -24px rgba(15, 23, 42, 0.32) !important;
+  border: 0 !important;
+  border-left: 1px solid #dbe7e4 !important;
+  border-radius: 0 !important;
+  box-shadow: -24px 0 60px -38px rgba(15, 23, 42, 0.48), -8px 0 28px -26px rgba(15, 118, 110, 0.32) !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  transform: translateX(calc(100% + 1rem)) !important;
-  transition: opacity 160ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transform: translate3d(100%, 0, 0) !important;
+  transition: opacity 160ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  will-change: transform !important;
 }
 
 #assistantRail.open,
@@ -46,15 +53,18 @@
 }
 
 #assistantRail > header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
   display: flex !important;
   flex: 0 0 auto !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 0.75rem !important;
-  min-height: 58px !important;
-  padding: 0.85rem 1rem !important;
+  gap: 1rem !important;
+  min-height: 68px !important;
+  padding: 1rem 1.15rem !important;
   background: #ffffff !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid #dbe7e4 !important;
 }
 
 #assistantRail > header h2 {
@@ -72,16 +82,22 @@
 
 #assistantRailClose {
   display: inline-grid !important;
-  flex: 0 0 2.2rem !important;
-  width: 2.2rem !important;
-  height: 2.2rem !important;
+  flex: 0 0 2.65rem !important;
+  width: 2.65rem !important;
+  height: 2.65rem !important;
   place-items: center !important;
   padding: 0 !important;
-  color: #475569 !important;
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+  background: #f6fbf9 !important;
+  border: 1px solid #dbe7e4 !important;
   border-radius: 8px !important;
   cursor: pointer !important;
+}
+
+#assistantRailClose:hover {
+  color: #0f766e !important;
+  background: #ecfdf5 !important;
+  border-color: #99f6e4 !important;
 }
 
 #assistantRail > div {
@@ -321,12 +337,64 @@
 }
 
 #assistantRail #agentForm {
+  position: relative !important;
+  z-index: 2 !important;
   display: grid !important;
   flex: 0 0 auto !important;
   gap: 0.65rem !important;
   padding: 0.85rem !important;
   background: #ffffff !important;
   border-top: 1px solid #e2e8f0 !important;
+}
+
+#assistantRail .assistant-quick-actions {
+  display: grid !important;
+  flex: 0 0 auto !important;
+  gap: 0.55rem !important;
+  padding: 0.75rem 0.85rem 0 !important;
+  background: #f8fafc !important;
+}
+
+#assistantRail .quick-actions-label {
+  color: #64748b !important;
+  font: 800 0.68rem/1 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+#assistantRail .quick-action-chips {
+  display: flex !important;
+  gap: 0.45rem !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 0.2rem !important;
+  scrollbar-width: none !important;
+}
+
+#assistantRail .quick-action-chips::-webkit-scrollbar {
+  display: none !important;
+}
+
+#assistantRail .quick-action-chip {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  min-height: 2.1rem !important;
+  max-width: 14rem !important;
+  padding: 0.45rem 0.65rem !important;
+  color: #0f766e !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 22px -20px rgba(15, 23, 42, 0.32) !important;
+  font: 760 0.76rem/1.15 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+#assistantRail .quick-action-chip .material-symbols-rounded {
+  font-size: 1rem !important;
 }
 
 #assistantRail .ai-textarea-wrapper,
@@ -416,9 +484,10 @@
 #assistantRailBackdrop.assistant-rail-backdrop-portal {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 40 !important;
+  z-index: 80 !important;
   display: block !important;
-  background: rgba(15, 23, 42, 0.28) !important;
+  background: rgba(15, 23, 42, 0.32) !important;
+  backdrop-filter: blur(6px) !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 180ms ease !important;
@@ -451,7 +520,7 @@
   position: fixed !important;
   right: max(1.25rem, env(safe-area-inset-right)) !important;
   bottom: max(1.25rem, env(safe-area-inset-bottom)) !important;
-  z-index: 45 !important;
+  z-index: 75 !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 0.45rem !important;
@@ -463,21 +532,59 @@
   border-radius: 999px !important;
   box-shadow: 0 18px 34px -22px rgba(13, 148, 136, 0.72) !important;
   cursor: pointer !important;
+  transition: opacity 160ms ease, transform 180ms ease, background 160ms ease !important;
 }
 
-@media (max-width: 767px) {
+#assistantRail.open ~ #assistantRailFab {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(0.5rem) !important;
+}
+
+#assistantRailFab[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
   #assistantRail,
   #assistantRail.assistant-rail,
   #assistantRail.assistant-rail-portal {
-    inset: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left)) !important;
-    width: auto !important;
-    max-width: none !important;
-    max-height: calc(100dvh - 1rem) !important;
-    border-radius: 8px !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    transform: translate3d(0, 100%, 0) !important;
+  }
+
+  #assistantRail.open,
+  #assistantRail.assistant-rail.open,
+  #assistantRail.assistant-rail-portal.open {
+    transform: translate3d(0, 0, 0) !important;
+  }
+
+  #assistantRail > header {
+    min-height: 4.25rem !important;
+    padding: max(0.8rem, env(safe-area-inset-top)) max(0.85rem, env(safe-area-inset-right)) 0.8rem max(0.85rem, env(safe-area-inset-left)) !important;
+  }
+
+  #assistantRailClose {
+    flex-basis: 2.75rem !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
   }
 
   #assistantRail #assistantModeSwitch {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  #assistantRail #assistantModeSwitch button {
+    min-height: 2.35rem !important;
+    padding: 0.38rem 0.28rem !important;
+    font-size: 0.75rem !important;
   }
 
   #assistantRail #agentForm > div[aria-label="Acciones rapidas del copiloto"],
@@ -489,5 +596,16 @@
   #assistantRail #exercisePdfBtn,
   #assistantRail #exerciseTelegramBtn {
     width: 100% !important;
+    min-height: 2.65rem !important;
+  }
+
+  #assistantRailFab {
+    right: max(1rem, env(safe-area-inset-right)) !important;
+    bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+    min-height: 3rem !important;
+  }
+
+  #assistantRail .quick-action-chip {
+    max-width: 72vw !important;
   }
 }
