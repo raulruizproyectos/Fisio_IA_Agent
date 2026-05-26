@@ -1,94 +1,33 @@
 # Arquitectura
 
 ## Principio
-Fisio_IA_Agent usa arquitectura hibrida:
-- Backend autoritativo para API, validacion, persistencia, PDF y contratos.
-- n8n para orquestacion conversacional y automatizacion.
-- Frontend como superficie de producto, sin logica clinica critica.
+Backend autoritativo, frontend como superficie de producto, n8n como orquestador. La logica clinica critica no debe quedar solo en UI.
 
 ## Componentes
-| Componente | Rol |
-| --- | --- |
-| Astro frontend | CRM web, shell, vistas, agente IA |
-| Express backend | API, PDF, Supabase, readiness, Telegram bridge |
-| Supabase DB | Source of truth operativo |
-| Supabase Storage | Media privada de ejercicios |
-| n8n | Workflows W0/W1/W2/W3/W5/W6 |
-| Telegram | Canal paciente/fisio |
-| Google Calendar | Disponibilidad y citas |
-| OpenAI | Razonamiento clinico/ejercicios |
+- `frontend`: Astro CRM, Copiloto IA, calendario, responsive.
+- `backend`: Express API, Supabase, Google Calendar, Telegram, PDFs.
+- `database`: schema/migrations/seed.
+- `n8n`: workflows W0/W1/W2/W3/W5/W6.
+- `scripts`: validacion, sincronizacion y smokes.
 
-## Workflows vivos
-- W0: entrada Telegram/router.
-- W1: citas.
-- W2: agente de ejercicios.
-- W3: trigger CRM.
-- W5: lector Calendar.
-- W6: escritor/sync Calendar.
-
-## Estado frontend
-- Archivo critico: `frontend/src/pages/index.astro`.
-- Riesgo principal: monolito grande con HTML, CSS y JS juntos.
-- Capa actual de navegacion:
-  - router principal `navigateTo`,
-  - fallback temprano `__fisioShellNavigate`,
-  - paginas no activas ocultas con `hidden`.
-- Siguiente refactor recomendado:
-  - extraer controlador JS del `assistant rail`; el layout y estilos ya viven en `assistant-rail.css`,
-  - extraer shell/router,
-  - extraer finanzas,
-  - extraer agenda,
-  - extraer agente IA.
-- Estado del rail IA (2026-05-25):
-  - `assistant-rail.css` es la fuente canonica del drawer,
-  - `index.astro`, `global-shell.css` y `premium-clinic-ui.css` no deben definir layout del `#assistantRail`,
-  - JS solo debe abrir/cerrar y sincronizar estado accesible; no debe usar `style.setProperty(..., 'important')` para layout,
-  - requiere smoke visual final en navegador y produccion tras redeploy.
-
-## Contratos que no se deben romper
+## Contratos sensibles
 - `/api/profesional/appointments`
 - `/api/profesional/appointments/sync-calendar/status`
-- `/api/pagos`
-- `/api/facturas`
-- `/api/bonos`
-- `/api/documentos`
-- `/api/exercises/recommend`
-- `/api/exercises/recommend/async`
+- `/api/pagos`, `/api/facturas`, `/api/bonos`, `/api/documentos`
+- `/api/exercises/recommend`, `/api/exercises/recommend/async`
 - `/api/telegram/*`
 
-## Direccion producto
-- Premium clinico de referencia para centros de fisioterapia.
-- Agente IA como diferenciador principal: diseño y usabilidad premium.
-- Densidad calmada: mas informacion util con menos volumen visual.
-- Cada pantalla debe responder: que miro, que hago ahora, que puede esperar.
-- IA con trazabilidad: plan, contexto, entrega, revision y seguimiento.
-- Evitar nuevas capas CSS correctivas sin retirar deuda antigua.
-- Evitar nuevos bloques `<style id="assistant-*">` en `index.astro`; cualquier ajuste del Copiloto debe ir en `frontend/src/styles/assistant-rail.css`.
-- Accesibilidad WCAG AA en flujos criticos.
+## Frontend
+- `index.astro` aun concentra controladores; no romper IDs ni `data-*`.
+- CSS canonico:
+  - `global-shell.css`: shell.
+  - `assistant-rail.css`: Copiloto IA.
+  - `premium-clinic-ui.css`: UI responsive y vistas.
+- Proximo refactor seguro: extraer controladores por dominio sin cambiar markup publico.
 
-## Estructura modular objetivo (frontend)
-```
-frontend/src/
-  styles/
-    global-shell.css        # Shell layout (sidebar, topbar, workspace)
-    assistant-rail.css      # Copiloto IA
-  controllers/
-    shellController.ts      # Router, sidebar, responsive, toasts, search
-    assistantController.ts  # Rail IA, chat, generacion, PDF, Telegram
-    patientsController.ts   # Listado, ficha, historial
-    appointmentsController.ts # Agenda, citas, Calendar sync
-    financeController.ts    # Pagos, bonos, facturas, gestoria
-    documentsController.ts  # Documentos clinicos, firmas
-  components/
-    AssistantRail.astro
-    SidebarNav.astro
-    Topbar.astro
-    MobileDock.astro
-    GlobalFeedbackShell.astro
-    ShellNavigationBootstrap.astro
-  layouts/
-    Layout.astro
-  pages/
-    index.astro             # Markup + CSS especifico (target: ~8K lineas)
-    reserva.astro
-```
+## Backend
+- Rutas grandes a dividir: `professional.js`, `telegram.js`, `exercises.js`.
+- Mantener separacion: rutas delgadas, servicios por dominio, Supabase en lib/servicios.
+
+## Seguridad
+Secretos solo en `.env.local` o plataforma. Nunca en docs, n8n raw exports ni commits.
