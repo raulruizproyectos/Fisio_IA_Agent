@@ -69,6 +69,22 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'fisio-ia-agent-api',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'fisio-ia-agent-api',
+    health: '/api/health',
+  });
+});
+
 app.get('/api/health/readiness', async (_req, res) => {
   const report = await buildReadinessReport({ supabase, env: process.env });
   res.status(getReadinessStatusCode(report)).json(report);
