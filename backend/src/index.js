@@ -17,7 +17,14 @@ import { buildReadinessReport, getReadinessStatusCode } from './lib/readiness.js
 
 // Configuracion
 const app = express();
-const PORT = process.env.PORT || 3001;
+const DEFAULT_PORT = 3001;
+const PLATFORM_PORT = Number.parseInt(process.env.PORT || '', 10);
+const PRIMARY_PORT = Number.isFinite(PLATFORM_PORT) ? PLATFORM_PORT : DEFAULT_PORT;
+const EXTRA_LISTEN_PORTS = (process.env.EXTRA_LISTEN_PORTS || (process.env.PORT ? '' : '3000'))
+  .split(',')
+  .map((value) => Number.parseInt(value.trim(), 10))
+  .filter((value) => Number.isFinite(value));
+const LISTEN_PORTS = Array.from(new Set([PRIMARY_PORT, DEFAULT_PORT, ...EXTRA_LISTEN_PORTS]));
 const ERROR_WEBHOOK_URL = process.env.N8N_ERROR_WEBHOOK_URL || null;
 const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:4321',
@@ -133,7 +140,20 @@ app.use((err, req, res, _next) => {
 });
 
 // Start
-app.listen(PORT, () => {
-  console.log(`\nFisio IA Agent API\n------------------\nServidor activo en http://localhost:${PORT}\nHealth check:     http://localhost:${PORT}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
+LISTEN_PORTS.forEach((port, index) => {
+  const isPrimary = index === 0;
+  const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`\nFisio IA Agent API\n------------------\nServidor activo en http://0.0.0.0:${port}${isPrimary ? '' : ' (compat)'}\nHealth check:     http://0.0.0.0:${port}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
+  });
+
+  server.on('error', (error) => {
+    if (!isPrimary && error?.code === 'EADDRINUSE') {
+      console.warn(`Puerto compat ${port} ocupado; backend principal sigue activo.`);
+      return;
+    }
+
+    console.error(`No se pudo iniciar el backend en el puerto ${port}:`, error);
+    process.exit(1);
+  });
 });
 
