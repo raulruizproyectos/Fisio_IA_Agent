@@ -30,3 +30,6 @@ Lee primero `PROJECT_CONTEXT.md`. Es la fuente compacta para futuras sesiones.
 - Rama productiva: `main`.
 - Frontend EasyPanel: `fisio-frontend`.
 - Backend EasyPanel: `fisio-backend`.
+- Repo privado: usar Deploy Key/SSH en EasyPanel.
+- URL SSH recomendada: `git@github.com:raulruizproyectos/Fisio_IA_Agent.git`.
+- Build paths: `frontend` y `backend` sin `/` inicial.

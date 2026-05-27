@@ -2,6 +2,12 @@
 
 Resumen compacto. Detalle completo en `git log`.
 
+## 2026-05-27
+- EasyPanel restaurado: el bloqueo era acceso Git a repo privado, resuelto con Deploy Key/SSH.
+- Backend endurecido para deploy: health en `/`, `/health`, `/api/health`; soporte puerto plataforma, `3001` y compat `3000`.
+- Backend Nixpacks fijado a Node 20 con start `node src/index.js`.
+- Documentacion actualizada para retomar sesion sin repetir diagnostico.
+
 ## 2026-05-26
 - Copiloto IA corregido: apertura/cierre estable, drawer desktop, panel movil.
 - UI CRM pulida: sidebar, dashboard, pacientes, Mensajes y layout responsive global.
