@@ -4,6 +4,9 @@
   "description": "Fisio IA Agent — API REST para gestión de fisioterapia",
   "main": "src/index.js",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
