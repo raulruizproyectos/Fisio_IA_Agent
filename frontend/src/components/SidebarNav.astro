@@ -40,9 +40,9 @@
           <span class="material-symbols-rounded text-[20px]">calendar_today</span>
           <span class="nav-label">Agenda</span>
         </a>
-        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors" data-section="plantillas">
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="plantillas">
           <span class="material-symbols-rounded text-[20px]">psychology</span>
-          <span class="nav-label">Planes IA</span>
+          <span class="nav-label">Planes terapéuticos</span>
         </a>
       </nav>
     </div>
@@ -83,11 +83,14 @@
 
   <div class="p-4 border-t border-gray-200">
     <div class="flex items-center gap-3 px-2">
-      <div class="w-9 h-9 rounded-full bg-[#11181C] text-white flex items-center justify-center text-sm font-medium">RR</div>
-      <div class="flex flex-col">
-        <strong class="text-sm font-medium text-[#11181C]">Dr. Raúl Ruiz</strong>
-        <span class="text-xs text-[#687076]">Fisioterapia</span>
+      <div id="sidebarUserInitials" class="w-9 h-9 rounded-full bg-[#11181C] text-white flex items-center justify-center text-sm font-medium">--</div>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <strong id="sidebarUserName" class="truncate text-sm font-medium text-[#11181C]">Profesional</strong>
+        <span id="sidebarUserRole" class="truncate text-xs text-[#687076]">Sesión segura</span>
       </div>
+      <button id="logoutBtn" type="button" class="rounded-lg p-2 text-[#687076] transition-colors hover:bg-red-50 hover:text-red-700" aria-label="Cerrar sesión" title="Cerrar sesión">
+        <span class="material-symbols-rounded text-[20px]">logout</span>
+      </button>
     </div>
   </div>
 </aside>

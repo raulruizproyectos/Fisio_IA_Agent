@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = Router();
 const PAYMENTS_TABLE = 'crm_pagos';

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = Router();
 const CLINICAL_NOTES_TABLE = 'crm_notas_clinicas';

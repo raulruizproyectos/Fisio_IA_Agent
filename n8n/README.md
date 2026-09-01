@@ -1,91 +1,59 @@
-﻿# Automatizacion con n8n - Fisio IA Agent
+# Automatización n8n — Fisio IA Agent
 
-## Objetivo operativo
-n8n es el orquestador principal para:
-- Clasificar intencion de mensajes (citas, ejercicios, notas)
-- Ejecutar Agente de Citas (Google Calendar + logging)
-- Ejecutar Agente IA de Ejercicios (OpenAI + catalogo + signed URLs)
-- Procesar trigger web desde CRM
+n8n se mantiene como orquestador de integraciones; la autorización, las reglas clínicas, la persistencia y la aprobación de informes permanecen en el backend y Supabase. Esta separación evita que una automatización visual se convierta en la única capa de lógica crítica.
 
-## Workflows versionados actualmente
-- Produccion remota activa (`n8n/Fisio_IA_Agent/production/`)
-  - `nucleo-agente.json`
-  - `puente-error-backend.json`
-  - `subflujo-pendientes.json`
-- Canonicos vNext (`n8n/Fisio_IA_Agent/vnext/`)
-  - `fisio-agent-core.json`
-  - `sw-fisio-pending-intakes.json`
-  - `telegram-chat.json` (bot pacientes/citas - `agent_mode=patient_appointments`)
-  - `telegram-fisio-reports.json` (bot fisio/informes - `agent_mode=physio_reports`)
-  - `w1-appointment-agent.json`
-  - `w2-exercise-agent.json`
-  - `w3-crm-trigger.json`
-  - `w6-calendar-sync.json`
+## Conjunto objetivo
 
-## Configuracion 2 bots Telegram
-- Bot pacientes (agenda citas): `fisioterapia_CarlaJL`
-  - Workflow: `n8n/Fisio_IA_Agent/vnext/telegram-chat.json`
-  - Debe usar credencial del bot de pacientes.
-- Bot fisio (informes + PDF): `FisioIA_Agent_bot`
-  - Workflow: `n8n/Fisio_IA_Agent/vnext/telegram-fisio-reports.json`
-  - Debe usar credencial del bot del fisioterapeuta.
+Los flujos canónicos están en `n8n/Fisio_IA_Agent/vnext/`:
 
-Comando principal en bot fisio:
-- `/informe <paciente_id> | <sintomas>`
-- Ejemplo: `/informe 11111111-2222-3333-4444-555555555555 | Dolor cervical al girar cuello desde hace 3 dias`
+- `fisio-agent-core.json`: router del copiloto.
+- `telegram-chat.json`: bot de pacientes y citas.
+- `telegram-fisio-reports.json`: bot profesional e informes.
+- `w1-appointment-agent.json`: creación de citas.
+- `w2-exercise-agent.json`: selección de ejercicios.
+- `w3-crm-trigger.json`: lanzamiento asíncrono desde CRM.
+- `sw-fisio-pending-intakes.json`: bandeja pendiente.
+- `w6-calendar-sync.json`: reconciliación de Calendar.
 
-## Estado remoto (2026-03-04)
-- Instancia auditada de extremo a extremo.
-- Estado consolidado:
-  - workflows totales: `54`
-  - workflows activos: `5`
-  - activos dentro de `Fisio_IA_Agent / ...`: `5`
-  - workflows de video en nombre: `0`
-- Backups de seguridad pre-limpieza:
-  - `docs/data/n8n/backup_before_deactivate_20260304/` (local, no versionado)
-- Artefactos de auditoria:
-  - `docs/data/n8n/workflows_snapshot_20260304_raw.json` (local, no versionado)
-  - `docs/data/n8n/workflows_summary_20260304.json`
+`production/` representa el estado exportado de la instancia anterior. Debe conservarse como referencia hasta completar el cambio, pero no se deben activar en paralelo dos flujos con el mismo trigger.
 
-## Convencion recomendada (vNext)
-- W0 Router Telegram
-- W1 Agente Citas
-- W2 Agente IA Ejercicios
-- W3 Trigger Web CRM
+## Seguridad obligatoria
 
-## Contrato minimo de trazabilidad
-Cada ejecucion debe registrar:
-- `request_id`
-- `patient_id` (si aplica)
-- `channel`
-- `workflow_name`
-- `status`
-- `created_at`
+1. Crear en n8n una credencial **Header Auth** llamada `Fisio Internal Webhook`:
+   - header: `X-Webhook-Secret`
+   - valor: el mismo secreto configurado como `N8N_WEBHOOK_SECRET` en el backend.
+2. Configurar en n8n estas variables de entorno, sin escribirlas dentro de los JSON:
+   - `INTERNAL_API_KEY`
+   - `TELEGRAM_WEBHOOK_SECRET`
+   - `N8N_WEBHOOK_SECRET`
+   - `SUPABASE_ANON_KEY`
+3. Limitar el editor de n8n a usuarios administradores, forzar HTTPS y activar el pruning de ejecuciones.
+4. No guardar tokens, datos clínicos de prueba ni claves dentro de nodos Code/Set.
 
-## Integracion backend
-Endpoints principales consumidos por workflows:
-- `POST /api/telegram/incoming`
-- `POST /api/agent/message`
-- `GET /api/profesional/intakes/pending`
-- `GET /api/profesional/appointments`
-- `POST /api/profesional/appointments`
-- `PATCH /api/profesional/appointments/:appointmentId`
+Los nodos HTTP versionados incluyen reintentos y envían la cabecera adecuada:
 
-## Integracion Supabase Storage
-- Bucket `ejercicios` (private)
-- object_key persistido en DB
-- signed URLs generadas JIT desde n8n con service role
+- Telegram → backend: `x-telegram-bot-api-secret-token`.
+- n8n → endpoints internos del backend: `X-Internal-Api-Key`.
+- backend/n8n → webhooks n8n: `X-Webhook-Secret` mediante Header Auth.
 
-## Nota de alcance
-- El set `production/` del repo queda sin flujos de video.
-- El set `vnext/` contiene la version canÃ³nica objetivo (W0/W1/W2/W3) para migracion progresiva.
-- Limitacion actual de API n8n:
-  - `PUT /api/v1/workflows/{id}/tags` sigue devolviendo `500`, por lo que el etiquetado en carpeta/tag `Fisio_IA_Agent` puede requerir accion manual en UI.
+## Contrato mínimo
 
-## Norma obligatoria de carpeta/tag
-- Referencia oficial: `docs/n8n/NORMA_CARPETA_FISIO_IA_AGENT.md`
-- Regla estricta:
-  - Todo workflow del proyecto debe quedar dentro de carpeta/tag `Fisio_IA_Agent`.
-  - Si un workflow queda fuera, el trabajo no se considera cerrado.
+Cada entrada/salida debe incluir:
 
+- `request_id` UUID.
+- `patient_id` UUID cuando aplique.
+- `channel`: `telegram`, `crm_web`, `backend` o `n8n`.
+- `status`: `queued`, `running`, `done` o `error`.
 
+El error final debe registrar `workflow_name`, `node_name`, `error_code`, `error_message` y marcas de tiempo, y devolver un mensaje seguro sin información técnica al paciente.
+
+## Activación recomendada
+
+1. Importar vNext desactivado.
+2. Vincular credenciales Telegram, Google Calendar, Supabase y Header Auth.
+3. Ejecutar cada flujo con datos ficticios y comprobar `request_id` de extremo a extremo.
+4. Desactivar el flujo antiguo equivalente.
+5. Activar un único flujo nuevo.
+6. Verificar logs y ausencia de duplicados durante 24 horas.
+
+Todo workflow del proyecto debe permanecer dentro de la carpeta/tag `Fisio_IA_Agent`.

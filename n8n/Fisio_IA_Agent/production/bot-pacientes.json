@@ -93,7 +93,16 @@
           "timeout": 15000
         },
         "contentType": "json",
-        "jsonBody": "={{ $json }}"
+        "jsonBody": "={{ $json }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-telegram-bot-api-secret-token",
+              "value": "={{ $env.TELEGRAM_WEBHOOK_SECRET }}"
+            }
+          ]
+        }
       },
       "id": "BackendCommandResolver",
       "name": "Resolver backend",
@@ -102,7 +111,10 @@
       "position": [
         688,
         304
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

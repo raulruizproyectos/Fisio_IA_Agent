@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { resolveAgentConversation } from './agent.js';
 
 const router = Router();
@@ -1603,7 +1603,12 @@ async function triggerAppointmentWorkflow({
   try {
     const response = await fetch(APPOINTMENT_WEBHOOK_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.N8N_WEBHOOK_SECRET
+          ? { 'X-Webhook-Secret': process.env.N8N_WEBHOOK_SECRET }
+          : {}),
+      },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(12000),
     });
@@ -1811,6 +1816,24 @@ router.post('/patient-report/send', async (req, res, next) => {
       return res.status(400).json({ error: 'patient_id es obligatorio' });
     }
 
+    if (!recommendationId) {
+      return res.status(400).json({ error: 'recommendation_id es obligatorio para enviar al paciente' });
+    }
+
+    const { data: approvedRecommendation, error: approvalError } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, paciente_id, estado')
+      .eq('id', recommendationId)
+      .eq('paciente_id', patientId)
+      .single();
+    if (approvalError) throw approvalError;
+    if (!['aprobada', 'enviada'].includes(approvedRecommendation?.estado)) {
+      return res.status(409).json({
+        error: 'El informe debe ser aprobado por un fisioterapeuta antes de enviarlo al paciente',
+        code: 'professional_approval_required',
+      });
+    }
+
     if (!exercises.length) {
       return res.status(400).json({ error: 'No hay ejercicios para enviar al paciente por Telegram' });
     }
@@ -1881,6 +1904,11 @@ router.post('/patient-report/send', async (req, res, next) => {
       },
       status: 'sent',
     });
+
+    await supabase
+      .from('crm_recomendaciones')
+      .update({ estado: 'enviada', updated_at: new Date().toISOString() })
+      .eq('id', recommendationId);
 
     return res.json({
       ok: true,
@@ -3039,4 +3067,3 @@ router.post('/incoming', async (req, res, next) => {
 });
 
 export default router;
-

@@ -6,7 +6,8 @@
         "path": "agent/core",
         "responseMode": "responseNode",
         "options": {},
-        "httpMethod": "POST"
+        "httpMethod": "POST",
+        "authentication": "headerAuth"
       },
       "id": "WebhookAgentCore",
       "name": "Entrada router",
@@ -16,7 +17,12 @@
         220,
         260
       ],
-      "webhookId": "fisio-agent-core"
+      "webhookId": "fisio-agent-core",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "parameters": {

@@ -6,7 +6,8 @@
         "httpMethod": "POST",
         "path": "fisio/error/notify",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
       "id": "WebhookErrorNotify",
       "name": "Entrada error",
@@ -16,7 +17,12 @@
         220,
         260
       ],
-      "webhookId": "fisio-error-notify"
+      "webhookId": "fisio-error-notify",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "parameters": {

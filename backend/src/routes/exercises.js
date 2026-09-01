@@ -1,15 +1,11 @@
 ﻿import { Router } from 'express';
 import crypto from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase.js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 import { EXERCISE_AGENT_PROMPT, EXERCISE_AGENT_PROMPT_VERSION } from '../lib/exercise-agent-prompt.js';
 
 const router = Router();
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 const EXERCISE_ENGINE_TIMEOUT_MS = Number(process.env.EXERCISE_ENGINE_TIMEOUT_MS || 30000);
 const EXERCISE_ENGINE_MAX_ATTEMPTS = Number(process.env.EXERCISE_ENGINE_MAX_ATTEMPTS || 2);
 const EXERCISE_ENGINE_CANDIDATE_LIMIT = Number(process.env.EXERCISE_ENGINE_CANDIDATE_LIMIT || 24);
@@ -158,7 +154,10 @@ router.get('/:id/media', async (req, res) => {
 // Main W2 endpoint: receives symptoms, queries catalog, calls OpenAI via n8n,
 // stores recommendation + items, returns result
 router.post('/recommend', async (req, res) => {
-  const requestId = crypto.randomUUID();
+  const requestedId = String(req.get('idempotency-key') || req.body?.request_id || '').trim();
+  const requestId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedId)
+    ? requestedId
+    : crypto.randomUUID();
   try {
     const {
       patient_id,
@@ -358,7 +357,10 @@ router.post('/recommend', async (req, res) => {
             escalation_recommend_medical_attention,
             escalation_reason,
             request_id: requestId,
-            estado: escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
+            estado: 'requiere_revision',
+            prompt_version: EXERCISE_AGENT_PROMPT_VERSION,
+            model_name: String(process.env.OPENAI_MODEL || 'n8n-managed'),
+            idempotency_key: requestId,
           })
           .select('id')
           .single();
@@ -381,7 +383,8 @@ router.post('/recommend', async (req, res) => {
             .insert(items);
 
           if (itemsErr) {
-            console.warn('[exercises/recommend] Error inserting items:', itemsErr.message);
+            await supabase.from('crm_recomendaciones').delete().eq('id', recommendationId);
+            throw itemsErr;
           }
         }
 
@@ -403,6 +406,21 @@ router.post('/recommend', async (req, res) => {
           status: 'processed',
         });
       } catch (persistenceErr) {
+        if (persistenceErr?.code === '23505') {
+          const { data: existing } = await supabase
+            .from('crm_recomendaciones')
+            .select('id, estado')
+            .eq('idempotency_key', requestId)
+            .maybeSingle();
+          return res.status(409).json({
+            ok: false,
+            code: 'duplicate_request',
+            error: 'Esta solicitud ya fue procesada',
+            request_id: requestId,
+            recommendation_id: existing?.id || null,
+            approval_state: existing?.estado || null,
+          });
+        }
         persistenceWarning = persistenceErr?.message || 'recommendation_persistence_failed';
         console.warn('[exercises/recommend] persistence warning:', persistenceWarning);
       }
@@ -523,6 +541,8 @@ router.post('/recommend', async (req, res) => {
       informe_clinico: informeClinico,
       persistence_skipped: !persistRecommendation || Boolean(persistenceWarning),
       persistence_warning: persistenceWarning,
+      approval_required: true,
+      approval_state: 'requiere_revision',
     };
 
     if (persistRecommendation && recommendationId) {
@@ -754,6 +774,69 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
   }
 });
 
+router.post('/recommendations/:recommendationId/review', async (req, res) => {
+  try {
+    const recommendationId = String(req.params.recommendationId || '').trim();
+    const decision = String(req.body?.decision || '').trim().toLowerCase();
+    const note = String(req.body?.note || req.body?.approval_note || '').trim();
+    if (!['approve', 'reject'].includes(decision)) {
+      return res.status(400).json({ ok: false, error: 'decision debe ser approve o reject' });
+    }
+
+    const { data: current, error: currentError } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, paciente_id, fisioterapeuta_id, estado, red_flags_present, request_id')
+      .eq('id', recommendationId)
+      .single();
+    if (currentError) throw currentError;
+    if (!current) return res.status(404).json({ ok: false, error: 'Recomendacion no encontrada' });
+    if (!['requiere_revision', 'rechazada'].includes(current.estado)) {
+      return res.status(409).json({ ok: false, error: `La recomendacion ya esta en estado ${current.estado}` });
+    }
+    if (decision === 'approve' && current.red_flags_present && note.length < 12) {
+      return res.status(400).json({
+        ok: false,
+        error: 'La aprobacion con alertas rojas requiere una nota clinica justificativa',
+      });
+    }
+
+    const reviewedAt = new Date().toISOString();
+    const nextState = decision === 'approve' ? 'aprobada' : 'rechazada';
+    const { data, error } = await supabase
+      .from('crm_recomendaciones')
+      .update({
+        estado: nextState,
+        reviewed_by_profile_id: req.auth?.profile_id || current.fisioterapeuta_id || null,
+        reviewed_at: reviewedAt,
+        approval_note: note || null,
+        updated_at: reviewedAt,
+      })
+      .eq('id', recommendationId)
+      .select('id, estado, reviewed_by_profile_id, reviewed_at, approval_note')
+      .single();
+    if (error) throw error;
+
+    await logComm(supabase, {
+      paciente_id: current.paciente_id,
+      fisioterapeuta_id: current.fisioterapeuta_id || req.auth?.profile_id || null,
+      recomendacion_id: recommendationId,
+      channel: 'crm_web',
+      direction: 'internal',
+      message_type: 'event',
+      message_text: decision === 'approve' ? 'Informe aprobado por el profesional' : 'Informe rechazado por el profesional',
+      payload: { event: 'recommendation_reviewed', decision, note: note || null },
+      request_id: current.request_id || null,
+      status: 'processed',
+      occurred_at: reviewedAt,
+    });
+
+    return res.json({ ok: true, data });
+  } catch (err) {
+    console.error('[exercises/recommendations/review] Error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Error revisando recomendacion' });
+  }
+});
+
 router.post('/reports/pdf', async (req, res) => {
   try {
     const rawPayload = req.body?.payload && typeof req.body.payload === 'object'
@@ -771,6 +854,23 @@ router.post('/reports/pdf', async (req, res) => {
     const recommendationId = String(
       rawPayload?.recommendation_id || rawPayload?.recomendacion_id || ''
     ).trim();
+
+    if (!recommendationId) {
+      return res.status(400).json({ ok: false, error: 'recommendation_id es obligatorio' });
+    }
+    const { data: approvedRecommendation, error: approvalError } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, estado')
+      .eq('id', recommendationId)
+      .single();
+    if (approvalError) throw approvalError;
+    if (!['aprobada', 'enviada'].includes(approvedRecommendation?.estado)) {
+      return res.status(409).json({
+        ok: false,
+        error: 'El informe debe ser aprobado por un fisioterapeuta antes de exportarlo',
+        code: 'professional_approval_required',
+      });
+    }
 
     const pdfPayload = {
       ...rawPayload,
@@ -917,7 +1017,7 @@ function parsePainScale(value) {
 }
 
 function sanitizeRecommendationState(value) {
-  const allowed = new Set(['generada', 'enviada', 'error', 'requiere_revision']);
+  const allowed = new Set(['requiere_revision', 'aprobada', 'rechazada', 'enviada', 'error']);
   const state = String(value || '').trim().toLowerCase();
   if (!state) return null;
   return allowed.has(state) ? state : null;
@@ -1223,7 +1323,20 @@ async function callEngineWithRetry({
     try {
       const response = await fetch(targetUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.N8N_WEBHOOK_SECRET
+            ? { 'X-Webhook-Secret': process.env.N8N_WEBHOOK_SECRET }
+            : {}),
+          ...(process.env.SUPABASE_URL
+              && targetUrl.startsWith(process.env.SUPABASE_URL)
+              && process.env.SUPABASE_ANON_KEY
+            ? {
+                apikey: process.env.SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+              }
+            : {}),
+        },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(timeoutMs),
       });
@@ -1864,7 +1977,10 @@ async function runExerciseRecommendationJob(jobId) {
     );
     const response = await fetch(getInternalExerciseRecommendUrl(), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Api-Key': String(process.env.INTERNAL_API_KEY || ''),
+      },
       body: JSON.stringify({
         patient_id: job.patient_id,
         symptoms: job.symptoms,
@@ -1947,6 +2063,3 @@ function startExerciseRecommendationJob(jobId) {
 }
 
 export default router;
-
-
-

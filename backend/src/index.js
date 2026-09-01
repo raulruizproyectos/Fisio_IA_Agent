@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { createClient } from '@supabase/supabase-js';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import patientsRouter from './routes/patients.js';
 import telegramRouter from './routes/telegram.js';
 import professionalRouter from './routes/professional.js';
@@ -14,6 +15,8 @@ import invoicesRouter from './routes/invoices.js';
 import documentsRouter from './routes/documents.js';
 import bonosRouter from './routes/bonos.js';
 import { buildReadinessReport, getReadinessStatusCode } from './lib/readiness.js';
+import { serviceSupabase, supabase } from './lib/supabase.js';
+import { authorizeRequest, requestIdentity } from './middleware/security.js';
 
 // Configuracion
 const app = express();
@@ -43,13 +46,14 @@ const allowedOrigins = Array.from(
   ])
 );
 
-// Supabase client
-export const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
 // Middleware
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use(requestIdentity);
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
+}));
 app.use(cors({
   origin: (origin, callback) => {
     // Allow same-origin/server-to-server requests without Origin header.
@@ -65,7 +69,31 @@ app.use(cors({
   },
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: '512kb', strict: true }));
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: Number(process.env.API_RATE_LIMIT || 300),
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes. Intentalo de nuevo mas tarde.' },
+}));
+app.use([
+  '/api/professional/public-booking/appointments',
+  '/api/profesional/public-booking/appointments',
+], rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: Number(process.env.PUBLIC_BOOKING_RATE_LIMIT || 20),
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes de reserva. Inténtalo más tarde.' },
+}));
+app.use('/api/telegram/incoming', rateLimit({
+  windowMs: 60 * 1000,
+  limit: Number(process.env.TELEGRAM_RATE_LIMIT || 180),
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Límite temporal de mensajes alcanzado.' },
+}));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -92,8 +120,14 @@ app.get('/', (_req, res) => {
   });
 });
 
+app.use(authorizeRequest);
+
+app.get('/api/me', (req, res) => {
+  res.json(req.auth || {});
+});
+
 app.get('/api/health/readiness', async (_req, res) => {
-  const report = await buildReadinessReport({ supabase, env: process.env });
+  const report = await buildReadinessReport({ supabase: serviceSupabase, env: process.env });
   res.status(getReadinessStatusCode(report)).json(report);
 });
 
@@ -119,7 +153,12 @@ app.use((err, req, res, _next) => {
   if (ERROR_WEBHOOK_URL) {
     fetch(ERROR_WEBHOOK_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.N8N_WEBHOOK_SECRET
+          ? { 'X-Webhook-Secret': process.env.N8N_WEBHOOK_SECRET }
+          : {}),
+      },
       body: JSON.stringify({
         severity: 'CRITICAL',
         service: 'fisio-ia-agent-api',
@@ -133,14 +172,22 @@ app.use((err, req, res, _next) => {
     });
   }
 
-  console.error('Error:', err.message);
-  res.status(err.status || 500).json({
-    error: err.message || 'Error interno del servidor',
-  });
+  console.error(JSON.stringify({
+    level: 'error',
+    request_id: req.id,
+    method: req.method,
+    route: req.originalUrl,
+    message: err.message || 'Error interno del servidor',
+  }));
+  const status = Number(err.status || 500);
+  const safeMessage = status >= 500 && process.env.NODE_ENV === 'production'
+    ? 'Error interno del servidor'
+    : (err.message || 'Error interno del servidor');
+  res.status(status).json({ error: safeMessage, request_id: req.id });
 });
 
 // Start
-LISTEN_PORTS.forEach((port, index) => {
+const servers = LISTEN_PORTS.map((port, index) => {
   const isPrimary = index === 0;
   const server = app.listen(port, '0.0.0.0', () => {
     console.log(`\nFisio IA Agent API\n------------------\nServidor activo en http://0.0.0.0:${port}${isPrimary ? '' : ' (compat)'}\nHealth check:     http://0.0.0.0:${port}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
@@ -155,5 +202,20 @@ LISTEN_PORTS.forEach((port, index) => {
     console.error(`No se pudo iniciar el backend en el puerto ${port}:`, error);
     process.exit(1);
   });
+  return server;
 });
 
+function shutdown(signal) {
+  console.log(`${signal}: cerrando servidor de forma ordenada`);
+  const timeout = setTimeout(() => process.exit(1), 10_000).unref();
+  Promise.all(servers.map((server) => new Promise((resolve) => server.close(resolve))))
+    .then(() => {
+      clearTimeout(timeout);
+      process.exit(0);
+    });
+}
+
+process.once('SIGTERM', () => shutdown('SIGTERM'));
+process.once('SIGINT', () => shutdown('SIGINT'));
+
+export { supabase };

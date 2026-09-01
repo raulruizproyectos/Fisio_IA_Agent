@@ -80,6 +80,15 @@
         "options": {
           "ignoreResponseCode": true,
           "timeout": 45000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-telegram-bot-api-secret-token",
+              "value": "={{ $env.TELEGRAM_WEBHOOK_SECRET }}"
+            }
+          ]
         }
       },
       "id": "BackendCommandResolver",
@@ -89,7 +98,10 @@
       "position": [
         700,
         300
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

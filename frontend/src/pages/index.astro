@@ -9,6 +9,7 @@ import Topbar from '../components/Topbar.astro';
 import assistantRailStyles from '../styles/assistant-rail.css?inline';
 import globalShellStyles from '../styles/global-shell.css?inline';
 import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
+import productionUiStyles from '../styles/production-ui.css?inline';
 
 import DashboardView from '../components/views/DashboardView.astro';
 import PatientsView from '../components/views/PatientsView.astro';
@@ -26,6 +27,12 @@ import ConfigView from '../components/views/ConfigView.astro';
 ---
 
 <Layout title="Fisio IA Agent - CRM Clinico Inteligente">
+  <a class="skip-link" href="#mainContent">Saltar al contenido principal</a>
+  <div class="app-boot" id="appBoot" role="status" aria-live="polite">
+    <div class="app-boot-mark"><span class="material-symbols-rounded">medical_services</span></div>
+    <strong>Preparando tu consulta</strong>
+    <span>Verificando la sesión y cargando el espacio clínico seguro…</span>
+  </div>
   <div class="app-shell">
     <SidebarNav />
 
@@ -35,7 +42,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
       <!-- CONTENT -->
       <div class="workspace-shell">
-        <main class="content">
+        <main class="content" id="mainContent" tabindex="-1">
 
           <DashboardView />
           <PatientsView />
@@ -62,11 +69,72 @@ import ConfigView from '../components/views/ConfigView.astro';
 <ShellNavigationBootstrap />
 
 <script>
+  import { backendBase, initializeProtectedApp, signOut } from '../lib/auth';
+
   // === CONFIG ===
-  const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:3001'
-    : 'https://fisio-backend.b5xbaf.easypanel.host';
-  const PROF_ID = '4a194ec4-3580-4246-9452-0852b589fd63';
+  const appBoot = document.getElementById('appBoot');
+  const authContext = await initializeProtectedApp().catch((error) => {
+    if (appBoot) {
+      appBoot.classList.add('is-error');
+      appBoot.innerHTML = `
+        <div class="app-boot-mark"><span class="material-symbols-rounded">cloud_off</span></div>
+        <strong>No se pudo abrir la consulta</strong>
+        <span>No hemos podido verificar la sesión. Comprueba la conexión e inténtalo de nuevo.</span>
+        <button type="button" onclick="window.location.reload()">Reintentar</button>
+      `;
+    }
+    throw error;
+  });
+  appBoot?.setAttribute('hidden', '');
+  const BACKEND_BASE = backendBase;
+  const PROF_ID = authContext.profileId;
+  if (!PROF_ID) throw new Error('El usuario autenticado no tiene un perfil profesional activo');
+
+  const displayName = String(authContext.name || authContext.email || 'Profesional').trim();
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('') || 'PR';
+  const sidebarUserName = document.getElementById('sidebarUserName');
+  const sidebarUserRole = document.getElementById('sidebarUserRole');
+  const sidebarUserInitials = document.getElementById('sidebarUserInitials');
+  if (sidebarUserName) sidebarUserName.textContent = displayName;
+  if (sidebarUserRole) sidebarUserRole.textContent = authContext.role === 'admin' ? 'Administración clínica' : 'Fisioterapia';
+  if (sidebarUserInitials) sidebarUserInitials.textContent = initials;
+  document.getElementById('logoutBtn')?.addEventListener('click', () => void signOut());
+  const dashboardTitle = document.getElementById('dashboardTitle');
+  if (dashboardTitle) {
+    const hour = new Date().getHours();
+    const greeting = hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+    dashboardTitle.textContent = `${greeting}, ${displayName.split(/\s+/)[0]}`;
+  }
+
+  const openProtectedUrl = async (url: string) => {
+    const popup = window.open('', '_blank');
+    if (popup) popup.opener = null;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`No se pudo abrir el documento (${response.status})`);
+      const objectUrl = URL.createObjectURL(await response.blob());
+      if (popup) popup.location.href = objectUrl;
+      else window.location.href = objectUrl;
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (error) {
+      popup?.close();
+      throw error;
+    }
+  };
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const link = target?.closest('[data-protected-url]') as HTMLAnchorElement | null;
+    const url = link?.dataset.protectedUrl;
+    if (!url) return;
+    event.preventDefault();
+    void openProtectedUrl(url).catch((error) => window.alert(error?.message || 'No se pudo abrir el documento'));
+  });
 
   // === CLINIC CONFIG (localStorage) ===
   const CLINIC_CONFIG_KEY = 'fisio_clinic_config';
@@ -122,6 +190,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const assistantDialogScroll = document.querySelector('#assistantRail .assistant-dialog-scroll') as HTMLElement | null;
   const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement | null;
   const exerciseBtn = document.getElementById('exerciseRecoBtn') as HTMLButtonElement | null;
+  const exerciseApproveBtn = document.getElementById('exerciseApproveBtn') as HTMLButtonElement | null;
   const exercisePdfBtn = document.getElementById('exercisePdfBtn') as HTMLButtonElement | null;
   const exerciseTelegramBtn = document.getElementById('exerciseTelegramBtn') as HTMLButtonElement | null;
   const agentDot = document.getElementById('agentDot') as HTMLElement | null;
@@ -1725,18 +1794,39 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
   const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexion'; };
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
+  const getExerciseApprovalState = () => String(
+    lastExerciseReportPayload?.approval_state
+      || lastExerciseReportPayload?.estado
+      || 'requiere_revision'
+  ).trim().toLowerCase();
+  const isExerciseReportApproved = () => ['aprobada', 'enviada'].includes(getExerciseApprovalState());
+  const updateExerciseApproveButton = () => {
+    if (!exerciseApproveBtn) return;
+    const hasReport = Boolean(lastExerciseReportPayload?.recommendation_id);
+    const approved = hasReport && isExerciseReportApproved();
+    exerciseApproveBtn.disabled = !hasReport || approved;
+    exerciseApproveBtn.innerHTML = approved
+      ? '<span class="material-symbols-rounded">verified</span> Plan aprobado'
+      : '<span class="material-symbols-rounded">fact_check</span> Revisar y aprobar';
+    exerciseApproveBtn.title = approved
+      ? 'Plan validado por un profesional'
+      : hasReport
+        ? 'Confirma la revisión clínica antes de exportar o enviar'
+        : 'Genera un plan para revisarlo';
+  };
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
     const hasReport = Boolean(lastExerciseReportPayload);
+    const approved = hasReport && isExerciseReportApproved();
     exercisePdfBtn.hidden = false;
-    exercisePdfBtn.disabled = !hasReport;
-    exercisePdfBtn.classList.toggle('is-pending', !hasReport);
-    exercisePdfBtn.classList.toggle('is-available', hasReport);
-    exercisePdfBtn.innerHTML = hasReport
+    exercisePdfBtn.disabled = !approved;
+    exercisePdfBtn.classList.toggle('is-pending', !approved);
+    exercisePdfBtn.classList.toggle('is-available', approved);
+    exercisePdfBtn.innerHTML = approved
       ? '<span class="material-symbols-rounded">picture_as_pdf</span> Descargar PDF'
-      : '<span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar';
-    exercisePdfBtn.title = hasReport ? 'Exportar a PDF' : 'Genera un plan y luego exportalo a PDF';
-    exercisePdfBtn.setAttribute('aria-label', hasReport ? 'Descargar PDF del plan actual' : 'PDF disponible tras generar un plan');
+      : '<span class="material-symbols-rounded">lock</span> PDF tras aprobar';
+    exercisePdfBtn.title = approved ? 'Exportar a PDF' : 'Revisa y aprueba el plan antes de exportarlo';
+    exercisePdfBtn.setAttribute('aria-label', approved ? 'Descargar PDF del plan actual' : 'PDF disponible tras aprobar el plan');
     syncAssistantActionGrid();
   };
   const hasLinkedTelegramPatient = () => {
@@ -1766,11 +1856,24 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     assistantDeliveryCard.hidden = false;
     const hasReport = Boolean(lastExerciseReportPayload);
+    const approved = hasReport && isExerciseReportApproved();
     const telegramLinked = hasLinkedTelegramPatient();
     const deliveryState = getCurrentReportDeliveryState();
     const pill = (label: string, modifier = '') => '<span class="assistant-delivery-pill' + (modifier ? ' ' + modifier : '') + '">' + escapeHtml(label) + '</span>';
 
     assistantDeliveryCard.classList.remove('is-ready', 'is-sent', 'is-blocked');
+
+    if (!approved) {
+      assistantDeliveryStatus.textContent = 'Revisión profesional pendiente';
+      assistantDeliverySummary.textContent = 'Comprueba dosis, contraindicaciones y lenguaje para el paciente. La entrega permanece bloqueada hasta tu aprobación.';
+      assistantDeliveryPills.innerHTML = [
+        pill('Revisión pendiente', 'is-warning'),
+        pill('PDF bloqueado', 'is-soft'),
+        pill('Envío bloqueado', 'is-soft')
+      ].join('');
+      assistantDeliveryCard.classList.add('is-blocked');
+      return;
+    }
 
     if (!telegramLinked) {
       assistantDeliveryStatus.textContent = 'Telegram pendiente de vincular';
@@ -1808,11 +1911,12 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!exerciseTelegramBtn) return;
     const hasPatient = Boolean(selectedPatientId);
     const hasReport = Boolean(lastExerciseReportPayload);
+    const approved = hasReport && isExerciseReportApproved();
     const isLinked = hasLinkedTelegramPatient();
     exerciseTelegramBtn.hidden = false;
-    exerciseTelegramBtn.disabled = !hasPatient || (isLinked && !hasReport);
-    exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !hasReport);
-    exerciseTelegramBtn.classList.toggle('is-available', isLinked && hasReport);
+    exerciseTelegramBtn.disabled = !hasPatient || (isLinked && !approved);
+    exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !approved);
+    exerciseTelegramBtn.classList.toggle('is-available', isLinked && approved);
 
     if (!hasPatient) {
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Telegram paciente';
@@ -1839,6 +1943,15 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
+    if (!approved) {
+      exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">lock</span> Telegram tras aprobar';
+      exerciseTelegramBtn.title = 'Revisa y aprueba el plan antes de enviarlo al paciente';
+      exerciseTelegramBtn.setAttribute('aria-label', 'Telegram disponible tras aprobar el plan');
+      renderAssistantDeliveryCard();
+      syncAssistantActionGrid();
+      return;
+    }
+
     if (getCurrentReportDeliveryState()) {
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Reenviar Telegram';
       exerciseTelegramBtn.title = 'Reenviar el informe del plan al paciente por Telegram';
@@ -1857,6 +1970,10 @@ import ConfigView from '../components/views/ConfigView.astro';
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
     if (sendBtn) sendBtn.disabled = busy;
     if (exerciseBtn) exerciseBtn.disabled = busy;
+    if (exerciseApproveBtn) {
+      if (busy) exerciseApproveBtn.disabled = true;
+      else updateExerciseApproveButton();
+    }
     if (exercisePdfBtn) {
       if (busy) {
         exercisePdfBtn.disabled = true;
@@ -2307,7 +2424,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         deliveredExerciseReports.delete(payloadPatientId);
       }
     }
+    updateExerciseApproveButton();
     updateExercisePdfButton();
+    updateExerciseTelegramButton();
     renderAssistantFlowCard();
     renderAssistantDeliveryCard();
 
@@ -2415,11 +2534,12 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     html += '<section class="exercise-report-section exercise-report-review">';
     html += '<div><span>Revision y entrega</span>';
-    html += `<p>${recommendationId ? 'El plan ya quedo asociado al historial del paciente. Puedes editar el briefing, regenerar, exportar PDF o enviarlo por Telegram.' : 'El plan se genero, pero el backend no confirmo recommendation_id. Exporta si procede y revisa la persistencia.'}</p></div>`;
+    html += `<p>${recommendationId ? 'El plan queda bloqueado hasta que confirmes la revisión clínica. Tras aprobarlo podrás exportar el PDF o enviarlo por Telegram.' : 'El plan se genero, pero el backend no confirmo recommendation_id. Revisa la persistencia antes de utilizarlo.'}</p></div>`;
     html += '<div class="exercise-report-actions">';
     html += renderReportActionButton('edit', 'edit_note', 'Editar briefing');
     html += renderReportActionButton('regenerate', 'refresh', 'Regenerar');
-    html += renderReportActionButton('pdf', 'picture_as_pdf', 'Exportar PDF', true);
+    html += renderReportActionButton('approve', 'fact_check', 'Revisar y aprobar', true);
+    html += renderReportActionButton('pdf', 'picture_as_pdf', 'Exportar PDF');
     html += renderReportActionButton('telegram', 'send', 'Enviar');
     html += '</div>';
     html += '</section>';
@@ -2732,6 +2852,11 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
+    if (action === 'approve') {
+      exerciseApproveBtn?.click();
+      return;
+    }
+
     if (action === 'edit') {
       setAssistantMode('update-plan', { focus: false });
       if (input) {
@@ -2811,6 +2936,52 @@ import ConfigView from '../components/views/ConfigView.astro';
     return true;
   };
 
+  const approveCurrentExerciseReport = async () => {
+    const recommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim();
+    if (!recommendationId) {
+      addMessage('No puedo aprobar este plan porque no quedó registrado en el historial.', 'agent');
+      return;
+    }
+    if (isExerciseReportApproved()) return;
+
+    let note = '';
+    if (lastExerciseReportPayload?.red_flags?.present) {
+      note = String(window.prompt('Este plan contiene alertas clínicas. Escribe la justificación de tu revisión antes de aprobarlo:') || '').trim();
+      if (note.length < 12) {
+        addMessage('La aprobación se ha cancelado: con alertas clínicas necesitas una nota justificativa de al menos 12 caracteres.', 'agent');
+        return;
+      }
+    }
+
+    try {
+      setSending(true, 'exercise');
+      const payload = await fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${recommendationId}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision: 'approve', note }),
+      });
+      const approvalState = String(payload?.data?.estado || 'aprobada');
+      lastExerciseReportPayload = {
+        ...lastExerciseReportPayload,
+        approval_required: false,
+        approval_state: approvalState,
+        estado: approvalState,
+        reviewed_at: payload?.data?.reviewed_at || new Date().toISOString(),
+      };
+      updateExerciseApproveButton();
+      updateExercisePdfButton();
+      updateExerciseTelegramButton();
+      renderAssistantDeliveryCard();
+      addMessage('Plan aprobado y registrado. Ya puedes exportarlo o enviarlo al paciente.', 'agent');
+    } catch (err: any) {
+      addMessage(`No se pudo aprobar el plan: ${err?.message || 'error no identificado'}`, 'agent');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  exerciseApproveBtn?.addEventListener('click', () => void approveCurrentExerciseReport());
+
   exerciseTelegramBtn?.addEventListener('click', async () => {
     if (!selectedPatientId) {
       addMessage('Selecciona un paciente antes de enviar el informe por Telegram.', 'agent');
@@ -2828,6 +2999,10 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!lastExerciseReportPayload) {
       addMessage('Primero genera y revisa un plan para poder enviarlo al paciente por Telegram.', 'agent');
+      return;
+    }
+    if (!isExerciseReportApproved()) {
+      addMessage('Revisa y aprueba el plan antes de enviarlo al paciente.', 'agent');
       return;
     }
 
@@ -2884,6 +3059,10 @@ import ConfigView from '../components/views/ConfigView.astro';
   exercisePdfBtn?.addEventListener('click', async () => {
     if (!lastExerciseReportPayload) {
       addMessage('Primero genera un informe de ejercicios para poder exportarlo a PDF.', 'agent');
+      return;
+    }
+    if (!isExerciseReportApproved()) {
+      addMessage('Revisa y aprueba el plan antes de exportarlo a PDF.', 'agent');
       return;
     }
     try {
@@ -3194,6 +3373,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       syncDashboardCommandCenter();
       const badge = document.getElementById('intakeBadge');
       if (badge) badge.textContent = String(intakes.length);
+      const notifBadge = document.getElementById('notifBadge');
+      if (notifBadge) notifBadge.toggleAttribute('hidden', intakes.length === 0);
       if (!intakes.length) {
         setListState(intakeBody, 'check_circle', 'Sin mensajes pendientes');
         return;
@@ -7505,7 +7686,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <span><small>Total</small><strong>${Number(f.importe_total || 0).toFixed(2)} EUR</strong></span>
           </div>
           <div class="factura-mobile-actions">
-            <a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">Abrir PDF</a>
+            <a href="#" data-protected-url="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">Abrir PDF</a>
           </div>
         </article>
       `;
@@ -7575,7 +7756,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <td>${Number(f.importe_iva).toFixed(2)} EUR</td>
           <td><strong>${Number(f.importe_total).toFixed(2)} EUR</strong></td>
           <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
-          <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a></td>
+          <td><a href="#" data-protected-url="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a></td>
         </tr>`;
       }).join('');
     } catch {
@@ -7663,7 +7844,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       await loadFacturas();
       // Open PDF in new tab
       if (payload.data?.id) {
-        window.open(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf${buildClinicParams()}`, '_blank');
+        await openProtectedUrl(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf${buildClinicParams()}`);
       }
     } catch (err: any) {
       setFacturaFeedback(`Error: ${err?.message || 'no se pudo generar'}`);
@@ -8047,7 +8228,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       });
       closeFirmaModal();
       // Open PDF
-      window.open(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf${buildClinicParams()}`, '_blank');
+      await openProtectedUrl(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf${buildClinicParams()}`);
       // Reload docs list
       if (fichaPatientId) {
         const docsPayload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
@@ -8507,7 +8688,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <p>${escapeHtml(tipoLabel)} | ${escapeHtml(d.titulo || 'Sin titulo')}</p>
           <small>${escapeHtml(fechaFirma)}</small>
           <div class="documentos-mobile-actions">
-            ${signed ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : ''}
+            ${signed ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : ''}
             <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}">Eliminar</button>
           </div>
         </article>
@@ -8546,7 +8727,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
           <td>${fechaFirma}</td>
           <td class="documentos-actions-cell">
-            ${d.estado === 'firmado' ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
+            ${d.estado === 'firmado' ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
             <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
           </td>
         </tr>`;
@@ -8967,3 +9148,5 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 <style is:global set:html={premiumClinicUiStyles}></style>
 
 <style is:global set:html={assistantRailStyles}></style>
+
+<style is:global set:html={productionUiStyles}></style>

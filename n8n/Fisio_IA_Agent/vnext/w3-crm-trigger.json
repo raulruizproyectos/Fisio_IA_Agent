@@ -6,7 +6,8 @@
         "path": "fisio/w3/crm-trigger",
         "responseMode": "responseNode",
         "httpMethod": "POST",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
       "id": "WebhookW3CrmTrigger",
       "name": "Entrada CRM",
@@ -16,7 +17,12 @@
         220,
         260
       ],
-      "webhookId": "fisio-w3-crm-trigger"
+      "webhookId": "fisio-w3-crm-trigger",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "parameters": {
@@ -83,6 +89,10 @@
             {
               "name": "Content-Type",
               "value": "application/json"
+            },
+            {
+              "name": "X-Internal-Api-Key",
+              "value": "={{ $env.INTERNAL_API_KEY }}"
             }
           ]
         },
@@ -101,7 +111,10 @@
       "position": [
         940,
         180
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

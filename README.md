@@ -10,11 +10,14 @@ CRM clinico para fisioterapia con agenda Google Calendar, pacientes, finanzas, d
 ## Arranque rapido
 ```powershell
 cd frontend
+npm.cmd ci
 npm.cmd run check
 npm.cmd run build
 
 cd ..\backend
+npm.cmd ci
 npm.cmd run lint
+npm.cmd test
 ```
 
 ## Contexto vivo
@@ -33,3 +36,11 @@ Lee primero `PROJECT_CONTEXT.md`. Es la fuente compacta para futuras sesiones.
 - Repo privado: usar Deploy Key/SSH en EasyPanel.
 - URL SSH recomendada: `git@github.com:raulruizproyectos/Fisio_IA_Agent.git`.
 - Build paths: `frontend` y `backend` sin `/` inicial.
+- Checklist y orden seguro: `docs/PRODUCTION_READINESS.md`.
+
+## Seguridad
+
+- El panel profesional usa Supabase Auth; no hay UUID de profesional fijo en frontend.
+- Las rutas clínicas usan JWT + RLS. Las rutas internas usan `INTERNAL_API_KEY`.
+- Telegram y n8n utilizan secretos de webhook independientes.
+- Todo informe generado por IA requiere aprobación profesional antes de PDF o envío al paciente.

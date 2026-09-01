@@ -6,7 +6,8 @@
         "path": "fisio/w1/appointment",
         "responseMode": "responseNode",
         "options": {},
-        "httpMethod": "POST"
+        "httpMethod": "POST",
+        "authentication": "headerAuth"
       },
       "id": "WebhookW1Appointment",
       "name": "Entrada cita",
@@ -16,7 +17,12 @@
         220,
         300
       ],
-      "webhookId": "fisio-w1-appointment"
+      "webhookId": "fisio-w1-appointment",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "parameters": {
@@ -114,6 +120,15 @@
         "options": {
           "ignoreResponseCode": true,
           "timeout": 15000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Api-Key",
+              "value": "={{ $env.INTERNAL_API_KEY }}"
+            }
+          ]
         }
       },
       "id": "CreateAppointmentInBackend",
@@ -124,7 +139,10 @@
         2160,
         80
       ],
-      "continueOnFail": true
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

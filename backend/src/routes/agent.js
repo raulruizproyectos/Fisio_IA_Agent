@@ -178,7 +178,12 @@ export const resolveAgentConversation = async ({
     try {
       response = await fetch(process.env.N8N_AGENT_WEBHOOK_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.N8N_WEBHOOK_SECRET
+            ? { 'X-Webhook-Secret': process.env.N8N_WEBHOOK_SECRET }
+            : {}),
+        },
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
@@ -259,4 +264,3 @@ router.post('/message', async (req, res, next) => {
 });
 
 export default router;
-

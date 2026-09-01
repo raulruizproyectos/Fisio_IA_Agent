@@ -1,0 +1,618 @@
+/* Production UI layer: calm clinical hierarchy, accessibility and predictable states. */
+:root {
+  --clinic-canvas: #f4f2ec;
+  --clinic-surface: #fffdf8;
+  --clinic-surface-raised: #ffffff;
+  --clinic-forest: #123f38;
+  --clinic-forest-strong: #0b302a;
+  --clinic-emerald: #197266;
+  --clinic-emerald-soft: #e4f2ed;
+  --clinic-gold: #ae8446;
+  --clinic-gold-soft: #f5ead8;
+  --clinic-ink: #17221f;
+  --clinic-copy: #50615c;
+  --clinic-muted: #7f8b87;
+  --clinic-border: #dddcd5;
+  --clinic-border-strong: #cacbc4;
+  --clinic-danger: #a33f37;
+  --clinic-radius-sm: .7rem;
+  --clinic-radius: 1rem;
+  --clinic-radius-lg: 1.35rem;
+  --clinic-shadow-sm: 0 1px 2px rgba(18, 45, 39, .04), 0 8px 24px rgba(18, 45, 39, .035);
+  --clinic-shadow: 0 18px 50px rgba(18, 45, 39, .09);
+}
+
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 94% 2%, rgba(174, 132, 70, .09), transparent 26rem),
+    var(--clinic-canvas) !important;
+  color: var(--clinic-ink) !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(25, 114, 102, .2);
+  color: var(--clinic-forest-strong);
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: .75rem;
+  left: .75rem;
+  padding: .7rem 1rem;
+  border-radius: .75rem;
+  background: var(--clinic-forest);
+  color: #fff;
+  font-weight: 800;
+  transform: translateY(-150%);
+  transition: transform .16s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.app-boot {
+  position: fixed;
+  z-index: 999;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: .55rem;
+  padding: 2rem;
+  background: var(--clinic-canvas);
+  color: var(--clinic-copy);
+  text-align: center;
+}
+
+.app-boot[hidden] {
+  display: none;
+}
+
+.app-boot-mark {
+  display: grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  margin-bottom: .5rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: var(--clinic-forest);
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(18, 63, 56, .18);
+}
+
+.app-boot strong {
+  color: var(--clinic-ink);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.app-boot span:not(.material-symbols-rounded) {
+  max-width: 31rem;
+  line-height: 1.55;
+}
+
+.app-boot button {
+  margin-top: .85rem;
+  padding: .75rem 1rem;
+  border: 0;
+  border-radius: .8rem;
+  background: var(--clinic-forest);
+  color: #fff;
+  font-weight: 800;
+}
+
+.app-boot.is-error .app-boot-mark {
+  background: var(--clinic-danger);
+}
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid rgba(25, 114, 102, .3) !important;
+  outline-offset: 3px !important;
+}
+
+:where(button, [role="button"], .btn-primary, .btn-secondary, .btn-ghost) {
+  min-height: 2.75rem;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+  filter: saturate(.55);
+}
+
+.app-shell {
+  background: transparent !important;
+}
+
+.sidebar {
+  width: 17rem !important;
+  background: rgba(255, 253, 248, .96) !important;
+  border-right: 1px solid var(--clinic-border) !important;
+  box-shadow: 12px 0 42px rgba(18, 45, 39, .025) !important;
+  backdrop-filter: blur(22px);
+}
+
+.sidebar > div:first-child {
+  padding-top: 1.65rem !important;
+  padding-bottom: 1.35rem !important;
+}
+
+.sidebar .nav-item {
+  min-height: 2.85rem;
+  padding: .65rem .78rem !important;
+  border: 1px solid transparent !important;
+  border-radius: .85rem !important;
+  color: var(--clinic-copy) !important;
+  font-weight: 700 !important;
+}
+
+.sidebar .nav-item:hover {
+  background: rgba(25, 114, 102, .065) !important;
+  color: var(--clinic-forest) !important;
+}
+
+.sidebar .nav-item.active,
+.sidebar .nav-item[aria-current="page"] {
+  background: var(--clinic-forest) !important;
+  border-color: var(--clinic-forest) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(18, 63, 56, .14) !important;
+}
+
+.sidebar .nav-item.active .material-symbols-rounded,
+.sidebar .nav-item[aria-current="page"] .material-symbols-rounded {
+  color: #e8c98f !important;
+}
+
+.sidebar h3 {
+  color: var(--clinic-muted) !important;
+  font-size: .66rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .13em !important;
+}
+
+.main-area {
+  min-width: 0;
+  background: transparent !important;
+}
+
+.topbar {
+  min-height: 4.6rem;
+  padding-inline: clamp(1rem, 2.5vw, 2.25rem) !important;
+  background: rgba(244, 242, 236, .86) !important;
+  border-bottom: 1px solid rgba(202, 203, 196, .72) !important;
+  backdrop-filter: blur(24px) saturate(1.2) !important;
+}
+
+.topbar .search-box input {
+  min-height: 2.9rem;
+  border: 1px solid transparent !important;
+  border-radius: .95rem !important;
+  background: rgba(255, 255, 255, .76) !important;
+  box-shadow: 0 1px 1px rgba(18, 45, 39, .03) !important;
+}
+
+.topbar .search-box input:hover,
+.topbar .search-box input:focus {
+  border-color: var(--clinic-border-strong) !important;
+  background: #fff !important;
+}
+
+.workspace-shell {
+  width: 100%;
+}
+
+.content {
+  width: min(100%, 104rem);
+  margin-inline: auto;
+  padding: clamp(1.15rem, 2.8vw, 2.75rem) !important;
+}
+
+.page-section {
+  max-width: 100%;
+}
+
+.clinic-dashboard {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.clinic-dashboard-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, .7fr);
+  gap: 1.25rem;
+  padding: clamp(1.5rem, 3vw, 2.7rem) !important;
+  border: 1px solid rgba(18, 63, 56, .12) !important;
+  border-radius: var(--clinic-radius-lg) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, .98), rgba(247, 244, 234, .94)) !important;
+  box-shadow: var(--clinic-shadow-sm) !important;
+}
+
+.clinic-dashboard-hero::after {
+  content: "";
+  position: absolute;
+  right: -7rem;
+  bottom: -10rem;
+  width: 25rem;
+  height: 25rem;
+  border: 1px solid rgba(174, 132, 70, .18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3.5rem rgba(174, 132, 70, .035), 0 0 0 7rem rgba(25, 114, 102, .025);
+  pointer-events: none;
+}
+
+.clinic-dashboard-copy,
+.clinic-focus-card {
+  position: relative;
+  z-index: 1;
+}
+
+.clinic-dashboard-copy h1 {
+  max-width: 17ch;
+  margin: .4rem 0 .7rem !important;
+  color: var(--clinic-forest-strong) !important;
+  font-family: var(--font-display) !important;
+  font-size: clamp(2.15rem, 4vw, 4rem) !important;
+  font-weight: 720 !important;
+  letter-spacing: -.055em !important;
+  line-height: 1.01 !important;
+}
+
+.clinic-dashboard-copy > p {
+  max-width: 61ch;
+  color: var(--clinic-copy) !important;
+  font-size: clamp(.95rem, 1.2vw, 1.08rem);
+  line-height: 1.7;
+}
+
+.clinic-kicker {
+  color: var(--clinic-gold) !important;
+  font-size: .69rem !important;
+  font-weight: 850 !important;
+  letter-spacing: .15em !important;
+  text-transform: uppercase;
+}
+
+.clinic-hero-actions {
+  margin-top: 1.55rem !important;
+  gap: .65rem !important;
+}
+
+.btn-primary,
+.assistant-launch-btn {
+  border-radius: .85rem !important;
+  background: var(--clinic-forest) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(18, 63, 56, .13) !important;
+}
+
+.btn-primary:hover,
+.assistant-launch-btn:hover {
+  background: var(--clinic-forest-strong) !important;
+}
+
+.btn-secondary {
+  border: 1px solid rgba(25, 114, 102, .16) !important;
+  border-radius: .85rem !important;
+  background: var(--clinic-emerald-soft) !important;
+  color: var(--clinic-forest) !important;
+}
+
+.btn-ghost,
+.btn-outline {
+  border-color: var(--clinic-border) !important;
+  border-radius: .85rem !important;
+  background: rgba(255, 255, 255, .64) !important;
+  color: var(--clinic-copy) !important;
+}
+
+.clinic-focus-card {
+  align-self: stretch;
+  padding: 1.3rem !important;
+  border: 1px solid rgba(18, 63, 56, .1) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: rgba(255, 255, 255, .68) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .8) !important;
+  backdrop-filter: blur(14px);
+}
+
+.clinic-command-search {
+  padding: .45rem !important;
+  border: 1px solid var(--clinic-border) !important;
+  border-radius: 1.05rem !important;
+  background: var(--clinic-surface-raised) !important;
+  box-shadow: var(--clinic-shadow-sm) !important;
+}
+
+.clinic-command-search input {
+  min-height: 3.2rem;
+  border: 0 !important;
+  border-radius: .8rem !important;
+  background: transparent !important;
+}
+
+.clinic-metric-grid {
+  gap: .85rem !important;
+}
+
+.clinic-metric-grid > article,
+.clinic-panel,
+.clinic-finance-strip {
+  border: 1px solid var(--clinic-border) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: rgba(255, 253, 248, .9) !important;
+  box-shadow: var(--clinic-shadow-sm) !important;
+}
+
+.clinic-metric-grid > article {
+  min-height: 7.4rem;
+  padding: 1.15rem !important;
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.clinic-metric-grid > article:hover {
+  border-color: rgba(25, 114, 102, .3) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--clinic-shadow) !important;
+}
+
+.clinic-metric-grid > article > .material-symbols-rounded {
+  color: var(--clinic-emerald) !important;
+}
+
+.clinic-panel {
+  padding: clamp(1.15rem, 2vw, 1.5rem) !important;
+}
+
+.clinic-card-head h2 {
+  margin-top: .2rem;
+  font-family: var(--font-display) !important;
+  font-size: 1.18rem !important;
+  letter-spacing: -.035em !important;
+}
+
+.status-chip {
+  min-height: 1.75rem;
+  padding: .28rem .62rem !important;
+  border-radius: 999px !important;
+  background: var(--clinic-emerald-soft) !important;
+  color: var(--clinic-forest) !important;
+  font-size: .68rem !important;
+  font-weight: 800 !important;
+}
+
+.status-chip.pendiente,
+.status-chip.pendiente_revision,
+.is-warning {
+  background: var(--clinic-gold-soft) !important;
+  color: #79551f !important;
+}
+
+.table-wrap,
+.patients-directory-card,
+.modal-panel,
+.drawer-panel {
+  border: 1px solid var(--clinic-border) !important;
+  border-radius: var(--clinic-radius-lg) !important;
+  background: var(--clinic-surface) !important;
+  box-shadow: var(--clinic-shadow-sm) !important;
+}
+
+table thead th {
+  color: var(--clinic-muted) !important;
+  font-size: .68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+table tbody tr {
+  transition: background .15s ease;
+}
+
+table tbody tr:hover {
+  background: rgba(25, 114, 102, .045) !important;
+}
+
+input,
+select,
+textarea {
+  min-height: 2.75rem;
+  border-color: var(--clinic-border) !important;
+  border-radius: .8rem !important;
+  background: #fff !important;
+  color: var(--clinic-ink) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #8b9692 !important;
+  opacity: 1;
+}
+
+.form-feedback:not([hidden]),
+.login-error:not([hidden]) {
+  animation: feedbackIn .18s ease-out both;
+}
+
+#exerciseApproveBtn:not(:disabled) {
+  border-color: rgba(174, 132, 70, .35) !important;
+  background: var(--clinic-gold-soft) !important;
+  color: #6e4b18 !important;
+}
+
+#exerciseApproveBtn:disabled .material-symbols-rounded:first-child {
+  color: var(--clinic-emerald);
+}
+
+.exercise-report {
+  border-color: var(--clinic-border) !important;
+  border-radius: var(--clinic-radius) !important;
+  background: var(--clinic-surface) !important;
+  box-shadow: var(--clinic-shadow-sm) !important;
+}
+
+.exercise-alert {
+  border: 1px solid #e5b7af !important;
+  border-radius: .85rem !important;
+  background: #fff2ef !important;
+  color: #7d302a !important;
+}
+
+.search-results:not([hidden]) {
+  border-color: var(--clinic-border) !important;
+  box-shadow: var(--clinic-shadow) !important;
+}
+
+.empty-state-sm {
+  color: var(--clinic-muted) !important;
+}
+
+@keyframes feedbackIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 768px) {
+  .main-area {
+    margin-left: 17rem !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .clinic-dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .clinic-focus-card {
+    max-width: 44rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .topbar {
+    min-height: 4.15rem;
+    padding-inline: .9rem !important;
+  }
+
+  .topbar .search-box {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+    margin: .65rem 0 0 !important;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .content {
+    padding: 1rem .85rem calc(6.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .clinic-dashboard {
+    gap: .9rem;
+  }
+
+  .clinic-dashboard-hero {
+    padding: 1.25rem !important;
+    border-radius: 1.05rem !important;
+  }
+
+  .clinic-dashboard-copy h1 {
+    font-size: clamp(2rem, 11vw, 3rem) !important;
+  }
+
+  .clinic-hero-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .clinic-hero-actions > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .clinic-hero-actions button {
+    width: 100%;
+  }
+
+  .clinic-command-search {
+    display: none !important;
+  }
+
+  .clinic-metric-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .clinic-metric-grid > article {
+    min-height: 6.6rem;
+    padding: .95rem !important;
+  }
+
+  .clinic-dashboard-grid,
+  .clinic-dashboard-grid-secondary {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-panel,
+  .drawer-panel {
+    border-radius: 1.1rem 1.1rem 0 0 !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .clinic-metric-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clinic-hero-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .clinic-hero-actions > :first-child {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media print {
+  .sidebar,
+  .topbar,
+  .mobile-dock,
+  #assistantRail,
+  #assistantRailFab,
+  .skip-link {
+    display: none !important;
+  }
+
+  .main-area {
+    margin: 0 !important;
+  }
+
+  body,
+  .content {
+    background: #fff !important;
+  }
+}

@@ -17,9 +17,15 @@
         "httpMethod": "POST",
         "path": "fisio/w6/calendar-write",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
-      "webhookId": "fisio-w6-calendar-write"
+      "webhookId": "fisio-w6-calendar-write",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "id": "W6Parse",

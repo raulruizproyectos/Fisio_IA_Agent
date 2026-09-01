@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { google } from 'googleapis';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = Router();
 
@@ -1686,7 +1686,8 @@ async function reconcileAppointmentsWithCalendar({
 
 router.get('/appointments', async (req, res, next) => {
   try {
-    const professionalIdRaw = pickValue(req.query, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
+    const professionalIdRaw = req.auth?.profile_id
+      || pickValue(req.query, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
     if (!professionalIdRaw) {
       return res.status(400).json({ error: 'fisioterapeuta_id/professional_id es obligatorio' });
     }
@@ -2023,6 +2024,7 @@ router.post('/appointments/sync-calendar', async (req, res, next) => {
   let trigger = 'background';
   try {
     const professionalIdRaw =
+      req.auth?.profile_id ||
       pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id') ||
       pickValue(req.query, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
 
@@ -2153,7 +2155,8 @@ router.post('/appointments/sync-calendar', async (req, res, next) => {
 
 router.post('/appointments/check-availability', async (req, res, next) => {
   try {
-    const professionalIdRaw = pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
+    const professionalIdRaw = req.auth?.profile_id
+      || pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
     const startAt = parseIsoTimestamp(pickValue(req.body, 'inicio_en', 'start_at', 'slot_start'));
     const endAt = parseIsoTimestamp(pickValue(req.body, 'fin_en', 'end_at', 'slot_end'));
     const excludeId = pickValue(req.body, 'exclude_appointment_id', 'appointment_id', 'exclude_id');
@@ -2199,7 +2202,8 @@ router.post('/appointments', async (req, res, next) => {
   try {
     const slot = req.body?.slot || {};
     const patientIdRaw = pickValue(req.body, 'paciente_id', 'patient_id');
-    const professionalIdRaw = pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
+    const professionalIdRaw = req.auth?.profile_id
+      || pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id');
     const startAt = parseIsoTimestamp(pickValue(req.body, 'inicio_en', 'start_at', 'slot_start') || pickValue(slot, 'inicio_en', 'start_at', 'slot_start'));
     const endAt = parseIsoTimestamp(pickValue(req.body, 'fin_en', 'end_at', 'slot_end') || pickValue(slot, 'fin_en', 'end_at', 'slot_end'));
     const status = pickValue(req.body, 'estado', 'status') || 'pendiente';
@@ -2301,6 +2305,21 @@ router.post('/appointments', async (req, res, next) => {
         return res.status(400).json({
           error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.',
           calendar_sync: calendarSync,
+          calendar_compensation: calendarCompensation,
+        });
+      }
+      if (error.code === '23P01') {
+        return res.status(409).json({
+          error: 'Ese horario acaba de ser ocupado. Actualiza la agenda y elige otro hueco.',
+          code: 'appointment_overlap',
+          calendar_compensation: calendarCompensation,
+        });
+      }
+      if (error.code === '23505' && requestId) {
+        return res.status(409).json({
+          error: 'Esta cita ya fue procesada.',
+          code: 'duplicate_request',
+          request_id: requestId,
           calendar_compensation: calendarCompensation,
         });
       }
@@ -3282,4 +3301,3 @@ router.post('/video-jobs/:jobId/send', async (req, res, next) => {
   }
 });
 export default router;
-
