@@ -33,6 +33,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:4321',
   'http://127.0.0.1:4321',
   'https://fisio-frontend.b5xbaf.easypanel.host',
+  'https://fisio-staging-fisio-frontend-staging.b5xbaf.easypanel.host',
 ];
 
 const allowedOrigins = Array.from(
