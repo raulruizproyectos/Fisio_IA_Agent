@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 111681)
-Total output lines: 9169
-
 ---
 import Layout from '../layouts/Layout.astro';
 import AssistantRail from '../components/AssistantRail.astro';
@@ -4471,7 +4468,909 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const renderAgendaSyncStatus = (syncStatus: any = null, liveSummary: any = null) => {
     const uiStatus = String(syncStatus?.ui_status || '').trim();
-    const summary = syncStat…11681 tokens truncated….response?.data || {};
+    const summary = syncStatus?.summary || liveSummary || null;
+    const lastSuccessAt = syncStatus?.last_success_at || null;
+    const updated = Number(summary?.updated || 0);
+    const cancelled = Number(summary?.cancelled || 0);
+    const persisted = Number(summary?.persisted || 0);
+    const fetched = Number(summary?.fetched || 0);
+    const trigger = String(syncStatus?.trigger || '').trim();
+
+    let chipLabel = 'Sin datos';
+    let chipClass = 'caducado';
+    let title = 'Sync Google Calendar';
+    let meta = 'Todavia no hay estado del sincronizador.';
+
+    if (uiStatus === 'syncing') {
+      chipLabel = 'Sincronizando';
+      chipClass = 'pendiente';
+      title = 'W6 sincronizando agenda';
+      meta = 'El sincronizador background esta reconciliando Google Calendar ahora mismo.';
+    } else if (uiStatus === 'healthy') {
+      chipLabel = 'Al dia';
+      chipClass = 'aprobado';
+      title = 'W6 al dia';
+      meta = `${fmtRelativeSyncAge(lastSuccessAt)} | ${persisted} nuevas | ${updated} actualizadas | ${cancelled} canceladas`;
+    } else if (uiStatus === 'stale') {
+      chipLabel = 'Con retraso';
+      chipClass = 'caducado';
+      title = 'W6 con retraso';
+      meta = `${fmtRelativeSyncAge(lastSuccessAt)} | ultima lectura ${fetched} evento(s)`;
+    } else if (uiStatus === 'error') {
+      chipLabel = 'Error';
+      chipClass = 'rechazado';
+      title = 'W6 con error';
+      meta = syncStatus?.error ? String(syncStatus.error) : 'El sincronizador devolvio un error.';
+    } else if (summary?.enabled) {
+      chipLabel = 'Solo vista';
+      chipClass = 'pendiente';
+      title = 'Sin heartbeat de W6';
+      meta = `La agenda se reconcilio al abrir esta vista | ${persisted} nuevas | ${updated} actualizadas | ${cancelled} canceladas`;
+    }
+
+    if (trigger && ['healthy', 'stale', 'error'].includes(uiStatus)) {
+      title += trigger === 'background' ? '' : ` (${trigger})`;
+    }
+
+    const facts: Array<{ label: string; value: string }> = [];
+    if (summary?.enabled !== undefined) facts.push({ label: 'Lectura', value: summary?.enabled ? 'Calendar activo' : 'Calendar desactivado' });
+    if (lastSuccessAt) facts.push({ label: 'Ultimo ciclo', value: fmtRelativeSyncAge(lastSuccessAt) });
+    if (syncStatus?.next_expected_at) facts.push({ label: 'Proximo', value: fmtRelativeSyncAge(syncStatus.next_expected_at) });
+    if (syncStatus?.error) facts.push({ label: 'Ultimo error', value: String(syncStatus.error) });
+
+    const viewModel = { uiStatus, chipLabel, chipClass, title, meta, facts };
+    dashboardRuntime.syncUi = viewModel;
+    applySyncStatusView(agendaSyncChip, agendaSyncTitle, agendaSyncMeta, agendaSyncFacts, viewModel);
+    applySyncStatusView(dashboardSyncChip, dashboardSyncTitle, dashboardSyncMeta, dashboardSyncFacts, viewModel);
+    syncDashboardCommandCenter();
+  };
+
+  const renderAgendaCalendar = (citas: any[], weekStart: Date) => {
+    const cal = document.getElementById('agendaCalendar');
+    if (!cal) return;
+
+    const HOUR_SLOTS = [9, 10, 11, 12, 15, 16, 17, 18];
+    const weekDays: Date[] = Array.from({ length: 5 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    });
+
+    // Map day/hour -> appointments
+    const apptMap = new Map<string, any[]>();
+    const allDayMap = new Map<number, any[]>();
+    for (const cita of citas) {
+      const start = new Date(cita.inicio_en);
+      const dayIdx = weekDays.findIndex(d => d.toDateString() === start.toDateString());
+      if (dayIdx < 0) continue;
+      if (isAllDayAppointment(cita)) {
+        if (!allDayMap.has(dayIdx)) allDayMap.set(dayIdx, []);
+        allDayMap.get(dayIdx)!.push(cita);
+        continue;
+      }
+      const hour = start.getHours();
+      const slotHour = HOUR_SLOTS.find(h => hour >= h && hour < h + 1);
+      if (slotHour === undefined) continue;
+      const key = `${dayIdx}-${slotHour}`;
+      if (!apptMap.has(key)) apptMap.set(key, []);
+      apptMap.get(key)!.push(cita);
+    }
+
+    const todayStr = new Date().toDateString();
+
+    let html = `<div class="agenda-board-shell">
+      <div class="agenda-board" role="grid" aria-label="Agenda semanal">
+        <div class="agenda-board-head" role="row">
+          <div class="agenda-board-corner" aria-hidden="true">Hora</div>`;
+
+    for (let i = 0; i < 5; i++) {
+      const isToday = weekDays[i].toDateString() === todayStr;
+      const dayNum = weekDays[i].toLocaleDateString('es-ES', { day: 'numeric' });
+      const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short' });
+      const allDayClosures = allDayMap.get(i) || [];
+      const allDayHtml = allDayClosures.map((cita: any) => {
+        const label = cita.nombre_paciente || cita.motivo || 'Cerrado';
+        return `<div class="agenda-all-day-chip" title="${escapeAttr(label)}">${escapeHtml(label)}</div>`;
+      }).join('');
+      html += `<div class="agenda-day-head${isToday ? ' is-today' : ''}" role="columnheader">
+        <span class="agenda-day-name">${escapeHtml(dayName)}</span>
+        <span class="agenda-day-number">${dayNum}</span>
+        ${allDayHtml}
+      </div>`;
+    }
+    html += '</div><div class="agenda-board-body">';
+
+    // Separator row between morning and afternoon
+    for (let si = 0; si < HOUR_SLOTS.length; si++) {
+      const hour = HOUR_SLOTS[si];
+      const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
+      if (prevHour !== null && hour - prevHour > 1) {
+        html += `<div class="agenda-break-cell" role="row" aria-label="Pausa 13:00 - 15:00">
+          <span>Pausa clinica</span>
+          <strong>13:00 - 15:00</strong>
+        </div>`;
+      }
+
+      const timeLabel = `${String(hour).padStart(2,'0')}:00`;
+      html += `<div class="agenda-board-row" role="row">
+        <div class="agenda-time-cell" role="rowheader">${timeLabel}</div>`;
+
+      for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
+        const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
+        const isToday = weekDays[dayIdx].toDateString() === todayStr;
+        html += `<div class="agenda-week-cell${isToday ? ' is-today' : ''}" role="gridcell">`;
+        for (const a of appts) {
+          const st = a.estado || 'pendiente';
+          const calendarOnly = isCalendarOnlyAppointment(a);
+          const blockMeta = calendarOnly ? getAgendaCalendarBlockMeta(a) : null;
+          const eventClass = calendarOnly
+            ? `agenda-event-block agenda-block-${String(getCalendarBlockKind(a)).replace(/[^a-z0-9_-]/gi, '_')}`
+            : `agenda-event-${String(st || 'pendiente').replace(/[^a-z0-9_-]/gi, '_')}`;
+          const firstName = calendarOnly
+            ? (blockMeta?.shortLabel || 'Bloqueo')
+            : (a.nombre_paciente || 'Paciente').split(' ')[0];
+          const timeStr = fmtHourOnly(a.inicio_en);
+          const motivo = calendarOnly
+            ? ((a.motivo || a.nombre_paciente || blockMeta?.label || 'Google Calendar').slice(0, 26))
+            : (a.motivo ? a.motivo.slice(0, 22) : '');
+          const tipLabel = calendarOnly
+            ? `${blockMeta?.label || 'Bloqueo Google Calendar'}${a.motivo ? ` - ${a.motivo}` : ''}`
+            : `${a.nombre_paciente || ''}${a.motivo ? ` - ${a.motivo}` : ''}`;
+          const tip = escapeAttr(tipLabel);
+          const apptId = escapeAttr(a.id || a.appointment_id || '');
+          const calPatId = escapeAttr(a.paciente_id || '');
+          const calPatName = escapeAttr(a.nombre_paciente || 'Paciente');
+          html += `<button type="button" class="agenda-event-card ${eventClass}${calendarOnly ? ' is-calendar-only' : ''}" data-cal-appt-id="${apptId}" data-cal-appt-patient="${calPatId}" data-cal-appt-name="${calPatName}" title="${tip}">
+            <div class="agenda-event-time">${timeStr}</div>
+            <div class="agenda-event-name">${escapeHtml(firstName)}</div>
+            ${motivo ? `<div class="agenda-event-reason">${escapeHtml(motivo)}</div>` : ''}
+          </button>`;
+        }
+        if (!appts.length) {
+          html += '<span class="agenda-cell-empty" aria-hidden="true"></span>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div></div></div>';
+    cal.innerHTML = html;
+  };
+
+  const renderAgendaMobileTimeline = (operationalCitas: any[] = [], allCitas: any[] = [], weekStart: Date) => {
+    if (!agendaMobileList || !agendaMobileSummary) return;
+
+    const calendarOnlySummary = summarizeCalendarOnlyBlocks(allCitas);
+    const sorted = [...allCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+    const weekDays = Array.from({ length: 5 }, (_, idx) => {
+      const date = new Date(weekStart);
+      date.setDate(date.getDate() + idx);
+      return date;
+    });
+
+    if (!sorted.length) {
+      agendaMobileSummary.textContent = calendarOnlySummary.total
+        ? `Sin citas clinicas en esta semana. Google Calendar aporta ${calendarOnlySummary.total} bloqueo(s) de contexto.`
+        : 'Sin citas clinicas en esta semana.';
+      setListState(agendaMobileList, 'event_busy', 'No hay citas ni bloqueos para mostrar en timeline movil.');
+      return;
+    }
+
+    const itemsByDay = new Map<string, any[]>();
+    for (const cita of sorted) {
+      const key = new Date(cita.inicio_en).toDateString();
+      if (!itemsByDay.has(key)) itemsByDay.set(key, []);
+      itemsByDay.get(key)!.push(cita);
+    }
+
+    const todayItems = sorted.filter((cita: any) => isTodayDate(cita.inicio_en || ''));
+    const clinicalCount = operationalCitas.length;
+    agendaMobileSummary.textContent = `${clinicalCount} cita(s) clinicas | ${todayItems.length} evento(s) hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
+
+    agendaMobileList.innerHTML = weekDays.map((date) => {
+      const key = date.toDateString();
+      const dayItems = itemsByDay.get(key) || [];
+      const isToday = isTodayDate(date.toISOString());
+      const dayTitle = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
+
+      if (!dayItems.length) {
+        return `
+          <article class="agenda-mobile-day ${isToday ? 'is-today' : ''}">
+            <header>
+              <strong>${escapeHtml(dayTitle)}</strong>
+              <span>Sin citas</span>
+            </header>
+            <p class="agenda-mobile-empty">Dia libre para captacion, seguimiento o documentacion.</p>
+          </article>
+        `;
+      }
+
+      return `
+        <article class="agenda-mobile-day ${isToday ? 'is-today' : ''}">
+          <header>
+            <strong>${escapeHtml(dayTitle)}</strong>
+            <span>${dayItems.length} cita(s)</span>
+          </header>
+          <div class="agenda-mobile-items">
+            ${dayItems.map((cita: any) => {
+              const calendarOnly = isCalendarOnlyAppointment(cita);
+              const blockMeta = calendarOnly ? getAgendaCalendarBlockMeta(cita) : null;
+              const estado = calendarOnly ? String(getCalendarBlockKind(cita)) : String(cita?.estado || 'pendiente');
+              const mirror = getAgendaMirrorMeta(cita);
+              const patientName = calendarOnly
+                ? String(cita?.motivo || cita?.nombre_paciente || blockMeta?.label || 'Google Calendar')
+                : String(cita?.nombre_paciente || 'Paciente');
+              const patientId = String(cita?.paciente_id || '');
+              const hour = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita?.inicio_en);
+              const canal = calendarOnly
+                ? 'Google Calendar'
+                : cita?.canal_origen === 'crm_web' ? 'CRM Web' : cita?.canal_origen === 'telegram' ? 'Telegram' : String(cita?.canal_origen || 'Canal CRM');
+              const apptId = escapeAttr(cita?.id || cita?.appointment_id || '');
+              const canConfirm = !calendarOnly && estado === 'pendiente';
+              const statusLabel = calendarOnly ? (blockMeta?.shortLabel || mirror.label) : estado;
+              const itemClass = calendarOnly ? ` is-calendar-only agenda-mobile-${escapeAttr(getCalendarBlockKind(cita))}` : '';
+              return `
+                <article class="agenda-mobile-item${itemClass}">
+                  <div class="agenda-mobile-item-main">
+                    <div class="agenda-mobile-item-top">
+                      <strong>${escapeHtml(hour)} | ${escapeHtml(patientName)}</strong>
+                      <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(statusLabel)}</span>
+                    </div>
+                    <p>${escapeHtml(calendarOnly ? (blockMeta?.note || 'Evento procedente de Google Calendar.') : (cita?.motivo || 'Sesion clinica sin motivo especificado.'))}</p>
+                    <div class="agenda-mobile-item-meta">
+                      <span class="agenda-mobile-meta-pill">${escapeHtml(canal)}</span>
+                      <span class="agenda-mobile-meta-pill">${escapeHtml(mirror.label)}</span>
+                    </div>
+                  </div>
+                  <div class="agenda-mobile-item-actions">
+                    <button type="button" class="btn-sm btn-outline" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle de la cita"><span class="material-symbols-rounded">right_panel_open</span> Detalle</button>
+                    ${canConfirm ? `<button type="button" class="btn-sm" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar cita"><span class="material-symbols-rounded">check</span> Confirmar</button>` : ''}
+                    ${calendarOnly ? '' : `<button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>`}
+                  </div>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
+
+  const closeAppointmentDetailDrawer = () => {
+    appointmentDetailDrawer?.classList.remove('open');
+    appointmentDetailDrawer?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('has-modal-open');
+  };
+
+  const findAgendaAppointmentById = (appointmentId: string) =>
+    latestAgendaAppointments.find((cita: any) => String(cita?.id || cita?.appointment_id || '') === String(appointmentId));
+
+  const openAppointmentDetailDrawer = (cita: any) => {
+    if (!appointmentDetailDrawer || !appointmentDetailBody) return;
+    const patientName = String(cita?.nombre_paciente || 'Paciente sin nombre');
+    const patientId = String(cita?.paciente_id || '');
+    const estado = String(cita?.estado || 'pendiente');
+    const calendarOnly = isCalendarOnlyAppointment(cita);
+    const mirror = getAgendaMirrorMeta(cita);
+    const start = cita?.inicio_en ? new Date(cita.inicio_en) : null;
+    const end = cita?.fin_en ? new Date(cita.fin_en) : null;
+    const day = start ? start.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', timeZone: 'Europe/Madrid' }) : 'Fecha no disponible';
+    const time = isAllDayAppointment(cita)
+      ? 'Todo el dia'
+      : `${start ? fmtHourOnly(cita.inicio_en) : '--:--'}${end ? ` - ${fmtHourOnly(cita.fin_en)}` : ''}`;
+    const canal = cita?.canal_origen === 'telegram'
+      ? 'Telegram'
+      : cita?.canal_origen === 'crm_web'
+        ? 'CRM Web'
+        : cita?.canal_origen || (calendarOnly ? 'Google Calendar' : 'CRM');
+    const apptId = escapeAttr(cita?.id || cita?.appointment_id || '');
+    const patientAttr = escapeAttr(patientId);
+    const patientNameAttr = escapeAttr(patientName);
+
+    if (appointmentDetailTitle) appointmentDetailTitle.textContent = calendarOnly ? 'Bloque de calendario' : patientName;
+    if (appointmentDetailSubtitle) {
+      appointmentDetailSubtitle.textContent = `${day} | ${time}`;
+    }
+
+    const canAct = !calendarOnly && Boolean(apptId);
+    const statusActions: string[] = [];
+    if (canAct && estado === 'pendiente') statusActions.push(`<button class="btn-secondary" type="button" data-appt-action="confirmada" data-appt-id="${apptId}"><span class="material-symbols-rounded">check</span> Confirmar</button>`);
+    if (canAct && ['pendiente', 'confirmada'].includes(estado)) statusActions.push(`<button class="btn-secondary" type="button" data-appt-action="completada" data-appt-id="${apptId}"><span class="material-symbols-rounded">check_circle</span> Completar</button>`);
+    if (canAct && !['cancelada', 'completada'].includes(estado)) statusActions.push(`<button class="btn-ghost btn-danger-ghost" type="button" data-appt-action="cancelada" data-appt-id="${apptId}"><span class="material-symbols-rounded">close</span> Cancelar</button>`);
+
+    appointmentDetailBody.innerHTML = `
+      <section class="drawer-summary-card">
+        <div class="drawer-summary-main">
+          <span class="drawer-kicker">${calendarOnly ? 'Google Calendar' : 'Paciente'}</span>
+          <strong>${escapeHtml(patientName)}</strong>
+          <p>${escapeHtml(cita?.motivo || mirror.note || 'Sin motivo especifico registrado.')}</p>
+        </div>
+        <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(calendarOnly ? mirror.label : estado)}</span>
+      </section>
+      <section class="drawer-info-grid">
+        <article>
+          <span>Dia</span>
+          <strong>${escapeHtml(day)}</strong>
+        </article>
+        <article>
+          <span>Hora</span>
+          <strong>${escapeHtml(time)}</strong>
+        </article>
+        <article>
+          <span>Canal</span>
+          <strong>${escapeHtml(canal)}</strong>
+        </article>
+        <article>
+          <span>Espejo</span>
+          <strong>${escapeHtml(mirror.label)}</strong>
+        </article>
+      </section>
+      <section class="drawer-action-stack">
+        <button class="btn-primary" type="button" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patientAttr}" data-patient-name="${patientNameAttr}" ${patientId ? '' : 'disabled'}>
+          <span class="material-symbols-rounded">person</span>
+          Abrir ficha del caso
+        </button>
+        <button class="btn-secondary" type="button" data-appt-action="exercise-report" data-patient-id="${patientAttr}" data-patient-name="${patientNameAttr}" ${patientId ? '' : 'disabled'}>
+          <span class="material-symbols-rounded">exercise</span>
+          Preparar informe IA de ejercicios
+        </button>
+        ${statusActions.join('')}
+      </section>
+      <section class="drawer-clinical-note">
+        <span class="material-symbols-rounded">psychology</span>
+        <p>Rumbo nuevo: la cita abre contexto, la ficha concentra el caso y el agente IA convierte sintomas en informe profesional con PDF y entrega trazable.</p>
+      </section>
+    `;
+
+    appointmentDetailDrawer.classList.add('open');
+    appointmentDetailDrawer.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
+  };
+
+  // === LOAD CITAS ===
+  const loadCitas = async () => {
+    const cal = document.getElementById('agendaCalendar');
+    if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>';
+    if (citasBody) setTableState(citasBody, 8, 'sync', 'Cargando agenda...', true);
+    if (agendaMobileList) setListState(agendaMobileList, 'sync', 'Cargando timeline movil...', true);
+    if (agendaMobileSummary) agendaMobileSummary.textContent = 'Sincronizando agenda semanal...';
+    setListState(dashCitasBody, 'sync', 'Actualizando agenda...', true);
+
+    const weekLabelEl = document.getElementById('weekLabel');
+    if (weekLabelEl) {
+      const weekEnd = new Date(agendaWeekStart);
+      weekEnd.setDate(agendaWeekStart.getDate() + 4);
+      weekLabelEl.textContent = `${agendaWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    }
+
+    const desde = new Date(agendaWeekStart).toISOString();
+    const hastaDate = new Date(agendaWeekStart);
+    hastaDate.setDate(hastaDate.getDate() + 5);
+    const hasta = hastaDate.toISOString();
+
+    try {
+      const [payload, syncPayload] = await Promise.all([
+        fetchJson(
+          `${BACKEND_BASE}/api/profesional/appointments?fisioterapeuta_id=${PROF_ID}&limit=100&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`
+        ),
+        fetchJson(`${BACKEND_BASE}/api/profesional/appointments/sync-calendar/status`).catch(() => ({ data: null })),
+      ]);
+      const citas = payload.data || [];
+      latestAgendaAppointments = citas;
+      const operationalCitas = getOperationalAgendaAppointments(citas);
+      const calendarOnlySummary = summarizeCalendarOnlyBlocks(citas);
+      renderAgendaSyncStatus(syncPayload?.data || null, payload?.calendar_sync || null);
+      renderAgendaCalendarMeta(citas);
+      renderDashboardCitas(operationalCitas);
+      const todayCount = operationalCitas.filter((c: any) => !isAllDayAppointment(c) && isTodayDate(c.inicio_en || '')).length;
+      const metricEl = document.getElementById('metricSesiones');
+      if (metricEl) metricEl.textContent = String(todayCount);
+
+      renderAgendaCalendar(citas, agendaWeekStart);
+      renderAgendaMobileTimeline(operationalCitas, citas, agendaWeekStart);
+
+      const countEl = document.getElementById('weekPatientCount');
+      if (countEl) countEl.textContent = String(getVisibleAgendaPatientCount(citas));
+
+      if (!citasBody) return;
+      if (!operationalCitas.length) {
+        const externalMessage = calendarOnlySummary.total
+          ? `No hay citas clinicas esta semana. Google Calendar aporta ${calendarOnlySummary.blocking} bloqueo${calendarOnlySummary.blocking === 1 ? '' : 's'} real${calendarOnlySummary.blocking === 1 ? '' : 'es'}, ${calendarOnlySummary.managed} cita${calendarOnlySummary.managed === 1 ? '' : 's'} solo Calendar y ${calendarOnlySummary.holidays} festivo${calendarOnlySummary.holidays === 1 ? '' : 's'} de referencia.`
+          : 'No hay citas esta semana.';
+        setTableState(citasBody, 8, 'event_busy', externalMessage);
+        return;
+      }
+      const sorted = [...operationalCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
+      citasBody.innerHTML = sorted.map((cita: any) => {
+        const start = new Date(cita.inicio_en);
+        const dayStr = fmtDayFull(start);
+        const hourStr = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita.inicio_en);
+        const canal = cita.canal_origen === 'telegram'
+          ? 'Telegram'
+          : cita.canal_origen === 'crm_web'
+            ? 'CRM Web'
+            : cita.canal_origen || '-';
+        const mirror = getAgendaMirrorMeta(cita);
+        const estado = cita.estado || 'pendiente';
+        const apptId = escapeAttr(cita.id);
+        const patId = escapeAttr(cita.paciente_id || '');
+        const patientLabel = cita.nombre_paciente || 'Paciente';
+        const patName = escapeAttr(patientLabel);
+        const actions: string[] = [];
+        if (estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar">&#x2713;</button>`);
+        if (estado === 'confirmada' || estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded agenda-action-icon">check_circle</span></button>`);
+        if (estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded agenda-action-icon">close</span></button>`);
+        if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded agenda-action-icon">person_off</span></button>`);
+        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle"><span class="material-symbols-rounded agenda-action-icon">right_panel_open</span></button>`);
+        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>`);
+        return `<tr>
+          <td class="td-patient">${escapeHtml(patientLabel)}</td>
+          <td>${escapeHtml(dayStr)}</td>
+          <td>${escapeHtml(hourStr)}</td>
+          <td>${escapeHtml(cita.motivo || '-')}</td>
+          <td>${escapeHtml(canal)}</td>
+          <td><span class="status-chip ${mirror.chipClass}" title="${escapeAttr(mirror.note)}">${escapeHtml(mirror.label)}</span></td>
+          <td><span class="status-chip ${estado}">${escapeHtml(estado)}</span></td>
+          <td class="td-actions">${actions.join('')}</td>
+        </tr>`;
+      }).join('');
+    } catch {
+      latestAgendaAppointments = [];
+      renderAgendaSyncStatus({ ui_status: 'error', error: 'No se pudo consultar el estado del sync de Google Calendar.' }, null);
+      if (agendaCalendarMeta) {
+        agendaCalendarMeta.hidden = true;
+        agendaCalendarMeta.textContent = '';
+      }
+      if (agendaMobileSummary) agendaMobileSummary.textContent = 'No se pudo cargar la agenda movil esta vez.';
+      if (agendaMobileList) setListState(agendaMobileList, 'cloud_off', 'No se pudo cargar el timeline movil.');
+      if (cal) cal.innerHTML = '<div class="agenda-cal-loading">Error al cargar la agenda</div>';
+      setTableState(citasBody, 8, 'cloud_off', 'Error al cargar citas');
+      renderDashboardCitas([], 'error');
+    }
+  };
+
+  let agendaAutoRefreshHandle: number | null = null;
+  const syncAgendaAutoRefresh = () => {
+    if (agendaAutoRefreshHandle) {
+      window.clearInterval(agendaAutoRefreshHandle);
+      agendaAutoRefreshHandle = null;
+    }
+
+    if (!['dashboard', 'citas'].includes(activeSection)) return;
+
+    agendaAutoRefreshHandle = window.setInterval(() => {
+      if (document.hidden) return;
+      loadCitas();
+    }, 45000);
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    if (['dashboard', 'citas'].includes(activeSection)) {
+      loadCitas();
+    }
+  });
+
+  pageLoaders['citas'] = loadCitas;
+  document.getElementById('refreshCitas')?.addEventListener('click', loadCitas);
+  document.getElementById('prevWeek')?.addEventListener('click', () => {
+    agendaWeekStart = new Date(agendaWeekStart);
+    agendaWeekStart.setDate(agendaWeekStart.getDate() - 7);
+    loadCitas();
+  });
+  document.getElementById('nextWeek')?.addEventListener('click', () => {
+    agendaWeekStart = new Date(agendaWeekStart);
+    agendaWeekStart.setDate(agendaWeekStart.getDate() + 7);
+    loadCitas();
+  });
+  document.getElementById('thisWeek')?.addEventListener('click', () => {
+    agendaWeekStart = getWeekMonday(new Date());
+    loadCitas();
+  });
+  loadCitas();
+  syncAgendaAutoRefresh();
+
+  // === APPOINTMENT MODAL ===
+  const appointmentModal = document.getElementById('appointmentModal') as HTMLElement | null;
+  const openAppointmentModal = async () => {
+    appointmentModal?.classList.add('open');
+    appointmentModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-modal-open');
+    await ensurePatientCatalog();
+    renderAppointmentPatientOptions();
+    setAppointmentFormDefaults(true);
+    setAppointmentFormFeedback();
+    window.setTimeout(() => appointmentPatientSelect?.focus(), 25);
+  };
+  const closeAppointmentModal = () => {
+    appointmentModal?.classList.remove('open');
+    appointmentModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('has-modal-open');
+    appointmentForm?.reset();
+    setAppointmentFormFeedback();
+  };
+  document.getElementById('openNewAppointmentBtn')?.addEventListener('click', openAppointmentModal);
+  document.getElementById('closeAppointmentModalBtn')?.addEventListener('click', closeAppointmentModal);
+  document.getElementById('appointmentModalDismiss')?.addEventListener('click', closeAppointmentModal);
+  appointmentModal?.addEventListener('click', (e) => { if (e.target === appointmentModal) closeAppointmentModal(); });
+  document.getElementById('closeAppointmentDetailDrawerBtn')?.addEventListener('click', closeAppointmentDetailDrawer);
+  appointmentDetailDrawer?.addEventListener('click', (e) => { if (e.target === appointmentDetailDrawer) closeAppointmentDetailDrawer(); });
+
+  appointmentForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pacienteId = appointmentPatientSelect?.value;
+    const inicioEn = appointmentStartInput?.value;
+    const finEn = appointmentEndInput?.value;
+    const motivo = appointmentReasonInput?.value?.trim() || '';
+    if (!pacienteId || !inicioEn || !finEn) {
+      setAppointmentFormFeedback('Completa paciente, inicio y fin.', 'error');
+      return;
+    }
+    if (new Date(finEn) <= new Date(inicioEn)) {
+      setAppointmentFormFeedback('La hora de fin debe ser posterior al inicio.', 'error');
+      return;
+    }
+    if (appointmentSubmitBtn) appointmentSubmitBtn.disabled = true;
+    setAppointmentFormFeedback();
+    try {
+      const res = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paciente_id: pacienteId,
+          fisioterapeuta_id: PROF_ID,
+          inicio_en: new Date(inicioEn).toISOString(),
+          fin_en: new Date(finEn).toISOString(),
+          motivo,
+          canal_origen: 'crm_web',
+        }),
+      });
+      if (res.error) throw new Error(res.error);
+      setAppointmentFormFeedback('Cita creada correctamente', 'success');
+      if (pendingIntakeIdForAppointment) {
+        intakeScheduledSet.add(pendingIntakeIdForAppointment);
+        persistIntakeScheduledSet();
+      }
+      pendingIntakeIdForAppointment = null;
+      window.setTimeout(() => { closeAppointmentModal(); loadCitas(); }, 600);
+    } catch (err: any) {
+      setAppointmentFormFeedback(err.message || 'Error al crear la cita', 'error');
+      pendingIntakeIdForAppointment = null;
+    } finally {
+      if (appointmentSubmitBtn) appointmentSubmitBtn.disabled = false;
+    }
+  });
+
+  // === APPOINTMENT ACTIONS (table + calendar) ===
+  const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
+    try {
+      const res = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: newStatus }),
+      });
+      if (res.error) throw new Error(res.error);
+      loadCitas();
+    } catch (err: any) {
+      console.error('Error updating appointment:', err);
+    }
+  };
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const actionBtn = target.closest('[data-appt-action]') as HTMLElement | null;
+    if (actionBtn) {
+      const action = actionBtn.getAttribute('data-appt-action')!;
+      const apptId = actionBtn.getAttribute('data-appt-id')!;
+      if (action === 'detalle') {
+        const cita = findAgendaAppointmentById(apptId);
+        if (cita) openAppointmentDetailDrawer(cita);
+      } else if (action === 'ficha') {
+        const patientId = actionBtn.getAttribute('data-patient-id') || '';
+        const patientName = actionBtn.getAttribute('data-patient-name') || '';
+        if (patientId) {
+          selectedPatientId = patientId;
+          selectedPatientName = patientName;
+          syncChatPatientSelection(patientId, patientName);
+          closeAppointmentDetailDrawer();
+          void openFichaPaciente(patientId);
+        }
+      } else if (action === 'exercise-report') {
+        const patientId = actionBtn.getAttribute('data-patient-id') || '';
+        const patientName = actionBtn.getAttribute('data-patient-name') || '';
+        if (patientId) {
+          const cita = findAgendaAppointmentById(apptId);
+          closeAppointmentDetailDrawer();
+          openExerciseReportAssistant({
+            patientId,
+            patientName,
+            mode: 'new-plan',
+            seedText: cita?.motivo ? `Preparar informe de ejercicios para: ${cita.motivo}` : '',
+            objective: cita?.motivo || '',
+          });
+        }
+      } else {
+        updateAppointmentStatus(apptId, action);
+        closeAppointmentDetailDrawer();
+      }
+      return;
+    }
+    const calAppt = target.closest('[data-cal-appt-patient]') as HTMLElement | null;
+    if (calAppt) {
+      const apptId = calAppt.getAttribute('data-cal-appt-id') || '';
+      const cita = apptId ? findAgendaAppointmentById(apptId) : null;
+      if (cita) {
+        openAppointmentDetailDrawer(cita);
+        return;
+      }
+      const patientId = calAppt.getAttribute('data-cal-appt-patient') || '';
+      const patientName = calAppt.getAttribute('data-cal-appt-name') || '';
+      if (patientId) {
+        selectedPatientId = patientId;
+        selectedPatientName = patientName;
+        syncChatPatientSelection(patientId, patientName);
+        void openFichaPaciente(patientId);
+      }
+    }
+  });
+
+  const historyNoteComposerHtml = `
+    <form class="history-note-form" data-role="history-note-form">
+      <label class="history-note-field">
+        <span>Nueva nota clinica</span>
+        <textarea name="texto_nota" rows="4" placeholder="Ej.: mejor tolerancia a la movilidad, mantiene dolor 3/10 y cumple ejercicios domiciliarios." required></textarea>
+      </label>
+      <input type="hidden" name="fuente" value="crm_web" />
+      <p class="history-note-feedback" data-role="history-note-feedback" hidden></p>
+      <div class="history-note-actions">
+        <button type="submit" class="btn-primary btn-history-note">
+          <span class="material-symbols-rounded">note_add</span>
+          Guardar seguimiento
+        </button>
+      </div>
+    </form>
+  `;
+
+  const setHistoryNoteFeedback = (formEl: HTMLFormElement | null, text = '', state: 'error' | 'success' = 'error') => {
+    const feedbackEl = formEl?.querySelector('[data-role="history-note-feedback"]') as HTMLElement | null;
+    if (!feedbackEl) return;
+    if (!text) {
+      feedbackEl.hidden = true;
+      feedbackEl.textContent = '';
+      feedbackEl.removeAttribute('data-state');
+      return;
+    }
+    feedbackEl.hidden = false;
+    feedbackEl.textContent = text;
+    feedbackEl.setAttribute('data-state', state);
+  };
+
+  const recommendationFollowUpStateOptions = [
+    { value: 'generada', label: 'Generada' },
+    { value: 'enviada', label: 'Enviada al paciente' },
+    { value: 'requiere_revision', label: 'Requiere revision' },
+    { value: 'error', label: 'Error' },
+  ];
+
+  const recommendationFollowUpAdherenceOptions = [
+    { value: '', label: 'Sin clasificar' },
+    { value: 'alta', label: 'Alta' },
+    { value: 'media', label: 'Media' },
+    { value: 'baja', label: 'Baja' },
+  ];
+
+  const renderRecommendationFollowUpForm = (recommendation: any, latestFollowUp: any = null) => {
+    const recommendationId = String(recommendation?.id || '').trim();
+    if (!recommendationId) return '';
+
+    const currentState = String(recommendation?.estado || latestFollowUp?.estado_actual || 'generada').trim().toLowerCase();
+    const defaultAdherence = String(latestFollowUp?.adherence_status || '').trim().toLowerCase();
+    const defaultPain = latestFollowUp?.pain_scale !== null && latestFollowUp?.pain_scale !== undefined ? String(latestFollowUp.pain_scale) : '';
+    const defaultNote = String(latestFollowUp?.note_text || '').trim();
+    const lastTouch = latestFollowUp?.created_at || latestFollowUp?.fecha || null;
+    const adherenceMeta = getRecommendationAdherenceMeta(defaultAdherence);
+    const adherenceOptionsHtml = recommendationFollowUpAdherenceOptions.map((option) => `<option value="${escapeAttr(option.value)}"${option.value === defaultAdherence ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+    const stateOptionsHtml = recommendationFollowUpStateOptions.map((option) => `<option value="${escapeAttr(option.value)}"${option.value === currentState ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+
+    return `
+      <div class="recommendation-followup-shell">
+        <div class="recommendation-followup-summary">
+          <div>
+            <strong>${lastTouch ? 'Ultimo feedback registrado' : 'Seguimiento pendiente'}</strong>
+            <p>${lastTouch ? `Actualizado ${escapeHtml(fmtDate(lastTouch))}.` : 'Guarda adherencia, dolor y siguiente paso para que el caso tenga continuidad domiciliaria.'}</p>
+          </div>
+          <div class="recommendation-followup-chips">
+            <span class="status-chip ${escapeAttr(adherenceMeta.tone)}">${escapeHtml(adherenceMeta.label)}</span>
+            <span class="status-chip ${escapeAttr(currentState === 'enviada' ? 'aprobado' : currentState === 'requiere_revision' ? 'rechazado' : 'pendiente')}">${escapeHtml(currentState.replace(/_/g, ' '))}</span>
+          </div>
+        </div>
+        <form class="recommendation-followup-form" data-role="recommendation-followup-form" data-recommendation-id="${escapeAttr(recommendationId)}">
+          <div class="recommendation-followup-grid">
+            <label class="recommendation-followup-field">
+              <span>Adherencia</span>
+              <select name="adherence_status">${adherenceOptionsHtml}</select>
+            </label>
+            <label class="recommendation-followup-field">
+              <span>Dolor (0-10)</span>
+              <input name="pain_scale" type="number" min="0" max="10" step="1" value="${escapeAttr(defaultPain)}" placeholder="Ej. 3" />
+            </label>
+            <label class="recommendation-followup-field">
+              <span>Estado del plan</span>
+              <select name="recommendation_state">${stateOptionsHtml}</select>
+            </label>
+          </div>
+          <label class="recommendation-followup-field">
+            <span>Nota clinica rapida</span>
+            <textarea name="note_text" rows="3" placeholder="Ej.: mejor tolerancia, mantener progresion, revisar tecnica en proxima sesion.">${escapeHtml(defaultNote)}</textarea>
+          </label>
+          <p class="recommendation-followup-feedback" data-role="history-note-feedback" hidden></p>
+          <div class="recommendation-followup-actions">
+            <button type="submit" class="btn-secondary recommendation-followup-submit">
+              <span class="material-symbols-rounded">monitor_heart</span>
+              Guardar follow-up
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+  };
+
+  const TELEGRAM_LINK_STATUS_META: Record<string, { label: string; chipClass: string }> = {
+    linked: { label: 'Vinculado', chipClass: 'aprobado' },
+    pending: { label: 'Codigo pendiente', chipClass: 'pendiente' },
+    not_linked: { label: 'Sin vincular', chipClass: 'rechazado' },
+  };
+
+  const copyTextToClipboard = async (rawValue: unknown) => {
+    const value = String(rawValue || '').trim();
+    if (!value) return false;
+
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+
+    return false;
+  };
+
+  let bookingFeedbackTimeout: number | null = null;
+  const setBookingLinkFeedback = (text = '', state: 'success' | 'error' = 'success') => {
+    if (!bookingFeedback) return;
+    if (bookingFeedbackTimeout) {
+      window.clearTimeout(bookingFeedbackTimeout);
+      bookingFeedbackTimeout = null;
+    }
+    if (!text) {
+      bookingFeedback.hidden = true;
+      bookingFeedback.textContent = '';
+      bookingFeedback.removeAttribute('data-state');
+      return;
+    }
+    bookingFeedback.hidden = false;
+    bookingFeedback.textContent = text;
+    bookingFeedback.setAttribute('data-state', state);
+    bookingFeedbackTimeout = window.setTimeout(() => {
+      bookingFeedback.hidden = true;
+      bookingFeedback.textContent = '';
+      bookingFeedback.removeAttribute('data-state');
+      bookingFeedbackTimeout = null;
+    }, 3200);
+  };
+
+  const syncBookingLinkUi = () => {
+    const publicBookingUrl = buildPublicBookingUrl();
+    if (bookingUrlInput) bookingUrlInput.value = publicBookingUrl;
+    syncDashboardBookingMeta();
+  };
+
+  const renderPatientTelegramLinkBlock = (linkState: any, errorMessage = '') => {
+    if (errorMessage) {
+      return `
+        <div class="detail-block telegram-link-unavailable" id="patientTelegramLinkBlock" tabindex="-1">
+          <div class="telegram-link-head">
+            <div>
+              <h3>Canal Telegram</h3>
+              <p class="detail-caption">No he podido comprobar ahora la vinculacion de Telegram. Puedes seguir trabajando el caso y reintentar despues.</p>
+            </div>
+            <span class="status-chip pendiente">No disponible</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const normalizedStatus = String(linkState?.link_status || 'not_linked');
+    const statusMeta = TELEGRAM_LINK_STATUS_META[normalizedStatus] || TELEGRAM_LINK_STATUS_META.not_linked;
+    const username = linkState?.telegram_username ? `@${linkState.telegram_username}` : null;
+    const linkedAt = linkState?.vinculado_en ? fmtDate(linkState.vinculado_en) : null;
+    const startCommand = linkState?.telegram_start_command || '';
+    const deepLink = linkState?.telegram_deep_link || '';
+    const actions: string[] = [];
+
+    if (normalizedStatus === 'not_linked') {
+      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-create">Preparar invitacion</button>');
+    }
+
+    if (normalizedStatus === 'pending') {
+      if (deepLink) {
+        actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-open-link" data-open-url="${escapeAttr(deepLink)}">Abrir bot</button>`);
+      }
+      actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-copy-command" data-copy-value="${escapeAttr(startCommand)}">Copiar /start</button>`);
+      if (deepLink) {
+        actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-copy-link" data-copy-value="${escapeAttr(deepLink)}">Copiar enlace</button>`);
+      }
+      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-regenerate">Regenerar codigo</button>');
+    }
+
+    if (normalizedStatus === 'linked' && deepLink) {
+      actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-open-link" data-open-url="${escapeAttr(deepLink)}">Abrir bot</button>`);
+    }
+
+    const hint = normalizedStatus === 'linked'
+      ? 'El paciente ya tiene un chat Telegram vinculado. No genero un codigo nuevo para no romper ese enlace.'
+      : normalizedStatus === 'pending'
+        ? 'Comparte el comando o el enlace con el paciente para completar la vinculacion desde Telegram.'
+        : 'Genera una invitacion segura para que el paciente vincule su chat con /start.';
+
+    return `
+      <div class="detail-block history-telegram-block" id="patientTelegramLinkBlock" tabindex="-1">
+        <div class="telegram-link-head">
+          <div>
+            <span class="detail-kicker">Canal del paciente</span>
+            <h3>Telegram</h3>
+            <p class="detail-caption">${escapeHtml(hint)}</p>
+          </div>
+          <span class="status-chip ${statusMeta.chipClass}">${escapeHtml(statusMeta.label)}</span>
+        </div>
+        <div class="telegram-link-card">
+          <div class="telegram-link-grid">
+            <div class="telegram-link-field"><span>Paciente</span><strong>${escapeHtml(linkState?.patient_name || selectedPatientName || 'Paciente seleccionado')}</strong></div>
+            <div class="telegram-link-field"><span>Usuario</span><strong>${escapeHtml(username || 'Sin username')}</strong></div>
+            <div class="telegram-link-field"><span>Vinculado</span><strong>${escapeHtml(linkedAt || 'Aun no')}</strong></div>
+            <div class="telegram-link-field"><span>Codigo</span><strong>${escapeHtml(linkState?.codigo_vinculacion || 'No generado')}</strong></div>
+          </div>
+          ${startCommand ? `<div class="telegram-link-command"><code>${escapeHtml(startCommand)}</code></div>` : ''}
+          ${actions.length ? `<div class="telegram-link-actions">${actions.join('')}</div>` : ''}
+        </div>
+      </div>
+    `;
+  };
+
+  // === LOAD HISTORIAL ===
+  const loadHistorial = async () => {
+    if (!historialContent) return;
+    if (!selectedPatientId) {
+      currentPatientTelegramLinkState = null;
+      updateExerciseTelegramButton();
+      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">person_search</span><p>Selecciona un paciente desde Pacientes, Agenda o la busqueda superior para revisar su seguimiento longitudinal.</p></div>`;
+      return;
+    }
+    historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
+
+    const loadPiece = async (label: string, request: Promise<any>) => {
+      try {
+        return { ok: true, label, response: await request, error: '' };
+      } catch (err: any) {
+        return { ok: false, label, response: null, error: err?.message || 'No disponible' };
+      }
+    };
+    const getHistoryPieceCopy = (label: string) => {
+      if (label === 'datos del paciente') return 'Ficha resumida no disponible';
+      if (label === 'notas clinicas') return 'Notas clinicas no disponibles';
+      if (label === 'planes de ejercicios') return 'Planes IA no disponibles';
+      if (label === 'Telegram') return 'Telegram no comprobado';
+      return `${label} no disponible`;
+    };
+
+    try {
+      const [patientPiece, historyPiece, recommendationsPiece, telegramPiece] = await Promise.all([
+        loadPiece('datos del paciente', fetchJson(`${BACKEND_BASE}/api/pacientes/${selectedPatientId}`)),
+        loadPiece('notas clinicas', fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`)),
+        loadPiece('planes de ejercicios', fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${selectedPatientId}?limit=25`)),
+        loadPiece('Telegram', fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`)),
+      ]);
+
+      const patient = patientPiece.response?.data || {};
       const notes = historyPiece.response?.data?.notas_seguimiento || [];
       const recommendations = recommendationsPiece.response?.data || [];
       const telegramLink = telegramPiece.response?.data || null;
