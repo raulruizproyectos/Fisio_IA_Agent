@@ -1,13 +1,26 @@
 import { createClient, type Session } from '@supabase/supabase-js';
 
-const supabaseUrl = String(import.meta.env.PUBLIC_SUPABASE_URL || '').trim();
-const supabaseKey = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '').trim();
+declare global {
+  interface Window {
+    __FISIO_RUNTIME_CONFIG__?: {
+      PUBLIC_SUPABASE_URL?: string;
+      PUBLIC_SUPABASE_ANON_KEY?: string;
+      PUBLIC_BACKEND_URL?: string;
+    };
+  }
+}
+
+const runtimeConfig = window.__FISIO_RUNTIME_CONFIG__ || {};
+const supabaseUrl = String(runtimeConfig.PUBLIC_SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || '').trim();
+const supabaseKey = String(runtimeConfig.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
 const localBackendBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:3001'
   : '';
 
-export const backendBase = String(import.meta.env.PUBLIC_BACKEND_URL || localBackendBase).replace(/\/+$/, '');
+export const backendBase = String(
+  runtimeConfig.PUBLIC_BACKEND_URL || import.meta.env.PUBLIC_BACKEND_URL || localBackendBase
+).replace(/\/+$/, '');
 
 export const authClient = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },

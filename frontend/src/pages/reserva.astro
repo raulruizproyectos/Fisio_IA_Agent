@@ -130,7 +130,9 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
 
   <script is:inline define:vars={{ configuredBackendBase }}>
     (() => {
-      const BACKEND_BASE = configuredBackendBase
+      const runtimeBackendBase = String(window.__FISIO_RUNTIME_CONFIG__?.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
+      const BACKEND_BASE = runtimeBackendBase
+        || configuredBackendBase
         || ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
           ? 'http://localhost:3001'
           : '');
