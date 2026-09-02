@@ -136,10 +136,34 @@ button:disabled,
 
 .sidebar {
   width: 17rem !important;
+  overflow: hidden !important;
   background: rgba(255, 253, 248, .96) !important;
   border-right: 1px solid var(--clinic-border) !important;
   box-shadow: 12px 0 42px rgba(18, 45, 39, .025) !important;
   backdrop-filter: blur(22px);
+}
+
+.sidebar > .flex-1 {
+  min-height: 0;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding-right: 1.25rem !important;
+  scrollbar-color: rgba(80, 97, 92, .32) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.sidebar > .flex-1::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar > .flex-1::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar > .flex-1::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(80, 97, 92, .28);
 }
 
 .sidebar > div:first-child {
