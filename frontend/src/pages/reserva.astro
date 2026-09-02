@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
 ---
 
 <Layout title="Reserva online | Fisio IA Agent" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
@@ -126,11 +128,12 @@ import Layout from '../layouts/Layout.astro';
     </section>
   </main>
 
-  <script is:inline>
+  <script is:inline define:vars={{ configuredBackendBase }}>
     (() => {
-      const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3001'
-        : 'https://fisio-backend.b5xbaf.easypanel.host';
+      const BACKEND_BASE = configuredBackendBase
+        || ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? 'http://localhost:3001'
+          : '');
 
       const params = new URLSearchParams(window.location.search);
       const professionalId = params.get('professional_id') || params.get('profesional_id') || '';
@@ -162,6 +165,12 @@ import Layout from '../layouts/Layout.astro';
       let bookingConfig = null;
       let selectedSlot = null;
       let currentSlots = [];
+
+      if (!BACKEND_BASE) {
+        if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta configurada en este entorno.';
+        if (windowHintEl) windowHintEl.textContent = 'Configuracion pendiente';
+        return;
+      }
 
       const setFeedback = (text = '', state = 'error') => {
         if (!feedbackEl) return;
