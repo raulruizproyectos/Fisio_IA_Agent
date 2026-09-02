@@ -48,7 +48,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ 'https://fisio-backend.b5xbaf.easypanel.host' + '/api/profesional/intakes/pending?profesional_id=' + $json.query.profesional_id }}",
+        "url": "={{ $env.BACKEND_URL + '/api/profesional/intakes/pending?profesional_id=' + $json.query.profesional_id }}",
         "options": {},
         "sendHeaders": true,
         "headerParameters": {

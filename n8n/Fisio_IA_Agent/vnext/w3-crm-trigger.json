@@ -82,7 +82,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/exercises/recommend/async",
+        "url": "={{ $env.BACKEND_URL + '/api/exercises/recommend/async' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

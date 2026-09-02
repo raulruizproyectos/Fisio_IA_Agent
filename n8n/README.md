@@ -23,6 +23,9 @@ Los flujos canónicos están en `n8n/Fisio_IA_Agent/vnext/`:
    - header: `X-Webhook-Secret`
    - valor: el mismo secreto configurado como `N8N_WEBHOOK_SECRET` en el backend.
 2. Configurar en n8n estas variables de entorno, sin escribirlas dentro de los JSON:
+   - `BACKEND_URL` (URL del backend del entorno, sin `/` final)
+   - `N8N_WEBHOOK_BASE_URL` (URL base de webhooks del entorno, terminada en `/webhook` y sin `/` final)
+   - `SUPABASE_URL` (URL del proyecto Supabase del entorno, sin `/` final)
    - `INTERNAL_API_KEY`
    - `TELEGRAM_WEBHOOK_SECRET`
    - `N8N_WEBHOOK_SECRET`

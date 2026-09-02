@@ -109,7 +109,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
+        "url": "={{ $env.BACKEND_URL + '/api/telegram/incoming' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ ({ request_id: $json.request_id, chat_id: $json.chat_id, username: $json.username, texto_mensaje: $json.texto_mensaje, agent_mode: $json.agent_mode, bot_username: $json.bot_username }) }}",
@@ -190,7 +190,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w1/appointment",
+        "url": "={{ $env.N8N_WEBHOOK_BASE_URL + '/fisio/w1/appointment' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.force_w1_payload }}",

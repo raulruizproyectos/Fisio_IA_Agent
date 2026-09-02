@@ -91,7 +91,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://uewhbaejcouenoufuwlq.supabase.co/functions/v1/exercise-recommend",
+        "url": "={{ $env.SUPABASE_URL + '/functions/v1/exercise-recommend' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
