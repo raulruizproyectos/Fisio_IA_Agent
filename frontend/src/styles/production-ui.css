@@ -729,7 +729,14 @@ textarea::placeholder {
 
 @media (min-width: 768px) {
   .main-area {
-    margin-left: 17rem !important;
+    /* The sidebar already occupies its column in the flex shell. Adding its
+       width again displaced the workspace and compressed laptop layouts. */
+    margin-left: 0 !important;
+  }
+
+  #topbarDateLabel,
+  #topbarDateLabel + strong {
+    white-space: nowrap;
   }
 }
 
