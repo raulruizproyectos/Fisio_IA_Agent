@@ -4,7 +4,7 @@
   "id": "f1PcLN8s9YiOXj3w",
   "name": "Fisio IA | Bot paciente",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {

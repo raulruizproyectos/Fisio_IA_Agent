@@ -1,4 +1,4 @@
-﻿alter table if exists public.crm_perfiles
+alter table if exists public.crm_perfiles
   add column if not exists telegram_chat_id text,
   add column if not exists telegram_username text,
   add column if not exists telegram_linked_at timestamptz;

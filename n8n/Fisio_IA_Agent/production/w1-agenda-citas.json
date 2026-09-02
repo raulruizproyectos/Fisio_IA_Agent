@@ -4,7 +4,7 @@
   "id": "cTp8bORuSL9hsdDk",
   "name": "Fisio IA | Citas",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {

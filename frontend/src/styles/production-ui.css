@@ -181,6 +181,57 @@ button:disabled,
   letter-spacing: .13em !important;
 }
 
+.sidebar-ai-launch {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .65rem;
+  margin-top: .8rem;
+  padding: .72rem;
+  border: 1px solid rgba(174, 132, 70, .28);
+  border-radius: .9rem;
+  background: linear-gradient(135deg, var(--clinic-forest), #19584e);
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(18, 63, 56, .15);
+}
+
+.sidebar-ai-launch:hover {
+  background: linear-gradient(135deg, var(--clinic-forest-strong), var(--clinic-forest));
+  transform: translateY(-1px);
+}
+
+.sidebar-ai-launch-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: .68rem;
+  background: rgba(255, 255, 255, .12);
+  color: #f0d7a7;
+}
+
+.sidebar-ai-launch strong,
+.sidebar-ai-launch small {
+  display: block;
+}
+
+.sidebar-ai-launch strong {
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.sidebar-ai-launch small {
+  margin-top: .08rem;
+  color: rgba(255, 255, 255, .68);
+  font-size: .64rem;
+}
+
+.sidebar-ai-launch-arrow {
+  font-size: 1rem !important;
+}
+
 .main-area {
   min-width: 0;
   background: transparent !important;
@@ -344,6 +395,196 @@ button:disabled,
   background: transparent !important;
 }
 
+.clinic-ai-pathway {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(15rem, .85fr) minmax(28rem, 1.45fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2rem);
+  padding: clamp(1.2rem, 2.3vw, 2rem);
+  border: 1px solid rgba(18, 63, 56, .14);
+  border-radius: var(--clinic-radius-lg);
+  background:
+    radial-gradient(circle at 100% 0, rgba(174, 132, 70, .18), transparent 25rem),
+    linear-gradient(128deg, var(--clinic-forest-strong), var(--clinic-forest));
+  color: #fff;
+  box-shadow: 0 20px 48px rgba(18, 63, 56, .15);
+}
+
+.clinic-ai-pathway .clinic-kicker {
+  color: #e8c98f !important;
+}
+
+.clinic-ai-pathway h2 {
+  max-width: 20ch;
+  margin: .35rem 0 .55rem;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.1vw, 2.15rem);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+
+.clinic-ai-pathway-copy > p {
+  max-width: 54ch;
+  color: rgba(255, 255, 255, .72);
+  font-size: .86rem;
+  line-height: 1.6;
+}
+
+.clinic-ai-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+  margin-top: .85rem;
+  color: rgba(255, 255, 255, .82);
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.clinic-ai-trust span {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+}
+
+.clinic-ai-trust .material-symbols-rounded {
+  color: #e8c98f;
+  font-size: .95rem;
+}
+
+.clinic-ai-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clinic-ai-steps li {
+  min-height: 7.2rem;
+  padding: .85rem;
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: .9rem;
+  background: rgba(255, 255, 255, .065);
+}
+
+.clinic-ai-steps li > span {
+  display: inline-grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  margin-bottom: .8rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(232, 201, 143, .16);
+  color: #f2d9a9;
+  font-size: .64rem;
+  font-weight: 850;
+}
+
+.clinic-ai-steps strong,
+.clinic-ai-steps p {
+  display: block;
+}
+
+.clinic-ai-steps strong {
+  color: #fff;
+  font-size: .78rem;
+}
+
+.clinic-ai-steps p {
+  margin: .25rem 0 0;
+  color: rgba(255, 255, 255, .59);
+  font-size: .68rem;
+  line-height: 1.4;
+}
+
+.clinic-ai-launch {
+  display: inline-flex;
+  min-width: 9.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  padding: .8rem .9rem;
+  border: 0;
+  border-radius: .85rem;
+  background: #f3d9a7;
+  color: var(--clinic-forest-strong);
+  font-size: .76rem;
+  font-weight: 850;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .12);
+}
+
+.clinic-ai-launch:hover {
+  background: #ffe5b1;
+  transform: translateY(-1px);
+}
+
+.assistant-care-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .35rem;
+  margin: 0;
+  padding: .65rem 1rem;
+  border-bottom: 1px solid var(--clinic-border);
+  background: #fff;
+  list-style: none;
+}
+
+.assistant-care-stepper li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: .35rem;
+  color: var(--clinic-muted);
+  font-size: .64rem;
+}
+
+.assistant-care-stepper li > span {
+  display: grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--clinic-border);
+  border-radius: 999px;
+  background: var(--clinic-canvas);
+  font-size: .58rem;
+  font-weight: 850;
+}
+
+.assistant-care-stepper li.is-current {
+  color: var(--clinic-forest);
+}
+
+.assistant-care-stepper li.is-current > span {
+  border-color: var(--clinic-forest);
+  background: var(--clinic-forest);
+  color: #fff;
+}
+
+.assistant-care-stepper li.is-complete {
+  color: #176c52;
+}
+
+.assistant-care-stepper li.is-complete > span {
+  border-color: rgba(23, 108, 82, .18);
+  background: #dff7ed;
+  color: #176c52;
+  font-size: 0;
+}
+
+.assistant-care-stepper li.is-complete > span::before {
+  content: 'check';
+  font-family: 'Material Symbols Rounded';
+  font-size: .9rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .clinic-metric-grid {
   gap: .85rem !important;
 }
@@ -500,6 +741,18 @@ textarea::placeholder {
   .clinic-focus-card {
     max-width: 44rem;
   }
+
+  .clinic-ai-pathway {
+    grid-template-columns: 1fr;
+  }
+
+  .clinic-ai-pathway h2 {
+    max-width: 28ch;
+  }
+
+  .clinic-ai-launch {
+    width: fit-content;
+  }
 }
 
 @media (max-width: 767px) {
@@ -551,6 +804,23 @@ textarea::placeholder {
 
   .clinic-command-search {
     display: none !important;
+  }
+
+  .clinic-ai-pathway {
+    padding: 1.15rem;
+    border-radius: 1.05rem;
+  }
+
+  .clinic-ai-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .clinic-ai-steps li {
+    min-height: 6.2rem;
+  }
+
+  .clinic-ai-launch {
+    width: 100%;
   }
 
   .clinic-metric-grid {

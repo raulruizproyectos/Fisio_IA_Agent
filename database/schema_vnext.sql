@@ -1,4 +1,4 @@
-﻿-- schema_vnext.sql
+-- schema_vnext.sql
 -- Propuesta aditiva (no destructiva) para el pivot CRM + Agents.
 -- Regla: no drop, no alter de estructuras legacy desconocidas.
 -- Convencion: tablas prefijadas con crm_ en schema public para minimizar colisiones.
@@ -363,4 +363,3 @@ end $$;
 --       and p.auth_user_id = auth.uid()
 --   )
 -- );
-

@@ -35,6 +35,8 @@ Backend:
 - `N8N_WEBHOOK_SECRET`
 - tokens Telegram y credenciales Calendar que utilice la instalación
 - `N8N_AGENT_WEBHOOK_URL`, `N8N_EXERCISE_WEBHOOK_URL`, `N8N_APPOINTMENT_WEBHOOK_URL`
+- `W5_CALENDAR_READER_URL`, `W6_CALENDAR_WRITER_URL` si Calendar se conecta por n8n
+- `N8N_ERROR_WEBHOOK_URL` si las alertas internas se envían por Gmail desde n8n
 
 Frontend:
 
@@ -73,6 +75,7 @@ Seguir `n8n/README.md`. En particular, crear la credencial Header Auth `Fisio In
 10. Confirmar que facturas y documentos no abren sin sesión.
 11. Revisar móvil (360 px), portátil (1280 px) y escritorio; navegar solo con teclado.
 12. Ejecutar `npm ci`, lint, tests, check, build y audit igual que CI.
+13. Medir en staging LCP, CLS e INP y comprobar que los listados y la ficha mantienen los presupuestos de `docs/AUDITORIA_2_0_PRODUCTO_20260901.md`.
 
 ## Operación y RGPD
 

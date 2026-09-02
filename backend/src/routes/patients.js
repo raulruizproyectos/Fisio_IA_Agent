@@ -113,8 +113,8 @@ const getSectionAvailability = (result, { key, label, table, migration }) => {
 router.get('/', async (req, res, next) => {
   try {
     const [legacyResult, crmResult] = await Promise.allSettled([
-      supabase.from('pacientes').select('*').order('creado_en', { ascending: false }),
-      supabase.from('crm_pacientes').select(CRM_FIELDS).eq('activo', true).order('created_at', { ascending: false }),
+      supabase.from('pacientes').select('*').order('creado_en', { ascending: false }).limit(500),
+      supabase.from('crm_pacientes').select(CRM_FIELDS).eq('activo', true).order('created_at', { ascending: false }).limit(500),
     ]);
 
     const legacyRows = legacyResult.status === 'fulfilled' && !legacyResult.value.error

@@ -4,6 +4,9 @@
 begin;
 
 create extension if not exists btree_gist with schema extensions;
+create schema if not exists private;
+revoke all on schema private from public, anon;
+grant usage on schema private to authenticated;
 
 create table if not exists public.crm_asignaciones_fisio_paciente (
   id uuid primary key default gen_random_uuid(),
@@ -72,10 +75,15 @@ create table if not exists public.crm_audit_log (
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
+alter table public.crm_audit_log
+  drop constraint if exists crm_audit_log_actor_type_check;
+alter table public.crm_audit_log
+  add constraint crm_audit_log_actor_type_check
+  check (actor_type in ('system', 'admin', 'fisioterapeuta', 'paciente', 'n8n', 'telegram'));
 create index if not exists idx_crm_audit_entity on public.crm_audit_log(entity_type, entity_id);
 create index if not exists idx_crm_audit_created on public.crm_audit_log(created_at desc);
 
-create or replace function public.get_my_profile_id()
+create or replace function private.get_my_profile_id()
 returns uuid
 language sql
 stable
@@ -88,7 +96,7 @@ as $$
   limit 1
 $$;
 
-create or replace function public.get_my_profesional_id()
+create or replace function private.get_my_profesional_id()
 returns uuid
 language sql
 stable
@@ -101,7 +109,22 @@ as $$
   limit 1
 $$;
 
-create or replace function public.is_crm_admin()
+create or replace function private.can_access_legacy_patient(target_patient_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public
+as $$
+  select exists (
+    select 1
+    from public.pacientes
+    where id = target_patient_id
+      and profesional_id = private.get_my_profesional_id()
+  )
+$$;
+
+create or replace function private.is_crm_admin()
 returns boolean
 language sql
 stable
@@ -114,55 +137,71 @@ as $$
   )
 $$;
 
-create or replace function public.can_access_crm_patient(target_patient_id uuid)
+create or replace function private.can_access_crm_patient(target_patient_id uuid)
 returns boolean
 language sql
 stable
 security definer
 set search_path = pg_catalog, public
 as $$
-  select public.is_crm_admin() or exists (
+  select private.is_crm_admin() or exists (
     select 1
     from public.crm_pacientes patient
     where patient.id = target_patient_id
       and (
-        patient.created_by_profile_id = public.get_my_profile_id()
+        patient.created_by_profile_id = private.get_my_profile_id()
         or exists (
           select 1 from public.crm_asignaciones_fisio_paciente assignment
           where assignment.paciente_id = patient.id
-            and assignment.fisioterapeuta_id = public.get_my_profile_id()
+            and assignment.fisioterapeuta_id = private.get_my_profile_id()
             and assignment.estado = 'activa'
         )
       )
   )
 $$;
 
-revoke all on function public.get_my_profile_id() from public, anon;
-revoke all on function public.get_my_profesional_id() from public, anon;
-revoke all on function public.is_crm_admin() from public, anon;
-revoke all on function public.can_access_crm_patient(uuid) from public, anon;
-grant execute on function public.get_my_profile_id() to authenticated;
-grant execute on function public.get_my_profesional_id() to authenticated;
-grant execute on function public.is_crm_admin() to authenticated;
-grant execute on function public.can_access_crm_patient(uuid) to authenticated;
+revoke all on function private.get_my_profile_id() from public, anon;
+revoke all on function private.get_my_profesional_id() from public, anon;
+revoke all on function private.can_access_legacy_patient(uuid) from public, anon;
+revoke all on function private.is_crm_admin() from public, anon;
+revoke all on function private.can_access_crm_patient(uuid) from public, anon;
+grant execute on function private.get_my_profile_id() to authenticated;
+grant execute on function private.get_my_profesional_id() to authenticated;
+grant execute on function private.can_access_legacy_patient(uuid) to authenticated;
+grant execute on function private.is_crm_admin() to authenticated;
+grant execute on function private.can_access_crm_patient(uuid) to authenticated;
 
 -- Vault access is server-only. It must never be callable through the public Data API.
-revoke all on function public.vault_read_secret(text) from public, anon, authenticated;
-grant execute on function public.vault_read_secret(text) to service_role;
+do $$
+begin
+  if to_regprocedure('public.vault_read_secret(text)') is not null then
+    execute 'revoke all on function public.vault_read_secret(text) from public, anon, authenticated';
+    execute 'grant execute on function public.vault_read_secret(text) to service_role';
+  end if;
+end $$;
 
 alter function public.crm_set_updated_at() set search_path = pg_catalog, public;
+do $$
+begin
+  if to_regprocedure('public.actualizar_columna_actualizado_en()') is not null then
+    execute 'alter function public.actualizar_columna_actualizado_en() set search_path = pg_catalog, public';
+  end if;
+end $$;
 
 do $$
 declare
   table_name text;
 begin
   foreach table_name in array array[
-    'crm_perfiles','crm_pacientes','crm_asignaciones_fisio_paciente','crm_citas',
+    'crm_perfiles','crm_pacientes','crm_asignaciones_fisio_paciente','crm_sesiones',
+    'crm_notas_seguimiento','crm_citas',
     'crm_ejercicios_catalogo','crm_ejercicio_media','crm_recomendaciones',
     'crm_recomendacion_items','crm_async_jobs','crm_comunicaciones','crm_pagos',
     'crm_notas_clinicas','crm_facturas','crm_documentos','crm_bonos',
     'crm_recordatorio_envios','crm_audit_log','telegram_onboarding_pending',
-    'telegram_chat_sessions'
+    'telegram_chat_sessions','vinculos_telegram_pacientes','mensajes_ingesta_paciente',
+    'notas_seguimiento_paciente','trabajos_video_ejercicio','eventos_visualizacion_video',
+    'profesionales','pacientes','planes','items_plan','sesiones'
   ] loop
     if to_regclass('public.' || table_name) is not null then
       execute format('alter table public.%I enable row level security', table_name);
@@ -182,12 +221,15 @@ begin
     from pg_policies
     where schemaname = 'public'
       and tablename::text = any (array[
-        'crm_perfiles','crm_pacientes','crm_asignaciones_fisio_paciente','crm_citas',
+        'crm_perfiles','crm_pacientes','crm_asignaciones_fisio_paciente','crm_sesiones',
+        'crm_notas_seguimiento','crm_citas',
         'crm_ejercicios_catalogo','crm_ejercicio_media','crm_recomendaciones',
         'crm_recomendacion_items','crm_async_jobs','crm_comunicaciones','crm_pagos',
         'crm_notas_clinicas','crm_facturas','crm_documentos','crm_bonos',
         'crm_recordatorio_envios','crm_audit_log','telegram_onboarding_pending',
-        'telegram_chat_sessions'
+        'telegram_chat_sessions','vinculos_telegram_pacientes','mensajes_ingesta_paciente',
+        'notas_seguimiento_paciente','trabajos_video_ejercicio','eventos_visualizacion_video',
+        'profesionales','pacientes','planes','items_plan','sesiones'
       ])
   loop
     execute format('drop policy if exists %I on %I.%I', policy_row.policyname, policy_row.schemaname, policy_row.tablename);
@@ -198,26 +240,47 @@ end $$;
 drop policy if exists crm_profiles_select on public.crm_perfiles;
 drop policy if exists crm_profiles_update on public.crm_perfiles;
 create policy crm_profiles_select on public.crm_perfiles for select to authenticated
-  using (auth_user_id = (select auth.uid()) or public.is_crm_admin());
+  using (auth_user_id = (select auth.uid()) or private.is_crm_admin());
 create policy crm_profiles_update on public.crm_perfiles for update to authenticated
-  using (auth_user_id = (select auth.uid()) or public.is_crm_admin())
-  with check (auth_user_id = (select auth.uid()) or public.is_crm_admin());
+  using (auth_user_id = (select auth.uid()) or private.is_crm_admin())
+  with check (auth_user_id = (select auth.uid()) or private.is_crm_admin());
 revoke update on public.crm_perfiles from authenticated;
 grant update (nombre_completo, email, telegram_username) on public.crm_perfiles to authenticated;
 
 drop policy if exists crm_patients_all on public.crm_pacientes;
 create policy crm_patients_all on public.crm_pacientes for all to authenticated
-  using (public.can_access_crm_patient(id))
+  using (private.can_access_crm_patient(id))
   with check (
-    public.is_crm_admin()
-    or created_by_profile_id = public.get_my_profile_id()
-    or public.can_access_crm_patient(id)
+    private.is_crm_admin()
+    or created_by_profile_id = private.get_my_profile_id()
+    or private.can_access_crm_patient(id)
   );
 
 drop policy if exists crm_assignments_all on public.crm_asignaciones_fisio_paciente;
 create policy crm_assignments_all on public.crm_asignaciones_fisio_paciente for all to authenticated
-  using (public.is_crm_admin() or fisioterapeuta_id = public.get_my_profile_id())
-  with check (public.is_crm_admin() or fisioterapeuta_id = public.get_my_profile_id());
+  using (private.is_crm_admin() or fisioterapeuta_id = private.get_my_profile_id())
+  with check (private.is_crm_admin() or fisioterapeuta_id = private.get_my_profile_id());
+
+do $$
+declare
+  table_name text;
+  policy_name text;
+begin
+  foreach table_name in array array['crm_sesiones', 'crm_notas_seguimiento'] loop
+    if to_regclass('public.' || table_name) is not null then
+      policy_name := case
+        when table_name = 'crm_sesiones' then 'crm_sessions_all'
+        else 'crm_followup_notes_all'
+      end;
+      execute format('drop policy if exists %I on public.%I', policy_name, table_name);
+      execute format(
+        'create policy %I on public.%I for all to authenticated using (private.can_access_crm_patient(paciente_id)) with check (private.can_access_crm_patient(paciente_id) and (fisioterapeuta_id = private.get_my_profile_id() or private.is_crm_admin()))',
+        policy_name,
+        table_name
+      );
+    end if;
+  end loop;
+end $$;
 
 drop policy if exists crm_catalog_select on public.crm_ejercicios_catalogo;
 create policy crm_catalog_select on public.crm_ejercicios_catalogo for select to authenticated using (true);
@@ -226,18 +289,18 @@ create policy crm_media_select on public.crm_ejercicio_media for select to authe
 
 drop policy if exists crm_appointments_all on public.crm_citas;
 create policy crm_appointments_all on public.crm_citas for all to authenticated
-  using (public.can_access_crm_patient(paciente_id))
+  using (private.can_access_crm_patient(paciente_id))
   with check (
-    public.can_access_crm_patient(paciente_id)
-    and (fisioterapeuta_id = public.get_my_profile_id() or public.is_crm_admin())
+    private.can_access_crm_patient(paciente_id)
+    and (fisioterapeuta_id = private.get_my_profile_id() or private.is_crm_admin())
   );
 
 drop policy if exists crm_recommendations_all on public.crm_recomendaciones;
 create policy crm_recommendations_all on public.crm_recomendaciones for all to authenticated
-  using (public.can_access_crm_patient(paciente_id))
+  using (private.can_access_crm_patient(paciente_id))
   with check (
-    public.can_access_crm_patient(paciente_id)
-    and (fisioterapeuta_id = public.get_my_profile_id() or public.is_crm_admin())
+    private.can_access_crm_patient(paciente_id)
+    and (fisioterapeuta_id = private.get_my_profile_id() or private.is_crm_admin())
   );
 
 drop policy if exists crm_recommendation_items_all on public.crm_recomendacion_items;
@@ -245,12 +308,12 @@ create policy crm_recommendation_items_all on public.crm_recomendacion_items for
   using (exists (
     select 1 from public.crm_recomendaciones recommendation
     where recommendation.id = recomendacion_id
-      and public.can_access_crm_patient(recommendation.paciente_id)
+      and private.can_access_crm_patient(recommendation.paciente_id)
   ))
   with check (exists (
     select 1 from public.crm_recomendaciones recommendation
     where recommendation.id = recomendacion_id
-      and public.can_access_crm_patient(recommendation.paciente_id)
+      and private.can_access_crm_patient(recommendation.paciente_id)
   ));
 
 do $$
@@ -263,15 +326,81 @@ begin
   ] loop
     execute format('drop policy if exists crm_patient_scope on public.%I', table_name);
     execute format(
-      'create policy crm_patient_scope on public.%I for all to authenticated using (public.can_access_crm_patient(paciente_id)) with check (public.can_access_crm_patient(paciente_id))',
+      'create policy crm_patient_scope on public.%I for all to authenticated using (private.can_access_crm_patient(paciente_id)) with check (private.can_access_crm_patient(paciente_id))',
       table_name
     );
   end loop;
 end $$;
 
+-- Legacy clinical tables remain tenant-scoped while the CRM migration is completed.
+drop policy if exists legacy_profile_select on public.profesionales;
+drop policy if exists legacy_profile_update on public.profesionales;
+create policy legacy_profile_select on public.profesionales for select to authenticated
+  using (id = private.get_my_profesional_id());
+create policy legacy_profile_update on public.profesionales for update to authenticated
+  using (id = private.get_my_profesional_id())
+  with check (id = private.get_my_profesional_id());
+
+drop policy if exists legacy_patients_all on public.pacientes;
+create policy legacy_patients_all on public.pacientes for all to authenticated
+  using (profesional_id = private.get_my_profesional_id())
+  with check (profesional_id = private.get_my_profesional_id());
+
+drop policy if exists legacy_plans_all on public.planes;
+create policy legacy_plans_all on public.planes for all to authenticated
+  using (profesional_id = private.get_my_profesional_id())
+  with check (profesional_id = private.get_my_profesional_id());
+
+drop policy if exists legacy_plan_items_all on public.items_plan;
+create policy legacy_plan_items_all on public.items_plan for all to authenticated
+  using (exists (
+    select 1 from public.planes plan
+    where plan.id = plan_id and plan.profesional_id = private.get_my_profesional_id()
+  ))
+  with check (exists (
+    select 1 from public.planes plan
+    where plan.id = plan_id and plan.profesional_id = private.get_my_profesional_id()
+  ));
+
+drop policy if exists legacy_sessions_all on public.sesiones;
+create policy legacy_sessions_all on public.sesiones for all to authenticated
+  using (private.can_access_legacy_patient(paciente_id))
+  with check (private.can_access_legacy_patient(paciente_id));
+
+do $$
+declare
+  table_name text;
+begin
+  foreach table_name in array array[
+    'vinculos_telegram_pacientes','mensajes_ingesta_paciente',
+    'notas_seguimiento_paciente','trabajos_video_ejercicio'
+  ] loop
+    if to_regclass('public.' || table_name) is not null then
+      execute format('drop policy if exists legacy_professional_scope on public.%I', table_name);
+      execute format(
+        'create policy legacy_professional_scope on public.%I for all to authenticated using (profesional_id = private.get_my_profesional_id()) with check (profesional_id = private.get_my_profesional_id())',
+        table_name
+      );
+    end if;
+  end loop;
+
+  if to_regclass('public.eventos_visualizacion_video') is not null then
+    execute 'drop policy if exists legacy_patient_scope on public.eventos_visualizacion_video';
+    execute 'create policy legacy_patient_scope on public.eventos_visualizacion_video for all to authenticated using (private.can_access_legacy_patient(paciente_id)) with check (private.can_access_legacy_patient(paciente_id) and (profesional_id is null or profesional_id = private.get_my_profesional_id()))';
+  end if;
+end $$;
+
 -- Internal-only tables: no anon/authenticated policies. service_role bypasses RLS.
-revoke all on public.telegram_onboarding_pending from anon, authenticated;
-revoke all on public.telegram_chat_sessions from anon, authenticated;
+do $$
+declare
+  table_name text;
+begin
+  foreach table_name in array array['telegram_onboarding_pending', 'telegram_chat_sessions'] loop
+    if to_regclass('public.' || table_name) is not null then
+      execute format('revoke all on public.%I from anon, authenticated', table_name);
+    end if;
+  end loop;
+end $$;
 revoke all on public.crm_recordatorio_envios from anon, authenticated;
 revoke all on public.crm_audit_log from anon, authenticated;
 grant select, insert, update, delete on public.crm_asignaciones_fisio_paciente to authenticated;
@@ -292,5 +421,33 @@ create index if not exists idx_crm_comunicaciones_fisio on public.crm_comunicaci
 create index if not exists idx_crm_comunicaciones_reco on public.crm_comunicaciones(recomendacion_id);
 create index if not exists idx_crm_comunicaciones_cita on public.crm_comunicaciones(cita_id);
 create index if not exists idx_crm_pacientes_creator on public.crm_pacientes(created_by_profile_id);
+do $$
+begin
+  if to_regclass('public.crm_notas_seguimiento') is not null then
+    execute 'create index if not exists idx_crm_notas_seguimiento_sesion on public.crm_notas_seguimiento(sesion_id)';
+  end if;
+end $$;
+create index if not exists idx_crm_recomendaciones_reviewer on public.crm_recomendaciones(reviewed_by_profile_id);
+create index if not exists idx_items_plan_ejercicio on public.items_plan(ejercicio_id);
+create index if not exists idx_notas_seguimiento_ingesta on public.notas_seguimiento_paciente(ingesta_vinculada_id);
+create index if not exists idx_notas_seguimiento_profesional on public.notas_seguimiento_paciente(profesional_id);
+create index if not exists idx_trabajos_video_ejercicio on public.trabajos_video_ejercicio(ejercicio_id);
+create index if not exists idx_trabajos_video_profesional on public.trabajos_video_ejercicio(profesional_id);
+create index if not exists idx_trabajos_video_padre on public.trabajos_video_ejercicio(trabajo_padre_id);
+do $$
+begin
+  if to_regclass('public.eventos_visualizacion_video') is not null then
+    execute 'create index if not exists idx_eventos_video_profesional on public.eventos_visualizacion_video(profesional_id)';
+    execute 'create index if not exists idx_eventos_video_trabajo on public.eventos_visualizacion_video(trabajo_video_id)';
+    execute 'create index if not exists idx_eventos_video_plan on public.eventos_visualizacion_video(plan_id)';
+    execute 'create index if not exists idx_eventos_video_ejercicio on public.eventos_visualizacion_video(ejercicio_id)';
+  end if;
+end $$;
+
+-- Retire RPC-visible helper functions after all policies point to private equivalents.
+drop function if exists public.can_access_crm_patient(uuid);
+drop function if exists public.is_crm_admin();
+drop function if exists public.get_my_profile_id();
+drop function if exists public.get_my_profesional_id();
 
 commit;

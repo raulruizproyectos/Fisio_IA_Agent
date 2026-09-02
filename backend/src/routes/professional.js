@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { google } from 'googleapis';
+import { JWT } from 'google-auth-library';
+import { calendar as createCalendarClient } from 'googleapis/build/src/apis/calendar/index.js';
 import { supabase } from '../lib/supabase.js';
 
 const router = Router();
@@ -70,11 +71,12 @@ const GOOGLE_HOLIDAY_CALENDAR_ICS_URL = GOOGLE_HOLIDAY_CALENDAR_ID
   ? `https://calendar.google.com/calendar/ical/${encodeURIComponent(GOOGLE_HOLIDAY_CALENDAR_ID)}/public/basic.ics`
   : '';
 const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL?.trim() || '';
-const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\n/g, '\n') || '';
+const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '';
 const GOOGLE_CALENDAR_TIMEZONE = process.env.GOOGLE_CALENDAR_TIMEZONE?.trim() || 'Europe/Madrid';
 const GOOGLE_CALENDAR_REQUIRED = String(process.env.GOOGLE_CALENDAR_REQUIRED || 'false').toLowerCase() === 'true';
-const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w5/calendar-events';
-const W6_CALENDAR_WRITER_URL = process.env.W6_CALENDAR_WRITER_URL?.trim() || 'https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w6/calendar-write';
+const W5_CALENDAR_READER_URL = process.env.W5_CALENDAR_READER_URL?.trim() || '';
+const W6_CALENDAR_WRITER_URL = process.env.W6_CALENDAR_WRITER_URL?.trim() || '';
+const N8N_WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET?.trim() || '';
 const CALENDAR_BACKGROUND_SYNC_STALE_MS = 6 * 60 * 1000;
 const CALENDAR_BACKGROUND_SYNC_INTERVAL_MS = 2 * 60 * 1000;
 const PUBLIC_BOOKING_TIMEZONE = GOOGLE_CALENDAR_TIMEZONE;
@@ -416,12 +418,12 @@ async function compensateCalendarCreateFailure(eventId) {
 
 function getGoogleCalendarClient() {
   if (!calendarDirectEnabled()) return null;
-  const auth = new google.auth.JWT({
+  const auth = new JWT({
     email: GOOGLE_CLIENT_EMAIL,
     key: GOOGLE_PRIVATE_KEY,
     scopes: ['https://www.googleapis.com/auth/calendar'],
   });
-  return google.calendar({ version: 'v3', auth });
+  return createCalendarClient({ version: 'v3', auth });
 }
 
 function formatCalendarNameParts(patientName, patientPhone, professionalName) {
@@ -521,7 +523,10 @@ async function syncAppointmentViaW6({ action, eventId, payload }) {
     };
     const res = await fetch(W6_CALENDAR_WRITER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(N8N_WEBHOOK_SECRET ? { 'X-Webhook-Secret': N8N_WEBHOOK_SECRET } : {}),
+      },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(10000),
     });
@@ -1361,7 +1366,10 @@ async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
   try {
     const res = await fetch(W5_CALENDAR_READER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(N8N_WEBHOOK_SECRET ? { 'X-Webhook-Secret': N8N_WEBHOOK_SECRET } : {}),
+      },
       body: JSON.stringify({
         time_min: timeMin,
         time_max: timeMax,

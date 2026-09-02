@@ -11,17 +11,17 @@
         <h1 id="dashboardTitle">Buenos dias, Dr.</h1>
         <p id="dashboardLiveSummary">Cargando agenda, mensajes y sincronizacion clinica...</p>
         <div class="clinic-hero-actions">
-          <button class="btn-primary" type="button" id="heroAgendaShortcutBtn" data-dashboard-nav="citas">
-            <span class="material-symbols-rounded">calendar_today</span>
-            Revisar agenda
+          <button class="btn-primary" type="button" id="heroAgentShortcutBtn" data-dashboard-action="open-copilot">
+            <span class="material-symbols-rounded">auto_awesome</span>
+            Crear plan clínico con IA
           </button>
           <button class="btn-secondary" type="button" id="heroNewPatientShortcutBtn" data-dashboard-action="new-patient">
             <span class="material-symbols-rounded">person_add</span>
             Alta de paciente
           </button>
-          <button class="btn-ghost" type="button" id="heroAgentShortcutBtn" data-dashboard-action="open-copilot">
-            <span class="material-symbols-rounded">psychology</span>
-            Copiloto IA
+          <button class="btn-ghost" type="button" id="heroAgendaShortcutBtn" data-dashboard-nav="citas">
+            <span class="material-symbols-rounded">calendar_today</span>
+            Revisar agenda
           </button>
         </div>
       </div>
@@ -50,6 +50,28 @@
       />
       <button class="btn-primary" type="button" data-dashboard-action="open-copilot" aria-label="Abrir copiloto">
         <span class="material-symbols-rounded">arrow_upward</span>
+      </button>
+    </section>
+
+    <section class="clinic-ai-pathway" aria-labelledby="aiPathwayTitle">
+      <div class="clinic-ai-pathway-copy">
+        <span class="clinic-kicker">Diferencial Fisio IA</span>
+        <h2 id="aiPathwayTitle">Del diagnóstico al seguimiento, sin perder el hilo clínico</h2>
+        <p>Selecciona al paciente, describe el diagnóstico y recibe una propuesta explicable. Tú la revisas antes de entregarla y cada evolución queda vinculada a su ficha.</p>
+        <div class="clinic-ai-trust">
+          <span><span class="material-symbols-rounded">verified_user</span> Revisión profesional obligatoria</span>
+          <span><span class="material-symbols-rounded">history</span> Trazabilidad completa</span>
+        </div>
+      </div>
+      <ol class="clinic-ai-steps" aria-label="Circuito del plan clínico con IA">
+        <li><span>01</span><div><strong>Contexto</strong><p>Paciente, diagnóstico y objetivos.</p></div></li>
+        <li><span>02</span><div><strong>Propuesta IA</strong><p>Ejercicios, dosis y precauciones.</p></div></li>
+        <li><span>03</span><div><strong>Validación</strong><p>Aprobar, ajustar o rechazar.</p></div></li>
+        <li><span>04</span><div><strong>Seguimiento</strong><p>Dolor, adherencia y evolución.</p></div></li>
+      </ol>
+      <button class="clinic-ai-launch" type="button" data-dashboard-action="open-copilot">
+        <span>Empezar un plan</span>
+        <span class="material-symbols-rounded">arrow_forward</span>
       </button>
     </section>
 
