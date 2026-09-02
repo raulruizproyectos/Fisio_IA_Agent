@@ -3,12 +3,11 @@ import { createClient, type Session } from '@supabase/supabase-js';
 const supabaseUrl = String(import.meta.env.PUBLIC_SUPABASE_URL || '').trim();
 const supabaseKey = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
-export const backendBase = String(
-  import.meta.env.PUBLIC_BACKEND_URL
-    || ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3001'
-      : 'https://fisio-backend.b5xbaf.easypanel.host')
-).replace(/\/+$/, '');
+const localBackendBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:3001'
+  : '';
+
+export const backendBase = String(import.meta.env.PUBLIC_BACKEND_URL || localBackendBase).replace(/\/+$/, '');
 
 export const authClient = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
@@ -43,6 +42,7 @@ function installAuthenticatedFetch() {
 
 export async function initializeProtectedApp() {
   if (!supabaseUrl || !supabaseKey) throw new Error('Supabase Auth no esta configurado en el frontend');
+  if (!backendBase) throw new Error('El backend no esta configurado en el frontend');
   const { data, error } = await authClient.auth.getSession();
   if (error || !data.session) {
     window.location.replace('/login');
