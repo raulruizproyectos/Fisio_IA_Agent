@@ -106,7 +106,7 @@ import Layout from '../layouts/Layout.astro';
 </script>
 
 <style>
-  .login-page { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(420px, .95fr); background: #f4f0e8; color: #15231f; }
+  .login-page { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(420px, .95fr); background: #f4f0e8; color: #15231f; }
   .login-brand { position: relative; overflow: hidden; padding: clamp(3rem, 8vw, 7rem); display: flex; flex-direction: column; justify-content: space-between; background: radial-gradient(circle at 20% 10%, rgba(197,166,103,.22), transparent 34%), linear-gradient(145deg,#123d37 0%,#0d2d29 58%,#09231f 100%); color: #f8f5ee; }
   .login-brand::after { content: ''; position: absolute; width: 38rem; height: 38rem; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; right: -15rem; bottom: -19rem; box-shadow: 0 0 0 5rem rgba(255,255,255,.025),0 0 0 10rem rgba(255,255,255,.018); }
   .brand-mark { width: 3.25rem; height: 3.25rem; display:grid; place-items:center; border:1px solid rgba(255,255,255,.2); border-radius:1rem; background:rgba(255,255,255,.1); backdrop-filter: blur(18px); }

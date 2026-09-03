@@ -1,5 +1,12 @@
 /* Production UI layer: calm clinical hierarchy, accessibility and predictable states. */
 :root {
+  --clinic-space-1: .25rem;
+  --clinic-space-2: .5rem;
+  --clinic-space-3: .75rem;
+  --clinic-space-4: 1rem;
+  --clinic-space-6: 1.5rem;
+  --clinic-space-8: 2rem;
+  --clinic-space-12: 3rem;
   --clinic-canvas: #dce4df;
   --clinic-surface: #f1efe9;
   --clinic-surface-raised: #e8eeea;
@@ -29,6 +36,7 @@ html {
 
 body {
   min-width: 320px;
+  min-height: 100dvh;
   background: var(--clinic-canvas) !important;
   color: var(--clinic-ink) !important;
   text-rendering: optimizeLegibility;
@@ -119,6 +127,11 @@ body {
 }
 
 :where(button, [role="button"], .btn-primary, .btn-secondary, .btn-ghost) {
+  min-height: 2.75rem;
+}
+
+:where(#sidebarToggle, .topbar button, .mobile-dock-item, .patient-modal-close, .icon-btn) {
+  min-width: 2.75rem;
   min-height: 2.75rem;
 }
 
@@ -352,10 +365,26 @@ button:disabled,
   width: min(100%, 98rem);
   margin-inline: auto;
   padding: clamp(1.15rem, 2.8vw, 2.75rem) !important;
+  background:
+    radial-gradient(circle at 8% 5%, rgba(80, 157, 138, .11), transparent 24rem),
+    radial-gradient(circle at 88% 24%, rgba(154, 95, 52, .07), transparent 28rem);
+  background-attachment: local;
 }
 
 .page-section {
   max-width: 100%;
+}
+
+.page-section.active:not([data-page="dashboard"]) {
+  animation: workspaceEnter .42s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+:where(.btn-primary, .btn-secondary, .btn-ghost, .btn-outline, .patient-primary-action, .clinic-focus-action, .clinic-ai-launch) {
+  will-change: transform;
+}
+
+:where(.btn-primary, .btn-secondary, .btn-ghost, .btn-outline, .patient-primary-action, .clinic-focus-action, .clinic-ai-launch):active {
+  transform: translateY(1px) scale(.985) !important;
 }
 
 .clinic-dashboard {
@@ -1608,6 +1637,11 @@ textarea::placeholder {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes workspaceEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (min-width: 768px) {
   #assistantRailFab {
     display: none !important;
@@ -1674,6 +1708,45 @@ textarea::placeholder {
 
   .patient-directory-controls {
     justify-content: space-between;
+  }
+}
+
+@media (max-width: 1023px) {
+  .sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    height: 100dvh !important;
+    transform: translateX(-100%) !important;
+  }
+
+  .sidebar.translate-x-0,
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  .sidebar-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+  }
+
+  .content {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .mobile-dock-item {
+    min-width: 0;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 1rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-dock {
+    display: none !important;
   }
 }
 

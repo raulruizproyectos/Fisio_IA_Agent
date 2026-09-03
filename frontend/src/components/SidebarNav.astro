@@ -1,4 +1,4 @@
-<aside class="sidebar fixed inset-y-0 left-0 z-40 w-64 bg-[#FAFAF8] border-r border-gray-200 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0" id="sidebar">
+<aside class="sidebar fixed inset-y-0 left-0 z-40 w-64 bg-[#FAFAF8] border-r border-gray-200 flex flex-col transition-transform duration-300 transform -translate-x-full lg:translate-x-0" id="sidebar">
   <div class="p-6">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -103,13 +103,14 @@
   </div>
 </aside>
 
-<div class="sidebar-backdrop fixed inset-0 bg-black/40 backdrop-blur-sm z-30 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden" id="sidebarBackdrop"></div>
+<div class="sidebar-backdrop fixed inset-0 bg-black/40 backdrop-blur-sm z-30 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden" id="sidebarBackdrop"></div>
 
 <script>
   import { isSidebarOpen } from '../store';
 
   const sidebar = document.getElementById('sidebar');
   const backdrop = document.getElementById('sidebarBackdrop');
+  const sidebarToggle = document.getElementById('sidebarToggle');
 
   isSidebarOpen.subscribe((isOpen) => {
     if (isOpen) {
@@ -118,20 +119,29 @@
       backdrop?.classList.remove('opacity-0', 'pointer-events-none');
       backdrop?.classList.add('opacity-100', 'pointer-events-auto');
       // On mobile, block body scroll
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth < 1024) {
         document.body.style.overflow = 'hidden';
       }
+      sidebarToggle?.setAttribute('aria-expanded', 'true');
     } else {
       sidebar?.classList.remove('translate-x-0');
       sidebar?.classList.add('-translate-x-full');
       backdrop?.classList.remove('opacity-100', 'pointer-events-auto');
       backdrop?.classList.add('opacity-0', 'pointer-events-none');
       document.body.style.overflow = '';
+      sidebarToggle?.setAttribute('aria-expanded', 'false');
     }
   });
 
   backdrop?.addEventListener('click', () => {
     isSidebarOpen.set(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isSidebarOpen.get()) {
+      isSidebarOpen.set(false);
+      sidebarToggle?.focus();
+    }
   });
 
   document.addEventListener('fisio:open-sidebar', () => isSidebarOpen.set(true));

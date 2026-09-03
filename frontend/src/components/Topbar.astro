@@ -1,9 +1,9 @@
 <header class="topbar bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
   <div class="flex items-center gap-4">
-    <button class="text-[#687076] hover:text-[#11181C] transition-colors md:hidden" id="sidebarToggle" aria-label="Men&uacute;">
+    <button class="text-[#687076] hover:text-[#11181C] transition-colors lg:hidden" id="sidebarToggle" aria-label="Men&uacute;" aria-controls="sidebar" aria-expanded="false">
       <span class="material-symbols-rounded text-2xl">menu</span>
     </button>
-    <div class="topbar-context hidden md:flex" aria-label="Estado de la consulta">
+    <div class="topbar-context hidden lg:flex" aria-label="Estado de la consulta">
       <span class="topbar-context-dot" aria-hidden="true"></span>
       <strong>Consulta operativa</strong>
       <span id="topbarDateLabel">Hoy</span>
@@ -20,13 +20,13 @@
   </div>
 
   <div class="flex items-center gap-2 md:gap-3">
-    <button class="hidden md:flex items-center gap-2 text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-50 px-4 py-2 rounded-full transition-colors" type="button" data-dashboard-nav="citas">
+    <button class="hidden lg:flex items-center gap-2 text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-50 px-4 py-2 rounded-full transition-colors" type="button" data-dashboard-nav="citas">
       <span class="material-symbols-rounded text-lg">calendar_today</span>
       <span>Agenda</span>
     </button>
     <button class="flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-full transition-colors" id="assistantRailToggle" type="button" aria-label="Abrir copilot cl&iacute;nico" aria-controls="assistantRail" aria-expanded="false">
       <span class="material-symbols-rounded text-lg">psychology</span>
-      <span class="hidden md:inline">Copiloto IA</span>
+      <span class="hidden lg:inline">Copiloto IA</span>
     </button>
     <button class="relative flex items-center gap-2 p-2 text-[#687076] hover:text-[#11181C] hover:bg-gray-50 rounded-full transition-colors" type="button" aria-label="Abrir bandeja de mensajes" id="notifBtn" data-dashboard-nav="intakes">
       <span class="material-symbols-rounded">notifications</span>
@@ -37,13 +37,6 @@
 </header>
 
 <script>
-  import { isSidebarOpen } from '../store';
-
-  const sidebarToggle = document.getElementById('sidebarToggle');
-  sidebarToggle?.addEventListener('click', () => {
-    isSidebarOpen.set(!isSidebarOpen.get());
-  });
-
   const assistantRailToggle = document.getElementById('assistantRailToggle');
   assistantRailToggle?.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('fisio:open-assistant'));
