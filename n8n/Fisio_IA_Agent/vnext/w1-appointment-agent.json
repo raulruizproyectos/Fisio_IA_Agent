@@ -6,7 +6,8 @@
         "path": "fisio/w1/appointment",
         "responseMode": "responseNode",
         "options": {},
-        "httpMethod": "POST"
+        "httpMethod": "POST",
+        "authentication": "headerAuth"
       },
       "id": "WebhookW1Appointment",
       "name": "Entrada cita",
@@ -16,7 +17,12 @@
         220,
         300
       ],
-      "webhookId": "fisio-w1-appointment"
+      "webhookId": "fisio-w1-appointment",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "parameters": {
@@ -107,13 +113,22 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments",
+        "url": "={{ $env.BACKEND_URL + '/api/profesional/appointments' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ ({ patient_id: $json.patient_id, professional_id: $json.professional_id, start_at: $json.start_at, end_at: $json.end_at, channel: $json.channel || 'telegram', reason: $json.reason, request_id: $json.request_id }) }}",
         "options": {
           "ignoreResponseCode": true,
           "timeout": 15000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Api-Key",
+              "value": "={{ $env.INTERNAL_API_KEY }}"
+            }
+          ]
         }
       },
       "id": "CreateAppointmentInBackend",
@@ -124,7 +139,10 @@
         2160,
         80
       ],
-      "continueOnFail": true
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

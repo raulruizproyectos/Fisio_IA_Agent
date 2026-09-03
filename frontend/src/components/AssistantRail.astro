@@ -5,7 +5,9 @@
 <aside class="fixed inset-y-0 right-0 z-50 w-full md:w-[480px] lg:w-[560px] bg-white border-l border-gray-200 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col assistant-rail" id="assistantRail" aria-label="Copiloto clinico" aria-hidden="true" data-copilot-build="clinical-copilot-20260518">
   
   <header class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
-    <div>
+    <div class="assistant-rail-heading">
+      <span class="assistant-brand-mark material-symbols-rounded" aria-hidden="true">clinical_notes</span>
+      <div>
       <div class="flex items-center gap-2 mb-0.5">
         <span class="text-[11px] font-medium text-emerald-600 uppercase tracking-widest">Copiloto clínico IA</span>
         <div class="flex items-center gap-1.5 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -17,11 +19,19 @@
         </div>
       </div>
       <h2 class="text-base font-medium text-[#11181C]">Conversación y plan terapéutico</h2>
+      </div>
     </div>
     <button type="button" class="text-[#687076] hover:bg-gray-100 p-2 rounded-full transition-colors" id="assistantRailClose" aria-label="Cerrar copiloto">
       <span class="material-symbols-rounded">close</span>
     </button>
   </header>
+
+  <ol class="assistant-care-stepper" aria-label="Flujo del plan clínico">
+    <li class="is-current"><span>1</span><strong>Contexto</strong></li>
+    <li><span>2</span><strong>Propuesta</strong></li>
+    <li><span>3</span><strong>Revisión</strong></li>
+    <li><span>4</span><strong>Entrega</strong></li>
+  </ol>
 
   <div class="flex-1 overflow-hidden flex flex-col md:flex-row bg-[#FAFAF8]">
     
@@ -56,7 +66,7 @@
           <div class="flex flex-col gap-4" id="chatLog"></div>
         </div>
 
-        <!-- TARJETAS DE ACCION RAPIDA (COPILOT QUICK ACTIONS) -->
+        <!-- Atajos clínicos -->
         <div class="assistant-quick-actions" id="assistantQuickActions">
           <span class="quick-actions-label">Atajos del Copilot:</span>
           <div class="quick-action-chips">
@@ -93,6 +103,9 @@
           <div class="flex flex-wrap items-center gap-2" aria-label="Acciones rapidas del copiloto">
             <button type="button" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-sm font-medium transition-colors" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios">
               <span class="material-symbols-rounded text-[18px]">electric_bolt</span> Generar plan
+            </button>
+            <button type="button" class="flex items-center gap-1.5 px-4 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 rounded-full text-sm font-medium transition-colors disabled:opacity-50" id="exerciseApproveBtn" aria-label="Aprobar plan tras revisión clínica" title="Genera un plan para revisarlo" disabled>
+              <span class="material-symbols-rounded text-[18px]">verified</span> Aprobar plan
             </button>
             <button type="button" class="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[#11181C] rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:bg-gray-50" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF" disabled>
               <span class="material-symbols-rounded text-[18px]">picture_as_pdf</span> Exportar PDF
@@ -176,6 +189,50 @@
       </div>
     </aside>
   </div>
+
+  <section class="exercise-editor" id="exerciseReportEditor" hidden aria-hidden="true" aria-labelledby="exerciseEditorTitle">
+    <header class="exercise-editor-header">
+      <div>
+        <span>Revisión profesional</span>
+        <h2 id="exerciseEditorTitle">Editar plan terapéutico</h2>
+        <p>Ajusta el contenido que recibirá el paciente antes de aprobarlo.</p>
+      </div>
+      <button type="button" id="exerciseEditorClose" aria-label="Cerrar editor">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </header>
+
+    <form class="exercise-editor-form" id="exerciseEditorForm">
+      <div class="exercise-editor-intro">
+        <label>
+          <span>Resumen clínico</span>
+          <textarea id="exerciseEditorSummary" rows="3" maxlength="1200"></textarea>
+        </label>
+        <label>
+          <span>Indicaciones para el paciente</span>
+          <textarea id="exerciseEditorPatientMessage" rows="3" maxlength="1200"></textarea>
+        </label>
+      </div>
+
+      <div class="exercise-editor-section-heading">
+        <div>
+          <span>Ejercicios del plan</span>
+          <strong>Edita dosis e instrucciones</strong>
+        </div>
+        <small>Los cambios quedan vinculados al historial.</small>
+      </div>
+      <div class="exercise-editor-list" id="exerciseEditorList"></div>
+      <p class="exercise-editor-feedback" id="exerciseEditorFeedback" role="status" hidden></p>
+
+      <footer class="exercise-editor-footer">
+        <button type="button" class="exercise-editor-cancel" id="exerciseEditorCancel">Cancelar</button>
+        <button type="submit" class="exercise-editor-save" id="exerciseEditorSave">
+          <span class="material-symbols-rounded">save</span>
+          Guardar cambios
+        </button>
+      </footer>
+    </form>
+  </section>
 </aside>
 
 <div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300 assistant-rail-backdrop" id="assistantRailBackdrop" aria-hidden="true"></div>

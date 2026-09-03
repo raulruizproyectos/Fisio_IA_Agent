@@ -1,18 +1,18 @@
-<aside class="sidebar fixed inset-y-0 left-0 z-40 w-64 bg-[#FAFAF8] border-r border-gray-200 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0" id="sidebar">
+<aside class="sidebar fixed inset-y-0 left-0 z-40 w-64 bg-[#FAFAF8] border-r border-gray-200 flex flex-col transition-transform duration-300 transform -translate-x-full lg:translate-x-0" id="sidebar">
   <div class="p-6">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-        <span class="material-symbols-rounded text-[22px]">medical_services</span>
+        <span class="material-symbols-rounded text-[22px]" aria-hidden="true">medical_services</span>
       </div>
       <div>
         <h1 class="text-base font-semibold text-[#11181C] tracking-tight leading-tight">Fisio_IA_Agent</h1>
-        <p class="text-[11px] font-medium text-emerald-600 uppercase tracking-widest mt-0.5">Clinical OS</p>
+        <p class="text-[11px] font-medium text-emerald-600 uppercase tracking-widest mt-0.5">Gestión clínica</p>
       </div>
     </div>
   </div>
 
   <div class="px-6 mb-6">
-    <div class="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-3 shadow-sm">
+    <div class="sidebar-status flex items-start gap-3">
       <span class="relative flex h-2.5 w-2.5 mt-1">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -22,6 +22,14 @@
         <span class="text-[10px] text-[#687076] leading-tight mt-0.5">Agenda, IA y CRM sincronizados</span>
       </div>
     </div>
+    <button type="button" class="sidebar-ai-launch" data-dashboard-action="open-copilot">
+      <span class="sidebar-ai-launch-icon"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span></span>
+      <span>
+        <strong>Nuevo plan con IA</strong>
+        <small>Diagnóstico a seguimiento</small>
+      </span>
+      <span class="material-symbols-rounded sidebar-ai-launch-arrow" aria-hidden="true">arrow_forward</span>
+    </button>
   </div>
 
   <div class="flex-1 overflow-y-auto px-4 space-y-6 pb-6">
@@ -40,9 +48,9 @@
           <span class="material-symbols-rounded text-[20px]">calendar_today</span>
           <span class="nav-label">Agenda</span>
         </a>
-        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors" data-section="plantillas">
+        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] hover:bg-gray-100 transition-colors" data-section="plantillas">
           <span class="material-symbols-rounded text-[20px]">psychology</span>
-          <span class="nav-label">Planes IA</span>
+          <span class="nav-label">Planes terapéuticos</span>
         </a>
       </nav>
     </div>
@@ -83,22 +91,26 @@
 
   <div class="p-4 border-t border-gray-200">
     <div class="flex items-center gap-3 px-2">
-      <div class="w-9 h-9 rounded-full bg-[#11181C] text-white flex items-center justify-center text-sm font-medium">RR</div>
-      <div class="flex flex-col">
-        <strong class="text-sm font-medium text-[#11181C]">Dr. Raúl Ruiz</strong>
-        <span class="text-xs text-[#687076]">Fisioterapia</span>
+      <div id="sidebarUserInitials" class="w-9 h-9 rounded-full bg-[#11181C] text-white flex items-center justify-center text-sm font-medium">--</div>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <strong id="sidebarUserName" class="truncate text-sm font-medium text-[#11181C]">Profesional</strong>
+        <span id="sidebarUserRole" class="truncate text-xs text-[#687076]">Sesión segura</span>
       </div>
+      <button id="logoutBtn" type="button" class="rounded-lg p-2 text-[#687076] transition-colors hover:bg-red-50 hover:text-red-700" aria-label="Cerrar sesión" title="Cerrar sesión">
+        <span class="material-symbols-rounded text-[20px]">logout</span>
+      </button>
     </div>
   </div>
 </aside>
 
-<div class="sidebar-backdrop fixed inset-0 bg-black/40 backdrop-blur-sm z-30 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden" id="sidebarBackdrop"></div>
+<div class="sidebar-backdrop fixed inset-0 bg-black/40 backdrop-blur-sm z-30 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden" id="sidebarBackdrop"></div>
 
 <script>
   import { isSidebarOpen } from '../store';
 
   const sidebar = document.getElementById('sidebar');
   const backdrop = document.getElementById('sidebarBackdrop');
+  const sidebarToggle = document.getElementById('sidebarToggle');
 
   isSidebarOpen.subscribe((isOpen) => {
     if (isOpen) {
@@ -107,20 +119,29 @@
       backdrop?.classList.remove('opacity-0', 'pointer-events-none');
       backdrop?.classList.add('opacity-100', 'pointer-events-auto');
       // On mobile, block body scroll
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth < 1024) {
         document.body.style.overflow = 'hidden';
       }
+      sidebarToggle?.setAttribute('aria-expanded', 'true');
     } else {
       sidebar?.classList.remove('translate-x-0');
       sidebar?.classList.add('-translate-x-full');
       backdrop?.classList.remove('opacity-100', 'pointer-events-auto');
       backdrop?.classList.add('opacity-0', 'pointer-events-none');
       document.body.style.overflow = '';
+      sidebarToggle?.setAttribute('aria-expanded', 'false');
     }
   });
 
   backdrop?.addEventListener('click', () => {
     isSidebarOpen.set(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isSidebarOpen.get()) {
+      isSidebarOpen.set(false);
+      sidebarToggle?.focus();
+    }
   });
 
   document.addEventListener('fisio:open-sidebar', () => isSidebarOpen.set(true));

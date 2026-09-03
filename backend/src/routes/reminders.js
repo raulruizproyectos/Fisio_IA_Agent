@@ -1,9 +1,16 @@
 import { Router } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = Router();
 
 const PATIENT_BOT_TOKEN = process.env.TELEGRAM_PATIENT_BOT_TOKEN?.trim() || null;
+
+function escapeTelegramHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 async function sendTelegramReminder(chatId, text) {
   if (!PATIENT_BOT_TOKEN || !chatId) return false;
@@ -73,9 +80,46 @@ router.post('/', async (req, res, next) => {
       const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
       const dia = fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
 
-      const message = `📋 <b>Recordatorio de cita</b>\n\nHola ${nombre}, te recordamos que tienes una cita de fisioterapia:\n\n📅 <b>${dia}</b>\n🕐 <b>${hora}h</b>${cita.motivo ? `\n📝 ${cita.motivo}` : ''}\n\nSi necesitas cancelar o cambiar la cita, escríbenos por aquí.\n\n— Clínica de Fisioterapia`;
+      const { error: claimError } = await supabase
+        .from('crm_recordatorio_envios')
+        .insert({ cita_id: cita.id, tipo: '24h', canal: 'telegram', estado: 'processing' });
+      if (claimError?.code === '23505') {
+        const retryBefore = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const { data: retryClaim, error: retryError } = await supabase
+          .from('crm_recordatorio_envios')
+          .update({
+            estado: 'processing',
+            intento_en: new Date().toISOString(),
+            error_code: null,
+          })
+          .eq('cita_id', cita.id)
+          .eq('tipo', '24h')
+          .eq('canal', 'telegram')
+          .in('estado', ['failed', 'processing'])
+          .lt('intento_en', retryBefore)
+          .select('id')
+          .maybeSingle();
+        if (retryError) throw retryError;
+        if (!retryClaim) {
+          results.push({ cita_id: cita.id, status: 'already_processed' });
+          continue;
+        }
+      }
+      if (claimError && claimError.code !== '23505') throw claimError;
+
+      const message = `📋 <b>Recordatorio de cita</b>\n\nHola ${escapeTelegramHtml(nombre)}, te recordamos que tienes una cita de fisioterapia:\n\n📅 <b>${escapeTelegramHtml(dia)}</b>\n🕐 <b>${escapeTelegramHtml(hora)}h</b>${cita.motivo ? `\n📝 ${escapeTelegramHtml(cita.motivo)}` : ''}\n\nSi necesitas cancelar o cambiar la cita, escríbenos por aquí.\n\n— Clínica de Fisioterapia`;
 
       const ok = await sendTelegramReminder(chatId, message);
+      await supabase
+        .from('crm_recordatorio_envios')
+        .update({
+          estado: ok ? 'sent' : 'failed',
+          enviado_en: ok ? new Date().toISOString() : null,
+          error_code: ok ? null : 'telegram_send_failed',
+        })
+        .eq('cita_id', cita.id)
+        .eq('tipo', '24h')
+        .eq('canal', 'telegram');
       results.push({ cita_id: cita.id, paciente: nombre, status: ok ? 'sent' : 'failed' });
       if (ok) sent++;
     }

@@ -6,7 +6,8 @@
         "path": "fisio/w2/exercise-recommend",
         "responseMode": "responseNode",
         "httpMethod": "POST",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
       "id": "WebhookW2Exercise",
       "name": "Entrada plan",
@@ -16,7 +17,12 @@
         220,
         260
       ],
-      "webhookId": "fisio-w2-exercise"
+      "webhookId": "fisio-w2-exercise",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "parameters": {
@@ -85,7 +91,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://uewhbaejcouenoufuwlq.supabase.co/functions/v1/exercise-recommend",
+        "url": "={{ $env.SUPABASE_URL + '/functions/v1/exercise-recommend' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -96,6 +102,14 @@
             {
               "name": "x-client-info",
               "value": "fisio_ia_agent_n8n_w2"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \" + $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
             }
           ]
         },
@@ -114,7 +128,10 @@
       "position": [
         940,
         180
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

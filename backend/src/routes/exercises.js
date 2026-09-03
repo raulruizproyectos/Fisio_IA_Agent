@@ -1,15 +1,11 @@
 ﻿import { Router } from 'express';
 import crypto from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase.js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 import { EXERCISE_AGENT_PROMPT, EXERCISE_AGENT_PROMPT_VERSION } from '../lib/exercise-agent-prompt.js';
 
 const router = Router();
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 const EXERCISE_ENGINE_TIMEOUT_MS = Number(process.env.EXERCISE_ENGINE_TIMEOUT_MS || 30000);
 const EXERCISE_ENGINE_MAX_ATTEMPTS = Number(process.env.EXERCISE_ENGINE_MAX_ATTEMPTS || 2);
 const EXERCISE_ENGINE_CANDIDATE_LIMIT = Number(process.env.EXERCISE_ENGINE_CANDIDATE_LIMIT || 24);
@@ -158,7 +154,10 @@ router.get('/:id/media', async (req, res) => {
 // Main W2 endpoint: receives symptoms, queries catalog, calls OpenAI via n8n,
 // stores recommendation + items, returns result
 router.post('/recommend', async (req, res) => {
-  const requestId = crypto.randomUUID();
+  const requestedId = String(req.get('idempotency-key') || req.body?.request_id || '').trim();
+  const requestId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedId)
+    ? requestedId
+    : crypto.randomUUID();
   try {
     const {
       patient_id,
@@ -314,7 +313,6 @@ router.post('/recommend', async (req, res) => {
       symptom_summary = symptoms,
       red_flags_present = false,
       red_flags_items = [],
-      selected_exercises: rawSelectedExercises = [],
       clinical_interpretation = '',
       main_goal = '',
       patient_cover_message = '',
@@ -327,10 +325,14 @@ router.post('/recommend', async (req, res) => {
       escalation_recommend_medical_attention = false,
       escalation_reason = '',
     } = recommendation;
+    const rawSelectedExercises = getRecommendationExercises(recommendation);
     const selectedExercises = improveSelectionImageCoverage({
       selectedExercises: rawSelectedExercises,
       catalog,
       symptoms,
+    }).filter((exercise) => {
+      const exerciseId = String(exercise?.exercise_id || exercise?.id || '').trim();
+      return exerciseId && catalogById.has(exerciseId);
     });
     engineObservability.image_min_ratio = EXERCISE_IMAGE_MIN_RATIO;
     engineObservability.image_coverage_adjusted = selectedExercises.some((item, index) => {
@@ -338,6 +340,17 @@ router.post('/recommend', async (req, res) => {
       const currentId = String(item?.exercise_id || item?.id || '');
       return rawId !== currentId;
     });
+
+    if (!selectedExercises.length) {
+      return res.status(422).json({
+        ok: false,
+        code: 'no_compatible_exercises',
+        error: 'No se han encontrado ejercicios compatibles y seguros para este caso. Amplia el contexto clinico o revisa el catalogo antes de intentarlo de nuevo.',
+        request_id: requestId,
+        patient_id: patId,
+        engine_observability: engineObservability,
+      });
+    }
 
     // 3a/3b/3c. Persist only when patient_id exists
     let recommendationId = null;
@@ -358,7 +371,10 @@ router.post('/recommend', async (req, res) => {
             escalation_recommend_medical_attention,
             escalation_reason,
             request_id: requestId,
-            estado: escalation_recommend_medical_attention ? 'requiere_revision' : 'generada',
+            estado: 'requiere_revision',
+            prompt_version: EXERCISE_AGENT_PROMPT_VERSION,
+            model_name: String(process.env.OPENAI_MODEL || 'n8n-managed'),
+            idempotency_key: requestId,
           })
           .select('id')
           .single();
@@ -381,7 +397,8 @@ router.post('/recommend', async (req, res) => {
             .insert(items);
 
           if (itemsErr) {
-            console.warn('[exercises/recommend] Error inserting items:', itemsErr.message);
+            await supabase.from('crm_recomendaciones').delete().eq('id', recommendationId);
+            throw itemsErr;
           }
         }
 
@@ -403,6 +420,21 @@ router.post('/recommend', async (req, res) => {
           status: 'processed',
         });
       } catch (persistenceErr) {
+        if (persistenceErr?.code === '23505') {
+          const { data: existing } = await supabase
+            .from('crm_recomendaciones')
+            .select('id, estado')
+            .eq('idempotency_key', requestId)
+            .maybeSingle();
+          return res.status(409).json({
+            ok: false,
+            code: 'duplicate_request',
+            error: 'Esta solicitud ya fue procesada',
+            request_id: requestId,
+            recommendation_id: existing?.id || null,
+            approval_state: existing?.estado || null,
+          });
+        }
         persistenceWarning = persistenceErr?.message || 'recommendation_persistence_failed';
         console.warn('[exercises/recommend] persistence warning:', persistenceWarning);
       }
@@ -523,6 +555,8 @@ router.post('/recommend', async (req, res) => {
       informe_clinico: informeClinico,
       persistence_skipped: !persistRecommendation || Boolean(persistenceWarning),
       persistence_warning: persistenceWarning,
+      approval_required: true,
+      approval_state: 'requiere_revision',
     };
 
     if (persistRecommendation && recommendationId) {
@@ -754,6 +788,189 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
   }
 });
 
+router.patch('/recommendations/:recommendationId/draft', async (req, res) => {
+  try {
+    const recommendationId = String(req.params.recommendationId || '').trim();
+    const incoming = req.body?.report && typeof req.body.report === 'object'
+      ? req.body.report
+      : req.body;
+
+    if (!incoming || typeof incoming !== 'object') {
+      return res.status(400).json({ ok: false, error: 'El informe editado es obligatorio' });
+    }
+
+    const { data: current, error: currentError } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, paciente_id, fisioterapeuta_id, estado, request_id')
+      .eq('id', recommendationId)
+      .single();
+    if (currentError) throw currentError;
+    if (!current) return res.status(404).json({ ok: false, error: 'Recomendación no encontrada' });
+    if (!['requiere_revision', 'rechazada'].includes(current.estado)) {
+      return res.status(409).json({ ok: false, error: 'El informe ya no admite cambios' });
+    }
+
+    const { data: storedItems, error: itemsError } = await supabase
+      .from('crm_recomendacion_items')
+      .select('ejercicio_id')
+      .eq('recomendacion_id', recommendationId);
+    if (itemsError) throw itemsError;
+    const allowedExerciseIds = new Set((storedItems || []).map((item) => String(item.ejercicio_id)));
+
+    const cleanText = (value, limit) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, limit);
+    const cleanNumber = (value, max = 999) => {
+      if (value === null || value === undefined || value === '') return null;
+      const parsed = Number.parseInt(String(value), 10);
+      return Number.isFinite(parsed) && parsed >= 0 ? Math.min(parsed, max) : null;
+    };
+    const exercises = (Array.isArray(incoming.exercises) ? incoming.exercises : [])
+      .slice(0, 12)
+      .filter((exercise) => allowedExerciseIds.has(String(exercise?.exercise_id || exercise?.id || '')))
+      .map((exercise, index) => ({
+        ...exercise,
+        nombre: cleanText(exercise?.nombre || exercise?.name || `Ejercicio ${index + 1}`, 160),
+        procedimiento: cleanText(exercise?.procedimiento || exercise?.descripcion || '', 1800),
+        why: cleanText(exercise?.why || exercise?.reason || '', 600),
+        cautions: Array.isArray(exercise?.cautions)
+          ? exercise.cautions.map((item) => cleanText(item, 280)).filter(Boolean).slice(0, 6)
+          : cleanText(exercise?.cautions, 1200).split(';').map((item) => item.trim()).filter(Boolean).slice(0, 6),
+        series: cleanNumber(exercise?.series, 20),
+        repeticiones: cleanNumber(exercise?.repeticiones, 200),
+        duracion_segundos: cleanNumber(exercise?.duracion_segundos, 7200),
+        orden: index + 1,
+      }));
+
+    if (!exercises.length) {
+      return res.status(400).json({ ok: false, error: 'El informe debe conservar al menos un ejercicio válido' });
+    }
+
+    const symptomSummary = cleanText(incoming.symptom_summary, 1200);
+    const messageToPatient = cleanText(incoming.message_to_patient, 1200);
+    const messageToTherapist = cleanText(incoming.message_to_therapist, 1200);
+    const editedAt = new Date().toISOString();
+    const report = {
+      ...incoming,
+      recommendation_id: recommendationId,
+      patient_id: current.paciente_id,
+      symptom_summary: symptomSummary,
+      message_to_patient: messageToPatient,
+      message_to_therapist: messageToTherapist,
+      exercises,
+      edited_at: editedAt,
+      approval_required: true,
+      approval_state: 'requiere_revision',
+    };
+
+    const { error: updateError } = await supabase
+      .from('crm_recomendaciones')
+      .update({
+        symptom_summary: symptomSummary,
+        message_to_patient_es: messageToPatient,
+        message_to_therapist_es: messageToTherapist,
+        estado: 'requiere_revision',
+        updated_at: editedAt,
+      })
+      .eq('id', recommendationId);
+    if (updateError) throw updateError;
+
+    await logComm(supabase, {
+      paciente_id: current.paciente_id,
+      fisioterapeuta_id: current.fisioterapeuta_id || req.auth?.profile_id || null,
+      recomendacion_id: recommendationId,
+      channel: 'crm_web',
+      direction: 'internal',
+      message_type: 'event',
+      message_text: 'Informe clínico editado por el profesional',
+      payload: { event: 'exercise_report_snapshot', report },
+      request_id: current.request_id || null,
+      status: 'processed',
+      occurred_at: editedAt,
+    });
+
+    return res.json({ ok: true, data: { report, edited_at: editedAt } });
+  } catch (err) {
+    console.error('[exercises/recommendations/draft] Error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Error guardando la revisión del informe' });
+  }
+});
+
+router.post('/recommendations/:recommendationId/review', async (req, res) => {
+  try {
+    const recommendationId = String(req.params.recommendationId || '').trim();
+    const decision = String(req.body?.decision || '').trim().toLowerCase();
+    const note = String(req.body?.note || req.body?.approval_note || '').trim();
+    if (!['approve', 'reject'].includes(decision)) {
+      return res.status(400).json({ ok: false, error: 'decision debe ser approve o reject' });
+    }
+
+    const { data: current, error: currentError } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, paciente_id, fisioterapeuta_id, estado, red_flags_present, request_id')
+      .eq('id', recommendationId)
+      .single();
+    if (currentError) throw currentError;
+    if (!current) return res.status(404).json({ ok: false, error: 'Recomendacion no encontrada' });
+    if (!['requiere_revision', 'rechazada'].includes(current.estado)) {
+      return res.status(409).json({ ok: false, error: `La recomendacion ya esta en estado ${current.estado}` });
+    }
+    if (decision === 'approve' && current.red_flags_present && note.length < 12) {
+      return res.status(400).json({
+        ok: false,
+        error: 'La aprobacion con alertas rojas requiere una nota clinica justificativa',
+      });
+    }
+    if (decision === 'approve') {
+      const { count: itemCount, error: itemCountError } = await supabase
+        .from('crm_recomendacion_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('recomendacion_id', recommendationId);
+      if (itemCountError) throw itemCountError;
+      if (!itemCount) {
+        return res.status(409).json({
+          ok: false,
+          code: 'empty_recommendation',
+          error: 'No se puede aprobar una recomendacion sin ejercicios validos',
+        });
+      }
+    }
+
+    const reviewedAt = new Date().toISOString();
+    const nextState = decision === 'approve' ? 'aprobada' : 'rechazada';
+    const { data, error } = await supabase
+      .from('crm_recomendaciones')
+      .update({
+        estado: nextState,
+        reviewed_by_profile_id: req.auth?.profile_id || current.fisioterapeuta_id || null,
+        reviewed_at: reviewedAt,
+        approval_note: note || null,
+        updated_at: reviewedAt,
+      })
+      .eq('id', recommendationId)
+      .select('id, estado, reviewed_by_profile_id, reviewed_at, approval_note')
+      .single();
+    if (error) throw error;
+
+    await logComm(supabase, {
+      paciente_id: current.paciente_id,
+      fisioterapeuta_id: current.fisioterapeuta_id || req.auth?.profile_id || null,
+      recomendacion_id: recommendationId,
+      channel: 'crm_web',
+      direction: 'internal',
+      message_type: 'event',
+      message_text: decision === 'approve' ? 'Informe aprobado por el profesional' : 'Informe rechazado por el profesional',
+      payload: { event: 'recommendation_reviewed', decision, note: note || null },
+      request_id: current.request_id || null,
+      status: 'processed',
+      occurred_at: reviewedAt,
+    });
+
+    return res.json({ ok: true, data });
+  } catch (err) {
+    console.error('[exercises/recommendations/review] Error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Error revisando recomendacion' });
+  }
+});
+
 router.post('/reports/pdf', async (req, res) => {
   try {
     const rawPayload = req.body?.payload && typeof req.body.payload === 'object'
@@ -771,6 +988,23 @@ router.post('/reports/pdf', async (req, res) => {
     const recommendationId = String(
       rawPayload?.recommendation_id || rawPayload?.recomendacion_id || ''
     ).trim();
+
+    if (!recommendationId) {
+      return res.status(400).json({ ok: false, error: 'recommendation_id es obligatorio' });
+    }
+    const { data: approvedRecommendation, error: approvalError } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, estado')
+      .eq('id', recommendationId)
+      .single();
+    if (approvalError) throw approvalError;
+    if (!['aprobada', 'enviada'].includes(approvedRecommendation?.estado)) {
+      return res.status(409).json({
+        ok: false,
+        error: 'El informe debe ser aprobado por un fisioterapeuta antes de exportarlo',
+        code: 'professional_approval_required',
+      });
+    }
 
     const pdfPayload = {
       ...rawPayload,
@@ -917,7 +1151,7 @@ function parsePainScale(value) {
 }
 
 function sanitizeRecommendationState(value) {
-  const allowed = new Set(['generada', 'enviada', 'error', 'requiere_revision']);
+  const allowed = new Set(['requiere_revision', 'aprobada', 'rechazada', 'enviada', 'error']);
   const state = String(value || '').trim().toLowerCase();
   if (!state) return null;
   return allowed.has(state) ? state : null;
@@ -1223,7 +1457,20 @@ async function callEngineWithRetry({
     try {
       const response = await fetch(targetUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.N8N_WEBHOOK_SECRET
+            ? { 'X-Webhook-Secret': process.env.N8N_WEBHOOK_SECRET }
+            : {}),
+          ...(process.env.SUPABASE_URL
+              && targetUrl.startsWith(process.env.SUPABASE_URL)
+              && process.env.SUPABASE_ANON_KEY
+            ? {
+                apikey: process.env.SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+              }
+            : {}),
+        },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(timeoutMs),
       });
@@ -1290,11 +1537,18 @@ async function callEngineWithRetry({
   };
 }
 
-function hasRecommendationShape(recommendation) {
+export function getRecommendationExercises(recommendation) {
+  if (!recommendation || typeof recommendation !== 'object') return [];
+  if (Array.isArray(recommendation.selected_exercises)) return recommendation.selected_exercises;
+  if (Array.isArray(recommendation.exercises)) return recommendation.exercises;
+  return [];
+}
+
+export function hasRecommendationShape(recommendation) {
   if (!recommendation || typeof recommendation !== 'object') return false;
-  if (Array.isArray(recommendation.selected_exercises)) return true;
-  if (Array.isArray(recommendation.exercises)) return true;
-  return false;
+  return getRecommendationExercises(recommendation).some((exercise) =>
+    Boolean(String(exercise?.exercise_id || exercise?.id || '').trim())
+  );
 }
 
 function hasExerciseImage(exercise) {
@@ -1528,27 +1782,48 @@ function extractRedFlags(symptoms) {
   return [...new Set(flags)];
 }
 
-function inferZoneFromSymptoms(symptoms) {
-  const text = String(symptoms || '').toLowerCase();
+function normalizeClinicalText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function getZoneAliases(zone) {
+  const normalized = normalizeClinicalText(zone);
+  const aliases = {
+    cervical: ['cervical', 'cuello', 'trapecio'],
+    hombro_brazo: ['hombro', 'brazo', 'manguito', 'escapula'],
+    lumbar: ['lumbar', 'espalda', 'columna', 'lumbopelvico', 'core'],
+    cadera: ['cadera', 'gluteo', 'pelvis'],
+    rodilla: ['rodilla', 'menisco', 'ligamento'],
+    tobillo_pie: ['tobillo', 'pie', 'aquiles', 'gemelo', 'pantorrilla'],
+  };
+  return aliases[normalized] || [normalized].filter(Boolean);
+}
+
+export function inferZoneFromSymptoms(symptoms) {
+  const text = normalizeClinicalText(symptoms);
   if (/(cervical|cuello|trapecio)/.test(text)) return 'cervical';
   if (/(hombro|brazo|manguito|escapula)/.test(text)) return 'hombro_brazo';
-  if (/(lumbar|espalda|dorsal|columna)/.test(text)) return 'espalda';
+  if (/(lumbar|lumbalgia|espalda|dorsal|columna|hernia discal|disco|l[1-5][ -]?s?1|ciatica|ciatico|core)/.test(text)) return 'lumbar';
   if (/(cadera|gluteo|pelvis)/.test(text)) return 'cadera';
   if (/(rodilla|menisco|ligamento)/.test(text)) return 'rodilla';
   if (/(tobillo|pie|aquiles|gemelo|pantorrilla)/.test(text)) return 'tobillo_pie';
   return null;
 }
 
-function scoreExerciseForSymptoms(exercise, symptomText, inferredZone) {
-  const name = String(exercise?.nombre || '').toLowerCase();
-  const description = String(exercise?.descripcion || '').toLowerCase();
-  const zone = String(exercise?.zona_corporal || '').toLowerCase();
+export function scoreExerciseForSymptoms(exercise, symptomText, inferredZone) {
+  const name = normalizeClinicalText(exercise?.nombre);
+  const description = normalizeClinicalText(exercise?.descripcion);
+  const zone = normalizeClinicalText(exercise?.zona_corporal);
   const combined = `${name} ${description} ${zone}`;
-  const symptoms = String(symptomText || '').toLowerCase();
+  const symptoms = normalizeClinicalText(symptomText);
+  const zoneAliases = getZoneAliases(inferredZone);
 
   let score = 0;
-  if (inferredZone && zone.includes(inferredZone.toLowerCase())) score += 6;
-  if (inferredZone && combined.includes(inferredZone.toLowerCase())) score += 2;
+  if (zoneAliases.some((alias) => zone.includes(alias))) score += 6;
+  if (zoneAliases.some((alias) => combined.includes(alias))) score += 2;
 
   const keywords = symptoms
     .replace(/[^a-z0-9\s]/g, ' ')
@@ -1864,7 +2139,10 @@ async function runExerciseRecommendationJob(jobId) {
     );
     const response = await fetch(getInternalExerciseRecommendUrl(), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Api-Key': String(process.env.INTERNAL_API_KEY || ''),
+      },
       body: JSON.stringify({
         patient_id: job.patient_id,
         symptoms: job.symptoms,
@@ -1947,6 +2225,3 @@ function startExerciseRecommendationJob(jobId) {
 }
 
 export default router;
-
-
-

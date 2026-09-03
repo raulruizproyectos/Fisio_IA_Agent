@@ -109,13 +109,22 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
+        "url": "={{ $env.BACKEND_URL + '/api/telegram/incoming' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ ({ request_id: $json.request_id, chat_id: $json.chat_id, username: $json.username, texto_mensaje: $json.texto_mensaje, agent_mode: $json.agent_mode, bot_username: $json.bot_username }) }}",
         "options": {
           "ignoreResponseCode": true,
           "timeout": 15000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-telegram-bot-api-secret-token",
+              "value": "={{ $env.TELEGRAM_WEBHOOK_SECRET }}"
+            }
+          ]
         }
       },
       "id": "BackendCommandResolver",
@@ -126,7 +135,10 @@
         700,
         300
       ],
-      "continueOnFail": true
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
@@ -178,13 +190,22 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://n8n-n8n.b5xbaf.easypanel.host/webhook/fisio/w1/appointment",
+        "url": "={{ $env.N8N_WEBHOOK_BASE_URL + '/fisio/w1/appointment' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.force_w1_payload }}",
         "options": {
           "ignoreResponseCode": true,
           "timeout": 15000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Webhook-Secret",
+              "value": "={{ $env.N8N_WEBHOOK_SECRET }}"
+            }
+          ]
         }
       },
       "id": "ForceW1Booking",
@@ -195,7 +216,10 @@
         1390,
         220
       ],
-      "continueOnFail": true
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import PDFDocument from 'pdfkit';
 
 const router = Router();
@@ -78,7 +78,8 @@ router.get('/', async (req, res, next) => {
     let query = supabase
       .from(DOCUMENTS_TABLE)
       .select(`${DOC_SELECT}, crm_pacientes(nombre, apellidos)`)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(200);
     if (paciente_id) query = query.eq('paciente_id', paciente_id);
 
     const { data, error } = await query;

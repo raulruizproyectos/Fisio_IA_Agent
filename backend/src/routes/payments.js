@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = Router();
 const PAYMENTS_TABLE = 'crm_pagos';
@@ -39,7 +39,8 @@ router.get('/', async (req, res, next) => {
       .from(PAYMENTS_TABLE)
       .select(PAGOS_SELECT)
       .order('fecha', { ascending: false })
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(500);
 
     if (paciente_id) query = query.eq('paciente_id', paciente_id);
     if (metodo_pago) query = query.eq('metodo_pago', metodo_pago);
@@ -79,7 +80,8 @@ router.get('/resumen', async (req, res, next) => {
       .select('fecha, importe, metodo_pago')
       .gte('fecha', `${year}-01-01`)
       .lt('fecha', `${year + 1}-01-01`)
-      .order('fecha', { ascending: true });
+      .order('fecha', { ascending: true })
+      .limit(5000);
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
@@ -121,7 +123,8 @@ router.get('/gestoria', async (req, res, next) => {
       .select('fecha, importe, metodo_pago, paciente_id, crm_pacientes(nombre, apellidos)')
       .gte('fecha', `${year}-01-01`)
       .lt('fecha', `${year + 1}-01-01`)
-      .order('fecha', { ascending: true });
+      .order('fecha', { ascending: true })
+      .limit(5000);
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);

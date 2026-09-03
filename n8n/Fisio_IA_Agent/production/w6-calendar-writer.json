@@ -1,7 +1,7 @@
 {
   "name": "Fisio IA | Calendario guardar",
   "description": "Webhook que permite al backend crear, actualizar y eliminar eventos en Google Calendar usando OAuth2 de n8n.",
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -17,9 +17,15 @@
         "httpMethod": "POST",
         "path": "fisio/w6/calendar-write",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
-      "webhookId": "fisio-w6-calendar-write"
+      "webhookId": "fisio-w6-calendar-write",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "id": "W6Parse",

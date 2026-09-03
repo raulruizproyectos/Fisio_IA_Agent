@@ -7,45 +7,60 @@
   <section class="clinic-dashboard" aria-labelledby="dashboardTitle">
     <header class="clinic-dashboard-hero">
       <div class="clinic-dashboard-copy">
-        <span class="clinic-kicker">Clinical OS</span>
-        <h1 id="dashboardTitle">Buenos dias, Dr.</h1>
-        <p id="dashboardLiveSummary">Cargando agenda, mensajes y sincronizacion clinica...</p>
+        <span class="clinic-kicker">Jornada clínica</span>
+        <h1 id="dashboardTitle">Buenos días, Dr.</h1>
+        <p id="dashboardLiveSummary">Cargando agenda, mensajes y sincronización clínica…</p>
         <div class="clinic-hero-actions">
-          <button class="btn-primary" type="button" id="heroAgendaShortcutBtn" data-dashboard-nav="citas">
-            <span class="material-symbols-rounded">calendar_today</span>
-            Revisar agenda
+          <button class="btn-primary" type="button" id="heroAgentShortcutBtn" data-dashboard-action="open-copilot">
+            <span class="material-symbols-rounded">auto_awesome</span>
+            Crear plan clínico con IA
           </button>
           <button class="btn-secondary" type="button" id="heroNewPatientShortcutBtn" data-dashboard-action="new-patient">
             <span class="material-symbols-rounded">person_add</span>
             Alta de paciente
           </button>
-          <button class="btn-ghost" type="button" id="heroAgentShortcutBtn" data-dashboard-action="open-copilot">
-            <span class="material-symbols-rounded">psychology</span>
-            Copiloto IA
+          <button class="btn-ghost" type="button" id="heroAgendaShortcutBtn" data-dashboard-nav="citas">
+            <span class="material-symbols-rounded">calendar_today</span>
+            Revisar agenda
           </button>
         </div>
       </div>
 
-      <aside class="clinic-focus-card" aria-label="Siguiente paso recomendado">
-        <div class="clinic-card-head">
-          <span class="clinic-kicker">Ahora</span>
-          <span class="status-chip pendiente" id="dashboardNextSessionStatus">Cargando</span>
+      <div class="clinic-focus-stage">
+        <div class="clinic-motion-figure" aria-hidden="true">
+          <svg viewBox="0 0 480 360" role="presentation">
+            <path class="motion-orbit motion-orbit-back" d="M55 276C112 162 177 83 284 63c64-12 116 4 147 33" />
+            <path class="motion-orbit motion-orbit-front" d="M18 318c98-55 181-61 258-26 54 25 108 29 185-5" />
+            <circle class="motion-joint motion-joint-one" cx="283" cy="83" r="20" />
+            <path class="motion-body" d="M278 112c-33 35-48 79-40 123m42-119c34 38 48 78 36 120m-78-1c-37 17-67 47-84 89m162-88c33 20 58 50 73 88m-143-157c-25 18-51 23-79 16m106-30c35 6 67-4 96-30" />
+            <circle class="motion-joint motion-joint-two" cx="238" cy="236" r="10" />
+            <circle class="motion-joint motion-joint-three" cx="316" cy="237" r="10" />
+          </svg>
         </div>
-        <strong id="dashboardNextSessionTitle">Leyendo proxima sesion...</strong>
-        <p id="dashboardNextSessionMeta">La agenda se actualiza en segundo plano.</p>
-        <button class="btn-ghost btn-sm" type="button" id="dashboardNextSessionBtn">
-          <span class="material-symbols-rounded">calendar_today</span>
-          Ver agenda
-        </button>
-      </aside>
+
+        <aside class="clinic-focus-card" aria-label="Siguiente paso recomendado">
+          <div class="clinic-card-head">
+            <span class="clinic-kicker">Ahora</span>
+            <span class="status-chip pendiente" id="dashboardNextSessionStatus">Cargando</span>
+          </div>
+          <strong id="dashboardNextSessionTitle">Leyendo próxima sesión…</strong>
+          <p id="dashboardNextSessionMeta">La agenda se actualiza en segundo plano.</p>
+          <button class="clinic-focus-action" type="button" id="dashboardNextSessionBtn">
+            <span>Ver agenda</span>
+            <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
+          </button>
+        </aside>
+      </div>
     </header>
 
-    <section class="clinic-command-search" aria-label="Acceso rapido">
+    <section class="clinic-command-search" aria-label="Acceso rápido">
       <span class="material-symbols-rounded" aria-hidden="true">search</span>
+      <label class="sr-only" for="mainCopilotInput">Buscar o indicar una acción clínica</label>
       <input
         type="text"
         id="mainCopilotInput"
-        placeholder="Busca paciente, crea una cita o abre el copiloto clinico..."
+        name="accion_clinica"
+        placeholder="Busca un paciente, crea una cita o abre el copiloto clínico…"
         autocomplete="off"
       />
       <button class="btn-primary" type="button" data-dashboard-action="open-copilot" aria-label="Abrir copiloto">
@@ -53,7 +68,25 @@
       </button>
     </section>
 
-    <section class="clinic-metric-grid" aria-label="Indicadores de la clinica">
+    <section class="clinic-ai-pathway" aria-labelledby="aiPathwayTitle">
+      <div class="clinic-ai-pathway-copy">
+        <span class="clinic-kicker">Ruta asistencial</span>
+        <h2 id="aiPathwayTitle">Un caso, una evolución continua</h2>
+        <p>Del contexto inicial a la revisión profesional y el seguimiento.</p>
+      </div>
+      <ol class="clinic-ai-steps" aria-label="Circuito del plan clínico con IA">
+        <li><span>01</span><div><strong>Contexto</strong><p>Paciente y objetivos.</p></div></li>
+        <li><span>02</span><div><strong>Propuesta</strong><p>Plan y precauciones.</p></div></li>
+        <li><span>03</span><div><strong>Validación</strong><p>Criterio profesional.</p></div></li>
+        <li><span>04</span><div><strong>Evolución</strong><p>Adherencia y resultados.</p></div></li>
+      </ol>
+      <button class="clinic-ai-launch" type="button" data-dashboard-action="open-copilot">
+        <span>Crear un plan</span>
+        <span class="material-symbols-rounded">arrow_forward</span>
+      </button>
+    </section>
+
+    <section class="clinic-metric-grid" aria-label="Indicadores de la clínica">
       <article>
         <span class="material-symbols-rounded">group</span>
         <div>
@@ -89,7 +122,7 @@
         <div class="clinic-card-head">
           <div>
             <span class="clinic-kicker">Agenda</span>
-            <h2>Semana clinica</h2>
+            <h2>Semana clínica</h2>
           </div>
           <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="citas">
             <span class="material-symbols-rounded">arrow_forward</span>
@@ -99,7 +132,7 @@
         <div class="clinic-list" id="dashCitasBody">
           <div class="empty-state-sm state-loading">
             <span class="material-symbols-rounded">sync</span>
-            <p>Cargando citas...</p>
+            <p>Cargando citas…</p>
           </div>
         </div>
       </article>
@@ -112,7 +145,7 @@
           </div>
           <span class="status-chip pendiente" id="dashboardIntakeStatus">Cargando</span>
         </div>
-        <strong class="clinic-panel-title" id="dashboardIntakeTitle">Leyendo mensajes...</strong>
+        <strong class="clinic-panel-title" id="dashboardIntakeTitle">Leyendo mensajes…</strong>
         <p id="dashboardIntakeMeta">Telegram y formulario web se revisan automaticamente.</p>
         <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="intakes">
           <span class="material-symbols-rounded">forward_to_inbox</span>
@@ -128,7 +161,7 @@
           </div>
           <span class="status-chip pendiente" id="dashboardSyncChip">Revision</span>
         </div>
-        <strong class="clinic-panel-title" id="dashboardSyncTitle">Comprobando estado...</strong>
+        <strong class="clinic-panel-title" id="dashboardSyncTitle">Comprobando estado…</strong>
         <p id="dashboardSyncMeta">Esperando lectura del sincronizador.</p>
         <div class="clinic-facts" id="dashboardSyncFacts" hidden></div>
       </article>
@@ -145,7 +178,7 @@
         <div class="clinic-priority-list" id="dashboardPriorityList">
           <div class="empty-state-sm state-loading">
             <span class="material-symbols-rounded">sync</span>
-            <p>Ordenando prioridades...</p>
+            <p>Ordenando prioridades…</p>
           </div>
         </div>
       </article>
@@ -154,7 +187,7 @@
         <div class="clinic-card-head">
           <div>
             <span class="clinic-kicker">Reservas</span>
-            <h2>Pagina publica</h2>
+            <h2>Página pública</h2>
           </div>
         </div>
         <p id="dashboardBookingMeta">Comparte la pagina publica para captar nuevas altas y completar huecos de agenda.</p>
@@ -162,7 +195,7 @@
         <div class="clinic-inline-actions">
           <button class="btn-primary btn-sm" type="button" id="dashboardBookingOpenBtn">
             <span class="material-symbols-rounded">open_in_new</span>
-            Abrir pagina
+            Abrir página
           </button>
           <button class="btn-ghost btn-sm" type="button" id="dashboardBookingCopyBtn">
             <span class="material-symbols-rounded">content_copy</span>
@@ -182,7 +215,7 @@
         <strong id="metricEngineOps">0/0</strong>
       </article>
       <article>
-        <span>Grafico anual</span>
+        <span>Gráfico anual</span>
         <strong id="dashChartYear">2026</strong>
       </article>
       <canvas id="dashIncomeChart" aria-label="Ingresos por mes" role="img"></canvas>

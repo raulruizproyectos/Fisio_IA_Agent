@@ -1,13 +1,16 @@
-﻿name: CI
+name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "production-hardening"]
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 jobs:
-  backend_syntax:
+  backend_quality:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,21 +19,24 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
         working-directory: backend
-        run: npm install
+        run: npm ci
 
-      - name: Check backend syntax
+      - name: Lint and test backend
         working-directory: backend
         run: |
-          node --check src/index.js
-          node --check src/routes/agent.js
-          node --check src/routes/exercises.js
-          node --check src/routes/patients.js
-          node --check src/routes/professional.js
-          node --check src/routes/telegram.js
+          npm run lint
+          npm test
+          find src -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Audit backend production dependencies
+        working-directory: backend
+        run: npm audit --omit=dev --audit-level=high
 
   frontend_build:
     runs-on: ubuntu-latest
@@ -41,15 +47,30 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm install
+        run: npm ci
+
+      - name: Check frontend types
+        working-directory: frontend
+        run: npm run check
 
       - name: Build frontend
         working-directory: frontend
+        env:
+          ASTRO_TELEMETRY_DISABLED: "1"
+          PUBLIC_SUPABASE_URL: "https://example.supabase.co"
+          PUBLIC_SUPABASE_ANON_KEY: "ci-placeholder-key"
+          PUBLIC_BACKEND_URL: "https://api.example.com"
         run: npm run build
+
+      - name: Audit frontend production dependencies
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
 
   n8n_json_validate:
     runs-on: ubuntu-latest
@@ -59,4 +80,4 @@ jobs:
 
       - name: Validate n8n workflow JSON files
         run: |
-          node -e "const fs=require('fs'); const path=require('path'); const root='n8n/Fisio_IA_Agent'; const walk=(dir)=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):path.join(dir,e.name)); const files=walk(root).filter(f=>f.endsWith('.json')); if(!files.length){throw new Error('No se encontraron workflows JSON');} for(const p of files){const txt=fs.readFileSync(p,'utf8').replace(/^\\uFEFF/, ''); JSON.parse(txt); console.log('OK', p);}"
+          node -e "const fs=require('fs'); const path=require('path'); const root='n8n/Fisio_IA_Agent'; const walk=(dir)=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):path.join(dir,e.name)); const files=walk(root).filter(f=>f.endsWith('.json')); if(!files.length){throw new Error('No se encontraron workflows JSON');} for(const p of files){const raw=fs.readFileSync(p,'utf8'); JSON.parse(raw); if(p.includes('/vnext/') && /(?:fisio-backend|n8n-n8n)\.b5xbaf\.easypanel\.host|uewhbaejcouenoufuwlq\.supabase\.co/.test(raw)){throw new Error('vNext contiene un endpoint productivo fijo: '+p);} console.log('OK', p);}"

@@ -16,6 +16,9 @@ Orden recomendado de importacion:
 5. `n8n/Fisio_IA_Agent/vnext/telegram-chat.json`
 6. `n8n/Fisio_IA_Agent/vnext/telegram-fisio-reports.json`
 7. `n8n/Fisio_IA_Agent/vnext/sw-fisio-pending-intakes.json`
+8. `n8n/Fisio_IA_Agent/production/w5-calendar-reader.json`
+9. `n8n/Fisio_IA_Agent/production/w6-calendar-writer.json`
+10. `n8n/Fisio_IA_Agent/production/puente-error-backend.json`
 
 ## Credenciales a revisar antes de activar
 - `Telegram API` del bot pacientes para `telegram-chat.json`.
@@ -23,6 +26,7 @@ Orden recomendado de importacion:
 - `OpenAI` en workflows que extraen intencion o generan recomendacion.
 - `Google Calendar` en el flujo W1 si la reserva se apoya en calendar desde n8n.
 - `Supabase` o headers/API keys donde el workflow llame a backend o storage.
+- `Gmail OAuth2` en `puente-error-backend.json`; se usa solo para alertas internas, no para contactar pacientes.
 
 ## Regla heredada de los proyectos Carla
 Si un nodo de Google Calendar queda importado sin calendario concreto, el workflow no se da por listo.
@@ -35,12 +39,14 @@ Hay que abrir el nodo y seleccionar el calendario correcto manualmente.
 - El ack esperado de W3 ahora incluye `job_id`, `tracking_request_id`, `poll_url` y `tracking_status`.
 
 ## Activacion minima obligatoria
-1. Importar workflow.
+1. Importar workflow desactivado.
 2. Asignar credenciales.
 3. Verificar carpeta/tag `Fisio_IA_Agent`.
 4. Confirmar URLs de backend del entorno actual.
 5. Activar workflow.
 6. Ejecutar smoke test real.
+
+Nunca activar a la vez dos Telegram Triggers o dos webhooks con la misma ruta. Los JSON versionados se mantienen desactivados para que la importación no sustituya accidentalmente el flujo operativo.
 
 ## Smoke test recomendado
 ### Bot pacientes
@@ -66,4 +72,3 @@ Un workflow no esta cerrado si falta cualquiera de estos puntos:
 - URL de backend correcta,
 - smoke test real ejecutado,
 - referencia actualizada en `CHANGELOG.md` o checkpoint activo.
-

@@ -8,6 +8,7 @@
     display: flex !important;
     width: 100% !important;
     min-height: 100vh !important;
+    min-height: 100dvh !important;
     max-width: 100% !important;
     overflow: hidden !important;
   }
@@ -21,6 +22,7 @@
     width: var(--sidebar-width) !important;
     min-width: var(--sidebar-width) !important;
     height: 100vh !important;
+    height: 100dvh !important;
     padding: 1rem 0.8rem !important;
     overflow: hidden auto !important;
     color: var(--ink-soft) !important;
@@ -142,6 +144,7 @@
     flex-direction: column !important;
     min-width: 0 !important;
     height: 100vh !important;
+    height: 100dvh !important;
     overflow: hidden !important;
   }
 
@@ -285,7 +288,7 @@
     display: none !important;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1023px) {
     .sidebar {
       position: fixed !important;
       inset: var(--topbar-height) auto 0 0 !important;
@@ -509,7 +512,7 @@
   background: #123f3a !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .topbar-clinic-pulse,
   .topbar-action {
     display: none !important;

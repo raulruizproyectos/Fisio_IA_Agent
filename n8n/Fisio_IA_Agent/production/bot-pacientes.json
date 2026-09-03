@@ -4,7 +4,7 @@
   "id": "f1PcLN8s9YiOXj3w",
   "name": "Fisio IA | Bot paciente",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -93,7 +93,16 @@
           "timeout": 15000
         },
         "contentType": "json",
-        "jsonBody": "={{ $json }}"
+        "jsonBody": "={{ $json }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-telegram-bot-api-secret-token",
+              "value": "={{ $env.TELEGRAM_WEBHOOK_SECRET }}"
+            }
+          ]
+        }
       },
       "id": "BackendCommandResolver",
       "name": "Resolver backend",
@@ -102,7 +111,10 @@
       "position": [
         688,
         304
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

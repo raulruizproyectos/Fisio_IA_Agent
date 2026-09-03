@@ -73,13 +73,22 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/incoming",
+        "url": "={{ $env.BACKEND_URL + '/api/telegram/incoming' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"request_id\": $json.request_id,\n  \"chat_id\": $json.chat_id,\n  \"username\": $json.username,\n  \"texto_mensaje\": $json.texto_mensaje,\n  \"agent_mode\": $json.agent_mode,\n  \"bot_username\": $json.bot_username\n}",
         "options": {
           "ignoreResponseCode": true,
           "timeout": 45000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-telegram-bot-api-secret-token",
+              "value": "={{ $env.TELEGRAM_WEBHOOK_SECRET }}"
+            }
+          ]
         }
       },
       "id": "BackendCommandResolver",
@@ -89,7 +98,10 @@
       "position": [
         700,
         300
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

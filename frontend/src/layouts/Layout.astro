@@ -6,6 +6,8 @@ interface Props {
 
 const { title, description = 'Plataforma inteligente de prescripcion y seguimiento para fisioterapeutas' } = Astro.props;
 import '../styles/global.css';
+import '@fontsource-variable/manrope';
+import '@fontsource-variable/sora';
 ---
 
 <!doctype html>
@@ -16,6 +18,7 @@ import '../styles/global.css';
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <meta name="fisio-build" content="2026-04-13-clinic-luxury-v3" />
+    <script is:inline src="/runtime-config.js"></script>
     <link rel="stylesheet" href="/material-symbols.css" />
     <style is:inline>
       .material-symbols-rounded {
@@ -35,9 +38,6 @@ import '../styles/global.css';
         -webkit-font-smoothing: antialiased;
       }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
   <body>
@@ -324,6 +324,7 @@ import '../styles/global.css';
 
   body {
     min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
     max-width: 100%;
     overflow-x: clip;
@@ -377,7 +378,7 @@ import '../styles/global.css';
     outline-offset: 2px;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1023px) {
     input,
     select,
     textarea {
@@ -385,6 +386,3 @@ import '../styles/global.css';
     }
   }
 </style>
-
-
-

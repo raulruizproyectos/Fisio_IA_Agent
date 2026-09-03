@@ -4,7 +4,7 @@
   "id": "gIumiL6e50JoGFba",
   "name": "Fisio IA | Calendario leer",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -20,9 +20,15 @@
         "httpMethod": "POST",
         "path": "fisio/w5/calendar-events",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
-      "webhookId": "fisio-w5-calendar-events"
+      "webhookId": "fisio-w5-calendar-events",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Fisio Internal Webhook"
+        }
+      }
     },
     {
       "id": "W5Normalize",

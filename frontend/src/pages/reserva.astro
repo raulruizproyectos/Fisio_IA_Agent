@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
 ---
 
 <Layout title="Reserva online | Fisio IA Agent" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
@@ -126,11 +128,14 @@ import Layout from '../layouts/Layout.astro';
     </section>
   </main>
 
-  <script is:inline>
+  <script is:inline define:vars={{ configuredBackendBase }}>
     (() => {
-      const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3001'
-        : 'https://fisio-backend.b5xbaf.easypanel.host';
+      const runtimeBackendBase = String(window.__FISIO_RUNTIME_CONFIG__?.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
+      const BACKEND_BASE = runtimeBackendBase
+        || configuredBackendBase
+        || ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? 'http://localhost:3001'
+          : '');
 
       const params = new URLSearchParams(window.location.search);
       const professionalId = params.get('professional_id') || params.get('profesional_id') || '';
@@ -162,6 +167,12 @@ import Layout from '../layouts/Layout.astro';
       let bookingConfig = null;
       let selectedSlot = null;
       let currentSlots = [];
+
+      if (!BACKEND_BASE) {
+        if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta configurada en este entorno.';
+        if (windowHintEl) windowHintEl.textContent = 'Configuracion pendiente';
+        return;
+      }
 
       const setFeedback = (text = '', state = 'error') => {
         if (!feedbackEl) return;
@@ -424,6 +435,7 @@ import Layout from '../layouts/Layout.astro';
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
       background: var(--booking-bg);
       color: var(--booking-ink);
       font-family: 'Manrope', sans-serif;
@@ -431,6 +443,7 @@ import Layout from '../layouts/Layout.astro';
 
     .booking-shell {
       min-height: 100vh;
+      min-height: 100dvh;
       display: grid;
       grid-template-columns: minmax(320px, 0.92fr) minmax(320px, 1.08fr);
       gap: clamp(1.25rem, 2vw, 2.5rem);

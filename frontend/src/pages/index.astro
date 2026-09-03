@@ -9,6 +9,7 @@ import Topbar from '../components/Topbar.astro';
 import assistantRailStyles from '../styles/assistant-rail.css?inline';
 import globalShellStyles from '../styles/global-shell.css?inline';
 import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
+import productionUiStyles from '../styles/production-ui.css?inline';
 
 import DashboardView from '../components/views/DashboardView.astro';
 import PatientsView from '../components/views/PatientsView.astro';
@@ -26,6 +27,12 @@ import ConfigView from '../components/views/ConfigView.astro';
 ---
 
 <Layout title="Fisio IA Agent - CRM Clinico Inteligente">
+  <a class="skip-link" href="#mainContent">Saltar al contenido principal</a>
+  <div class="app-boot" id="appBoot" role="status" aria-live="polite">
+    <div class="app-boot-mark"><span class="material-symbols-rounded">medical_services</span></div>
+    <strong>Preparando tu consulta</strong>
+    <span>Verificando la sesión y cargando el espacio clínico seguro…</span>
+  </div>
   <div class="app-shell">
     <SidebarNav />
 
@@ -35,7 +42,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
       <!-- CONTENT -->
       <div class="workspace-shell">
-        <main class="content">
+        <main class="content" id="mainContent" tabindex="-1">
 
           <DashboardView />
           <PatientsView />
@@ -62,11 +69,72 @@ import ConfigView from '../components/views/ConfigView.astro';
 <ShellNavigationBootstrap />
 
 <script>
+  import { backendBase, initializeProtectedApp, signOut } from '../lib/auth';
+
   // === CONFIG ===
-  const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:3001'
-    : 'https://fisio-backend.b5xbaf.easypanel.host';
-  const PROF_ID = '4a194ec4-3580-4246-9452-0852b589fd63';
+  const appBoot = document.getElementById('appBoot');
+  const authContext = await initializeProtectedApp().catch((error) => {
+    if (appBoot) {
+      appBoot.classList.add('is-error');
+      appBoot.innerHTML = `
+        <div class="app-boot-mark"><span class="material-symbols-rounded">cloud_off</span></div>
+        <strong>No se pudo abrir la consulta</strong>
+        <span>No hemos podido verificar la sesión. Comprueba la conexión e inténtalo de nuevo.</span>
+        <button type="button" onclick="window.location.reload()">Reintentar</button>
+      `;
+    }
+    throw error;
+  });
+  appBoot?.setAttribute('hidden', '');
+  const BACKEND_BASE = backendBase;
+  const PROF_ID = authContext.profileId;
+  if (!PROF_ID) throw new Error('El usuario autenticado no tiene un perfil profesional activo');
+
+  const displayName = String(authContext.name || authContext.email || 'Profesional').trim();
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('') || 'PR';
+  const sidebarUserName = document.getElementById('sidebarUserName');
+  const sidebarUserRole = document.getElementById('sidebarUserRole');
+  const sidebarUserInitials = document.getElementById('sidebarUserInitials');
+  if (sidebarUserName) sidebarUserName.textContent = displayName;
+  if (sidebarUserRole) sidebarUserRole.textContent = authContext.role === 'admin' ? 'Administración clínica' : 'Fisioterapia';
+  if (sidebarUserInitials) sidebarUserInitials.textContent = initials;
+  document.getElementById('logoutBtn')?.addEventListener('click', () => void signOut());
+  const dashboardTitle = document.getElementById('dashboardTitle');
+  if (dashboardTitle) {
+    const hour = new Date().getHours();
+    const greeting = hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+    dashboardTitle.textContent = `${greeting}, ${displayName.split(/\s+/)[0]}`;
+  }
+
+  const openProtectedUrl = async (url: string) => {
+    const popup = window.open('', '_blank');
+    if (popup) popup.opener = null;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`No se pudo abrir el documento (${response.status})`);
+      const objectUrl = URL.createObjectURL(await response.blob());
+      if (popup) popup.location.href = objectUrl;
+      else window.location.href = objectUrl;
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (error) {
+      popup?.close();
+      throw error;
+    }
+  };
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const link = target?.closest('[data-protected-url]') as HTMLAnchorElement | null;
+    const url = link?.dataset.protectedUrl;
+    if (!url) return;
+    event.preventDefault();
+    void openProtectedUrl(url).catch((error) => window.alert(error?.message || 'No se pudo abrir el documento'));
+  });
 
   // === CLINIC CONFIG (localStorage) ===
   const CLINIC_CONFIG_KEY = 'fisio_clinic_config';
@@ -96,7 +164,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   // === RESPONSIVE & LAYOUT UTILS ===
-  const isMobile = () => window.innerWidth <= 768;
+  const usesDrawerNavigation = () => window.innerWidth < 1024;
 
   const closeSidebar = () => {
     document.dispatchEvent(new CustomEvent('fisio:close-sidebar'));
@@ -122,15 +190,22 @@ import ConfigView from '../components/views/ConfigView.astro';
   const assistantDialogScroll = document.querySelector('#assistantRail .assistant-dialog-scroll') as HTMLElement | null;
   const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement | null;
   const exerciseBtn = document.getElementById('exerciseRecoBtn') as HTMLButtonElement | null;
+  const exerciseApproveBtn = document.getElementById('exerciseApproveBtn') as HTMLButtonElement | null;
   const exercisePdfBtn = document.getElementById('exercisePdfBtn') as HTMLButtonElement | null;
   const exerciseTelegramBtn = document.getElementById('exerciseTelegramBtn') as HTMLButtonElement | null;
+  const exerciseEditor = document.getElementById('exerciseReportEditor') as HTMLElement | null;
+  const exerciseEditorForm = document.getElementById('exerciseEditorForm') as HTMLFormElement | null;
+  const exerciseEditorList = document.getElementById('exerciseEditorList') as HTMLElement | null;
+  const exerciseEditorSummary = document.getElementById('exerciseEditorSummary') as HTMLTextAreaElement | null;
+  const exerciseEditorPatientMessage = document.getElementById('exerciseEditorPatientMessage') as HTMLTextAreaElement | null;
+  const exerciseEditorFeedback = document.getElementById('exerciseEditorFeedback') as HTMLElement | null;
+  const exerciseEditorSave = document.getElementById('exerciseEditorSave') as HTMLButtonElement | null;
   const agentDot = document.getElementById('agentDot') as HTMLElement | null;
   const agentStatusText = document.getElementById('agentStatusText') as HTMLElement | null;
   const metricEngineOps = document.getElementById('metricEngineOps') as HTMLElement | null;
   const sidebarToggle = document.getElementById('sidebarToggle') as HTMLElement | null;
   const sidebar = document.getElementById('sidebar') as HTMLElement | null;
   const focusAgentNav = document.getElementById('focusAgentNav') as HTMLAnchorElement | null;
-  const heroAgentShortcutBtn = document.getElementById('heroAgentShortcutBtn') as HTMLButtonElement | null;
   const assistantRail = document.getElementById('assistantRail') as HTMLElement | null;
   const assistantRailToggle = document.getElementById('assistantRailToggle') as HTMLButtonElement | null;
   const assistantRailClose = document.getElementById('assistantRailClose') as HTMLButtonElement | null;
@@ -140,6 +215,22 @@ import ConfigView from '../components/views/ConfigView.astro';
   const mobileDockNavButtons = document.querySelectorAll('[data-mobile-nav]') as NodeListOf<HTMLButtonElement>;
   const mobileDockActionButtons = document.querySelectorAll('[data-mobile-action]') as NodeListOf<HTMLButtonElement>;
   const toastRegion = document.getElementById('toastRegion') as HTMLElement | null;
+  const assistantCareStepItems = Array.from(
+    document.querySelectorAll('.assistant-care-stepper li')
+  ) as HTMLElement[];
+
+  const setAssistantCareStep = (currentStep: number) => {
+    const safeStep = Math.min(Math.max(Math.trunc(currentStep) || 1, 1), assistantCareStepItems.length || 1);
+    assistantCareStepItems.forEach((item, index) => {
+      const step = index + 1;
+      item.classList.toggle('is-complete', step < safeStep);
+      item.classList.toggle('is-current', step === safeStep);
+      if (step === safeStep) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+  };
+
+  setAssistantCareStep(1);
 
   const isAssistantMobileViewport = () => window.innerWidth <= 768;
 
@@ -195,7 +286,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   sidebarToggle?.addEventListener('click', () => {
-    if (isMobile()) {
+    if (usesDrawerNavigation()) {
       const sidebarEl = document.getElementById('sidebar');
       const isOpen = sidebarEl?.classList.contains('translate-x-0');
       if (isOpen) {
@@ -224,7 +315,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     event.preventDefault();
     requestOpenAssistantRail();
   });
-  heroAgentShortcutBtn?.addEventListener('click', requestOpenAssistantRail);
 
   const assistantPatientLabel = document.getElementById('assistantPatientLabel') as HTMLElement | null;
   const assistantPatientMeta = document.getElementById('assistantPatientMeta') as HTMLElement | null;
@@ -614,7 +704,19 @@ import ConfigView from '../components/views/ConfigView.astro';
       } catch {
         detail = '';
       }
-      throw new Error(detail ? `HTTP ${r.status}: ${detail.slice(0, 220)}` : `HTTP ${r.status}`);
+      let message = detail ? `HTTP ${r.status}: ${detail.slice(0, 220)}` : `HTTP ${r.status}`;
+      let code = '';
+      if (detail) {
+        try {
+          const errorPayload = JSON.parse(detail);
+          message = String(errorPayload?.error || errorPayload?.message || message);
+          code = String(errorPayload?.code || '');
+        } catch {}
+      }
+      const error: any = new Error(message);
+      error.status = r.status;
+      error.code = code || null;
+      throw error;
     }
     const payload = await r.json();
     return sanitizePayload(payload);
@@ -860,7 +962,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const syncAssistantActionGrid = () => {
     if (!assistantActionGrid) return;
-    const hasReport = Boolean(lastExerciseReportPayload);
+    const hasReport = hasUsableExerciseReport();
     assistantActionGrid.classList.toggle('has-report', hasReport);
     assistantActionGrid.removeAttribute('style');
   };
@@ -1555,14 +1657,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!section) return;
     event.preventDefault();
     navigateTo(section);
-    if (isMobile()) closeSidebar();
+    if (usesDrawerNavigation()) closeSidebar();
   });
 
   // === SIDEBAR TOGGLE REMOVED ===
 
   // === ASSISTANT RAIL TOGGLE REMOVED ===
   // focusAgentNav removed
-  // heroAgentShortcutBtn removed
   heroAgendaShortcutBtn?.addEventListener('click', () => navigateTo('citas'));
   heroNewPatientShortcutBtn?.addEventListener('click', () => openPatientModal());
   dashboardActionButtons.forEach((button) => {
@@ -1631,7 +1732,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const action = button.getAttribute('data-priority-action');
     if (nav) {
       navigateTo(nav);
-      if (isMobile()) closeSidebar();
+      if (usesDrawerNavigation()) closeSidebar();
       return;
     }
     if (action === 'open-booking-page') {
@@ -1686,7 +1787,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   // Close sidebar on nav click (mobile)
-  navItems.forEach(n => n.addEventListener('click', () => { if (isMobile()) closeSidebar(); }));
+  navItems.forEach(n => n.addEventListener('click', () => { if (usesDrawerNavigation()) closeSidebar(); }));
 
   // Clean up on resize
   syncResponsiveViewportState();
@@ -1694,7 +1795,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   window.addEventListener('resize', () => {
     syncResponsiveViewportState();
     syncAssistantRailState();
-    if (!isMobile()) closeSidebar();
+    if (!usesDrawerNavigation()) closeSidebar();
     syncOverlayBodyLock();
     queueAssistantLayoutEnforce();
   });
@@ -1723,20 +1824,53 @@ import ConfigView from '../components/views/ConfigView.astro';
     queueAssistantLayoutEnforce();
     scrollAssistantRailToBottom();
   };
-  const setAgentStatus = (connected: boolean) => { agentDot?.classList.toggle('connected',connected); agentDot?.classList.toggle('disconnected',!connected); if(agentStatusText) agentStatusText.textContent=connected?'Conectado':'Sin conexion'; };
+  const setAgentStatus = (connected: boolean, label = '') => {
+    agentDot?.classList.toggle('connected', connected);
+    agentDot?.classList.toggle('disconnected', !connected);
+    if (agentStatusText) agentStatusText.textContent = label || (connected ? 'Operativo' : 'No disponible');
+  };
   const sendBtnDefaultHtml = sendBtn?.innerHTML || '';
+  const getExerciseApprovalState = () => String(
+    lastExerciseReportPayload?.approval_state
+      || lastExerciseReportPayload?.estado
+      || 'requiere_revision'
+  ).trim().toLowerCase();
+  const getExerciseReportItems = () => Array.isArray(lastExerciseReportPayload?.exercises)
+    ? lastExerciseReportPayload.exercises.filter((exercise: any) =>
+        Boolean(String(exercise?.exercise_id || exercise?.id || '').trim())
+      )
+    : [];
+  const hasUsableExerciseReport = () => Boolean(
+    lastExerciseReportPayload?.recommendation_id && getExerciseReportItems().length
+  );
+  const isExerciseReportApproved = () => ['aprobada', 'enviada'].includes(getExerciseApprovalState());
+  const updateExerciseApproveButton = () => {
+    if (!exerciseApproveBtn) return;
+    const hasReport = hasUsableExerciseReport();
+    const approved = hasReport && isExerciseReportApproved();
+    exerciseApproveBtn.disabled = !hasReport || approved;
+    exerciseApproveBtn.innerHTML = approved
+      ? '<span class="material-symbols-rounded">verified</span> Plan aprobado'
+      : '<span class="material-symbols-rounded">fact_check</span> Revisar y aprobar';
+    exerciseApproveBtn.title = approved
+      ? 'Plan validado por un profesional'
+      : hasReport
+        ? 'Confirma la revisión clínica antes de exportar o enviar'
+        : 'Genera un plan para revisarlo';
+  };
   const updateExercisePdfButton = () => {
     if (!exercisePdfBtn) return;
-    const hasReport = Boolean(lastExerciseReportPayload);
+    const hasReport = hasUsableExerciseReport();
+    const approved = hasReport && isExerciseReportApproved();
     exercisePdfBtn.hidden = false;
-    exercisePdfBtn.disabled = !hasReport;
-    exercisePdfBtn.classList.toggle('is-pending', !hasReport);
-    exercisePdfBtn.classList.toggle('is-available', hasReport);
-    exercisePdfBtn.innerHTML = hasReport
+    exercisePdfBtn.disabled = !approved;
+    exercisePdfBtn.classList.toggle('is-pending', !approved);
+    exercisePdfBtn.classList.toggle('is-available', approved);
+    exercisePdfBtn.innerHTML = approved
       ? '<span class="material-symbols-rounded">picture_as_pdf</span> Descargar PDF'
-      : '<span class="material-symbols-rounded">picture_as_pdf</span> PDF al generar';
-    exercisePdfBtn.title = hasReport ? 'Exportar a PDF' : 'Genera un plan y luego exportalo a PDF';
-    exercisePdfBtn.setAttribute('aria-label', hasReport ? 'Descargar PDF del plan actual' : 'PDF disponible tras generar un plan');
+      : '<span class="material-symbols-rounded">lock</span> PDF tras aprobar';
+    exercisePdfBtn.title = approved ? 'Exportar a PDF' : 'Revisa y aprueba el plan antes de exportarlo';
+    exercisePdfBtn.setAttribute('aria-label', approved ? 'Descargar PDF del plan actual' : 'PDF disponible tras aprobar el plan');
     syncAssistantActionGrid();
   };
   const hasLinkedTelegramPatient = () => {
@@ -1765,12 +1899,25 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
 
     assistantDeliveryCard.hidden = false;
-    const hasReport = Boolean(lastExerciseReportPayload);
+    const hasReport = hasUsableExerciseReport();
+    const approved = hasReport && isExerciseReportApproved();
     const telegramLinked = hasLinkedTelegramPatient();
     const deliveryState = getCurrentReportDeliveryState();
     const pill = (label: string, modifier = '') => '<span class="assistant-delivery-pill' + (modifier ? ' ' + modifier : '') + '">' + escapeHtml(label) + '</span>';
 
     assistantDeliveryCard.classList.remove('is-ready', 'is-sent', 'is-blocked');
+
+    if (!approved) {
+      assistantDeliveryStatus.textContent = 'Revisión profesional pendiente';
+      assistantDeliverySummary.textContent = 'Comprueba dosis, contraindicaciones y lenguaje para el paciente. La entrega permanece bloqueada hasta tu aprobación.';
+      assistantDeliveryPills.innerHTML = [
+        pill('Revisión pendiente', 'is-warning'),
+        pill('PDF bloqueado', 'is-soft'),
+        pill('Envío bloqueado', 'is-soft')
+      ].join('');
+      assistantDeliveryCard.classList.add('is-blocked');
+      return;
+    }
 
     if (!telegramLinked) {
       assistantDeliveryStatus.textContent = 'Telegram pendiente de vincular';
@@ -1807,12 +1954,13 @@ import ConfigView from '../components/views/ConfigView.astro';
   const updateExerciseTelegramButton = () => {
     if (!exerciseTelegramBtn) return;
     const hasPatient = Boolean(selectedPatientId);
-    const hasReport = Boolean(lastExerciseReportPayload);
+    const hasReport = hasUsableExerciseReport();
+    const approved = hasReport && isExerciseReportApproved();
     const isLinked = hasLinkedTelegramPatient();
     exerciseTelegramBtn.hidden = false;
-    exerciseTelegramBtn.disabled = !hasPatient || (isLinked && !hasReport);
-    exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !hasReport);
-    exerciseTelegramBtn.classList.toggle('is-available', isLinked && hasReport);
+    exerciseTelegramBtn.disabled = !hasPatient || (isLinked && !approved);
+    exerciseTelegramBtn.classList.toggle('is-pending', !isLinked || !approved);
+    exerciseTelegramBtn.classList.toggle('is-available', isLinked && approved);
 
     if (!hasPatient) {
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Telegram paciente';
@@ -1839,6 +1987,15 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
+    if (!approved) {
+      exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">lock</span> Telegram tras aprobar';
+      exerciseTelegramBtn.title = 'Revisa y aprueba el plan antes de enviarlo al paciente';
+      exerciseTelegramBtn.setAttribute('aria-label', 'Telegram disponible tras aprobar el plan');
+      renderAssistantDeliveryCard();
+      syncAssistantActionGrid();
+      return;
+    }
+
     if (getCurrentReportDeliveryState()) {
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Reenviar Telegram';
       exerciseTelegramBtn.title = 'Reenviar el informe del plan al paciente por Telegram';
@@ -1857,6 +2014,10 @@ import ConfigView from '../components/views/ConfigView.astro';
   const setSending = (busy: boolean, context: 'generic' | 'exercise' | 'chat' = 'generic') => {
     if (sendBtn) sendBtn.disabled = busy;
     if (exerciseBtn) exerciseBtn.disabled = busy;
+    if (exerciseApproveBtn) {
+      if (busy) exerciseApproveBtn.disabled = true;
+      else updateExerciseApproveButton();
+    }
     if (exercisePdfBtn) {
       if (busy) {
         exercisePdfBtn.disabled = true;
@@ -2295,6 +2456,125 @@ import ConfigView from '../components/views/ConfigView.astro';
     return `<a class="exercise-thumb" href="${escapeAttr(imageUrl)}" target="_blank" rel="noopener" aria-label="Ampliar imagen de ${escapeAttr(name)}"><img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(name)}" loading="lazy" /></a>`;
   };
 
+  const getExerciseProcedureSteps = (exercise: any) => {
+    const raw = String(exercise?.procedimiento || exercise?.descripcion || exercise?.description || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!raw) return [];
+
+    const marked = raw
+      .replace(/POSICI[ÓO]N INICIAL\s*:/gi, '|||Preparación|||')
+      .replace(/EJECUCI[ÓO]N\s*:/gi, '|||Ejecución|||')
+      .replace(/CONSEJOS?\s*:/gi, '|||Consejo|||');
+    const chunks = marked.split('|||').map((item) => item.trim()).filter(Boolean);
+    const labelled = [];
+    for (let index = 0; index < chunks.length; index += 2) {
+      const possibleLabel = chunks[index];
+      const possibleText = chunks[index + 1];
+      if (['Preparación', 'Ejecución', 'Consejo'].includes(possibleLabel) && possibleText) {
+        labelled.push({ label: possibleLabel, text: possibleText });
+      }
+    }
+    if (labelled.length) return labelled.slice(0, 3);
+
+    return raw
+      .split(/\.\s+/)
+      .map((text) => text.trim())
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((text, index) => ({ label: index === 0 ? 'Preparación' : `Paso ${index + 1}`, text }));
+  };
+
+  const renderExerciseProcedure = (exercise: any) => {
+    const steps = getExerciseProcedureSteps(exercise);
+    if (!steps.length) return '';
+    return `<div class="exercise-procedure">${steps.map((step, index) => `
+      <div class="exercise-procedure-step">
+        <b>${index + 1}</b>
+        <span><strong>${escapeHtml(step.label)}:</strong> ${escapeHtml(step.text)}</span>
+      </div>`).join('')}</div>`;
+  };
+
+  const closeExerciseEditor = () => {
+    if (!exerciseEditor) return;
+    exerciseEditor.hidden = true;
+    exerciseEditor.setAttribute('aria-hidden', 'true');
+    exerciseEditorFeedback?.toggleAttribute('hidden', true);
+  };
+
+  const openExerciseEditor = () => {
+    if (!lastExerciseReportPayload || !exerciseEditor || !exerciseEditorList) {
+      addMessage('Genera un plan antes de abrir la revisión.', 'agent');
+      return;
+    }
+    const exercises = Array.isArray(lastExerciseReportPayload.exercises)
+      ? lastExerciseReportPayload.exercises
+      : [];
+    if (exerciseEditorSummary) {
+      exerciseEditorSummary.value = String(lastExerciseReportPayload.symptom_summary || '');
+    }
+    if (exerciseEditorPatientMessage) {
+      exerciseEditorPatientMessage.value = String(lastExerciseReportPayload.message_to_patient || '');
+    }
+    exerciseEditorList.innerHTML = exercises.map((exercise: any, index: number) => {
+      const name = String(exercise?.nombre || exercise?.name || `Ejercicio ${index + 1}`);
+      const imageUrl = String(exercise?.imagen_url || exercise?.image_url || '').trim();
+      const cautions = Array.isArray(exercise?.cautions) ? exercise.cautions.join('; ') : String(exercise?.cautions || '');
+      const media = imageUrl
+        ? `<img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(name)}" loading="lazy" />`
+        : '<div class="exercise-editor-placeholder"><span class="material-symbols-rounded">exercise</span></div>';
+      return `<article class="exercise-editor-item" data-editor-index="${index}">
+        ${media}
+        <div class="exercise-editor-item-fields">
+          <strong class="exercise-editor-item-title"><span>${index + 1}</span>${escapeHtml(name)}</strong>
+          <label><span>Series</span><input name="series" inputmode="numeric" type="number" min="0" max="20" value="${escapeAttr(exercise?.series ?? '')}" /></label>
+          <label><span>Repeticiones</span><input name="repeticiones" inputmode="numeric" type="number" min="0" max="200" value="${escapeAttr(exercise?.repeticiones ?? '')}" /></label>
+          <label><span>Duración (seg.)</span><input name="duracion" inputmode="numeric" type="number" min="0" max="7200" value="${escapeAttr(exercise?.duracion_segundos ?? '')}" /></label>
+          <label class="exercise-editor-field-wide"><span>Cómo realizarlo</span><textarea name="procedimiento" rows="4" maxlength="1800">${escapeHtml(exercise?.procedimiento || exercise?.descripcion || '')}</textarea></label>
+          <label class="exercise-editor-field-wide"><span>Objetivo de este ejercicio</span><textarea name="why" rows="2" maxlength="600">${escapeHtml(exercise?.why || exercise?.reason || '')}</textarea></label>
+          <label class="exercise-editor-field-wide"><span>Precauciones</span><textarea name="cautions" rows="2" maxlength="1200">${escapeHtml(cautions)}</textarea></label>
+        </div>
+      </article>`;
+    }).join('');
+    exerciseEditor.hidden = false;
+    exerciseEditor.setAttribute('aria-hidden', 'false');
+    exerciseEditorSummary?.focus();
+  };
+
+  const readEditorNumber = (value: FormDataEntryValue | null) => {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  };
+
+  const buildEditedExerciseReport = () => {
+    const currentExercises = Array.isArray(lastExerciseReportPayload?.exercises)
+      ? lastExerciseReportPayload.exercises
+      : [];
+    const itemNodes = Array.from(exerciseEditorList?.querySelectorAll<HTMLElement>('[data-editor-index]') || []);
+    const exercises = itemNodes.map((node) => {
+      const index = Number.parseInt(String(node.dataset.editorIndex || ''), 10);
+      const current = currentExercises[index] || {};
+      const field = (name: string) => (node.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | null)?.value || '';
+      return {
+        ...current,
+        series: readEditorNumber(field('series')),
+        repeticiones: readEditorNumber(field('repeticiones')),
+        duracion_segundos: readEditorNumber(field('duracion')),
+        procedimiento: field('procedimiento').trim(),
+        why: field('why').trim(),
+        cautions: field('cautions').split(';').map((item) => item.trim()).filter(Boolean),
+      };
+    });
+    return {
+      ...lastExerciseReportPayload,
+      symptom_summary: String(exerciseEditorSummary?.value || '').trim(),
+      message_to_patient: String(exerciseEditorPatientMessage?.value || '').trim(),
+      exercises,
+    };
+  };
+
   // Render exercise recommendation as a complete clinical plan inside the conversation.
   const addExerciseReport = (payload: any) => {
     if (!log) return;
@@ -2307,7 +2587,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         deliveredExerciseReports.delete(payloadPatientId);
       }
     }
+    updateExerciseApproveButton();
     updateExercisePdfButton();
+    updateExerciseTelegramButton();
     renderAssistantFlowCard();
     renderAssistantDeliveryCard();
 
@@ -2392,7 +2674,6 @@ import ConfigView from '../components/views/ConfigView.astro';
       exercises.forEach((exercise: any, index: number) => {
         const name = String(exercise?.nombre || exercise?.name || `Ejercicio ${index + 1}`).trim();
         const zone = String(exercise?.zona_corporal || exercise?.body_area || '').trim();
-        const procedure = trimAgentBriefText(exercise?.procedimiento || exercise?.descripcion || exercise?.description || '', 240);
         const why = trimAgentBriefText(exercise?.why || exercise?.reason || '', 180);
         const cautions = toReportTextList(exercise?.cautions || [], 3);
         html += '<article class="exercise-card-pro">';
@@ -2403,7 +2684,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         html += `<span>${escapeHtml(getExerciseDoseLabel(exercise))}</span>`;
         if (zone) html += `<span>${escapeHtml(zone)}</span>`;
         html += '</div>';
-        if (procedure) html += `<p>${escapeHtml(procedure)}</p>`;
+        html += renderExerciseProcedure(exercise);
         if (why) html += `<small><strong>Motivo:</strong> ${escapeHtml(why)}</small>`;
         if (cautions.length) html += `<small class="exercise-cautions"><strong>Precauciones:</strong> ${escapeHtml(cautions.join(' | '))}</small>`;
         html += '</div>';
@@ -2414,13 +2695,12 @@ import ConfigView from '../components/views/ConfigView.astro';
     html += '</section>';
 
     html += '<section class="exercise-report-section exercise-report-review">';
-    html += '<div><span>Revision y entrega</span>';
-    html += `<p>${recommendationId ? 'El plan ya quedo asociado al historial del paciente. Puedes editar el briefing, regenerar, exportar PDF o enviarlo por Telegram.' : 'El plan se genero, pero el backend no confirmo recommendation_id. Exporta si procede y revisa la persistencia.'}</p></div>`;
+    html += '<div><span>Revisión profesional</span>';
+    html += `<p>${recommendationId ? 'Comprueba el contenido, edítalo si es necesario y apruébalo cuando esté listo para el paciente.' : 'El plan se generó, pero no quedó vinculado al historial. Revisa la persistencia antes de utilizarlo.'}</p></div>`;
     html += '<div class="exercise-report-actions">';
-    html += renderReportActionButton('edit', 'edit_note', 'Editar briefing');
-    html += renderReportActionButton('regenerate', 'refresh', 'Regenerar');
-    html += renderReportActionButton('pdf', 'picture_as_pdf', 'Exportar PDF', true);
-    html += renderReportActionButton('telegram', 'send', 'Enviar');
+    html += renderReportActionButton('edit', 'edit_note', 'Editar informe', true);
+    html += renderReportActionButton('approve', 'fact_check', 'Aprobar plan');
+    html += renderReportActionButton('regenerate', 'refresh', 'Crear otra propuesta');
     html += '</div>';
     html += '</section>';
 
@@ -2679,10 +2959,26 @@ import ConfigView from '../components/views/ConfigView.astro';
         return;
       }
 
+      const generatedExercises = Array.isArray(payload?.exercises)
+        ? payload.exercises.filter((exercise: any) =>
+            Boolean(String(exercise?.exercise_id || exercise?.id || '').trim())
+          )
+        : [];
+      if (!generatedExercises.length) {
+        lastExerciseReportPayload = null;
+        updateExerciseApproveButton();
+        updateExercisePdfButton();
+        updateExerciseTelegramButton();
+        clearAgentProgress();
+        addMessage('No se ha creado ningún plan: el motor no encontró ejercicios compatibles. Amplía el contexto clínico o revisa el catálogo y vuelve a generarlo.', 'agent');
+        return;
+      }
+
       syncEngineOpsFromPayload(payload);
       upsertAgentProgress('Preparando informe y guardando historial...');
       clearAgentProgress();
       addExerciseReport(payload);
+      setAssistantCareStep(2);
       if (payload?.recommendation_id) {
         void loadAssistantPatientBrief(activePatientId, true);
         if (activeSection === 'historial') {
@@ -2732,19 +3028,13 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
+    if (action === 'approve') {
+      exerciseApproveBtn?.click();
+      return;
+    }
+
     if (action === 'edit') {
-      setAssistantMode('update-plan', { focus: false });
-      if (input) {
-        const base = lastExerciseRequestText || lastExerciseVisibleText || '';
-        input.value = base
-          ? `Ajusta este plan. Mantener lo que funcione y cambia dosis, ejercicios o precauciones segun este briefing:\n\n${base}`
-          : 'Ajusta el plan actual segun dolor, adherencia, progresion y tolerancia.';
-        resizeAgentInput();
-        renderAssistantModeCard();
-        renderAssistantFlowCard();
-        input.focus();
-        input.setSelectionRange(input.value.length, input.value.length);
-      }
+      openExerciseEditor();
       return;
     }
 
@@ -2759,6 +3049,52 @@ import ConfigView from '../components/views/ConfigView.astro';
         `Regenerar plan con el mismo briefing: ${trimAgentBriefText(lastExerciseVisibleText || requestText, 110)}`,
         { showUserMessage: true }
       );
+    }
+  });
+
+  document.getElementById('exerciseEditorClose')?.addEventListener('click', closeExerciseEditor);
+  document.getElementById('exerciseEditorCancel')?.addEventListener('click', closeExerciseEditor);
+
+  exerciseEditorForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!lastExerciseReportPayload) return;
+    const editedReport = buildEditedExerciseReport();
+    if (!editedReport.exercises.length) {
+      if (exerciseEditorFeedback) {
+        exerciseEditorFeedback.textContent = 'El plan debe contener al menos un ejercicio.';
+        exerciseEditorFeedback.hidden = false;
+      }
+      return;
+    }
+
+    const recommendationId = String(editedReport.recommendation_id || '').trim();
+    exerciseEditorSave?.toggleAttribute('disabled', true);
+    if (exerciseEditorFeedback) {
+      exerciseEditorFeedback.textContent = recommendationId ? 'Guardando revisión…' : 'Aplicando cambios…';
+      exerciseEditorFeedback.hidden = false;
+    }
+
+    try {
+      let savedReport = editedReport;
+      if (recommendationId) {
+        const response = await fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${recommendationId}/draft`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ report: editedReport }),
+        });
+        savedReport = response?.data?.report || editedReport;
+      }
+      log?.querySelector('.msg-report:last-of-type')?.remove();
+      addExerciseReport(savedReport);
+      closeExerciseEditor();
+      addMessage(recommendationId ? 'Cambios guardados en el historial. El plan sigue pendiente de aprobación.' : 'Cambios aplicados al borrador.', 'agent');
+    } catch (err: any) {
+      if (exerciseEditorFeedback) {
+        exerciseEditorFeedback.textContent = err?.message || 'No se pudieron guardar los cambios.';
+        exerciseEditorFeedback.hidden = false;
+      }
+    } finally {
+      exerciseEditorSave?.toggleAttribute('disabled', false);
     }
   });
 
@@ -2811,6 +3147,57 @@ import ConfigView from '../components/views/ConfigView.astro';
     return true;
   };
 
+  const approveCurrentExerciseReport = async () => {
+    const recommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim();
+    if (!hasUsableExerciseReport()) {
+      addMessage('Este resultado no contiene ejercicios válidos y no se puede aprobar. Genera una propuesta nueva con más contexto clínico.', 'agent');
+      return;
+    }
+    if (!recommendationId) {
+      addMessage('No puedo aprobar este plan porque no quedó registrado en el historial.', 'agent');
+      return;
+    }
+    if (isExerciseReportApproved()) return;
+
+    let note = '';
+    if (lastExerciseReportPayload?.red_flags?.present) {
+      note = String(window.prompt('Este plan contiene alertas clínicas. Escribe la justificación de tu revisión antes de aprobarlo:') || '').trim();
+      if (note.length < 12) {
+        addMessage('La aprobación se ha cancelado: con alertas clínicas necesitas una nota justificativa de al menos 12 caracteres.', 'agent');
+        return;
+      }
+    }
+
+    try {
+      setSending(true, 'exercise');
+      const payload = await fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${recommendationId}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision: 'approve', note }),
+      });
+      const approvalState = String(payload?.data?.estado || 'aprobada');
+      lastExerciseReportPayload = {
+        ...lastExerciseReportPayload,
+        approval_required: false,
+        approval_state: approvalState,
+        estado: approvalState,
+        reviewed_at: payload?.data?.reviewed_at || new Date().toISOString(),
+      };
+      updateExerciseApproveButton();
+      updateExercisePdfButton();
+      updateExerciseTelegramButton();
+      renderAssistantDeliveryCard();
+      setAssistantCareStep(3);
+      addMessage('Plan aprobado y registrado. Ya puedes exportarlo o enviarlo al paciente.', 'agent');
+    } catch (err: any) {
+      addMessage(`No se pudo aprobar el plan: ${err?.message || 'error no identificado'}`, 'agent');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  exerciseApproveBtn?.addEventListener('click', () => void approveCurrentExerciseReport());
+
   exerciseTelegramBtn?.addEventListener('click', async () => {
     if (!selectedPatientId) {
       addMessage('Selecciona un paciente antes de enviar el informe por Telegram.', 'agent');
@@ -2828,6 +3215,14 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!lastExerciseReportPayload) {
       addMessage('Primero genera y revisa un plan para poder enviarlo al paciente por Telegram.', 'agent');
+      return;
+    }
+    if (!hasUsableExerciseReport()) {
+      addMessage('No hay ejercicios válidos que enviar. Genera una propuesta nueva antes de continuar.', 'agent');
+      return;
+    }
+    if (!isExerciseReportApproved()) {
+      addMessage('Revisa y aprueba el plan antes de enviarlo al paciente.', 'agent');
       return;
     }
 
@@ -2862,6 +3257,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         recommendationId: recommendationId || null,
         sentAt: new Date().toISOString(),
       });
+      setAssistantCareStep(4);
       updateExerciseTelegramButton();
       if (followUpRegistered && activeSection === 'historial') {
         pendingHistoryAnchor = 'recommendations';
@@ -2882,12 +3278,17 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   exercisePdfBtn?.addEventListener('click', async () => {
-    if (!lastExerciseReportPayload) {
+    if (!hasUsableExerciseReport()) {
       addMessage('Primero genera un informe de ejercicios para poder exportarlo a PDF.', 'agent');
+      return;
+    }
+    if (!isExerciseReportApproved()) {
+      addMessage('Revisa y aprueba el plan antes de exportarlo a PDF.', 'agent');
       return;
     }
     try {
       await exportExerciseReportPdf(lastExerciseReportPayload);
+      setAssistantCareStep(4);
       const recommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim();
       let archived = false;
       if (recommendationId) {
@@ -2931,7 +3332,24 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   // === HEALTH CHECK ===
-  const checkHealth = async () => { try { const r = await fetch(`${BACKEND_BASE}/api/health`,{signal:AbortSignal.timeout(5000)}); setAgentStatus(r.ok); } catch { setAgentStatus(false); } };
+  const checkHealth = async () => {
+    try {
+      const health = await fetch(`${BACKEND_BASE}/api/health`, { signal: AbortSignal.timeout(5000) });
+      if (!health.ok) {
+        setAgentStatus(false);
+        return;
+      }
+      try {
+        const catalog = await fetchJson(`${BACKEND_BASE}/api/exercises/catalog`, undefined, 6000);
+        const catalogTotal = Number(catalog?.total || catalog?.data?.length || 0);
+        setAgentStatus(catalogTotal > 0, catalogTotal > 0 ? 'Operativo' : 'Sin catálogo');
+      } catch {
+        setAgentStatus(false, 'Revisión pendiente');
+      }
+    } catch {
+      setAgentStatus(false);
+    }
+  };
   checkHealth();
 
   // === LOAD INTAKES (dashboard) ===
@@ -3194,6 +3612,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       syncDashboardCommandCenter();
       const badge = document.getElementById('intakeBadge');
       if (badge) badge.textContent = String(intakes.length);
+      const notifBadge = document.getElementById('notifBadge');
+      if (notifBadge) notifBadge.toggleAttribute('hidden', intakes.length === 0);
       if (!intakes.length) {
         setListState(intakeBody, 'check_circle', 'Sin mensajes pendientes');
         return;
@@ -3441,7 +3861,9 @@ import ConfigView from '../components/views/ConfigView.astro';
       patientsFilterChip.textContent = `${filterLabel} | ${sortLabel}`;
     }
     patientsSegmentButtons.forEach((button) => {
-      button.classList.toggle('is-active', button.dataset.patientFilter === patientDirectoryFilter);
+      const isActive = button.dataset.patientFilter === patientDirectoryFilter;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
     if (patientsSortSelect && patientsSortSelect.value !== patientDirectorySort) {
       patientsSortSelect.value = patientDirectorySort;
@@ -5144,7 +5566,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!selectedPatientId) {
       currentPatientTelegramLinkState = null;
       updateExerciseTelegramButton();
-      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">&#xe889;</span><p>Selecciona un paciente desde Pacientes, Agenda o la busqueda superior para revisar su seguimiento longitudinal.</p></div>`;
+      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">person_search</span><p>Selecciona un paciente desde Pacientes, Agenda o la busqueda superior para revisar su seguimiento longitudinal.</p></div>`;
       return;
     }
     historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
@@ -7505,7 +7927,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <span><small>Total</small><strong>${Number(f.importe_total || 0).toFixed(2)} EUR</strong></span>
           </div>
           <div class="factura-mobile-actions">
-            <a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">Abrir PDF</a>
+            <a href="#" data-protected-url="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">Abrir PDF</a>
           </div>
         </article>
       `;
@@ -7575,7 +7997,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <td>${Number(f.importe_iva).toFixed(2)} EUR</td>
           <td><strong>${Number(f.importe_total).toFixed(2)} EUR</strong></td>
           <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
-          <td><a href="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a></td>
+          <td><a href="#" data-protected-url="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a></td>
         </tr>`;
       }).join('');
     } catch {
@@ -7663,7 +8085,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       await loadFacturas();
       // Open PDF in new tab
       if (payload.data?.id) {
-        window.open(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf${buildClinicParams()}`, '_blank');
+        await openProtectedUrl(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf${buildClinicParams()}`);
       }
     } catch (err: any) {
       setFacturaFeedback(`Error: ${err?.message || 'no se pudo generar'}`);
@@ -8047,7 +8469,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       });
       closeFirmaModal();
       // Open PDF
-      window.open(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf${buildClinicParams()}`, '_blank');
+      await openProtectedUrl(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf${buildClinicParams()}`);
       // Reload docs list
       if (fichaPatientId) {
         const docsPayload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
@@ -8507,7 +8929,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <p>${escapeHtml(tipoLabel)} | ${escapeHtml(d.titulo || 'Sin titulo')}</p>
           <small>${escapeHtml(fechaFirma)}</small>
           <div class="documentos-mobile-actions">
-            ${signed ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : ''}
+            ${signed ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : ''}
             <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}">Eliminar</button>
           </div>
         </article>
@@ -8546,7 +8968,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
           <td>${fechaFirma}</td>
           <td class="documentos-actions-cell">
-            ${d.estado === 'firmado' ? `<a href="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" target="_blank" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
+            ${d.estado === 'firmado' ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
             <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
           </td>
         </tr>`;
@@ -8914,7 +9336,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   }
 
   // =======================================================
-  // GEMINI COPILOT QUICK ACTION CARDS LOGIC
+  // ACCIONES RÁPIDAS DEL COPILOTO CLÍNICO
   // =======================================================
   const quickActionChips = document.querySelectorAll('.quick-action-chip');
   quickActionChips.forEach(chip => {
@@ -8965,5 +9387,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
 
 <style is:global set:html={premiumClinicUiStyles}></style>
+
+<style is:global set:html={productionUiStyles}></style>
 
 <style is:global set:html={assistantRailStyles}></style>

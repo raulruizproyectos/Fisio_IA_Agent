@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = Router();
 
@@ -113,8 +113,8 @@ const getSectionAvailability = (result, { key, label, table, migration }) => {
 router.get('/', async (req, res, next) => {
   try {
     const [legacyResult, crmResult] = await Promise.allSettled([
-      supabase.from('pacientes').select('*').order('creado_en', { ascending: false }),
-      supabase.from('crm_pacientes').select(CRM_FIELDS).eq('activo', true).order('created_at', { ascending: false }),
+      supabase.from('pacientes').select('*').order('creado_en', { ascending: false }).limit(500),
+      supabase.from('crm_pacientes').select(CRM_FIELDS).eq('activo', true).order('created_at', { ascending: false }).limit(500),
     ]);
 
     const legacyRows = legacyResult.status === 'fulfilled' && !legacyResult.value.error
@@ -284,23 +284,42 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
+    const fullName = String(pickValue(req.body, 'nombre_completo', 'full_name') || '').trim();
+    if (!fullName) return res.status(400).json({ error: 'nombre_completo es obligatorio' });
+    const [nombre, ...surnameParts] = fullName.split(/\s+/);
+    const profileId = req.auth?.profile_id;
+    if (!profileId) return res.status(403).json({ error: 'Perfil profesional no autorizado' });
+
     const payload = {
-      nombre_completo: pickValue(req.body, 'nombre_completo', 'full_name'),
+      nombre,
+      apellidos: surnameParts.join(' ') || null,
       fecha_nacimiento: pickValue(req.body, 'fecha_nacimiento', 'birth_date'),
       email: pickValue(req.body, 'email'),
-      phone: pickValue(req.body, 'phone'),
-      notas_medicas: pickValue(req.body, 'notas_medicas', 'medical_notes') || {},
-      profesional_id: pickValue(req.body, 'profesional_id', 'professional_id'),
+      telefono: pickValue(req.body, 'phone', 'telefono'),
+      observaciones: formatLegacyNotes(pickValue(req.body, 'notas_medicas', 'medical_notes')),
+      created_by_profile_id: profileId,
+      activo: true,
     };
 
     const { data, error } = await supabase
-      .from('pacientes')
+      .from('crm_pacientes')
       .insert(payload)
-      .select()
+      .select(CRM_FIELDS)
       .single();
 
     if (error) throw error;
-    res.status(201).json({ data });
+
+    const { error: assignmentError } = await supabase
+      .from('crm_asignaciones_fisio_paciente')
+      .upsert({ fisioterapeuta_id: profileId, paciente_id: data.id, estado: 'activa' }, {
+        onConflict: 'fisioterapeuta_id,paciente_id',
+      });
+    if (assignmentError) {
+      await supabase.from('crm_pacientes').delete().eq('id', data.id);
+      throw assignmentError;
+    }
+
+    res.status(201).json({ data: normalizeCrmPatient(data) });
   } catch (err) {
     next(err);
   }

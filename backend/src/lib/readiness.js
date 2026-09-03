@@ -56,6 +56,74 @@ const isMissingTableError = (table, error) => {
   return code === 'PGRST205' || (message.includes(table.toLowerCase()) && (message.includes('schema cache') || message.includes('could not find the table')));
 };
 
+const hasValue = (env, key) => Boolean(String(env?.[key] || '').trim());
+
+const hasAll = (env, keys) => keys.every((key) => hasValue(env, key));
+
+export function buildIntegrationConfigurationReport(env = {}) {
+  const directCalendar = hasAll(env, ['GOOGLE_CALENDAR_ID', 'GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY']);
+  const n8nCalendar = hasAll(env, ['W5_CALENDAR_READER_URL', 'W6_CALENDAR_WRITER_URL', 'N8N_WEBHOOK_SECRET']);
+  const directAi = hasValue(env, 'OPENAI_API_KEY');
+  const n8nAi = hasAll(env, ['N8N_EXERCISE_WEBHOOK_URL', 'N8N_WEBHOOK_SECRET']);
+
+  const integrations = [
+    {
+      key: 'supabase',
+      label: 'Supabase PostgreSQL',
+      criticality: 'core',
+      status: hasAll(env, ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY']) ? 'configured' : 'missing',
+      mode: 'service_role_and_user_jwt',
+    },
+    {
+      key: 'clinical_ai',
+      label: 'Motor IA clínico',
+      criticality: 'core',
+      status: directAi || n8nAi ? 'configured' : 'missing',
+      mode: directAi ? 'openai_direct' : n8nAi ? 'n8n_webhook' : null,
+    },
+    {
+      key: 'agent_orchestration',
+      label: 'Orquestación n8n',
+      criticality: 'optional',
+      status: hasAll(env, ['N8N_AGENT_WEBHOOK_URL', 'N8N_WEBHOOK_SECRET']) ? 'configured' : 'missing',
+      mode: 'signed_webhook',
+    },
+    {
+      key: 'telegram_patient',
+      label: 'Entrega al paciente por Telegram',
+      criticality: 'optional',
+      status: hasAll(env, ['TELEGRAM_PATIENT_BOT_TOKEN', 'TELEGRAM_WEBHOOK_SECRET']) ? 'configured' : 'missing',
+      mode: 'patient_bot',
+    },
+    {
+      key: 'google_calendar',
+      label: 'Google Calendar',
+      criticality: String(env.GOOGLE_CALENDAR_REQUIRED || '').toLowerCase() === 'true' ? 'core' : 'optional',
+      status: directCalendar || n8nCalendar ? 'configured' : 'missing',
+      mode: directCalendar ? 'service_account' : n8nCalendar ? 'n8n_oauth_bridge' : null,
+    },
+    {
+      key: 'gmail',
+      label: 'Alertas internas por Gmail',
+      criticality: 'optional',
+      status: hasAll(env, ['N8N_ERROR_WEBHOOK_URL', 'N8N_WEBHOOK_SECRET']) ? 'configured' : 'missing',
+      mode: 'n8n_gmail_oauth',
+      note: 'El backend entrega incidencias a n8n; la credencial OAuth de Gmail debe verificarse dentro del workflow de errores.',
+    },
+  ];
+
+  return {
+    checks: integrations,
+    summary: {
+      total_checks: integrations.length,
+      configured_checks: integrations.filter((item) => item.status === 'configured').length,
+      missing_core: integrations.filter((item) => item.criticality === 'core' && item.status === 'missing').length,
+      missing_optional: integrations.filter((item) => item.criticality === 'optional' && item.status === 'missing').length,
+      not_used: integrations.filter((item) => item.status === 'not_used').length,
+    },
+  };
+}
+
 const buildCheckMessage = (check, error) => {
   if (isMissingTableError(check.table, error)) {
     return `Falta tabla ${check.table}. Ejecuta ${check.migration}.`;
@@ -91,6 +159,7 @@ const checkTable = async (supabase, check) => {
 };
 
 export async function buildReadinessReport({ supabase, env }) {
+  const integrationReport = buildIntegrationConfigurationReport(env);
   const envStatus = {
     supabase_url_configured: Boolean(env.SUPABASE_URL),
     supabase_service_role_configured: Boolean(env.SUPABASE_SERVICE_ROLE_KEY),
@@ -111,6 +180,8 @@ export async function buildReadinessReport({ supabase, env }) {
         optional_missing: 0,
       },
       checks: [],
+      integrations: integrationReport.checks,
+      integration_summary: integrationReport.summary,
       missing_tables: [],
       message: 'Faltan credenciales de Supabase en el backend.',
     };
@@ -135,6 +206,8 @@ export async function buildReadinessReport({ supabase, env }) {
         optional_missing: 0,
       },
       checks: [],
+      integrations: integrationReport.checks,
+      integration_summary: integrationReport.summary,
       missing_tables: [],
       message: String(error?.message || 'No se pudo completar la comprobacion de readiness.'),
     };
@@ -145,9 +218,9 @@ export async function buildReadinessReport({ supabase, env }) {
   const coreIssues = checks.filter((check) => check.severity === 'core' && check.status !== 'ok');
   const optionalIssues = checks.filter((check) => check.severity === 'optional' && check.status !== 'ok');
 
-  const status = coreIssues.length || errorChecks.length
+  const status = coreIssues.length || errorChecks.length || integrationReport.summary.missing_core
     ? 'error'
-    : optionalIssues.length
+    : optionalIssues.length || integrationReport.summary.missing_optional
       ? 'degraded'
       : 'ok';
 
@@ -165,6 +238,8 @@ export async function buildReadinessReport({ supabase, env }) {
       optional_missing: checks.filter((check) => check.severity === 'optional' && check.status === 'missing').length,
     },
     checks,
+    integrations: integrationReport.checks,
+    integration_summary: integrationReport.summary,
     missing_tables: missingTables,
     message: status === 'ok'
       ? 'Backend y tablas CRM listos.'
