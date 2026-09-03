@@ -6,14 +6,8 @@
 <div class="page-section active" data-page="dashboard">
   <section class="clinic-dashboard" aria-labelledby="dashboardTitle">
     <header class="clinic-dashboard-hero">
-      <div class="clinic-vital-line" aria-hidden="true">
-        <svg viewBox="0 0 920 170" preserveAspectRatio="none">
-          <path class="clinic-vital-line-track" d="M0 92H210l30-1 17-48 34 96 27-47h112l16-28 28 55 22-27H920" />
-          <path class="clinic-vital-line-pulse" d="M0 92H210l30-1 17-48 34 96 27-47h112l16-28 28 55 22-27H920" />
-        </svg>
-      </div>
       <div class="clinic-dashboard-copy">
-        <span class="clinic-kicker">Resumen clínico</span>
+        <span class="clinic-kicker">Jornada clínica</span>
         <h1 id="dashboardTitle">Buenos días, Dr.</h1>
         <p id="dashboardLiveSummary">Cargando agenda, mensajes y sincronización clínica…</p>
         <div class="clinic-hero-actions">
@@ -32,18 +26,31 @@
         </div>
       </div>
 
-      <aside class="clinic-focus-card" aria-label="Siguiente paso recomendado">
-        <div class="clinic-card-head">
-          <span class="clinic-kicker">Ahora</span>
-          <span class="status-chip pendiente" id="dashboardNextSessionStatus">Cargando</span>
+      <div class="clinic-focus-stage">
+        <div class="clinic-motion-figure" aria-hidden="true">
+          <svg viewBox="0 0 480 360" role="presentation">
+            <path class="motion-orbit motion-orbit-back" d="M55 276C112 162 177 83 284 63c64-12 116 4 147 33" />
+            <path class="motion-orbit motion-orbit-front" d="M18 318c98-55 181-61 258-26 54 25 108 29 185-5" />
+            <circle class="motion-joint motion-joint-one" cx="283" cy="83" r="20" />
+            <path class="motion-body" d="M278 112c-33 35-48 79-40 123m42-119c34 38 48 78 36 120m-78-1c-37 17-67 47-84 89m162-88c33 20 58 50 73 88m-143-157c-25 18-51 23-79 16m106-30c35 6 67-4 96-30" />
+            <circle class="motion-joint motion-joint-two" cx="238" cy="236" r="10" />
+            <circle class="motion-joint motion-joint-three" cx="316" cy="237" r="10" />
+          </svg>
         </div>
-        <strong id="dashboardNextSessionTitle">Leyendo próxima sesión…</strong>
-        <p id="dashboardNextSessionMeta">La agenda se actualiza en segundo plano.</p>
-        <button class="btn-ghost btn-sm" type="button" id="dashboardNextSessionBtn">
-          <span class="material-symbols-rounded">calendar_today</span>
-          Ver agenda
-        </button>
-      </aside>
+
+        <aside class="clinic-focus-card" aria-label="Siguiente paso recomendado">
+          <div class="clinic-card-head">
+            <span class="clinic-kicker">Ahora</span>
+            <span class="status-chip pendiente" id="dashboardNextSessionStatus">Cargando</span>
+          </div>
+          <strong id="dashboardNextSessionTitle">Leyendo próxima sesión…</strong>
+          <p id="dashboardNextSessionMeta">La agenda se actualiza en segundo plano.</p>
+          <button class="clinic-focus-action" type="button" id="dashboardNextSessionBtn">
+            <span>Ver agenda</span>
+            <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
+          </button>
+        </aside>
+      </div>
     </header>
 
     <section class="clinic-command-search" aria-label="Acceso rápido">
@@ -63,22 +70,18 @@
 
     <section class="clinic-ai-pathway" aria-labelledby="aiPathwayTitle">
       <div class="clinic-ai-pathway-copy">
-        <span class="clinic-kicker">Diferencial Fisio IA</span>
-        <h2 id="aiPathwayTitle">Del diagnóstico al seguimiento, sin perder el hilo clínico</h2>
-        <p>Selecciona al paciente, describe el diagnóstico y recibe una propuesta explicable. Tú la revisas antes de entregarla y cada evolución queda vinculada a su ficha.</p>
-        <div class="clinic-ai-trust">
-          <span><span class="material-symbols-rounded">verified_user</span> Revisión profesional obligatoria</span>
-          <span><span class="material-symbols-rounded">history</span> Trazabilidad completa</span>
-        </div>
+        <span class="clinic-kicker">Ruta asistencial</span>
+        <h2 id="aiPathwayTitle">Un caso, una evolución continua</h2>
+        <p>Del contexto inicial a la revisión profesional y el seguimiento.</p>
       </div>
       <ol class="clinic-ai-steps" aria-label="Circuito del plan clínico con IA">
-        <li><span>01</span><div><strong>Contexto</strong><p>Paciente, diagnóstico y objetivos.</p></div></li>
-        <li><span>02</span><div><strong>Propuesta IA</strong><p>Ejercicios, dosis y precauciones.</p></div></li>
-        <li><span>03</span><div><strong>Validación</strong><p>Aprobar, ajustar o rechazar.</p></div></li>
-        <li><span>04</span><div><strong>Seguimiento</strong><p>Dolor, adherencia y evolución.</p></div></li>
+        <li><span>01</span><div><strong>Contexto</strong><p>Paciente y objetivos.</p></div></li>
+        <li><span>02</span><div><strong>Propuesta</strong><p>Plan y precauciones.</p></div></li>
+        <li><span>03</span><div><strong>Validación</strong><p>Criterio profesional.</p></div></li>
+        <li><span>04</span><div><strong>Evolución</strong><p>Adherencia y resultados.</p></div></li>
       </ol>
       <button class="clinic-ai-launch" type="button" data-dashboard-action="open-copilot">
-        <span>Empezar un plan</span>
+        <span>Crear un plan</span>
         <span class="material-symbols-rounded">arrow_forward</span>
       </button>
     </section>

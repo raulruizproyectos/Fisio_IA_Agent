@@ -3639,7 +3639,9 @@ import ConfigView from '../components/views/ConfigView.astro';
       patientsFilterChip.textContent = `${filterLabel} | ${sortLabel}`;
     }
     patientsSegmentButtons.forEach((button) => {
-      button.classList.toggle('is-active', button.dataset.patientFilter === patientDirectoryFilter);
+      const isActive = button.dataset.patientFilter === patientDirectoryFilter;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
     if (patientsSortSelect && patientsSortSelect.value !== patientDirectorySort) {
       patientsSortSelect.value = patientDirectorySort;
