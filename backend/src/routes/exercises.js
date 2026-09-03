@@ -788,6 +788,112 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
   }
 });
 
+router.patch('/recommendations/:recommendationId/draft', async (req, res) => {
+  try {
+    const recommendationId = String(req.params.recommendationId || '').trim();
+    const incoming = req.body?.report && typeof req.body.report === 'object'
+      ? req.body.report
+      : req.body;
+
+    if (!incoming || typeof incoming !== 'object') {
+      return res.status(400).json({ ok: false, error: 'El informe editado es obligatorio' });
+    }
+
+    const { data: current, error: currentError } = await supabase
+      .from('crm_recomendaciones')
+      .select('id, paciente_id, fisioterapeuta_id, estado, request_id')
+      .eq('id', recommendationId)
+      .single();
+    if (currentError) throw currentError;
+    if (!current) return res.status(404).json({ ok: false, error: 'Recomendación no encontrada' });
+    if (!['requiere_revision', 'rechazada'].includes(current.estado)) {
+      return res.status(409).json({ ok: false, error: 'El informe ya no admite cambios' });
+    }
+
+    const { data: storedItems, error: itemsError } = await supabase
+      .from('crm_recomendacion_items')
+      .select('ejercicio_id')
+      .eq('recomendacion_id', recommendationId);
+    if (itemsError) throw itemsError;
+    const allowedExerciseIds = new Set((storedItems || []).map((item) => String(item.ejercicio_id)));
+
+    const cleanText = (value, limit) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, limit);
+    const cleanNumber = (value, max = 999) => {
+      if (value === null || value === undefined || value === '') return null;
+      const parsed = Number.parseInt(String(value), 10);
+      return Number.isFinite(parsed) && parsed >= 0 ? Math.min(parsed, max) : null;
+    };
+    const exercises = (Array.isArray(incoming.exercises) ? incoming.exercises : [])
+      .slice(0, 12)
+      .filter((exercise) => allowedExerciseIds.has(String(exercise?.exercise_id || exercise?.id || '')))
+      .map((exercise, index) => ({
+        ...exercise,
+        nombre: cleanText(exercise?.nombre || exercise?.name || `Ejercicio ${index + 1}`, 160),
+        procedimiento: cleanText(exercise?.procedimiento || exercise?.descripcion || '', 1800),
+        why: cleanText(exercise?.why || exercise?.reason || '', 600),
+        cautions: Array.isArray(exercise?.cautions)
+          ? exercise.cautions.map((item) => cleanText(item, 280)).filter(Boolean).slice(0, 6)
+          : cleanText(exercise?.cautions, 1200).split(';').map((item) => item.trim()).filter(Boolean).slice(0, 6),
+        series: cleanNumber(exercise?.series, 20),
+        repeticiones: cleanNumber(exercise?.repeticiones, 200),
+        duracion_segundos: cleanNumber(exercise?.duracion_segundos, 7200),
+        orden: index + 1,
+      }));
+
+    if (!exercises.length) {
+      return res.status(400).json({ ok: false, error: 'El informe debe conservar al menos un ejercicio válido' });
+    }
+
+    const symptomSummary = cleanText(incoming.symptom_summary, 1200);
+    const messageToPatient = cleanText(incoming.message_to_patient, 1200);
+    const messageToTherapist = cleanText(incoming.message_to_therapist, 1200);
+    const editedAt = new Date().toISOString();
+    const report = {
+      ...incoming,
+      recommendation_id: recommendationId,
+      patient_id: current.paciente_id,
+      symptom_summary: symptomSummary,
+      message_to_patient: messageToPatient,
+      message_to_therapist: messageToTherapist,
+      exercises,
+      edited_at: editedAt,
+      approval_required: true,
+      approval_state: 'requiere_revision',
+    };
+
+    const { error: updateError } = await supabase
+      .from('crm_recomendaciones')
+      .update({
+        symptom_summary: symptomSummary,
+        message_to_patient_es: messageToPatient,
+        message_to_therapist_es: messageToTherapist,
+        estado: 'requiere_revision',
+        updated_at: editedAt,
+      })
+      .eq('id', recommendationId);
+    if (updateError) throw updateError;
+
+    await logComm(supabase, {
+      paciente_id: current.paciente_id,
+      fisioterapeuta_id: current.fisioterapeuta_id || req.auth?.profile_id || null,
+      recomendacion_id: recommendationId,
+      channel: 'crm_web',
+      direction: 'internal',
+      message_type: 'event',
+      message_text: 'Informe clínico editado por el profesional',
+      payload: { event: 'exercise_report_snapshot', report },
+      request_id: current.request_id || null,
+      status: 'processed',
+      occurred_at: editedAt,
+    });
+
+    return res.json({ ok: true, data: { report, edited_at: editedAt } });
+  } catch (err) {
+    console.error('[exercises/recommendations/draft] Error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Error guardando la revisión del informe' });
+  }
+});
+
 router.post('/recommendations/:recommendationId/review', async (req, res) => {
   try {
     const recommendationId = String(req.params.recommendationId || '').trim();

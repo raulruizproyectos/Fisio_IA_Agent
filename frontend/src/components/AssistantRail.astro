@@ -189,6 +189,50 @@
       </div>
     </aside>
   </div>
+
+  <section class="exercise-editor" id="exerciseReportEditor" hidden aria-hidden="true" aria-labelledby="exerciseEditorTitle">
+    <header class="exercise-editor-header">
+      <div>
+        <span>Revisión profesional</span>
+        <h2 id="exerciseEditorTitle">Editar plan terapéutico</h2>
+        <p>Ajusta el contenido que recibirá el paciente antes de aprobarlo.</p>
+      </div>
+      <button type="button" id="exerciseEditorClose" aria-label="Cerrar editor">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </header>
+
+    <form class="exercise-editor-form" id="exerciseEditorForm">
+      <div class="exercise-editor-intro">
+        <label>
+          <span>Resumen clínico</span>
+          <textarea id="exerciseEditorSummary" rows="3" maxlength="1200"></textarea>
+        </label>
+        <label>
+          <span>Indicaciones para el paciente</span>
+          <textarea id="exerciseEditorPatientMessage" rows="3" maxlength="1200"></textarea>
+        </label>
+      </div>
+
+      <div class="exercise-editor-section-heading">
+        <div>
+          <span>Ejercicios del plan</span>
+          <strong>Edita dosis e instrucciones</strong>
+        </div>
+        <small>Los cambios quedan vinculados al historial.</small>
+      </div>
+      <div class="exercise-editor-list" id="exerciseEditorList"></div>
+      <p class="exercise-editor-feedback" id="exerciseEditorFeedback" role="status" hidden></p>
+
+      <footer class="exercise-editor-footer">
+        <button type="button" class="exercise-editor-cancel" id="exerciseEditorCancel">Cancelar</button>
+        <button type="submit" class="exercise-editor-save" id="exerciseEditorSave">
+          <span class="material-symbols-rounded">save</span>
+          Guardar cambios
+        </button>
+      </footer>
+    </form>
+  </section>
 </aside>
 
 <div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300 assistant-rail-backdrop" id="assistantRailBackdrop" aria-hidden="true"></div>

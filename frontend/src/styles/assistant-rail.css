@@ -6,7 +6,7 @@
 #assistantRail,
 #assistantRail.assistant-rail,
 #assistantRail.assistant-rail-portal {
-  --assistant-rail-width: clamp(420px, 32vw, 560px);
+  --assistant-rail-width: min(1120px, calc(100vw - 244px));
   --assistant-rail-z: 90;
   --assistant-backdrop-z: 80;
   --assistant-fab-z: 75;
@@ -46,6 +46,10 @@
 #assistantRail *::before,
 #assistantRail *::after {
   box-sizing: border-box !important;
+}
+
+#assistantRail :where(button, input, textarea, select, p, span, strong, small, dt, dd, label) {
+  font-family: var(--font-ui, "Manrope", system-ui, sans-serif) !important;
 }
 
 #assistantRail [hidden] {
@@ -821,12 +825,16 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
 }
 
 #assistantRail .msg-report .msg-body {
-  width: calc(100% - 2.7rem) !important;
+  width: 100% !important;
   max-width: none !important;
   padding: 0 !important;
   overflow: hidden !important;
   background: #fffdf8 !important;
   border-radius: 1.15rem !important;
+}
+
+#assistantRail .msg-report .msg-avatar {
+  display: none !important;
 }
 
 #assistantRail .msg-report .msg-sender {
@@ -861,7 +869,7 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
 #assistantRail .exercise-report-section-head > span {
   display: block !important;
   color: #b67d34 !important;
-  font-size: .66rem !important;
+  font-size: .73rem !important;
   font-weight: 850 !important;
   letter-spacing: .12em !important;
   text-transform: uppercase !important;
@@ -871,7 +879,7 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
   display: block !important;
   margin-top: .28rem !important;
   color: #fffdf6 !important;
-  font: 720 1.32rem/1.1 var(--font-display, "Sora", sans-serif) !important;
+  font: 760 1.45rem/1.2 var(--font-ui, "Manrope", system-ui, sans-serif) !important;
   letter-spacing: -.035em !important;
 }
 
@@ -879,8 +887,8 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
   max-width: 58ch !important;
   margin: .55rem 0 0 !important;
   color: rgba(245, 250, 247, .74) !important;
-  font-size: .8rem !important;
-  line-height: 1.55 !important;
+  font-size: .88rem !important;
+  line-height: 1.65 !important;
 }
 
 #assistantRail .exercise-report-status {
@@ -912,8 +920,8 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
 #assistantRail .exercise-report-section p {
   margin: .38rem 0 0 !important;
   color: #536a62 !important;
-  font-size: .82rem !important;
-  line-height: 1.55 !important;
+  font-size: .88rem !important;
+  line-height: 1.65 !important;
 }
 
 #assistantRail .exercise-report-summary,
@@ -961,13 +969,13 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
 
 #assistantRail .exercise-plan-grid {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: .65rem !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: .8rem !important;
 }
 
 #assistantRail .exercise-card-pro {
   display: grid !important;
-  grid-template-columns: 5.4rem minmax(0, 1fr) !important;
+  grid-template-columns: 10.5rem minmax(0, 1fr) !important;
   min-width: 0 !important;
   overflow: hidden !important;
   background: #f7f6ef !important;
@@ -1023,8 +1031,8 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
 
 #assistantRail .exercise-card-pro-top strong {
   color: #17342b !important;
-  font-size: .8rem !important;
-  line-height: 1.3 !important;
+  font-size: .96rem !important;
+  line-height: 1.35 !important;
 }
 
 #assistantRail .exercise-dose-line {
@@ -1050,8 +1058,283 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
   display: block !important;
   margin: .45rem 0 0 !important;
   color: #657a72 !important;
+  font-size: .79rem !important;
+  line-height: 1.6 !important;
+}
+
+#assistantRail .exercise-procedure {
+  display: grid !important;
+  gap: .45rem !important;
+  margin-top: .7rem !important;
+}
+
+#assistantRail .exercise-procedure-step {
+  display: grid !important;
+  grid-template-columns: 1.5rem minmax(0, 1fr) !important;
+  gap: .55rem !important;
+  align-items: start !important;
+}
+
+#assistantRail .exercise-procedure-step > b {
+  display: grid !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  place-items: center !important;
+  color: #0d5144 !important;
+  background: #dcefe8 !important;
+  border-radius: 50% !important;
+  font-size: .65rem !important;
+}
+
+#assistantRail .exercise-procedure-step > span {
+  color: #4f665e !important;
+  font-size: .79rem !important;
+  line-height: 1.55 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+#assistantRail .exercise-editor {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 30 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  color: #17342b !important;
+  background: #f3f7f5 !important;
+  animation: editorEnter 220ms cubic-bezier(.22, 1, .36, 1) both !important;
+}
+
+#assistantRail .exercise-editor[hidden] {
+  display: none !important;
+}
+
+#assistantRail .exercise-editor-header {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 1.5rem !important;
+  padding: 1.35rem clamp(1.1rem, 3vw, 2rem) !important;
+  color: #fffdf6 !important;
+  background: linear-gradient(125deg, #0a3a31, #0d5b4c) !important;
+}
+
+#assistantRail .exercise-editor-header > div > span {
+  display: block !important;
+  color: #e6bd78 !important;
+  font-size: .7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .13em !important;
+  text-transform: uppercase !important;
+}
+
+#assistantRail .exercise-editor-header h2 {
+  margin: .28rem 0 0 !important;
+  color: #fffdf6 !important;
+  font: 760 clamp(1.35rem, 2.2vw, 1.85rem)/1.2 var(--font-ui, "Manrope", sans-serif) !important;
+  letter-spacing: -.025em !important;
+}
+
+#assistantRail .exercise-editor-header p {
+  margin: .4rem 0 0 !important;
+  color: rgba(255, 253, 246, .72) !important;
+  font-size: .86rem !important;
+}
+
+#assistantRail .exercise-editor-header button {
+  display: grid !important;
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  flex: 0 0 auto !important;
+  place-items: center !important;
+  color: #fff !important;
+  background: rgba(255,255,255,.1) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  border-radius: .75rem !important;
+}
+
+#assistantRail .exercise-editor-form {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  gap: 1.15rem !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  padding: 1.35rem clamp(1rem, 3vw, 2rem) 6.5rem !important;
+}
+
+#assistantRail .exercise-editor-intro {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+#assistantRail .exercise-editor label > span,
+#assistantRail .exercise-editor-section-heading span {
+  display: block !important;
+  margin-bottom: .42rem !important;
+  color: #31564b !important;
+  font-size: .76rem !important;
+  font-weight: 760 !important;
+}
+
+#assistantRail .exercise-editor textarea,
+#assistantRail .exercise-editor input {
+  width: 100% !important;
+  color: #17342b !important;
+  background: #fff !important;
+  border: 1px solid #cad8d3 !important;
+  border-radius: .8rem !important;
+  outline: none !important;
+  font-size: .88rem !important;
+  line-height: 1.55 !important;
+}
+
+#assistantRail .exercise-editor textarea {
+  min-height: 5.6rem !important;
+  padding: .8rem .9rem !important;
+  resize: vertical !important;
+}
+
+#assistantRail .exercise-editor input {
+  min-height: 2.7rem !important;
+  padding: .6rem .75rem !important;
+}
+
+#assistantRail .exercise-editor :is(textarea, input):focus {
+  border-color: #2a8d78 !important;
+  box-shadow: 0 0 0 3px rgba(42,141,120,.12) !important;
+}
+
+#assistantRail .exercise-editor-section-heading {
+  display: flex !important;
+  align-items: end !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  padding-top: .35rem !important;
+}
+
+#assistantRail .exercise-editor-section-heading strong {
+  display: block !important;
+  color: #17342b !important;
+  font-size: 1.08rem !important;
+}
+
+#assistantRail .exercise-editor-section-heading small {
+  color: #6d827a !important;
+  font-size: .75rem !important;
+}
+
+#assistantRail .exercise-editor-list {
+  display: grid !important;
+  gap: .85rem !important;
+}
+
+#assistantRail .exercise-editor-item {
+  display: grid !important;
+  grid-template-columns: 8.5rem minmax(0, 1fr) !important;
+  gap: 1rem !important;
+  padding: .9rem !important;
+  background: #fff !important;
+  border: 1px solid #d4dfdb !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 12px 34px -30px rgba(13,81,68,.55) !important;
+}
+
+#assistantRail .exercise-editor-item img,
+#assistantRail .exercise-editor-placeholder {
+  width: 100% !important;
+  height: 8.5rem !important;
+  object-fit: cover !important;
+  background: #e4ece8 !important;
+  border-radius: .7rem !important;
+}
+
+#assistantRail .exercise-editor-placeholder {
+  display: grid !important;
+  place-items: center !important;
+  color: #71857d !important;
+}
+
+#assistantRail .exercise-editor-item-fields {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: .7rem !important;
+}
+
+#assistantRail .exercise-editor-item-title {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: .6rem !important;
+  color: #17342b !important;
+  font-size: .96rem !important;
+}
+
+#assistantRail .exercise-editor-item-title > span {
+  display: grid !important;
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+  place-items: center !important;
+  color: #0d5144 !important;
+  background: #dcefe8 !important;
+  border-radius: 50% !important;
   font-size: .68rem !important;
-  line-height: 1.45 !important;
+}
+
+#assistantRail .exercise-editor-field-wide {
+  grid-column: 1 / -1 !important;
+}
+
+#assistantRail .exercise-editor-feedback {
+  margin: 0 !important;
+  padding: .75rem .9rem !important;
+  color: #8a431c !important;
+  background: #fff2e9 !important;
+  border-radius: .75rem !important;
+  font-size: .82rem !important;
+}
+
+#assistantRail .exercise-editor-footer {
+  position: absolute !important;
+  inset: auto 0 0 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: .65rem !important;
+  padding: 1rem clamp(1rem, 3vw, 2rem) calc(1rem + env(safe-area-inset-bottom)) !important;
+  background: rgba(255,255,255,.96) !important;
+  border-top: 1px solid #d4dfdb !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+#assistantRail .exercise-editor-footer button {
+  min-height: 2.8rem !important;
+  padding: .65rem 1rem !important;
+  border-radius: .72rem !important;
+  font-size: .84rem !important;
+  font-weight: 760 !important;
+}
+
+#assistantRail .exercise-editor-cancel {
+  color: #435e55 !important;
+  background: #fff !important;
+  border: 1px solid #cad8d3 !important;
+}
+
+#assistantRail .exercise-editor-save {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .42rem !important;
+  color: #fff !important;
+  background: #0d6655 !important;
+  border: 1px solid #0d6655 !important;
+}
+
+@keyframes editorEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 #assistantRail .exercise-report-review {
@@ -1069,15 +1352,15 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
 
 #assistantRail .exercise-report-action {
   display: inline-flex !important;
-  min-height: 2.15rem !important;
+  min-height: 2.65rem !important;
   align-items: center !important;
   gap: .3rem !important;
-  padding: .42rem .62rem !important;
+  padding: .58rem .82rem !important;
   color: #35544a !important;
   background: rgba(255, 253, 248, .72) !important;
   border: 1px solid rgba(14, 69, 57, .16) !important;
   border-radius: .58rem !important;
-  font-size: .69rem !important;
+  font-size: .8rem !important;
   font-weight: 760 !important;
 }
 
@@ -1258,6 +1541,10 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
   #assistantRail main[aria-label*="copiloto"] > div:first-child {
     grid-template-columns: 1fr !important;
   }
+
+  #assistantRail .exercise-editor-intro {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1272,6 +1559,16 @@ html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
   #assistantRail #exerciseRecoBtn { grid-column: 1 / -1 !important; }
   #assistantRail .msg-avatar { display: none !important; }
   #assistantRail .msg-report .msg-body { width: 100% !important; }
+  #assistantRail .exercise-card-pro,
+  #assistantRail .exercise-editor-item { grid-template-columns: 1fr !important; }
+  #assistantRail .exercise-thumb,
+  #assistantRail .exercise-editor-item img,
+  #assistantRail .exercise-editor-placeholder { height: 11rem !important; }
+  #assistantRail .exercise-editor-item-fields { grid-template-columns: 1fr !important; }
+  #assistantRail .exercise-editor-field-wide,
+  #assistantRail .exercise-editor-item-title { grid-column: auto !important; }
+  #assistantRail .exercise-editor-section-heading { align-items: flex-start !important; flex-direction: column !important; }
+  #assistantRail .exercise-editor-footer button { flex: 1 1 0 !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
