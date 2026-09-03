@@ -3,9 +3,10 @@
     <button class="text-[#687076] hover:text-[#11181C] transition-colors md:hidden" id="sidebarToggle" aria-label="Men&uacute;">
       <span class="material-symbols-rounded text-2xl">menu</span>
     </button>
-    <div class="hidden md:flex flex-col">
-      <span id="topbarDateLabel" class="text-[11px] font-medium text-emerald-600 uppercase tracking-wider">Hoy</span>
-      <strong class="text-sm font-medium text-[#11181C]">Operativa cl&iacute;nica</strong>
+    <div class="topbar-context hidden md:flex" aria-label="Estado de la consulta">
+      <span class="topbar-context-dot" aria-hidden="true"></span>
+      <strong>Consulta operativa</strong>
+      <span id="topbarDateLabel">Hoy</span>
     </div>
   </div>
 

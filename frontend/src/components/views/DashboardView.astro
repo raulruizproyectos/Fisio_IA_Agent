@@ -6,6 +6,12 @@
 <div class="page-section active" data-page="dashboard">
   <section class="clinic-dashboard" aria-labelledby="dashboardTitle">
     <header class="clinic-dashboard-hero">
+      <div class="clinic-vital-line" aria-hidden="true">
+        <svg viewBox="0 0 920 170" preserveAspectRatio="none">
+          <path class="clinic-vital-line-track" d="M0 92H210l30-1 17-48 34 96 27-47h112l16-28 28 55 22-27H920" />
+          <path class="clinic-vital-line-pulse" d="M0 92H210l30-1 17-48 34 96 27-47h112l16-28 28 55 22-27H920" />
+        </svg>
+      </div>
       <div class="clinic-dashboard-copy">
         <span class="clinic-kicker">Resumen clínico</span>
         <h1 id="dashboardTitle">Buenos días, Dr.</h1>
@@ -123,7 +129,7 @@
         <div class="clinic-list" id="dashCitasBody">
           <div class="empty-state-sm state-loading">
             <span class="material-symbols-rounded">sync</span>
-            <p>Cargando citas...</p>
+            <p>Cargando citas…</p>
           </div>
         </div>
       </article>
@@ -136,7 +142,7 @@
           </div>
           <span class="status-chip pendiente" id="dashboardIntakeStatus">Cargando</span>
         </div>
-        <strong class="clinic-panel-title" id="dashboardIntakeTitle">Leyendo mensajes...</strong>
+        <strong class="clinic-panel-title" id="dashboardIntakeTitle">Leyendo mensajes…</strong>
         <p id="dashboardIntakeMeta">Telegram y formulario web se revisan automaticamente.</p>
         <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="intakes">
           <span class="material-symbols-rounded">forward_to_inbox</span>
@@ -169,7 +175,7 @@
         <div class="clinic-priority-list" id="dashboardPriorityList">
           <div class="empty-state-sm state-loading">
             <span class="material-symbols-rounded">sync</span>
-            <p>Ordenando prioridades...</p>
+            <p>Ordenando prioridades…</p>
           </div>
         </div>
       </article>
