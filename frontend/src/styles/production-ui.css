@@ -431,7 +431,7 @@ button:disabled,
   grid-template-columns: minmax(15rem, .85fr) minmax(28rem, 1.45fr) auto;
   align-items: center;
   gap: clamp(1rem, 2vw, 2rem);
-  padding: clamp(1.2rem, 2.3vw, 2rem);
+  padding: clamp(1.4rem, 2.3vw, 2.15rem);
   border: 0;
   border-radius: var(--clinic-radius);
   background: var(--clinic-forest-strong);
@@ -446,9 +446,9 @@ button:disabled,
 .clinic-ai-pathway h2 {
   max-width: 20ch;
   margin: .35rem 0 .55rem;
-  color: #fff;
+  color: #fff !important;
   font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.1vw, 2.15rem);
+  font-size: clamp(1.5rem, 1.8vw, 2rem);
   font-weight: 700;
   letter-spacing: -.045em;
   line-height: 1.08;
@@ -457,7 +457,7 @@ button:disabled,
 .clinic-ai-pathway-copy > p {
   max-width: 54ch;
   color: rgba(255, 255, 255, .72);
-  font-size: .86rem;
+  font-size: .9rem;
   line-height: 1.6;
 }
 
@@ -519,14 +519,14 @@ button:disabled,
 }
 
 .clinic-ai-steps strong {
-  color: #fff;
-  font-size: .78rem;
+  color: #fff !important;
+  font-size: .82rem;
 }
 
 .clinic-ai-steps p {
   margin: .25rem 0 0;
   color: rgba(255, 255, 255, .59);
-  font-size: .68rem;
+  font-size: .72rem;
   line-height: 1.4;
 }
 
