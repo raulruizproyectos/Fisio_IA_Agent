@@ -5,7 +5,9 @@
 <aside class="fixed inset-y-0 right-0 z-50 w-full md:w-[480px] lg:w-[560px] bg-white border-l border-gray-200 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col assistant-rail" id="assistantRail" aria-label="Copiloto clinico" aria-hidden="true" data-copilot-build="clinical-copilot-20260518">
   
   <header class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
-    <div>
+    <div class="assistant-rail-heading">
+      <span class="assistant-brand-mark material-symbols-rounded" aria-hidden="true">clinical_notes</span>
+      <div>
       <div class="flex items-center gap-2 mb-0.5">
         <span class="text-[11px] font-medium text-emerald-600 uppercase tracking-widest">Copiloto clínico IA</span>
         <div class="flex items-center gap-1.5 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -17,6 +19,7 @@
         </div>
       </div>
       <h2 class="text-base font-medium text-[#11181C]">Conversación y plan terapéutico</h2>
+      </div>
     </div>
     <button type="button" class="text-[#687076] hover:bg-gray-100 p-2 rounded-full transition-colors" id="assistantRailClose" aria-label="Cerrar copiloto">
       <span class="material-symbols-rounded">close</span>
@@ -63,7 +66,7 @@
           <div class="flex flex-col gap-4" id="chatLog"></div>
         </div>
 
-        <!-- TARJETAS DE ACCION RAPIDA (COPILOT QUICK ACTIONS) -->
+        <!-- Atajos clínicos -->
         <div class="assistant-quick-actions" id="assistantQuickActions">
           <span class="quick-actions-label">Atajos del Copilot:</span>
           <div class="quick-action-chips">

@@ -313,7 +313,6 @@ router.post('/recommend', async (req, res) => {
       symptom_summary = symptoms,
       red_flags_present = false,
       red_flags_items = [],
-      selected_exercises: rawSelectedExercises = [],
       clinical_interpretation = '',
       main_goal = '',
       patient_cover_message = '',
@@ -326,10 +325,14 @@ router.post('/recommend', async (req, res) => {
       escalation_recommend_medical_attention = false,
       escalation_reason = '',
     } = recommendation;
+    const rawSelectedExercises = getRecommendationExercises(recommendation);
     const selectedExercises = improveSelectionImageCoverage({
       selectedExercises: rawSelectedExercises,
       catalog,
       symptoms,
+    }).filter((exercise) => {
+      const exerciseId = String(exercise?.exercise_id || exercise?.id || '').trim();
+      return exerciseId && catalogById.has(exerciseId);
     });
     engineObservability.image_min_ratio = EXERCISE_IMAGE_MIN_RATIO;
     engineObservability.image_coverage_adjusted = selectedExercises.some((item, index) => {
@@ -337,6 +340,17 @@ router.post('/recommend', async (req, res) => {
       const currentId = String(item?.exercise_id || item?.id || '');
       return rawId !== currentId;
     });
+
+    if (!selectedExercises.length) {
+      return res.status(422).json({
+        ok: false,
+        code: 'no_compatible_exercises',
+        error: 'No se han encontrado ejercicios compatibles y seguros para este caso. Amplia el contexto clinico o revisa el catalogo antes de intentarlo de nuevo.',
+        request_id: requestId,
+        patient_id: patId,
+        engine_observability: engineObservability,
+      });
+    }
 
     // 3a/3b/3c. Persist only when patient_id exists
     let recommendationId = null;
@@ -798,6 +812,20 @@ router.post('/recommendations/:recommendationId/review', async (req, res) => {
         ok: false,
         error: 'La aprobacion con alertas rojas requiere una nota clinica justificativa',
       });
+    }
+    if (decision === 'approve') {
+      const { count: itemCount, error: itemCountError } = await supabase
+        .from('crm_recomendacion_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('recomendacion_id', recommendationId);
+      if (itemCountError) throw itemCountError;
+      if (!itemCount) {
+        return res.status(409).json({
+          ok: false,
+          code: 'empty_recommendation',
+          error: 'No se puede aprobar una recomendacion sin ejercicios validos',
+        });
+      }
     }
 
     const reviewedAt = new Date().toISOString();
@@ -1403,11 +1431,18 @@ async function callEngineWithRetry({
   };
 }
 
-function hasRecommendationShape(recommendation) {
+export function getRecommendationExercises(recommendation) {
+  if (!recommendation || typeof recommendation !== 'object') return [];
+  if (Array.isArray(recommendation.selected_exercises)) return recommendation.selected_exercises;
+  if (Array.isArray(recommendation.exercises)) return recommendation.exercises;
+  return [];
+}
+
+export function hasRecommendationShape(recommendation) {
   if (!recommendation || typeof recommendation !== 'object') return false;
-  if (Array.isArray(recommendation.selected_exercises)) return true;
-  if (Array.isArray(recommendation.exercises)) return true;
-  return false;
+  return getRecommendationExercises(recommendation).some((exercise) =>
+    Boolean(String(exercise?.exercise_id || exercise?.id || '').trim())
+  );
 }
 
 function hasExerciseImage(exercise) {
@@ -1641,27 +1676,48 @@ function extractRedFlags(symptoms) {
   return [...new Set(flags)];
 }
 
-function inferZoneFromSymptoms(symptoms) {
-  const text = String(symptoms || '').toLowerCase();
+function normalizeClinicalText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function getZoneAliases(zone) {
+  const normalized = normalizeClinicalText(zone);
+  const aliases = {
+    cervical: ['cervical', 'cuello', 'trapecio'],
+    hombro_brazo: ['hombro', 'brazo', 'manguito', 'escapula'],
+    lumbar: ['lumbar', 'espalda', 'columna', 'lumbopelvico', 'core'],
+    cadera: ['cadera', 'gluteo', 'pelvis'],
+    rodilla: ['rodilla', 'menisco', 'ligamento'],
+    tobillo_pie: ['tobillo', 'pie', 'aquiles', 'gemelo', 'pantorrilla'],
+  };
+  return aliases[normalized] || [normalized].filter(Boolean);
+}
+
+export function inferZoneFromSymptoms(symptoms) {
+  const text = normalizeClinicalText(symptoms);
   if (/(cervical|cuello|trapecio)/.test(text)) return 'cervical';
   if (/(hombro|brazo|manguito|escapula)/.test(text)) return 'hombro_brazo';
-  if (/(lumbar|espalda|dorsal|columna)/.test(text)) return 'espalda';
+  if (/(lumbar|lumbalgia|espalda|dorsal|columna|hernia discal|disco|l[1-5][ -]?s?1|ciatica|ciatico|core)/.test(text)) return 'lumbar';
   if (/(cadera|gluteo|pelvis)/.test(text)) return 'cadera';
   if (/(rodilla|menisco|ligamento)/.test(text)) return 'rodilla';
   if (/(tobillo|pie|aquiles|gemelo|pantorrilla)/.test(text)) return 'tobillo_pie';
   return null;
 }
 
-function scoreExerciseForSymptoms(exercise, symptomText, inferredZone) {
-  const name = String(exercise?.nombre || '').toLowerCase();
-  const description = String(exercise?.descripcion || '').toLowerCase();
-  const zone = String(exercise?.zona_corporal || '').toLowerCase();
+export function scoreExerciseForSymptoms(exercise, symptomText, inferredZone) {
+  const name = normalizeClinicalText(exercise?.nombre);
+  const description = normalizeClinicalText(exercise?.descripcion);
+  const zone = normalizeClinicalText(exercise?.zona_corporal);
   const combined = `${name} ${description} ${zone}`;
-  const symptoms = String(symptomText || '').toLowerCase();
+  const symptoms = normalizeClinicalText(symptomText);
+  const zoneAliases = getZoneAliases(inferredZone);
 
   let score = 0;
-  if (inferredZone && zone.includes(inferredZone.toLowerCase())) score += 6;
-  if (inferredZone && combined.includes(inferredZone.toLowerCase())) score += 2;
+  if (zoneAliases.some((alias) => zone.includes(alias))) score += 6;
+  if (zoneAliases.some((alias) => combined.includes(alias))) score += 2;
 
   const keywords = symptoms
     .replace(/[^a-z0-9\s]/g, ' ')

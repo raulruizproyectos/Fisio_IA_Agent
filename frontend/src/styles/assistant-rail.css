@@ -609,3 +609,677 @@
     max-width: 72vw !important;
   }
 }
+
+/* Immersive clinical workspace ------------------------------------------------ */
+#assistantRail,
+#assistantRail.assistant-rail,
+#assistantRail.assistant-rail-portal {
+  --assistant-rail-width: min(1040px, calc(100vw - clamp(17rem, 22vw, 22rem)));
+  color: #152922 !important;
+  background:
+    radial-gradient(circle at 88% 4%, rgba(47, 175, 144, .13), transparent 28rem),
+    #f4f3ed !important;
+  border-left: 1px solid rgba(10, 57, 47, .18) !important;
+  box-shadow: -40px 0 90px -42px rgba(4, 32, 27, .64) !important;
+  transition: opacity 180ms ease, transform 480ms cubic-bezier(.16, 1, .3, 1) !important;
+}
+
+html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  background: rgba(5, 25, 21, .36) !important;
+  backdrop-filter: blur(10px) saturate(.78) !important;
+}
+
+#assistantRail > header {
+  min-height: 82px !important;
+  padding: 1rem 1.5rem !important;
+  color: #f7f4e9 !important;
+  background:
+    radial-gradient(circle at 84% -60%, rgba(59, 205, 164, .5), transparent 18rem),
+    linear-gradient(118deg, #092f28 0%, #0d493d 68%, #0d5c4d 100%) !important;
+  border-bottom-color: rgba(255, 255, 255, .11) !important;
+}
+
+#assistantRail .assistant-rail-heading {
+  display: flex !important;
+  align-items: center !important;
+  gap: .9rem !important;
+}
+
+#assistantRail .assistant-brand-mark {
+  display: grid !important;
+  width: 2.85rem !important;
+  height: 2.85rem !important;
+  flex: 0 0 auto !important;
+  place-items: center !important;
+  color: #f6d99f !important;
+  background: rgba(255, 255, 255, .09) !important;
+  border: 1px solid rgba(255, 255, 255, .17) !important;
+  border-radius: .9rem !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .08) !important;
+}
+
+#assistantRail > header h2 {
+  color: #fffdf6 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: -.018em !important;
+}
+
+#assistantRail > header span:not(.material-symbols-rounded) {
+  color: #9fe7d3 !important;
+}
+
+#assistantRail #agentStatusText {
+  color: #b9f4e3 !important;
+}
+
+#assistantRailClose {
+  color: #effbf7 !important;
+  background: rgba(255, 255, 255, .07) !important;
+  border-color: rgba(255, 255, 255, .15) !important;
+  border-radius: .8rem !important;
+}
+
+#assistantRailClose:hover {
+  color: #0b3e34 !important;
+  background: #f6d99f !important;
+  border-color: #f6d99f !important;
+  transform: rotate(4deg) scale(1.04) !important;
+}
+
+#assistantRail .assistant-care-stepper {
+  position: relative !important;
+  gap: 0 !important;
+  padding: .7rem 1.5rem .78rem !important;
+  background: #0a3a31 !important;
+  border-bottom-color: rgba(255, 255, 255, .1) !important;
+}
+
+#assistantRail .assistant-care-stepper::before {
+  position: absolute !important;
+  top: 1.38rem !important;
+  right: calc(12.5% + 1.5rem) !important;
+  left: calc(12.5% + 1.5rem) !important;
+  height: 1px !important;
+  content: "" !important;
+  background: rgba(255, 255, 255, .16) !important;
+}
+
+#assistantRail .assistant-care-stepper li {
+  position: relative !important;
+  z-index: 1 !important;
+  justify-content: center !important;
+  color: rgba(235, 247, 242, .58) !important;
+  font-size: .68rem !important;
+}
+
+#assistantRail .assistant-care-stepper li > span {
+  color: #9db9b0 !important;
+  background: #0c4439 !important;
+  border-color: rgba(255, 255, 255, .16) !important;
+}
+
+#assistantRail .assistant-care-stepper li.is-current,
+#assistantRail .assistant-care-stepper li.is-complete {
+  color: #fff8e7 !important;
+}
+
+#assistantRail .assistant-care-stepper li.is-current > span {
+  color: #0b3d33 !important;
+  background: #f5d89e !important;
+  border-color: #f5d89e !important;
+  box-shadow: 0 0 0 5px rgba(245, 216, 158, .12) !important;
+}
+
+#assistantRail > div {
+  flex-direction: row !important;
+  background: transparent !important;
+}
+
+#assistantRail main[aria-label*="copiloto"] {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.18), transparent 35%),
+    #f4f3ed !important;
+  border-right: 1px solid rgba(14, 69, 57, .13) !important;
+}
+
+#assistantRail main[aria-label*="copiloto"] > div:first-child {
+  grid-template-columns: minmax(15rem, 1fr) minmax(20rem, 1.18fr) !important;
+  align-items: center !important;
+  gap: .8rem !important;
+  padding: .9rem 1.1rem !important;
+  background: rgba(251, 250, 245, .88) !important;
+  border-bottom-color: rgba(14, 69, 57, .12) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+#assistantRail .patient-selector,
+#assistantRail main[aria-label*="copiloto"] > div:first-child > div:first-child {
+  min-height: 3rem !important;
+  background: #fffdf8 !important;
+  border-color: rgba(14, 69, 57, .18) !important;
+  border-radius: .85rem !important;
+  box-shadow: 0 8px 24px -22px rgba(7, 54, 44, .5) !important;
+}
+
+#assistantRail #assistantModeSwitch {
+  min-height: 3rem !important;
+  padding: .3rem !important;
+  background: rgba(16, 74, 62, .07) !important;
+  border-color: rgba(14, 69, 57, .12) !important;
+  border-radius: .85rem !important;
+}
+
+#assistantRail #assistantModeSwitch button {
+  min-height: 2.25rem !important;
+  color: #526a62 !important;
+  border-radius: .65rem !important;
+}
+
+#assistantRail #assistantModeSwitch button[aria-pressed="true"],
+#assistantRail #assistantModeSwitch button.is-active {
+  color: #0b493d !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 8px 18px -15px rgba(7, 54, 44, .48) !important;
+}
+
+#assistantRail .assistant-dialog-surface {
+  background:
+    radial-gradient(circle at 20% 4%, rgba(42, 160, 132, .09), transparent 21rem),
+    linear-gradient(180deg, #f7f6f1 0%, #f1f3ee 100%) !important;
+}
+
+#assistantRail .assistant-dialog-scroll {
+  padding: 1.15rem 1.2rem !important;
+}
+
+#assistantRail .msg {
+  animation: assistantMessageIn 420ms cubic-bezier(.16, 1, .3, 1) both !important;
+}
+
+#assistantRail .msg-body,
+#assistantRail .msg-body.user-msg {
+  border-color: rgba(14, 69, 57, .13) !important;
+  border-radius: 1rem 1rem 1rem .32rem !important;
+  background: rgba(255, 253, 248, .96) !important;
+  box-shadow: 0 16px 40px -32px rgba(4, 43, 35, .48) !important;
+}
+
+#assistantRail .msg.user .msg-body,
+#assistantRail .msg-body.user-msg {
+  color: #fffdf8 !important;
+  background: #0d5144 !important;
+  border-color: #0d5144 !important;
+  border-radius: 1rem 1rem .32rem 1rem !important;
+}
+
+#assistantRail .msg-report {
+  width: 100% !important;
+  gap: .7rem !important;
+}
+
+#assistantRail .msg-report .msg-body {
+  width: calc(100% - 2.7rem) !important;
+  max-width: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #fffdf8 !important;
+  border-radius: 1.15rem !important;
+}
+
+#assistantRail .msg-report .msg-sender {
+  display: none !important;
+}
+
+#assistantRail .exercise-report,
+#assistantRail .exercise-report-full {
+  display: block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  color: #183129 !important;
+  background: #fffdf8 !important;
+  border: 0 !important;
+  border-radius: inherit !important;
+  box-shadow: none !important;
+}
+
+#assistantRail .exercise-report-hero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 1rem !important;
+  padding: 1.25rem 1.35rem !important;
+  color: #f9f5e9 !important;
+  background:
+    radial-gradient(circle at 94% 0%, rgba(89, 211, 174, .3), transparent 18rem),
+    linear-gradient(125deg, #0a3a31, #0d5b4c) !important;
+}
+
+#assistantRail .exercise-report-kicker,
+#assistantRail .exercise-report-section span,
+#assistantRail .exercise-report-section-head > span {
+  display: block !important;
+  color: #b67d34 !important;
+  font-size: .66rem !important;
+  font-weight: 850 !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+}
+
+#assistantRail .exercise-report-hero strong {
+  display: block !important;
+  margin-top: .28rem !important;
+  color: #fffdf6 !important;
+  font: 720 1.32rem/1.1 var(--font-display, "Sora", sans-serif) !important;
+  letter-spacing: -.035em !important;
+}
+
+#assistantRail .exercise-report-hero p {
+  max-width: 58ch !important;
+  margin: .55rem 0 0 !important;
+  color: rgba(245, 250, 247, .74) !important;
+  font-size: .8rem !important;
+  line-height: 1.55 !important;
+}
+
+#assistantRail .exercise-report-status {
+  display: flex !important;
+  max-width: 13rem !important;
+  flex-wrap: wrap !important;
+  align-content: flex-start !important;
+  justify-content: flex-end !important;
+  gap: .35rem !important;
+}
+
+#assistantRail .exercise-report-pill {
+  padding: .32rem .52rem !important;
+  color: #e9fff8 !important;
+  background: rgba(255, 255, 255, .09) !important;
+  border: 1px solid rgba(255, 255, 255, .13) !important;
+  border-radius: 999px !important;
+  font-size: .63rem !important;
+  font-weight: 720 !important;
+  white-space: nowrap !important;
+}
+
+#assistantRail .exercise-report-section {
+  display: block !important;
+  padding: 1.1rem 1.35rem !important;
+  border-top: 1px solid rgba(14, 69, 57, .11) !important;
+}
+
+#assistantRail .exercise-report-section p {
+  margin: .38rem 0 0 !important;
+  color: #536a62 !important;
+  font-size: .82rem !important;
+  line-height: 1.55 !important;
+}
+
+#assistantRail .exercise-report-summary,
+#assistantRail .exercise-report-notes {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(11rem, .75fr) !important;
+  gap: 1.25rem !important;
+}
+
+#assistantRail .exercise-report-summary dl {
+  display: grid !important;
+  gap: .45rem !important;
+  margin: 0 !important;
+}
+
+#assistantRail .exercise-report-summary dl > div {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: .75rem !important;
+  padding-bottom: .38rem !important;
+  border-bottom: 1px solid rgba(14, 69, 57, .1) !important;
+}
+
+#assistantRail .exercise-report-summary dt,
+#assistantRail .exercise-report-summary dd {
+  margin: 0 !important;
+  font-size: .7rem !important;
+}
+
+#assistantRail .exercise-report-summary dt { color: #789087 !important; }
+#assistantRail .exercise-report-summary dd { color: #183129 !important; font-weight: 760 !important; }
+
+#assistantRail .exercise-report-section-head {
+  display: flex !important;
+  align-items: baseline !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  margin-bottom: .8rem !important;
+}
+
+#assistantRail .exercise-report-section-head small {
+  color: #789087 !important;
+  font-size: .68rem !important;
+}
+
+#assistantRail .exercise-plan-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: .65rem !important;
+}
+
+#assistantRail .exercise-card-pro {
+  display: grid !important;
+  grid-template-columns: 5.4rem minmax(0, 1fr) !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  background: #f7f6ef !important;
+  border: 1px solid rgba(14, 69, 57, .12) !important;
+  border-radius: .85rem !important;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease !important;
+}
+
+#assistantRail .exercise-card-pro:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(14, 105, 87, .3) !important;
+  box-shadow: 0 14px 28px -24px rgba(5, 58, 47, .5) !important;
+}
+
+#assistantRail .exercise-thumb {
+  display: grid !important;
+  min-height: 8.2rem !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  color: #6b8179 !important;
+  background: #e6ece7 !important;
+}
+
+#assistantRail .exercise-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+#assistantRail .exercise-card-pro-body {
+  min-width: 0 !important;
+  padding: .78rem !important;
+}
+
+#assistantRail .exercise-card-pro-top {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: .48rem !important;
+}
+
+#assistantRail .exercise-card-pro-top > span {
+  display: grid !important;
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+  flex: 0 0 auto !important;
+  place-items: center !important;
+  color: #0a4c3f !important;
+  background: #dcefe8 !important;
+  border-radius: 50% !important;
+  font-size: .62rem !important;
+  font-weight: 850 !important;
+}
+
+#assistantRail .exercise-card-pro-top strong {
+  color: #17342b !important;
+  font-size: .8rem !important;
+  line-height: 1.3 !important;
+}
+
+#assistantRail .exercise-dose-line {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: .3rem !important;
+  margin-top: .5rem !important;
+}
+
+#assistantRail .exercise-dose-line span {
+  padding: .23rem .38rem !important;
+  color: #596f67 !important;
+  background: #fffdf8 !important;
+  border: 1px solid rgba(14, 69, 57, .1) !important;
+  border-radius: .35rem !important;
+  font-size: .61rem !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+#assistantRail .exercise-card-pro-body p,
+#assistantRail .exercise-card-pro-body small {
+  display: block !important;
+  margin: .45rem 0 0 !important;
+  color: #657a72 !important;
+  font-size: .68rem !important;
+  line-height: 1.45 !important;
+}
+
+#assistantRail .exercise-report-review {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: .8rem !important;
+  background: #f4f0e4 !important;
+}
+
+#assistantRail .exercise-report-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: .4rem !important;
+}
+
+#assistantRail .exercise-report-action {
+  display: inline-flex !important;
+  min-height: 2.15rem !important;
+  align-items: center !important;
+  gap: .3rem !important;
+  padding: .42rem .62rem !important;
+  color: #35544a !important;
+  background: rgba(255, 253, 248, .72) !important;
+  border: 1px solid rgba(14, 69, 57, .16) !important;
+  border-radius: .58rem !important;
+  font-size: .69rem !important;
+  font-weight: 760 !important;
+}
+
+#assistantRail .exercise-report-action.is-primary {
+  color: #fffdf6 !important;
+  background: #0d5144 !important;
+  border-color: #0d5144 !important;
+}
+
+#assistantRail .exercise-report-foot {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  padding: .65rem 1.35rem !important;
+  color: #6e837b !important;
+  background: #ecece5 !important;
+  font-size: .65rem !important;
+}
+
+#assistantRail .exercise-report-foot code {
+  max-width: 52% !important;
+  overflow: hidden !important;
+  color: #33544a !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#assistantRail .assistant-quick-actions {
+  padding: .7rem 1.1rem 0 !important;
+  background: transparent !important;
+}
+
+#assistantRail .quick-action-chip {
+  color: #225f51 !important;
+  background: rgba(255, 253, 248, .74) !important;
+  border-color: rgba(14, 69, 57, .15) !important;
+  border-radius: .62rem !important;
+  box-shadow: none !important;
+  transition: transform 160ms ease, background 160ms ease !important;
+}
+
+#assistantRail .quick-action-chip:hover {
+  transform: translateY(-2px) !important;
+  background: #fffdf8 !important;
+}
+
+#assistantRail #agentForm {
+  gap: .7rem !important;
+  padding: .85rem 1.1rem 1rem !important;
+  background: rgba(250, 249, 243, .94) !important;
+  border-top-color: rgba(14, 69, 57, .12) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+#assistantRail .ai-textarea-wrapper,
+#assistantRail #agentForm > div:has(#agentInput) {
+  min-height: 3.65rem !important;
+  background: #fffdf8 !important;
+  border-color: rgba(14, 69, 57, .2) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 14px 32px -28px rgba(6, 57, 47, .48) !important;
+}
+
+#assistantRail #sendBtn {
+  width: 2.7rem !important;
+  height: 2.7rem !important;
+  flex-basis: 2.7rem !important;
+  color: #fff8e8 !important;
+  background: #0b493d !important;
+  border-radius: .78rem !important;
+  transition: transform 160ms ease, background 160ms ease !important;
+}
+
+#assistantRail #sendBtn:hover { transform: translateY(-2px) !important; background: #126655 !important; }
+
+#assistantRail #agentForm > div[aria-label="Acciones rapidas del copiloto"],
+#assistantRail .assistant-action-grid {
+  grid-template-columns: minmax(9rem, 1fr) repeat(3, minmax(0, auto)) !important;
+}
+
+#assistantRail #exerciseRecoBtn,
+#assistantRail #exerciseApproveBtn,
+#assistantRail #exercisePdfBtn,
+#assistantRail #exerciseTelegramBtn {
+  display: inline-flex !important;
+  min-height: 2.45rem !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: .5rem .72rem !important;
+  border-radius: .68rem !important;
+  font-size: .72rem !important;
+  transition: transform 160ms ease, background 160ms ease !important;
+}
+
+#assistantRail #exerciseRecoBtn {
+  color: #113b31 !important;
+  background: #f4d59a !important;
+  border-color: #f4d59a !important;
+}
+
+#assistantRail #exerciseRecoBtn:hover:not(:disabled) { transform: translateY(-2px) !important; background: #f8dfae !important; }
+
+#assistantRail aside[aria-label*="Contexto"] {
+  display: flex !important;
+  width: 280px !important;
+  flex: 0 0 280px !important;
+  background:
+    linear-gradient(180deg, rgba(11, 69, 57, .035), transparent 12rem),
+    #fbfaf5 !important;
+  border-left: 0 !important;
+}
+
+#assistantRail aside[aria-label*="Contexto"] > div:not([hidden]) {
+  padding: 1.2rem !important;
+  background: transparent !important;
+  border-bottom-color: rgba(14, 69, 57, .12) !important;
+}
+
+#assistantRail #assistantPatientLabel {
+  color: #16352b !important;
+  font-size: .92rem !important;
+}
+
+#assistantRail #assistantPatientMeta,
+#assistantRail #assistantDiagnosticSummary {
+  color: #6d817a !important;
+  line-height: 1.5 !important;
+}
+
+#assistantRail #assistantDiagnosticToggle {
+  color: #0d6957 !important;
+  font-weight: 800 !important;
+}
+
+#assistantRail #assistantDiagnosticGrid label {
+  display: grid !important;
+  gap: .3rem !important;
+}
+
+#assistantRail #assistantDiagnosticGrid input,
+#assistantRail #assistantDiagnosticGrid select,
+#assistantRail #assistantDiagnosticGrid textarea {
+  min-height: 2.45rem !important;
+  padding: .55rem .65rem !important;
+  background: #fffdf8 !important;
+  border-color: rgba(14, 69, 57, .16) !important;
+  border-radius: .65rem !important;
+  font-size: .75rem !important;
+}
+
+@keyframes assistantMessageIn {
+  from { opacity: 0; transform: translateY(10px) scale(.988); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 1279px) {
+  #assistantRail,
+  #assistantRail.assistant-rail,
+  #assistantRail.assistant-rail-portal {
+    --assistant-rail-width: min(860px, calc(100vw - 2rem));
+  }
+
+  #assistantRail aside[aria-label*="Contexto"] {
+    display: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  #assistantRail,
+  #assistantRail.assistant-rail,
+  #assistantRail.assistant-rail-portal {
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  #assistantRail main[aria-label*="copiloto"] > div:first-child {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #assistantRail .assistant-care-stepper li strong { display: none !important; }
+  #assistantRail .exercise-report-hero,
+  #assistantRail .exercise-report-summary,
+  #assistantRail .exercise-report-notes { grid-template-columns: 1fr !important; }
+  #assistantRail .exercise-report-status { max-width: none !important; justify-content: flex-start !important; }
+  #assistantRail .exercise-plan-grid { grid-template-columns: 1fr !important; }
+  #assistantRail #agentForm > div[aria-label="Acciones rapidas del copiloto"],
+  #assistantRail .assistant-action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  #assistantRail #exerciseRecoBtn { grid-column: 1 / -1 !important; }
+  #assistantRail .msg-avatar { display: none !important; }
+  #assistantRail .msg-report .msg-body { width: 100% !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #assistantRail,
+  #assistantRail *,
+  #assistantRail *::before,
+  #assistantRail *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
