@@ -321,9 +321,9 @@ git worktree remove 'C:\Visual Code\fisio-audit-ph' --force; git worktree prune
 
 | Rama | Commit | Contenido |
 |---|---|---|
-| `docs/auditoria-20260915` (local y `origin/docs/auditoria-20260915`) | `f4f6553` | **Informe y documentacion viva publicados**; rama activa de documentacion |
+| `docs/auditoria-20260915` (local y `origin/docs/auditoria-20260915`) | rama de documentacion | **Informe y documentacion viva publicados**; rama activa de documentacion. El tip exacto se consulta con `git log -1 origin/docs/auditoria-20260915` (cambia con cada commit de docs) |
 | `main` (local y `origin/main`) | `8c208cf` | Sin el informe, **a proposito**: asi `git merge --ff-only origin/production-hardening` funciona sin conflictos |
-| `mejoras/auditoria-20260915` | `f4c04d4` | Base desde `origin/production-hardening`, lista para implementar R-1..R-11 |
+| `mejoras/auditoria-20260915` | `f4c04d4` (`origin/production-hardening`) | Base desde el codigo actual, lista para implementar R-1..R-11 |
 
 Documentacion viva actualizada en la misma rama: `CHANGELOG.md` (2026-09-15), `PROJECT_CONTEXT.md` (Estado 2026-09-15 + Proximos pasos por bloques), `configuracion_pendiente.md` (R-1..R-11 y bloqueo de entorno) y `docs/SESSION_CURRENT.md`.
 
