@@ -317,14 +317,34 @@ cd 'C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent'
 git worktree remove 'C:\Visual Code\fisio-audit-ph' --force; git worktree prune
 ```
 
-### Para no perder el informe
+### Estado real de las ramas (ejecutado)
+
+| Rama | Commit | Contenido |
+|---|---|---|
+| `docs/auditoria-20260915` (local y `origin/docs/auditoria-20260915`) | `6ad5e11` + docs vivos | **Informe publicado**; es la rama activa de documentacion |
+| `main` (local y `origin/main`) | `8c208cf` | Sin el informe, **a proposito**: asi `git merge --ff-only origin/production-hardening` funciona sin conflictos |
+| `mejoras/auditoria-20260915` | `f4c04d4` | Base desde `origin/production-hardening`, lista para implementar R-1..R-11 |
+
+Documentacion viva actualizada en la misma rama: `CHANGELOG.md` (2026-09-15), `PROJECT_CONTEXT.md` (Estado 2026-09-15 + Proximos pasos por bloques), `configuracion_pendiente.md` (R-1..R-11 y bloqueo de entorno) y `docs/SESSION_CURRENT.md`.
+
+### Continuar (dos caminos)
+
+Camino A, recomendado — primero R-1:
 
 ```powershell
 cd 'C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent'
-git checkout -b docs/auditoria-20260915
-git add docs/AUDITORIA_CRM_IA_20260915.md
-git commit -m "docs: auditoria tecnica y clinica 2026-09-15 (seguridad, RGPD, IA y plan de accion)"
-git push -u origin docs/auditoria-20260915
+git checkout main                      # main ya esta igual a origin/main
+git merge --ff-only origin/production-hardening
+# aplicar database/migrations/20260901_production_security_hardening.sql en staging,
+# ejecutar las 13 pruebas de humo de docs/PRODUCTION_READINESS.md y despues:
+git push origin main
 ```
 
-> Nota: se recomienda **no** commitearlo directamente en `main` mientras siga siendo la rama productiva declarada; usar una rama de documentacion y mergearla cuando se haga el merge del hardening.
+Camino B — implementar mejoras sin tocar `main`:
+
+```powershell
+git checkout mejoras/auditoria-20260915   # el arbol pasa al codigo actual (Astro 7 + hardening)
+# R-2 (auditoria de accesos), R-3 (RGPD), R-4 (seguridad clinica), R-5 (pruebas)
+```
+
+Nota: el informe vive en la rama `docs/auditoria-20260915`; al mergear el hardening conviene mergear o hacer `cherry-pick` de la rama de documentacion para que `main` tambien lo tenga.

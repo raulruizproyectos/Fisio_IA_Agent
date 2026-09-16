@@ -2,6 +2,14 @@
 
 Resumen compacto. Detalle completo en `git log`.
 
+## 2026-09-15
+- Auditoria tecnica y clinica completa del CRM y del agente IA: informe en `docs/AUDITORIA_CRM_IA_20260915.md` (seccion 7 = plan de mejoras; seccion 11 = como retomar).
+- Hallazgo principal: el hardening de produccion esta en `origin/production-hardening` (`f4c04d4`, 2026-09-03) y **no** esta en `main` (`8c208cf`, 2026-05-27), que sigue siendo la rama productiva declarada. `main` no tiene autenticacion, ni RLS en tablas `crm_*`, ni auditoria.
+- Verificado en la rama: JWT con Supabase Auth, perfil activo en `crm_perfiles`, cliente Supabase por peticion sin fallback privilegiado, RLS con aislamiento por profesional, helmet + tres niveles de rate limit, webhooks firmados, aprobacion clinica obligatoria antes de PDF/Telegram e idempotencia.
+- Validado: backend de la rama `npm ci` + `eslint` (0 errores) + `npm test` (11/11); estado A frontend `astro check` y `astro build` OK; escaneo de secretos limpio.
+- Pendientes tras la auditoria: R-1..R-11 en `configuracion_pendiente.md`, ordenados en cuatro bloques.
+- Bloqueo de entorno: la politica de Control de Aplicaciones de Windows impide cargar el binario nativo de Astro 7, asi que el frontend actual no se puede compilar en este equipo (detalle en R-11). El backend si es validable en local.
+
 ## 2026-05-27
 - EasyPanel restaurado: el bloqueo era acceso Git a repo privado, resuelto con Deploy Key/SSH.
 - Backend endurecido para deploy: health en `/`, `/health`, `/api/health`; soporte puerto plataforma, `3001` y compat `3000`.
