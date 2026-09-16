@@ -321,7 +321,7 @@ git worktree remove 'C:\Visual Code\fisio-audit-ph' --force; git worktree prune
 
 | Rama | Commit | Contenido |
 |---|---|---|
-| `docs/auditoria-20260915` (local y `origin/docs/auditoria-20260915`) | `6ad5e11` + docs vivos | **Informe publicado**; es la rama activa de documentacion |
+| `docs/auditoria-20260915` (local y `origin/docs/auditoria-20260915`) | `f4f6553` | **Informe y documentacion viva publicados**; rama activa de documentacion |
 | `main` (local y `origin/main`) | `8c208cf` | Sin el informe, **a proposito**: asi `git merge --ff-only origin/production-hardening` funciona sin conflictos |
 | `mejoras/auditoria-20260915` | `f4c04d4` | Base desde `origin/production-hardening`, lista para implementar R-1..R-11 |
 
