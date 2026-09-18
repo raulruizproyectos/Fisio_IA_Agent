@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { recordAudit } from '../lib/audit.js';
 
 const router = Router();
 
@@ -209,6 +210,13 @@ router.get('/:id/ficha', async (req, res, next) => {
       getSectionAvailability(notasRes, { key: 'notas', label: 'Notas clinicas', table: 'crm_notas_clinicas', migration: 'database/migrations/008_ficha_paciente_enriquecida.sql' }),
     ].filter(Boolean);
 
+    await recordAudit(req, {
+      entity_type: 'paciente',
+      entity_id: id,
+      action: 'read_ficha',
+      metadata: { source: p._source || 'crm' },
+    });
+
     res.json({
       paciente: {
         ...p,
@@ -244,6 +252,14 @@ router.patch('/:id', async (req, res, next) => {
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    await recordAudit(req, {
+      entity_type: 'paciente',
+      entity_id: req.params.id,
+      action: 'update',
+      after_state: data,
+    });
+
     res.json({ data });
   } catch (err) {
     next(err);
@@ -319,6 +335,13 @@ router.post('/', async (req, res, next) => {
       throw assignmentError;
     }
 
+    await recordAudit(req, {
+      entity_type: 'paciente',
+      entity_id: data.id,
+      action: 'create',
+      after_state: data,
+    });
+
     res.status(201).json({ data: normalizeCrmPatient(data) });
   } catch (err) {
     next(err);
@@ -344,6 +367,14 @@ router.put('/:id', async (req, res, next) => {
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    await recordAudit(req, {
+      entity_type: 'paciente',
+      entity_id: req.params.id,
+      action: 'update_legacy',
+      after_state: data,
+    });
+
     res.json({ data });
   } catch (err) {
     next(err);
@@ -352,12 +383,67 @@ router.put('/:id', async (req, res, next) => {
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const { error } = await supabase
-      .from('pacientes')
-      .delete()
-      .eq('id', req.params.id);
+    const patientId = req.params.id;
+    const shouldAnonymize = req.query.anonymize === 'true' || req.query.rgpd === 'true';
 
-    if (error) throw error;
+    // 1. Manejo sobre CRM (fuente canónica)
+    if (shouldAnonymize) {
+      const anonymizedPayload = {
+        nombre: 'Paciente',
+        apellidos: 'Anonimizado RGPD',
+        email: null,
+        telefono: null,
+        dni: null,
+        direccion: null,
+        profesion: null,
+        medico_derivador: null,
+        aseguradora: null,
+        alergias: null,
+        antecedentes: null,
+        observaciones: 'Datos identificativos suprimidos conforme al Art. 17 RGPD',
+        activo: false,
+        updated_at: new Date().toISOString(),
+      };
+
+      await supabase
+        .from('crm_pacientes')
+        .update(anonymizedPayload)
+        .eq('id', patientId);
+
+      await recordAudit(req, {
+        entity_type: 'paciente',
+        entity_id: patientId,
+        action: 'gdpr_anonymize',
+        metadata: { reason: 'solicitud_supresion_rgpd' },
+      });
+    } else {
+      const { error: crmErr } = await supabase
+        .from('crm_pacientes')
+        .update({ activo: false, updated_at: new Date().toISOString() })
+        .eq('id', patientId);
+
+      if (crmErr) {
+        await supabase.from('crm_pacientes').delete().eq('id', patientId);
+      }
+
+      await recordAudit(req, {
+        entity_type: 'paciente',
+        entity_id: patientId,
+        action: 'delete',
+        metadata: { type: 'soft_delete' },
+      });
+    }
+
+    // 2. Limpieza de tabla legacy si existiera
+    try {
+      await supabase
+        .from('pacientes')
+        .delete()
+        .eq('id', patientId);
+    } catch {
+      // Ignorar si no existe en tabla legacy
+    }
+
     res.status(204).send();
   } catch (err) {
     next(err);

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { recordAudit } from '../lib/audit.js';
 
 const router = Router();
 const CLINICAL_NOTES_TABLE = 'crm_notas_clinicas';
@@ -76,6 +77,15 @@ router.post('/', async (req, res, next) => {
       if (isMissingClinicalNotesTableError(error)) return respondClinicalNotesUnavailable(res, { write: true });
       throw error;
     }
+
+    await recordAudit(req, {
+      entity_type: 'clinical_note',
+      entity_id: data.id,
+      action: 'create',
+      after_state: data,
+      metadata: { paciente_id },
+    });
+
     res.status(201).json({ data });
   } catch (err) {
     next(err);
@@ -103,6 +113,15 @@ router.patch('/:id', async (req, res, next) => {
       if (isMissingClinicalNotesTableError(error)) return respondClinicalNotesUnavailable(res, { write: true });
       throw error;
     }
+
+    await recordAudit(req, {
+      entity_type: 'clinical_note',
+      entity_id: req.params.id,
+      action: 'update',
+      after_state: data,
+      metadata: { paciente_id: data?.paciente_id },
+    });
+
     res.json({ data });
   } catch (err) {
     next(err);
@@ -117,6 +136,13 @@ router.delete('/:id', async (req, res, next) => {
       if (isMissingClinicalNotesTableError(error)) return respondClinicalNotesUnavailable(res, { write: true });
       throw error;
     }
+
+    await recordAudit(req, {
+      entity_type: 'clinical_note',
+      entity_id: req.params.id,
+      action: 'delete',
+    });
+
     res.json({ ok: true });
   } catch (err) {
     next(err);

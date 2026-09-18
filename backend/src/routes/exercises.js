@@ -1,8 +1,9 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import crypto from 'node:crypto';
 import { supabase } from '../lib/supabase.js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 import { EXERCISE_AGENT_PROMPT, EXERCISE_AGENT_PROMPT_VERSION } from '../lib/exercise-agent-prompt.js';
+import { recordAudit } from '../lib/audit.js';
 
 const router = Router();
 
@@ -964,6 +965,14 @@ router.post('/recommendations/:recommendationId/review', async (req, res) => {
       occurred_at: reviewedAt,
     });
 
+    await recordAudit(req, {
+      entity_type: 'recommendation',
+      entity_id: recommendationId,
+      action: decision === 'approve' ? 'approve_recommendation' : 'reject_recommendation',
+      after_state: data,
+      metadata: { decision, note: note || null },
+    });
+
     return res.json({ ok: true, data });
   } catch (err) {
     console.error('[exercises/recommendations/review] Error:', err.message);
@@ -1018,6 +1027,16 @@ router.post('/reports/pdf', async (req, res) => {
     const buffer = await buildExerciseReportPdfBuffer(pdfPayload);
     const fallbackSuffix = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
     const filenameSuffix = recommendationId || fallbackSuffix;
+
+    await recordAudit(req, {
+      entity_type: 'recommendation',
+      entity_id: recommendationId,
+      action: 'export_pdf',
+      metadata: {
+        patient_id: pdfPayload.patient_id,
+        exercise_count: exercises.length,
+      },
+    });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="informe-ejercicios-${filenameSuffix}.pdf"`);
@@ -1697,21 +1716,20 @@ function improveSelectionImageCoverage({ selectedExercises = [], catalog = [], s
         Math.min(0.92, Math.max(0.6, replacementEntry.score / 10))
       ),
       why: current?.why
-        ? `${current.why}. Ajustado para incluir apoyo visual.`
+        ? `${current.why}. Ajustado con ejercicio compatible para incluir apoyo visual.`
         : 'Seleccion adaptada para incluir apoyo visual sin perder relevancia clinica.',
-      cautions:
-        Array.isArray(current?.cautions) && current.cautions.length
-          ? current.cautions
-          : replacement.contraindicaciones
-            ? [String(replacement.contraindicaciones)]
-            : [],
-      series: current?.series ?? replacement.metadata?.series_defecto ?? 3,
-      repeticiones: current?.repeticiones ?? replacement.metadata?.repeticiones_defecto ?? 10,
+      cautions: replacement.contraindicaciones
+        ? [String(replacement.contraindicaciones)]
+        : (Array.isArray(replacement.cautions) && replacement.cautions.length ? replacement.cautions : []),
+      series: replacement.metadata?.series_defecto ?? replacement.series ?? 3,
+      repeticiones: replacement.metadata?.repeticiones_defecto ?? replacement.repeticiones ?? 10,
       duracion_segundos:
-        current?.duracion_segundos ?? replacement.metadata?.duracion_segundos_defecto ?? null,
-      procedimiento: current?.procedimiento || replacement.descripcion || '',
+        replacement.metadata?.duracion_segundos_defecto ?? replacement.duracion_segundos ?? null,
+      procedimiento: replacement.descripcion || replacement.procedimiento || '',
       imagen_url: getExerciseImageUrl(replacement),
       orden: current?.orden || idx + 1,
+      ajustado_apoyo_visual: true,
+      ejercicio_original_id: currentId || null,
     };
     withImageCount += 1;
   }
