@@ -95,6 +95,17 @@ app.use('/api/telegram/incoming', rateLimit({
   legacyHeaders: false,
   message: { error: 'Límite temporal de mensajes alcanzado.' },
 }));
+app.use([
+  '/api/exercises/recommend',
+  '/api/exercises/recommend/async',
+  '/api/recommendations/generate',
+], rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: Number(process.env.AI_GENERATION_RATE_LIMIT || 60),
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Límite de generación con IA por hora alcanzado. Inténtalo más tarde.' },
+}));
 
 // Health check
 app.get('/api/health', (req, res) => {

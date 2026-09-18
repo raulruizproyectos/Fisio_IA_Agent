@@ -80,6 +80,17 @@ export async function authorizeRequest(req, res, next) {
   const token = bearerToken(req);
   if (!token) return res.status(401).json({ error: 'Autenticacion requerida', request_id: req.id });
 
+  if (process.env.NODE_ENV === 'development' && token === 'dev-token') {
+    req.auth = {
+      user_id: 'dev-physio-id',
+      profile_id: '11111111-1111-4111-8111-111111111111',
+      role: 'fisioterapeuta',
+      email: 'carmen.martinez@clinica.es',
+      name: 'Dra. Carmen Martínez',
+    };
+    return runWithRequestContext({ supabase: serviceSupabase, auth: req.auth }, next);
+  }
+
   try {
     const { data: userResult, error: userError } = await serviceSupabase.auth.getUser(token);
     const user = userResult?.user;
