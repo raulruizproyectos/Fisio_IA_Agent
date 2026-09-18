@@ -50,3 +50,4 @@ docs/data/n8n/tmp_*.json
 tmp/
 scratch_screenshot/
 .aider-benchmark/
+.agents/mcp_config.json

@@ -10,11 +10,19 @@ declare global {
   }
 }
 
-const runtimeConfig = window.__FISIO_RUNTIME_CONFIG__ || {};
-const supabaseUrl = String(runtimeConfig.PUBLIC_SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || '').trim();
-const supabaseKey = String(runtimeConfig.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '').trim();
+const runtimeConfig = (typeof window !== 'undefined' && window.__FISIO_RUNTIME_CONFIG__) || {};
+const supabaseUrl = String(
+  runtimeConfig.PUBLIC_SUPABASE_URL ||
+  import.meta.env.PUBLIC_SUPABASE_URL ||
+  'https://fisio-dev.supabase.co'
+).trim();
+const supabaseKey = String(
+  runtimeConfig.PUBLIC_SUPABASE_ANON_KEY ||
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dev-anon-key'
+).trim();
 
-const localBackendBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const localBackendBase = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
   ? 'http://localhost:3001'
   : '';
 
@@ -23,8 +31,8 @@ export const backendBase = String(
 ).replace(/\/+$/, '');
 
 export const authClient = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseKey || 'placeholder-anon-key',
+  supabaseUrl,
+  supabaseKey,
   {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   }

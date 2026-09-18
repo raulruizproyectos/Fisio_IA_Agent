@@ -21,7 +21,18 @@ import '@fontsource-variable/sora';
     <script is:inline src="/runtime-config.js"></script>
     <link rel="stylesheet" href="/material-symbols.css" />
     <style is:inline>
-      .material-symbols-rounded {
+      :root {
+        --font-ui: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --font-display: 'Sora Variable', 'Sora', sans-serif;
+      }
+      *, *::before, *::after {
+        font-family: var(--font-ui);
+      }
+      h1, h2, h3, .font-display {
+        font-family: var(--font-display) !important;
+      }
+      .material-symbols-rounded,
+      [class*="material-symbols"] {
         font-family: "Material Symbols Rounded" !important;
         font-weight: normal !important;
         font-style: normal !important;

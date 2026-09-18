@@ -53,38 +53,6 @@
       </div>
     </header>
 
-    <section class="clinic-command-search" aria-label="Acceso rápido">
-      <span class="material-symbols-rounded" aria-hidden="true">search</span>
-      <label class="sr-only" for="mainCopilotInput">Buscar o indicar una acción clínica</label>
-      <input
-        type="text"
-        id="mainCopilotInput"
-        name="accion_clinica"
-        placeholder="Busca un paciente, crea una cita o abre el copiloto clínico…"
-        autocomplete="off"
-      />
-      <button class="btn-primary" type="button" data-dashboard-action="open-copilot" aria-label="Abrir copiloto">
-        <span class="material-symbols-rounded">arrow_upward</span>
-      </button>
-    </section>
-
-    <section class="clinic-ai-pathway" aria-labelledby="aiPathwayTitle">
-      <div class="clinic-ai-pathway-copy">
-        <span class="clinic-kicker">Ruta asistencial</span>
-        <h2 id="aiPathwayTitle">Un caso, una evolución continua</h2>
-        <p>Del contexto inicial a la revisión profesional y el seguimiento.</p>
-      </div>
-      <ol class="clinic-ai-steps" aria-label="Circuito del plan clínico con IA">
-        <li><span>01</span><div><strong>Contexto</strong><p>Paciente y objetivos.</p></div></li>
-        <li><span>02</span><div><strong>Propuesta</strong><p>Plan y precauciones.</p></div></li>
-        <li><span>03</span><div><strong>Validación</strong><p>Criterio profesional.</p></div></li>
-        <li><span>04</span><div><strong>Evolución</strong><p>Adherencia y resultados.</p></div></li>
-      </ol>
-      <button class="clinic-ai-launch" type="button" data-dashboard-action="open-copilot">
-        <span>Crear un plan</span>
-        <span class="material-symbols-rounded">arrow_forward</span>
-      </button>
-    </section>
 
     <section class="clinic-metric-grid" aria-label="Indicadores de la clínica">
       <article>
@@ -137,34 +105,36 @@
         </div>
       </article>
 
-      <article class="clinic-panel">
-        <div class="clinic-card-head">
-          <div>
-            <span class="clinic-kicker">Triage</span>
-            <h2>Bandeja de entrada</h2>
+      <div class="clinic-side-stack">
+        <article class="clinic-panel">
+          <div class="clinic-card-head">
+            <div>
+              <span class="clinic-kicker">Triage</span>
+              <h2>Bandeja de entrada</h2>
+            </div>
+            <span class="status-chip pendiente" id="dashboardIntakeStatus">Cargando</span>
           </div>
-          <span class="status-chip pendiente" id="dashboardIntakeStatus">Cargando</span>
-        </div>
-        <strong class="clinic-panel-title" id="dashboardIntakeTitle">Leyendo mensajes…</strong>
-        <p id="dashboardIntakeMeta">Telegram y formulario web se revisan automaticamente.</p>
-        <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="intakes">
-          <span class="material-symbols-rounded">forward_to_inbox</span>
-          Ver mensajes
-        </button>
-      </article>
+          <strong class="clinic-panel-title" id="dashboardIntakeTitle">Leyendo mensajes…</strong>
+          <p id="dashboardIntakeMeta">Telegram y formulario web se revisan automaticamente.</p>
+          <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="intakes">
+            <span class="material-symbols-rounded">forward_to_inbox</span>
+            Ver mensajes
+          </button>
+        </article>
 
-      <article class="clinic-panel">
-        <div class="clinic-card-head">
-          <div>
-            <span class="clinic-kicker">Sync</span>
-            <h2>Google Calendar</h2>
+        <article class="clinic-panel">
+          <div class="clinic-card-head">
+            <div>
+              <span class="clinic-kicker">Sync</span>
+              <h2>Google Calendar</h2>
+            </div>
+            <span class="status-chip pendiente" id="dashboardSyncChip">Revision</span>
           </div>
-          <span class="status-chip pendiente" id="dashboardSyncChip">Revision</span>
-        </div>
-        <strong class="clinic-panel-title" id="dashboardSyncTitle">Comprobando estado…</strong>
-        <p id="dashboardSyncMeta">Esperando lectura del sincronizador.</p>
-        <div class="clinic-facts" id="dashboardSyncFacts" hidden></div>
-      </article>
+          <strong class="clinic-panel-title" id="dashboardSyncTitle">Comprobando estado…</strong>
+          <p id="dashboardSyncMeta">Esperando lectura del sincronizador.</p>
+          <div class="clinic-facts" id="dashboardSyncFacts" hidden></div>
+        </article>
+      </div>
     </section>
 
     <section class="clinic-dashboard-grid clinic-dashboard-grid-secondary">

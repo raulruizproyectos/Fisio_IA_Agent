@@ -117,8 +117,8 @@ select {
 }
 
 .topbar {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-bottom: 1px solid var(--line) !important;
+  background: #0d1522 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: none !important;
   backdrop-filter: blur(18px) !important;
 }
@@ -2160,8 +2160,8 @@ h4,
   height: 58px !important;
   flex-basis: 58px !important;
   padding: 0 1.15rem !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-bottom: 1px solid var(--clinic-line) !important;
+  background: #0d1522 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: none !important;
   backdrop-filter: blur(16px) !important;
 }
@@ -2289,9 +2289,9 @@ h4,
 .clinic-panel,
 .clinic-command-search,
 .clinic-finance-strip {
-  border: 1px solid var(--clinic-line) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: var(--clinic-radius) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: #0d1522 !important;
   box-shadow: var(--clinic-shadow-soft) !important;
 }
 
@@ -2996,9 +2996,9 @@ textarea:focus {
 .page-section[data-page="pacientes"] > section > header,
 .page-section[data-page="pacientes"] > section > .grid,
 .page-section[data-page="pacientes"] > section > section {
-  border: 1px solid var(--clinic-line) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: var(--clinic-radius) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: #0d1522 !important;
   box-shadow: var(--clinic-shadow-soft) !important;
 }
 

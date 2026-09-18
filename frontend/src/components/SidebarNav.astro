@@ -11,24 +11,26 @@
     </div>
   </div>
 
-  <div class="px-6 mb-6">
-    <div class="sidebar-status flex items-start gap-3">
-      <span class="relative flex h-2.5 w-2.5 mt-1">
+  <div class="px-5 mb-5">
+    <div class="sidebar-status flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] mb-3">
+      <span class="relative flex h-2 w-2 flex-shrink-0">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
       </span>
-      <div class="flex flex-col">
-        <strong class="text-xs font-semibold text-[#11181C]">Consulta activa</strong>
-        <span class="text-[10px] text-[#687076] leading-tight mt-0.5">Agenda, IA y CRM sincronizados</span>
+      <div class="flex flex-col min-w-0">
+        <strong class="text-xs font-semibold text-white truncate">Consulta activa</strong>
+        <span class="text-[11px] text-slate-400 truncate">Agenda e IA operativas</span>
       </div>
     </div>
-    <button type="button" class="sidebar-ai-launch" data-dashboard-action="open-copilot">
-      <span class="sidebar-ai-launch-icon"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span></span>
-      <span>
-        <strong>Nuevo plan con IA</strong>
-        <small>Diagnóstico a seguimiento</small>
-      </span>
-      <span class="material-symbols-rounded sidebar-ai-launch-arrow" aria-hidden="true">arrow_forward</span>
+    <button type="button" class="sidebar-ai-launch w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-emerald-500/5 border border-emerald-500/30 text-white hover:bg-emerald-500/20 transition-all text-left group" data-dashboard-action="open-copilot">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+        <span class="material-symbols-rounded text-lg" aria-hidden="true">auto_awesome</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <strong class="text-xs font-semibold text-white block truncate">Nuevo plan con IA</strong>
+        <small class="text-[11px] text-slate-400 block truncate">Copiloto clínico</small>
+      </div>
+      <span class="material-symbols-rounded text-emerald-400 text-sm opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" aria-hidden="true">arrow_forward</span>
     </button>
   </div>
 
