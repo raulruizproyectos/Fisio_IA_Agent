@@ -131,11 +131,14 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
   <script is:inline define:vars={{ configuredBackendBase }}>
     (() => {
       const runtimeBackendBase = String(window.__FISIO_RUNTIME_CONFIG__?.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
-      const BACKEND_BASE = runtimeBackendBase
-        || configuredBackendBase
-        || ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      const defaultBackend = window.location.hostname.includes('b5xbaf.easypanel.host')
+        ? 'https://fisio-backend.b5xbaf.easypanel.host'
+        : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
           ? 'http://localhost:3001'
           : '');
+      const BACKEND_BASE = runtimeBackendBase
+        || configuredBackendBase
+        || defaultBackend;
 
       const params = new URLSearchParams(window.location.search);
       const professionalId = params.get('professional_id') || params.get('profesional_id') || '';
@@ -195,7 +198,8 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         .replace(/'/g, '&#39;');
 
       const buildUrl = (path, extra = {}) => {
-        const url = new URL(BACKEND_BASE + path);
+        const base = BACKEND_BASE || window.location.origin;
+        const url = new URL(path, base);
         if (professionalId) url.searchParams.set('professional_id', professionalId);
         Object.entries(extra).forEach(([key, value]) => {
           if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);

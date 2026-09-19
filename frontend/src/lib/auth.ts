@@ -22,12 +22,14 @@ const supabaseKey = String(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dev-anon-key'
 ).trim();
 
-const localBackendBase = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
-  ? 'http://localhost:3001'
-  : '';
+const defaultBackendBase = (typeof window !== 'undefined' && window.location.hostname.includes('b5xbaf.easypanel.host'))
+  ? 'https://fisio-backend.b5xbaf.easypanel.host'
+  : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+    ? 'http://localhost:3001'
+    : '';
 
 export const backendBase = String(
-  runtimeConfig.PUBLIC_BACKEND_URL || import.meta.env.PUBLIC_BACKEND_URL || localBackendBase
+  runtimeConfig.PUBLIC_BACKEND_URL || import.meta.env.PUBLIC_BACKEND_URL || defaultBackendBase
 ).replace(/\/+$/, '');
 
 export const authClient = createClient(
@@ -45,14 +47,24 @@ function installAuthenticatedFetch() {
   if (installed) return;
   installed = true;
   const nativeFetch = window.fetch.bind(window);
-  const backendOrigin = new URL(backendBase).origin;
+  let backendOrigin = '';
+  try {
+    backendOrigin = new URL(backendBase || window.location.origin, window.location.origin).origin;
+  } catch {
+    backendOrigin = window.location.origin;
+  }
 
   window.fetch = async (input: RequestInfo | URL, init: RequestInit = {}) => {
-    const target = new URL(
-      typeof input === 'string' ? input : input instanceof URL ? input.href : input.url,
-      window.location.origin
-    );
-    if (target.origin !== backendOrigin) return nativeFetch(input, init);
+    let target: URL;
+    try {
+      target = new URL(
+        typeof input === 'string' ? input : input instanceof URL ? input.href : input.url,
+        window.location.origin
+      );
+    } catch {
+      return nativeFetch(input, init);
+    }
+    if (backendOrigin && target.origin !== backendOrigin) return nativeFetch(input, init);
 
     const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
     if (currentSession?.access_token) headers.set('Authorization', `Bearer ${currentSession.access_token}`);
