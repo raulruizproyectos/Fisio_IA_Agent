@@ -1,36 +1,47 @@
-# Instrucciones Operativas de Sesion (Obligatorias)
+# Reglas Canónicas para Agentes IA — Fisio IA Agent
 
-## Regla de secretos (fuente unica)
+Guía operativa obligatoria para cualquier agente o desarrollador que modifique este repositorio.
 
-- Todas las claves, tokens y accesos de APIs/plataformas se guardan en `.env.local`.
-- `.env.local` es la fuente unica para buscar secretos en cada inicio de sesion.
-- Nunca guardar secretos en archivos versionados del repo.
+## 1. Dónde Consultar Antes de Tocar Código
+- **Estado Actual y Prioridades**: `docs/STATUS.md` (fuente canónica del estado presente).
+- **Arquitectura y Modelo de Datos**: `docs/ARCHITECTURE.md` (componentes, flujos y ER).
+- **Operaciones y Despliegue**: `docs/OPERATIONS.md` (entorno, comandos y migraciones).
+- **Historial de Cambios**: `docs/CHANGELOG.md`.
 
-## Inicio de cada sesion
+## 2. Comandos de Validación Obligatorios
+Antes de dar por concluida cualquier tarea o proponer un commit:
+```bash
+# Backend: lint y suite de tests (deben pasar los 18 tests)
+cd backend && npm run lint && npm test
 
-1. Cargar variables locales:
-   - `powershell -ExecutionPolicy Bypass -File scripts/load-env-local.ps1`
-2. Verificar claves requeridas:
-   - `powershell -ExecutionPolicy Bypass -File scripts/check-secrets.ps1`
-3. Si falta alguna clave:
-   - Preguntar al usuario.
-   - En cuanto la proporcione, anadirla a `.env.local` para futuras sesiones.
+# Frontend: chequeo de tipos y compilación estática (0 errores)
+cd ../frontend && npm run check && npm run build
+```
 
-## Alta de nuevas credenciales
+## 3. Seguridad y Secretos (Tolerancia Cero)
+- **Fuente única de secretos locales**: `.env.local` en la raíz del proyecto.
+- **Prohibición**: NUNCA commitear claves, tokens ni passwords (`SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `TELEGRAM_BOT_TOKEN`, etc.).
+- `SUPABASE_SERVICE_ROLE_KEY` solo puede utilizarse en backend o n8n; NUNCA exponerla al frontend ni en variables `PUBLIC_*`.
+- En Supabase Storage, el bucket de ejercicios clínicos es privado con URLs firmadas JIT.
 
-- Toda credencial nueva detectada durante la sesion debe anadirse a `.env.local`.
-- Si una clave viene de Supabase Vault, sincronizarla con:
-  - `node scripts/sync-openai-from-vault.mjs` (para `OPENAI_API_KEY`).
+## 4. Norma de Robustez Clínica
+- Todo flujo crítico debe disponer de *fallback* funcional y registrar trazabilidad (`request_id`, contexto, error).
+- Ningún fallo en un servicio externo (Google Calendar, Telegram, n8n, OpenAI) debe bloquear completamente el flujo asistencial principal.
+- Respuestas claras y seguras en degradación controlada.
 
-## Robustez obligatoria
+## 5. Gating Clínico e Integridad Médica
+- Los planes de ejercicios generados por IA nacen en `requiere_revision`.
+- Queda terminantemente bloqueada la generación de PDF (`/api/documents/exercise-plan/pdf`) o el envío al paciente si la recomendación no está explícitamente `aprobada` por el fisioterapeuta.
+- Ante *red flags* clínicas, se exige una justificación profesional documentada de al menos 12 caracteres.
+- Al sustituir un ejercicio por apoyo visual, el nuevo ejercicio debe adoptar sus propias precauciones y dosificación (nunca heredar contraindicaciones de otro).
 
-- El sistema debe ser muy robusto y con control de errores.
+## 6. Frontend y Sistema de Diseño (v4.0 Turn.io)
+- **Contratos DOM**: NUNCA modificar ni eliminar IDs ni atributos `data-*` en `frontend/src/pages/index.astro` ni en los componentes de `views/*`, ya que son requeridos para la hidratación reactiva.
+- **Abandono del Dark Dashboard**: No reintroducir fondos azul marino/negros (`#0d1522`) ni tarjetas oscuras. Utilizar los lienzos pastel de `design-tokens.css` (*Lavender*, *Mint*, *Peach*, *Sky*, *Sand*).
+- **Disciplina Coral Pulse**: `#ff643b` (`--color-coral-pulse`) se reserva **únicamente** para la acción principal de cada pantalla (Guardar, Crear, Confirmar, Registrar). No usarlo para decoración ni en múltiples botones que compitan entre sí.
+- **Tipografía**: DM Sans con `font-feature-settings: "ss03" 1` en toda la interfaz.
+- **Responsive**: Compatibilidad obligatoria en escritorio (1280px+) y móvil (375px+).
 
-## Entorno Windows local obligatorio
-
-- No trabajar desde `G:\Mi unidad\...` cuando haya que editar, validar o instalar dependencias.
-- Esa ruta sincronizada provoca bloqueos de sandbox, I/O y `npm` en este proyecto.
-- Antes de una sesion de desarrollo, preparar workspace local completo con:
-  - `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-local-workspace.ps1`
-- A partir de ahi, abrir y continuar la sesion desde `C:\Temp\Fisio_IA_Agent_workspace`.
-- El workspace local conserva `.git`, asi que los commits y pushes deben hacerse desde esa copia local.
+## 7. Automatizaciones en n8n
+- Antes de crear un nuevo nodo o workflow, revisar los existentes en `n8n/Fisio_IA_Agent`.
+- Todo webhook debe estar autenticado con cabecera de secreto (`N8N_WEBHOOK_SECRET`).

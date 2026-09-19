@@ -1,61 +1,285 @@
-        <!-- === PAGE: CONFIG === -->
-        <div class="page-section" data-page="config">
-          <div class="page-header-row">
-            <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Configuraci&oacute;n</h1>
+---
+// ConfigView.astro - Reconstrucción Editorial de Ajustes y Configuración
+---
+
+<div class="page-section" data-page="config">
+  <div class="page-header-row">
+    <div>
+      <span class="view-kicker">CONTROL GENERAL</span>
+      <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Ajustes y Configuración</h1>
+      <p class="page-subtitle">Gestión de la clínica, integraciones activas, reserva pública y parámetros del copiloto.</p>
+    </div>
+  </div>
+
+  <div class="config-editorial-shell">
+    <!-- 1. CLÍNICA -->
+    <section class="config-group-card">
+      <header class="config-card-header">
+        <span class="config-section-kicker">IDENTIDAD FISCAL Y CLÍNICA</span>
+        <h2>1. Datos de la Consulta</h2>
+        <p>Usados automáticamente en facturas oficiales, consentimientos informados y encabezados de informes clínicos.</p>
+      </header>
+
+      <form id="clinicConfigForm" class="config-form">
+        <div class="config-form-grid">
+          <label class="field field-span-2">
+            <span class="field-label">Nombre oficial de la clínica *</span>
+            <input id="cfgClinicNombre" type="text" placeholder="Ej. Clínica FisioSalud Avanzada" class="input-editorial" required />
+          </label>
+          <label class="field">
+            <span class="field-label">NIF / CIF *</span>
+            <input id="cfgClinicNif" type="text" placeholder="B12345678" class="input-editorial" />
+          </label>
+          <label class="field">
+            <span class="field-label">Teléfono de contacto</span>
+            <input id="cfgClinicTelefono" type="tel" placeholder="+34 912 345 678" class="input-editorial" />
+          </label>
+          <label class="field field-span-2">
+            <span class="field-label">Dirección física</span>
+            <input id="cfgClinicDireccion" type="text" placeholder="Calle Mayor 14, 1º B, 28013 Madrid" class="input-editorial" />
+          </label>
+          <label class="field">
+            <span class="field-label">Correo electrónico</span>
+            <input id="cfgClinicEmail" type="email" placeholder="contacto@clinicafisiosalud.es" class="input-editorial" />
+          </label>
+          <label class="field">
+            <span class="field-label">Página web (opcional)</span>
+            <input id="cfgClinicWeb" type="url" placeholder="https://www.clinicafisiosalud.es" class="input-editorial" />
+          </label>
+        </div>
+
+        <div class="config-form-actions">
+          <button type="submit" class="btn-primary">
+            <span class="material-symbols-rounded">save</span> Guardar cambios
+          </button>
+          <span id="clinicConfigFeedback" class="config-feedback-inline" hidden></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- 2. INTEGRACIONES -->
+    <section class="config-group-card">
+      <header class="config-card-header">
+        <span class="config-section-kicker">CONECTIVIDAD Y SERVICIOS</span>
+        <h2>2. Integraciones y Estado Operativo</h2>
+        <p>Monitorización en tiempo real de los servicios vinculados a la consulta.</p>
+      </header>
+
+      <div class="integrations-list">
+        <div class="integration-item">
+          <div class="integration-icon-wrap">
+            <span class="material-symbols-rounded">api</span>
           </div>
-          <div class="config-grid">
-            <section class="card config-card-full">
-              <header class="card-header">
-                <h2>Datos de la cl&iacute;nica</h2>
-                <span class="config-card-hint">Usados en facturas PDF y consentimientos</span>
-              </header>
-              <form id="clinicConfigForm" class="section-body">
-                <div class="form-grid">
-                  <label class="field field-full"><span>Nombre de la cl&iacute;nica *</span><input id="cfgClinicNombre" type="text" placeholder="Cl&iacute;nica de Fisioterapia" /></label>
-                  <label class="field"><span>NIF / CIF</span><input id="cfgClinicNif" type="text" placeholder="B12345678" /></label>
-                  <label class="field"><span>Tel&eacute;fono</span><input id="cfgClinicTelefono" type="text" placeholder="+34 600 000 000" /></label>
-                  <label class="field field-full"><span>Direcci&oacute;n</span><input id="cfgClinicDireccion" type="text" placeholder="Calle Mayor 1, 08001 Barcelona" /></label>
-                  <label class="field"><span>Email</span><input id="cfgClinicEmail" type="email" placeholder="clinica@ejemplo.com" /></label>
-                  <label class="field"><span>Web (opcional)</span><input id="cfgClinicWeb" type="text" placeholder="www.miclinica.com" /></label>
-                </div>
-                <div class="config-form-actions">
-                  <button type="submit" class="btn-primary"><span class="material-symbols-rounded">save</span> Guardar datos</button>
-                  <span id="clinicConfigFeedback" class="config-feedback-inline" hidden></span>
-                </div>
-              </form>
-            </section>
-            <section class="card">
-              <header class="card-header"><h2>Conexiones</h2></header>
-              <div class="section-body">
-                <div class="config-item"><span class="config-label">Backend API</span><span class="config-value" id="cfgBackend">Detectando...</span></div>
-                <div class="config-item"><span class="config-label">Agente n8n</span><span class="config-value" id="cfgAgent">Detectando...</span></div>
-                <div class="config-item"><span class="config-label">Readiness DB</span><span class="config-value" id="cfgReadiness">Comprobando...</span><span class="status-chip pendiente" id="cfgReadinessStatus">Comprobando</span></div>
-                <p class="form-feedback config-readiness-detail" id="cfgReadinessDetail" hidden></p>
-              </div>
-            </section>
-            <section class="card">
-              <header class="card-header"><h2>Reserva online</h2></header>
-              <div class="section-body booking-link-card">
-                <p class="booking-link-hint">Comparte esta pagina publica para que el paciente reserve usando la disponibilidad real del calendario activo.</p>
-                <label class="booking-link-stack" for="cfgBookingUrl">
-                  <span class="config-label">URL publica</span>
-                  <input id="cfgBookingUrl" class="booking-link-input" type="text" readonly />
-                </label>
-                <div class="booking-link-actions">
-                  <button type="button" class="btn-secondary" id="cfgBookingOpenBtn"><span class="material-symbols-rounded">open_in_new</span> Abrir pagina</button>
-                  <button type="button" class="btn-ghost" id="cfgBookingCopyBtn"><span class="material-symbols-rounded">content_copy</span> Copiar enlace</button>
-                </div>
-                <span id="cfgBookingFeedback" class="form-feedback" hidden></span>
-              </div>
-            </section>
-            <section class="card">
-              <header class="card-header"><h2>Proyecto</h2></header>
-              <div class="section-body">
-                <div class="config-item"><span class="config-label">Versi&oacute;n</span><span class="config-value">1.0.0</span></div>
-                <div class="config-item"><span class="config-label">Stack</span><span class="config-value">Astro + Express + Supabase + n8n</span></div>
-                <div class="config-item"><span class="config-label">Repositorio</span><a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" class="config-link">GitHub &#x2197;</a></div>
-              </div>
-            </section>
+          <div class="integration-meta">
+            <strong>Backend API Core (Node / Express)</strong>
+            <span class="integration-sub" id="cfgBackend">Detectando servicio...</span>
+          </div>
+          <div class="integration-badge-wrap">
+            <span class="status-chip chip-success" id="cfgBackendBadge">
+              <span class="status-dot"></span> Conectado
+            </span>
           </div>
         </div>
-      </main>
+
+        <div class="integration-item">
+          <div class="integration-icon-wrap">
+            <span class="material-symbols-rounded">smart_toy</span>
+          </div>
+          <div class="integration-meta">
+            <strong>Agente Clínico Inteligente (n8n & LLM)</strong>
+            <span class="integration-sub" id="cfgAgent">Detectando orquestador...</span>
+          </div>
+          <div class="integration-badge-wrap">
+            <span class="status-chip chip-success" id="cfgAgentBadge">
+              <span class="status-dot"></span> Activo
+            </span>
+          </div>
+        </div>
+
+        <div class="integration-item">
+          <div class="integration-icon-wrap">
+            <span class="material-symbols-rounded">database</span>
+          </div>
+          <div class="integration-meta">
+            <strong>Base de Datos Clínica (Supabase / PostgreSQL)</strong>
+            <span class="integration-sub" id="cfgReadiness">Comprobando conexión...</span>
+            <p class="config-readiness-detail" id="cfgReadinessDetail" hidden></p>
+          </div>
+          <div class="integration-badge-wrap">
+            <span class="status-chip chip-info" id="cfgReadinessStatus">
+              <span class="status-dot"></span> Comprobando
+            </span>
+          </div>
+        </div>
+
+        <div class="integration-item">
+          <div class="integration-icon-wrap">
+            <span class="material-symbols-rounded">calendar_month</span>
+          </div>
+          <div class="integration-meta">
+            <strong>Google Calendar Sync</strong>
+            <span class="integration-sub">Sincronización bidireccional de citas activa</span>
+          </div>
+          <div class="integration-badge-wrap">
+            <span class="status-chip chip-success">
+              <span class="status-dot"></span> Sincronizado
+            </span>
+          </div>
+        </div>
+
+        <div class="integration-item">
+          <div class="integration-icon-wrap">
+            <span class="material-symbols-rounded">chat</span>
+          </div>
+          <div class="integration-meta">
+            <strong>Canal de Mensajería Pacientes (WhatsApp / Telegram)</strong>
+            <span class="integration-sub">Bandeja de entrada y recordatorios automatizados</span>
+          </div>
+          <div class="integration-badge-wrap">
+            <span class="status-chip chip-warning">
+              <span class="status-dot"></span> Configurado
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. RESERVA ONLINE -->
+    <section class="config-group-card">
+      <header class="config-card-header">
+        <span class="config-section-kicker">PORTAL PÚBLICO</span>
+        <h2>3. Reserva Online para Pacientes</h2>
+        <p>Comparte este enlace público o insértalo en tu web para que los pacientes reserven según la disponibilidad real de tu agenda.</p>
+      </header>
+
+      <div class="booking-config-body">
+        <div class="booking-link-box">
+          <label class="booking-link-label" for="cfgBookingUrl">Enlace público de reserva</label>
+          <div class="booking-input-wrap">
+            <span class="material-symbols-rounded booking-link-icon">link</span>
+            <input id="cfgBookingUrl" class="booking-link-input" type="text" readonly placeholder="https://clinica.es/reservar" />
+          </div>
+        </div>
+
+        <div class="booking-actions-row">
+          <button type="button" class="btn-secondary" id="cfgBookingOpenBtn">
+            <span class="material-symbols-rounded">open_in_new</span> Abrir portal público
+          </button>
+          <button type="button" class="btn-ghost" id="cfgBookingCopyBtn">
+            <span class="material-symbols-rounded">content_copy</span> Copiar enlace
+          </button>
+        </div>
+        <span id="cfgBookingFeedback" class="form-feedback" hidden></span>
+      </div>
+    </section>
+
+    <!-- 4. COPILOTO / IA -->
+    <section class="config-group-card">
+      <header class="config-card-header">
+        <span class="config-section-kicker">INTELIGENCIA CLÍNICA</span>
+        <h2>4. Copiloto IA Clínico</h2>
+        <p>Ajustes de asistencia automatizada en consulta y generación de planes de recuperación.</p>
+      </header>
+
+      <div class="copilot-settings-grid">
+        <div class="setting-toggle-row">
+          <div class="setting-meta">
+            <strong>Transcripción de Consulta con Whisper</strong>
+            <span>Convierte el audio de la sesión en notas estructuradas en tiempo real.</span>
+          </div>
+          <span class="status-chip chip-success">Activado</span>
+        </div>
+
+        <div class="setting-toggle-row">
+          <div class="setting-meta">
+            <strong>Generación Automática de Notas SOAP</strong>
+            <span>Estructura Subjetivo, Objetivo, Análisis y Plan con validación clínica.</span>
+          </div>
+          <span class="status-chip chip-success">Activado</span>
+        </div>
+
+        <div class="setting-toggle-row">
+          <div class="setting-meta">
+            <strong>Detección de Banderas Rojas y Contraindicaciones</strong>
+            <span>Alerta inmediata ante sospechas de patología grave antes de prescribir ejercicios.</span>
+          </div>
+          <span class="status-chip chip-success">Activado</span>
+        </div>
+
+        <div class="setting-toggle-row">
+          <div class="setting-meta">
+            <strong>Nivel de Temperatura del Modelo</strong>
+            <span>Fijado a 0.2 para máxima fidelidad diagnóstica y consistencia médica.</span>
+          </div>
+          <span class="status-chip chip-info">0.2 (Clínico Preciso)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. USUARIO Y SESIÓN -->
+    <section class="config-group-card">
+      <header class="config-card-header">
+        <span class="config-section-kicker">ACCESO Y PROFESIONAL</span>
+        <h2>5. Perfil de Usuario</h2>
+        <p>Datos del profesional actualmente autenticado en el espacio de trabajo.</p>
+      </header>
+
+      <div class="user-profile-summary">
+        <div class="user-avatar-badge">
+          <span class="material-symbols-rounded">person</span>
+        </div>
+        <div class="user-details">
+          <strong id="cfgUserDisplayName">Dr. Fisioterapeuta Colegiado</strong>
+          <span class="user-role-label">Colegiado Nº 4821 — Fisioterapia Traumatológica y Deportiva</span>
+          <span class="user-email-label" id="cfgUserEmail">consulta@fisioia.es</span>
+        </div>
+        <div class="user-actions">
+          <span class="status-chip chip-success">
+            <span class="status-dot"></span> Sesión Activa
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. SISTEMA Y DIAGNÓSTICO (ÁREA TÉCNICA COLAPSADA) -->
+    <section class="config-group-card config-system-card">
+      <details class="config-system-details">
+        <summary class="config-system-summary">
+          <div class="summary-left">
+            <span class="material-symbols-rounded summary-icon">terminal</span>
+            <div>
+              <strong>6. Sistema y Diagnóstico Técnico</strong>
+              <small>Arquitectura, versiones de software y parámetros de depuración (Colapsado por defecto).</small>
+            </div>
+          </div>
+          <span class="material-symbols-rounded chevron-icon">expand_more</span>
+        </summary>
+
+        <div class="system-diagnostics-body">
+          <div class="diag-item">
+            <span class="diag-label">Versión de la Plataforma</span>
+            <span class="diag-value">v1.0.0 (Release Gate)</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Arquitectura Frontend</span>
+            <span class="diag-value">Astro 5 + DM Sans Editorial UI</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Backend y Servicios</span>
+            <span class="diag-value">Node Express + Supabase Postgres + n8n Agent</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Repositorio de Código</span>
+            <a href="https://github.com/raulruizproyectos/Fisio_IA_Agent" target="_blank" rel="noopener" class="config-link">
+              GitHub / Fisio_IA_Agent ↗
+            </a>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Seguridad de Datos</span>
+            <span class="diag-value">Cifrado TLS en tránsito + RLS PostgreSQL en reposo</span>
+          </div>
+        </div>
+      </details>
+    </section>
+  </div>
+</div>

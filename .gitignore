@@ -49,5 +49,5 @@ docs/data/n8n/tmp_*.json
 # Local validation artifacts
 tmp/
 scratch_screenshot/
-.aider-benchmark/
+.aider*
 .agents/mcp_config.json

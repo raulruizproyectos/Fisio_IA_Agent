@@ -296,12 +296,19 @@
     assistantState.set({ ...current, isOpen: true });
   };
 
+  const toggleAssistant = () => {
+    const current = assistantState.get();
+    assistantState.set({ ...current, isOpen: !current.isOpen });
+  };
+
   document.getElementById('assistantRailClose')?.addEventListener('click', closeAssistant);
   document.getElementById('assistantRailBackdrop')?.addEventListener('click', closeAssistant);
   document.getElementById('assistantRailFab')?.addEventListener('click', openAssistant);
 
+  assistantRailToggle?.addEventListener('click', toggleAssistant);
   document.addEventListener('fisio:open-assistant', openAssistant);
   document.addEventListener('fisio:close-assistant', closeAssistant);
+  document.addEventListener('fisio:toggle-assistant', toggleAssistant);
 
   // Resize listener to maintain styles if opened
   window.addEventListener('resize', () => {

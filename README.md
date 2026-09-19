@@ -1,64 +1,43 @@
 # Fisio IA Agent
 
-CRM clinico para fisioterapia con agenda Google Calendar, pacientes, finanzas, documentos, Telegram y Copiloto IA.
+Plataforma CRM y asistente clínico inteligente para clínicas de fisioterapia. Integra gestión integral de pacientes, agenda conectada con Google Calendar, control de cobros y facturación, generación de documentos clínicos, canal de mensajería con Telegram y Copiloto IA para prescripción de planes terapéuticos guiados.
 
 ## Stack
-- Frontend: Astro, Tailwind utilities, Nanostores, CSS modular.
-- Backend: Node/Express, Supabase, Google Calendar, Telegram, PDFKit.
-- Automatizacion: n8n workflows versionados en `n8n/Fisio_IA_Agent`.
+- **Frontend**: Astro 5 (modo estático con islas interactivas), CSS modular con Design Tokens (DM Sans `ss03`), Nanostores.
+- **Backend**: Node.js / Express (ESM), Supabase Auth (JWT) + PostgreSQL con RLS, Google Calendar API (Service Account), Telegram Bot API, PDFKit.
+- **Automatización**: n8n (workflows modulares versionados en `n8n/Fisio_IA_Agent`).
 
-## Arranque rapido
-```powershell
+## Quick Start
+```bash
+# Frontend
 cd frontend
-npm.cmd ci
-npm.cmd run check
-npm.cmd run build
+npm ci
+npm run check
+npm run build
 
-cd ..\backend
-npm.cmd ci
-npm.cmd run lint
-npm.cmd test
+# Backend
+cd ../backend
+npm ci
+npm run lint
+npm test
 ```
 
-## Contexto vivo
-Lee primero `PROJECT_CONTEXT.md`. Es la fuente compacta para futuras sesiones.
+## Environment
+Los secretos nunca se versionan en Git. En desarrollo local se cargan desde `.env.local` en la raíz.
+- **Backend**: `PORT`, `NODE_ENV`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `FRONTEND_URL`, `INTERNAL_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `N8N_WEBHOOK_SECRET`, `OPENAI_API_KEY`, `GOOGLE_CALENDAR_CLIENT_EMAIL`, `GOOGLE_CALENDAR_PRIVATE_KEY`, `GOOGLE_CALENDAR_ID`.
+- **Frontend**: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_BACKEND_URL`.
 
-## Estado de continuidad — 2026-09-01
+## Architecture
+- Arquitectura de backend autoritativo con cliente Supabase por petición según JWT del profesional y RLS estricto en PostgreSQL.
+- Frontend con diseño editorial clínico (*Turn.io style*) estructurado en habitaciones cromáticas pasteles con *Canopy Green* como ancla de marca y *Coral Pulse* exclusivo para acciones primarias.
+- Detalle completo y diagrama ER en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-- Trabajo activo: rama `production-hardening` y PR borrador [#1](https://github.com/raulruizproyectos/Fisio_IA_Agent/pull/1). `main` sigue intacta.
-- Auditoria 2.0 implementada: seguridad, Supabase Auth/RLS, revision humana obligatoria de informes IA, trazabilidad, UX premium, rendimiento y endurecimiento de n8n.
-- Validacion local completada: frontend (`check` y `build`), backend (`lint` y 9 pruebas), dependencias sin vulnerabilidades conocidas y JSON de n8n validos.
-- Staging temporal: el proyecto Supabase vacio `CRM` recibio el esquema y la migracion; paso asesores de seguridad/rendimiento y pruebas transaccionales de aislamiento, aprobacion y solapamiento. Los datos de prueba se revirtieron. No se ha aplicado la migracion a produccion.
-- Estado de n8n: los 15 workflows versionados permanecen desactivados; los 9 webhooks de produccion requieren autenticacion por cabecera. Gmail solo se usa para alertas tecnicas internas, no para pacientes.
-- Pendiente antes de produccion: desplegar staging en EasyPanel, QA visual desktop/movil, smoke tests autenticados, probar credenciales reales de Supabase/OpenAI/Google Calendar/Telegram/n8n/Gmail, revisar RGPD/backups/observabilidad, aplicar la migracion productiva con confirmacion, activar workflows uno a uno, limpiar los objetos temporales de `CRM` y fusionar la PR.
-- Restriccion: no crear recursos con coste y eliminar todo dato u objeto creado exclusivamente para pruebas cuando finalice la validacion.
+## Documentation
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Componentes, seguridad, modelo de datos y flujos críticos.
+- [docs/STATUS.md](docs/STATUS.md): Estado actual del proyecto, componentes estables, prioridades y decisiones.
+- [docs/OPERATIONS.md](docs/OPERATIONS.md): Guía operativa, despliegue en EasyPanel/producción y migraciones.
+- [docs/CHANGELOG.md](docs/CHANGELOG.md): Registro histórico de cambios y checkpoints.
+- [AGENTS.md](AGENTS.md): Reglas canónicas obligatorias para agentes IA.
 
-### Orden para reanudar
-
-1. Comprobar el ultimo commit remoto de `production-hardening` y el CI de la PR #1.
-2. Abrir el staging de EasyPanel y ejecutar QA visual y funcional sin tocar produccion.
-3. Validar integraciones reales mediante lectura o `dry run`; no enviar mensajes, correos ni citas reales sin confirmacion.
-4. Corregir cualquier incidencia y repetir frontend, backend, dependencias y workflows.
-5. Solicitar confirmacion antes de modificar Supabase productivo, desplegar produccion, activar n8n o fusionar a `main`.
-
-## Reglas criticas
-- No subir secretos. `.env.local` esta ignorado y es la fuente local.
-- No romper IDs, `data-*` ni eventos del frontend: muchas vistas se hidratan desde `frontend/src/pages/index.astro`.
-- `assistant-rail.css` es la fuente canonica del Copiloto IA.
-- Google Calendar se renderiza en Agenda desde `renderAgendaCalendar()` y estilos `.agenda-*`.
-
-## Deploy
-- Rama productiva: `main`.
-- Frontend EasyPanel: `fisio-frontend`.
-- Backend EasyPanel: `fisio-backend`.
-- Repo privado: usar Deploy Key/SSH en EasyPanel.
-- URL SSH recomendada: `git@github.com:raulruizproyectos/Fisio_IA_Agent.git`.
-- Build paths: `frontend` y `backend` sin `/` inicial.
-- Checklist y orden seguro: `docs/PRODUCTION_READINESS.md`.
-
-## Seguridad
-
-- El panel profesional usa Supabase Auth; no hay UUID de profesional fijo en frontend.
-- Las rutas clínicas usan JWT + RLS. Las rutas internas usan `INTERNAL_API_KEY`.
-- Telegram y n8n utilizan secretos de webhook independientes.
-- Todo informe generado por IA requiere aprobación profesional antes de PDF o envío al paciente.
+## Current Status
+El sistema cuenta con backend endurecido (18/18 tests unitarios/integración pasando), verificación estática limpia de Astro (0 errores) y reconstrucción visual v4.0 terminada. Listo para despliegue y aplicación de migración en Supabase Cloud. Ver [docs/STATUS.md](docs/STATUS.md).

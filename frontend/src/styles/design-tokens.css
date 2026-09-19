@@ -1,0 +1,143 @@
+/* ==========================================================================
+   FISIO IA AGENT — CLINICAL EDITORIAL DESIGN TOKENS (v4.0)
+   Reference: Refero Style e9f5e976-53f7-42f5-a882-4e63b3c2f734 (Turn.io)
+   Direction: Clinical + Editorial + Professional + Human + Memorable
+   ========================================================================== */
+
+:root {
+  /* === BASE BRAND & ACCENT PALETTE === */
+  --color-canopy-green: #0a3922;
+  --color-coral-pulse: #ff643b;
+  --color-indigo-bloom: #460095;
+  --color-leaf-bright: #1dbf73;
+  --color-deep-teal: #003642;
+  --color-orchid-tint: #f3b3fe;
+  --color-sky-signal: #00b4dc;
+  --color-aubergine: #47264c;
+
+  /* === MONOCHROME / INK SCALE === */
+  --color-ink-black: #000000;
+  --color-paper-white: #ffffff;
+  --color-ash: #a6a6a6;
+  --color-slate: #7a7a7a;
+  --color-graphite: #3d3d3d;
+  --color-charcoal: #333333;
+  --color-frost-gray: #e0e0e0;
+  --color-cloud-gray: #f2f2f2;
+
+  /* === PASTEL CLINICAL ROOMS (WASHES) === */
+  --color-lavender-mist: #eee2ff;
+  --color-mint-wash: #d2f2e3;
+  --color-sky-wash: #ccf0f8;
+  --color-sage-wash: #e4f7ee;
+  --color-lilac-wash: #fdf0ff;
+  --color-peach-wash: #ffede8;
+  --color-cream: #faf7e8;
+  --color-sand: #f4ece9;
+
+  /* === SURFACES === */
+  --surface-page-canvas: #eee2ff;
+  --surface-card-surface: #ffffff;
+  --surface-pastel-card: #d2f2e3;
+  --surface-dark-brand-surface: #0a3922;
+
+  --surface-page: #eee2ff;
+  --surface-primary: #ffffff;
+  --surface-secondary: #faf7e8;
+  --surface-brand: #0a3922;
+  --surface-interactive: #d2f2e3;
+
+  /* === SEMANTIC TEXT TOKENS (HIGH CONTRAST WCAG AA) === */
+  --text-primary: #000000;
+  --text-secondary: #3d3d3d;
+  --text-muted: #7a7a7a;
+  --text-on-brand: #ffffff;
+  --text-disabled: #a6a6a6;
+
+  /* === RADII === */
+  --radius-tag: 9999px;
+  --radius-button: 40px;
+  --radius-card: 24px;
+  --radius-panel: 16px;
+  --radius-icon: 8px;
+
+  /* === TYPOGRAPHY SCALES === */
+  --font-family-base: 'DM Sans Variable', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+
+  /* === MOTION === */
+  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-micro: 140ms;
+  --duration-component: 220ms;
+  --duration-panel: 320ms;
+
+  /* Legacy mapping aliases to bridge existing views safely */
+  --bg-base: #eee2ff;
+  --bg-soft: #faf7e8;
+  --bg-paper: #ffffff;
+  --ink: #000000;
+  --clinic-ink: #000000;
+  --clinic-ink-rgb: 0, 0, 0;
+  --clinic-muted: #7a7a7a;
+  --clinic-line: #e0e0e0;
+  --clinic-accent: #0a3922;
+  --clinic-primary: #ff643b;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-subtle: rgba(0, 0, 0, 0.04);
+}
+
+/* SECTION ROOMS (ATMOSPHERIC BACKGROUNDS) */
+.page-section[data-page="dashboard"] {
+  --surface-page-canvas: var(--color-lavender-mist);
+  background: var(--color-lavender-mist);
+}
+
+.page-section[data-page="pacientes"],
+.page-section[data-page="ficha-paciente"] {
+  --surface-page-canvas: var(--color-mint-wash);
+  background: var(--color-mint-wash);
+}
+
+.page-section[data-page="citas"] {
+  --surface-page-canvas: var(--color-cream);
+  background: var(--color-cream);
+}
+
+.page-section[data-page="plantillas"] {
+  --surface-page-canvas: var(--color-sage-wash);
+  background: var(--color-sage-wash);
+}
+
+.page-section[data-page="pagos"],
+.page-section[data-page="facturas"],
+.page-section[data-page="bonos"],
+.page-section[data-page="gestoria"] {
+  --surface-page-canvas: var(--color-peach-wash);
+  background: var(--color-peach-wash);
+}
+
+.page-section[data-page="documentos"] {
+  --surface-page-canvas: var(--color-lilac-wash);
+  background: var(--color-lilac-wash);
+}
+
+.page-section[data-page="intakes"] {
+  --surface-page-canvas: var(--color-sky-wash);
+  background: var(--color-sky-wash);
+}
+
+.page-section[data-page="config"] {
+  --surface-page-canvas: var(--color-sand);
+  background: var(--color-sand);
+}
+
+.page-section[data-page="historial"] {
+  --surface-page-canvas: var(--color-cream);
+  background: var(--color-cream);
+}

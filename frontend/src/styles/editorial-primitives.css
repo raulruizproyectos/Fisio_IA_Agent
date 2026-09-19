@@ -1,0 +1,325 @@
+/* ==========================================================================
+   FISIO IA AGENT — EDITORIAL PRIMITIVES (v4.0)
+   Strict button discipline: Coral Pulse (#ff643b) exclusively for primary action
+   Canopy Green (#0a3922) for brand identity & active states
+   ========================================================================== */
+
+/* === BUTTONS === */
+button, .btn {
+  font-family: var(--font-family-base) !important;
+  font-feature-settings: "ss03" 1 !important;
+  transition: transform var(--duration-micro) var(--ease-editorial), background-color var(--duration-micro) ease !important;
+}
+
+button:active, .btn:active {
+  transform: scale(0.975) !important;
+}
+
+/* Primary Action CTA — CORAL PULSE STRICT */
+.btn-primary,
+#addPagoBtn,
+#sendBtn,
+#pagoSubmitBtn,
+#btnSaveFicha,
+.patient-primary-action,
+[data-action="primary-cta"] {
+  background: var(--color-coral-pulse) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  padding: 0.65rem 1.4rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  box-shadow: 0 2px 8px rgba(255, 100, 59, 0.25) !important;
+  cursor: pointer !important;
+}
+
+.btn-primary:hover,
+#addPagoBtn:hover,
+#sendBtn:hover,
+#pagoSubmitBtn:hover,
+#btnSaveFicha:hover {
+  background: #f0542b !important;
+  color: #ffffff !important;
+}
+
+/* Secondary Button — Crisp White with subtle border */
+.btn-secondary,
+.btn-outline {
+  background: #ffffff !important;
+  color: var(--color-charcoal) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  padding: 0.6rem 1.25rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.btn-secondary:hover,
+.btn-outline:hover {
+  background: var(--color-cloud-gray) !important;
+  color: #000000 !important;
+  border-color: #d0d0d0 !important;
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background: transparent !important;
+  color: var(--color-graphite) !important;
+  border: 0 !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  padding: 0.5rem 1rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  cursor: pointer !important;
+}
+
+.btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #000000 !important;
+}
+
+/* Small Button modifier */
+.btn-sm {
+  padding: 0.4rem 0.85rem !important;
+  font-size: var(--text-xs) !important;
+  border-radius: var(--radius-button) !important;
+}
+
+/* Brand Button (Canopy Green) */
+.btn-brand,
+.btn-canopy {
+  background: var(--color-canopy-green) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  padding: 0.65rem 1.35rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  cursor: pointer !important;
+}
+
+.btn-brand:hover,
+.btn-canopy:hover {
+  background: #0d4a2d !important;
+}
+
+/* === FORM CONTROLS === */
+input,
+select,
+textarea {
+  font-family: var(--font-family-base) !important;
+  font-feature-settings: "ss03" 1 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: 12px !important;
+  padding: 0.65rem 0.95rem !important;
+  font-size: var(--text-sm) !important;
+  outline: none !important;
+  transition: border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-canopy-green) !important;
+  box-shadow: 0 0 0 3px rgba(10, 57, 34, 0.12) !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-ash) !important;
+}
+
+/* === CARDS & CONTAINERS === */
+.card,
+.table-card,
+.editorial-card,
+.ficha-data-card,
+.intakes-card,
+.template-history-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.07) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+}
+
+/* === TABS (PILL DISCIPLINE) === */
+.finance-tab,
+.ficha-tab,
+.tab-pill,
+[data-ficha-tab] {
+  background: #ffffff !important;
+  color: var(--color-graphite) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  padding: 0.5rem 1.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  cursor: pointer !important;
+  transition: all var(--duration-micro) ease !important;
+}
+
+.finance-tab:hover,
+.ficha-tab:hover,
+.tab-pill:hover {
+  background: var(--color-cloud-gray) !important;
+  color: #000000 !important;
+}
+
+.finance-tab.active,
+.ficha-tab.active,
+.tab-pill.active,
+.ficha-tab[aria-selected="true"],
+.finance-tab[aria-pressed="true"],
+[data-page="pagos"] .finance-tab[data-dashboard-nav="pagos"],
+[data-page="facturas"] .finance-tab[data-dashboard-nav="facturas"],
+[data-page="bonos"] .finance-tab[data-dashboard-nav="bonos"],
+[data-page="gestoria"] .finance-tab[data-dashboard-nav="gestoria"] {
+  background: var(--color-canopy-green) !important;
+  color: #ffffff !important;
+  border-color: var(--color-canopy-green) !important;
+  font-weight: 600 !important;
+}
+
+[data-page="pagos"] .finance-tab[data-dashboard-nav="pagos"] .material-symbols-rounded,
+[data-page="facturas"] .finance-tab[data-dashboard-nav="facturas"] .material-symbols-rounded,
+[data-page="bonos"] .finance-tab[data-dashboard-nav="bonos"] .material-symbols-rounded,
+[data-page="gestoria"] .finance-tab[data-dashboard-nav="gestoria"] .material-symbols-rounded {
+  color: var(--color-mint-wash) !important;
+}
+
+/* === TABLES (EDITORIAL CLARITY) === */
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  color: #000000 !important;
+}
+
+th {
+  background: transparent !important;
+  color: var(--color-slate) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1.5px solid var(--color-frost-gray) !important;
+  padding: 0.85rem 1.1rem !important;
+  text-align: left !important;
+}
+
+td {
+  color: var(--color-charcoal) !important;
+  border-bottom: 1px solid var(--color-cloud-gray) !important;
+  padding: 0.95rem 1.1rem !important;
+  font-size: var(--text-sm) !important;
+  vertical-align: middle !important;
+}
+
+tbody tr:hover td {
+  background: rgba(10, 57, 34, 0.02) !important;
+}
+
+td.td-patient,
+td:first-child strong {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+/* === STATUS CHIPS === */
+.status-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.25rem 0.65rem !important;
+  border-radius: var(--radius-tag) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  text-transform: capitalize !important;
+}
+
+.status-chip.confirmada,
+.status-chip.activo,
+.status-chip.firmado {
+  background: var(--color-mint-wash) !important;
+  color: var(--color-canopy-green) !important;
+}
+
+.status-chip.pendiente {
+  background: var(--color-peach-wash) !important;
+  color: var(--color-coral-pulse) !important;
+}
+
+.status-chip.en_consulta {
+  background: var(--color-sky-wash) !important;
+  color: var(--color-deep-teal) !important;
+}
+
+.status-chip.cancelada {
+  background: #ffe8e8 !important;
+  color: #d32f2f !important;
+}
+
+/* === LOADING & SKELETON STATES (LIGHT CLINICAL SHIMMER) === */
+.state-loading,
+.agenda-cal-loading,
+.skeleton-loading,
+.skeleton {
+  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%) !important;
+  background-size: 200% 100% !important;
+  animation: clinicalShimmer 2s infinite ease-in-out !important;
+  color: var(--color-slate) !important;
+  border-radius: var(--radius-panel) !important;
+  border: none !important;
+}
+
+@keyframes clinicalShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* === EMPTY STATES === */
+.empty-state,
+.empty-state-sm {
+  background: #ffffff !important;
+  border: 1.5px dashed var(--color-frost-gray) !important;
+  border-radius: var(--radius-card) !important;
+  padding: 2.5rem 1.5rem !important;
+  text-align: center !important;
+  color: var(--color-charcoal) !important;
+}
+
+.empty-state h3,
+.empty-state-sm h4,
+.empty-state strong {
+  color: var(--color-ink-black) !important;
+  font-weight: 700 !important;
+}
+
+.empty-state p,
+.empty-state-sm p {
+  color: var(--color-graphite) !important;
+}

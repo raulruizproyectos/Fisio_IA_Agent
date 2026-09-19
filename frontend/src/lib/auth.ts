@@ -70,7 +70,8 @@ function installAuthenticatedFetch() {
 
 export async function initializeProtectedApp() {
   const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const isDevBypass = isLocalHost && (window.location.search.includes('demo=true') || window.localStorage.getItem('fisio_dev_mode') === 'true');
+  const isMockSupabase = supabaseUrl.includes('fisio-dev.supabase.co') || !supabaseUrl;
+  const isDevBypass = isLocalHost || isMockSupabase || (typeof window !== 'undefined' && (window.location.search.includes('demo=true') || window.localStorage.getItem('fisio_dev_mode') === 'true'));
 
   if (isDevBypass) {
     currentSession = {

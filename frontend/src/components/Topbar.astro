@@ -1,44 +1,91 @@
-<header class="topbar px-6 py-3.5 flex items-center justify-between sticky top-0 z-30 bg-[#0d1420] border-b border-white/[0.08] backdrop-blur-md">
-  <div class="flex items-center gap-4">
-    <button class="text-slate-400 hover:text-white transition-colors lg:hidden p-1.5 rounded-lg hover:bg-white/5" id="sidebarToggle" aria-label="Menú" aria-controls="sidebar" aria-expanded="false">
-      <span class="material-symbols-rounded text-2xl">menu</span>
+---
+// Topbar.astro - Reconstrucción Editorial Command Bar
+---
+
+<header class="topbar-command-bar" id="topbar">
+  <!-- Left: Nav Breadcrumbs & Mobile Trigger -->
+  <div class="topbar-left">
+    <button
+      class="topbar-mobile-toggle"
+      id="sidebarToggle"
+      aria-label="Abrir menú de navegación"
+      aria-controls="sidebar"
+      aria-expanded="false"
+    >
+      <span class="material-symbols-rounded">menu</span>
     </button>
-    <nav class="hidden lg:flex items-center gap-2 text-sm font-medium text-slate-300" aria-label="Ruta de navegación">
-      <span class="text-slate-400">Consulta</span>
-      <span class="text-slate-600">/</span>
-      <span class="text-white font-semibold flex items-center gap-1.5" id="topbarSectionLabel">
+
+    <nav class="topbar-breadcrumb" aria-label="Ruta de navegación">
+      <span class="breadcrumb-root">Consulta</span>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current" id="topbarSectionLabel">
         Panel General
       </span>
     </nav>
   </div>
 
-  <div class="flex-1 max-w-xl mx-6 relative search-box">
-    <div class="relative flex items-center">
-      <span class="material-symbols-rounded absolute left-3.5 text-slate-400 text-lg search-icon" aria-hidden="true">search</span>
+  <!-- Center: Command Search Bar -->
+  <div class="topbar-center search-box">
+    <div class="search-input-shell">
+      <span class="material-symbols-rounded search-icon" aria-hidden="true">search</span>
       <label class="sr-only" for="searchInput">Buscar en la consulta</label>
-      <input type="search" id="searchInput" name="busqueda_consulta" placeholder="Buscar paciente, cita, informe clínico..." autocomplete="off" class="w-full bg-white/[0.04] border border-white/[0.08] focus:border-emerald-500/50 focus:bg-white/[0.07] focus:ring-2 focus:ring-emerald-500/20 rounded-xl py-2 pl-10 pr-12 text-sm text-white placeholder-slate-400 outline-none transition-all" />
-      <kbd class="hidden sm:inline-block absolute right-3 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white/[0.06] border border-white/[0.1] rounded">⌘K</kbd>
+      <input
+        type="search"
+        id="searchInput"
+        name="busqueda_consulta"
+        placeholder="Buscar paciente, cita, informe clínico..."
+        autocomplete="off"
+        class="search-command-input"
+      />
+      <kbd class="search-command-kbd">⌘K</kbd>
     </div>
-    <div class="absolute top-full left-0 right-0 mt-2 bg-[#111a26] rounded-xl shadow-2xl border border-white/[0.1] overflow-hidden search-results" id="searchResults" hidden></div>
+    <div class="search-results-dropdown" id="searchResults" hidden></div>
   </div>
 
-  <div class="flex items-center gap-2 md:gap-3">
-    <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-slate-300">
-      <span class="material-symbols-rounded text-emerald-400 text-sm">calendar_today</span>
+  <!-- Right: Date Context, Actions & Copilot Launch -->
+  <div class="topbar-right">
+    <!-- Date Pill -->
+    <div class="topbar-date-pill" title="Fecha de hoy">
+      <span class="material-symbols-rounded">calendar_today</span>
       <span id="topbarDateLabel">Hoy</span>
     </div>
-    <button class="hidden lg:flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/[0.06] px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-white/[0.08]" type="button" data-dashboard-nav="citas">
-      <span class="material-symbols-rounded text-base text-slate-400">event_note</span>
-      <span>Agenda</span>
+
+    <!-- Quick Agenda Shortcut -->
+    <button
+      class="topbar-btn-secondary"
+      type="button"
+      data-dashboard-nav="citas"
+      title="Abrir agenda de citas"
+    >
+      <span class="material-symbols-rounded">event_note</span>
+      <span class="btn-text-desktop">Agenda</span>
     </button>
-    <button class="flex items-center gap-2 text-xs font-semibold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 px-3.5 py-1.5 rounded-lg transition-all shadow-sm" id="assistantRailToggle" type="button" aria-label="Abrir copiloto clínico" aria-controls="assistantRail" aria-expanded="false">
-      <span class="material-symbols-rounded text-base text-emerald-400">auto_awesome</span>
-      <span class="hidden sm:inline">Copiloto IA</span>
+
+    <!-- Copiloto IA Clinical Button -->
+    <button
+      class="topbar-btn-copilot"
+      id="assistantRailToggle"
+      type="button"
+      aria-label="Abrir copiloto clínico con IA"
+      aria-controls="assistantRail"
+      aria-expanded="false"
+    >
+      <span class="material-symbols-rounded pulse-icon">auto_awesome</span>
+      <span class="copilot-label">Copiloto IA</span>
+      <span class="copilot-active-dot" id="copilotActiveDot" hidden></span>
     </button>
-    <button class="relative flex items-center gap-1.5 p-2 text-slate-300 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors border border-transparent hover:border-white/[0.08]" type="button" aria-label="Abrir bandeja de mensajes" id="notifBtn" data-dashboard-nav="intakes">
-      <span class="material-symbols-rounded text-lg">notifications</span>
-      <span class="hidden xl:inline text-xs font-medium">Bandeja</span>
-      <span id="notifBadge" class="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full" hidden></span>
+
+    <!-- Inbox / Notifications -->
+    <button
+      class="topbar-btn-icon"
+      type="button"
+      aria-label="Bandeja de mensajes y solicitudes"
+      id="notifBtn"
+      data-dashboard-nav="intakes"
+      title="Bandeja de solicitudes"
+    >
+      <span class="material-symbols-rounded">notifications</span>
+      <span id="notifBadge" class="topbar-notif-dot" hidden></span>
     </button>
   </div>
 </header>
@@ -46,13 +93,26 @@
 <script>
   const assistantRailToggle = document.getElementById('assistantRailToggle');
   assistantRailToggle?.addEventListener('click', () => {
-    document.dispatchEvent(new CustomEvent('fisio:open-assistant'));
+    document.dispatchEvent(new CustomEvent('fisio:toggle-assistant'));
   });
 
   const dateLabel = document.getElementById('topbarDateLabel');
   if (dateLabel) {
-    dateLabel.textContent = new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long', day: 'numeric', month: 'short'
+    const formattedDate = new Intl.DateTimeFormat('es-ES', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
     }).format(new Date());
+    // Capitalize first letter
+    dateLabel.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
   }
+
+  // Update assistant toggle aria-expanded and active state
+  document.addEventListener('fisio:assistant-state', ((event: CustomEvent<{ open: boolean }>) => {
+    const isOpen = Boolean(event.detail?.open);
+    if (assistantRailToggle) {
+      assistantRailToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      assistantRailToggle.classList.toggle('is-open', isOpen);
+    }
+  }) as EventListener);
 </script>

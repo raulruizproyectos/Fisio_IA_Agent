@@ -1,36 +1,46 @@
         <!-- === PAGE: PAGOS === -->
         <div class="page-section" data-page="pagos">
+          <!-- 1. HEADER -->
           <div class="page-header-row">
             <div>
+              <span class="view-kicker">CONTROL ECONÓMICO</span>
               <h1 class="page-title"><span class="material-symbols-rounded">payments</span> Finanzas</h1>
-              <p class="page-subtitle">Caja diaria, facturas pendientes y bonos en una vista de trabajo.</p>
+              <p class="page-subtitle">Caja diaria, facturación oficial, bonos de sesiones y resumen de gestoría.</p>
             </div>
             <div class="page-tools">
               <button class="btn-secondary" id="financeInvoiceBtn" type="button">
                 <span class="material-symbols-rounded">receipt_long</span> Emitir factura
               </button>
-              <button class="btn-primary" id="addPagoBtn">
+              <button class="btn-primary" id="addPagoBtn" type="button">
                 <span class="material-symbols-rounded">add_card</span> Registrar pago
               </button>
             </div>
           </div>
+
+          <!-- Secondary Navigation Tabs -->
           <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
 
+          <!-- 2. RESUMEN CONTEXTUAL & ACCIONES OPERATIVAS -->
           <section class="finance-workbench" aria-label="Panel operativo de finanzas">
             <article class="finance-priority-panel">
-              <span class="finance-kicker">Prioridad ahora</span>
+              <span class="finance-kicker">Prioridad de Caja</span>
               <strong id="financePriorityTitle">Cargando caja...</strong>
               <p id="financePriorityMeta">Calculando cobros, facturas pendientes y bonos activos.</p>
               <div class="finance-priority-actions">
-                <button class="btn-primary btn-sm" id="financePrimaryActionBtn" type="button" data-finance-action="pago"><span class="material-symbols-rounded">arrow_forward</span> Registrar pago</button>
-                <button class="btn-ghost btn-sm" id="financeSecondaryActionBtn" type="button" data-finance-action="facturas"><span class="material-symbols-rounded">receipt_long</span> Ver facturas</button>
+                <button class="btn-primary btn-sm" id="financePrimaryActionBtn" type="button" data-finance-action="pago">
+                  <span class="material-symbols-rounded">arrow_forward</span> Registrar pago
+                </button>
+                <button class="btn-ghost btn-sm" id="financeSecondaryActionBtn" type="button" data-finance-action="facturas">
+                  <span class="material-symbols-rounded">receipt_long</span> Ver facturas
+                </button>
               </div>
             </article>
+
             <div class="finance-action-grid">
               <button class="finance-action-card" type="button" id="financeNewPaymentBtn">
                 <span class="material-symbols-rounded">add_card</span>
                 <strong>Registrar cobro</strong>
-                <small>Entrada rapida de caja.</small>
+                <small>Entrada rápida de caja.</small>
               </button>
               <button class="finance-action-card" type="button" id="financeNewInvoiceBtn">
                 <span class="material-symbols-rounded">receipt_long</span>
@@ -44,16 +54,40 @@
               </button>
               <button class="finance-action-card" type="button" id="financeOpenGestoriaBtn">
                 <span class="material-symbols-rounded">account_balance</span>
-                <strong>Gestoria</strong>
-                <small>Resumen para cierre.</small>
+                <strong>Gestoría</strong>
+                <small>Resumen para trimestre.</small>
               </button>
             </div>
           </section>
 
-          <!-- Resumen + filtros compactos -->
+          <!-- 3. KPIS & DESGLOSE FINANCIERO -->
+          <section class="finance-overview-grid" id="financeOverviewGrid" aria-live="polite">
+            <article class="finance-overview-card">
+              <span class="overview-label">Total Cobrado</span>
+              <strong id="financePaidValue">0,00 &euro;</strong>
+              <p id="financePaidMeta">Pagos confirmados del filtro actual.</p>
+            </article>
+            <article class="finance-overview-card finance-overview-card-warn">
+              <span class="overview-label">Facturas Pendientes</span>
+              <strong id="financePendingValue">0,00 &euro;</strong>
+              <p id="financePendingMeta">Importe pendiente de cobro.</p>
+            </article>
+            <article class="finance-overview-card">
+              <span class="overview-label">Bonos Activos</span>
+              <strong id="financeBonosValue">0</strong>
+              <p id="financeBonosMeta">Sesiones contratadas disponibles.</p>
+            </article>
+            <article class="finance-overview-card">
+              <span class="overview-label">Tendencia Mensual</span>
+              <strong id="financeTrendValue">0,00 &euro;</strong>
+              <p id="financeTrendMeta">Comparativa mes actual vs anterior.</p>
+            </article>
+          </section>
+
+          <!-- 4. FILTROS Y RESUMEN COMPACTO -->
           <div class="pagos-toolbar">
             <div class="pagos-summary-row">
-              <div class="pagos-stat"><span class="pagos-stat-label">Total</span><span class="pagos-stat-value" id="pagosTotalImporte">0,00 &euro;</span></div>
+              <div class="pagos-stat"><span class="pagos-stat-label">Total Filtrado</span><span class="pagos-stat-value" id="pagosTotalImporte">0,00 &euro;</span></div>
               <div class="pagos-stat"><span class="pagos-stat-label">Sesiones</span><span class="pagos-stat-value" id="pagosTotalSesiones">0</span></div>
               <div class="pagos-stat pagos-stat-cash"><span class="pagos-stat-label">Efectivo</span><span class="pagos-stat-value" id="pagosTotalEfectivo">0,00 &euro;</span></div>
               <div class="pagos-stat pagos-stat-card"><span class="pagos-stat-label">Tarjeta</span><span class="pagos-stat-value" id="pagosTotalTarjeta">0,00 &euro;</span></div>
@@ -70,35 +104,16 @@
             </div>
           </div>
 
-          <section class="finance-overview-grid" id="financeOverviewGrid" aria-live="polite">
-            <article class="finance-overview-card">
-              <span>Cobrado</span>
-              <strong id="financePaidValue">0,00 &euro;</strong>
-              <p id="financePaidMeta">Pagos del filtro actual.</p>
-            </article>
-            <article class="finance-overview-card finance-overview-card-warn">
-              <span>Pendiente</span>
-              <strong id="financePendingValue">0,00 &euro;</strong>
-              <p id="financePendingMeta">Facturas pendientes de cobro.</p>
-            </article>
-            <article class="finance-overview-card">
-              <span>Bonos activos</span>
-              <strong id="financeBonosValue">0</strong>
-              <p id="financeBonosMeta">Sesiones disponibles.</p>
-            </article>
-            <article class="finance-overview-card">
-              <span>Tendencia mensual</span>
-              <strong id="financeTrendValue">0,00 &euro;</strong>
-              <p id="financeTrendMeta">Comparativa mes actual vs mes anterior.</p>
-            </article>
-          </section>
-
           <p class="form-feedback" id="pagosAvailabilityNotice" hidden></p>
+
+          <!-- 5. LEDGER / TABLA DE PAGOS -->
+          <!-- Mobile Card List (< 768px) -->
           <div class="pagos-mobile-list" id="pagosMobileList">
             <div class="empty-state-sm state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando pagos...</p></div>
           </div>
-          <!-- Tabla de pagos -->
-          <section class="card table-card">
+
+          <!-- Desktop Ledger Table (>= 768px) -->
+          <section class="card table-card pagos-table-container">
             <div class="table-wrap pagos-table-wrap">
               <table>
                 <thead>
