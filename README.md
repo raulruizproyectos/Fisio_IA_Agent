@@ -33,6 +33,7 @@ Los secretos nunca se versionan en Git. En desarrollo local se cargan desde `.en
 - Detalle completo y diagrama ER en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Documentation
+- [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md): Documento integral de seguimiento, post-mortem, matriz E2E y despliegue EasyPanel.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Componentes, seguridad, modelo de datos y flujos críticos.
 - [docs/STATUS.md](docs/STATUS.md): Estado actual del proyecto, componentes estables, prioridades y decisiones.
 - [docs/OPERATIONS.md](docs/OPERATIONS.md): Guía operativa, despliegue en EasyPanel/producción y migraciones.
@@ -40,4 +41,4 @@ Los secretos nunca se versionan en Git. En desarrollo local se cargan desde `.en
 - [AGENTS.md](AGENTS.md): Reglas canónicas obligatorias para agentes IA.
 
 ## Current Status
-El sistema cuenta con backend endurecido (18/18 tests unitarios/integración pasando), verificación estática limpia de Astro (0 errores) y reconstrucción visual v4.0 terminada. Listo para despliegue y aplicación de migración en Supabase Cloud. Ver [docs/STATUS.md](docs/STATUS.md).
+Recuperación funcional P0 completada y verificada E2E (checkpoint `dc6b7fc`, supersedes `a96c502`). Todos los dominios clínicos (Pacientes, Agenda, Copiloto IA, Finanzas, Documentos) cuentan con persistencia real comprobada en Supabase PostgreSQL y pruebas de navegador limpias sin modo demo. Listo para despliegue en EasyPanel. Ver [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md) y [docs/STATUS.md](docs/STATUS.md).
