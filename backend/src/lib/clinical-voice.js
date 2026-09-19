@@ -309,6 +309,7 @@ export async function generateLongitudinalSummary({
   }
 
   const notesContext = sorted.map((n, idx) => {
+    const s = n.structured_data || {};
     const txStr = Array.isArray(s.tratamientos) ? s.tratamientos.join(', ') : (s.tratamientos || 'N/A');
     return `Sesión ${idx + 1} (${n.fecha}): EVA=${s.dolor_eva ?? 'N/A'}. Zona=${s.zona_corporal ?? 'N/A'}. Tx=${txStr}. Nota: ${n.nota}`;
   }).join('\n');
