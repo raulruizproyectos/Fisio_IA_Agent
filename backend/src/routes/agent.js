@@ -1,7 +1,38 @@
 import { Router } from 'express';
+import { supabase } from '../lib/supabase.js';
 
 const router = Router();
 const GENERIC_AGENT_ROUTES = new Set(['register_intake', 'unknown', 'default']);
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY?.trim() || null;
+const COPILOT_MODEL = process.env.OPENAI_COPILOT_MODEL || 'gpt-4o-mini';
+
+async function fetchPatientClinicalContext(patientId) {
+  if (!patientId) return null;
+  try {
+    const { data: patient } = await supabase
+      .from('crm_pacientes')
+      .select('id, nombre, apellidos, resumen_clinico_longitudinal, antecedentes, alergias')
+      .eq('id', patientId)
+      .maybeSingle();
+
+    if (!patient) return null;
+
+    const { data: notes } = await supabase
+      .from('crm_notas_clinicas')
+      .select('id, fecha, session_datetime, dolor_eva, zona_corporal, nota, structured_data')
+      .eq('paciente_id', patientId)
+      .order('session_datetime', { ascending: false })
+      .limit(4);
+
+    return {
+      patient,
+      notes: notes || [],
+    };
+  } catch (err) {
+    console.error('Error fetching clinical context for Copilot:', err);
+    return null;
+  }
+}
 
 export const pickValue = (obj, ...keys) => {
   for (const key of keys) {
@@ -14,7 +45,7 @@ export const pickValue = (obj, ...keys) => {
 
 export const isMissingAgentWebhookConfig = () => !process.env.N8N_AGENT_WEBHOOK_URL;
 
-export const buildAgentFallbackReply = (payload = {}) => {
+export const buildAgentFallbackReply = (payload = {}, clinicalContext = null) => {
   const text = String(payload.text || payload.message_text || payload.texto_mensaje || '').trim();
   let reply = 'Mensaje recibido. Queda pendiente de revision clinica.';
   let route = 'register_intake';
@@ -22,9 +53,18 @@ export const buildAgentFallbackReply = (payload = {}) => {
 
   const mentionsAppointment = /cita|agendar|agenda|reservar|reserva|hueco|hora|calendario/i.test(text);
   const mentionsExercise = /ejercicio|ejercicios|plan|tabla|rutina|pauta|fortalecimiento|rehabilitacion|estiramiento/i.test(text);
-  const mentionsSymptoms = /dolor|sintoma|sintomas|molestia|lesion|seguimiento|evolucion/i.test(text);
+  const mentionsEvolution = /evolucion|progreso|resumen|historial|como va|dolor/i.test(text);
 
-  if (mentionsAppointment) {
+  if (mentionsEvolution && clinicalContext?.patient) {
+    const p = clinicalContext.patient;
+    const name = `${p.nombre || ''} ${p.apellidos || ''}`.trim() || 'Paciente';
+    const summary = p.resumen_clinico_longitudinal || 'Sin resumen longitudinal previo.';
+    const latestNote = clinicalContext.notes?.[0];
+    const evaText = latestNote?.dolor_eva !== null && latestNote?.dolor_eva !== undefined ? ` (EVA ${latestNote.dolor_eva}/10)` : '';
+    reply = `Evolución clínica de ${name}:\n\n${summary}\n\nÚltima sesión${evaText}: ${latestNote?.nota || 'Sin notas recientes'}.`;
+    route = 'evolution_summary';
+    confidence = 0.9;
+  } else if (mentionsAppointment) {
     reply = 'Solicitud de cita recibida. Voy a tramitarla.';
     route = 'appointment';
     confidence = 0.8;
@@ -32,14 +72,10 @@ export const buildAgentFallbackReply = (payload = {}) => {
     reply = 'Solicitud de informe de ejercicios recibida. Preparando pautas con imagenes y procedimiento.';
     route = 'exercise';
     confidence = 0.8;
-  } else if (mentionsSymptoms) {
-    reply = 'Sintomas registrados. Caso en cola para revision del fisioterapeuta.';
-    route = 'session_note';
-    confidence = 0.7;
   } else if (text.length > 0) {
-    reply = 'Contexto recibido. Puedo preparar un informe de ejercicios basado en sintomas.';
-    route = 'unknown';
-    confidence = 0.35;
+    reply = 'Contexto clínico recibido. Puedes consultar la evolución, notas de sesión o prescribir planes de recuperación.';
+    route = 'session_note';
+    confidence = 0.6;
   }
 
   return {
@@ -161,10 +197,74 @@ export const resolveAgentConversation = async ({
     timestamp: new Date().toISOString(),
   };
 
+  const clinicalContext = patientId ? await fetchPatientClinicalContext(patientId) : null;
+
+  // Direct OpenAI Copilot for clinical queries when API key is available
+  if (OPENAI_API_KEY && (clinicalContext || /evolucion|paciente|dolor|ejercicio|tratamiento|sintoma/i.test(payload.text))) {
+    try {
+      let systemPrompt = `Eres el Copiloto Clínico de Fisio Clinical.
+Asistes al fisioterapeuta colegiado con rigor técnico, concisión y terminología médica precisa.
+NUNCA inventes datos no documentados. Si no hay información de un dato, dilo claramente.`;
+
+      if (clinicalContext?.patient) {
+        const p = clinicalContext.patient;
+        const pName = `${p.nombre || ''} ${p.apellidos || ''}`.trim() || 'Paciente';
+        systemPrompt += `\n\nDATOS DEL PACIENTE SELECCIONADO:
+- Nombre: ${pName}
+- Antecedentes: ${p.antecedentes || 'Sin antecedentes relevantes'}
+- Alergias: ${p.alergias || 'No declaradas'}
+- Resumen Longitudinal (Capa 2): ${p.resumen_clinico_longitudinal || 'Sin resumen longitudinal previo.'}
+- Sesiones Recientes (Capa 1):
+${clinicalContext.notes.map((n, i) => `  ${i + 1}. [${n.session_datetime || n.fecha}] EVA: ${n.dolor_eva ?? '-'} | Zona: ${n.zona_corporal || '-'} | Nota: ${n.nota}`).join('\n') || '  Sin notas previas'}`;
+      }
+
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: COPILOT_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: payload.text },
+          ],
+          temperature: 0.2,
+          max_tokens: 600,
+        }),
+      });
+
+      if (aiResponse.ok) {
+        const aiData = await aiResponse.json();
+        const replyText = aiData?.choices?.[0]?.message?.content?.trim();
+        if (replyText) {
+          return {
+            data: {
+              ok: true,
+              role: payload.role,
+              route: 'clinical_assistant',
+              confidence: 0.95,
+              reply_text: replyText,
+              intent_hint: 'clinical_assistant',
+              normalized_payload: payload,
+              received: payload,
+            },
+            source: 'clinical_engine',
+            fallback_used: false,
+            n8n_unreachable: false,
+          };
+        }
+      }
+    } catch (aiErr) {
+      console.error('Error calling direct clinical copilot OpenAI:', aiErr);
+    }
+  }
+
   if (isMissingAgentWebhookConfig()) {
     return {
-      data: buildAgentFallbackReply(payload),
-      source: 'n8n_agent',
+      data: buildAgentFallbackReply(payload, clinicalContext),
+      source: 'clinical_copilot',
       fallback_used: true,
       n8n_unreachable: true,
       fallback_reason: 'missing_webhook_config',

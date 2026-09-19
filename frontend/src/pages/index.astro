@@ -30,7 +30,7 @@ import DocumentosView from '../components/views/DocumentosView.astro';
 import ConfigView from '../components/views/ConfigView.astro';
 ---
 
-<Layout title="Fisio IA Agent - CRM Clinico Inteligente">
+<Layout title="Fisio Clinical - CRM y Gestion Clinica">
   <a class="skip-link" href="#mainContent">Saltar al contenido principal</a>
   <div class="app-boot" id="appBoot" role="status" aria-live="polite">
     <div class="app-boot-mark"><span class="material-symbols-rounded">medical_services</span></div>
@@ -866,8 +866,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       primaryIcon: 'electric_bolt',
       action: 'exercise',
       title: 'Nuevo plan guiado',
-      summary: 'Genera una propuesta inicial con plan IA, PDF e historial listos desde un briefing corto.',
-      outputLabel: 'Salida: plan IA + PDF',
+      summary: 'Genera una propuesta inicial con plan clínico, PDF e historial listos desde un briefing corto.',
+      outputLabel: 'Salida: plan clínico + PDF',
       requirementLabel: 'Requiere: paciente + objetivo',
       tip: 'Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.',
     },
@@ -3119,7 +3119,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       }
       updateExercisePdfButton();
       if (retriesUsed > 0) {
-        addMessage(`Motor IA respondio tras ${retriesUsed} reintento(s).`, 'agent');
+        addMessage(`Asistente clínico respondió tras ${retriesUsed} reintento(s).`, 'agent');
       }
       setAgentStatus(true);
       updateExercisePdfButton();
@@ -4324,7 +4324,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         templateHistoryBody,
         6,
         'inventory_2',
-        'Aun no hay planes IA registrados en esta biblioteca. Genera uno desde el copiloto o entra en un paciente para empezar.',
+        'Aun no hay planes clínicos registrados en esta biblioteca. Genera uno desde el copiloto o entra en un paciente para empezar.',
       );
       return;
     }
@@ -4338,7 +4338,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         : ['generada', 'enviada', 'aprobada', 'completada'].includes(plan?.status)
           ? 'aprobado'
           : 'pendiente';
-      const note = plan?.selection_rationale || plan?.symptom_summary || 'Plan de ejercicios IA disponible para consulta.';
+      const note = plan?.selection_rationale || plan?.symptom_summary || 'Plan de ejercicios disponible para consulta.';
       const archivedCount = Number(plan?.archived_reports_count || 0);
       const deliveryCopy = archivedCount
         ? `${archivedCount} archivada${archivedCount === 1 ? '' : 's'}${plan?.latest_report_format ? ` - ${String(plan.latest_report_format).toUpperCase()}` : ''}${plan?.latest_report_source ? ` - ${plan.latest_report_source}` : ''}`
@@ -5267,13 +5267,13 @@ import ConfigView from '../components/views/ConfigView.astro';
         </button>
         <button class="btn-secondary" type="button" data-appt-action="exercise-report" data-patient-id="${patientAttr}" data-patient-name="${patientNameAttr}" ${patientId ? '' : 'disabled'}>
           <span class="material-symbols-rounded">exercise</span>
-          Preparar informe IA de ejercicios
+          Preparar informe clínico de ejercicios
         </button>
         ${statusActions.join('')}
       </section>
       <section class="drawer-clinical-note">
         <span class="material-symbols-rounded">psychology</span>
-        <p>Rumbo nuevo: la cita abre contexto, la ficha concentra el caso y el agente IA convierte sintomas en informe profesional con PDF y entrega trazable.</p>
+        <p>Rumbo nuevo: la cita abre contexto, la ficha concentra el caso y el asistente clínico convierte síntomas en informe profesional con PDF y entrega trazable.</p>
       </section>
     `;
 
@@ -5850,7 +5850,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const getHistoryPieceCopy = (label: string) => {
       if (label === 'datos del paciente') return 'Ficha resumida no disponible';
       if (label === 'notas clinicas') return 'Notas clinicas no disponibles';
-      if (label === 'planes de ejercicios') return 'Planes IA no disponibles';
+      if (label === 'planes de ejercicios') return 'Planes clínicos no disponibles';
       if (label === 'Telegram') return 'Telegram no comprobado';
       return `${label} no disponible`;
     };
@@ -7451,7 +7451,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               ? 'Progresar o mantener'
               : 'Archivar entrega';
       const adjustmentMeta = !recommendationSummary.totalPlans
-        ? 'Aun no hay plan IA para este caso.'
+        ? 'Aun no hay plan clínico para este caso.'
         : recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps
           ? 'El paciente ya recibio el plan. Falta respuesta.'
           : painTrend.tone === 'alert'
@@ -7534,7 +7534,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const decisions = [
       unavailableModules.length ? { tone: 'alert', title: 'Revisar migraciones pendientes', body: `La ficha esta operativa en modo parcial. Falta recuperar: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.` } : null,
-      recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports ? { tone: 'warm', title: 'Archivar la entrega del plan', body: 'Ya existe un plan IA, pero aun no hay constancia de entrega o PDF archivado en el historial.' } : null,
+      recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports ? { tone: 'warm', title: 'Archivar la entrega del plan', body: 'Ya existe un plan clínico, pero aun no hay constancia de entrega o PDF archivado en el historial.' } : null,
       recommendationSummary.totalPlans && !recommendationSummary.totalFollowUps ? { tone: 'ready', title: 'Registrar respuesta del paciente', body: 'El plan domiciliario ya existe. Falta dejar adherencia, dolor o ajustes para continuidad real.' } : null,
       !citasUnavailable && !citas.length ? { tone: 'urgent', title: 'Programar la primera sesion', body: 'Todavia no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
       !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoracion y evolucion', body: 'Ya existe actividad en agenda, pero falta una nota clinica que deje criterio terapeutico y siguiente paso.' } : null,
@@ -7579,7 +7579,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       primaryAction = 'historial';
       primaryLabel = 'Revisar entregas';
       nextTitle = 'Archivar la entrega domiciliaria';
-      nextMeta = 'Hay un plan IA generado y conviene dejar trazabilidad del envio o PDF en el historial.';
+      nextMeta = 'Hay un plan clínico generado y conviene dejar trazabilidad del envio o PDF en el historial.';
     } else if (!notasUnavailable && latestEva != null && latestEva >= 7) {
       primaryAction = 'agente';
       primaryLabel = 'Checklist visita';
@@ -7595,7 +7595,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (fichaOpsNextMeta) fichaOpsNextMeta.textContent = nextMeta;
     if (fichaOpsPlanTitle) fichaOpsPlanTitle.textContent = recommendationSummary.totalPlans
       ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'} activo${recommendationSummary.totalPlans === 1 ? '' : 's'}`
-      : 'Sin plan IA';
+      : 'Sin plan clínico';
     if (fichaOpsPlanMeta) fichaOpsPlanMeta.textContent = recommendationSummary.totalPlans
       ? recommendationSummary.totalFollowUps
         ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con feedback registrado.`
@@ -7638,7 +7638,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         { done: Boolean(patient?.email || patient?.telefono), title: 'Contacto localizado', body: patient?.email || patient?.telefono ? 'El caso ya tiene una via de contacto guardada.' : 'Falta email o telefono para continuidad.' },
         { done: !citasUnavailable && Boolean(citas.length), title: 'Agenda registrada', body: citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay citas asociadas al paciente.' },
         { done: !notasUnavailable && Boolean(notas.length), title: 'Seguimiento documentado', body: notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Sin notas de evolucion.' },
-        { done: Boolean(recommendationSummary.totalPlans), title: 'Plan domiciliario generado', body: recommendationSummary.totalPlans ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'} IA activo${recommendationSummary.totalPlans === 1 ? '' : 's'} en historial.` : 'Aun no hay plan domiciliario generado para este caso.' },
+        { done: Boolean(recommendationSummary.totalPlans), title: 'Plan domiciliario generado', body: recommendationSummary.totalPlans ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'} activo${recommendationSummary.totalPlans === 1 ? '' : 's'} en historial.` : 'Aun no hay plan domiciliario generado para este caso.' },
         { done: Boolean(recommendationSummary.totalFollowUps), title: 'Feedback del plan', body: recommendationSummary.totalFollowUps ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con adherencia o dolor registrado.` : 'Falta registrar la respuesta del paciente al plan domiciliario.' },
         { done: !pagosUnavailable && Boolean(pagos.length), title: 'Cobro vinculado', body: pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
       ];
@@ -7788,7 +7788,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       patientId: fichaPatientId,
       patientName: fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}),
       mode: 'new-plan',
-      seedText: 'Generar o progresar informe IA de ejercicios desde la ficha del paciente.',
+      seedText: 'Generar o progresar informe clínico de ejercicios desde la ficha del paciente.',
     });
   });
 
@@ -7812,7 +7812,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       patientId: fichaPatientId,
       patientName: fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}),
       mode: 'new-plan',
-      seedText: 'Preparar informe IA de ejercicios como siguiente accion del caso.',
+      seedText: 'Preparar informe clínico de ejercicios como siguiente accion del caso.',
     });
   });
 
@@ -8097,9 +8097,70 @@ import ConfigView from '../components/views/ConfigView.astro';
   const renderFichaNotas = (notas: any[]) => {
     if (!fichaNotasTimeline) return;
     const notasUnavailable = isFichaModuleUnavailable('notas');
-    const notasOrdenadas = [...notas].sort((a: any, b: any) => new Date(b.fecha || '').getTime() - new Date(a.fecha || '').getTime());
+    const notasOrdenadas = [...notas].sort((a: any, b: any) => new Date(b.session_datetime || b.fecha || '').getTime() - new Date(a.session_datetime || a.fecha || '').getTime());
     const latestNote = notasOrdenadas[0] || null;
     const highPainCount = notasOrdenadas.filter((n: any) => Number(n?.dolor_eva || 0) >= 7).length;
+
+    // 1. Memoria Longitudinal (Capa 2)
+    const fichaLongitudinalCard = document.getElementById('fichaLongitudinalCard');
+    const fichaLongitudinalSummaryText = document.getElementById('fichaLongitudinalSummaryText');
+    const fichaLongitudinalUpdated = document.getElementById('fichaLongitudinalUpdated');
+    const longSummary = fichaData?.paciente?.resumen_clinico_longitudinal || null;
+    if (longSummary && fichaLongitudinalCard && fichaLongitudinalSummaryText) {
+      fichaLongitudinalCard.classList.remove('hidden');
+      fichaLongitudinalSummaryText.textContent = longSummary;
+      if (fichaLongitudinalUpdated) {
+        fichaLongitudinalUpdated.textContent = fichaData?.paciente?.resumen_actualizado_en
+          ? `Actualizado: ${fmtDate(fichaData.paciente.resumen_actualizado_en)}`
+          : 'Actualizado recientemente';
+      }
+    } else if (fichaLongitudinalCard) {
+      fichaLongitudinalCard.classList.add('hidden');
+    }
+
+    // 2. Tendencia de dolor (EVA)
+    const fichaPainTrendCard = document.getElementById('fichaPainTrendCard');
+    const fichaPainTrendBadge = document.getElementById('fichaPainTrendBadge');
+    const fichaPainTrendTimeline = document.getElementById('fichaPainTrendTimeline');
+    const evaNotes = notasOrdenadas
+      .filter((n: any) => n.dolor_eva !== null && n.dolor_eva !== undefined)
+      .slice(0, 8)
+      .reverse();
+
+    if (evaNotes.length > 0 && fichaPainTrendCard && fichaPainTrendTimeline) {
+      fichaPainTrendCard.classList.remove('hidden');
+      const latestEva = Number(evaNotes[evaNotes.length - 1].dolor_eva);
+      const prevEva = evaNotes.length > 1 ? Number(evaNotes[evaNotes.length - 2].dolor_eva) : null;
+      let badgeText = `Actual: ${latestEva}/10`;
+      let badgeClass = 'bg-slate-800 text-slate-200';
+      if (prevEva !== null) {
+        const diff = latestEva - prevEva;
+        if (diff < 0) {
+          badgeText = `Mejoría (-${Math.abs(diff)} pts EVA)`;
+          badgeClass = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        } else if (diff > 0) {
+          badgeText = `Aumento (+${diff} pts EVA)`;
+          badgeClass = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        } else {
+          badgeText = 'Estable (sin cambio EVA)';
+          badgeClass = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        }
+      }
+      if (fichaPainTrendBadge) {
+        fichaPainTrendBadge.textContent = badgeText;
+        fichaPainTrendBadge.className = `text-xs px-2.5 py-1 rounded-full font-medium ${badgeClass}`;
+      }
+      fichaPainTrendTimeline.innerHTML = evaNotes.map((pt: any) => `
+        <div class="flex flex-col items-center p-2.5 rounded-xl bg-[#0d1522] border border-white/5 min-w-[70px]">
+          <span class="text-[10px] text-slate-400 mb-1">${fmtDate(pt.session_datetime || pt.fecha)}</span>
+          <span class="text-sm font-bold ${evaClass(pt.dolor_eva)}">EVA ${pt.dolor_eva}</span>
+          <span class="text-[10px] text-slate-500 truncate max-w-[60px]">${escapeHtml(zonaLabels[pt.zona_corporal] || pt.zona_corporal || '')}</span>
+        </div>
+      `).join('');
+    } else if (fichaPainTrendCard) {
+      fichaPainTrendCard.classList.add('hidden');
+    }
+
     if (fichaNotasSummary) {
       fichaNotasSummary.innerHTML = notasUnavailable
         ? `<span class="ficha-summary-chip">Modulo no disponible</span>`
@@ -8120,7 +8181,22 @@ import ConfigView from '../components/views/ConfigView.astro';
       const zonaLabel = zonaLabels[n.zona_corporal] || n.zona_corporal || '';
       const evaHtml = n.dolor_eva != null ? `<span class="ficha-nota-eva ${evaClass(n.dolor_eva)}">EVA ${n.dolor_eva}/10</span>` : '';
       const zonaHtml = zonaLabel ? `<span class="ficha-nota-zona">${escapeHtml(zonaLabel)}</span>` : '';
+      const voiceBadge = n.source === 'voice' || n.audio_processed ? `<span class="ficha-nota-zona bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="material-symbols-rounded text-xs align-middle">mic</span> Voz</span>` : '';
       const pruebasHtml = n.pruebas_realizadas ? `<div class="ficha-nota-pruebas"><strong>Pruebas</strong><p>${escapeHtml(n.pruebas_realizadas)}</p></div>` : '';
+      
+      let structuredHtml = '';
+      if (n.structured_data && typeof n.structured_data === 'object') {
+        const sd = n.structured_data;
+        const items = [];
+        if (sd.movilidad) items.push(`<strong>Movilidad:</strong> ${escapeHtml(sd.movilidad)}`);
+        if (sd.tratamientos) items.push(`<strong>Tratamiento:</strong> ${escapeHtml(sd.tratamientos)}`);
+        if (sd.ejercicios) items.push(`<strong>Pauta:</strong> ${escapeHtml(sd.ejercicios)}`);
+        if (sd.proximo_paso) items.push(`<strong>Próximo paso:</strong> ${escapeHtml(sd.proximo_paso)}`);
+        if (items.length > 0) {
+          structuredHtml = `<div class="ficha-nota-pruebas mt-2 bg-white/[0.02] border border-white/5 p-2.5 rounded-lg text-xs space-y-1 text-slate-300">${items.map(it => `<div>${it}</div>`).join('')}</div>`;
+        }
+      }
+
       return `<div class="ficha-nota-card">
         <div class="ficha-nota-actions">
           <button title="Editar" data-action="edit-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded ficha-note-action-icon">edit</span></button>
@@ -8128,15 +8204,303 @@ import ConfigView from '../components/views/ConfigView.astro';
         </div>
         <div class="ficha-nota-header">
           <div class="ficha-nota-headline">
-            <span class="ficha-nota-date">${fmtDate(n.fecha)}</span>
-            <div class="ficha-nota-chips">${zonaHtml}${evaHtml}</div>
+            <span class="ficha-nota-date">${fmtDate(n.session_datetime || n.fecha)}</span>
+            <div class="ficha-nota-chips">${voiceBadge}${zonaHtml}${evaHtml}</div>
           </div>
         </div>
         <div class="ficha-nota-text">${escapeHtml(n.nota)}</div>
         ${pruebasHtml}
+        ${structuredHtml}
       </div>`;
     }).join('');
   };
+
+  // ===================== VOICE SESSION NOTES & CLINICAL SYNTHESIS =====================
+  const voiceSessionModal = document.getElementById('voiceSessionModal');
+  const btnVoiceSessionNote = document.getElementById('btnVoiceSessionNote');
+  const voiceSessionModalClose = document.getElementById('voiceSessionModalClose');
+  const voiceModeAudioBtn = document.getElementById('voiceModeAudioBtn');
+  const voiceModeTextBtn = document.getElementById('voiceModeTextBtn');
+  const voiceAudioSection = document.getElementById('voiceAudioSection');
+  const voiceTextSection = document.getElementById('voiceTextSection');
+  const voiceRecordToggleBtn = document.getElementById('voiceRecordToggleBtn');
+  const voiceRecordIcon = document.getElementById('voiceRecordIcon');
+  const voiceRecordTimer = document.getElementById('voiceRecordTimer');
+  const voiceRecordStatus = document.getElementById('voiceRecordStatus');
+  const voiceTranscriptInput = document.getElementById('voiceTranscriptInput') as HTMLTextAreaElement | null;
+  const voiceCaptureFeedback = document.getElementById('voiceCaptureFeedback');
+  const btnSynthesizeVoiceNote = document.getElementById('btnSynthesizeVoiceNote');
+  const voiceStepCapture = document.getElementById('voiceStepCapture');
+  const voiceStepReview = document.getElementById('voiceStepReview');
+  const btnBackToCapture = document.getElementById('btnBackToCapture');
+  const voiceReviewSummary = document.getElementById('voiceReviewSummary') as HTMLTextAreaElement | null;
+  const voiceReviewEva = document.getElementById('voiceReviewEva') as HTMLInputElement | null;
+  const voiceReviewEvaCompare = document.getElementById('voiceReviewEvaCompare');
+  const voiceReviewZone = document.getElementById('voiceReviewZone') as HTMLSelectElement | null;
+  const voiceReviewMobility = document.getElementById('voiceReviewMobility') as HTMLInputElement | null;
+  const voiceReviewEvolution = document.getElementById('voiceReviewEvolution') as HTMLSelectElement | null;
+  const voiceReviewTreatment = document.getElementById('voiceReviewTreatment') as HTMLInputElement | null;
+  const voiceReviewExercises = document.getElementById('voiceReviewExercises') as HTMLInputElement | null;
+  const voiceReviewNextStep = document.getElementById('voiceReviewNextStep') as HTMLInputElement | null;
+  const voiceReviewCancelBtn = document.getElementById('voiceReviewCancelBtn');
+  const voiceReviewConfirmBtn = document.getElementById('voiceReviewConfirmBtn');
+
+  let mediaRecorder: MediaRecorder | null = null;
+  let audioChunks: Blob[] = [];
+  let recordTimerInterval: any = null;
+  let recordSeconds = 0;
+  let recordedAudioBase64: string | null = null;
+  let isRecording = false;
+
+  const openVoiceSessionModal = () => {
+    if (!voiceSessionModal) return;
+    recordedAudioBase64 = null;
+    audioChunks = [];
+    isRecording = false;
+    clearInterval(recordTimerInterval);
+    if (voiceRecordTimer) voiceRecordTimer.textContent = '00:00';
+    if (voiceRecordStatus) voiceRecordStatus.textContent = 'Pulsa para iniciar la grabación de la sesión';
+    if (voiceRecordIcon) voiceRecordIcon.textContent = 'mic';
+    if (voiceRecordToggleBtn) {
+      voiceRecordToggleBtn.classList.remove('bg-rose-500', 'animate-pulse');
+      voiceRecordToggleBtn.classList.add('bg-emerald-500');
+    }
+    if (voiceTranscriptInput) voiceTranscriptInput.value = '';
+    if (voiceCaptureFeedback) voiceCaptureFeedback.hidden = true;
+
+    // Reset to step 1
+    voiceStepCapture?.classList.remove('hidden');
+    voiceStepReview?.classList.add('hidden');
+
+    voiceSessionModal.classList.remove('opacity-0', 'pointer-events-none');
+    voiceSessionModal.classList.add('opacity-100', 'pointer-events-auto');
+    voiceSessionModal.setAttribute('aria-hidden', 'false');
+  };
+
+  const closeVoiceSessionModal = () => {
+    if (!voiceSessionModal) return;
+    if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+      try { mediaRecorder.stop(); } catch (_) {}
+    }
+    clearInterval(recordTimerInterval);
+    isRecording = false;
+    voiceSessionModal.classList.remove('opacity-100', 'pointer-events-auto');
+    voiceSessionModal.classList.add('opacity-0', 'pointer-events-none');
+    voiceSessionModal.setAttribute('aria-hidden', 'true');
+  };
+
+  btnVoiceSessionNote?.addEventListener('click', openVoiceSessionModal);
+  voiceSessionModalClose?.addEventListener('click', closeVoiceSessionModal);
+  voiceReviewCancelBtn?.addEventListener('click', closeVoiceSessionModal);
+
+  // Switch between audio and text modes
+  voiceModeAudioBtn?.addEventListener('click', () => {
+    voiceModeAudioBtn.classList.add('bg-emerald-500', 'text-white');
+    voiceModeAudioBtn.classList.remove('text-slate-400');
+    voiceModeTextBtn?.classList.remove('bg-emerald-500', 'text-white');
+    voiceModeTextBtn?.classList.add('text-slate-400');
+    if (voiceAudioSection) voiceAudioSection.hidden = false;
+  });
+
+  voiceModeTextBtn?.addEventListener('click', () => {
+    voiceModeTextBtn.classList.add('bg-emerald-500', 'text-white');
+    voiceModeTextBtn.classList.remove('text-slate-400');
+    voiceModeAudioBtn?.classList.remove('bg-emerald-500', 'text-white');
+    voiceModeAudioBtn?.classList.add('text-slate-400');
+    if (voiceAudioSection) voiceAudioSection.hidden = true;
+    voiceTranscriptInput?.focus();
+  });
+
+  // Audio recording toggle
+  voiceRecordToggleBtn?.addEventListener('click', async () => {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          clearInterval(recordTimerInterval);
+          if (voiceRecordStatus) voiceRecordStatus.textContent = 'Procesando audio con Whisper...';
+          const blob = new Blob(audioChunks, { type: mimeType });
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64 = (reader.result as string)?.split(',')[1] || '';
+            recordedAudioBase64 = base64;
+            try {
+              const res = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/voice/transcribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio_base64: base64, mime_type: mimeType }),
+              });
+              if (res?.transcript && voiceTranscriptInput) {
+                voiceTranscriptInput.value = res.transcript;
+                if (voiceRecordStatus) voiceRecordStatus.textContent = 'Audio transcrito correctamente.';
+              }
+            } catch (err: any) {
+              if (voiceRecordStatus) voiceRecordStatus.textContent = 'Error en transcripción. Puedes escribir manualmente.';
+              showToast('Error al transcribir audio: ' + (err?.message || ''), 'error');
+            }
+          };
+          reader.readAsDataURL(blob);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        recordSeconds = 0;
+        if (voiceRecordTimer) voiceRecordTimer.textContent = '00:00';
+        recordTimerInterval = setInterval(() => {
+          recordSeconds++;
+          const mins = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+          const secs = String(recordSeconds % 60).padStart(2, '0');
+          if (voiceRecordTimer) voiceRecordTimer.textContent = `${mins}:${secs}`;
+        }, 1000);
+
+        if (voiceRecordIcon) voiceRecordIcon.textContent = 'stop';
+        if (voiceRecordStatus) voiceRecordStatus.textContent = 'Grabando sesión... Pulsa para detener y transcribir.';
+        voiceRecordToggleBtn.classList.remove('bg-emerald-500');
+        voiceRecordToggleBtn.classList.add('bg-rose-500', 'animate-pulse');
+      } catch (err: any) {
+        if (voiceRecordStatus) voiceRecordStatus.textContent = 'Permiso de micrófono denegado. Escribe las notas abajo.';
+        showToast('Acceso al micrófono denegado.', 'error');
+      }
+    } else {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      isRecording = false;
+      if (voiceRecordIcon) voiceRecordIcon.textContent = 'mic';
+      voiceRecordToggleBtn.classList.remove('bg-rose-500', 'animate-pulse');
+      voiceRecordToggleBtn.classList.add('bg-emerald-500');
+    }
+  });
+
+  // Synthesize Note
+  btnSynthesizeVoiceNote?.addEventListener('click', async () => {
+    const text = voiceTranscriptInput?.value?.trim() || '';
+    if (!text) {
+      if (voiceCaptureFeedback) {
+        voiceCaptureFeedback.hidden = false;
+        voiceCaptureFeedback.textContent = 'Introduce o dicta texto antes de sintetizar la nota.';
+      }
+      return;
+    }
+    if (voiceCaptureFeedback) voiceCaptureFeedback.hidden = true;
+
+    try {
+      btnSynthesizeVoiceNote.setAttribute('disabled', 'true');
+      btnSynthesizeVoiceNote.innerHTML = '<span class="material-symbols-rounded animate-spin">refresh</span> Sintetizando nota clínica...';
+
+      const synthRes = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/voice/synthesize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          paciente_id: fichaPatientId,
+        }),
+      });
+
+      const preview = synthRes?.note_preview || {};
+      if (voiceReviewSummary) voiceReviewSummary.value = preview.clinical_summary || text;
+      if (voiceReviewEva) voiceReviewEva.value = preview.dolor_eva !== null && preview.dolor_eva !== undefined ? String(preview.dolor_eva) : '';
+      if (voiceReviewEvaCompare) {
+        voiceReviewEvaCompare.textContent = preview.dolor_eva_anterior !== null && preview.dolor_eva_anterior !== undefined
+          ? `(Sesión anterior: ${preview.dolor_eva_anterior}/10)`
+          : '';
+      }
+      if (voiceReviewZone) voiceReviewZone.value = preview.zona_corporal || '';
+      if (voiceReviewMobility) voiceReviewMobility.value = preview.movilidad || '';
+      if (voiceReviewEvolution) voiceReviewEvolution.value = preview.evolucion || 'favorable';
+      if (voiceReviewTreatment) voiceReviewTreatment.value = Array.isArray(preview.tratamientos) ? preview.tratamientos.join(', ') : (preview.tratamientos || '');
+      if (voiceReviewExercises) voiceReviewExercises.value = Array.isArray(preview.ejercicios) ? preview.ejercicios.join(', ') : (preview.ejercicios || '');
+      if (voiceReviewNextStep) voiceReviewNextStep.value = preview.proximo_paso || '';
+
+      voiceStepCapture?.classList.add('hidden');
+      voiceStepReview?.classList.remove('hidden');
+    } catch (err: any) {
+      showToast('Error al sintetizar nota: ' + (err?.message || ''), 'error');
+    } finally {
+      btnSynthesizeVoiceNote?.removeAttribute('disabled');
+      btnSynthesizeVoiceNote!.innerHTML = '<span class="material-symbols-rounded">clinical_notes</span> Sintetizar Nota Clínica Estructurada';
+    }
+  });
+
+  btnBackToCapture?.addEventListener('click', () => {
+    voiceStepReview?.classList.add('hidden');
+    voiceStepCapture?.classList.remove('hidden');
+  });
+
+  // Confirm and save session note
+  voiceReviewConfirmBtn?.addEventListener('click', async () => {
+    if (!fichaPatientId) return;
+    const summary = voiceReviewSummary?.value?.trim() || '';
+    if (!summary) {
+      showToast('El resumen clínico es requerido.', 'error');
+      return;
+    }
+
+    try {
+      voiceReviewConfirmBtn?.setAttribute('disabled', 'true');
+      voiceReviewConfirmBtn!.innerHTML = '<span class="material-symbols-rounded animate-spin">refresh</span> Guardando...';
+
+      const savePayload = {
+        paciente_id: fichaPatientId,
+        fecha: new Date().toISOString().slice(0, 10),
+        session_datetime: new Date().toISOString(),
+        zona_corporal: voiceReviewZone?.value || null,
+        dolor_eva: voiceReviewEva?.value !== '' ? Number(voiceReviewEva?.value) : null,
+        nota: summary,
+        pruebas_realizadas: voiceReviewMobility?.value?.trim() || null,
+        structured_data: {
+          movilidad: voiceReviewMobility?.value?.trim() || '',
+          tratamientos: voiceReviewTreatment?.value?.trim() || '',
+          ejercicios: voiceReviewExercises?.value?.trim() || '',
+          evolucion: voiceReviewEvolution?.value || '',
+          proximo_paso: voiceReviewNextStep?.value?.trim() || '',
+        },
+        audio_processed: Boolean(recordedAudioBase64),
+        source: recordedAudioBase64 ? 'voice' : 'text',
+      };
+
+      await fetchJson(`${BACKEND_BASE}/api/notas-clinicas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(savePayload),
+      });
+
+      closeVoiceSessionModal();
+
+      // Refresh ficha data
+      const [notasPayload, evolutionPayload] = await Promise.all([
+        fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`),
+        fetchJson(`${BACKEND_BASE}/api/notas-clinicas/evolution/${fichaPatientId}`).catch(() => null),
+      ]);
+
+      if (fichaData) {
+        fichaData.notas = notasPayload.data || [];
+        if (evolutionPayload?.longitudinal_summary) {
+          fichaData.paciente.resumen_clinico_longitudinal = evolutionPayload.longitudinal_summary;
+          fichaData.paciente.resumen_actualizado_en = evolutionPayload.longitudinal_updated_at;
+        }
+      }
+
+      renderFichaHero(fichaData || {});
+      renderFichaWorkspace(fichaData || {});
+      renderFichaNotas(fichaData?.notas || []);
+      showToast('Sesión clínica confirmada y guardada en historial.', 'success');
+    } catch (err: any) {
+      showToast('Error al guardar sesión: ' + (err?.message || ''), 'error');
+    } finally {
+      voiceReviewConfirmBtn?.removeAttribute('disabled');
+      voiceReviewConfirmBtn!.innerHTML = '<span class="material-symbols-rounded">check</span> Confirmar y Guardar en Historial';
+    }
+  });
 
   // Nota actions (add / edit / delete)
   fichaAddNota?.addEventListener('click', () => {

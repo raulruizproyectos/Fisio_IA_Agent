@@ -1,7 +1,7 @@
 # Contributing Guide
 
 ## Objetivo
-Mantener Fisio IA Agent estable, seguro y trazable entre frontend, backend, n8n y Supabase.
+Mantener Fisio Clinical estable, seguro y trazable entre frontend, backend, n8n y Supabase.
 
 ## Reglas operativas
 - Leer siempre `AGENTS.md` antes de realizar cambios en el repositorio.

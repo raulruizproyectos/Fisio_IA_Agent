@@ -1,13 +1,13 @@
 # Changelog
 
-Registro consolidado de checkpoints técnicos y funcionales del proyecto Fisio IA Agent.
+Registro consolidado de checkpoints técnicos y funcionales del proyecto Fisio Clinical.
 
 ## [checkpoint-2026-09-19-recovery] — Recuperación Funcional P0 & Superación de Checkpoint a96c502
 
 ### Added / Restored
 - Recuperación de conectividad real con Supabase en `backend/.env` (`SUPABASE_ANON_KEY`) resolviendo fallo de readiness (`missing_core: 0`).
 - Tablas y columnas creadas en Supabase: `crm_asignaciones_fisio_paciente`, `crm_audit_log`, `crm_recordatorio_envios` y columnas de auditoría/idempotencia en `crm_recomendaciones`.
-- Verificación funcional E2E real en navegador (Playwright) y endpoints sin `?demo=true`: Pacientes, Agenda, Ficha, Prescripción IA, Finanzas y Documentos con firma/PDF.
+- Verificación funcional E2E real en navegador (Playwright) y endpoints sin `?demo=true`: Pacientes, Agenda, Ficha, Prescripción Clínica, Finanzas y Documentos con firma/PDF.
 
 ### Fixed
 - Backend `patients.js`: corrección de consulta `/ficha` (`inicio_en, fin_en` en vez de `fecha_hora`) y manejo robusto de asignación de pacientes.
@@ -26,14 +26,14 @@ Registro consolidado de checkpoints técnicos y funcionales del proyecto Fisio I
 ### Added
 - Sistema de tokens y primitivas editoriales clínicas (*Turn.io style*): `frontend/src/styles/design-tokens.css`, `editorial-primitives.css`, `editorial-shell.css` y `editorial-views.css`.
 - Tipografía unificada `@fontsource-variable/dm-sans` con `font-feature-settings: "ss03" 1`.
-- Habitaciones clínicas cromáticas: Lavender Mist (Inicio), Mint Wash (Pacientes), Cream (Agenda), Peach Wash (Finanzas), Sky Wash (Mensajes), Sand Canvas (Ajustes) y Canopy Green (Copiloto IA y Sidebar).
+- Habitaciones clínicas cromáticas: Lavender Mist (Inicio), Mint Wash (Pacientes), Cream (Agenda), Peach Wash (Finanzas), Sky Wash (Mensajes), Sand Canvas (Ajustes) y Canopy Green (Copiloto Clínico y Sidebar).
 - Estado de carga clínico (*light clinical shimmer*) y estados empty con bordes punteados suaves.
 
 ### Changed
 - Abandonado por completo el esquema de dark dashboard genérico (`#0d1522`) en favor de lienzos claros y tarjetas blancas puras sin sombras pesadas.
 - Reconstruido el Topbar como barra de comandos editorial con buscador `⌘K`, contexto temporal y acceso rápido a Agenda y Copiloto.
 - Reorganizada la sección Ajustes (`ConfigView`) en 6 bloques estructurados temáticos con diagnóstico técnico colapsable en `<details>`.
-- Reorganizado el Copiloto IA (`AssistantRail`) a una altura de `calc(100dvh - 64px)` con compositor sticky y margen seguro inferior.
+- Reorganizado el Copiloto Clínico (`AssistantRail`) a una altura de `calc(100dvh - 64px)` con compositor sticky y margen seguro inferior.
 
 ### Fixed
 - Finanzas: Eliminado el renderizado doble de cobros en escritorio ocultando `#pagosMobileList` en `>= 768px`.
@@ -52,7 +52,7 @@ Registro consolidado de checkpoints técnicos y funcionales del proyecto Fisio I
 - Módulo de auditoría y trazabilidad médica `backend/src/lib/audit.js` registrando en `crm_audit_log` (R-2).
 - Procedimiento de supresión y anonimización de pacientes conforme a RGPD (R-3) en `backend/src/routes/patients.js`.
 - Batería de pruebas para gating clínico en `backend/test/clinical_gating.test.js` (R-5).
-- Rate limit de generación de ejercicios IA (60 req/h) en `backend/src/index.js` (R-6).
+- Rate limit de generación de ejercicios (60 req/h) en `backend/src/index.js` (R-6).
 - Scripts SQL de verificación previa no destructiva en `database/preflight/`.
 
 ### Fixed
@@ -66,7 +66,7 @@ Registro consolidado de checkpoints técnicos y funcionales del proyecto Fisio I
 ### Added
 - Supabase Auth obligatorio con validación de JWT y extracción de perfil en `/api/me`.
 - Row Level Security (RLS) habilitado en tablas `crm_*` con cliente Supabase por petición.
-- Aprobación humana obligatoria antes de generar PDF o remitir recomendaciones IA.
+- Aprobación humana obligatoria antes de generar PDF o remitir recomendaciones clínicas.
 - Control de solapamiento de citas en PostgreSQL.
 - CI en GitHub Actions con validación de backend, frontend y workflows n8n.
 

@@ -2,7 +2,7 @@
   "name": "fisio-ia-agent-frontend",
   "type": "module",
   "version": "0.0.1",
-  "description": "Fisio IA Agent — Portal profesional y paciente",
+  "description": "Fisio Clinical — Portal profesional y paciente",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",

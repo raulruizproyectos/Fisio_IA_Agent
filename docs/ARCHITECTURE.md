@@ -23,7 +23,7 @@ graph TD
 - **Estructura de Vistas**:
   - `frontend/src/pages/index.astro`: Punto de entrada del CRM con hidratación de eventos y orquestación de vistas (`data-page`).
   - `frontend/src/components/views/`: Vistas de dominio (`DashboardView`, `CitasView`, `PatientsView`, `FichaPacienteView`, `PagosView`, `IntakesView`, `ConfigView`, etc.).
-  - `frontend/src/components/AssistantRail.astro`: Copiloto IA contextual (`height: calc(100dvh - 64px)`).
+  - `frontend/src/components/AssistantRail.astro`: Copiloto Clínico contextual (`height: calc(100dvh - 64px)`).
 
 ## Backend
 - **Framework**: Node.js 20+ con Express en formato ESM.
@@ -36,7 +36,7 @@ graph TD
 - **Trazabilidad (R-2)**:
   - Módulo `backend/src/lib/audit.js` que registra operaciones de creación, edición y supresión en `crm_audit_log` con sanitización de UUID y preservación de contexto en metadatos JSONB.
 - **Gating Clínico (R-5)**:
-  - Todo plan de ejercicios generado por IA nace en estado `requiere_revision`.
+  - Todo plan de ejercicios generado nace en estado `requiere_revision`.
   - Bloqueo estricto de generación de PDF o envío al paciente si la recomendación no está explícitamente `aprobada` por el profesional. Las alertas clínicas (*red flags*) requieren justificación obligatoria.
 
 ## Database
@@ -64,7 +64,7 @@ erDiagram
 ```
 
 ## AI / Agent
-1. **Entrada**: El profesional formula una consulta clínica en el Copiloto IA (`AssistantRail`) o solicita generar un plan de ejercicios desde la ficha del paciente.
+1. **Entrada**: El profesional formula una consulta clínica en el Copiloto Clínico (`AssistantRail`) o solicita generar un plan de ejercicios desde la ficha del paciente.
 2. **Procesamiento**: El frontend invoca `/api/exercises/recommend` pasando síntomas, objetivos y contraindicaciones del paciente.
 3. **Orquestación**: El backend valida el contrato, verifica rate limit y delega a n8n (`W1_RECOMENDADOR_EJERCICIOS`) o al motor local.
 4. **Respuesta y Gating**: El informe se persiste en `crm_recomendaciones` como borrador. El profesional debe validarlo, editar ejercicios y aprobarlo manualmente antes de generar PDF o remitirlo por Telegram/WhatsApp.

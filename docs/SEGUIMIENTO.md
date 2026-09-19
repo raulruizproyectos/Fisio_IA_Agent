@@ -1,4 +1,4 @@
-# Documento de Seguimiento y Operación — Fisio IA Agent
+# Documento de Seguimiento y Operación — Fisio Clinical
 
 **Fecha:** 2026-09-19  
 **Estado:** Recuperación Funcional P0 Completada y Verificada  
@@ -20,7 +20,7 @@ Tras detectar que el commit `a96c502` fue publicado con fallos de persistencia r
    - Añadidas columnas de auditoría/idempotencia a `crm_recomendaciones` (`idempotency_key`, `reviewed_by_profile_id`, `reviewed_at`, `approval_note`, `prompt_version`, `model_name`).
    - Alineado `DEFAULT_PROFESSIONAL_ID` al perfil real de `crm_perfiles` (`6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
    - Corregidas consultas de backend: `/ficha` (`inicio_en, fin_en` en vez de `fecha_hora`) y `/program-library` (eliminado `nombre_completo` inexistente de `crm_pacientes`).
-4. **Verificación E2E en Navegador:** Automatización completa con Playwright en `http://localhost:4321` sin `?demo=true`, comprobando visualmente y en red la carga de Pacientes, Agenda, Ficha clínica, Prescripción IA y Cobros.
+4. **Verificación E2E en Navegador:** Automatización completa con Playwright en `http://localhost:4321` sin `?demo=true`, comprobando visualmente y en red la carga de Pacientes, Agenda, Ficha clínica, Prescripción Clínica y Cobros.
 
 ---
 
@@ -31,8 +31,8 @@ Tras detectar que el commit `a96c502` fue publicado con fallos de persistencia r
 | **Infraestructura** | **VERIFIED** | Backend (3001) y Frontend (4321) activos; `/api/health` OK; `/api/health/readiness` con `missing_core: 0`. |
 | **Pacientes (P0)** | **VERIFIED** | Alta y recuperación de `QA Test Patient` (`c8d8afb5-04e3-42ed-bb33-bf926cd42ed5`) en `crm_pacientes`; Ficha clínica renderiza datos reales. |
 | **Agenda (P1)** | **VERIFIED** | Cita creada en `crm_citas` (`795a75f4-3b1a-4247-8341-1d36f07b5379`); sincronizada y renderizada en la vista de calendario. |
-| **Planes Terapéuticos (P1)** | **VERIFIED** | Generación de recomendación con motor IA directo y persistencia real en `crm_recomendaciones` (`78612ae5-0645-4771-a295-39b561135eef`); visible en biblioteca. |
-| **Copiloto IA (P1)** | **VERIFIED** | `/api/agente/message` responde consultas clínicas con contexto del paciente. |
+| **Planes Terapéuticos (P1)** | **VERIFIED** | Generación de recomendación con motor clínico directo y persistencia real en `crm_recomendaciones` (`78612ae5-0645-4771-a295-39b561135eef`); visible en biblioteca. |
+| **Copiloto Clínico (P1)** | **VERIFIED** | `/api/agente/message` responde consultas clínicas con contexto del paciente. |
 | **Finanzas (P2)** | **VERIFIED** | Cobro de 50.00 EUR registrado en `crm_pagos` (`f5148f18-0a99-4526-acb0-5582c50c82cb`), reflejado en resumen mensual y ficha. |
 | **Documentos (P2)** | **VERIFIED** | Creación en `crm_documentos` (`fb741faf-649b-4a34-b0e0-2b79c5aa4d31`), firma digital en base64 y generación de PDF con `pdfkit` (3,706 bytes). |
 | **Mensajes (P2)** | **VERIFIED** | Integración con tabla `crm_comunicaciones` operativa y consultable en historial. |

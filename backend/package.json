@@ -1,7 +1,7 @@
 {
   "name": "fisio-ia-agent-backend",
   "version": "0.0.1",
-  "description": "Fisio IA Agent — API REST para gestión de fisioterapia",
+  "description": "Fisio Clinical — API REST para gestión de fisioterapia",
   "main": "src/index.js",
   "type": "module",
   "engines": {

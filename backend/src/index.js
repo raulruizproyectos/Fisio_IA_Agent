@@ -70,6 +70,7 @@ app.use(cors({
   },
   credentials: true,
 }));
+app.use('/api/notas-clinicas/voice/transcribe', express.json({ limit: '15mb' }));
 app.use(express.json({ limit: '512kb', strict: true }));
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -104,7 +105,7 @@ app.use([
   limit: Number(process.env.AI_GENERATION_RATE_LIMIT || 60),
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  message: { error: 'Límite de generación con IA por hora alcanzado. Inténtalo más tarde.' },
+  message: { error: 'Límite de generación clínica por hora alcanzado. Inténtalo más tarde.' },
 }));
 
 // Health check

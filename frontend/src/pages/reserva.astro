@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
 ---
 
-<Layout title="Reserva online | Fisio IA Agent" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
+<Layout title="Reserva online | Fisio Clinical" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
   <main class="booking-shell">
     <section class="booking-hero">
       <div class="booking-hero-copy">
@@ -17,7 +17,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         <div class="booking-clinic-line">
           <span class="material-symbols-rounded">calendar_today</span>
           <div>
-            <strong id="clinicName">Fisio IA Agent</strong>
+            <strong id="clinicName">Fisio Clinical</strong>
             <p id="clinicLocation">Terrassa, Barcelona</p>
           </div>
         </div>
@@ -286,7 +286,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         bookingConfig = payload?.data || null;
         if (!bookingConfig) throw new Error('No se pudo cargar la configuracion de reserva online.');
 
-        if (clinicNameEl) clinicNameEl.textContent = bookingConfig.clinic?.name || 'Fisio IA Agent';
+        if (clinicNameEl) clinicNameEl.textContent = bookingConfig.clinic?.name || 'Fisio Clinical';
         if (clinicLocationEl) clinicLocationEl.textContent = bookingConfig.clinic?.location || '';
         if (clinicLeadEl) clinicLeadEl.textContent = `Reserva online con ${bookingConfig.professional?.nombre_completo || 'tu fisioterapeuta'} y huecos reales sincronizados con la agenda activa.`;
         if (professionalNameEl) professionalNameEl.textContent = bookingConfig.professional?.nombre_completo || 'Fisioterapeuta';

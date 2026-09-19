@@ -1,6 +1,6 @@
-# Fisio IA Agent
+# Fisio Clinical
 
-Plataforma CRM y asistente clínico inteligente para clínicas de fisioterapia. Integra gestión integral de pacientes, agenda conectada con Google Calendar, control de cobros y facturación, generación de documentos clínicos, canal de mensajería con Telegram y Copiloto IA para prescripción de planes terapéuticos guiados.
+Plataforma CRM y asistente de gestión clínica para clínicas de fisioterapia. Integra gestión integral de pacientes, agenda conectada con Google Calendar, control de cobros y facturación, generación de documentos clínicos, canal de mensajería con Telegram y asistente para prescripción de planes terapéuticos guiados.
 
 ## Stack
 - **Frontend**: Astro 5 (modo estático con islas interactivas), CSS modular con Design Tokens (DM Sans `ss03`), Nanostores.
@@ -38,7 +38,7 @@ Los secretos nunca se versionan en Git. En desarrollo local se cargan desde `.en
 - [docs/STATUS.md](docs/STATUS.md): Estado actual del proyecto, componentes estables, prioridades y decisiones.
 - [docs/OPERATIONS.md](docs/OPERATIONS.md): Guía operativa, despliegue en EasyPanel/producción y migraciones.
 - [docs/CHANGELOG.md](docs/CHANGELOG.md): Registro histórico de cambios y checkpoints.
-- [AGENTS.md](AGENTS.md): Reglas canónicas obligatorias para agentes IA.
+- [AGENTS.md](AGENTS.md): Reglas canónicas del proyecto.
 
 ## Current Status
-Recuperación funcional P0 completada y verificada E2E (checkpoint `dc6b7fc`, supersedes `a96c502`). Todos los dominios clínicos (Pacientes, Agenda, Copiloto IA, Finanzas, Documentos) cuentan con persistencia real comprobada en Supabase PostgreSQL y pruebas de navegador limpias sin modo demo. Listo para despliegue en EasyPanel. Ver [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md) y [docs/STATUS.md](docs/STATUS.md).
+Recuperación funcional P0 completada y verificada E2E (checkpoint `dc6b7fc`, supersedes `a96c502`). Todos los dominios clínicos (Pacientes, Agenda, Copiloto Clínico, Finanzas, Documentos) cuentan con persistencia real comprobada en Supabase PostgreSQL y pruebas de navegador limpias sin modo demo. Listo para despliegue en EasyPanel. Ver [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md) y [docs/STATUS.md](docs/STATUS.md).

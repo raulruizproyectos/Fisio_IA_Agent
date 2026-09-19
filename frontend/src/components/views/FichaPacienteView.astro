@@ -37,7 +37,7 @@
       </div>
       <div class="flex flex-wrap gap-3 pt-2">
         <button class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-full font-medium transition-colors shadow-sm" type="button" id="fichaHeroCopilotBtn">
-          <span class="material-symbols-rounded text-[20px]">exercise</span> Informe IA
+          <span class="material-symbols-rounded text-[20px]">exercise</span> Informe Clínico
         </button>
         <button class="flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white px-5 py-2.5 rounded-full font-medium transition-colors border border-white/10" type="button" id="fichaHeroAgendaBtn">
           <span class="material-symbols-rounded text-[20px]">calendar_today</span> Agenda
@@ -176,10 +176,10 @@
 
           <section class="bg-[#111a26] border border-white/[0.06] p-6 rounded-2xl lg:col-span-2">
             <header class="mb-4">
-              <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Motor IA clínico</span>
-              <h2 class="text-xl font-bold text-white">Circuito del plan</h2>
+              <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Protocolo clínico</span>
+              <p class="text-sm font-semibold text-white">Seguimiento de planes prescritos</p>
             </header>
-            <div class="text-slate-300 text-sm" id="fichaPlanInsights">Cuando exista un plan IA, verás aquí el circuito: plan, entrega, feedback y ajuste recomendado.</div>
+            <div class="text-slate-300 text-sm" id="fichaPlanInsights">Cuando exista un plan de recuperación, verás aquí el circuito: plan, entrega, feedback y ajuste recomendado.</div>
           </section>
         </div>
       </div>
@@ -214,10 +214,42 @@
 
       <!-- Panel: Notas -->
       <div class="ficha-panel hidden space-y-6" data-ficha-panel="notas">
-        <header class="flex justify-between items-center">
-          <h2 class="text-xl font-bold text-white">Notas de evolución</h2>
-          <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors" id="fichaAddNota"><span class="material-symbols-rounded text-[18px]">add</span> Nueva nota</button>
+        <header class="flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-white">Notas de evolución y sesiones</h2>
+            <p class="text-xs text-slate-400">Registro estructurado con síntesis clínica y memoria longitudinal.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors shadow-sm cursor-pointer" id="btnVoiceSessionNote">
+              <span class="material-symbols-rounded text-[18px]">mic</span> Registrar sesión por voz
+            </button>
+            <button type="button" class="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors border border-white/10 cursor-pointer" id="fichaAddNota">
+              <span class="material-symbols-rounded text-[18px]">add</span> Nota manual
+            </button>
+          </div>
         </header>
+
+        <!-- Memoria Longitudinal (Capa 2) -->
+        <div id="fichaLongitudinalCard" class="bg-[#111a26] border border-emerald-500/20 p-5 rounded-2xl hidden space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-rounded text-emerald-400 text-base">history_edu</span>
+              <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Memoria Clínica Longitudinal (Capa 2)</span>
+            </div>
+            <span id="fichaLongitudinalUpdated" class="text-xs text-slate-500"></span>
+          </div>
+          <p id="fichaLongitudinalSummaryText" class="text-sm text-slate-200 leading-relaxed"></p>
+        </div>
+
+        <!-- Tendencia de Dolor (EVA) -->
+        <div id="fichaPainTrendCard" class="bg-[#111a26] border border-white/[0.08] p-5 rounded-2xl hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Evolución de Dolor (EVA)</span>
+            <span id="fichaPainTrendBadge" class="text-xs px-2.5 py-1 rounded-full font-medium"></span>
+          </div>
+          <div id="fichaPainTrendTimeline" class="flex flex-wrap gap-3"></div>
+        </div>
+
         <div id="fichaNotasSummary" class="text-sm text-slate-400"></div>
         <div id="fichaNotasTimeline" class="space-y-4">
           <p class="text-slate-500 italic">Sin notas clínicas registradas</p>
@@ -341,6 +373,153 @@
       <button type="button" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors shadow-sm" id="firmaGuardarBtn">
         <span class="material-symbols-rounded text-[20px]">draw</span> Guardar y generar PDF
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Registro Sesion por Voz / Sintesis Clinica -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="voiceSessionModal" aria-hidden="true">
+  <div class="bg-[#0d1522] border border-white/[0.1] rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[92vh]">
+    <div class="px-6 py-4 border-b border-white/[0.08] flex items-center justify-between bg-[#111a26]">
+      <div>
+        <p class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">SESIÓN CLÍNICA</p>
+        <h2 id="voiceSessionModalTitle" class="text-xl font-bold text-white">Registro de Sesión por Voz</h2>
+      </div>
+      <button type="button" class="text-slate-400 hover:bg-white/10 hover:text-white p-2 rounded-full transition-colors cursor-pointer" id="voiceSessionModalClose">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="p-6 overflow-y-auto space-y-6 flex-1 text-slate-200">
+      
+      <!-- Paso 1: Captura (Audio o Texto) -->
+      <div id="voiceStepCapture" class="space-y-4">
+        <div class="flex gap-2 p-1 bg-[#111a26] rounded-xl border border-white/10">
+          <button type="button" class="flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-emerald-500 text-white cursor-pointer" id="voiceModeAudioBtn">
+            <span class="material-symbols-rounded text-sm align-middle">mic</span> Grabar Audio
+          </button>
+          <button type="button" class="flex-1 py-2 rounded-lg text-sm font-medium transition-colors text-slate-400 hover:text-white cursor-pointer" id="voiceModeTextBtn">
+            <span class="material-symbols-rounded text-sm align-middle">edit_note</span> Dictado / Texto
+          </button>
+        </div>
+
+        <!-- Grabación de audio activa -->
+        <div id="voiceAudioSection" class="p-6 bg-[#111a26] border border-white/10 rounded-2xl text-center space-y-4">
+          <div class="flex justify-center">
+            <button type="button" id="voiceRecordToggleBtn" class="w-20 h-20 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer">
+              <span class="material-symbols-rounded text-3xl" id="voiceRecordIcon">mic</span>
+            </button>
+          </div>
+          <div>
+            <div id="voiceRecordTimer" class="text-2xl font-mono font-bold text-white">00:00</div>
+            <p id="voiceRecordStatus" class="text-xs text-slate-400 mt-1">Pulsa para iniciar la grabación de la sesión</p>
+          </div>
+          <div id="voiceRecordVisualizer" class="h-6 flex items-center justify-center gap-1 opacity-40">
+            <span class="w-1 bg-emerald-400 h-2 rounded-full animate-pulse"></span>
+            <span class="w-1 bg-emerald-400 h-4 rounded-full animate-pulse"></span>
+            <span class="w-1 bg-emerald-400 h-6 rounded-full animate-pulse"></span>
+            <span class="w-1 bg-emerald-400 h-3 rounded-full animate-pulse"></span>
+            <span class="w-1 bg-emerald-400 h-5 rounded-full animate-pulse"></span>
+          </div>
+        </div>
+
+        <!-- Dictado o transcripción de texto -->
+        <div id="voiceTextSection" class="space-y-2">
+          <label class="block text-sm font-medium text-slate-300">Transcripción o notas dictadas de la sesión:</label>
+          <textarea id="voiceTranscriptInput" rows="6" class="w-full bg-[#111a26] border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Habla o escribe lo sucedido en la sesión: motivo, dolor actual, maniobras y pruebas realizadas, técnicas aplicadas, feedback inmediato y tareas domiciliarias..."></textarea>
+        </div>
+
+        <div id="voiceCaptureFeedback" class="text-sm text-red-400" hidden></div>
+
+        <button type="button" id="btnSynthesizeVoiceNote" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer">
+          <span class="material-symbols-rounded">clinical_notes</span>
+          Sintetizar Nota Clínica Estructurada
+        </button>
+      </div>
+
+      <!-- Paso 2: Revisión y Confirmación Humana -->
+      <div id="voiceStepReview" class="space-y-4 hidden">
+        <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between text-xs text-emerald-400">
+          <span>Revisa y ajusta los datos extraídos antes de confirmar.</span>
+          <button type="button" id="btnBackToCapture" class="text-slate-400 hover:text-white underline cursor-pointer">Volver al dictado</button>
+        </div>
+
+        <div class="space-y-3">
+          <label class="block">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Resumen Clínico de la Sesión</span>
+            <textarea id="voiceReviewSummary" rows="3" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-3 text-white text-sm" required></textarea>
+          </label>
+
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dolor (EVA 0-10)</span>
+              <div class="flex items-center gap-2 mt-1">
+                <input id="voiceReviewEva" type="number" min="0" max="10" class="w-20 bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" />
+                <span id="voiceReviewEvaCompare" class="text-xs text-slate-400"></span>
+              </div>
+            </label>
+
+            <label class="block">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Zona Corporal</span>
+              <select id="voiceReviewZone" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm">
+                <option value="">-- Seleccionar --</option>
+                <option value="cervical">Cervical</option>
+                <option value="espalda">Espalda</option>
+                <option value="lumbar">Lumbar</option>
+                <option value="hombro_brazo">Hombro/Brazo</option>
+                <option value="codo_mano">Codo/Mano</option>
+                <option value="cadera">Cadera</option>
+                <option value="rodilla">Rodilla</option>
+                <option value="tobillo_pie">Tobillo/Pie</option>
+                <option value="abdomen_core">Abdomen/Core</option>
+                <option value="general">General</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Movilidad / Pruebas</span>
+              <input id="voiceReviewMobility" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: flexión completa sin tope doloroso" />
+            </label>
+
+            <label class="block">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Evolución Percibida</span>
+              <select id="voiceReviewEvolution" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm">
+                <option value="favorable">Favorable / Mejoría</option>
+                <option value="estable">Estable / Sin cambios</option>
+                <option value="recaida">Recaída / Empeoramiento</option>
+                <option value="primera_sesion">Primera sesión</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="block">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tratamientos Aplicados en Consulta</span>
+            <input id="voiceReviewTreatment" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: Terapia manual, punción seca, movilizaciones" />
+          </label>
+
+          <label class="block">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ejercicios Pautados para Casa</span>
+            <input id="voiceReviewExercises" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: Isométricos de cuádriceps 3x10, estiramientos" />
+          </label>
+
+          <label class="block">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Próximo Paso / Pauta</span>
+            <input id="voiceReviewNextStep" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: Revisión en 7 días para progresar carga" />
+          </label>
+        </div>
+
+        <div class="flex gap-3 justify-end pt-3 border-t border-white/[0.08]">
+          <button type="button" id="voiceReviewCancelBtn" class="px-5 py-2.5 rounded-full text-slate-400 hover:bg-white/5 font-medium transition-colors cursor-pointer">Cancelar</button>
+          <button type="button" id="voiceReviewConfirmBtn" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors shadow-sm cursor-pointer">
+            <span class="material-symbols-rounded">check</span>
+            Confirmar y Guardar en Historial
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

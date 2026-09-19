@@ -16,8 +16,8 @@ Updated: 2026-09-19 (P0 Functional Recovery Checkpoint — Supersedes `a96c502`)
 - **P1 Agenda & Citas**:
   - Creación y listado de citas verificado contra `crm_citas`.
   - Reserva pública (`/api/profesional/public-booking/slots` y `/appointments`) verificada end-to-end con asignación automática de paciente.
-- **P1 Planes Terapéuticos & Copiloto IA**:
-  - Generación de recomendaciones con motor IA directo y persistencia confirmada en `crm_recomendaciones` y `crm_recomendacion_items`.
+- **P1 Planes Terapéuticos & Copiloto Clínico**:
+  - Generación de recomendaciones con motor clínico directo y persistencia confirmada en `crm_recomendaciones` y `crm_recomendacion_items`.
   - `GET /api/profesional/program-library` corregido eliminando `nombre_completo` de `crm_pacientes`.
 - **P2 Finanzas & Pagos**:
   - Registro de cobros verificado en `crm_pagos` (50.00 EUR), reflejado en `/pagos/resumen` y en la ficha del paciente.
@@ -35,13 +35,13 @@ Updated: 2026-09-19 (P0 Functional Recovery Checkpoint — Supersedes `a96c502`)
   - Procedimiento de supresión y anonimización RGPD (R-3) en `backend/src/routes/patients.js`.
   - Seguridad clínica en prescripción de ejercicios (R-4): los ejercicios de apoyo visual adoptan sus propias precauciones y dosificación sin heredar contraindicaciones ajenas.
   - Gating clínico (R-5): bloqueo estricto de generación de PDF o remisión si el informe no está aprobado; validación obligatoria de justificación ante *red flags*.
-  - Rate limiting (R-6) en generación de ejercicios IA (60 req/h por IP).
+  - Rate limiting (R-6) en generación de ejercicios clínicos (60 req/h por IP).
   - Batería de 18/18 tests unitarios e integrados pasando (`npm test` en backend).
 - **Frontend & Visual System**:
   - Reconstrucción visual v4.0 completada bajo el estándar de diseño editorial clínico *Turn.io* (Refero).
   - Tipografía DM Sans unificada con `font-feature-settings: "ss03" 1`.
   - Design Tokens centralizados en `frontend/src/styles/design-tokens.css`: Canopy Green (`#0a3922`), Coral Pulse (`#ff643b`) reservado a acciones primarias, paleta de lienzos pastel por contexto.
-  - Vistas adaptadas y verificadas visualmente: Inicio, Agenda, Pacientes, Ficha Paciente, Finanzas (eliminado duplicado en desktop), Mensajes (resuelto contraste blanco/blanco), Ajustes (estructurado en 6 bloques temáticos) y Copiloto IA (panel de 400px con compositor sticky y aire inferior).
+  - Vistas adaptadas y verificadas visualmente: Inicio, Agenda, Pacientes, Ficha Paciente, Finanzas (eliminado duplicado en desktop), Mensajes (resuelto contraste blanco/blanco), Ajustes (estructurado en 6 bloques temáticos) y Copiloto Clínico (panel de 400px con compositor sticky y aire inferior).
   - Verificación estática de Astro limpia (`npx astro check`: 0 errores, 0 warnings).
 
 ## Working / needs validation

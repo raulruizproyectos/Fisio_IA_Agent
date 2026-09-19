@@ -1,6 +1,6 @@
 # Operations
 
-Guía de desarrollo local, validación, despliegue y mantenimiento de Fisio IA Agent.
+Guía de desarrollo local, validación, despliegue y mantenimiento de Fisio Clinical.
 
 ## Local Development
 
