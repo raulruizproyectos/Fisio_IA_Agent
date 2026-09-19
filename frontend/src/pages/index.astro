@@ -91,9 +91,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const isDevMode = typeof window !== 'undefined' && (
     window.location.search.includes('demo=true') ||
-    window.localStorage.getItem('fisio_dev_mode') === 'true' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
+    window.localStorage.getItem('fisio_dev_mode') === 'true'
   );
 
   // === CONFIG ===
@@ -2317,18 +2315,23 @@ import ConfigView from '../components/views/ConfigView.astro';
           _source: p._source || 'crm',
         }));
       }
-    } catch {
-      patientCatalog = DEMO_PATIENTS.map((p: any) => ({
-        ...p,
-        id: p.id,
-        nombre_completo: p.nombre_completo,
-        email: p.email,
-        phone: p.telefono,
-        telefono: p.telefono,
-        fecha_nacimiento: p.fecha_nacimiento,
-        creado_en: new Date().toISOString(),
-        _source: 'crm',
-      }));
+    } catch (err) {
+      if (isDevMode) {
+        patientCatalog = DEMO_PATIENTS.map((p: any) => ({
+          ...p,
+          id: p.id,
+          nombre_completo: p.nombre_completo,
+          email: p.email,
+          phone: p.telefono,
+          telefono: p.telefono,
+          fecha_nacimiento: p.fecha_nacimiento,
+          creado_en: new Date().toISOString(),
+          _source: 'crm',
+        }));
+      } else {
+        patientCatalog = [];
+        console.error('Error al cargar catalogo de pacientes desde backend:', err);
+      }
     }
     restoreSelectedPatientFromStorage();
     renderChatPatientOptions();

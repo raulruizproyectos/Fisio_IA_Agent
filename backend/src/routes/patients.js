@@ -199,7 +199,7 @@ router.get('/:id/ficha', async (req, res, next) => {
     }
 
     const [citasRes, pagosRes, notasRes] = await Promise.allSettled([
-      supabase.from('crm_citas').select('id, fecha_hora, estado, motivo, created_at').eq('paciente_id', id).order('fecha_hora', { ascending: false }).limit(50),
+      supabase.from('crm_citas').select('id, inicio_en, fin_en, estado, motivo, created_at').eq('paciente_id', id).order('inicio_en', { ascending: false }).limit(50),
       supabase.from('crm_pagos').select('id, fecha, importe, metodo_pago, concepto, notas').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
       supabase.from('crm_notas_clinicas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
     ]);
@@ -222,7 +222,9 @@ router.get('/:id/ficha', async (req, res, next) => {
         ...p,
         nombre_completo: [p.nombre, p.apellidos].filter(Boolean).join(' ').trim(),
       },
-      citas: citasRes.status === 'fulfilled' && !citasRes.value.error ? citasRes.value.data : [],
+      citas: citasRes.status === 'fulfilled' && !citasRes.value.error
+        ? (citasRes.value.data || []).map((c) => ({ ...c, fecha_hora: c.inicio_en }))
+        : [],
       pagos: pagosRes.status === 'fulfilled' && !pagosRes.value.error ? pagosRes.value.data : [],
       notas: notasRes.status === 'fulfilled' && !notasRes.value.error ? notasRes.value.data : [],
       module_availability: moduleAvailability,
@@ -330,7 +332,7 @@ router.post('/', async (req, res, next) => {
       .upsert({ fisioterapeuta_id: profileId, paciente_id: data.id, estado: 'activa' }, {
         onConflict: 'fisioterapeuta_id,paciente_id',
       });
-    if (assignmentError) {
+    if (assignmentError && !isMissingTableError({ status: 'fulfilled', value: { error: assignmentError } }, 'crm_asignaciones_fisio_paciente')) {
       await supabase.from('crm_pacientes').delete().eq('id', data.id);
       throw assignmentError;
     }

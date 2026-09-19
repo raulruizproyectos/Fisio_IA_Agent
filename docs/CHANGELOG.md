@@ -2,7 +2,26 @@
 
 Registro consolidado de checkpoints técnicos y funcionales del proyecto Fisio IA Agent.
 
-## [checkpoint-2026-09-19] — Reconstrucción Visual & Quality Gate (v4.0)
+## [checkpoint-2026-09-19-recovery] — Recuperación Funcional P0 & Superación de Checkpoint a96c502
+
+### Added / Restored
+- Recuperación de conectividad real con Supabase en `backend/.env` (`SUPABASE_ANON_KEY`) resolviendo fallo de readiness (`missing_core: 0`).
+- Tablas y columnas creadas en Supabase: `crm_asignaciones_fisio_paciente`, `crm_audit_log`, `crm_recordatorio_envios` y columnas de auditoría/idempotencia en `crm_recomendaciones`.
+- Verificación funcional E2E real en navegador (Playwright) y endpoints sin `?demo=true`: Pacientes, Agenda, Ficha, Prescripción IA, Finanzas y Documentos con firma/PDF.
+
+### Fixed
+- Backend `patients.js`: corrección de consulta `/ficha` (`inicio_en, fin_en` en vez de `fecha_hora`) y manejo robusto de asignación de pacientes.
+- Backend `professional.js`: eliminación de columna inexistente `nombre_completo` en la consulta a `crm_pacientes` en `/program-library`.
+- Frontend `index.astro`: desvinculado `localhost` de `isDevMode` para prevenir la inyección silenciosa de mocks demo ante errores o listas vacías.
+- Alineación de perfil activo (`DEFAULT_PROFESSIONAL_ID` = `6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
+
+### Quality & Gates
+- Backend: 18/18 tests unitarios e integrados pasando (`npm test`).
+- Frontend: `astro check` con 0 errores y build estático exitoso (`npm run build`).
+
+---
+
+## [checkpoint-2026-09-19] — Reconstrucción Visual & Quality Gate (v4.0) [SUPERSEDED]
 
 ### Added
 - Sistema de tokens y primitivas editoriales clínicas (*Turn.io style*): `frontend/src/styles/design-tokens.css`, `editorial-primitives.css`, `editorial-shell.css` y `editorial-views.css`.

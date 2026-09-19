@@ -82,10 +82,10 @@ export async function authorizeRequest(req, res, next) {
 
   if (process.env.NODE_ENV === 'development' && token === 'dev-token') {
     req.auth = {
-      user_id: 'dev-physio-id',
-      profile_id: '11111111-1111-4111-8111-111111111111',
+      user_id: '9403b843-53ef-47ef-bcd9-e45909e08907',
+      profile_id: process.env.DEFAULT_PROFESSIONAL_ID || '6dae4ef6-b6b3-4cb0-91d9-0320d10db255',
       role: 'fisioterapeuta',
-      email: 'carmen.martinez@clinica.es',
+      email: 'demo.1772149150@fisio.local',
       name: 'Dra. Carmen Martínez',
     };
     return runWithRequestContext({ supabase: serviceSupabase, auth: req.auth }, next);

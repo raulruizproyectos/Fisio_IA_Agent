@@ -1,6 +1,31 @@
 # Project Status
 
-Updated: 2026-09-19
+Updated: 2026-09-19 (P0 Functional Recovery Checkpoint — Supersedes `a96c502`)
+
+> **AVISO DE RECUPERACIÓN FUNCIONAL**: El checkpoint `a96c502` fue invalidado debido a fallos de persistencia real en base de datos, desajuste de claves/esquemas Supabase y fallbacks silenciosos a datos demo en frontend. El presente checkpoint SUPERSEDE al anterior tras una recuperación y verificación funcional completa E2E sin `?demo=true`.
+
+## Functional Recovery & Core Domains (Verified E2E)
+- **P0 Infraestructura & Base de Datos**:
+  - `backend/.env`: Restaurada `SUPABASE_ANON_KEY`, corrigiendo el readiness check (`missing_core: 0`).
+  - Alineado `DEFAULT_PROFESSIONAL_ID` al perfil real de `crm_perfiles` (`6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
+  - Creadas tablas faltantes en Supabase: `crm_asignaciones_fisio_paciente`, `crm_audit_log`, `crm_recordatorio_envios`.
+  - Añadidas columnas requeridas a `crm_recomendaciones` (`idempotency_key`, `reviewed_by_profile_id`, `reviewed_at`, `approval_note`, `prompt_version`, `model_name`) eliminando el descarte de persistencia (`persistence_skipped: false`).
+- **P0 Pacientes**:
+  - Alta, listado y consulta individual verificados con persistencia real en PostgreSQL (`crm_pacientes`).
+  - `/ficha` corregido en `backend/src/routes/patients.js`: sustituida columna inexistente `fecha_hora` por `inicio_en, fin_en` con mapeo de compatibilidad.
+- **P1 Agenda & Citas**:
+  - Creación y listado de citas verificado contra `crm_citas`.
+  - Reserva pública (`/api/profesional/public-booking/slots` y `/appointments`) verificada end-to-end con asignación automática de paciente.
+- **P1 Planes Terapéuticos & Copiloto IA**:
+  - Generación de recomendaciones con motor IA directo y persistencia confirmada en `crm_recomendaciones` y `crm_recomendacion_items`.
+  - `GET /api/profesional/program-library` corregido eliminando `nombre_completo` de `crm_pacientes`.
+- **P2 Finanzas & Pagos**:
+  - Registro de cobros verificado en `crm_pagos` (50.00 EUR), reflejado en `/pagos/resumen` y en la ficha del paciente.
+- **P2 Documentos & Firma Digital**:
+  - Creación de documento en `crm_documentos`, firma digital en base64 y generación de PDF con `pdfkit` verificado (3.7 KB).
+- **Frontend Fallback Sanitization**:
+  - Sanitizado `isDevMode` en `frontend/src/pages/index.astro` para requerir explícitamente `?demo=true` o `localStorage.getItem('fisio_dev_mode') === 'true'`. En modo estándar (`localhost`), la UI opera 100% contra backend y PostgreSQL real sin inyectar datos ficticios ni ocultar errores de red/API.
+  - Verificado mediante automatización de navegador con Playwright en `http://localhost:4321` (App boot, Catálogo, Agenda, Ficha Paciente y Cobros validados sin errores).
 
 ## Stable
 - **Backend Quality & Security**:

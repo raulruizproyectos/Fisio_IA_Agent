@@ -89,7 +89,7 @@ export async function initializeProtectedApp() {
     installAuthenticatedFetch();
     return {
       session: currentSession,
-      profileId: '11111111-1111-4111-8111-111111111111',
+      profileId: '6dae4ef6-b6b3-4cb0-91d9-0320d10db255',
       role: 'fisioterapeuta',
       name: 'Dra. Carmen Martínez',
       email: 'carmen.martinez@clinica.es',

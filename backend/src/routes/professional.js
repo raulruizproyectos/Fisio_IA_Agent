@@ -2706,7 +2706,7 @@ router.get('/program-library', async (req, res, next) => {
       patientIds.length
         ? supabase
             .from('crm_pacientes')
-            .select('id, nombre, apellidos, nombre_completo, email')
+            .select('id, nombre, apellidos, email')
             .in('id', patientIds)
         : Promise.resolve({ data: [], error: null }),
       recommendationIds.length
