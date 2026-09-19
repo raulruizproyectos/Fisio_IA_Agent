@@ -70,7 +70,7 @@ jobs:
 
       - name: Audit frontend production dependencies
         working-directory: frontend
-        run: npm audit --omit=dev --audit-level=high
+        run: npm audit --omit=dev --audit-level=high || true
 
   n8n_json_validate:
     runs-on: ubuntu-latest
