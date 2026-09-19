@@ -1,4 +1,4 @@
-# Automatización n8n — Fisio IA Agent
+# Automatización n8n — Fisio Clinical
 
 n8n se mantiene como orquestador de integraciones; la autorización, las reglas clínicas, la persistencia y la aprobación de informes permanecen en el backend y Supabase. Esta separación evita que una automatización visual se convierta en la única capa de lógica crítica.
 

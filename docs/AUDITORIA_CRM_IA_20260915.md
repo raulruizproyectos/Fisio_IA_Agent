@@ -1,4 +1,4 @@
-# Auditoria tecnica y clinica — Fisio IA Agent (CRM + Agente IA)
+# Auditoria tecnica y clinica — Fisio Clinical (CRM + Motor Clínico)
 
 - Fecha de auditoria: 2026-09-15
 - Alcance: repositorio completo (frontend Astro, backend Express, SQL Supabase, workflows n8n, scripts, CI, docs) y estado de ramas/workspaces locales
@@ -127,7 +127,7 @@ y recalcula `confidence: Math.max(...)` con minimo 0.6.
 **Impacto**: sin pruebas de integracion no hay garantia automatica de que un profesional no pueda leer pacientes de otro, ni de que un plan no aprobado no se pueda exportar.
 **Recomendacion**: pruebas de integracion con dos usuarios (A/B) y un admin sobre pacientes, citas, notas, informes, PDF y Telegram; y un test de que la migracion deja RLS activa en todas las tablas `crm_*`.
 
-### R-6 (P2 coste/abuso). Limite de generacion IA no especifico
+### R-6 (P2 coste/abuso). Limite de generacion automatica no especifico
 **Evidencia**: `backend/src/index.js` (estado C) aplica limites especificos a reserva publica (20/h) y Telegram (180/min), pero `POST /api/exercises/recommend` y `/recommend/async` solo quedan bajo el limite global (`API_RATE_LIMIT`, 300/15 min).
 **Impacto**: un usuario autenticado, o una sesion comprometida, puede consumir cuota de modelo a ritmo alto (coste OpenAI y Edge Function).
 **Recomendacion**: cuota por usuario/hora para generacion de informes y registro del consumo junto al job.
@@ -173,7 +173,7 @@ El mismo proyecto y el mismo `node_modules` compilan sin problema en `C:\Visual 
 | Endpoints de cron y webhooks sin secreto | **RESUELTO**: `INTERNAL_API_KEY`, `TELEGRAM_WEBHOOK_SECRET`, `N8N_WEBHOOK_SECRET`, Header Auth en n8n |
 | Sin auditoria de accesos | **PENDIENTE**: tabla protegida pero sin escrituras de aplicacion (R-2) |
 | Borrado de paciente sobre tabla legacy / sin supresion RGPD | **PENDIENTE** (R-3) |
-| Plan de IA sin validacion humana, indistinguible de un fallback | **RESUELTO**: todo nace `requiere_revision`; PDF/Telegram bloqueados hasta aprobacion |
+| Plan generado sin validacion humana, indistinguible de un fallback | **RESUELTO**: todo nace `requiere_revision`; PDF/Telegram bloqueados hasta aprobacion |
 | Ejercicios inventados por el modelo persistidos | **RESUELTO parcialmente**: filtrado contra catalogo + 422; falta validar el resto de campos clinicos |
 | Sin validacion de esquema de entrada | **PENDIENTE**: validacion sigue ad-hoc (sin zod/joi/ajv) |
 | Sin rate limiting ni cabeceras de seguridad | **RESUELTO**: helmet + 3 niveles de rate limit + limite de payload |
@@ -225,7 +225,7 @@ Comprobaciones pendientes que **no** se pueden hacer sin el entorno real (y que 
 7. Implementar `recordAudit()` y cubrir escrituras clinicas + lecturas de ficha e informes (R-2).
 8. Procedimiento de supresion/anonimizacion completo: tablas + Storage + traza (R-3).
 9. Documentar plazos de conservacion, DPA/encargado del tratamiento y procedimiento de brechas.
-10. Cuota de generacion IA por usuario y registro de coste (R-6).
+10. Cuota de generacion automatica por usuario y registro de coste (R-6).
 
 ### Bloque 3 — Seguridad clinica y pruebas (3-4 semanas)
 11. Corregir la reasignacion por imagen: no heredar `cautions` ni dosis de otro ejercicio (R-4) y registrar en el informe cuando un ejercicio se haya ajustado.
@@ -277,7 +277,7 @@ cd ..\frontend; npm run check; npx astro build
 
 ## 10. Conclusion
 
-El proyecto no tiene un problema de concepto: el flujo "diagnostico -> propuesta IA -> validacion profesional -> informe -> seguimiento" esta bien pensado, la seguridad de la version `production-hardening` es solida y el CI ya es reproducible. El problema es de **gobierno del codigo**: la version desplegable no es la que esta en la rama productiva declarada, y las dos piezas que faltan para poder tratar datos de salud reales con tranquilidad son la **auditoria de accesos** y el **ciclo de vida del dato (retencion/supresion)**. Resolver R-1 a R-4 y ejecutar las pruebas de humo del readiness doc convierte este CRM en apto para produccion; el resto es deuda planificable.
+El proyecto no tiene un problema de concepto: el flujo "diagnostico -> propuesta de plan -> validacion profesional -> informe -> seguimiento" esta bien pensado, la seguridad de la version `production-hardening` es solida y el CI ya es reproducible. El problema es de **gobierno del codigo**: la version desplegable no es la que esta en la rama productiva declarada, y las dos piezas que faltan para poder tratar datos de salud reales con tranquilidad son la **auditoria de accesos** y el **ciclo de vida del dato (retencion/supresion)**. Resolver R-1 a R-4 y ejecutar las pruebas de humo del readiness doc convierte este CRM en apto para produccion; el resto es deuda planificable.
 
 ## 11. Como retomar esta auditoria en una sesion nueva
 

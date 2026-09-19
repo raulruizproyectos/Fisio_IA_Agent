@@ -203,7 +203,7 @@ app.use((err, req, res, _next) => {
 const servers = LISTEN_PORTS.map((port, index) => {
   const isPrimary = index === 0;
   const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`\nFisio IA Agent API\n------------------\nServidor activo en http://0.0.0.0:${port}${isPrimary ? '' : ' (compat)'}\nHealth check:     http://0.0.0.0:${port}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
+    console.log(`\nFisio Clinical API\n------------------\nServidor activo en http://0.0.0.0:${port}${isPrimary ? '' : ' (compat)'}\nHealth check:     http://0.0.0.0:${port}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
   });
 
   server.on('error', (error) => {

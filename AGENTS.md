@@ -1,4 +1,4 @@
-# Reglas Canónicas para Agentes IA — Fisio IA Agent
+# Reglas Canónicas de Desarrollo — Fisio Clinical
 
 Guía operativa obligatoria para cualquier agente o desarrollador que modifique este repositorio.
 
@@ -30,7 +30,7 @@ cd ../frontend && npm run check && npm run build
 - Respuestas claras y seguras en degradación controlada.
 
 ## 5. Gating Clínico e Integridad Médica
-- Los planes de ejercicios generados por IA nacen en `requiere_revision`.
+- Los planes de ejercicios generados por el sistema nacen en `requiere_revision`.
 - Queda terminantemente bloqueada la generación de PDF (`/api/documents/exercise-plan/pdf`) o el envío al paciente si la recomendación no está explícitamente `aprobada` por el fisioterapeuta.
 - Ante *red flags* clínicas, se exige una justificación profesional documentada de al menos 12 caracteres.
 - Al sustituir un ejercicio por apoyo visual, el nuevo ejercicio debe adoptar sus propias precauciones y dosificación (nunca heredar contraindicaciones de otro).

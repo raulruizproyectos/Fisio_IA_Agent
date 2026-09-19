@@ -1,4 +1,4 @@
-# Bot de Telegram - Fisio IA Agent
+# Bot de Telegram — Fisio Clinical
 
 ## Que se ha implementado
 
