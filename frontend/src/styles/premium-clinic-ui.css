@@ -9,37 +9,37 @@
 }
 
 :root {
-  /* Premium clinic design tokens - Fisio IA Agent */
-  --bg-base: #f8fafc;
-  --bg-soft: #f1f5f9;
-  --bg-paper: #ffffff;
-  --bg-paper-muted: rgba(255, 255, 255, 0.85);
-  --bg-ink: #0f172a;
-  --ink: #0f172a;
-  --ink-soft: #334155;
+  /* Premium clinic design tokens - Refero Superpower Clinical System */
+  --bg-base: #090e17;
+  --bg-soft: #0d1522;
+  --bg-paper: #111a26;
+  --bg-paper-muted: #152232;
+  --bg-ink: #f8fafc;
+  --ink: #f8fafc;
+  --ink-soft: #cbd5e1;
   --ink-muted: #94a3b8;
-  --line: #e2e8f0;
-  --line-strong: #cbd5e1;
-  --teal: #0d9488;
-  --teal-deep: #0f766e;
-  --teal-soft: #ccfbf1;
-  --sage: #e2e8f0;
-  --sage-strong: #cbd5e1;
-  --amber: #b45309;
-  --amber-soft: #fef3c7;
-  --blue: #6366f1;
-  --blue-soft: #e0e7ff;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --teal: #10b981;
+  --teal-deep: #059669;
+  --teal-soft: rgba(16, 185, 129, 0.15);
+  --sage: rgba(255, 255, 255, 0.08);
+  --sage-strong: rgba(255, 255, 255, 0.15);
+  --amber: #f59e0b;
+  --amber-soft: rgba(245, 158, 11, 0.15);
+  --blue: #38bdf8;
+  --blue-soft: rgba(56, 189, 248, 0.15);
   --danger: #f43f5e;
-  --success: #0d9488;
-  --sand: #6366f1;
-  --sand-soft: #e0e7ff;
-  --font-ui: 'Manrope', 'Inter', 'Segoe UI', system-ui, sans-serif;
-  --font-display: 'Sora', 'Manrope', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --success: #10b981;
+  --sand: #38bdf8;
+  --sand-soft: rgba(56, 189, 248, 0.12);
+  --font-ui: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Sora Variable', 'Sora', sans-serif;
   --radius-sm: 8px;
-  --radius-md: 8px;
-  --radius-lg: 8px;
-  --shadow-soft: 0 14px 34px rgba(15, 23, 42, 0.07);
-  --shadow-pop: 0 18px 42px rgba(15, 23, 42, 0.08);
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-soft: 0 14px 34px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 18px 42px rgba(0, 0, 0, 0.5);
 }
 
 html,
@@ -1090,12 +1090,12 @@ textarea:focus {
 
 .ops-title {
   margin: 0 !important;
-  color: #0b1519 !important;
-  font-family: var(--font-ui) !important;
-  font-size: clamp(2.6rem, 5.4vw, 6.6rem) !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.075em !important;
-  line-height: 0.88 !important;
+  color: #f8fafc !important;
+  font-family: var(--font-display) !important;
+  font-size: clamp(1.75rem, 3vw, 2.4rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
 }
 
 .ops-subtitle {
@@ -1670,10 +1670,7 @@ h4,
 }
 
 .content {
-  background:
-    linear-gradient(90deg, rgba(20, 90, 80, 0.035) 0 1px, transparent 1px 100%),
-    linear-gradient(180deg, #fbfaf5 0%, #f7f6f0 100%) !important;
-  background-size: 42px 42px, auto !important;
+  background: #090e17 !important;
 }
 
 .page-section {
@@ -1809,9 +1806,9 @@ tbody tr:hover td {
 .bonos-summary-strip,
 .facturas-summary-strip,
 .documentos-summary {
-  border-top: 1px solid var(--line) !important;
-  border-bottom: 1px solid var(--line) !important;
-  background: rgba(255, 254, 250, 0.3) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #0d1522 !important;
 }
 
 .ops-signal,
@@ -1822,16 +1819,18 @@ tbody tr:hover td {
 .template-kpi-card,
 .bonos-summary-card,
 .facturas-summary-card {
-  border-radius: 0 !important;
+  border-radius: 12px !important;
   box-shadow: none !important;
+  background: #111a26 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .finance-workbench,
 .finance-subview-strip,
 .pagos-toolbar {
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius-lg) !important;
-  background: rgba(255, 254, 250, 0.62) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  background: #0d1522 !important;
   box-shadow: none !important;
 }
 
@@ -1940,10 +1939,10 @@ textarea {
 
 .empty-state,
 .empty-state-sm {
-  border: 0 !important;
-  border-radius: var(--radius-lg) !important;
-  background: rgba(220, 233, 223, 0.42) !important;
-  color: #53625c !important;
+  border: 1px dashed rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  background: #0d1522 !important;
+  color: #94a3b8 !important;
 }
 
 @media (max-width: 900px) {
@@ -1980,23 +1979,23 @@ textarea {
  * readable tables and a calmer clinical workspace.
  */
 :root {
-  --clinic-bg: #f7faf9;
-  --clinic-surface: #ffffff;
-  --clinic-surface-soft: #f4f8f7;
-  --clinic-ink: #101828;
-  --clinic-ink-soft: #344054;
-  --clinic-muted: #667085;
-  --clinic-line: #d9e4e2;
-  --clinic-line-soft: #edf2f1;
-  --clinic-teal: #0f9488;
-  --clinic-teal-deep: #0b5f59;
-  --clinic-teal-soft: #e6f7f4;
-  --clinic-green-soft: #edf7f1;
-  --clinic-radius: 8px;
-  --clinic-shadow: 0 18px 44px rgba(16, 24, 40, 0.08);
-  --clinic-shadow-soft: 0 10px 28px rgba(16, 24, 40, 0.05);
-  --font-ui: "Manrope", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --clinic-bg: #090e17;
+  --clinic-surface: #0d1522;
+  --clinic-surface-soft: #111a26;
+  --clinic-ink: #f8fafc;
+  --clinic-ink-soft: #cbd5e1;
+  --clinic-muted: #94a3b8;
+  --clinic-line: rgba(255, 255, 255, 0.08);
+  --clinic-line-soft: rgba(255, 255, 255, 0.04);
+  --clinic-teal: #10b981;
+  --clinic-teal-deep: #059669;
+  --clinic-teal-soft: rgba(16, 185, 129, 0.15);
+  --clinic-green-soft: rgba(16, 185, 129, 0.1);
+  --clinic-radius: 12px;
+  --clinic-shadow: 0 18px 44px rgba(0, 0, 0, 0.4);
+  --clinic-shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.25);
+  --font-ui: "Manrope Variable", "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Sora Variable", "Sora", sans-serif;
 }
 
 html {
@@ -2540,10 +2539,11 @@ h4,
 .template-kpi-card,
 .bonos-summary-card,
 .facturas-summary-card {
-  border: 1px solid var(--clinic-line) !important;
-  border-radius: var(--clinic-radius) !important;
-  background: rgba(255, 255, 255, 0.88) !important;
-  box-shadow: var(--clinic-shadow-soft) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  background: #0d1522 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  color: #f8fafc !important;
 }
 
 .card,
@@ -2804,10 +2804,10 @@ input,
 select,
 textarea {
   min-height: 2.45rem !important;
-  border: 1px solid var(--clinic-line) !important;
-  border-radius: var(--clinic-radius) !important;
-  background: #ffffff !important;
-  color: var(--clinic-ink) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  background: #111a26 !important;
+  color: #f8fafc !important;
   box-shadow: none !important;
 }
 
@@ -3649,8 +3649,8 @@ button .material-symbols-rounded,
 
 td,
 th {
-  min-width: 0 !important;
-  overflow-wrap: anywhere !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
 }
 
 td .btn-sm,
@@ -4021,10 +4021,10 @@ td .btn-outline {
 }
 
 .intakes-table .td-patient {
-  color: var(--clinic-ink-soft) !important;
-  font-weight: 680 !important;
+  color: #f8fafc !important;
+  font-weight: 600 !important;
   line-height: 1.42 !important;
-  overflow-wrap: anywhere !important;
+  overflow-wrap: normal !important;
 }
 
 .intakes-table .status-chip {

@@ -4375,16 +4375,116 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (!patientCatalog.length) await fetchPatientCatalog();
       const libraryPayload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-library?profesional_id=${PROF_ID}&limit=24`);
       const library = libraryPayload?.data || {};
-      const recentPlans = Array.isArray(library?.recent_plans) ? library.recent_plans : [];
-      const summary = library?.summary || {};
+      let recentPlans = Array.isArray(library?.recent_plans) ? library.recent_plans : [];
+      let summary = library?.summary || {};
 
       templateLibraryCache = {
         summary,
         recentPlans,
       };
+
+      if (!recentPlans.length && isDevMode) {
+        recentPlans = [
+          {
+            patient_id: 'demo-p-01',
+            title: 'Protocolo de estabilización lumbar L5-S1',
+            clinical_note: 'Fase de fortalecimiento core y control motor lumbopélvico.',
+            status: 'activo',
+            exercises_count: 4,
+            archived_deliveries_count: 2,
+            latest_report_format: 'pdf',
+            latest_report_source: 'WhatsApp',
+            last_activity_at: new Date().toISOString(),
+            created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+          },
+          {
+            patient_id: 'demo-p-02',
+            title: 'Readaptación rotura fibrilar gemelo',
+            clinical_note: 'Cargas progresivas excéntricas y pliometría controlada.',
+            status: 'activo',
+            exercises_count: 3,
+            archived_deliveries_count: 1,
+            latest_report_format: 'link',
+            latest_report_source: 'Telegram',
+            last_activity_at: new Date().toISOString(),
+            created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
+          },
+          {
+            patient_id: 'demo-p-03',
+            title: 'Recuperación funcional LCA post-artroscopia',
+            clinical_note: 'Extensión activa, activación cuádriceps y propiocepción bipodal.',
+            status: 'activo',
+            exercises_count: 5,
+            archived_deliveries_count: 3,
+            latest_report_format: 'pdf',
+            latest_report_source: 'Email',
+            last_activity_at: new Date().toISOString(),
+            created_at: new Date(Date.now() - 86400000 * 8).toISOString(),
+          }
+        ];
+        summary = {
+          total_plans: recentPlans.length,
+          total_deliveries: 6,
+          active_patients: 3,
+        };
+        templateLibraryCache = { summary, recentPlans };
+      }
+
       renderTemplateLibrarySummary(summary, recentPlans);
       renderRecentTemplatePlans(recentPlans);
     } catch (err: any) {
+      if (isDevMode) {
+        const demoPlans = [
+          {
+            patient_id: 'demo-p-01',
+            title: 'Protocolo de estabilización lumbar L5-S1',
+            clinical_note: 'Fase de fortalecimiento core y control motor lumbopélvico.',
+            status: 'activo',
+            exercises_count: 4,
+            archived_deliveries_count: 2,
+            latest_report_format: 'pdf',
+            latest_report_source: 'WhatsApp',
+            last_activity_at: new Date().toISOString(),
+            created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+          },
+          {
+            patient_id: 'demo-p-02',
+            title: 'Readaptación rotura fibrilar gemelo',
+            clinical_note: 'Cargas progresivas excéntricas y pliometría controlada.',
+            status: 'activo',
+            exercises_count: 3,
+            archived_deliveries_count: 1,
+            latest_report_format: 'link',
+            latest_report_source: 'Telegram',
+            last_activity_at: new Date().toISOString(),
+            created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
+          },
+          {
+            patient_id: 'demo-p-03',
+            title: 'Recuperación funcional LCA post-artroscopia',
+            clinical_note: 'Extensión activa, activación cuádriceps y propiocepción bipodal.',
+            status: 'activo',
+            exercises_count: 5,
+            archived_deliveries_count: 3,
+            latest_report_format: 'pdf',
+            latest_report_source: 'Email',
+            last_activity_at: new Date().toISOString(),
+            created_at: new Date(Date.now() - 86400000 * 8).toISOString(),
+          }
+        ];
+        const demoSummary = {
+          total_plans: demoPlans.length,
+          total_deliveries: 6,
+          active_patients: 3,
+        };
+        templateLibraryCache = {
+          summary: demoSummary,
+          recentPlans: demoPlans,
+        };
+        renderTemplateLibrarySummary(demoSummary, demoPlans);
+        renderRecentTemplatePlans(demoPlans);
+        return;
+      }
       templateLibraryCache = {
         summary: {},
         recentPlans: [],
@@ -6618,6 +6718,62 @@ import ConfigView from '../components/views/ConfigView.astro';
       renderPagosSummary(pagos);
       void renderFinanceOverview(pagos);
       renderPagosMobile(pagos);
+      if (!pagos.length && isDevMode) {
+        const demoPagos = [
+          {
+            id: 'demo-pago-01',
+            fecha: new Date().toISOString(),
+            importe: 55.00,
+            metodo_pago: 'tarjeta',
+            concepto: 'Sesión Fisioterapia Deportiva',
+            crm_pacientes: { nombre: 'Carlos', apellidos: 'Vega Ortiz' }
+          },
+          {
+            id: 'demo-pago-02',
+            fecha: new Date(Date.now() - 86400000).toISOString(),
+            importe: 50.00,
+            metodo_pago: 'efectivo',
+            concepto: 'Rehabilitación Gemelo',
+            crm_pacientes: { nombre: 'Elena', apellidos: 'Ramos Gil' }
+          },
+          {
+            id: 'demo-pago-03',
+            fecha: new Date(Date.now() - 86400000 * 2).toISOString(),
+            importe: 180.00,
+            metodo_pago: 'tarjeta',
+            concepto: 'Bono 4 sesiones Fisioterapia',
+            crm_pacientes: { nombre: 'Marcos', apellidos: 'Alonso Vilar' }
+          },
+          {
+            id: 'demo-pago-04',
+            fecha: new Date(Date.now() - 86400000 * 3).toISOString(),
+            importe: 45.00,
+            metodo_pago: 'efectivo',
+            concepto: 'Terapia Manual Cervical',
+            crm_pacientes: { nombre: 'Lucia', apellidos: 'Méndez Ruiz' }
+          }
+        ];
+        renderPagosSummary(demoPagos);
+        void renderFinanceOverview(demoPagos);
+        renderPagosMobile(demoPagos);
+        pagosBody.innerHTML = demoPagos.map((p: any) => {
+          const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
+          const metodoClass = p.metodo_pago === 'efectivo' ? 'pagos-chip-cash' : 'pagos-chip-card';
+          return `<tr data-pago='${escapeAttr(JSON.stringify(p))}'>
+            <td>${fmtDate(p.fecha)}</td>
+            <td class="td-patient">${escapeHtml(patientName)}</td>
+            <td><span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
+            <td class="text-right">${Number(p.importe || 0).toFixed(2)} EUR</td>
+            <td>
+              <div class="table-actions">
+                <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
+                <button class="btn-sm btn-outline finance-danger-action" data-action="delete-pago" data-pago-id="${p.id}">Eliminar</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+        return;
+      }
       if (!pagos.length) { setTableState(pagosBody, 5, 'credit_card_off', 'Sin pagos en este periodo'); return; }
       pagosBody.innerHTML = pagos.map((p: any) => {
         const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
@@ -6636,6 +6792,62 @@ import ConfigView from '../components/views/ConfigView.astro';
         </tr>`;
       }).join('');
     } catch {
+      if (isDevMode) {
+        const demoPagos = [
+          {
+            id: 'demo-pago-01',
+            fecha: new Date().toISOString(),
+            importe: 55.00,
+            metodo_pago: 'tarjeta',
+            concepto: 'Sesión Fisioterapia Deportiva',
+            crm_pacientes: { nombre: 'Carlos', apellidos: 'Vega Ortiz' }
+          },
+          {
+            id: 'demo-pago-02',
+            fecha: new Date(Date.now() - 86400000).toISOString(),
+            importe: 50.00,
+            metodo_pago: 'efectivo',
+            concepto: 'Rehabilitación Gemelo',
+            crm_pacientes: { nombre: 'Elena', apellidos: 'Ramos Gil' }
+          },
+          {
+            id: 'demo-pago-03',
+            fecha: new Date(Date.now() - 86400000 * 2).toISOString(),
+            importe: 180.00,
+            metodo_pago: 'tarjeta',
+            concepto: 'Bono 4 sesiones Fisioterapia',
+            crm_pacientes: { nombre: 'Marcos', apellidos: 'Alonso Vilar' }
+          },
+          {
+            id: 'demo-pago-04',
+            fecha: new Date(Date.now() - 86400000 * 3).toISOString(),
+            importe: 45.00,
+            metodo_pago: 'efectivo',
+            concepto: 'Terapia Manual Cervical',
+            crm_pacientes: { nombre: 'Lucia', apellidos: 'Méndez Ruiz' }
+          }
+        ];
+        renderPagosSummary(demoPagos);
+        void renderFinanceOverview(demoPagos);
+        renderPagosMobile(demoPagos);
+        pagosBody.innerHTML = demoPagos.map((p: any) => {
+          const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
+          const metodoClass = p.metodo_pago === 'efectivo' ? 'pagos-chip-cash' : 'pagos-chip-card';
+          return `<tr data-pago='${escapeAttr(JSON.stringify(p))}'>
+            <td>${fmtDate(p.fecha)}</td>
+            <td class="td-patient">${escapeHtml(patientName)}</td>
+            <td><span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
+            <td class="text-right">${Number(p.importe || 0).toFixed(2)} EUR</td>
+            <td>
+              <div class="table-actions">
+                <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
+                <button class="btn-sm btn-outline finance-danger-action" data-action="delete-pago" data-pago-id="${p.id}">Eliminar</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+        return;
+      }
       renderPagosSummary([]);
       void renderFinanceOverview([]);
       renderPagosMobile([]);
@@ -7625,8 +7837,18 @@ import ConfigView from '../components/views/ConfigView.astro';
     fichaPatientId = patientId;
     syncFichaAvailabilityUi([]);
     // Switch to ficha page
-    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelector('[data-page="ficha-paciente"]')?.classList.add('active');
+    (window as any).__fisioShellNavigate?.('ficha-paciente');
+    document.querySelectorAll('.page-section').forEach(s => {
+      s.classList.remove('active');
+      (s as HTMLElement).hidden = true;
+      s.setAttribute('aria-hidden', 'true');
+    });
+    const fichaPage = document.querySelector('[data-page="ficha-paciente"]') as HTMLElement | null;
+    if (fichaPage) {
+      fichaPage.classList.add('active');
+      fichaPage.hidden = false;
+      fichaPage.setAttribute('aria-hidden', 'false');
+    }
     // Reset to first tab
     activateFichaTab('resumen');
     // Hide edit form, show view
@@ -7636,11 +7858,32 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     // Load data
     try {
-      const [payload, recommendationsResp] = await Promise.all([
-        fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`),
-        fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`).catch(() => ({ data: [] })),
-      ]);
-      payload.recommendations = Array.isArray(recommendationsResp?.data) ? recommendationsResp.data : [];
+      let payload: any = null;
+      try {
+        const [resPayload, recommendationsResp] = await Promise.all([
+          fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`),
+          fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`).catch(() => ({ data: [] })),
+        ]);
+        payload = resPayload;
+        payload.recommendations = Array.isArray(recommendationsResp?.data) ? recommendationsResp.data : [];
+      } catch (fetchErr: any) {
+        if (isDevMode) {
+          const demoPat = DEMO_PATIENTS.find(p => p.id === patientId || p.nombre_completo?.toLowerCase().includes(patientId.toLowerCase())) || DEMO_PATIENTS[0];
+          payload = {
+            paciente: demoPat,
+            citas: DEMO_APPOINTMENTS.filter(c => c.paciente_id === demoPat.id || c.nombre_paciente?.includes(demoPat.nombre)),
+            pagos: [
+              { id: 'p1', fecha: '2026-09-18', importe: 55, metodo_pago: 'tarjeta' },
+              { id: 'p2', fecha: '2026-09-10', importe: 55, metodo_pago: 'efectivo' },
+            ],
+            notas: demoPat.notas_clinicas || [],
+            recommendations: DEMO_EXERCISES_CATALOG.slice(0, 3),
+            module_availability: [],
+          };
+        } else {
+          throw fetchErr;
+        }
+      }
       fichaData = payload;
       selectedPatientId = patientId;
       selectedPatientName = getPatientFullName(payload.paciente);
@@ -9094,6 +9337,57 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       const docs = [...(payload.data || [])].sort((a: any, b: any) => new Date((b?.fecha_firma || b?.created_at || 0)).getTime() - new Date((a?.fecha_firma || a?.created_at || 0)).getTime());
       renderDocumentosSummary(docs);
       renderDocumentosMobile(docs);
+      if (!docs.length && isDevMode) {
+        const demoDocs = [
+          {
+            id: 'demo-doc-01',
+            tipo: 'consentimiento_informado',
+            titulo: 'Consentimiento informado de fisioterapia invasiva (punción seca)',
+            estado: 'firmado',
+            fecha_firma: new Date(Date.now() - 86400000 * 2).toISOString(),
+            crm_pacientes: { nombre: 'Carlos', apellidos: 'Vega Ortiz' }
+          },
+          {
+            id: 'demo-doc-02',
+            tipo: 'lopd',
+            titulo: 'Cláusula informativa y consentimiento de protección de datos RGPD',
+            estado: 'firmado',
+            fecha_firma: new Date(Date.now() - 86400000 * 5).toISOString(),
+            crm_pacientes: { nombre: 'Elena', apellidos: 'Ramos Gil' }
+          },
+          {
+            id: 'demo-doc-03',
+            tipo: 'consentimiento_informado',
+            titulo: 'Consentimiento para terapia manual y ejercicio terapéutico supervisado',
+            estado: 'pendiente',
+            fecha_firma: null,
+            crm_pacientes: { nombre: 'Marcos', apellidos: 'Alonso Vilar' }
+          }
+        ];
+        renderDocumentosSummary(demoDocs);
+        renderDocumentosMobile(demoDocs);
+        documentosBody.innerHTML = demoDocs.map((d: any) => {
+          const pac = d.crm_pacientes;
+          const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : 'Sin paciente';
+          const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Sin tipo';
+          const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
+          const fechaFirma = d.fecha_firma
+            ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+            : 'Pendiente';
+          return `<tr>
+            <td class="td-patient">${escapeHtml(pacNombre)}</td>
+            <td>${escapeHtml(tipoLabel)}</td>
+            <td>${escapeHtml(d.titulo || 'Sin titulo')}</td>
+            <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
+            <td>${fechaFirma}</td>
+            <td class="documentos-actions-cell">
+              ${d.estado === 'firmado' ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
+              <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
+            </td>
+          </tr>`;
+        }).join('');
+        return;
+      }
       if (!docs.length) {
         setTableState(documentosBody, 6, 'description', 'Sin documentos registrados');
         return;
@@ -9119,6 +9413,57 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         </tr>`;
       }).join('');
     } catch {
+      if (isDevMode) {
+        const demoDocs = [
+          {
+            id: 'demo-doc-01',
+            tipo: 'consentimiento_informado',
+            titulo: 'Consentimiento informado de fisioterapia invasiva (punción seca)',
+            estado: 'firmado',
+            fecha_firma: new Date(Date.now() - 86400000 * 2).toISOString(),
+            crm_pacientes: { nombre: 'Carlos', apellidos: 'Vega Ortiz' }
+          },
+          {
+            id: 'demo-doc-02',
+            tipo: 'lopd',
+            titulo: 'Cláusula informativa y consentimiento de protección de datos RGPD',
+            estado: 'firmado',
+            fecha_firma: new Date(Date.now() - 86400000 * 5).toISOString(),
+            crm_pacientes: { nombre: 'Elena', apellidos: 'Ramos Gil' }
+          },
+          {
+            id: 'demo-doc-03',
+            tipo: 'consentimiento_informado',
+            titulo: 'Consentimiento para terapia manual y ejercicio terapéutico supervisado',
+            estado: 'pendiente',
+            fecha_firma: null,
+            crm_pacientes: { nombre: 'Marcos', apellidos: 'Alonso Vilar' }
+          }
+        ];
+        renderDocumentosSummary(demoDocs);
+        renderDocumentosMobile(demoDocs);
+        documentosBody.innerHTML = demoDocs.map((d: any) => {
+          const pac = d.crm_pacientes;
+          const pacNombre = pac ? `${pac.nombre || ''} ${pac.apellidos || ''}`.trim() : 'Sin paciente';
+          const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Sin tipo';
+          const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
+          const fechaFirma = d.fecha_firma
+            ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+            : 'Pendiente';
+          return `<tr>
+            <td class="td-patient">${escapeHtml(pacNombre)}</td>
+            <td>${escapeHtml(tipoLabel)}</td>
+            <td>${escapeHtml(d.titulo || 'Sin titulo')}</td>
+            <td><span class="status-chip ${estadoClass}">${d.estado === 'firmado' ? 'Firmado' : 'Pendiente'}</span></td>
+            <td>${fechaFirma}</td>
+            <td class="documentos-actions-cell">
+              ${d.estado === 'firmado' ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
+              <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
+            </td>
+          </tr>`;
+        }).join('');
+        return;
+      }
       renderDocumentosSummary([]);
       renderDocumentosMobile([]);
       setTableState(documentosBody, 6, 'cloud_off', 'Error al cargar documentos');

@@ -1900,6 +1900,824 @@ textarea::placeholder {
   font-weight: 650 !important;
 }
 
+/* ==========================================================================
+   REFERO SUPERPOWER: CLINICAL COMMAND WORKSPACES & SURFACES
+   ========================================================================== */
+
+/* --- 1. AGENDA & CITAS WORKSPACE (data-page="citas") --- */
+.page-section[data-page="citas"] {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.page-section[data-page="citas"] .agenda-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  padding-bottom: 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.page-section[data-page="citas"] .page-title {
+  color: #f8fafc !important;
+  font-family: var(--font-display, "Sora", sans-serif) !important;
+  font-size: 1.85rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.page-section[data-page="citas"] .agenda-sync-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  margin-top: 0.4rem !important;
+}
+
+.page-section[data-page="citas"] .agenda-sync-copy strong {
+  color: #f8fafc !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+}
+
+.page-section[data-page="citas"] .agenda-sync-copy p {
+  color: #94a3b8 !important;
+  font-size: 0.78rem !important;
+  margin: 0 !important;
+}
+
+.week-nav-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.35rem 0.5rem !important;
+  background: #0d1522 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 9999px !important;
+}
+
+.week-nav-bar .week-label {
+  color: #f8fafc !important;
+  font-size: 0.85rem !important;
+  font-weight: 650 !important;
+  padding: 0 0.65rem !important;
+  white-space: nowrap !important;
+}
+
+.week-nav-bar .btn-ghost {
+  color: #94a3b8 !important;
+  border-radius: 9999px !important;
+  padding: 0.35rem 0.75rem !important;
+}
+
+.week-nav-bar .btn-ghost:hover {
+  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Calendar Card & Grid */
+.agenda-cal-card {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  background: #0d1522 !important;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden !important;
+  margin-bottom: 1.75rem !important;
+}
+
+.agenda-board-head {
+  background: #111a26 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.agenda-board-corner,
+.agenda-day-head {
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.agenda-day-head.is-today {
+  background: rgba(16, 185, 129, 0.08) !important;
+  box-shadow: inset 0 3px 0 #10b981 !important;
+}
+
+.agenda-day-name {
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+.agenda-day-number {
+  color: #f8fafc !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+}
+
+.agenda-time-cell {
+  background: #0b111a !important;
+  color: #64748b !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+}
+
+.agenda-week-cell {
+  background: #0d1522 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.agenda-week-cell.is-today {
+  background: rgba(16, 185, 129, 0.04) !important;
+}
+
+.agenda-cell-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px !important;
+}
+
+.agenda-break-cell {
+  background: #090e17 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.agenda-break-cell span {
+  color: #64748b !important;
+}
+
+.agenda-break-cell strong {
+  color: #10b981 !important;
+}
+
+/* High contrast clinical appointment cards inside calendar */
+.agenda-event-card {
+  background: #131d2a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-left: 3px solid #10b981 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.65rem !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.agenda-event-card:hover {
+  background: #192738 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  transform: translateY(-2px) scale(1.01) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5) !important;
+  z-index: 10 !important;
+}
+
+.agenda-event-time {
+  color: #34d399 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.agenda-event-name {
+  color: #f8fafc !important;
+  font-size: 0.88rem !important;
+  font-weight: 650 !important;
+}
+
+.agenda-event-reason {
+  color: #94a3b8 !important;
+  font-size: 0.74rem !important;
+  font-weight: 500 !important;
+}
+
+/* Pacientes esta semana Table - FIXED COLUMN WRAPPING & CONTRAST */
+.page-section[data-page="citas"] .table-card {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  background: #0d1522 !important;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden !important;
+}
+
+.page-section[data-page="citas"] .card-header {
+  padding: 1.25rem 1.6rem !important;
+  background: #111a26 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.page-section[data-page="citas"] .card-header h2 {
+  color: #f8fafc !important;
+  font-family: var(--font-display, "Sora", sans-serif) !important;
+  font-size: 1.15rem !important;
+  font-weight: 650 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  margin: 0 !important;
+}
+
+.page-section[data-page="citas"] .badge-week-count {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 1.6rem !important;
+  height: 1.6rem !important;
+  padding: 0 0.5rem !important;
+  border-radius: 9999px !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #34d399 !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+}
+
+.page-section[data-page="citas"] .badge-week-count:empty {
+  display: none !important;
+}
+
+.page-section[data-page="citas"] table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.page-section[data-page="citas"] th {
+  background: #0f1724 !important;
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 0.85rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  white-space: nowrap !important;
+}
+
+.page-section[data-page="citas"] td {
+  padding: 0.95rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  color: #cbd5e1 !important;
+  font-size: 0.86rem !important;
+}
+
+.page-section[data-page="citas"] tbody tr:hover td {
+  background: #141f2e !important;
+}
+
+/* Specific column widths to prevent ugly character breaking */
+.page-section[data-page="citas"] td.td-patient {
+  color: #f8fafc !important;
+  font-weight: 650 !important;
+  font-size: 0.92rem !important;
+  white-space: nowrap !important;
+  min-width: 170px !important;
+}
+
+.page-section[data-page="citas"] th:nth-child(2),
+.page-section[data-page="citas"] td:nth-child(2) {
+  white-space: nowrap !important;
+  width: 115px !important;
+  color: #94a3b8 !important;
+}
+
+.page-section[data-page="citas"] th:nth-child(3),
+.page-section[data-page="citas"] td:nth-child(3) {
+  white-space: nowrap !important;
+  width: 80px !important;
+  color: #34d399 !important;
+  font-weight: 700 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.page-section[data-page="citas"] th:nth-child(4),
+.page-section[data-page="citas"] td:nth-child(4) {
+  max-width: 280px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  color: #cbd5e1 !important;
+}
+
+.page-section[data-page="citas"] th:nth-child(5),
+.page-section[data-page="citas"] td:nth-child(5) {
+  white-space: nowrap !important;
+  width: 120px !important;
+}
+
+.page-section[data-page="citas"] th:nth-child(6),
+.page-section[data-page="citas"] td:nth-child(6) {
+  white-space: nowrap !important;
+  width: 110px !important;
+}
+
+.page-section[data-page="citas"] th:nth-child(7),
+.page-section[data-page="citas"] td:nth-child(7) {
+  white-space: nowrap !important;
+  width: 110px !important;
+}
+
+.page-section[data-page="citas"] th:nth-child(8),
+.page-section[data-page="citas"] td:nth-child(8) {
+  white-space: nowrap !important;
+  width: 100px !important;
+  text-align: right !important;
+}
+
+/* --- 2. BIBLIOTECA CLÍNICA (data-page="plantillas") --- */
+.page-section[data-page="plantillas"] {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.template-library-shell {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.75rem !important;
+  width: 100% !important;
+}
+
+.template-kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 1.25rem !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .template-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.template-kpi-card {
+  background: #0d1522 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 1.25rem 1.5rem !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.25rem !important;
+}
+
+.template-kpi-card span {
+  color: #10b981 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+}
+
+.template-kpi-card strong {
+  color: #f8fafc !important;
+  font-family: var(--font-display, "Sora", sans-serif) !important;
+  font-size: 1.85rem !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  margin: 0.25rem 0 !important;
+}
+
+.template-kpi-card p {
+  color: #94a3b8 !important;
+  font-size: 0.82rem !important;
+  margin: 0 !important;
+}
+
+.template-library-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  width: 100% !important;
+}
+
+.template-history-card {
+  background: #0d1522 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden !important;
+}
+
+.template-history-card .card-header {
+  padding: 1.25rem 1.6rem !important;
+  background: #111a26 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.template-history-card .card-header h2 {
+  color: #f8fafc !important;
+  font-family: var(--font-display, "Sora", sans-serif) !important;
+  font-size: 1.15rem !important;
+  font-weight: 650 !important;
+  margin: 0 !important;
+}
+
+.template-history-card .card-subtitle {
+  color: #94a3b8 !important;
+  font-size: 0.82rem !important;
+  margin: 0.25rem 0 0 !important;
+}
+
+.template-history-card table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.template-history-card th {
+  background: #0f1724 !important;
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 0.85rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.template-history-card td {
+  padding: 0.95rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  color: #cbd5e1 !important;
+  font-size: 0.86rem !important;
+}
+
+.template-history-card tbody tr:hover td {
+  background: #141f2e !important;
+}
+
+/* --- 3. FINANZAS & PAGOS WORKSPACE (data-page="pagos") --- */
+.page-section[data-page="pagos"] {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.finance-workbench {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr) !important;
+  gap: 1.25rem !important;
+  padding: 1.5rem !important;
+  background: #0d1522 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4) !important;
+  margin-bottom: 1.5rem !important;
+}
+
+@media (max-width: 960px) {
+  .finance-workbench {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.finance-priority-panel {
+  background: #111a26 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 1.4rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+}
+
+.finance-kicker {
+  color: #10b981 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+}
+
+.finance-priority-panel strong {
+  color: #f8fafc !important;
+  font-family: var(--font-display, "Sora", sans-serif) !important;
+  font-size: 1.25rem !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em !important;
+  margin: 0.2rem 0 !important;
+}
+
+.finance-priority-panel p {
+  color: #94a3b8 !important;
+  font-size: 0.85rem !important;
+  line-height: 1.45 !important;
+  margin: 0 !important;
+}
+
+.finance-priority-actions {
+  display: flex !important;
+  gap: 0.75rem !important;
+  margin-top: 0.5rem !important;
+}
+
+.finance-action-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.85rem !important;
+}
+
+.finance-action-card {
+  background: #111a26 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 1.15rem 1.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.finance-action-card:hover {
+  background: #152232 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+.finance-action-card .material-symbols-rounded {
+  color: #10b981 !important;
+  font-size: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.finance-action-card strong {
+  color: #f8fafc !important;
+  font-size: 0.95rem !important;
+  font-weight: 650 !important;
+}
+
+.finance-action-card small {
+  color: #94a3b8 !important;
+  font-size: 0.78rem !important;
+  margin-top: 0.15rem !important;
+}
+
+.pagos-toolbar {
+  background: #0d1522 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 1.25rem 1.5rem !important;
+  margin-bottom: 1.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.5rem !important;
+  flex-wrap: wrap !important;
+}
+
+.pagos-summary-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 2rem !important;
+  flex-wrap: wrap !important;
+}
+
+.pagos-stat {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.2rem !important;
+}
+
+.pagos-stat-label {
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+.pagos-stat-value {
+  color: #f8fafc !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.pagos-filters-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+}
+
+.pagos-filters-row select {
+  background: #111a26 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  border-radius: 8px !important;
+  padding: 0.4rem 0.85rem !important;
+  font-size: 0.85rem !important;
+  outline: none !important;
+}
+
+.finance-overview-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+  margin-bottom: 1.5rem !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .finance-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+.finance-overview-card {
+  background: #0d1522 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 1.15rem 1.4rem !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.25rem !important;
+}
+
+.finance-overview-card span {
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+.finance-overview-card strong {
+  color: #f8fafc !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+  margin: 0.2rem 0 !important;
+}
+
+.finance-overview-card p {
+  color: #64748b !important;
+  font-size: 0.78rem !important;
+  margin: 0 !important;
+}
+
+/* --- 4. DOCUMENTOS & CONSENTIMIENTOS WORKSPACE (data-page="documentos") --- */
+.page-section[data-page="documentos"] {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.documentos-workbench {
+  background: #0d1522 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden !important;
+}
+
+.documentos-workbench-head {
+  padding: 1.25rem 1.6rem !important;
+  background: #111a26 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.documentos-workbench-title {
+  color: #f8fafc !important;
+  font-family: var(--font-display, "Sora", sans-serif) !important;
+  font-size: 1.25rem !important;
+  font-weight: 650 !important;
+  margin: 0 !important;
+}
+
+.documentos-summary {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 1.25rem !important;
+  padding: 1.25rem 1.6rem !important;
+  background: #0d1522 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.documentos-summary .ops-signal {
+  background: #111a26 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 1.15rem 1.35rem !important;
+}
+
+.ops-signal-label {
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+.ops-signal-value {
+  color: #f8fafc !important;
+  font-family: var(--font-display, "Sora", sans-serif) !important;
+  font-size: 1.65rem !important;
+  font-weight: 700 !important;
+  display: block !important;
+  margin: 0.2rem 0 !important;
+}
+
+.documentos-value-ok {
+  color: #34d399 !important;
+}
+
+.documentos-value-warn {
+  color: #fbbf24 !important;
+}
+
+.ops-signal-hint {
+  color: #64748b !important;
+  font-size: 0.78rem !important;
+}
+
+.documentos-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.documentos-table th {
+  background: #0f1724 !important;
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 0.85rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.documentos-table td {
+  padding: 0.95rem 1.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  color: #cbd5e1 !important;
+  font-size: 0.86rem !important;
+}
+
+.documentos-table tbody tr:hover td {
+  background: #141f2e !important;
+}
+
+/* --- 5. MOTION SYSTEM & MICRO-INTERACTIONS --- */
+@keyframes clinicalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-section {
+  animation: clinicalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+/* Tactile button feedback */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.patient-primary-action {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-ghost:active,
+.patient-primary-action:active {
+  transform: scale(0.97) !important;
+}
+
+/* Shimmer keyframes for skeletons & loading states */
+@keyframes clinicalShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.state-loading,
+.agenda-cal-loading {
+  background: linear-gradient(90deg, #0d1522 25%, #152232 50%, #0d1522 75%) !important;
+  background-size: 200% 100% !important;
+  animation: clinicalShimmer 2s infinite ease-in-out !important;
+  color: #94a3b8 !important;
+}
+
 /* Patient intake: a composed workspace instead of a compressed generic modal. */
 .patient-modal-overlay {
   position: fixed;
