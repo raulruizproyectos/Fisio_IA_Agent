@@ -1,15 +1,33 @@
 # Project Status
 
-Updated: 2026-09-19 (P0 Functional Recovery Checkpoint — Supersedes `a96c502`)
+Updated: 2026-09-19 (P0 Product Recovery & Release Baseline — Supersedes `0188ec4` and `1b570b0`)
 
-> **AVISO DE RECUPERACIÓN FUNCIONAL**: El checkpoint `a96c502` fue invalidado debido a fallos de persistencia real en base de datos, desajuste de claves/esquemas Supabase y fallbacks silenciosos a datos demo en frontend. El presente checkpoint SUPERSEDE al anterior tras una recuperación y verificación funcional completa E2E sin `?demo=true`.
+> **AVISO DE RECUPERACIÓN Y HARDENING COMPLETO**: El checkpoint `0188ec4` contenía bloqueos en llamadas locales por autenticación 401 (`dev-token` no reconocido al estar `NODE_ENV` indefinido), desconexión del `patient_id` en el Copiloto Clínico, desalineación del `DEFAULT_PROFESSIONAL_ID` en `.env.local`, y choques de diseño visual en la Ficha del Paciente. El presente checkpoint SUPERSEDE formalmente a los anteriores tras una resolución de causas raíz, verificación visual con capturas y ejecución E2E real en navegador.
 
 ## Functional Recovery & Core Domains (Verified E2E)
-- **P0 Infraestructura & Base de Datos**:
-  - `backend/.env`: Restaurada `SUPABASE_ANON_KEY`, corrigiendo el readiness check (`missing_core: 0`).
-  - Alineado `DEFAULT_PROFESSIONAL_ID` al perfil real de `crm_perfiles` (`6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
-  - Creadas tablas faltantes en Supabase: `crm_asignaciones_fisio_paciente`, `crm_audit_log`, `crm_recordatorio_envios`.
-  - Añadidas columnas requeridas a `crm_recomendaciones` (`idempotency_key`, `reviewed_by_profile_id`, `reviewed_at`, `approval_note`, `prompt_version`, `model_name`) eliminando el descarte de persistencia (`persistence_skipped: false`).
+- **P0 Autenticación & Runtime Real**:
+  - `backend/src/middleware/security.js`: Condición de `dev-token` ampliada para entornos de desarrollo donde `NODE_ENV` no esté explícitamente definido (`!process.env.NODE_ENV || process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'`).
+  - `.env.local`: Alineado `DEFAULT_PROFESSIONAL_ID` al perfil real de `crm_perfiles` (`6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
+  - Eliminados los estados de carga infinita ("Cargando agenda...", "Leyendo próxima sesión...", "Cargando citas...", "Leyendo mensajes...").
+- **P0 Dashboard & KPIs Clínicos**:
+  - Pacientes activos cargan cifra real (9 pacientes) desde Supabase.
+  - Sesiones hoy reflejan valor real (0 citas para la jornada de hoy sábado).
+  - Informes/planes clínicos generados cargan cifra real (1 plan) mediante consulta a `/api/profesional/program-library`.
+  - Ingresos del mes cargan valor real verificado (50 EUR).
+  - Tarjeta de foco muestra el estado real del día ("Libre", "Sin próxima sesión cargada", botón "Abrir agenda").
+- **P0 Copiloto Clínico**:
+  - Conectado el contexto del paciente: `handleAssistantChat` en `index.astro` envía ahora `patient_id` y `profesional_id` a `/api/agent/message`.
+  - Backend extrae historial clínico longitudinal (Capa 2) y notas recientes (Capa 1).
+  - Proveedor OpenAI (`gpt-4o-mini`) verificado en ejecución real (confianza 0.95, ruta `clinical_assistant`).
+- **P1 Notas de Sesión por Voz & Síntesis Clínica**:
+  - Corregido fallo de tipo `s.tratamientos?.join` en `backend/src/lib/clinical-voice.js`.
+  - Verificado endpoint de síntesis clínica estructurada (`/api/notas-clinicas/voice/synthesize`).
+- **P1 Accesibilidad (WCAG AA & Astro Audit)**:
+  - Resueltos findings de labels sin control asociado en `FichaPacienteView.astro`, `PatientsView.astro` y `PagosView.astro`.
+  - `npx astro check` pasa con 0 errores y 0 warnings.
+- **P2 Coherencia Visual & Reducción de Brillo**:
+  - Reconstruida `FichaPacienteView.astro` con superficies tonales clínicas cálidas (`#f8f7f4`, `#faf7e8`, `#ffffff` con sutil borde `rgba(0,0,0,0.06)`), eliminando el choque visual de fondo oscuro rígido (`#090e17`).
+  - Verificación visual completada con capturas de pantalla de Dashboard, Copiloto, Directorio de Pacientes y Ficha Clínica.
 - **P0 Pacientes**:
   - Alta, listado y consulta individual verificados con persistencia real en PostgreSQL (`crm_pacientes`).
   - `/ficha` corregido en `backend/src/routes/patients.js`: sustituida columna inexistente `fecha_hora` por `inicio_en, fin_en` con mapeo de compatibilidad.

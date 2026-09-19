@@ -2926,11 +2926,18 @@ import ConfigView from '../components/views/ConfigView.astro';
     resizeAgentInput();
     upsertAgentProgress('Consultando al asistente clinico...');
     setSending(true, busySource);
+    const activePatientId = selectedPatientId || fichaPatientId || chatPatientSelect?.value || null;
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/agent/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'professional', channel: 'web', text: requestText }),
+        body: JSON.stringify({
+          role: 'professional',
+          channel: 'web',
+          text: requestText,
+          patient_id: activePatientId,
+          profesional_id: PROF_ID,
+        }),
       });
       const answer = payload?.data?.reply_text || payload?.data?.message || (typeof payload.data === 'string' ? payload.data : JSON.stringify(payload.data));
       clearAgentProgress();
@@ -3799,6 +3806,17 @@ import ConfigView from '../components/views/ConfigView.astro';
       const elSesiones = document.getElementById('metricSesionesMes');
       if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} EUR`;
       if (elSesiones) elSesiones.textContent = String(sesionesMes);
+
+      try {
+        const libraryData = await fetchJson(`${BACKEND_BASE}/api/profesional/program-library?profesional_id=${PROF_ID}&limit=1`);
+        const elInformes = document.getElementById('metricInformes');
+        if (elInformes) {
+          const totalPlans = Number(libraryData?.data?.summary?.visible_plans || 0);
+          elInformes.textContent = String(totalPlans);
+        }
+      } catch (err) {
+        console.warn('No se pudieron cargar planes para metricInformes:', err);
+      }
 
       // Draw chart
       const chartYear = document.getElementById('dashChartYear');

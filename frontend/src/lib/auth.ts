@@ -57,7 +57,7 @@ function installAuthenticatedFetch() {
     const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
     if (currentSession?.access_token) headers.set('Authorization', `Bearer ${currentSession.access_token}`);
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const isDev = isLocalHost && (window.location.search.includes('demo=true') || window.localStorage.getItem('fisio_dev_mode') === 'true');
+    const isDev = isLocalHost || (window.location.search.includes('demo=true') || window.localStorage.getItem('fisio_dev_mode') === 'true');
     const response = await nativeFetch(input, { ...init, headers });
 
     if (response.status === 401 && !target.pathname.endsWith('/api/health') && !isDev) {

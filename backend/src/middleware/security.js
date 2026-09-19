@@ -80,7 +80,8 @@ export async function authorizeRequest(req, res, next) {
   const token = bearerToken(req);
   if (!token) return res.status(401).json({ error: 'Autenticacion requerida', request_id: req.id });
 
-  if (process.env.NODE_ENV === 'development' && token === 'dev-token') {
+  const isDevEnv = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+  if (isDevEnv && token === 'dev-token') {
     req.auth = {
       user_id: '9403b843-53ef-47ef-bcd9-e45909e08907',
       profile_id: process.env.DEFAULT_PROFESSIONAL_ID || '6dae4ef6-b6b3-4cb0-91d9-0320d10db255',

@@ -145,28 +145,28 @@
             <form id="pagoForm" class="patient-form">
               <input type="hidden" id="pagoEditId" value="" />
               <div class="form-grid">
-                <label class="field field-full">
+                <label class="field field-full" for="pagoPacienteSelect">
                   <span>Paciente</span>
                   <select id="pagoPacienteSelect" required>
                     <option value="">-- Selecciona paciente --</option>
                   </select>
                 </label>
-                <label class="field">
+                <label class="field" for="pagoImporteInput">
                   <span>Importe (&euro;)</span>
                   <input id="pagoImporteInput" name="importe" type="number" step="0.01" min="0.01" placeholder="35.00" required />
                 </label>
-                <label class="field">
+                <div class="field">
                   <span>M&eacute;todo</span>
-                  <div class="pagos-metodo-toggle">
+                  <div class="pagos-metodo-toggle" role="radiogroup" aria-label="Método de pago">
                     <label class="pagos-toggle-opt"><input type="radio" name="metodo_pago" value="efectivo" checked /><span class="pagos-chip pagos-chip-cash">Efectivo</span></label>
                     <label class="pagos-toggle-opt"><input type="radio" name="metodo_pago" value="tarjeta" /><span class="pagos-chip pagos-chip-card">Tarjeta</span></label>
                   </div>
-                </label>
-                <label class="field">
+                </div>
+                <label class="field" for="pagoFechaInput">
                   <span>Fecha</span>
                   <input id="pagoFechaInput" name="fecha" type="date" required />
                 </label>
-                <label class="field field-full">
+                <label class="field field-full" for="pagoNotasInput">
                   <span>Notas (opcional)</span>
                   <input id="pagoNotasInput" name="notas" type="text" placeholder="Ej: Sesi&oacute;n extra, bono 10 sesiones..." />
                 </label>

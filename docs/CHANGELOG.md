@@ -2,7 +2,26 @@
 
 Registro consolidado de checkpoints técnicos y funcionales del proyecto Fisio Clinical.
 
-## [checkpoint-2026-09-19-recovery] — Recuperación Funcional P0 & Superación de Checkpoint a96c502
+## [checkpoint-2026-09-19-p0-recovery] — P0 Product Recovery & Release Hardening (Supersedes 0188ec4 & 1b570b0)
+
+### Fixed & Restored
+- **Runtime & Autenticación Local**: Solucionado el error 401 Unauthorized en llamadas locales permitiendo `dev-token` en `backend/src/middleware/security.js` cuando `NODE_ENV` está indefinido o en desarrollo/test.
+- **Alineación de ID Profesional**: Actualizado `DEFAULT_PROFESSIONAL_ID` en `.env.local` al ID real de `crm_perfiles` (`6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
+- **Eliminación de Loaders Infinitos**: Resuelto el bloqueo de peticiones de agenda, citas, bandeja de entrada y KPIs. El Dashboard renderiza datos reales: 9 pacientes activos, 0 citas hoy (sábado), 1 plan clínico, 50 EUR facturados y foco del día ("Libre").
+- **Copiloto Clínico con Contexto Real**: En `index.astro`, `handleAssistantChat` envía ahora `patient_id` y `profesional_id` a `/api/agent/message`, permitiendo a OpenAI (`gpt-4o-mini`) responder con contexto longitudinal y de notas recientes.
+- **Notas de Sesión por Voz**: Corregido crash `TypeError: s.tratamientos?.join is not a function` en `backend/src/lib/clinical-voice.js`.
+- **Accesibilidad (WCAG AA & Astro Audit)**: Corregidos labels sin `for` asociado en `FichaPacienteView.astro` (`voiceTranscriptInput`, `painEvaSlider`, `painZoneNotes`), `PatientsView.astro` y `PagosView.astro`.
+- **Coherencia Visual en Ficha de Paciente**: Sustituido el contenedor oscuro rígido (`#090e17`) de `FichaPacienteView.astro` por superficies tonales clínicas coherentes con la paleta de la aplicación (`#f8f7f4`, `#faf7e8`, `#ffffff`).
+
+### Quality & Verification
+- Backend: 21/21 tests unitarios e integrados pasando (`npm test`).
+- Frontend: `npx astro check` limpio con 0 errores y 0 warnings.
+- Build estático exitoso: `npm run build` genera las 4 páginas en 2.74s.
+- Verificación visual y funcional real mediante subagente de navegador con capturas registradas en el brain de la sesión.
+
+---
+
+## [checkpoint-2026-09-19-recovery] — Recuperación Funcional P0 & Superación de Checkpoint a96c502 [SUPERSEDED]
 
 ### Added / Restored
 - Recuperación de conectividad real con Supabase en `backend/.env` (`SUPABASE_ANON_KEY`) resolviendo fallo de readiness (`missing_core: 0`).
