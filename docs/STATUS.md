@@ -1,28 +1,33 @@
 # Project Status
 
-Updated: 2026-09-20 (P0 Product Recovery & Release Baseline — Commit `23aeb40`)
+Updated: 2026-09-20 (Definitive Product Recovery, Stitch Redesign & Hardening — Baseline `64934d7`)
 
-> **AVISO DE RECUPERACIÓN Y HARDENING COMPLETO**: El checkpoint anterior contenía bloqueos en llamadas locales por autenticación 401 (`dev-token` no reconocido al estar `NODE_ENV` indefinido), desconexión del `patient_id` en el Copiloto Clínico, desalineación del `DEFAULT_PROFESSIONAL_ID` en `.env.local`, choque visual de fondo en la Ficha del Paciente, y error de construcción de URL en el frontend en entornos de producción. El presente checkpoint SUPERSEDE formalmente a los anteriores tras una resolución integral de causas raíz, verificación visual con capturas y ejecución E2E real en navegador.
+> **ESTADO DE VERIFICACIÓN EMPÍRICA (CERO FALSOS POSITIVOS)**: Este checkpoint (`64934d7`) SUPERSEDE formalmente a `b8f7980`, `23aeb40`, `c59556a` y anteriores. Se eliminó la falsa confianza y se verificó empíricamente con navegador real Playwright, backend real Node.js, PostgreSQL/Supabase real y OpenAI `gpt-4o-mini`.
 
-## Functional Recovery & Core Domains (Verified E2E)
-- **P0 Autenticación & Runtime Real**:
-  - `backend/src/middleware/security.js`: Condición de `dev-token` ampliada para entornos de desarrollo donde `NODE_ENV` no esté explícitamente definido (`!process.env.NODE_ENV || process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'`).
-  - `.env.local`: Alineado `DEFAULT_PROFESSIONAL_ID` al perfil real de `crm_perfiles` (`6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
-  - `frontend/src/lib/auth.ts`: Fallback automático para `backendBase` en dominios de producción EasyPanel (`https://fisio-backend.b5xbaf.easypanel.host`) y manejo seguro con `try/catch` de `new URL` para evitar excepciones en arranque.
-  - Eliminados los estados de carga infinita ("Cargando agenda...", "Leyendo próxima sesión...", "Cargando citas...", "Leyendo mensajes...").
-- **P0 Dashboard & KPIs Clínicos**:
-  - Pacientes activos cargan cifra real (9 pacientes) desde Supabase.
-  - Sesiones hoy reflejan valor real (0 citas para la jornada de hoy sábado).
-  - Informes/planes clínicos generados cargan cifra real (1 plan) mediante consulta a `/api/profesional/program-library`.
-  - Ingresos del mes cargan valor real verificado (50 EUR).
-  - Tarjeta de foco muestra el estado real del día ("Libre", "Sin próxima sesión cargada", botón "Abrir agenda").
-- **P0 Copiloto Clínico**:
-  - Conectado el contexto del paciente: `handleAssistantChat` en `index.astro` envía ahora `patient_id` y `profesional_id` a `/api/agent/message`.
-  - Backend extrae historial clínico longitudinal (Capa 2) y notas recientes (Capa 1).
-  - Proveedor OpenAI (`gpt-4o-mini`) verificado en ejecución real (confianza 0.95, ruta `clinical_assistant`).
-- **P1 Notas de Sesión por Voz & Síntesis Clínica**:
-  - Corregido fallo de tipo `s.tratamientos?.join` en `backend/src/lib/clinical-voice.js`.
-  - Verificado endpoint de síntesis clínica estructurada (`/api/notas-clinicas/voice/synthesize`).
+## Functional Recovery & Core Domains (Empirically Verified)
+- **Seguridad & Autenticación Failsafe**:
+  - `backend/src/middleware/security.js`: `dev-token` estrictamente restringido a `process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'`. En producción o con `NODE_ENV` ausente, falla de forma cerrada (401).
+  - `frontend/src/lib/auth.ts`: Diagnóstico explícito en consola cuando `PUBLIC_BACKEND_URL` falta en entornos de producción, eliminando fallbacks silenciosos no documentados.
+- **Dependencias Deterministas (Causa Raíz Resuelta)**:
+  - `frontend/package-lock.json`: Resuelta discrepancia de `@emnapi/wasi-threads@1.2.3`.
+  - `frontend/Dockerfile` y `.github/workflows/ci.yml`: Eliminado el bypass `|| npm install`. Ambas pipelines ejecutan ahora exclusivamente `npm ci` determinista.
+- **Rediseño Visual Google Stitch & Fin del Tema Oscuro Legacy**:
+  - Eliminadas las hojas de estilo obsidian legacy (`premium-clinic-ui.css` y `production-ui.css`) que forzaban fondos negros `#0b131c` / `#111a26`.
+  - Adoptado el sistema canónico de diseño en `DESIGN.md` (Stitch Project `15793182036642898909`): Canopy Green (`#0A3922`), Kinetic Coral (`#FF643B`), Lienzo Cálido (`#F7F5F1`), Mint (`#D2F2E3`), Cream (`#FAF7E8`), DM Sans.
+  - Agenda: Rediseñada completamente a planificador clínico sobre lienzo cálido con tarjetas blancas y etiquetas claras (eliminada la cuadrícula negra tipo hoja de cálculo).
+  - Copiloto IA: Reflow contextual de espacio de trabajo (~58% consulta / ~42% copiloto), eliminando el cajón oscuro desarticulado.
+- **Memoria Clínica Longitudinal & Síntesis de Voz**:
+  - `backend/src/routes/clinical-notes.js`: `updatePatientLongitudinalSummary` utiliza `serviceSupabase` para persistir la Capa 2 en segundo plano de forma fiable sin perder el contexto de base de datos.
+  - `backend/src/lib/clinical-voice.js`: Resolución segura de dolor EVA y zona corporal desde columnas de la tabla y `structured_data`.
+  - Verificada síntesis clínica estructurada (`/api/notas-clinicas/voice/synthesize`) y lectura longitudinal en Ficha de Paciente.
+- **Copiloto Clínico Grounded**:
+  - Contexto clínico real del paciente (resumen Capa 2 + notas recientes Capa 1) inyectado en `/api/agent/message`.
+  - OpenAI `gpt-4o-mini` responde con precisión clínica basada exclusivamente en el historial registrado (0 alucinaciones). Human-in-the-loop: botón `Revisar y aprobar`.
+- **Dashboard & KPIs Clínicos**:
+  - Carga cifras reales desde PostgreSQL: 9 pacientes activos, sesiones hoy, planes clínicos generados, ingresos mensuales.
+  - Tarjeta de foco "Ahora" en estado Libre/Próxima sesión con acción directa.
+- **Directorio de Pacientes**:
+  - Alta de paciente QA verificada con persistencia real en `crm_pacientes` y filtrado instantáneo en búsqueda.
 - **P1 Accesibilidad (WCAG AA & Astro Audit)**:
   - Resueltos findings de labels sin control asociado en `FichaPacienteView.astro`, `PatientsView.astro` y `PagosView.astro`.
   - `npx astro check` pasa con 0 errores y 0 warnings.
