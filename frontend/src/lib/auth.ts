@@ -22,15 +22,19 @@ const supabaseKey = String(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dev-anon-key'
 ).trim();
 
+const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
 const defaultBackendBase = (typeof window !== 'undefined' && window.location.hostname.includes('b5xbaf.easypanel.host'))
   ? 'https://fisio-backend.b5xbaf.easypanel.host'
-  : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
-    ? 'http://localhost:3001'
-    : '';
+  : (isLocalEnv ? 'http://localhost:3001' : '');
 
 export const backendBase = String(
   runtimeConfig.PUBLIC_BACKEND_URL || import.meta.env.PUBLIC_BACKEND_URL || defaultBackendBase
 ).replace(/\/+$/, '');
+
+if (!runtimeConfig.PUBLIC_BACKEND_URL && !import.meta.env.PUBLIC_BACKEND_URL && !isLocalEnv && typeof window !== 'undefined') {
+  console.warn('[Fisio Config] PUBLIC_BACKEND_URL no configurada explícitamente; usando fallback de host:', backendBase);
+}
 
 export const authClient = createClient(
   supabaseUrl,

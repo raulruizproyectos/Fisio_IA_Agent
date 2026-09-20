@@ -17,7 +17,7 @@
    1. INICIO — CLINICAL COMMAND CENTER (LAVENDER MIST)
    -------------------------------------------------------------------------- */
 .page-section[data-page="dashboard"] {
-  background: var(--color-lavender-mist) !important;
+  background: var(--surface-page-canvas, #f7f5f1) !important;
 }
 
 .clinic-dashboard {
@@ -391,7 +391,7 @@
    2. AGENDA — CALENDAR & APPOINTMENTS (CREAM CANVAS)
    -------------------------------------------------------------------------- */
 .page-section[data-page="citas"] {
-  background: var(--color-cream) !important;
+  background: var(--surface-page-canvas, #f7f5f1) !important;
 }
 
 .agenda-board-shell {
@@ -565,7 +565,7 @@
 .page-section[data-page="facturas"],
 .page-section[data-page="bonos"],
 .page-section[data-page="gestoria"] {
-  background: var(--color-peach-wash) !important;
+  background: var(--surface-page-canvas, #f7f5f1) !important;
 }
 
 /* CRITICAL: HIDE DUPLICATE PAYMENTS LIST ON DESKTOP */

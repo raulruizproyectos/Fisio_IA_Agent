@@ -1,143 +1,142 @@
 /* ==========================================================================
-   FISIO CLINICAL — CLINICAL EDITORIAL DESIGN TOKENS (v4.0)
-   Reference: Refero Style e9f5e976-53f7-42f5-a882-4e63b3c2f734 (Turn.io)
-   Direction: Clinical + Editorial + Professional + Human + Memorable
+   FISIO CLINICAL — CLINICAL EDITORIAL SANCTUARY DESIGN TOKENS (v2026)
+   Canonical Specification: DESIGN.md (Stitch Project 15793182036642898909)
+   Colors: Canopy #0A3922, Kinetic Coral #FF643B, Warm Canvas #F7F5F1, Pure White #FFFFFF
    ========================================================================== */
 
 :root {
-  /* === BASE BRAND & ACCENT PALETTE === */
-  --color-canopy-green: #0a3922;
-  --color-coral-pulse: #ff643b;
-  --color-indigo-bloom: #460095;
-  --color-leaf-bright: #1dbf73;
-  --color-deep-teal: #003642;
-  --color-orchid-tint: #f3b3fe;
-  --color-sky-signal: #00b4dc;
-  --color-aubergine: #47264c;
+  /* === CORE BRAND & IDENTITY === */
+  --color-canopy: #0a3922;
+  --color-canopy-rgb: 10, 57, 34;
+  --color-coral: #ff643b;
+  --color-coral-hover: #e5522b;
+  --color-coral-rgb: 255, 100, 59;
+  --color-canvas: #f7f5f1;
+  --color-canvas-rgb: 247, 245, 241;
+  --color-surface: #ffffff;
 
-  /* === MONOCHROME / INK SCALE === */
-  --color-ink-black: #000000;
-  --color-paper-white: #ffffff;
-  --color-ash: #a6a6a6;
-  --color-slate: #7a7a7a;
-  --color-graphite: #3d3d3d;
-  --color-charcoal: #333333;
-  --color-frost-gray: #e0e0e0;
-  --color-cloud-gray: #f2f2f2;
-
-  /* === PASTEL CLINICAL ROOMS (WASHES) === */
-  --color-lavender-mist: #eee2ff;
-  --color-mint-wash: #d2f2e3;
-  --color-sky-wash: #ccf0f8;
-  --color-sage-wash: #e4f7ee;
-  --color-lilac-wash: #fdf0ff;
-  --color-peach-wash: #ffede8;
+  /* === TONAL SUPPORT SURFACES === */
+  --color-mint: #d2f2e3;
+  --color-mint-text: #0a3922;
   --color-cream: #faf7e8;
-  --color-sand: #f4ece9;
+  --color-cream-text: #4f4932;
+  --color-lavender: #eee2ff;
+  --color-lavender-text: #3c1e6e;
+  --color-peach: #ffede8;
+  --color-peach-text: #9e2a0b;
 
-  /* === SURFACES === */
-  --surface-page-canvas: #eee2ff;
-  --surface-card-surface: #ffffff;
-  --surface-pastel-card: #d2f2e3;
-  --surface-dark-brand-surface: #0a3922;
+  /* === INK & CONTRAST (WCAG AA / AAA) === */
+  --color-ink: #111111;
+  --color-ink-secondary: #414942;
+  --color-ink-muted: #717972;
+  --color-ink-disabled: #a6a6a6;
+  --color-ink-on-brand: #ffffff;
 
-  --surface-page: #eee2ff;
-  --surface-primary: #ffffff;
-  --surface-secondary: #faf7e8;
-  --surface-brand: #0a3922;
-  --surface-interactive: #d2f2e3;
-
-  /* === SEMANTIC TEXT TOKENS (HIGH CONTRAST WCAG AA) === */
-  --text-primary: #000000;
-  --text-secondary: #3d3d3d;
-  --text-muted: #7a7a7a;
-  --text-on-brand: #ffffff;
-  --text-disabled: #a6a6a6;
+  /* === BORDERS & ELEVATION === */
+  --color-border-subtle: rgba(10, 57, 34, 0.08);
+  --color-border-medium: rgba(10, 57, 34, 0.16);
+  --color-border-focus: #0a3922;
+  --shadow-ambient: 0 4px 20px -2px rgba(10, 57, 34, 0.04);
+  --shadow-raised: 0 12px 32px -4px rgba(10, 57, 34, 0.08);
+  --shadow-flyout: 0 16px 40px -8px rgba(10, 57, 34, 0.12);
 
   /* === RADII === */
-  --radius-tag: 9999px;
-  --radius-button: 40px;
-  --radius-card: 24px;
-  --radius-panel: 16px;
-  --radius-icon: 8px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;     /* buttons, inputs, controls */
+  --radius-md: 16px;    /* cards, standard containers */
+  --radius-lg: 24px;    /* hero containers, major panels */
+  --radius-full: 9999px; /* status pills, badges */
+
+  /* === SPACING RHYTHM === */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
 
   /* === TYPOGRAPHY SCALES === */
   --font-family-base: 'DM Sans Variable', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display: 'DM Sans Variable', 'DM Sans', sans-serif;
+
+  /* === SEMANTIC MAPPINGS (BRIDGING EXISTING SYSTEM SAFELY) === */
+  --bg-base: var(--color-canvas);
+  --bg-card: var(--color-surface);
+  --bg-card-hover: #faf9f6;
+  --bg-elevated: var(--color-surface);
+  --bg-surface: var(--color-canvas);
+
+  --accent: var(--color-canopy);
+  --accent-hover: #062616;
+  --accent-soft: rgba(10, 57, 34, 0.08);
+  --accent-glow: rgba(10, 57, 34, 0.18);
+  --premium: var(--color-coral);
+  --premium-soft: rgba(255, 100, 59, 0.12);
+
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-ink-secondary);
+  --text-muted: var(--color-ink-muted);
+
+  --border: var(--color-border-subtle);
+  --border-light: rgba(10, 57, 34, 0.04);
+  --border-strong: var(--color-border-medium);
+
+  /* Navigation Sidebar Tokens */
+  --sidebar-bg: var(--color-canopy);
+  --sidebar-bg2: #072b19;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-text: rgba(255, 255, 255, 0.78);
+  --sidebar-text-hover: #ffffff;
+  --sidebar-active-bg: rgba(255, 255, 255, 0.12);
+  --sidebar-active-color: #ffffff;
+  --sidebar-width: 250px;
+  --sidebar-collapsed: 64px;
+
+  /* Surfaces */
+  --surface-page-canvas: var(--color-canvas);
+  --surface-card-surface: var(--color-surface);
+  --surface-pastel-card: var(--color-mint);
+  --surface-dark-brand-surface: var(--color-canopy);
+
+  /* Semantic Alert Tokens */
+  --danger: #ba1a1a;
+  --danger-soft: rgba(186, 26, 26, 0.08);
+  --warning: #b12d05;
+  --warning-soft: rgba(177, 45, 5, 0.1);
+  --success: #0a3922;
+  --success-soft: var(--color-mint);
+  --info: #004d67;
+  --info-soft: #c1e8ff;
+
+  /* === EDITORIAL SYSTEM COMPATIBILITY ALIASES === */
+  --color-canopy-green: var(--color-canopy);
+  --color-coral-pulse: var(--color-coral);
+  --color-mint-wash: var(--color-mint);
+  --color-cream-wash: var(--color-cream);
+  --color-lavender-mist: var(--color-lavender);
+  --color-peach-wash: var(--color-peach);
+  --color-sand: var(--color-cream);
+  --color-graphite: var(--color-ink-secondary);
+  --color-slate: var(--color-ink-muted);
+  --color-frost-gray: var(--color-border-subtle);
+  --color-cloud-gray: #f0ede6;
+  --color-ash: #9e9b94;
+  --color-leaf-bright: #10b981;
+  --color-deep-teal: #062616;
+  --radius-card: var(--radius-md);
+  --radius-button: var(--radius-sm);
+  --radius-icon: 8px;
+  --duration-micro: 0.18s;
   --text-xs: 12px;
-  --text-sm: 14px;
-  --text-base: 16px;
+  --text-sm: 13.5px;
+  --text-base: 15px;
   --text-lg: 18px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
-  --text-3xl: 32px;
-
-  /* === MOTION === */
-  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
-  --duration-micro: 140ms;
-  --duration-component: 220ms;
-  --duration-panel: 320ms;
-
-  /* Legacy mapping aliases to bridge existing views safely */
-  --bg-base: #eee2ff;
-  --bg-soft: #faf7e8;
-  --bg-paper: #ffffff;
-  --ink: #000000;
-  --clinic-ink: #000000;
-  --clinic-ink-rgb: 0, 0, 0;
-  --clinic-muted: #7a7a7a;
-  --clinic-line: #e0e0e0;
-  --clinic-accent: #0a3922;
-  --clinic-primary: #ff643b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-subtle: rgba(0, 0, 0, 0.04);
+  --text-xl: 22px;
+  --text-2xl: 28px;
 }
 
-/* SECTION ROOMS (ATMOSPHERIC BACKGROUNDS) */
-.page-section[data-page="dashboard"] {
-  --surface-page-canvas: var(--color-lavender-mist);
-  background: var(--color-lavender-mist);
-}
-
-.page-section[data-page="pacientes"],
-.page-section[data-page="ficha-paciente"] {
-  --surface-page-canvas: var(--color-mint-wash);
-  background: var(--color-mint-wash);
-}
-
-.page-section[data-page="citas"] {
-  --surface-page-canvas: var(--color-cream);
-  background: var(--color-cream);
-}
-
-.page-section[data-page="plantillas"] {
-  --surface-page-canvas: var(--color-sage-wash);
-  background: var(--color-sage-wash);
-}
-
-.page-section[data-page="pagos"],
-.page-section[data-page="facturas"],
-.page-section[data-page="bonos"],
-.page-section[data-page="gestoria"] {
-  --surface-page-canvas: var(--color-peach-wash);
-  background: var(--color-peach-wash);
-}
-
-.page-section[data-page="documentos"] {
-  --surface-page-canvas: var(--color-lilac-wash);
-  background: var(--color-lilac-wash);
-}
-
-.page-section[data-page="intakes"] {
-  --surface-page-canvas: var(--color-sky-wash);
-  background: var(--color-sky-wash);
-}
-
-.page-section[data-page="config"] {
-  --surface-page-canvas: var(--color-sand);
-  background: var(--color-sand);
-}
-
-.page-section[data-page="historial"] {
-  --surface-page-canvas: var(--color-cream);
-  background: var(--color-cream);
+/* Page Section Foundation: Calm Warm Canvas */
+.page-section {
+  background: var(--color-canvas) !important;
+  color: var(--color-ink);
 }

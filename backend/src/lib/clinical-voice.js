@@ -281,8 +281,10 @@ export async function generateLongitudinalSummary({
     const n = notes[0];
     const s = n.structured_data || {};
     const parts = [];
-    if (s.zona_corporal) parts.push(`Zona: ${s.zona_corporal}.`);
-    if (s.dolor_eva != null) parts.push(`Dolor actual: EVA ${s.dolor_eva}/10.`);
+    const zona = n.zona_corporal || s.zona_corporal;
+    const dolor = n.dolor_eva ?? s.dolor_eva;
+    if (zona) parts.push(`Zona: ${zona}.`);
+    if (dolor != null) parts.push(`Dolor actual: EVA ${dolor}/10.`);
     if (n.nota) parts.push(n.nota);
     return parts.join(' ');
   }
@@ -311,7 +313,10 @@ export async function generateLongitudinalSummary({
   const notesContext = sorted.map((n, idx) => {
     const s = n.structured_data || {};
     const txStr = Array.isArray(s.tratamientos) ? s.tratamientos.join(', ') : (s.tratamientos || 'N/A');
-    return `Sesión ${idx + 1} (${n.fecha}): EVA=${s.dolor_eva ?? 'N/A'}. Zona=${s.zona_corporal ?? 'N/A'}. Tx=${txStr}. Nota: ${n.nota}`;
+    const eva = n.dolor_eva ?? s.dolor_eva ?? 'N/A';
+    const zona = n.zona_corporal || s.zona_corporal || 'N/A';
+    const fecha = n.fecha || (n.session_datetime ? String(n.session_datetime).split('T')[0] : 'N/A');
+    return `Sesión ${idx + 1} (${fecha}): EVA=${eva}. Zona=${zona}. Tx=${txStr}. Nota: ${n.nota || ''}`;
   }).join('\n');
 
   const systemPrompt = `Eres un fisioterapeuta elaborando el RESUMEN CLÍNICO LONGITUDINAL de un paciente.

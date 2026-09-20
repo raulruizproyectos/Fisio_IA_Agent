@@ -6,14 +6,6 @@ import MobileDock from '../components/MobileDock.astro';
 import ShellNavigationBootstrap from '../components/ShellNavigationBootstrap.astro';
 import SidebarNav from '../components/SidebarNav.astro';
 import Topbar from '../components/Topbar.astro';
-import designTokensStyles from '../styles/design-tokens.css?inline';
-import editorialPrimitivesStyles from '../styles/editorial-primitives.css?inline';
-import editorialShellStyles from '../styles/editorial-shell.css?inline';
-import editorialViewsStyles from '../styles/editorial-views.css?inline';
-import assistantRailStyles from '../styles/assistant-rail.css?inline';
-import globalShellStyles from '../styles/global-shell.css?inline';
-import premiumClinicUiStyles from '../styles/premium-clinic-ui.css?inline';
-import productionUiStyles from '../styles/production-ui.css?inline';
 
 import DashboardView from '../components/views/DashboardView.astro';
 import PatientsView from '../components/views/PatientsView.astro';
@@ -10249,49 +10241,3 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     });
   });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<style is:global set:html={globalShellStyles}></style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<style is:global set:html={premiumClinicUiStyles}></style>
-
-<style is:global set:html={productionUiStyles}></style>
-
-<style is:global set:html={designTokensStyles}></style>
-
-<style is:global set:html={editorialPrimitivesStyles}></style>
-
-<style is:global set:html={editorialShellStyles}></style>
-
-<style is:global set:html={editorialViewsStyles}></style>
-
-<style is:global set:html={assistantRailStyles}></style>

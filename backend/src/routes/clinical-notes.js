@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase } from '../lib/supabase.js';
+import { supabase, serviceSupabase } from '../lib/supabase.js';
 import { recordAudit } from '../lib/audit.js';
 import { transcribeAudio, synthesizeClinicalNote, generateLongitudinalSummary } from '../lib/clinical-voice.js';
 
@@ -35,7 +35,7 @@ const respondClinicalNotesUnavailable = (res, { write = false } = {}) => {
 // Update Layer 2 longitudinal summary in crm_pacientes
 async function updatePatientLongitudinalSummary(pacienteId) {
   try {
-    const { data: patient } = await supabase
+    const { data: patient } = await serviceSupabase
       .from('crm_pacientes')
       .select('id, nombre, apellidos')
       .eq('id', pacienteId)
@@ -45,7 +45,7 @@ async function updatePatientLongitudinalSummary(pacienteId) {
 
     const patientName = `${patient.nombre || ''} ${patient.apellidos || ''}`.trim() || 'Paciente';
 
-    const { data: notes } = await supabase
+    const { data: notes } = await serviceSupabase
       .from(CLINICAL_NOTES_TABLE)
       .select(NOTE_SELECT)
       .eq('paciente_id', pacienteId)
@@ -57,7 +57,7 @@ async function updatePatientLongitudinalSummary(pacienteId) {
     const summary = await generateLongitudinalSummary({ patientName, notes });
     const now = new Date().toISOString();
 
-    await supabase
+    await serviceSupabase
       .from('crm_pacientes')
       .update({
         resumen_clinico_longitudinal: summary,
