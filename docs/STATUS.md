@@ -1,13 +1,14 @@
 # Project Status
 
-Updated: 2026-09-19 (P0 Product Recovery & Release Baseline — Supersedes `0188ec4` and `1b570b0`)
+Updated: 2026-09-20 (P0 Product Recovery & Release Baseline — Commit `23aeb40`)
 
-> **AVISO DE RECUPERACIÓN Y HARDENING COMPLETO**: El checkpoint `0188ec4` contenía bloqueos en llamadas locales por autenticación 401 (`dev-token` no reconocido al estar `NODE_ENV` indefinido), desconexión del `patient_id` en el Copiloto Clínico, desalineación del `DEFAULT_PROFESSIONAL_ID` en `.env.local`, y choques de diseño visual en la Ficha del Paciente. El presente checkpoint SUPERSEDE formalmente a los anteriores tras una resolución de causas raíz, verificación visual con capturas y ejecución E2E real en navegador.
+> **AVISO DE RECUPERACIÓN Y HARDENING COMPLETO**: El checkpoint anterior contenía bloqueos en llamadas locales por autenticación 401 (`dev-token` no reconocido al estar `NODE_ENV` indefinido), desconexión del `patient_id` en el Copiloto Clínico, desalineación del `DEFAULT_PROFESSIONAL_ID` en `.env.local`, choque visual de fondo en la Ficha del Paciente, y error de construcción de URL en el frontend en entornos de producción. El presente checkpoint SUPERSEDE formalmente a los anteriores tras una resolución integral de causas raíz, verificación visual con capturas y ejecución E2E real en navegador.
 
 ## Functional Recovery & Core Domains (Verified E2E)
 - **P0 Autenticación & Runtime Real**:
   - `backend/src/middleware/security.js`: Condición de `dev-token` ampliada para entornos de desarrollo donde `NODE_ENV` no esté explícitamente definido (`!process.env.NODE_ENV || process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'`).
   - `.env.local`: Alineado `DEFAULT_PROFESSIONAL_ID` al perfil real de `crm_perfiles` (`6dae4ef6-b6b3-4cb0-91d9-0320d10db255`).
+  - `frontend/src/lib/auth.ts`: Fallback automático para `backendBase` en dominios de producción EasyPanel (`https://fisio-backend.b5xbaf.easypanel.host`) y manejo seguro con `try/catch` de `new URL` para evitar excepciones en arranque.
   - Eliminados los estados de carga infinita ("Cargando agenda...", "Leyendo próxima sesión...", "Cargando citas...", "Leyendo mensajes...").
 - **P0 Dashboard & KPIs Clínicos**:
   - Pacientes activos cargan cifra real (9 pacientes) desde Supabase.
@@ -25,6 +26,7 @@ Updated: 2026-09-19 (P0 Product Recovery & Release Baseline — Supersedes `0188
 - **P1 Accesibilidad (WCAG AA & Astro Audit)**:
   - Resueltos findings de labels sin control asociado en `FichaPacienteView.astro`, `PatientsView.astro` y `PagosView.astro`.
   - `npx astro check` pasa con 0 errores y 0 warnings.
+  - Backend `npm test`: 21/21 tests pasando (100% verde).
 - **P2 Coherencia Visual & Reducción de Brillo**:
   - Reconstruida `FichaPacienteView.astro` con superficies tonales clínicas cálidas (`#f8f7f4`, `#faf7e8`, `#ffffff` con sutil borde `rgba(0,0,0,0.06)`), eliminando el choque visual de fondo oscuro rígido (`#090e17`).
   - Verificación visual completada con capturas de pantalla de Dashboard, Copiloto, Directorio de Pacientes y Ficha Clínica.
