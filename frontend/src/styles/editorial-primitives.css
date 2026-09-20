@@ -323,3 +323,217 @@ td:first-child strong {
 .empty-state-sm p {
   color: var(--color-graphite) !important;
 }
+
+/* === ACCESSIBLE SKIP LINK === */
+.skip-link {
+  position: fixed !important;
+  z-index: 9999 !important;
+  top: 0.75rem !important;
+  left: 0.75rem !important;
+  padding: 0.7rem 1.25rem !important;
+  border-radius: var(--radius-sm, 10px) !important;
+  background: var(--color-canopy-green, #0a3922) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(10, 57, 34, 0.25) !important;
+  transform: translateY(-200%) !important;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.skip-link:focus {
+  transform: translateY(0) !important;
+  outline: 3px solid var(--color-coral-pulse, #ff643b) !important;
+  outline-offset: 2px !important;
+}
+
+/* === PAGE SECTION & HIDDEN RULES === */
+.page-section {
+  display: none !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.page-section.active {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+[hidden],
+.page-section[hidden],
+.page-section:not(.active),
+.page-section[aria-hidden="true"]:not(.active) {
+  display: none !important;
+}
+
+/* === MODAL & DRAWER PRIMITIVES === */
+.modal-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1.5rem !important;
+  background: rgba(10, 57, 34, 0.38) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transition: opacity 200ms ease, visibility 200ms ease !important;
+}
+
+.modal-shell.open,
+.modal-shell:not([aria-hidden="true"]):not([hidden]) {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+.modal-shell[aria-hidden="true"],
+.modal-shell[hidden] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  display: none !important;
+}
+
+.modal-panel {
+  width: min(100%, 580px) !important;
+  max-height: min(85vh, 720px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+  border-radius: var(--radius-card, 16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 20px 40px -12px rgba(10, 57, 34, 0.18), 0 0 1px rgba(0, 0, 0, 0.15) !important;
+}
+
+.crm-drawer-shell {
+  justify-content: flex-end !important;
+  padding: 0 !important;
+}
+
+.crm-drawer-panel {
+  width: clamp(400px, 36vw, 560px) !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+  transform: translateX(100%) !important;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.crm-drawer-shell.open .crm-drawer-panel,
+.crm-drawer-shell:not([aria-hidden="true"]) .crm-drawer-panel {
+  transform: translateX(0) !important;
+}
+
+.modal-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  padding: 1.5rem 1.75rem 1rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  background: #ffffff !important;
+}
+
+.modal-title-group h2 {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  margin: 0.15rem 0 0.35rem !important;
+}
+
+.modal-eyebrow {
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--color-canopy-green, #0a3922) !important;
+  margin: 0 !important;
+}
+
+.drawer-subtitle {
+  font-size: 0.85rem !important;
+  color: var(--color-slate, #64748b) !important;
+  margin: 0 !important;
+}
+
+.modal-close {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  background: var(--color-sand, #f7f5f1) !important;
+  color: var(--color-slate, #64748b) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.modal-close:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: #000000 !important;
+}
+
+.modal-panel form {
+  padding: 1.5rem 1.75rem !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.15rem !important;
+}
+
+.modal-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.75rem !important;
+  margin-top: 1.5rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Form Layout Primitives */
+.form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 1.15rem !important;
+}
+
+.field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.35rem !important;
+}
+
+.field > span,
+.field > label {
+  font-size: var(--text-xs) !important;
+  font-weight: 700 !important;
+  color: var(--color-charcoal) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+
+.field-full {
+  grid-column: 1 / -1 !important;
+}
+

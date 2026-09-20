@@ -394,6 +394,89 @@
   background: var(--surface-page-canvas, #f7f5f1) !important;
 }
 
+.agenda-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.5rem !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.agenda-header-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+}
+
+.agenda-sync-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--radius-button, 12px) !important;
+  padding: 0.5rem 0.85rem !important;
+}
+
+.agenda-sync-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.1rem !important;
+}
+
+.agenda-sync-copy strong {
+  font-size: var(--text-xs) !important;
+  font-weight: 700 !important;
+  color: #000000 !important;
+}
+
+.agenda-sync-copy p {
+  font-size: 11px !important;
+  color: var(--color-slate, #64748b) !important;
+  margin: 0 !important;
+}
+
+.week-nav-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--radius-button, 12px) !important;
+  padding: 0.35rem 0.5rem !important;
+}
+
+.week-label {
+  font-size: var(--text-sm) !important;
+  font-weight: 700 !important;
+  color: #000000 !important;
+  padding: 0 0.5rem !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.agenda-cal-card {
+  background: #ffffff !important;
+  border-radius: var(--radius-card, 16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.07) !important;
+  overflow: hidden !important;
+  margin-bottom: 1.75rem !important;
+  padding: 0 !important;
+}
+
+.badge-week-count {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.2rem 0.6rem !important;
+  border-radius: 9999px !important;
+  background: var(--color-mint-wash, #d2f2e3) !important;
+  color: var(--color-canopy-green, #0a3922) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 700 !important;
+  margin-left: 0.5rem !important;
+}
+
 .agenda-board-shell {
   background: #ffffff !important;
   border-radius: var(--radius-card) !important;
@@ -1633,3 +1716,251 @@
   background: #e8532c !important;
   transform: translateY(-1px) !important;
 }
+
+/* --------------------------------------------------------------------------
+   8. BIBLIOTECA CLÍNICA & PLANES TERAPÉUTICOS (WARM CANVAS)
+   -------------------------------------------------------------------------- */
+.page-section[data-page="plantillas"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
+
+.template-library-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 1.5rem !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+}
+
+.template-library-shell {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+}
+
+.template-kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+@media (max-width: 768px) {
+  .template-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.template-kpi-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--radius-card, 16px) !important;
+  padding: 1.35rem 1.5rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.35rem !important;
+}
+
+.template-kpi-card span {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--color-canopy-green, #0a3922) !important;
+}
+
+.template-kpi-card strong {
+  font-size: 1.85rem !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  line-height: 1.1 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.template-kpi-card p {
+  font-size: var(--text-xs) !important;
+  color: var(--color-slate, #64748b) !important;
+  margin: 0 !important;
+}
+
+.template-history-card {
+  background: #ffffff !important;
+  border-radius: var(--radius-card, 16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
+}
+
+/* --------------------------------------------------------------------------
+   9. FINANZAS OVERVIEW CARDS
+   -------------------------------------------------------------------------- */
+.finance-overview-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 1.25rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+@media (max-width: 900px) {
+  .finance-overview-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .finance-overview-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.finance-overview-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--radius-card, 16px) !important;
+  padding: 1.25rem 1.5rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.35rem !important;
+}
+
+.finance-overview-card .overview-label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--color-canopy-green, #0a3922) !important;
+}
+
+.finance-overview-card strong {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.finance-overview-card p {
+  font-size: var(--text-xs) !important;
+  color: var(--color-slate, #64748b) !important;
+  margin: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   10. DOCUMENTOS & CONSENTIMIENTOS
+   -------------------------------------------------------------------------- */
+.page-section[data-page="documentos"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
+
+.documentos-workbench {
+  background: #ffffff !important;
+  border-radius: var(--radius-card, 16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.07) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  padding: 1.5rem 1.75rem !important;
+}
+
+.documentos-summary,
+.ops-signals {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 1.25rem !important;
+}
+
+@media (max-width: 768px) {
+  .documentos-summary,
+  .ops-signals {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.ops-signal {
+  background: var(--color-sand, #f7f5f1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  border-radius: var(--radius-card, 16px) !important;
+  padding: 1.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.35rem !important;
+}
+
+.ops-signal-label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--color-slate, #64748b) !important;
+}
+
+.ops-signal-value {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.ops-signal-hint {
+  font-size: var(--text-xs) !important;
+  color: var(--color-slate, #64748b) !important;
+}
+
+.documentos-value-ok {
+  color: var(--color-canopy-green, #0a3922) !important;
+}
+
+.documentos-value-warn {
+  color: var(--color-coral-pulse, #ff643b) !important;
+}
+
+/* --------------------------------------------------------------------------
+   11. HISTORIAL & AUDITORÍA LONGITUDINAL
+   -------------------------------------------------------------------------- */
+.page-section[data-page="historial"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
+
+.detail-block {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--radius-card, 16px) !important;
+  padding: 1.5rem 1.75rem !important;
+  margin-bottom: 1.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+}
+
+.detail-block h3 {
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  margin: 0 !important;
+}
+
+.detail-caption {
+  font-size: var(--text-sm) !important;
+  color: var(--color-slate, #64748b) !important;
+  margin: 0 !important;
+}
+
+.history-case-hero {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 1.25rem !important;
+  background: var(--color-mint-wash, #d2f2e3) !important;
+  border: 1px solid rgba(10, 57, 34, 0.12) !important;
+}
+
+.history-patient-meta {
+  display: flex !important;
+  gap: 1.5rem !important;
+  font-size: var(--text-sm) !important;
+  color: var(--color-charcoal) !important;
+  margin-top: 0.35rem !important;
+}
+
