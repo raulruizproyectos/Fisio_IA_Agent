@@ -24,8 +24,7 @@ function connection(value) {
   assert.ok(['require', 'verify-ca', 'verify-full'].includes(sslmode), 'La copia exige conexión cifrada.');
   return { PGHOST: url.hostname, PGPORT: url.port || '5432', PGUSER: decodeURIComponent(url.username),
     PGPASSWORD: decodeURIComponent(url.password), PGDATABASE: 'postgres', PGSSLMODE: sslmode,
-    PGCONNECT_TIMEOUT: '20', PGOPTIONS: '-c default_transaction_read_only=on',
-    PGSERVICE: '', PGSERVICEFILE: '', PGHOSTADDR: '' };
+    PGCONNECT_TIMEOUT: '20', PGOPTIONS: '-c default_transaction_read_only=on' };
 }
 
 if (process.argv.includes('--self-test')) {
@@ -69,6 +68,10 @@ if (process.argv.includes('--self-test')) {
     }
     if (!process.env.SUPABASE_DB_URL) throw new Error('Falta SUPABASE_DB_URL en .env.local; no se ha realizado ninguna copia.');
     const env = { ...process.env, ...connection(process.env.SUPABASE_DB_URL) };
+    // Empty PGSERVICEFILE makes libpq open an empty path; remove inherited overrides.
+    delete env.PGSERVICE;
+    delete env.PGSERVICEFILE;
+    delete env.PGHOSTADDR;
     const bin = process.env.POSTGRES_BIN || 'C:\\Program Files\\PostgreSQL\\18\\bin';
     const executable = (name) => path.join(bin, name + (process.platform === 'win32' ? '.exe' : ''));
     for (const name of ['pg_dump', 'pg_restore']) assert.ok(existsSync(executable(name)), `Falta ${name}; configura POSTGRES_BIN.`);

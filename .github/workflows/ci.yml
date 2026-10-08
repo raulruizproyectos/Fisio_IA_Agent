@@ -87,7 +87,7 @@ jobs:
             -e PUBLIC_BACKEND_URL=https://api.example.test \
             -e PUBLIC_SUPABASE_URL=https://example.supabase.co fisio-frontend-ci
           trap 'docker rm -f fisio-frontend-ci' EXIT
-          curl --fail --retry 10 --retry-delay 1 --retry-connrefused http://127.0.0.1:8080/health
+          curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:8080/health || { docker logs fisio-frontend-ci; exit 1; }
           curl --fail --silent --dump-header /tmp/fisio-headers http://127.0.0.1:8080/login/ --output /tmp/fisio-login.html
           grep -F "connect-src 'self' https://api.example.test https://example.supabase.co" /tmp/fisio-headers
           grep -F 'no-store' /tmp/fisio-headers
