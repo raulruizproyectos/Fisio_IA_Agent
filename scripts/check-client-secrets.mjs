@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parse } from '../backend/node_modules/dotenv/lib/main.js';
+import { parseEnv as parse } from 'node:util';
 const root = fileURLToPath(new URL('../', import.meta.url));
 let env = {};
 try { env = parse(await readFile(path.join(root, '.env.local'), 'utf8')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
