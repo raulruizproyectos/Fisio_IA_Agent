@@ -1,5 +1,16 @@
 # Architecture
 
+## Estado vigente — 2026-10-08: despliegue y cierre de integraciones
+
+El usuario autorizó fusionar PR #2, aplicar las cinco migraciones ensayadas y configurar/desplegar los servicios existentes. PR #2 fusionado en main (0fce175); frontend/backend desplegados y sanos. Cloud tiene las cinco migraciones, columnas verificadas y RLS preservado. La copia nativa CRM/Auth está restaurada y comprobada; no acredita restauración completa de los internos gestionados.
+
+Se ha ampliado expresamente la preparación para cerrar Calendar, mensajería y cron antes de la primera prueba. Google fue reconectado por el usuario: W5 lee el calendario configurado y W6 lee recursos/páginas completos mediante OAuth. Once workflows existentes actualizados por API: webhooks con Header Auth, llamadas al backend con su clave/secreto, expresiones corregidas y sin reintentos de escritura. Eliminado el atajo del bot que reservaba otra cita cuando fallaba el backend. Exportaciones de producción sin secretos en n8n/Fisio_IA_Agent/production; copias de recuperación con posibles secretos exclusivamente en .env.local.
+
+El backend incorpora comprobación Calendar por OAuth y no acepta una respuesta vacía como calendario vacío. Recordatorios: entrega incierta queda bloqueada, sin reenvío automático; errores SQL no se ocultan. Backend lint/106 pruebas y frontend check/build pasan. Preparación comprobada en local; publicar esta corrección y verificar el nuevo despliegue antes de dar por terminada la primera prueba. El cron Calendar existente sigue cada dos minutos; recordatorios horarios se activarán después de comprobar backend y vista previa.
+
+Pruebas de producción previas: diez controles HTTP/Auth/CSP/proxy pasan; acceso anónimo redirige al login. No acreditan login profesional válido ni entrega real a pacientes. WhatsApp sigue como piloto desactivado; no hay nueva infraestructura. Las entradas siguientes documentan historia: no repetir migraciones, auditorías o despliegues por frases antiguas.
+
+
 ## Overview
 
 Alcance actual: una clínica, reutilizando el CRM y los permisos existentes. El frontend/backend permanecen en el VPS con EasyPanel y la base continúa en Supabase Cloud; no se incorpora administración comercial de varios centros. La separación de credenciales por centro se abordará solo si el usuario decide ampliar el producto.

@@ -1,5 +1,16 @@
 # Punto de continuidad — 8 de octubre de 2026
 
+## Estado vigente — 2026-10-08: despliegue y cierre de integraciones
+
+El usuario autorizó fusionar PR #2, aplicar las cinco migraciones ensayadas y configurar/desplegar los servicios existentes. PR #2 fusionado en main (0fce175); frontend/backend desplegados y sanos. Cloud tiene las cinco migraciones, columnas verificadas y RLS preservado. La copia nativa CRM/Auth está restaurada y comprobada; no acredita restauración completa de los internos gestionados.
+
+Se ha ampliado expresamente la preparación para cerrar Calendar, mensajería y cron antes de la primera prueba. Google fue reconectado por el usuario: W5 lee el calendario configurado y W6 lee recursos/páginas completos mediante OAuth. Once workflows existentes actualizados por API: webhooks con Header Auth, llamadas al backend con su clave/secreto, expresiones corregidas y sin reintentos de escritura. Eliminado el atajo del bot que reservaba otra cita cuando fallaba el backend. Exportaciones de producción sin secretos en n8n/Fisio_IA_Agent/production; copias de recuperación con posibles secretos exclusivamente en .env.local.
+
+El backend incorpora comprobación Calendar por OAuth y no acepta una respuesta vacía como calendario vacío. Recordatorios: entrega incierta queda bloqueada, sin reenvío automático; errores SQL no se ocultan. Backend lint/106 pruebas y frontend check/build pasan. Preparación comprobada en local; publicar esta corrección y verificar el nuevo despliegue antes de dar por terminada la primera prueba. El cron Calendar existente sigue cada dos minutos; recordatorios horarios se activarán después de comprobar backend y vista previa.
+
+Pruebas de producción previas: diez controles HTTP/Auth/CSP/proxy pasan; acceso anónimo redirige al login. No acreditan login profesional válido ni entrega real a pacientes. WhatsApp sigue como piloto desactivado; no hay nueva infraestructura. Las entradas siguientes documentan historia: no repetir migraciones, auditorías o despliegues por frases antiguas.
+
+
 ## Prioridad vigente: GitHub y testing en producción
 
 El usuario acepta por ahora Precisión azul y pide continuar hasta probar en producción, corregir los fallos de testing y actualizar GitHub. Rama `mejoras/auditoria-20260915` publicada y PR #2 en borrador hacia `main`; no autoriza por ello fusionar, aplicar SQL ni desplegar. CI backend/n8n/frontend verde en `28c201d`, incluido Docker/nginx real. Usuario completó cambio de contraseña PostgreSQL; URI solo en `.env.local`. Copia nativa nueva restaurada localmente: 35 tablas públicas y 27 Auth coinciden por cantidades/hashes; cinco migraciones pasan sin perder filas. Ensayo limitado al CRM/Auth, no a todos los internos gestionados de Supabase. Servidor local detenido. Consultar `docs/PRODUCTION_TESTING.md`: destinos, recuperación y autorización concreta para merge/SQL/configuración/despliegue, después prueba ficticia acotada. Mantener secretos, copias y diagnósticos privados fuera de Git. Los bloques siguientes son históricos.

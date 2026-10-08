@@ -1,5 +1,5 @@
 {
-  "name": "Fisio IA | Bot paciente",
+  "name": "Fisio IA | Bot fisio",
   "nodes": [
     {
       "parameters": {
@@ -14,15 +14,15 @@
       "typeVersion": 1,
       "position": [
         240,
-        300
+        304
       ],
+      "webhookId": "89fda6ce-5c30-42b3-a3f5-405a6edc9cac",
       "credentials": {
         "telegramApi": {
-          "id": "Y2lad9wx7Ifpxm4z",
-          "name": "citas_fisioterapia_bot"
+          "id": "6PkC23M5FI8DavpT",
+          "name": "FisioIAAgent"
         }
       },
-      "webhookId": "44766c45-5dca-4c61-ae29-6c1e7027850e",
       "retryOnFail": false
     },
     {
@@ -56,13 +56,13 @@
             {
               "id": "agent_mode",
               "name": "agent_mode",
-              "value": "patient_appointments",
+              "value": "physio_reports",
               "type": "string"
             },
             {
               "id": "bot_username",
               "name": "bot_username",
-              "value": "fisioterapia_CarlaJL",
+              "value": "FisioIA_Agent_bot",
               "type": "string"
             }
           ]
@@ -74,8 +74,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        460,
-        300
+        464,
+        304
       ],
       "retryOnFail": false
     },
@@ -104,10 +104,9 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        700,
-        300
+        688,
+        304
       ],
-      "continueOnFail": true,
       "retryOnFail": false,
       "credentials": {
         "httpHeaderAuth": {
@@ -125,8 +124,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        930,
-        300
+        912,
+        304
       ],
       "retryOnFail": false
     },
@@ -134,25 +133,23 @@
       "parameters": {
         "chatId": "={{ $('Preparar').item.json.chat_id }}",
         "text": "={{ $json.reply_text }}",
-        "additionalFields": {
-          "appendAttribution": false
-        }
+        "additionalFields": {}
       },
       "id": "TelegramReply",
       "name": "Enviar Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        940,
-        300
+        1136,
+        304
       ],
+      "webhookId": "c96165bf-0c87-42af-a67f-fb9bd0588593",
       "credentials": {
         "telegramApi": {
-          "id": "Y2lad9wx7Ifpxm4z",
-          "name": "citas_fisioterapia_bot"
+          "id": "6PkC23M5FI8DavpT",
+          "name": "FisioIAAgent"
         }
       },
-      "webhookId": "6688abb0-7b7a-4d83-94b4-ef6f5c835f65",
       "retryOnFail": false
     }
   ],

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-08 — Producción e integraciones
+
+- PR #2 fusionado; cinco migraciones Cloud aplicadas y verificadas; frontend/backend desplegados en el VPS existente. CSP/runtime, rechazo anónimo, CSRF y cookies de proxy comprobados.
+- Usuario reconectó Google. Workflows actuales autenticados y exportados sin secretos; bot paciente sin segunda reserva y cuerpos JSON corregidos. W6 permite lectura íntegra/paginada para la recuperación de Calendar.
+- Recordatorios conservan entregas inciertas y verifican errores de lectura/recibo. Comprobación Calendar OAuth y rechazo de W5 vacío con pruebas de regresión. Backend lint/106 pruebas y frontend check/build pasan. Despliegue de esta corrección y validación de cron pendientes en este punto.
+
 ## 2026-10-08 — Preparación de GitHub y testing en producción
 
 - Rama publicada y PR #2 en borrador; CI backend/n8n/frontend verde en `28c201d`, incluido contenedor Docker/nginx. Corregidos lockfile npm, scanner sin dependencia backend, variables libpq vacías y espera de arranque del contenedor.

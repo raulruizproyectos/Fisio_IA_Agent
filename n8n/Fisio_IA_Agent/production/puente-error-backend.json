@@ -18,9 +18,11 @@
         260
       ],
       "webhookId": "fisio-error-notify",
+      "retryOnFail": false,
       "credentials": {
         "httpHeaderAuth": {
-          "name": "Fisio Internal Webhook"
+          "id": "9WNxfibVAwfGcekQ",
+          "name": "N8N_FISIO_HEADER_CREDENTIAL_ID"
         }
       }
     },
@@ -51,7 +53,8 @@
       "position": [
         500,
         260
-      ]
+      ],
+      "retryOnFail": false
     },
     {
       "parameters": {
@@ -73,7 +76,9 @@
           "id": "7CfeWv5vaRffjNyl",
           "name": "Gmail account"
         }
-      }
+      },
+      "webhookId": "f36e63ac-bc99-413d-a192-fe7dcd44bb7e",
+      "retryOnFail": false
     },
     {
       "parameters": {
@@ -87,7 +92,8 @@
       "position": [
         1020,
         260
-      ]
+      ],
+      "retryOnFail": false
     }
   ],
   "connections": {
@@ -128,8 +134,8 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
-  },
-  "pinData": null,
-  "meta": null
+    "availableInMCP": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  }
 }

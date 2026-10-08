@@ -1446,7 +1446,7 @@ async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
     });
     if (!res.ok) return null;
     const text = await res.text();
-    if (!text || !text.trim()) return { events: [], busy_events: [] };
+    if (!text || !text.trim()) return null;
     return JSON.parse(text);
   } catch {
     return null;
@@ -2465,16 +2465,15 @@ router.post('/appointments/:appointmentId/check-calendar', async (req, res, next
     if (row.calendar_sync_in_flight) return result('in_progress', 'La petición de Calendar sigue en curso o no confirmó su finalización. La cita continúa bloqueada.');
     let confirmation;
     try {
-      const events = await readAppointmentCalendarEvidence(getGoogleCalendarClient(), GOOGLE_CALENDAR_ID, row);
+      const events = await readAppointmentCalendarEvidence(getGoogleCalendarClient(), GOOGLE_CALENDAR_ID, row,
+        { url: W6_CALENDAR_WRITER_URL, secret: N8N_WEBHOOK_SECRET });
       const expected = ['cancelada', 'no_show'].includes(row.estado) ? null : buildCalendarEventPayload({
         ...await fetchCalendarContext({ patientId: row.paciente_id, professionalId: row.fisioterapeuta_id }),
         startAt: row.inicio_en, endAt: row.fin_en, reason: row.motivo, appointmentId: row.id, operationId: row.calendar_sync_operation_id,
       });
       confirmation = confirmAppointmentCalendarEvidence(row, events, expected);
     } catch {
-      return result('pending', calendarDirectEnabled()
-        ? 'No se pudo completar la comprobación de Calendar. La cita continúa bloqueada; no repitas el cambio.'
-        : 'La comprobación requiere el lector directo de Calendar. W5 no acredita lecturas completas ni cancelaciones; la cita continúa bloqueada.');
+      return result('pending', 'No se pudo completar la comprobación de Calendar. La cita continúa bloqueada; no repitas el cambio.');
     }
     if (!confirmation) return result('pending', 'Calendar no acredita todavía el resultado esperado. La cita continúa bloqueada; no repitas el cambio.');
     const saved = await supabase.from('crm_citas')

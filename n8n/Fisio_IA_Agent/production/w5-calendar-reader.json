@@ -1,11 +1,5 @@
 {
-  "updatedAt": "2026-03-16T15:20:03.239Z",
-  "createdAt": "2026-03-16T15:20:03.239Z",
-  "id": "gIumiL6e50JoGFba",
   "name": "Fisio IA | Calendario leer",
-  "description": null,
-  "active": false,
-  "isArchived": false,
   "nodes": [
     {
       "id": "W5Webhook",
@@ -24,9 +18,11 @@
         "authentication": "headerAuth"
       },
       "webhookId": "fisio-w5-calendar-events",
+      "retryOnFail": false,
       "credentials": {
         "httpHeaderAuth": {
-          "name": "Fisio Internal Webhook"
+          "id": "9WNxfibVAwfGcekQ",
+          "name": "N8N_FISIO_HEADER_CREDENTIAL_ID"
         }
       }
     },
@@ -41,7 +37,8 @@
       ],
       "parameters": {
         "jsCode": "const body = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst timeMin = body.time_min || body.timeMin || new Date().toISOString();\nconst rawMax = body.time_max || body.timeMax || null;\nconst timeMax = rawMax || new Date(new Date(timeMin).getTime() + 7*24*3600*1000).toISOString();\nconst parseCalendarIds = (value) => {\n  const rawValues = Array.isArray(value) ? value : [value];\n  const seen = new Set();\n  const ids = [];\n  for (const rawValue of rawValues) {\n    const parts = String(rawValue || '')\n      .split(/[\\n,;]+/)\n      .map((entry) => entry.trim())\n      .filter(Boolean);\n    for (const part of parts) {\n      if (seen.has(part)) continue;\n      seen.add(part);\n      ids.push(part);\n    }\n  }\n  return ids;\n};\nconst defaultCalendarIds = [\n  body.calendar_id || body.calendarId || 'raul.ruiz.diaz.bcn@gmail.com',\n  body.holiday_calendar_id || body.holidayCalendarId || 'es.spain#holiday@group.v.calendar.google.com',\n];\nconst calendarIds = parseCalendarIds(body.calendar_ids || body.calendarIds || defaultCalendarIds);\nreturn calendarIds.map((calendarId) => ({ json: { timeMin, timeMax, calendarId } }));"
-      }
+      },
+      "retryOnFail": false
     },
     {
       "id": "W5GetEvents",
@@ -73,7 +70,8 @@
           "name": "Google Calendar account"
         }
       },
-      "alwaysOutputData": true
+      "alwaysOutputData": true,
+      "retryOnFail": false
     },
     {
       "id": "W5Format",
@@ -86,7 +84,8 @@
       ],
       "parameters": {
         "jsCode": "const events = $input.all()\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && (ev.start?.dateTime || ev.start?.date));\nconst normalize = (ev) => ({\n  google_calendar_event_id: ev.id,\n  calendar_id: ev.organizer?.email || ev.creator?.email || null,\n  summary: ev.summary || '',\n  inicio_en: ev.start?.dateTime || ev.start?.date || null,\n  fin_en: ev.end?.dateTime || ev.end?.date || null,\n  description: ev.description || null,\n  status: ev.status || 'confirmed',\n  transparency: ev.transparency || null,\n  all_day: Boolean(ev.start?.date && !ev.start?.dateTime)\n});\nconst seen = new Set();\nconst busyEvents = [];\nfor (const ev of events) {\n  const normalized = normalize(ev);\n  if (!normalized.inicio_en) continue;\n  if ((normalized.status || '').toLowerCase() === 'cancelled') continue;\n  if ((normalized.transparency || '').toLowerCase() === 'transparent' && !normalized.all_day) continue;\n  const dedupeKey = `${normalized.google_calendar_event_id}::${normalized.calendar_id || ''}`;\n  if (seen.has(dedupeKey)) continue;\n  seen.add(dedupeKey);\n  busyEvents.push(normalized);\n}\nconst fisioEvents = busyEvents\n  .filter(ev => (ev.summary || '').toLowerCase().includes('cita fisioterapia'));\nreturn [{ json: { events: fisioEvents, busy_events: busyEvents, total: fisioEvents.length, busy_total: busyEvents.length } }];"
-      }
+      },
+      "retryOnFail": false
     },
     {
       "id": "W5Respond",
@@ -101,7 +100,8 @@
         "respondWith": "json",
         "responseBody": "={{ $json }}",
         "options": {}
-      }
+      },
+      "retryOnFail": false
     }
   ],
   "connections": {
@@ -153,190 +153,8 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
-  },
-  "staticData": null,
-  "meta": null,
-  "pinData": null,
-  "versionId": "407ce5aa-8ad0-41dd-aa01-bdf315fa0286",
-  "activeVersionId": "407ce5aa-8ad0-41dd-aa01-bdf315fa0286",
-  "versionCounter": 3,
-  "triggerCount": 1,
-  "shared": [
-    {
-      "updatedAt": "2026-03-16T15:20:03.249Z",
-      "createdAt": "2026-03-16T15:20:03.249Z",
-      "role": "workflow:owner",
-      "workflowId": "gIumiL6e50JoGFba",
-      "projectId": "SMJKJOy6zCKUIsqO",
-      "project": {
-        "updatedAt": "2025-12-02T21:01:16.195Z",
-        "createdAt": "2025-12-02T20:50:48.096Z",
-        "id": "SMJKJOy6zCKUIsqO",
-        "name": "Raúl Ruiz <raul.ruiz.diaz.bcn@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"
-      }
-    }
-  ],
-  "tags": [],
-  "activeVersion": {
-    "updatedAt": "2026-03-16T15:20:03.260Z",
-    "createdAt": "2026-03-16T15:20:03.260Z",
-    "versionId": "407ce5aa-8ad0-41dd-aa01-bdf315fa0286",
-    "workflowId": "gIumiL6e50JoGFba",
-    "nodes": [
-      {
-        "id": "W5Webhook",
-        "name": "Entrada",
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2.1,
-        "position": [
-          240,
-          300
-        ],
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "fisio/w5/calendar-events",
-          "responseMode": "responseNode",
-          "options": {}
-        },
-        "webhookId": "fisio-w5-calendar-events"
-      },
-      {
-        "id": "W5Normalize",
-        "name": "Normalizar",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          460,
-          300
-        ],
-        "parameters": {
-          "jsCode": "const body = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst timeMin = body.time_min || body.timeMin || new Date().toISOString();\nconst rawMax = body.time_max || body.timeMax || null;\nconst timeMax = rawMax || new Date(new Date(timeMin).getTime() + 7*24*3600*1000).toISOString();\nconst parseCalendarIds = (value) => {\n  const rawValues = Array.isArray(value) ? value : [value];\n  const seen = new Set();\n  const ids = [];\n  for (const rawValue of rawValues) {\n    const parts = String(rawValue || '')\n      .split(/[\\n,;]+/)\n      .map((entry) => entry.trim())\n      .filter(Boolean);\n    for (const part of parts) {\n      if (seen.has(part)) continue;\n      seen.add(part);\n      ids.push(part);\n    }\n  }\n  return ids;\n};\nconst defaultCalendarIds = [\n  body.calendar_id || body.calendarId || 'raul.ruiz.diaz.bcn@gmail.com',\n  body.holiday_calendar_id || body.holidayCalendarId || 'es.spain#holiday@group.v.calendar.google.com',\n];\nconst calendarIds = parseCalendarIds(body.calendar_ids || body.calendarIds || defaultCalendarIds);\nreturn calendarIds.map((calendarId) => ({ json: { timeMin, timeMax, calendarId } }));"
-        }
-      },
-      {
-        "id": "W5GetEvents",
-        "name": "Leer calendario",
-        "type": "n8n-nodes-base.googleCalendar",
-        "typeVersion": 1.3,
-        "position": [
-          700,
-          300
-        ],
-        "parameters": {
-          "resource": "event",
-          "operation": "getAll",
-          "calendar": {
-            "__rl": true,
-            "mode": "id",
-            "value": "={{ $json.calendarId }}"
-          },
-          "returnAll": true,
-          "additionalFields": {
-            "timeMin": "={{ $json.timeMin }}",
-            "timeMax": "={{ $json.timeMax }}"
-          },
-          "options": {}
-        },
-        "credentials": {
-          "googleCalendarOAuth2Api": {
-            "id": "UzAG7J2e9rs78F4r",
-            "name": "Google Calendar account"
-          }
-        }
-      },
-      {
-        "id": "W5Format",
-        "name": "Preparar respuesta",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          940,
-          300
-        ],
-        "parameters": {
-          "jsCode": "const events = $input.all()\n  .map(item => item.json)\n  .filter(ev => ev && ev.id && (ev.start?.dateTime || ev.start?.date));\nconst normalize = (ev) => ({\n  google_calendar_event_id: ev.id,\n  calendar_id: ev.organizer?.email || ev.creator?.email || null,\n  summary: ev.summary || '',\n  inicio_en: ev.start?.dateTime || ev.start?.date || null,\n  fin_en: ev.end?.dateTime || ev.end?.date || null,\n  description: ev.description || null,\n  status: ev.status || 'confirmed',\n  transparency: ev.transparency || null,\n  all_day: Boolean(ev.start?.date && !ev.start?.dateTime)\n});\nconst seen = new Set();\nconst busyEvents = [];\nfor (const ev of events) {\n  const normalized = normalize(ev);\n  if (!normalized.inicio_en) continue;\n  if ((normalized.status || '').toLowerCase() === 'cancelled') continue;\n  if ((normalized.transparency || '').toLowerCase() === 'transparent' && !normalized.all_day) continue;\n  const dedupeKey = `${normalized.google_calendar_event_id}::${normalized.calendar_id || ''}`;\n  if (seen.has(dedupeKey)) continue;\n  seen.add(dedupeKey);\n  busyEvents.push(normalized);\n}\nconst fisioEvents = busyEvents\n  .filter(ev => (ev.summary || '').toLowerCase().includes('cita fisioterapia'));\nreturn [{ json: { events: fisioEvents, busy_events: busyEvents, total: fisioEvents.length, busy_total: busyEvents.length } }];"
-        }
-      },
-      {
-        "id": "W5Respond",
-        "name": "Responder",
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          1160,
-          300
-        ],
-        "parameters": {
-          "respondWith": "json",
-          "responseBody": "={{ $json }}",
-          "options": {}
-        }
-      }
-    ],
-    "connections": {
-      "Entrada": {
-        "main": [
-          [
-            {
-              "node": "Normalizar",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Normalizar": {
-        "main": [
-          [
-            {
-              "node": "Leer calendario",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Leer calendario": {
-        "main": [
-          [
-            {
-              "node": "Preparar respuesta",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Preparar respuesta": {
-        "main": [
-          [
-            {
-              "node": "Responder",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      }
-    },
-    "authors": "Raúl Ruiz",
-    "name": "",
-    "description": null,
-    "autosaved": false,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-03-16T15:20:03.495Z",
-        "id": 265,
-        "workflowId": "gIumiL6e50JoGFba",
-        "versionId": "407ce5aa-8ad0-41dd-aa01-bdf315fa0286",
-        "event": "activated",
-        "userId": "d2ccd21e-d8d4-45dd-ba5c-969a39fed16c"
-      }
-    ]
+    "availableInMCP": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
   }
 }

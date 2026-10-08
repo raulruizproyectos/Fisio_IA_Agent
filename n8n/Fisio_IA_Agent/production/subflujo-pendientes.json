@@ -10,7 +10,8 @@
       "position": [
         220,
         260
-      ]
+      ],
+      "retryOnFail": false
     },
     {
       "parameters": {
@@ -43,22 +44,16 @@
       "position": [
         460,
         260
-      ]
+      ],
+      "retryOnFail": false
     },
     {
       "parameters": {
         "method": "GET",
         "url": "={{ 'https://fisio-backend.b5xbaf.easypanel.host' + '/api/profesional/intakes/pending?profesional_id=' + $json.query.profesional_id }}",
         "options": {},
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-Internal-Api-Key",
-              "value": "={{ $env.INTERNAL_API_KEY }}"
-            }
-          ]
-        }
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "id": "FetchPendingIntakes",
       "name": "Buscar pendientes",
@@ -68,9 +63,13 @@
         720,
         180
       ],
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 1000
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "R7toe2gVBNi7E4pH",
+          "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID"
+        }
+      }
     },
     {
       "parameters": {
@@ -83,7 +82,8 @@
       "position": [
         720,
         340
-      ]
+      ],
+      "retryOnFail": false
     }
   ],
   "connections": {
@@ -120,8 +120,8 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
-  },
-  "pinData": null,
-  "meta": null
+    "availableInMCP": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  }
 }

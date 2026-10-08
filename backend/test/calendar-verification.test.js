@@ -53,3 +53,25 @@ test('lecturas incompletas, W5, calendario distinto y errores de get no prueban 
   }
   await assert.rejects(readAppointmentCalendarEvidence({ events: { get: async () => ({ data: { id: 'other' } }) } }, 'clinic-calendar', { ...row, google_calendar_event_id: 'event-a' }));
 });
+
+test('puente OAuth conserva recurso completo, todas las páginas y errores inciertos', async (t) => {
+  const bridge = { url: 'https://calendar.fixture.invalid', secret: 'fixture-secret' };
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    assert.equal(url, bridge.url);
+    assert.equal(options.headers['X-Webhook-Secret'], bridge.secret);
+    const body = JSON.parse(options.body); calls.push(body);
+    assert.equal(body.calendar_id, 'clinic-calendar');
+    return { ok: true, json: async () => ({ ok: true, data: body.action === 'get'
+      ? { id: 'event-a', status: 'cancelled' }
+      : body.page_token ? { items: [] } : { items: [event], nextPageToken: 'page-2' } }) };
+  });
+  assert.deepEqual(await readAppointmentCalendarEvidence(null, 'clinic-calendar', row, bridge), [event]);
+  assert.equal(calls.length, 2); assert.equal(calls[1].page_token, 'page-2');
+  assert.deepEqual(await readAppointmentCalendarEvidence(null, 'clinic-calendar', { ...row, google_calendar_event_id: 'event-a' }, bridge), [{ id: 'event-a', status: 'cancelled' }]);
+  for (const response of [{ ok: false }, { ok: true, json: async () => ({ ok: false }) },
+    { ok: true, json: async () => ({ ok: true, data: {} }) }]) {
+    globalThis.fetch.mock.mockImplementation(async () => response);
+    await assert.rejects(readAppointmentCalendarEvidence(null, 'clinic-calendar', row, bridge));
+  }
+});

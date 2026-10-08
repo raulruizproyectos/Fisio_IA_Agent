@@ -1,0 +1,149 @@
+{
+  "name": "Fisio IA | Calendario sync",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ManualTrigger",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        260
+      ],
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "ScheduleTrigger",
+      "name": "Programado",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        440
+      ],
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();\nconst to = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();\nreturn [{ json: { from, to, lookback_days: 7, lookahead_days: 30 } }];"
+      },
+      "id": "BuildSyncWindow",
+      "name": "Preparar ventana",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        340
+      ],
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/profesional/appointments/sync-calendar",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({ desde: $json.from, hasta: $json.to, lookback_days: $json.lookback_days, lookahead_days: $json.lookahead_days, trigger: \"background\" }) }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "contentType": "json"
+      },
+      "id": "TriggerCalendarSync",
+      "name": "Sincronizar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        340
+      ],
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "R7toe2gVBNi7E4pH",
+          "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "if (!$json.data) throw new Error(\"Calendar sync response incomplete\"); return [{json:{ok:true}}];"
+      },
+      "id": "SummarizeSync",
+      "name": "Resumen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        340
+      ],
+      "retryOnFail": false
+    }
+  ],
+  "connections": {
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Preparar ventana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Programado": {
+      "main": [
+        [
+          {
+            "node": "Preparar ventana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar ventana": {
+      "main": [
+        [
+          {
+            "node": "Sincronizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sincronizar": {
+      "main": [
+        [
+          {
+            "node": "Resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  }
+}

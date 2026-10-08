@@ -13,16 +13,19 @@ function escapeTelegramHtml(value) {
 }
 
 async function sendTelegramReminder(chatId, text) {
-  if (!PATIENT_BOT_TOKEN || !chatId) return false;
+  if (!PATIENT_BOT_TOKEN || !chatId) return 'failed';
   try {
     const res = await fetch(`https://api.telegram.org/bot${PATIENT_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+      signal: AbortSignal.timeout(10000),
     });
-    return res.ok;
+    const data = await res.json();
+    if (res.ok && data.ok === true) return 'sent';
+    return data.ok === false ? 'failed' : 'processing';
   } catch {
-    return false;
+    return 'processing'; // An uncertain delivery must not be sent again automatically.
   }
 }
 
@@ -49,16 +52,18 @@ router.post('/', async (req, res, next) => {
     const pacienteIds = [...new Set(citas.map(c => c.paciente_id))];
 
     // Get telegram links for these patients
-    const { data: vinculos } = await supabase
+    const { data: vinculos, error: linkError } = await supabase
       .from('vinculos_telegram_pacientes')
       .select('paciente_id, telegram_chat_id')
       .in('paciente_id', pacienteIds);
+    if (linkError) throw linkError;
 
     // Get patient names
-    const { data: pacientes } = await supabase
+    const { data: pacientes, error: patientError } = await supabase
       .from('crm_pacientes')
       .select('id, nombre, apellidos')
       .in('id', pacienteIds);
+    if (patientError) throw patientError;
 
     const chatMap = {};
     for (const v of (vinculos || [])) chatMap[v.paciente_id] = v.telegram_chat_id;
@@ -95,7 +100,7 @@ router.post('/', async (req, res, next) => {
           .eq('cita_id', cita.id)
           .eq('tipo', '24h')
           .eq('canal', 'telegram')
-          .in('estado', ['failed', 'processing'])
+          .eq('estado', 'failed')
           .lt('intento_en', retryBefore)
           .select('id')
           .maybeSingle();
@@ -109,19 +114,20 @@ router.post('/', async (req, res, next) => {
 
       const message = `📋 <b>Recordatorio de cita</b>\n\nHola ${escapeTelegramHtml(nombre)}, te recordamos que tienes una cita de fisioterapia:\n\n📅 <b>${escapeTelegramHtml(dia)}</b>\n🕐 <b>${escapeTelegramHtml(hora)}h</b>${cita.motivo ? `\n📝 ${escapeTelegramHtml(cita.motivo)}` : ''}\n\nSi necesitas cancelar o cambiar la cita, escríbenos por aquí.\n\n— Clínica de Fisioterapia`;
 
-      const ok = await sendTelegramReminder(chatId, message);
-      await supabase
+      const status = await sendTelegramReminder(chatId, message);
+      const { error: saveError } = await supabase
         .from('crm_recordatorio_envios')
         .update({
-          estado: ok ? 'sent' : 'failed',
-          enviado_en: ok ? new Date().toISOString() : null,
-          error_code: ok ? null : 'telegram_send_failed',
+          estado: status,
+          enviado_en: status === 'sent' ? new Date().toISOString() : null,
+          error_code: status === 'sent' ? null : status === 'processing' ? 'telegram_delivery_unknown' : 'telegram_send_failed',
         })
         .eq('cita_id', cita.id)
         .eq('tipo', '24h')
         .eq('canal', 'telegram');
-      results.push({ cita_id: cita.id, paciente: nombre, status: ok ? 'sent' : 'failed' });
-      if (ok) sent++;
+      if (saveError) throw saveError;
+      results.push({ cita_id: cita.id, status });
+      if (status === 'sent') sent++;
     }
 
     res.json({ sent, total: citas.length, results });

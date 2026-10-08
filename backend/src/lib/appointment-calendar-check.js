@@ -5,8 +5,23 @@ const field = (text, name) => {
   return values.length === 1 ? values[0] : null;
 };
 
-export async function readAppointmentCalendarEvidence(client, calendarId, row) {
-  if (!client) throw new Error('La comprobación requiere lectura directa de Calendar. W5 no acredita lecturas completas ni cancelaciones.');
+export async function readAppointmentCalendarEvidence(client, calendarId, row, bridge = {}) {
+  if (!client && bridge.url && bridge.secret) {
+    const request = async (action, params, options) => {
+      const response = await fetch(bridge.url, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': bridge.secret },
+        body: JSON.stringify({ action, calendar_id: params.calendarId, event_id: params.eventId,
+          q: params.q, page_token: params.pageToken }), signal: AbortSignal.timeout(options.timeout),
+      });
+      if (!response.ok) throw new Error('No se pudo leer Calendar.');
+      const result = await response.json();
+      if (result?.ok !== true || !result.data) throw new Error('Calendar no confirmó la lectura.');
+      return { data: result.data };
+    };
+    client = { events: { get: (params, options) => request('get', params, options),
+      list: (params, options) => request('list', params, options) } };
+  }
+  if (!client) throw new Error('La comprobación requiere un lector de recursos completos de Calendar; W5 no acredita cancelaciones.');
   if (row.calendar_sync_calendar_id && row.calendar_sync_calendar_id !== calendarId) {
     throw new Error('El calendario configurado ha cambiado. Se conserva el bloqueo de la cita.');
   }
