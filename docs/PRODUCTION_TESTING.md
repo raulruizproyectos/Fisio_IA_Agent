@@ -24,6 +24,8 @@ El usuario acepta por ahora Precisión azul y pide continuar hasta probar en pro
 ## Bloqueos antes de aplicar cambios externos
 
 1. **Copia nueva verificable.** No existe `SUPABASE_DB_URL` en la configuración local. PostgreSQL 18 ya está instalado. La API de backups no devolvió entradas descargables. La copia lógica antigua fue creada cuando Auth estaba vacío y el esquema tenía 31 tablas; el script existente rechaza correctamente el inventario actual. Obtener la URI Session pooler del proyecto, con la contraseña existente, guardarla solo en `.env.local` y hacer/ensayar una copia nativa. No resetear contraseñas como parte de este paso.
+
+   Actualización posterior: el usuario no conserva la contraseña y pide preparar un cambio controlado. Se dejó abierto «Reset database password» sin rellenar ni enviar; generar/confirmar la nueva credencial corresponde al usuario por las reglas del navegador. Host Session pooler confirmado en el panel: `aws-1-eu-central-1.pooler.supabase.com`, puerto 5432, usuario `postgres.uewhbaejcouenoufuwlq`. Los servicios Fisio usan claves API y no declaran conexión PostgreSQL directa; la consulta de sesiones solo mostró clientes internos de Supabase. Esto no descarta herramientas que conecten ocasionalmente. Antes del cambio, identificar esas conexiones y conservar la contraseña nueva únicamente en `.env.local`; después construir la URI con percent-encoding y TLS. No cambiar claves API ni contraseñas Auth.
 2. **Cinco migraciones pendientes**, en este orden:
    - `20261007154552_financial_integrity.sql`
    - `20261007201534_clinic_creation_retries.sql`
@@ -39,3 +41,7 @@ El usuario acepta por ahora Precisión azul y pide continuar hasta probar en pro
 Comprobar primero salud, readiness autenticado, HTTPS/proxy/CORS, ausencia de caché en Auth y cookies HttpOnly/Secure. Verificar que el acceso anónimo no abre el CRM ni sus datos, y que la sesión profesional corresponde a la clínica existente. Después, con un registro ficticio identificable y alcance autorizado, probar alta/recarga, notas, cita y recuperación de reserva; verificar Calendar real antes de usar escrituras. Registrar cada fallo y su reproducción, hacer el ajuste mínimo y repetir solo el flujo afectado. No emitir facturas reales, enviar mensajes, gastar en IA ni tocar citas reales como parte de este primer recorrido.
 
 Referencias oficiales: [servicios y fuentes EasyPanel](https://easypanel.io/docs/services/app), [API EasyPanel](https://easypanel.io/docs/api), [copias Supabase](https://supabase.com/docs/guides/platform/backups).
+
+## Publicación y CI
+
+Rama publicada y [PR #2](https://github.com/raulruizproyectos/Fisio_IA_Agent/pull/2) abierto en borrador hacia `main`. La primera ejecución pasó backend/n8n y detectó dos entradas opcionales ausentes en el lockfile frontend (`@emnapi/core`/`runtime` 1.11.3). Se regeneró solo el lockfile con npm 11.19.0, la versión usada por CI, sin cambiar versiones existentes ni dependencias directas. La instalación limpia en modo dry-run pasa; comprobar el siguiente resultado CI, incluido el contenedor, antes de afirmar que está listo.

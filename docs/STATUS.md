@@ -4,9 +4,9 @@ Actualizado: 2026-10-08, preparación de testing en producción. Precisión azul
 
 ## GitHub y preparación de producción
 
-- Usuario pide actualizar GitHub y acepta publicar `mejoras/auditoria-20260915` con PR hacia `main`. No fusionar ni desplegar por esa aprobación. Estado de publicación en el PR; preservar secretos/copias locales fuera de Git.
+- Rama `mejoras/auditoria-20260915` publicada y PR #2 abierto en borrador hacia `main`, por autorización del usuario. No fusionar ni desplegar por esa aprobación. Primer CI: backend/n8n pasan, frontend encuentra entradas opcionales ausentes; lockfile reparado con npm 11.19.0 y dry-run limpio pasando. Verificar la siguiente ejecución en el PR; preservar secretos/copias locales fuera de Git.
 - EasyPanel accesible por API HTTPS con el token existente: proyecto `fisio-ia-agent`, servicios frontend/backend y URLs localizados. Ambos siguen en `aa211205`, versión del 20 de septiembre; salud responde 200. La nueva versión local aún no está desplegada.
-- Supabase sano; faltan las cinco migraciones de finanzas/reintentos/Calendar. Copia antigua incompatible con el inventario actual (35 tablas, una cuenta Auth); falta `SUPABASE_DB_URL` para copia nativa. No aplicar SQL antes de obtener y verificar copia actual.
+- Supabase sano; faltan las cinco migraciones de finanzas/reintentos/Calendar. Copia antigua incompatible con el inventario actual (35 tablas, una cuenta Auth); falta `SUPABASE_DB_URL` para copia nativa. Usuario entró en el panel y no conserva la contraseña PostgreSQL: cambio controlado preparado, formulario sin enviar; nueva credencial/confirmación a cargo del usuario. No aplicar SQL antes de obtener y verificar copia actual.
 - Backend lint/100 pruebas y frontend check/build pasan; CSP, guardas y 33 casos runtime pasan. Docker frontend excluye `.env*` y exige `npm ci`; CI elimina la clave placeholder que ahora rechazaba la guarda y ejecuta regresiones de navegador/runtime.
 - Destinos, bloqueos, cambios de configuración y recorrido de prueba registrados en `docs/PRODUCTION_TESTING.md`. No iniciar otra auditoría ni rediseño. Corregir los fallos reproducibles durante testing y verificar los flujos afectados.
 
