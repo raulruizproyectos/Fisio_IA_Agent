@@ -1,0 +1,434 @@
+/* ==========================================================================
+   FISIO CLINICAL — PRECISION FINANCE (v5.0)
+   Covers: Pagos (Ledger), Facturación, Bonos, and Gestoría
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   ========================================================================== */
+
+/* === TABS / SUBNAV DE FINANZAS === */
+.finance-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1.25rem 0;
+  border-bottom: 1px solid #dce3ed;
+  padding-bottom: 0.5rem;
+  overflow-x: auto;
+}
+
+.finance-tabs a,
+.finance-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #536375;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.finance-tabs a:hover,
+.finance-tabs button:hover {
+  color: #142234;
+  background: #f1f5f9;
+}
+
+.finance-tabs a.active,
+.finance-tabs button.active {
+  color: #175dd0;
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  font-weight: 600;
+}
+
+/* === SUBVIEW BANNER STRIP === */
+.finance-subview-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.finance-subview-strip span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #175dd0;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.finance-subview-strip strong {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #142234;
+  display: block;
+}
+
+.finance-subview-strip p {
+  font-size: 0.875rem;
+  color: #536375;
+  margin: 0.2rem 0 0 0;
+}
+
+/* === WORKBENCH / PRIORITY & ACTIONS === */
+.finance-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .finance-workbench {
+    grid-template-columns: 1fr;
+  }
+}
+
+.finance-priority-panel {
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-left: 4px solid #175dd0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.finance-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #175dd0;
+  margin-bottom: 0.35rem;
+}
+
+.finance-priority-panel strong {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #142234;
+  margin-bottom: 0.35rem;
+}
+
+.finance-priority-panel p {
+  font-size: 0.875rem;
+  color: #536375;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.finance-priority-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.finance-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .finance-action-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.finance-action-card {
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.finance-action-card:hover {
+  border-color: #175dd0;
+  background: #f4f7fb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(23, 93, 208, 0.08);
+}
+
+.finance-action-card span.material-symbols-rounded {
+  font-size: 1.5rem;
+  color: #175dd0;
+}
+
+.finance-action-card strong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #142234;
+}
+
+.finance-action-card small {
+  font-size: 0.8125rem;
+  color: #536375;
+}
+
+/* === KPI OVERVIEW GRIDS === */
+.finance-overview-grid,
+.facturas-summary-strip,
+.bonos-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .finance-overview-grid,
+  .facturas-summary-strip,
+  .bonos-summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .finance-overview-grid,
+  .facturas-summary-strip,
+  .bonos-summary-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+.finance-overview-card,
+.facturas-summary-card,
+.bonos-summary-card {
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.overview-label,
+.facturas-summary-card span,
+.bonos-summary-card span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #536375;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.finance-overview-card strong,
+.facturas-summary-card strong,
+.bonos-summary-card strong {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #142234;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.finance-overview-card p,
+.facturas-summary-card p,
+.bonos-summary-card p {
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.finance-overview-card-warn strong,
+.facturas-summary-card-accent strong,
+.bonos-summary-card-accent strong {
+  color: #b45309;
+}
+
+/* === STAT SUMMARY BARS & TOOLBARS === */
+.pagos-toolbar {
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 0.875rem 1.15rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagos-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pagos-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.pagos-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #536375;
+}
+
+.pagos-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #142234;
+}
+
+.pagos-stat-cash .pagos-stat-value {
+  color: #047857;
+}
+
+.pagos-stat-card .pagos-stat-value {
+  color: #0369a1;
+}
+
+.pagos-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pagos-filters-row select {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #142234;
+}
+
+/* === TABLES IN FINANCE === */
+.table-wrap {
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.table-wrap thead {
+  background: #f4f7fb;
+  border-bottom: 1px solid #dce3ed;
+}
+
+.table-wrap th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.table-wrap td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.table-wrap tr:last-child td {
+  border-bottom: none;
+}
+
+.table-wrap tbody tr:hover {
+  background: #f4f7fb;
+}
+
+/* Badges & Status */
+.pago-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.pago-method-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* === GESTORÍA ESPECÍFICO === */
+.finance-annual-summary {
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.gestoria-mes-totals {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: #f4f7fb;
+  border-bottom: 1px solid #dce3ed;
+}
+
+.gestoria-mes-chip {
+  font-size: 0.8125rem;
+  color: #536375;
+}
+
+.gestoria-mes-chip strong {
+  color: #142234;
+}
+
+.gestoria-mes-cash strong {
+  color: #047857;
+}
+
+.gestoria-mes-card strong {
+  color: #0369a1;
+}
+
+/* === MOBILE ADAPTATIONS === */
+@media (max-width: 768px) {
+  .pagos-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

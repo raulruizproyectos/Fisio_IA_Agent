@@ -11,7 +11,7 @@ Guía operativa obligatoria para cualquier agente o desarrollador que modifique 
 ## 2. Comandos de Validación Obligatorios
 Antes de dar por concluida cualquier tarea o proponer un commit:
 ```bash
-# Backend: lint y suite de tests (deben pasar los 18 tests)
+# Backend: lint y suite de tests (debe pasar la suite actual)
 cd backend && npm run lint && npm test
 
 # Frontend: chequeo de tipos y compilación estática (0 errores)
@@ -35,10 +35,10 @@ cd ../frontend && npm run check && npm run build
 - Ante *red flags* clínicas, se exige una justificación profesional documentada de al menos 12 caracteres.
 - Al sustituir un ejercicio por apoyo visual, el nuevo ejercicio debe adoptar sus propias precauciones y dosificación (nunca heredar contraindicaciones de otro).
 
-## 6. Frontend y Sistema de Diseño (v4.0 Turn.io)
+## 6. Frontend y Sistema de Diseño (v6.0 Precisión azul)
 - **Contratos DOM**: NUNCA modificar ni eliminar IDs ni atributos `data-*` en `frontend/src/pages/index.astro` ni en los componentes de `views/*`, ya que son requeridos para la hidratación reactiva.
-- **Abandono del Dark Dashboard**: No reintroducir fondos azul marino/negros (`#0d1522`) ni tarjetas oscuras. Utilizar los lienzos pastel de `design-tokens.css` (*Lavender*, *Mint*, *Peach*, *Sky*, *Sand*).
-- **Disciplina Coral Pulse**: `#ff643b` (`--color-coral-pulse`) se reserva **únicamente** para la acción principal de cada pantalla (Guardar, Crear, Confirmar, Registrar). No usarlo para decoración ni en múltiples botones que compitan entre sí.
+- **Dirección elegida por el usuario**: Precisión azul, DESIGN.md v6. Navegación y tarjetas blancas, lienzo #f4f7fb, texto #142234 y azul #175dd0. No reintroducir las reglas verde/coral anteriores.
+- **Acciones y estados**: azul para acción/orientación; rojo/ámbar/verde solo para estados semánticos con etiquetas. Movimiento discreto, reducido cuando lo solicita el sistema; controles de 44 px y foco visible.
 - **Tipografía**: DM Sans con `font-feature-settings: "ss03" 1` en toda la interfaz.
 - **Responsive**: Compatibilidad obligatoria en escritorio (1280px+) y móvil (375px+).
 

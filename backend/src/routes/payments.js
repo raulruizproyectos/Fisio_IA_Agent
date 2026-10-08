@@ -1,10 +1,29 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { isMoney, isDate, respondFinanceError } from '../lib/finance.js';
 
 const router = Router();
 const PAYMENTS_TABLE = 'crm_pagos';
 
 const PAGOS_SELECT = 'id, paciente_id, fecha, importe, metodo_pago, concepto, notas, created_at, updated_at, crm_pacientes(nombre, apellidos)';
+
+const sumMoney = (total, amount) => (Math.round(total * 100) + Math.round(Number(amount) * 100)) / 100;
+
+function validatePayment(fields) {
+  if (fields.importe !== undefined && !isMoney(fields.importe)) {
+    return 'importe debe ser mayor que 0, inferior a 1000000 y tener como máximo dos decimales';
+  }
+  if (fields.fecha !== undefined && !isDate(fields.fecha)) {
+    return 'fecha debe ser una fecha válida en formato AAAA-MM-DD';
+  }
+  if (fields.metodo_pago !== undefined && !['efectivo', 'tarjeta'].includes(fields.metodo_pago)) {
+    return 'metodo_pago debe ser "efectivo" o "tarjeta"';
+  }
+  if (fields.paciente_id !== undefined && (typeof fields.paciente_id !== 'string' || !fields.paciente_id.trim())) {
+    return 'paciente_id es obligatorio';
+  }
+  return null;
+}
 
 const isMissingPaymentsTableError = (error) => {
   const message = String(error?.message || '').toLowerCase();
@@ -43,6 +62,7 @@ router.get('/', async (req, res, next) => {
       .limit(500);
 
     if (paciente_id) query = query.eq('paciente_id', paciente_id);
+    if (req.query.pendientes_factura === 'true') query = query.is('factura_id', null);
     if (metodo_pago) query = query.eq('metodo_pago', metodo_pago);
 
     if (anio) {
@@ -60,7 +80,7 @@ router.get('/', async (req, res, next) => {
     const { data, error } = await query;
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
-      return res.status(500).json({ error: error.message });
+      return respondFinanceError(res, error);
     }
 
     res.json({ data: data || [] });
@@ -85,7 +105,7 @@ router.get('/resumen', async (req, res, next) => {
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
-      return res.status(500).json({ error: error.message });
+      return respondFinanceError(res, error);
     }
 
     const meses = {};
@@ -95,16 +115,16 @@ router.get('/resumen', async (req, res, next) => {
     for (const p of data || []) {
       const m = new Date(p.fecha + 'T00:00:00').getMonth() + 1;
       const importe = Number(p.importe);
-      meses[m].total += importe;
+      meses[m].total = sumMoney(meses[m].total, importe);
       meses[m].sesiones += 1;
-      if (p.metodo_pago === 'efectivo') meses[m].efectivo += importe;
-      else meses[m].tarjeta += importe;
+      if (p.metodo_pago === 'efectivo') meses[m].efectivo = sumMoney(meses[m].efectivo, importe);
+      else meses[m].tarjeta = sumMoney(meses[m].tarjeta, importe);
     }
 
     res.json({
       anio: year,
       resumen: Object.values(meses),
-      total_anual: Object.values(meses).reduce((s, m) => s + m.total, 0),
+      total_anual: Object.values(meses).reduce((s, m) => sumMoney(s, m.total), 0),
       total_sesiones: Object.values(meses).reduce((s, m) => s + m.sesiones, 0),
     });
   } catch (err) {
@@ -128,7 +148,7 @@ router.get('/gestoria', async (req, res, next) => {
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
-      return res.status(500).json({ error: error.message });
+      return respondFinanceError(res, error);
     }
 
     const byPatient = {};
@@ -147,28 +167,28 @@ router.get('/gestoria', async (req, res, next) => {
       if (!byPatient[pid].meses[m]) byPatient[pid].meses[m] = { sesiones: 0, efectivo: 0, tarjeta: 0, total: 0 };
 
       byPatient[pid].meses[m].sesiones += 1;
-      byPatient[pid].meses[m].total += importe;
+      byPatient[pid].meses[m].total = sumMoney(byPatient[pid].meses[m].total, importe);
       byPatient[pid].sesiones_anual += 1;
-      byPatient[pid].total_anual += importe;
+      byPatient[pid].total_anual = sumMoney(byPatient[pid].total_anual, importe);
       totalesMes[m].sesiones += 1;
-      totalesMes[m].total += importe;
+      totalesMes[m].total = sumMoney(totalesMes[m].total, importe);
 
       if (p.metodo_pago === 'efectivo') {
-        byPatient[pid].meses[m].efectivo += importe;
-        byPatient[pid].efectivo_anual += importe;
-        totalesMes[m].efectivo += importe;
+        byPatient[pid].meses[m].efectivo = sumMoney(byPatient[pid].meses[m].efectivo, importe);
+        byPatient[pid].efectivo_anual = sumMoney(byPatient[pid].efectivo_anual, importe);
+        totalesMes[m].efectivo = sumMoney(totalesMes[m].efectivo, importe);
       } else {
-        byPatient[pid].meses[m].tarjeta += importe;
-        byPatient[pid].tarjeta_anual += importe;
-        totalesMes[m].tarjeta += importe;
+        byPatient[pid].meses[m].tarjeta = sumMoney(byPatient[pid].meses[m].tarjeta, importe);
+        byPatient[pid].tarjeta_anual = sumMoney(byPatient[pid].tarjeta_anual, importe);
+        totalesMes[m].tarjeta = sumMoney(totalesMes[m].tarjeta, importe);
       }
     }
 
     const pacientes = Object.values(byPatient).sort((a, b) => b.total_anual - a.total_anual);
     const gran_total = {
-      efectivo: pacientes.reduce((s, p) => s + p.efectivo_anual, 0),
-      tarjeta: pacientes.reduce((s, p) => s + p.tarjeta_anual, 0),
-      total: pacientes.reduce((s, p) => s + p.total_anual, 0),
+      efectivo: pacientes.reduce((s, p) => sumMoney(s, p.efectivo_anual), 0),
+      tarjeta: pacientes.reduce((s, p) => sumMoney(s, p.tarjeta_anual), 0),
+      total: pacientes.reduce((s, p) => sumMoney(s, p.total_anual), 0),
       sesiones: pacientes.reduce((s, p) => s + p.sesiones_anual, 0),
     };
 
@@ -184,10 +204,9 @@ router.post('/', async (req, res, next) => {
     const { paciente_id, fecha, importe, metodo_pago, concepto, notas } = req.body;
 
     if (!paciente_id) return res.status(400).json({ error: 'paciente_id es obligatorio' });
-    if (!importe || Number(importe) <= 0) return res.status(400).json({ error: 'importe debe ser mayor que 0' });
-    if (!metodo_pago || !['efectivo', 'tarjeta'].includes(metodo_pago)) {
-      return res.status(400).json({ error: 'metodo_pago debe ser "efectivo" o "tarjeta"' });
-    }
+    if (importe === undefined || metodo_pago === undefined) return res.status(400).json({ error: 'importe y metodo_pago son obligatorios' });
+    const validationError = validatePayment(req.body);
+    if (validationError) return res.status(400).json({ error: validationError });
 
     const { data, error } = await supabase
       .from(PAYMENTS_TABLE)
@@ -204,7 +223,7 @@ router.post('/', async (req, res, next) => {
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res, { write: true });
-      return res.status(500).json({ error: error.message });
+      return respondFinanceError(res, error);
     }
 
     res.status(201).json({ data });
@@ -222,10 +241,10 @@ router.patch('/:id', async (req, res, next) => {
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
-    if (updates.importe) updates.importe = Number(updates.importe);
-    if (updates.metodo_pago && !['efectivo', 'tarjeta'].includes(updates.metodo_pago)) {
-      return res.status(400).json({ error: 'metodo_pago debe ser "efectivo" o "tarjeta"' });
-    }
+    if (!Object.keys(updates).length) return res.status(400).json({ error: 'No hay cambios para aplicar' });
+    const validationError = validatePayment(updates);
+    if (validationError) return res.status(400).json({ error: validationError });
+    if (updates.importe !== undefined) updates.importe = Number(updates.importe);
     updates.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
@@ -233,11 +252,11 @@ router.patch('/:id', async (req, res, next) => {
       .update(updates)
       .eq('id', id)
       .select(PAGOS_SELECT)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res, { write: true });
-      return res.status(500).json({ error: error.message });
+      return respondFinanceError(res, error);
     }
     if (!data) return res.status(404).json({ error: 'Pago no encontrado' });
 
@@ -254,7 +273,7 @@ router.delete('/:id', async (req, res, next) => {
     const { error } = await supabase.from(PAYMENTS_TABLE).delete().eq('id', id);
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res, { write: true });
-      return res.status(500).json({ error: error.message });
+      return respondFinanceError(res, error);
     }
     res.json({ ok: true });
   } catch (err) {

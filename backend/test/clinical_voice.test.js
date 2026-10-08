@@ -2,6 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { synthesizeClinicalNote, generateLongitudinalSummary } from '../src/lib/clinical-voice.js';
 
+test('resumen desempata la misma hora por creación y conserva el último dolor',async()=>{
+  const notes=[{id:'b',session_datetime:'2026-10-07T12:00:00Z',created_at:'2026-10-07T13:00:00Z',dolor_eva:4,nota:'Última'},
+    {id:'a',session_datetime:'2026-10-07T12:00:00Z',created_at:'2026-10-07T12:30:00Z',dolor_eva:0,nota:'Primera'}];
+  const summary=await generateLongitudinalSummary({patientName:'Fixture',notes,useAi:false});
+  assert.match(summary,/EVA 0\/10 → 4\/10/);assert.match(summary,/Última sesión: Última/);
+});
+
 test('synthesizeClinicalNote: extrae EVA y zona sin inventar datos en modo determinista', async () => {
   const text = 'Paciente acude con dolor lumbar irradiado hacia pierna derecha. Refiere EVA 6/10 tras esfuerzo en trabajo. Se realiza terapia manual descontracturante y movilizaciones lumbopélvicas. Al finalizar refiere mejoría con dolor 4/10. Pautamos puentes glúteos.';
 

@@ -1,0 +1,176 @@
+/* ==========================================================================
+   FISIO CLINICAL — PRECISION SETTINGS (v5.0)
+   Covers: Ajustes, Datos de la Clínica, Integraciones, Copiloto
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   ========================================================================== */
+
+.config-editorial-shell {
+  max-width: 1040px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+}
+
+.config-group-card {
+  background: #ffffff !important;
+  border-radius: 8px !important;
+  border: 1px solid #dce3ed !important;
+  padding: 1.75rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.config-card-header {
+  margin-bottom: 1.25rem !important;
+  padding-bottom: 0.75rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.config-section-kicker {
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #175dd0 !important;
+  display: block !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.config-card-header h2 {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #142234 !important;
+  margin: 0 0 0.25rem 0 !important;
+}
+
+.config-card-header p {
+  color: #536375 !important;
+  font-size: 0.875rem !important;
+  margin: 0 !important;
+}
+
+/* Config Form Grid */
+.config-form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 1rem !important;
+  margin-bottom: 1.25rem !important;
+}
+
+@media (max-width: 640px) {
+  .config-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.field-span-2 {
+  grid-column: 1 / -1 !important;
+}
+
+.field-label {
+  display: block !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.input-editorial {
+  width: 100% !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  padding: 0.55rem 0.85rem !important;
+  font-size: 0.875rem !important;
+  color: #142234 !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.input-editorial:focus {
+  border-color: #175dd0 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(23, 93, 208, 0.15) !important;
+}
+
+.config-form-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  padding-top: 0.75rem !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+/* Integrations List */
+.integrations-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+}
+
+.integration-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  padding: 1rem !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 8px !important;
+  background: #f4f7fb !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.integration-item:hover {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.integration-icon-wrap {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.integration-meta {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.15rem !important;
+}
+
+.integration-meta strong {
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: #142234 !important;
+}
+
+.integration-sub {
+  font-size: 0.8125rem !important;
+  color: #536375 !important;
+}
+
+.status-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.25rem 0.6rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  border-radius: 9999px !important;
+}
+
+.chip-success {
+  background: #ecfdf5 !important;
+  color: #065f46 !important;
+}
+
+.status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #10b981 !important;
+}

@@ -1,50 +1,48 @@
 /* ==========================================================================
-   FISIO CLINICAL — CLINICAL EDITORIAL SANCTUARY DESIGN TOKENS (v2026)
-   Canonical Specification: DESIGN.md (Stitch Project 15793182036642898909)
-   Colors: Canopy #0A3922, Kinetic Coral #FF643B, Warm Canvas #F7F5F1, Pure White #FFFFFF
+   FISIO CLINICAL — PRECISIÓN AZUL DESIGN TOKENS (v6.0)
+   Direction: Precisión azul, selected 2026-10-08
+   Primary: Blue (#175DD0), Canvas (#F4F7FB), White surfaces
+   Text: Ink (#142234), Muted (#536375), Border (#DCE3ED)
    ========================================================================== */
 
 :root {
-  /* === CORE BRAND & IDENTITY === */
-  --color-canopy: #0a3922;
-  --color-canopy-rgb: 10, 57, 34;
-  --color-coral: #ff643b;
-  --color-coral-hover: #e5522b;
-  --color-coral-rgb: 255, 100, 59;
-  --color-canvas: #f7f5f1;
-  --color-canvas-rgb: 247, 245, 241;
+  /* === CORE BRAND & CLINICAL IDENTITY === */
+  --color-brand-primary: #175dd0;
+  --color-brand-primary-hover: #104ab0;
+  --color-brand-accent: #175dd0;
+  --color-brand-accent-hover: #104ab0;
+  --color-canvas: #f4f7fb;
+  --color-canvas-rgb: 244, 247, 251;
   --color-surface: #ffffff;
+  --color-surface-hover: #f1f5f9;
+  --color-surface-subtle: #f4f7fb;
+  --color-surface-selected: #eaf1fe;
 
-  /* === TONAL SUPPORT SURFACES === */
-  --color-mint: #d2f2e3;
-  --color-mint-text: #0a3922;
-  --color-cream: #faf7e8;
-  --color-cream-text: #4f4932;
-  --color-lavender: #eee2ff;
-  --color-lavender-text: #3c1e6e;
-  --color-peach: #ffede8;
-  --color-peach-text: #9e2a0b;
-
-  /* === INK & CONTRAST (WCAG AA / AAA) === */
-  --color-ink: #111111;
-  --color-ink-secondary: #414942;
-  --color-ink-muted: #717972;
-  --color-ink-disabled: #a6a6a6;
+  /* === INK & CONTRAST === */
+  --color-ink: #142234;
+  --color-ink-secondary: #334155;
+  --color-ink-muted: #536375;
+  --color-ink-disabled: #94a3b8;
   --color-ink-on-brand: #ffffff;
 
   /* === BORDERS & ELEVATION === */
-  --color-border-subtle: rgba(10, 57, 34, 0.08);
-  --color-border-medium: rgba(10, 57, 34, 0.16);
-  --color-border-focus: #0a3922;
-  --shadow-ambient: 0 4px 20px -2px rgba(10, 57, 34, 0.04);
-  --shadow-raised: 0 12px 32px -4px rgba(10, 57, 34, 0.08);
-  --shadow-flyout: 0 16px 40px -8px rgba(10, 57, 34, 0.12);
+  --color-border: #dce3ed;
+  --color-border-subtle: #f1f5f9;
+  --color-border-medium: #cbd5e1;
+  --color-border-strong: #94a3b8;
+  --color-border-focus: #175dd0;
+
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-ambient: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-raised: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-flyout: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
 
   /* === RADII === */
   --radius-xs: 4px;
   --radius-sm: 8px;     /* buttons, inputs, controls */
-  --radius-md: 16px;    /* cards, standard containers */
-  --radius-lg: 24px;    /* hero containers, major panels */
+  --radius-md: 14px;    /* cards, standard containers */
+  --radius-lg: 16px;    /* modal dialogs, major panels */
   --radius-full: 9999px; /* status pills, badges */
 
   /* === SPACING RHYTHM === */
@@ -58,84 +56,138 @@
   /* === TYPOGRAPHY SCALES === */
   --font-family-base: 'DM Sans Variable', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-family-display: 'DM Sans Variable', 'DM Sans', sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* === SEMANTIC MAPPINGS (BRIDGING EXISTING SYSTEM SAFELY) === */
+  /* === CLINICAL STATUS & SEVERITY === */
+  --color-success-text: #166534;
+  --color-success-bg: #dcfce7;
+  --color-success-border: #86efac;
+
+  --color-urgent-text: #991b1b;
+  --color-urgent-bg: #fee2e2;
+  --color-urgent-border: #fca5a5;
+
+  --color-warning-text: #9a3412;
+  --color-warning-bg: #ffedd5;
+  --color-warning-border: #fdba74;
+
+  --color-info-text: #1e40af;
+  --color-info-bg: #dbeafe;
+  --color-info-border: #93c5fd;
+
+  --color-neutral-text: #475569;
+  --color-neutral-bg: #f1f5f9;
+  --color-neutral-border: #cbd5e1;
+
+  /* === NAVIGATION / SIDEBAR TOKENS (HIGH CONTRAST) === */
+  --sidebar-bg: #ffffff;
+  --sidebar-bg2: #f4f7fb;
+  --sidebar-border: #dce3ed;
+  --sidebar-text: #536375;
+  --sidebar-text-hover: #142234;
+  --sidebar-active-bg: #eaf1fe;
+  --sidebar-active-border: #175dd0;
+  --sidebar-active-color: #175dd0;
+  --sidebar-width: 224px;
+  --sidebar-collapsed: 68px;
+
+  /* === SURFACES === */
+  --surface-page-canvas: var(--color-canvas);
+  --surface-card-surface: var(--color-surface);
+  --surface-pastel-card: #f4f7fb;
+  --surface-dark-brand-surface: var(--sidebar-bg);
+
+  /* === BACKWARD COMPATIBILITY / BRIDGING ALIASES === */
+  --color-canopy: #175dd0;
+  --color-canopy-rgb: 15, 91, 120;
+  --color-canopy-green: #175dd0;
+  --color-coral: #175dd0;
+  --color-coral-pulse: #175dd0;
+  --color-coral-hover: #104ab0;
+  --color-coral-rgb: 15, 91, 120;
+  --color-mint: #e0f2fe;
+  --color-mint-text: #0369a1;
+  --color-mint-wash: #f0f9ff;
+  --color-cream: #f4f7fb;
+  --color-cream-text: #334155;
+  --color-cream-wash: #f4f7fb;
+  --color-lavender: #f1f5f9;
+  --color-lavender-text: #334155;
+  --color-lavender-mist: #f4f7fb;
+  --color-peach: #ffedd5;
+  --color-peach-text: #9a3412;
+  --color-peach-wash: #fff7ed;
+  --color-sand: #f4f7fb;
+  --color-graphite: #334155;
+  --color-slate: #536375;
+  --color-frost-gray: #dce3ed;
+  --color-cloud-gray: #f1f5f9;
+  --color-ash: #94a3b8;
+  --color-leaf-bright: #166534;
+  --color-deep-teal: #175dd0;
+
   --bg-base: var(--color-canvas);
   --bg-card: var(--color-surface);
-  --bg-card-hover: #faf9f6;
+  --bg-card-hover: var(--color-surface-hover);
   --bg-elevated: var(--color-surface);
   --bg-surface: var(--color-canvas);
 
-  --accent: var(--color-canopy);
-  --accent-hover: #062616;
-  --accent-soft: rgba(10, 57, 34, 0.08);
-  --accent-glow: rgba(10, 57, 34, 0.18);
-  --premium: var(--color-coral);
-  --premium-soft: rgba(255, 100, 59, 0.12);
+  --accent: var(--color-brand-primary);
+  --accent-hover: var(--color-brand-primary-hover);
+  --accent-soft: rgba(23, 93, 208, 0.08);
+  --accent-glow: rgba(23, 93, 208, 0.16);
+  --premium: var(--color-brand-primary);
+  --premium-soft: rgba(23, 93, 208, 0.08);
 
   --text-primary: var(--color-ink);
   --text-secondary: var(--color-ink-secondary);
   --text-muted: var(--color-ink-muted);
 
-  --border: var(--color-border-subtle);
-  --border-light: rgba(10, 57, 34, 0.04);
+  --border: var(--color-border);
+  --border-light: var(--color-border-subtle);
   --border-strong: var(--color-border-medium);
 
-  /* Navigation Sidebar Tokens */
-  --sidebar-bg: var(--color-canopy);
-  --sidebar-bg2: #072b19;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-text: rgba(255, 255, 255, 0.78);
-  --sidebar-text-hover: #ffffff;
-  --sidebar-active-bg: rgba(255, 255, 255, 0.12);
-  --sidebar-active-color: #ffffff;
-  --sidebar-width: 250px;
-  --sidebar-collapsed: 64px;
+  --danger: var(--color-urgent-text);
+  --danger-soft: var(--color-urgent-bg);
+  --warning: var(--color-warning-text);
+  --warning-soft: var(--color-warning-bg);
+  --success: var(--color-success-text);
+  --success-soft: var(--color-success-bg);
+  --info: var(--color-info-text);
+  --info-soft: var(--color-info-bg);
 
-  /* Surfaces */
-  --surface-page-canvas: var(--color-canvas);
-  --surface-card-surface: var(--color-surface);
-  --surface-pastel-card: var(--color-mint);
-  --surface-dark-brand-surface: var(--color-canopy);
-
-  /* Semantic Alert Tokens */
-  --danger: #ba1a1a;
-  --danger-soft: rgba(186, 26, 26, 0.08);
-  --warning: #b12d05;
-  --warning-soft: rgba(177, 45, 5, 0.1);
-  --success: #0a3922;
-  --success-soft: var(--color-mint);
-  --info: #004d67;
-  --info-soft: #c1e8ff;
-
-  /* === EDITORIAL SYSTEM COMPATIBILITY ALIASES === */
-  --color-canopy-green: var(--color-canopy);
-  --color-coral-pulse: var(--color-coral);
-  --color-mint-wash: var(--color-mint);
-  --color-cream-wash: var(--color-cream);
-  --color-lavender-mist: var(--color-lavender);
-  --color-peach-wash: var(--color-peach);
-  --color-sand: var(--color-cream);
-  --color-graphite: var(--color-ink-secondary);
-  --color-slate: var(--color-ink-muted);
-  --color-frost-gray: var(--color-border-subtle);
-  --color-cloud-gray: #f0ede6;
-  --color-ash: #9e9b94;
-  --color-leaf-bright: #10b981;
-  --color-deep-teal: #062616;
   --radius-card: var(--radius-md);
   --radius-button: var(--radius-sm);
   --radius-icon: 8px;
-  --duration-micro: 0.18s;
+  --radius-panel: 16px;
+  --color-charcoal: var(--color-ink);
+  --topbar-height: 76px;
+  --duration-fast: 120ms;
+  --duration-default: 220ms;
+  --duration-slow: 240ms;
+  --ease-out: cubic-bezier(.2, 0, 0, 1);
+  --ease-editorial: var(--ease-out);
+  --transition: 120ms var(--ease-out);
+  --transition-slow: 240ms var(--ease-out);
+  --shadow-md: var(--shadow-raised);
+  --shadow-lg: var(--shadow-flyout);
+  --bg-paper: var(--color-surface);
+  --bg-soft: var(--color-surface-hover);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-ink-secondary);
+  --ink-muted: var(--color-ink-muted);
+  --line: var(--color-border);
+  --teal-deep: var(--color-brand-primary);
+  --duration-micro: 0.15s;
   --text-xs: 12px;
   --text-sm: 13.5px;
-  --text-base: 15px;
+  --text-base: 14.5px;
   --text-lg: 18px;
   --text-xl: 22px;
-  --text-2xl: 28px;
+  --text-2xl: 26px;
 }
 
-/* Page Section Foundation: Calm Warm Canvas */
+/* Page Section Foundation */
 .page-section {
   background: var(--color-canvas) !important;
   color: var(--color-ink);

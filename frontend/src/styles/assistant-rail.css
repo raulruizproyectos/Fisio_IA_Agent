@@ -1,11 +1,12 @@
 /* ==========================================================================
-   FISIO CLINICAL - CLINICAL COPILOT RAIL (HIGH-END CLINICAL SLATE LUXURY)
+   FISIO CLINICAL - CLINICAL COPILOT RAIL (PRECISION WORKSPACE)
+   Harmonious with the rest of Fisio Clinical - No giant alien dark app
    ========================================================================== */
 
 #assistantRail,
 #assistantRail.assistant-rail,
 #assistantRail.assistant-rail-portal {
-  --assistant-rail-width: min(540px, 100vw);
+  --assistant-rail-width: min(560px, 100vw);
   position: fixed !important;
   inset: 0 0 0 auto !important;
   z-index: 100 !important;
@@ -16,17 +17,17 @@
   height: 100vh !important;
   height: 100dvh !important;
   overflow: hidden !important;
-  background: #0d1420 !important;
-  color: #f8fafc !important;
+  background: #ffffff !important;
+  color: #142234 !important;
   border: 0 !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: -20px 0 50px -10px rgba(0, 0, 0, 0.7) !important;
+  border-left: 1px solid #dce3ed !important;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.12) !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transform: translate3d(100%, 0, 0) !important;
   transition: opacity 200ms ease, transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: transform, opacity !important;
-  font-family: "Manrope", system-ui, sans-serif !important;
+  font-family: inherit !important;
 }
 
 #assistantRail.open,
@@ -57,27 +58,32 @@
   -webkit-font-smoothing: antialiased !important;
 }
 
-/* Desktop backdrop: NEVER blur or lock the page on desktop */
-@media (min-width: 769px) {
+/* Desktop backdrop: subtle or non-blocking */
+@media (min-width: 1024px) {
   #assistantRailBackdrop,
-  .assistant-rail-backdrop,
-  html[data-assistant-state="open-desktop"] #assistantRailBackdrop {
+  .assistant-rail-backdrop {
     display: none !important;
     opacity: 0 !important;
     pointer-events: none !important;
-    backdrop-filter: none !important;
+  }
+
+  /* Workspace reflow on desktop when open */
+  body.copilot-open .content,
+  html[data-assistant-state="open-desktop"] .content {
+    margin-right: min(560px, 38vw) !important;
+    transition: margin-right 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 }
 
-/* Mobile backdrop: simple dark tint, zero blur */
-@media (max-width: 768px) {
+/* Mobile backdrop */
+@media (max-width: 1023px) {
   #assistantRailBackdrop.visible,
   html[data-assistant-state="open-mobile"] #assistantRailBackdrop {
     display: block !important;
     opacity: 1 !important;
     pointer-events: auto !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(2px) !important;
   }
 }
 
@@ -88,9 +94,9 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 1.1rem 1.4rem !important;
-  background: #0d1420 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 1rem 1.5rem !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #dce3ed !important;
   min-height: auto !important;
 }
 
@@ -107,26 +113,26 @@
   width: 2.5rem !important;
   height: 2.5rem !important;
   border-radius: 0.65rem !important;
-  background: rgba(16, 185, 129, 0.15) !important;
-  color: #34d399 !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  background: rgba(23, 93, 208, 0.1) !important;
+  color: #175dd0 !important;
+  border: 1px solid rgba(23, 93, 208, 0.2) !important;
   font-size: 1.25rem !important;
 }
 
 #assistantRail > header h2 {
   margin: 0.15rem 0 0 !important;
-  color: #ffffff !important;
-  font-family: "Sora", "Manrope", sans-serif !important;
-  font-size: 0.95rem !important;
-  font-weight: 600 !important;
+  color: #142234 !important;
+  font-size: 0.9375rem !important;
+  font-weight: 700 !important;
   letter-spacing: -0.01em !important;
 }
 
 #assistantRail > header .text-emerald-600 {
-  color: #34d399 !important;
-  font-size: 0.68rem !important;
+  color: #175dd0 !important;
+  font-size: 0.6875rem !important;
   font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
 }
 
 #assistantRail #agentDot {
@@ -136,36 +142,36 @@
 }
 
 #assistantRail #agentStatusText {
-  color: #34d399 !important;
-  font-size: 0.65rem !important;
+  color: #15803d !important;
+  font-size: 0.6875rem !important;
   font-weight: 700 !important;
 }
 
 #assistantRail > header .bg-emerald-50 {
-  background: rgba(16, 185, 129, 0.12) !important;
-  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
   border-radius: 999px !important;
-  padding: 0.15rem 0.5rem !important;
+  padding: 0.125rem 0.5rem !important;
 }
 
 #assistantRailClose {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 2.2rem !important;
-  height: 2.2rem !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
   border-radius: 0.5rem !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #94a3b8 !important;
-  transition: all 0.15s ease !important;
+  background: #f4f7fb !important;
+  border: 1px solid #dce3ed !important;
+  color: #536375 !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
   cursor: pointer !important;
 }
 
 #assistantRailClose:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: #f1f5f9 !important;
+  color: #142234 !important;
+  border-color: #cbd5e1 !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -175,9 +181,9 @@
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
   gap: 0.5rem !important;
-  padding: 0.65rem 1.4rem !important;
-  background: #090e17 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 0.625rem 1.5rem !important;
+  background: #f4f7fb !important;
+  border-bottom: 1px solid #dce3ed !important;
   list-style: none !important;
   margin: 0 !important;
 }
@@ -186,8 +192,8 @@
   display: flex !important;
   align-items: center !important;
   gap: 0.4rem !important;
-  font-size: 0.72rem !important;
-  color: #64748b !important;
+  font-size: 0.75rem !important;
+  color: #536375 !important;
 }
 
 #assistantRail .assistant-care-stepper li > span {
@@ -197,68 +203,70 @@
   width: 1.25rem !important;
   height: 1.25rem !important;
   border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #94a3b8 !important;
-  font-size: 0.68rem !important;
+  background: #dce3ed !important;
+  color: #475569 !important;
+  font-size: 0.6875rem !important;
   font-weight: 700 !important;
 }
 
 #assistantRail .assistant-care-stepper li.is-current {
-  color: #34d399 !important;
-  font-weight: 600 !important;
+  color: #175dd0 !important;
+  font-weight: 700 !important;
 }
 
 #assistantRail .assistant-care-stepper li.is-current > span {
-  background: #10b981 !important;
+  background: #175dd0 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 1px 3px rgba(23, 93, 208, 0.3) !important;
 }
 
 /* --------------------------------------------------------------------------
    CONTENT BODY & CHAT SECTION
    -------------------------------------------------------------------------- */
 #assistantRail > div {
-  background: #0a0f18 !important;
+  background: #f4f7fb !important;
 }
 
 #assistantRail main {
-  background: #0a0f18 !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: #f4f7fb !important;
+  border-right: 1px solid #dce3ed !important;
 }
 
 /* Patient Selector & Mode Switch */
 #assistantRail main > div:first-child {
-  background: #0d1420 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-  padding: 0.85rem 1.25rem !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #dce3ed !important;
+  padding: 0.875rem 1.25rem !important;
+  gap: 0.75rem !important;
 }
 
 #assistantRail #chatPatientSelect {
   width: 100% !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.09) !important;
-  border-radius: 0.65rem !important;
-  padding: 0.55rem 0.9rem 0.55rem 2.5rem !important;
-  color: #ffffff !important;
-  font-size: 0.82rem !important;
+  background: #f4f7fb !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.875rem 0.5rem 2.5rem !important;
+  color: #142234 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
   outline: none !important;
-  transition: all 0.15s ease !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
 #assistantRail #chatPatientSelect:focus {
-  border-color: rgba(16, 185, 129, 0.5) !important;
-  background: rgba(255, 255, 255, 0.07) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12) !important;
+  border-color: #0284c7 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
 }
 
 #assistantRail #chatPatientSelect option {
-  background: #0d1420 !important;
-  color: #ffffff !important;
+  background: #ffffff !important;
+  color: #142234 !important;
 }
 
 #assistantRail .relative > span.material-symbols-rounded {
   position: absolute !important;
-  left: 0.8rem !important;
+  left: 0.75rem !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
   color: #94a3b8 !important;
@@ -268,10 +276,10 @@
 
 #assistantRail #assistantModeSwitch {
   display: flex !important;
-  gap: 0.35rem !important;
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 0.65rem !important;
+  gap: 0.25rem !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 8px !important;
   padding: 0.25rem !important;
 }
 
@@ -280,40 +288,40 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.4rem !important;
-  padding: 0.45rem 0.6rem !important;
-  border-radius: 0.5rem !important;
+  gap: 0.375rem !important;
+  padding: 0.375rem 0.625rem !important;
+  border-radius: 6px !important;
   border: 0 !important;
   background: transparent !important;
-  color: #94a3b8 !important;
-  font-size: 0.78rem !important;
-  font-weight: 550 !important;
+  color: #536375 !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
   cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
 #assistantRail #assistantModeSwitch button:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.05) !important;
+  color: #142234 !important;
+  background: rgba(255, 255, 255, 0.6) !important;
 }
 
 #assistantRail #assistantModeSwitch button[aria-pressed="true"],
 #assistantRail #assistantModeSwitch button.is-active {
-  background: #10b981 !important;
-  color: #ffffff !important;
-  font-weight: 650 !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+  background: #ffffff !important;
+  color: #175dd0 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
 
 /* --------------------------------------------------------------------------
    CHAT SURFACE & EMPTY STATE
    -------------------------------------------------------------------------- */
 #assistantRail .assistant-dialog-surface {
-  background: #0a0f18 !important;
+  background: #f4f7fb !important;
 }
 
 #assistantRail .assistant-dialog-scroll {
-  padding: 1.2rem !important;
+  padding: 1.25rem !important;
 }
 
 #assistantRail .assistant-chat-empty {
@@ -321,287 +329,191 @@
   flex-direction: column !important;
   align-items: center !important;
   text-align: center !important;
-  padding: 2.5rem 1rem !important;
+  padding: 2rem 1rem !important;
 }
 
 #assistantRail .assistant-chat-empty-icon {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 3.2rem !important;
-  height: 3.2rem !important;
+  width: 3.25rem !important;
+  height: 3.25rem !important;
   border-radius: 1rem !important;
-  background: rgba(16, 185, 129, 0.12) !important;
-  border: 1px solid rgba(16, 185, 129, 0.25) !important;
-  color: #34d399 !important;
+  background: rgba(23, 93, 208, 0.08) !important;
+  border: 1px solid rgba(23, 93, 208, 0.15) !important;
+  color: #175dd0 !important;
   margin-bottom: 1rem !important;
 }
 
 #assistantRail .assistant-chat-empty-icon .material-symbols-rounded {
-  font-size: 1.6rem !important;
+  font-size: 1.5rem !important;
 }
 
 #assistantRail .assistant-chat-empty strong {
   display: block !important;
-  color: #ffffff !important;
-  font-family: "Sora", sans-serif !important;
-  font-size: 1.05rem !important;
-  font-weight: 600 !important;
+  color: #142234 !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
   margin-bottom: 0.35rem !important;
 }
 
 #assistantRail .assistant-chat-empty p {
-  color: #94a3b8 !important;
-  font-size: 0.82rem !important;
-  max-width: 32ch !important;
-  margin-bottom: 1.2rem !important;
-  line-height: 1.5 !important;
+  color: #536375 !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.4 !important;
+  max-width: 320px !important;
 }
 
-#assistantRail .assistant-chat-empty-chips {
+/* Chat Messages */
+#chatLog .msg {
   display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.45rem !important;
-  justify-content: center !important;
+  flex-direction: column !important;
+  gap: 0.375rem !important;
+  max-width: 88% !important;
+  word-break: break-word !important;
 }
 
-#assistantRail .assistant-chat-empty-chip,
-#assistantRail .quick-action-chip {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.35rem !important;
-  padding: 0.45rem 0.85rem !important;
-  border-radius: 0.55rem !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #cbd5e1 !important;
-  font-size: 0.75rem !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
+#chatLog .msg.msg-user {
+  align-self: flex-end !important;
+  background: #175dd0 !important;
+  color: #ffffff !important;
+  border-radius: 14px 14px 2px 14px !important;
+  padding: 0.75rem 1rem !important;
+  box-shadow: 0 1px 2px rgba(23, 93, 208, 0.2) !important;
 }
 
-#assistantRail .assistant-chat-empty-chip:hover,
-#assistantRail .quick-action-chip:hover {
-  background: rgba(16, 185, 129, 0.15) !important;
-  border-color: rgba(16, 185, 129, 0.35) !important;
-  color: #6ee7b7 !important;
-  transform: translateY(-1px) !important;
+#chatLog .msg.msg-user * {
+  color: #ffffff !important;
 }
 
-/* Quick actions row */
+#chatLog .msg.msg-assistant {
+  align-self: flex-start !important;
+  background: #ffffff !important;
+  color: #142234 !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 14px 14px 14px 2px !important;
+  padding: 0.875rem 1.125rem !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* --------------------------------------------------------------------------
+   QUICK ACTIONS & INPUT AREA
+   -------------------------------------------------------------------------- */
 #assistantRail .assistant-quick-actions {
-  padding: 0.65rem 1.25rem !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-  background: rgba(13, 20, 32, 0.7) !important;
+  padding: 0.5rem 1rem !important;
+  background: #ffffff !important;
+  border-top: 1px solid #dce3ed !important;
 }
 
 #assistantRail .quick-actions-label {
-  display: block !important;
-  color: #64748b !important;
-  font-size: 0.68rem !important;
+  font-size: 0.6875rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.06em !important;
-  margin-bottom: 0.4rem !important;
+  letter-spacing: 0.05em !important;
+  color: #536375 !important;
+  margin-bottom: 0.375rem !important;
+  display: block !important;
 }
 
 #assistantRail .quick-action-chips {
   display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.45rem !important;
-  padding-bottom: 0.2rem !important;
+  gap: 0.375rem !important;
+  overflow-x: auto !important;
+  padding-bottom: 0.25rem !important;
 }
 
-/* Chat Messages */
-#assistantRail .msg {
-  display: flex !important;
-  gap: 0.75rem !important;
-  margin-bottom: 1rem !important;
-}
-
-#assistantRail .msg.user {
-  flex-direction: row-reverse !important;
-}
-
-#assistantRail .msg-avatar {
-  width: 2rem !important;
-  height: 2rem !important;
-  border-radius: 0.5rem !important;
-  background: rgba(16, 185, 129, 0.15) !important;
-  color: #34d399 !important;
-  display: flex !important;
+#assistantRail .quick-action-chip {
+  display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  flex-shrink: 0 !important;
+  gap: 0.375rem !important;
+  padding: 0.375rem 0.625rem !important;
+  background: #f4f7fb !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
-#assistantRail .msg.user .msg-avatar {
-  background: rgba(59, 130, 246, 0.15) !important;
-  color: #60a5fa !important;
+#assistantRail .quick-action-chip:hover {
+  background: #f1f5f9 !important;
+  border-color: #0284c7 !important;
+  color: #0369a1 !important;
 }
 
-#assistantRail .msg-body {
-  padding: 0.85rem 1rem !important;
-  border-radius: 0.85rem !important;
-  background: #111a26 !important;
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
-  color: #e2e8f0 !important;
-  font-size: 0.83rem !important;
-  line-height: 1.55 !important;
-  max-width: 85% !important;
+/* AI Input Area */
+#assistantRail .ai-input-area {
+  background: #ffffff !important;
+  border-top: 1px solid #dce3ed !important;
+  padding: 1rem 1.25rem !important;
 }
 
-#assistantRail .msg.user .msg-body {
-  background: rgba(16, 185, 129, 0.14) !important;
-  border-color: rgba(16, 185, 129, 0.28) !important;
-  color: #ffffff !important;
+#assistantRail .ai-input-area .relative.bg-gray-50 {
+  background: #f4f7fb !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 12px !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
-/* --------------------------------------------------------------------------
-   INPUT & ACTION FOOTER
-   -------------------------------------------------------------------------- */
-#assistantRail #agentForm {
-  background: #0d1420 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-  padding: 0.85rem 1.25rem 1.1rem !important;
-}
-
-#assistantRail #agentForm .relative.bg-gray-50,
-#assistantRail .assistant-input-box {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.09) !important;
-  border-radius: 0.85rem !important;
-  transition: all 0.15s ease !important;
-}
-
-#assistantRail #agentForm .relative:focus-within {
-  border-color: rgba(16, 185, 129, 0.5) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12) !important;
+#assistantRail .ai-input-area .relative.bg-gray-50:focus-within {
+  background: #ffffff !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
 }
 
 #assistantRail #agentInput {
-  color: #ffffff !important;
-  font-size: 0.84rem !important;
-  padding: 0.75rem 0.9rem !important;
-}
-
-#assistantRail #agentInput::placeholder {
-  color: #64748b !important;
+  color: #142234 !important;
+  font-size: 0.8125rem !important;
 }
 
 #assistantRail #sendBtn {
-  background: #10b981 !important;
+  background: #175dd0 !important;
   color: #ffffff !important;
-  border-radius: 0.65rem !important;
-  transition: all 0.15s ease !important;
-  cursor: pointer !important;
+  border-radius: 8px !important;
 }
 
-#assistantRail #sendBtn:hover:not(:disabled) {
-  background: #059669 !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
+#assistantRail #sendBtn:hover {
+  background: #104ab0 !important;
 }
 
 /* Action Buttons */
 #assistantRail #exerciseRecoBtn {
-  background: #10b981 !important;
+  background: #175dd0 !important;
   color: #ffffff !important;
-  font-size: 0.78rem !important;
-  font-weight: 650 !important;
-  padding: 0.55rem 1rem !important;
-  border-radius: 0.6rem !important;
-  border: 0 !important;
-  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3) !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  font-size: 0.8125rem !important;
 }
 
 #assistantRail #exerciseRecoBtn:hover {
-  background: #059669 !important;
-  transform: translateY(-1px) !important;
+  background: #104ab0 !important;
 }
 
 #assistantRail #exerciseApproveBtn {
-  background: rgba(245, 158, 11, 0.12) !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-  color: #fbbf24 !important;
-  font-size: 0.78rem !important;
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  color: #15803d !important;
+  border-radius: 9999px !important;
   font-weight: 600 !important;
-  padding: 0.55rem 1rem !important;
-  border-radius: 0.6rem !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  font-size: 0.8125rem !important;
 }
 
-#assistantRail #exerciseApproveBtn:hover:not(:disabled) {
-  background: rgba(245, 158, 11, 0.22) !important;
-  border-color: rgba(245, 158, 11, 0.5) !important;
-}
-
-#assistantRail #exercisePdfBtn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #cbd5e1 !important;
-  font-size: 0.78rem !important;
-  font-weight: 600 !important;
-  padding: 0.55rem 0.95rem !important;
-  border-radius: 0.6rem !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
-}
-
-#assistantRail #exercisePdfBtn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-}
-
+#assistantRail #exercisePdfBtn,
 #assistantRail #exerciseTelegramBtn {
-  background: rgba(59, 130, 246, 0.12) !important;
-  border: 1px solid rgba(59, 130, 246, 0.25) !important;
-  color: #60a5fa !important;
-  font-size: 0.78rem !important;
+  background: #ffffff !important;
+  border: 1px solid #dce3ed !important;
+  color: #334155 !important;
+  border-radius: 9999px !important;
   font-weight: 600 !important;
-  padding: 0.55rem 0.95rem !important;
-  border-radius: 0.6rem !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  font-size: 0.8125rem !important;
 }
 
-#assistantRail #exerciseTelegramBtn:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.22) !important;
-  border-color: rgba(59, 130, 246, 0.45) !important;
-}
-
-/* --------------------------------------------------------------------------
-   RIGHT CONTEXT ASIDE INSIDE RAIL
-   -------------------------------------------------------------------------- */
-#assistantRail aside[aria-label*="Contexto"] {
-  display: none !important;
-}
-
-#assistantRail aside .bg-gray-50,
-#assistantRail aside .bg-white {
-  background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.06) !important;
-}
-
-#assistantRail #assistantPatientLabel {
-  color: #ffffff !important;
-  font-family: "Sora", sans-serif !important;
-  font-size: 0.88rem !important;
-}
-
-#assistantRail #assistantPatientMeta {
-  color: #94a3b8 !important;
-  font-size: 0.75rem !important;
-}
-
-#assistantRail aside strong {
-  color: #ffffff !important;
-}
-
-#assistantRail aside span {
-  color: #94a3b8 !important;
+#assistantRail #exercisePdfBtn:hover,
+#assistantRail #exerciseTelegramBtn:hover {
+  background: #f4f7fb !important;
+  border-color: #cbd5e1 !important;
+  color: #142234 !important;
 }

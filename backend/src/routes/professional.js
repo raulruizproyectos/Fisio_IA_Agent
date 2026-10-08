@@ -1,7 +1,10 @@
 import { Router } from 'express';
+import { createHash, randomUUID } from 'node:crypto';
 import { JWT } from 'google-auth-library';
 import { calendar as createCalendarClient } from 'googleapis/build/src/apis/calendar/index.js';
 import { supabase } from '../lib/supabase.js';
+import { readAppointmentCalendarEvidence, confirmAppointmentCalendarEvidence } from '../lib/appointment-calendar-check.js';
+import { publicErrorMessage } from '../lib/public-error.js';
 
 const router = Router();
 
@@ -51,6 +54,10 @@ const APPOINTMENT_SELECT = `
   canal_origen,
   motivo,
   google_calendar_event_id,
+  calendar_sync_pending,
+  calendar_sync_in_flight,
+  calendar_sync_operation_id,
+  calendar_sync_calendar_id,
   request_id,
   created_at,
   updated_at,
@@ -59,7 +66,7 @@ const APPOINTMENT_SELECT = `
 
 const APPOINTMENT_ALLOWED_STATUSES = ['pendiente', 'confirmada', 'cancelada', 'completada', 'no_show', 'reprogramada'];
 const APPOINTMENT_ACTIVE_STATUSES = ['pendiente', 'confirmada', 'reprogramada'];
-const APPOINTMENT_ALLOWED_CHANNELS = ['telegram', 'crm_web', 'manual', 'n8n'];
+const APPOINTMENT_ALLOWED_CHANNELS = ['telegram', 'whatsapp', 'crm_web', 'manual', 'n8n'];
 const VIDEO_WORKFLOWS_ENABLED = process.env.ENABLE_VIDEO_WORKFLOWS === 'true';
 const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID?.trim() || '';
 const GOOGLE_HOLIDAY_CALENDAR_ID = process.env.GOOGLE_HOLIDAY_CALENDAR_ID?.trim() || 'es.spain#holiday@group.v.calendar.google.com';
@@ -79,13 +86,9 @@ const W6_CALENDAR_WRITER_URL = process.env.W6_CALENDAR_WRITER_URL?.trim() || '';
 const N8N_WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET?.trim() || '';
 const CALENDAR_BACKGROUND_SYNC_STALE_MS = 6 * 60 * 1000;
 const CALENDAR_BACKGROUND_SYNC_INTERVAL_MS = 2 * 60 * 1000;
-const PUBLIC_BOOKING_TIMEZONE = GOOGLE_CALENDAR_TIMEZONE;
+export const PUBLIC_BOOKING_TIMEZONE = GOOGLE_CALENDAR_TIMEZONE;
 const PUBLIC_BOOKING_SLOT_MINUTES = Math.min(180, Math.max(15, Number.parseInt(String(process.env.PUBLIC_BOOKING_SLOT_MINUTES || '60'), 10) || 60));
 const PUBLIC_BOOKING_MAX_DAYS_AHEAD = Math.min(120, Math.max(7, Number.parseInt(String(process.env.PUBLIC_BOOKING_MAX_DAYS_AHEAD || '45'), 10) || 45));
-const PUBLIC_BOOKING_CLINIC_NAME = process.env.PUBLIC_BOOKING_CLINIC_NAME?.trim() || 'Fisio Clinical';
-const PUBLIC_BOOKING_LOCATION = process.env.PUBLIC_BOOKING_LOCATION?.trim() || 'Terrassa, Barcelona';
-const PUBLIC_BOOKING_CONTACT_PHONE = process.env.PUBLIC_BOOKING_CONTACT_PHONE?.trim() || '';
-const PUBLIC_BOOKING_CONTACT_EMAIL = process.env.PUBLIC_BOOKING_CONTACT_EMAIL?.trim() || '';
 const PUBLIC_BOOKING_WINDOWS = parsePublicBookingWindows(process.env.PUBLIC_BOOKING_WINDOWS);
 const calendarBackgroundSyncState = {
   status: 'idle',
@@ -123,15 +126,16 @@ function attachCalendarSyncMeta(row, overrides = {}) {
   const baseOrigin = baseState === 'crm_only' ? 'crm' : 'google_calendar';
   return {
     ...row,
-    calendar_sync_state: overrides.calendar_sync_state || baseState,
+    calendar_sync_state: row?.calendar_sync_pending ? 'calendar_pending' : overrides.calendar_sync_state || baseState,
     calendar_origin: overrides.calendar_origin || baseOrigin,
   };
 }
 
 function normalizeAppointmentRow(row) {
+  const {public_booking_hash:_hash, calendar_sync_operation_id:_operation, calendar_sync_calendar_id:_calendar, ...appointment}=row || {};
   const fullName = [row?.crm_pacientes?.nombre, row?.crm_pacientes?.apellidos].filter(Boolean).join(' ').trim();
   return attachCalendarSyncMeta({
-    ...row,
+    ...appointment,
     motivo: normalizeAppointmentReason(row?.motivo),
     nombre_paciente: fullName || null,
   });
@@ -144,7 +148,7 @@ function normalizeAppointmentReason(rawValue = '') {
   const explicitReason = extractCalendarDescriptionField(input, 'Motivo');
   if (explicitReason) return explicitReason;
 
-  if (!/\n|Paciente:|Fisioterapeuta:|CRM Appointment ID:|Tel:/i.test(input)) {
+  if (!/\n|Paciente:|Fisioterapeuta:|CRM Appointment ID:|CRM Sync Operation:|Tel:/i.test(input)) {
     return input;
   }
 
@@ -152,7 +156,7 @@ function normalizeAppointmentReason(rawValue = '') {
     .split(/\r?\n/)
     .map((line) => String(line || '').trim())
     .filter(Boolean)
-    .filter((line) => !/^(Paciente|Fisioterapeuta|Tel|CRM Appointment ID)\s*:/i.test(line));
+    .filter((line) => !/^(Paciente|Fisioterapeuta|Tel|CRM Appointment ID|CRM Sync Operation)\s*:/i.test(line));
 
   return cleanedLines[0] || null;
 }
@@ -351,7 +355,7 @@ function buildCalendarBackgroundSyncStatus() {
     last_error_at: calendarBackgroundSyncState.last_error_at,
     age_ms: ageMs,
     last_error_age_ms: lastErrorAgeMs,
-    error: calendarBackgroundSyncState.error,
+    error: calendarBackgroundSyncState.error ? publicErrorMessage(calendarBackgroundSyncState.error, 'No se pudo completar la sincronización de Calendar. Las citas CRM se conservan.') : null,
     summary: calendarBackgroundSyncState.summary,
     window: calendarBackgroundSyncState.window,
     professional_id: calendarBackgroundSyncState.professional_id,
@@ -403,17 +407,8 @@ function buildCalendarSyncResult(partial = {}) {
     status: partial.status || 'skipped',
     event_id: partial.event_id || null,
     action: partial.action || null,
-    error: partial.error || null,
+    error: partial.error ? publicErrorMessage(partial.error, 'Calendar requiere comprobación. No repitas ni modifiques la cita hasta confirmar su estado.') : null,
   };
-}
-
-async function compensateCalendarCreateFailure(eventId) {
-  if (!eventId) return null;
-  return syncAppointmentToGoogleCalendar({
-    action: 'cancel',
-    eventId,
-    payload: null,
-  });
 }
 
 function getGoogleCalendarClient() {
@@ -482,11 +477,15 @@ function buildCalendarEventPayload({
   startAt,
   endAt,
   reason,
+  appointmentId,
+  operationId,
 }) {
   const nameParts = formatCalendarNameParts(patientName, patientPhone, professionalName);
   const extraReason = String(reason || '').trim();
   const description = [
     nameParts.description,
+    appointmentId ? `CRM Appointment ID: ${appointmentId}` : null,
+    operationId ? `CRM Sync Operation: ${operationId}` : null,
     extraReason ? `Motivo: ${extraReason}` : null,
   ]
     .filter(Boolean)
@@ -534,10 +533,15 @@ async function syncAppointmentViaW6({ action, eventId, payload }) {
       return buildCalendarSyncResult({ status: 'error', action, event_id: eventId || null, error: `W6 responded ${res.status}` });
     }
     const data = await res.json();
+    const returnedId = typeof data?.event_id === 'string' && data.event_id.trim() ? data.event_id : null;
+    const confirmed = data?.ok === true && (action === 'create'
+      ? Boolean(returnedId)
+      : action === 'update' ? returnedId === eventId : !returnedId || returnedId === eventId);
     return buildCalendarSyncResult({
-      status: data?.ok ? 'synced' : 'error',
+      status: confirmed ? 'synced' : 'error',
       action,
-      event_id: data?.event_id || eventId || null,
+      event_id: confirmed ? (returnedId || eventId || null) : (eventId || null),
+      error: confirmed ? null : 'W6 no confirmó la escritura esperada en Calendar',
     });
   } catch (error) {
     return buildCalendarSyncResult({ status: 'error', action, event_id: eventId || null, error: String(error?.message || error) });
@@ -553,16 +557,19 @@ async function syncAppointmentToGoogleCalendar({
     return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
   }
 
-  // Try direct mode (Service Account JWT) first
-  const calendarClient = getGoogleCalendarClient();
-  if (calendarClient) {
-    try {
+  // Choose one writer. A lost acknowledgement does not authorize another mutation.
+  try {
+    const calendarClient = getGoogleCalendarClient();
+    if (calendarClient) {
       if (action === 'create') {
         const created = await calendarClient.events.insert({
           calendarId: GOOGLE_CALENDAR_ID,
           requestBody: payload,
           sendUpdates: 'none',
-        });
+        }, { retry: false, timeout: 10000 });
+        if (typeof created.data?.id !== 'string' || !created.data.id.trim()) {
+          return buildCalendarSyncResult({ status: 'error', action, error: 'Google no confirmó el identificador del evento' });
+        }
         return buildCalendarSyncResult({
           status: 'synced',
           action,
@@ -576,7 +583,7 @@ async function syncAppointmentToGoogleCalendar({
           eventId,
           requestBody: payload,
           sendUpdates: 'none',
-        });
+        }, { retry: false, timeout: 10000 });
         return buildCalendarSyncResult({
           status: 'synced',
           action,
@@ -590,10 +597,10 @@ async function syncAppointmentToGoogleCalendar({
             calendarId: GOOGLE_CALENDAR_ID,
             eventId,
             sendUpdates: 'none',
-          });
+          }, { retry: false, timeout: 10000 });
         } catch (error) {
           const status = error?.response?.status;
-          if (status !== 404) throw error;
+          if (status !== 404 && status !== 410) throw error;
         }
         return buildCalendarSyncResult({
           status: 'synced',
@@ -603,13 +610,60 @@ async function syncAppointmentToGoogleCalendar({
       }
 
       return buildCalendarSyncResult({ status: 'skipped', action, event_id: eventId || null });
-    } catch {
-      // Fall through to W6 if direct mode fails
     }
+  } catch {
+    return buildCalendarSyncResult({ status: 'error', action, event_id: eventId || null,
+      error: 'Google no confirmó la escritura. Comprueba Calendar antes de repetirla.' });
   }
 
-  // Fallback: use W6 (n8n OAuth2 writer)
+  // W6 is an alternative when direct credentials are absent, never a retry transport.
   return syncAppointmentViaW6({ action, eventId, payload });
+}
+
+async function syncSavedAppointmentToCalendar(row) {
+  if (!row.calendar_sync_pending) return { data: normalizeAppointmentRow(row),
+    calendar_sync: buildCalendarSyncResult({ event_id: row.google_calendar_event_id }) };
+  // Persist the claim before any remote request, so another process cannot check it mid-write.
+  const claim = await supabase.from('crm_citas')
+    .update({ calendar_sync_in_flight: true, calendar_sync_operation_id: randomUUID(), calendar_sync_calendar_id: GOOGLE_CALENDAR_ID })
+    .eq('id', row.id).eq('calendar_sync_pending', true).eq('calendar_sync_in_flight', false).eq('updated_at', row.updated_at)
+    .select(APPOINTMENT_SELECT).maybeSingle();
+  if (claim.error || !claim.data) return { data: normalizeAppointmentRow(row),
+    calendar_sync: buildCalendarSyncResult({ status: 'error', error: 'La cita está guardada. No se pudo iniciar Calendar; comprueba su estado antes de modificarla.' }) };
+  row = claim.data;
+  const cancelling = ['cancelada', 'no_show'].includes(row.estado);
+  const eventId = row.google_calendar_event_id || null;
+  const action = cancelling ? 'cancel' : eventId ? 'update' : 'create';
+  let calendarSync;
+  try {
+    const payload = cancelling ? null : buildCalendarEventPayload({
+      ...await fetchCalendarContext({ patientId: row.paciente_id, professionalId: row.fisioterapeuta_id }),
+      startAt: row.inicio_en, endAt: row.fin_en, reason: row.motivo, appointmentId: row.id, operationId: row.calendar_sync_operation_id,
+    });
+    calendarSync = cancelling && !eventId
+      ? buildCalendarSyncResult({ status: 'synced', action })
+      : await syncAppointmentToGoogleCalendar({ action, eventId, payload });
+    if (calendarSync.status === 'synced') {
+      const { data, error } = await supabase.from('crm_citas')
+        .update({ google_calendar_event_id: cancelling ? null : calendarSync.event_id, calendar_sync_pending: false, calendar_sync_in_flight: false })
+        .eq('id', row.id).eq('calendar_sync_pending', true).eq('calendar_sync_in_flight', true)
+        .eq('calendar_sync_operation_id', row.calendar_sync_operation_id).eq('updated_at', row.updated_at)
+        .select(APPOINTMENT_SELECT).maybeSingle();
+      if (!error && data) return { data: normalizeAppointmentRow(data), calendar_sync: calendarSync };
+      calendarSync = buildCalendarSyncResult({ status: 'error', action, event_id: calendarSync.event_id,
+        error: 'Calendar confirmó la operación, pero su vínculo CRM requiere comprobación. No repitas la cita.' });
+    }
+  } catch {
+    calendarSync = buildCalendarSyncResult({ status: 'error', action, event_id: eventId,
+      error: 'La cita está guardada en CRM; Calendar requiere comprobación antes de repetir la operación.' });
+  }
+  // Local request has settled; this says nothing about success/absence on Google's side.
+  const settled = await supabase.from('crm_citas').update({ calendar_sync_in_flight: false })
+    .eq('id', row.id).eq('calendar_sync_pending', true).eq('calendar_sync_in_flight', true)
+    .eq('calendar_sync_operation_id', row.calendar_sync_operation_id).eq('updated_at', row.updated_at)
+    .select(APPOINTMENT_SELECT).maybeSingle();
+  if (!settled.error && settled.data) row = settled.data;
+  return { data: normalizeAppointmentRow(row), calendar_sync: calendarSync };
 }
 
 async function resolveCrmPatientId(rawPatientId) {
@@ -823,33 +877,33 @@ async function findAppointmentConflicts({ professionalId, startAt, endAt, exclud
 }
 
 async function resolvePublicBookingProfessionalProfile(rawProfessionalId = null) {
-  const professionalId = rawProfessionalId
-    ? await resolveCrmProfessionalId(rawProfessionalId)
-    : await getDefaultCrmProfessionalId();
-
-  if (!professionalId) return null;
+  if (!rawProfessionalId) return null;
 
   const { data, error } = await supabase
     .from('crm_perfiles')
-    .select('id, nombre_completo, email, activo')
-    .eq('id', professionalId)
+    .select('id, nombre_completo, email, activo, clinica_id, crm_clinicas!inner(id, nombre, activo, direccion, telefono, email)')
+    .eq('id', rawProfessionalId)
+    .eq('crm_clinicas.activo', true)
     .maybeSingle();
 
   if (error) throw error;
-  if (!data || data.activo === false) return null;
+  if (!data?.clinica_id || data.activo === false || data.crm_clinicas?.activo !== true) return null;
 
   return {
     id: data.id,
     nombre_completo: data.nombre_completo || 'Fisioterapeuta',
     email: data.email || null,
+    clinic_id: data.clinica_id,
+    clinic: data.crm_clinicas,
   };
 }
 
-async function ensureCrmPatientAssignment({ professionalId, patientId }) {
+async function ensureCrmPatientAssignment({ professionalId, patientId, clinicId }) {
   try {
     const payload = {
       fisioterapeuta_id: professionalId,
       paciente_id: patientId,
+      clinica_id: clinicId,
       estado: 'activa',
       desasignado_en: null,
       updated_at: new Date().toISOString(),
@@ -867,7 +921,7 @@ async function ensureCrmPatientAssignment({ professionalId, patientId }) {
   }
 }
 
-async function findOrCreatePublicBookingPatient({ professionalId, fullName, email, phone, reason = '' }) {
+async function findOrCreatePublicBookingPatient({ professionalId, clinicId, fullName, email, phone, reason = '' }) {
   const normalizedEmail = normalizeComparableEmail(email);
   const normalizedPhone = String(phone || '').trim();
   const compactPhone = normalizeComparablePhone(normalizedPhone);
@@ -878,6 +932,7 @@ async function findOrCreatePublicBookingPatient({ professionalId, fullName, emai
     const { data, error } = await supabase
       .from('crm_pacientes')
       .select('id, email, telefono')
+      .eq('clinica_id', clinicId)
       .eq('email', normalizedEmail)
       .eq('activo', true)
       .limit(1)
@@ -891,6 +946,7 @@ async function findOrCreatePublicBookingPatient({ professionalId, fullName, emai
     const { data, error } = await supabase
       .from('crm_pacientes')
       .select('id, email, telefono')
+      .eq('clinica_id', clinicId)
       .eq('activo', true)
       .not('telefono', 'is', null)
       .limit(200);
@@ -912,7 +968,7 @@ async function findOrCreatePublicBookingPatient({ professionalId, fullName, emai
       if (error) throw error;
     }
 
-    await ensureCrmPatientAssignment({ professionalId, patientId: existingPatient.id });
+    await ensureCrmPatientAssignment({ professionalId, patientId: existingPatient.id, clinicId });
     return existingPatient.id;
   }
 
@@ -924,6 +980,7 @@ async function findOrCreatePublicBookingPatient({ professionalId, fullName, emai
     observaciones: buildPublicBookingNote(reason),
     activo: true,
     created_by_profile_id: professionalId,
+    clinica_id: clinicId,
   };
 
   const { data: inserted, error: insertError } = await supabase
@@ -934,11 +991,11 @@ async function findOrCreatePublicBookingPatient({ professionalId, fullName, emai
 
   if (insertError) throw insertError;
 
-  await ensureCrmPatientAssignment({ professionalId, patientId: inserted.id });
+  await ensureCrmPatientAssignment({ professionalId, patientId: inserted.id, clinicId });
   return inserted.id;
 }
 
-function getPublicBookingBounds() {
+export function getPublicBookingBounds() {
   const today = getDateOnlyInTimeZone(new Date(), PUBLIC_BOOKING_TIMEZONE);
   const maxDate = addDaysToDateOnly(today, PUBLIC_BOOKING_MAX_DAYS_AHEAD);
   return { today, maxDate };
@@ -951,7 +1008,7 @@ function isWeekendDateInTimeZone(dateOnly, timeZone = PUBLIC_BOOKING_TIMEZONE) {
   return weekday === 'Sat' || weekday === 'Sun';
 }
 
-async function buildPublicBookingSlots({ professionalId, dateOnly, durationMinutes = PUBLIC_BOOKING_SLOT_MINUTES }) {
+export async function buildPublicBookingSlots({ professionalId, dateOnly, durationMinutes = PUBLIC_BOOKING_SLOT_MINUTES }) {
   if (!parsePublicBookingDateOnly(dateOnly)) return [];
   if (isWeekendDateInTimeZone(dateOnly, PUBLIC_BOOKING_TIMEZONE)) return [];
 
@@ -963,7 +1020,7 @@ async function buildPublicBookingSlots({ professionalId, dateOnly, durationMinut
       const endClock = formatMinutesAsClock(cursor + durationMinutes);
       const startAt = zonedDateTimeToUtcIso(dateOnly, startClock, PUBLIC_BOOKING_TIMEZONE);
       const endAt = zonedDateTimeToUtcIso(dateOnly, endClock, PUBLIC_BOOKING_TIMEZONE);
-      if (!startAt || !endAt) continue;
+      if (!startAt || !endAt || Date.parse(startAt) <= Date.now()) continue;
 
       const availability = await resolveAppointmentAvailability({
         professionalId,
@@ -1152,6 +1209,15 @@ async function findCrmPatientIdForCalendarEvent(event) {
 
 async function persistCalendarBackfillAppointment({ event, professionalId }) {
   if (!event?.google_calendar_event_id || !event?.inicio_en || !event?.fin_en) return null;
+
+  const appointmentId = extractCalendarDescriptionField(event.description, 'CRM Appointment ID');
+  if (appointmentId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(appointmentId)) {
+    const { data, error } = await supabase.from('crm_citas').select(APPOINTMENT_SELECT)
+      .eq('id', appointmentId).eq('fisioterapeuta_id', professionalId).maybeSingle();
+    if (error) throw error;
+    // A referenced CRM write must never be recreated by Calendar read-back.
+    return data ? normalizeAppointmentRow(data) : null;
+  }
 
   const patientId = await findCrmPatientIdForCalendarEvent(event);
   if (!patientId) return null;
@@ -1389,12 +1455,18 @@ async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
 
 async function fetchCalendarAppointmentsViaW5(timeMin, timeMax) {
   const data = await fetchCalendarReaderPayloadViaW5(timeMin, timeMax);
+  if (!Array.isArray(data?.events)) {
+    throw Object.assign(new Error('No se pudo leer Google Calendar; se conservan las citas CRM.'), { status: 503 });
+  }
   return normalizeCalendarEventCollection(data?.events).filter(isManagedCalendarAppointment);
 }
 
 async function fetchCalendarBusyEventsViaW5(timeMin, timeMax) {
   const data = await fetchCalendarReaderPayloadViaW5(timeMin, timeMax);
   const rawBusyEvents = Array.isArray(data?.busy_events) ? data.busy_events : data?.events;
+  if (!Array.isArray(rawBusyEvents)) {
+    throw Object.assign(new Error('No se pudo comprobar Google Calendar; vuelve a intentar la reserva cuando esté disponible.'), { status: 503 });
+  }
   return normalizeCalendarEventCollection(rawBusyEvents).filter(isCalendarBusyEvent);
 }
 
@@ -1409,11 +1481,11 @@ async function fetchCalendarAppointments(timeMin, timeMax) {
   if (calendarW5Enabled()) {
     return fetchCalendarAppointmentsViaW5(timeMin, timeMax);
   }
-  return [];
+  throw Object.assign(new Error('Lectura de Google Calendar no disponible; se conservan las citas CRM.'), { status: 503 });
 }
 
 async function fetchCalendarBusyEvents(timeMin, timeMax) {
-  let busyEvents = [];
+  let busyEvents = null;
 
   if (calendarDirectEnabled()) {
     try {
@@ -1424,8 +1496,11 @@ async function fetchCalendarBusyEvents(timeMin, timeMax) {
     }
   }
 
-  if (!busyEvents.length && calendarW5Enabled()) {
+  if (busyEvents === null && calendarW5Enabled()) {
     busyEvents = await fetchCalendarBusyEventsViaW5(timeMin, timeMax);
+  }
+  if (busyEvents === null) {
+    throw Object.assign(new Error('Lectura de Google Calendar no disponible; no se puede confirmar este horario.'), { status: 503 });
   }
 
   const holidayEvents = await fetchHolidayCalendarBusyEvents(timeMin, timeMax);
@@ -1592,6 +1667,7 @@ async function reconcileAppointmentsWithCalendar({
   const rowById = new Map(rows.map((row) => [row.id, { ...row }]));
 
   for (const row of rowById.values()) {
+    if (row.calendar_sync_pending) continue;
     const calendarEventId = row.google_calendar_event_id;
     if (!calendarEventId) continue;
 
@@ -1602,12 +1678,19 @@ async function reconcileAppointmentsWithCalendar({
 
     if (!calendarEvent || calendarEvent.status === 'cancelled') {
       if (!['cancelada', 'completada', 'no_show'].includes(row.estado)) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('crm_citas')
           .update({ estado: 'cancelada' })
-          .eq('id', row.id);
+          .eq('id', row.id).eq('calendar_sync_pending', false).eq('updated_at', row.updated_at)
+          .select(APPOINTMENT_SELECT).maybeSingle();
         if (error) throw error;
-        row.estado = 'cancelada';
+        if (!data) {
+          const fresh = await supabase.from('crm_citas').select(APPOINTMENT_SELECT).eq('id', row.id).maybeSingle();
+          if (fresh.error) throw fresh.error;
+          if (fresh.data) rowById.set(row.id, normalizeAppointmentRow(fresh.data));
+          continue;
+        }
+        Object.assign(row, normalizeAppointmentRow(data));
         summary.cancelled += 1;
       }
       Object.assign(row, attachCalendarSyncMeta(row, {
@@ -1625,12 +1708,19 @@ async function reconcileAppointmentsWithCalendar({
     if (row.estado === 'cancelada') desired.estado = 'confirmada';
 
     if (Object.keys(desired).length) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('crm_citas')
         .update(desired)
-        .eq('id', row.id);
+        .eq('id', row.id).eq('calendar_sync_pending', false).eq('updated_at', row.updated_at)
+        .select(APPOINTMENT_SELECT).maybeSingle();
       if (error) throw error;
-      Object.assign(row, desired);
+      if (!data) {
+        const fresh = await supabase.from('crm_citas').select(APPOINTMENT_SELECT).eq('id', row.id).maybeSingle();
+        if (fresh.error) throw fresh.error;
+        if (fresh.data) rowById.set(row.id, normalizeAppointmentRow(fresh.data));
+        continue;
+      }
+      Object.assign(row, normalizeAppointmentRow(data));
       summary.updated += 1;
       if (desired.estado === 'confirmada') summary.restored += 1;
     }
@@ -1653,7 +1743,7 @@ async function reconcileAppointmentsWithCalendar({
     if (persistedRow) {
       rowById.set(persistedRow.id, persistedRow);
       knownCalendarIds.add(event.google_calendar_event_id);
-      summary.persisted += 1;
+      if (persistedRow.calendar_sync_state === 'backfilled') summary.persisted += 1;
       continue;
     }
 
@@ -1677,6 +1767,7 @@ async function reconcileAppointmentsWithCalendar({
   }
 
   summary.synthetic = calendarOnlyRows.length + busyOnlyRows.length;
+  summary.pending = [...rowById.values()].filter(row => row.calendar_sync_pending).length;
 
   const merged = [...rowById.values(), ...calendarOnlyRows, ...busyOnlyRows]
     .filter((appointment) => {
@@ -1736,15 +1827,15 @@ router.get('/appointments', async (req, res, next) => {
     if (fromAt) query = query.gte('inicio_en', fromAt);
     if (toAt) query = query.lte('inicio_en', toAt);
 
-    const shouldCalendarReconcile = !patientId && !statusFilter && fromAt && toAt;
+    const shouldCalendarReconcile = !patientId && !statusFilter && fromAt && toAt && calendarIntegrationEnabled();
 
     const [{ data, error }, calendarEvents, busyEvents] = await Promise.all([
       query,
       shouldCalendarReconcile
-        ? fetchCalendarAppointments(fromAt, toAt)
+        ? fetchCalendarAppointments(fromAt, toAt).catch(() => null)
         : Promise.resolve([]),
       shouldCalendarReconcile
-        ? fetchCalendarBusyEvents(fromAt, toAt)
+        ? fetchCalendarBusyEvents(fromAt, toAt).catch(() => [])
         : Promise.resolve([]),
     ]);
 
@@ -1756,9 +1847,10 @@ router.get('/appointments', async (req, res, next) => {
     }
 
     let supabaseRows = (data || []).map(normalizeAppointmentRow);
-    let calendarSyncSummary = null;
+    let calendarSyncSummary = { enabled: calendarIntegrationEnabled(), available: false,
+      pending: supabaseRows.filter(row => row.calendar_sync_pending).length };
 
-    if (shouldCalendarReconcile) {
+    if (shouldCalendarReconcile && Array.isArray(calendarEvents)) {
       const calendarEventIds = calendarEvents
         .map((event) => event?.google_calendar_event_id)
         .filter(Boolean);
@@ -1834,10 +1926,10 @@ router.get('/public-booking/config', async (req, res, next) => {
     res.json({
       data: {
         clinic: {
-          name: PUBLIC_BOOKING_CLINIC_NAME,
-          location: PUBLIC_BOOKING_LOCATION,
-          phone: PUBLIC_BOOKING_CONTACT_PHONE || null,
-          email: PUBLIC_BOOKING_CONTACT_EMAIL || null,
+          name: professional.clinic.nombre,
+          location: professional.clinic.direccion || null,
+          phone: professional.clinic.telefono || null,
+          email: professional.clinic.email || null,
         },
         professional,
         booking: {
@@ -1903,8 +1995,56 @@ router.get('/public-booking/slots', async (req, res, next) => {
   }
 });
 
+function publicBookingRequestKey(req) {
+  const key=String(req.get?.('Idempotency-Key') || '').toLowerCase();
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(key)) {
+    throw appointmentFailure(400,{error:'Falta una clave de reserva válida. Actualiza la página antes de reservar.'});
+  }
+  return key;
+}
+
+router.post('/public-booking/recovery', async (req,res,next)=>{
+  res.set('Cache-Control','no-store');
+  try {
+    const key=publicBookingRequestKey(req);
+    const professional=await resolvePublicBookingProfessionalProfile(pickValue(req.body,'professional_id','fisioterapeuta_id','profesional_id'));
+    if(!professional) return res.status(404).json({error:'No hay profesional disponible para comprobar la reserva.'});
+    const {data,error}=await supabase.from('crm_citas')
+      .select('id,inicio_en,fin_en,estado,public_booking_hash')
+      .eq('request_id',key).eq('fisioterapeuta_id',professional.id).maybeSingle();
+    if(error) throw Object.assign(error,{status:503});
+    // Absence cannot prove that a concurrent writer has finished. Never authorize a new booking.
+    if(!data?.public_booking_hash) return res.json({state:'unknown'});
+    return res.json({state:APPOINTMENT_ACTIVE_STATUSES.includes(data.estado)?'registered':'changed',
+      data:{id:data.id,inicio_en:data.inicio_en,fin_en:data.fin_en,estado:data.estado}});
+  } catch(err) {
+    if(err.responsePayload) return res.status(err.status).json(err.responsePayload);
+    next(err);
+  }
+});
+
+async function recoverPublicBooking(requestId, payloadHash, professional, startAt, endAt) {
+  const {data,error}=await supabase.from('crm_citas')
+    .select(`${APPOINTMENT_SELECT}, public_booking_hash`).eq('request_id',requestId).maybeSingle();
+  if(error) throw Object.assign(error,{status:503});
+  if(!data) return null;
+  if(data.fisioterapeuta_id!==professional.id || data.public_booking_hash!==payloadHash) {
+    throw appointmentFailure(409,{code:'BOOKING_KEY_REUSED',error:'Esta solicitud ya se utilizó con otros datos. Contacta con la clínica antes de hacer otra reserva.'});
+  }
+  if(!APPOINTMENT_ACTIVE_STATUSES.includes(data.estado)
+    || new Date(data.inicio_en).getTime()!==new Date(startAt).getTime()
+    || new Date(data.fin_en).getTime()!==new Date(endAt).getTime()) {
+    throw appointmentFailure(409,{code:'BOOKING_ALREADY_CHANGED',error:'La cita ya se registró y su estado ha cambiado. Contacta con la clínica para comprobarla.'});
+  }
+  // A retry confirms the saved row, never creates another Calendar event.
+  return {data:normalizeAppointmentRow(data),replayed:true,
+    calendar_sync:buildCalendarSyncResult({status:'not_checked',action:'recover',event_id:data.google_calendar_event_id}),
+    booking:{professional_name:professional.nombre_completo,time_zone:PUBLIC_BOOKING_TIMEZONE}};
+}
+
 router.post('/public-booking/appointments', async (req, res, next) => {
   try {
+    const requestId=publicBookingRequestKey(req);
     const professional = await resolvePublicBookingProfessionalProfile(
       pickValue(req.body, 'fisioterapeuta_id', 'professional_id', 'profesional_id')
     );
@@ -1920,7 +2060,7 @@ router.post('/public-booking/appointments', async (req, res, next) => {
     const startAt = parseIsoTimestamp(pickValue(req.body, 'inicio_en', 'start_at', 'slot_start'));
     const endAt = parseIsoTimestamp(pickValue(req.body, 'fin_en', 'end_at', 'slot_end'));
 
-    if (!patientName || !startAt || !endAt) {
+    if (typeof patientName !== 'string' || !patientName.trim() || !startAt || !endAt) {
       return res.status(400).json({
         error: 'nombre_completo/full_name, inicio_en/start_at y fin_en/end_at son obligatorios',
       });
@@ -1929,10 +2069,21 @@ router.post('/public-booking/appointments', async (req, res, next) => {
     if (!patientEmail && !patientPhone) {
       return res.status(400).json({ error: 'Debes enviar al menos email o telefono' });
     }
+    if ((patientEmail !== null && typeof patientEmail !== 'string')
+      || (patientPhone !== null && typeof patientPhone !== 'string')) {
+      return res.status(400).json({error:'Email y teléfono deben ser texto.'});
+    }
 
     if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
       return res.status(400).json({ error: 'fin_en/end_at debe ser posterior a inicio_en/start_at' });
     }
+
+    const payloadHash=createHash('sha256').update(JSON.stringify([
+      requestId,professional.id,String(patientName).trim(),normalizeComparableEmail(patientEmail),
+      normalizeComparablePhone(patientPhone),reason,startAt,endAt,
+    ])).digest('hex');
+    const recovered=await recoverPublicBooking(requestId,payloadHash,professional,startAt,endAt);
+    if(recovered) return res.status(200).json(recovered);
 
     const availability = await resolveAppointmentAvailability({
       professionalId: professional.id,
@@ -1941,45 +2092,19 @@ router.post('/public-booking/appointments', async (req, res, next) => {
     });
 
     if (!availability.available) {
-      return res.status(409).json(availability);
+      const concurrent=await recoverPublicBooking(requestId,payloadHash,professional,startAt,endAt);
+      if(concurrent) return res.status(200).json(concurrent);
+      return res.status(409).json({available:false,code:'appointment_overlap',error:'Ese horario ya está ocupado. Elige otro hueco.'});
     }
 
     const patientId = await findOrCreatePublicBookingPatient({
       professionalId: professional.id,
+      clinicId: professional.clinic_id,
       fullName: patientName,
       email: patientEmail,
       phone: patientPhone,
       reason,
     });
-
-    let effectiveCalendarEventId = null;
-    let calendarSync = buildCalendarSyncResult({ status: 'skipped', action: 'create', event_id: null });
-    if (calendarIntegrationEnabled()) {
-      const context = await fetchCalendarContext({ patientId, professionalId: professional.id });
-      const calendarEventPayload = buildCalendarEventPayload({
-        patientName: context.patientName,
-        patientPhone: context.patientPhone,
-        professionalName: context.professionalName,
-        startAt,
-        endAt,
-        reason,
-        appointmentId: null,
-      });
-      calendarSync = await syncAppointmentToGoogleCalendar({
-        action: 'create',
-        eventId: null,
-        payload: calendarEventPayload,
-      });
-      if (calendarSync.status === 'synced' && calendarSync.event_id) {
-        effectiveCalendarEventId = calendarSync.event_id;
-      }
-      if (GOOGLE_CALENDAR_REQUIRED && calendarSync.status === 'error') {
-        return res.status(502).json({
-          error: 'No se pudo crear evento en Google Calendar',
-          calendar_sync: calendarSync,
-        });
-      }
-    }
 
     const { data, error } = await supabase
       .from('crm_citas')
@@ -1991,36 +2116,43 @@ router.post('/public-booking/appointments', async (req, res, next) => {
         estado: 'pendiente',
         canal_origen: 'crm_web',
         motivo: reason || 'Reserva online publica',
-        google_calendar_event_id: effectiveCalendarEventId,
+        google_calendar_event_id: null,
+        calendar_sync_pending: calendarIntegrationEnabled(),
+        request_id: requestId,
+        public_booking_hash: payloadHash,
       })
       .select(APPOINTMENT_SELECT)
       .single();
 
     if (error) {
-      const calendarCompensation = effectiveCalendarEventId
-        ? await compensateCalendarCreateFailure(effectiveCalendarEventId)
-        : null;
+      // Network errors may arrive after commit: do not delete the event or write again blindly.
+      if(!/^(23|22|42)/.test(error.code || '')) {
+        return res.status(503).json({code:'BOOKING_UNCERTAIN',error:'No se ha podido confirmar el guardado. Comprueba esta misma reserva antes de elegir otra hora.'});
+      }
+      const concurrent=['23P01','23505'].includes(error.code)
+        ? await recoverPublicBooking(requestId,payloadHash,professional,startAt,endAt) : null;
+      if(concurrent) return res.status(200).json(concurrent);
+      if(error.code==='23P01') {
+        return res.status(409).json({available:false,code:'appointment_overlap',error:'Ese horario acaba de ser ocupado. Elige otro hueco.'});
+      }
       if (isMissingTableError(error, 'crm_citas')) {
         return res.status(400).json({
           error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.',
-          calendar_sync: calendarSync,
-          calendar_compensation: calendarCompensation,
         });
       }
-      error.calendar_sync = calendarSync;
-      error.calendar_compensation = calendarCompensation;
       throw error;
     }
 
+    const result = await syncSavedAppointmentToCalendar(data);
     res.status(201).json({
-      data: normalizeAppointmentRow(data),
-      calendar_sync: calendarSync,
+      ...result,
       booking: {
         professional_name: professional.nombre_completo,
         time_zone: PUBLIC_BOOKING_TIMEZONE,
       },
     });
   } catch (err) {
+    if(err.responsePayload) return res.status(err.status).json(err.responsePayload);
     next(err);
   }
 });
@@ -2206,6 +2338,65 @@ router.post('/appointments/check-availability', async (req, res, next) => {
   }
 });
 
+function appointmentFailure(status, responsePayload) {
+  return Object.assign(new Error(responsePayload.error), { status, responsePayload });
+}
+
+export async function createCrmAppointment({ patientId, professionalId, startAt, endAt, status = 'pendiente', channel = 'crm_web', reason = null, requestId = null, googleCalendarEventId = null }) {
+  const availability = await resolveAppointmentAvailability({
+    professionalId,
+    startAt,
+    endAt,
+    excludeEventId: googleCalendarEventId || null,
+  });
+
+  if (!availability.available) {
+    throw Object.assign(new Error(availability.error), { status: 409, responsePayload: availability });
+  }
+
+  const { data, error } = await supabase
+    .from('crm_citas')
+    .insert({
+      paciente_id: patientId,
+      fisioterapeuta_id: professionalId,
+      inicio_en: startAt,
+      fin_en: endAt,
+      estado: status,
+      canal_origen: channel,
+      motivo: reason || null,
+      request_id: requestId || null,
+      google_calendar_event_id: googleCalendarEventId || null,
+      calendar_sync_pending: !googleCalendarEventId && calendarIntegrationEnabled(),
+    })
+    .select(APPOINTMENT_SELECT)
+    .single();
+
+  if (error) {
+    if (isMissingTableError(error, 'crm_citas')) {
+      throw appointmentFailure(400, {
+        error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.',
+      });
+    }
+    if (error.code === '23P01') {
+      throw appointmentFailure(409, {
+        error: 'Ese horario acaba de ser ocupado. Actualiza la agenda y elige otro hueco.',
+        code: 'appointment_overlap',
+      });
+    }
+    if (error.code === '23505' && requestId) {
+      throw appointmentFailure(409, {
+        error: 'Esta cita ya fue procesada.',
+        code: 'duplicate_request',
+        request_id: requestId,
+      });
+    }
+    throw error;
+  }
+
+
+  return syncSavedAppointmentToCalendar(data);
+}
+
 router.post('/appointments', async (req, res, next) => {
   try {
     const slot = req.body?.slot || {};
@@ -2249,100 +2440,52 @@ router.post('/appointments', async (req, res, next) => {
       return res.status(400).json({ error: `canal_origen/source invalido. Usa: ${APPOINTMENT_ALLOWED_CHANNELS.join(', ')}` });
     }
 
-    const availability = await resolveAppointmentAvailability({
-      professionalId,
-      startAt,
-      endAt,
-      excludeEventId: googleCalendarEventId || null,
-    });
-
-    if (!availability.available) {
-      return res.status(409).json(availability);
-    }
-
-    let effectiveCalendarEventId = googleCalendarEventId || null;
-    let calendarSync = buildCalendarSyncResult({ status: 'skipped', action: 'create', event_id: effectiveCalendarEventId });
-    if (!effectiveCalendarEventId && calendarIntegrationEnabled()) {
-      const context = await fetchCalendarContext({ patientId, professionalId });
-      const calendarEventPayload = buildCalendarEventPayload({
-        patientName: context.patientName,
-        patientPhone: context.patientPhone,
-        professionalName: context.professionalName,
-        startAt,
-        endAt,
-        reason,
-        appointmentId: requestId || null,
-      });
-      calendarSync = await syncAppointmentToGoogleCalendar({
-        action: 'create',
-        eventId: null,
-        payload: calendarEventPayload,
-      });
-      if (calendarSync.status === 'synced' && calendarSync.event_id) {
-        effectiveCalendarEventId = calendarSync.event_id;
-      }
-      if (GOOGLE_CALENDAR_REQUIRED && calendarSync.status === 'error') {
-        return res.status(502).json({
-          error: 'No se pudo crear evento en Google Calendar',
-          calendar_sync: calendarSync,
-        });
-      }
-    }
-
-    const { data, error } = await supabase
-      .from('crm_citas')
-      .insert({
-        paciente_id: patientId,
-        fisioterapeuta_id: professionalId,
-        inicio_en: startAt,
-        fin_en: endAt,
-        estado: status,
-        canal_origen: channel,
-        motivo: reason || null,
-        request_id: requestId || null,
-        google_calendar_event_id: effectiveCalendarEventId,
-      })
-      .select(APPOINTMENT_SELECT)
-      .single();
-
-    if (error) {
-      const calendarCompensation = effectiveCalendarEventId
-        ? await compensateCalendarCreateFailure(effectiveCalendarEventId)
-        : null;
-      if (isMissingTableError(error, 'crm_citas')) {
-        return res.status(400).json({
-          error: 'Falta tabla crm_citas. Ejecuta schema_vnext.sql en Supabase.',
-          calendar_sync: calendarSync,
-          calendar_compensation: calendarCompensation,
-        });
-      }
-      if (error.code === '23P01') {
-        return res.status(409).json({
-          error: 'Ese horario acaba de ser ocupado. Actualiza la agenda y elige otro hueco.',
-          code: 'appointment_overlap',
-          calendar_compensation: calendarCompensation,
-        });
-      }
-      if (error.code === '23505' && requestId) {
-        return res.status(409).json({
-          error: 'Esta cita ya fue procesada.',
-          code: 'duplicate_request',
-          request_id: requestId,
-          calendar_compensation: calendarCompensation,
-        });
-      }
-      error.calendar_sync = calendarSync;
-      error.calendar_compensation = calendarCompensation;
-      throw error;
-    }
-
-    res.status(201).json({
-      data: normalizeAppointmentRow(data),
-      calendar_sync: calendarSync,
-    });
+    const result = await createCrmAppointment({ patientId, professionalId, startAt, endAt, status, channel, reason, requestId, googleCalendarEventId });
+    res.status(201).json(result);
   } catch (err) {
+    if (err.responsePayload) return res.status(err.status).json(err.responsePayload);
     next(err);
   }
+});
+
+router.post('/appointments/:appointmentId/check-calendar', async (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    // Internal/public privileged callers cannot use this professional recovery action.
+    if (!req.auth?.profile_id || !req.auth?.clinic_id) return res.status(403).json({ error: 'Se requiere una sesión profesional de la clínica.' });
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.appointmentId || '')
+      || typeof req.body?.updated_at !== 'string' || req.body.updated_at.length > 50) return res.status(400).json({ error: 'Identificador o versión de cita inválidos' });
+    const { data: row, error } = await supabase.from('crm_citas').select(APPOINTMENT_SELECT)
+      .eq('id', req.params.appointmentId).eq('fisioterapeuta_id', req.auth.profile_id).maybeSingle();
+    if (error) throw error;
+    if (!row) return res.status(404).json({ error: 'Cita no encontrada' });
+    if (req.body?.updated_at !== row.updated_at) return res.status(409).json({ code: 'APPOINTMENT_CHANGED', error: 'La cita ha cambiado. Actualiza la agenda antes de comprobarla.' });
+    const result = (status, message, data = row) => res.json({ data: normalizeAppointmentRow(data), calendar_check: { status, message } });
+    if (!row.calendar_sync_pending) return result('already_confirmed', 'El vínculo CRM ya estaba confirmado.');
+    if (row.calendar_sync_in_flight) return result('in_progress', 'La petición de Calendar sigue en curso o no confirmó su finalización. La cita continúa bloqueada.');
+    let confirmation;
+    try {
+      const events = await readAppointmentCalendarEvidence(getGoogleCalendarClient(), GOOGLE_CALENDAR_ID, row);
+      const expected = ['cancelada', 'no_show'].includes(row.estado) ? null : buildCalendarEventPayload({
+        ...await fetchCalendarContext({ patientId: row.paciente_id, professionalId: row.fisioterapeuta_id }),
+        startAt: row.inicio_en, endAt: row.fin_en, reason: row.motivo, appointmentId: row.id, operationId: row.calendar_sync_operation_id,
+      });
+      confirmation = confirmAppointmentCalendarEvidence(row, events, expected);
+    } catch {
+      return result('pending', calendarDirectEnabled()
+        ? 'No se pudo completar la comprobación de Calendar. La cita continúa bloqueada; no repitas el cambio.'
+        : 'La comprobación requiere el lector directo de Calendar. W5 no acredita lecturas completas ni cancelaciones; la cita continúa bloqueada.');
+    }
+    if (!confirmation) return result('pending', 'Calendar no acredita todavía el resultado esperado. La cita continúa bloqueada; no repitas el cambio.');
+    const saved = await supabase.from('crm_citas')
+      .update({ google_calendar_event_id: confirmation.eventId, calendar_sync_pending: false })
+      .eq('id', row.id).eq('fisioterapeuta_id', req.auth.profile_id)
+      .eq('calendar_sync_pending', true).eq('calendar_sync_in_flight', false).eq('updated_at', row.updated_at)
+      .select(APPOINTMENT_SELECT).maybeSingle();
+    if (saved.error) return result('pending', 'Calendar confirmó el resultado, pero no se pudo confirmar el vínculo CRM. Comprueba esta misma cita de nuevo.');
+    if (!saved.data) return res.status(409).json({ code: 'APPOINTMENT_CHANGED', error: 'La cita ha cambiado durante la comprobación. Actualiza la agenda.' });
+    return result('verified', 'Calendar comprobado. La cita ya puede modificarse.', saved.data);
+  } catch (error) { next(error); }
 });
 
 router.patch('/appointments/:appointmentId', async (req, res, next) => {
@@ -2351,7 +2494,7 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
 
     const { data: current, error: currentError } = await supabase
       .from('crm_citas')
-      .select('id, paciente_id, fisioterapeuta_id, inicio_en, fin_en, estado, motivo, google_calendar_event_id, request_id')
+      .select('id, paciente_id, fisioterapeuta_id, inicio_en, fin_en, estado, motivo, google_calendar_event_id, calendar_sync_pending, request_id, updated_at')
       .eq('id', appointmentId)
       .maybeSingle();
 
@@ -2367,6 +2510,9 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
     if (!current) {
       return res.status(404).json({ error: 'Cita no encontrada' });
     }
+
+    if (current.calendar_sync_pending) return res.status(409).json({ code: 'CALENDAR_CHECK_REQUIRED',
+      error: 'La cita está guardada y Calendar requiere comprobación antes de modificarla.' });
 
     const nextStatus = pickValue(req.body, 'estado', 'status');
     const nextStartRaw = pickValue(req.body, 'inicio_en', 'start_at', 'slot_start');
@@ -2428,86 +2574,19 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
     if (nextReason !== null) updatePayload.motivo = nextReason || null;
     if (nextCalendarEventId !== null) updatePayload.google_calendar_event_id = nextCalendarEventId || null;
 
-    const effectiveReason = nextReason !== null ? (nextReason || null) : current.motivo || null;
-    let effectiveCalendarEventId =
-      nextCalendarEventId !== null
-        ? (nextCalendarEventId || null)
-        : (current.google_calendar_event_id || null);
-    let calendarSync = buildCalendarSyncResult({
-      status: 'skipped',
-      action: 'update',
-      event_id: effectiveCalendarEventId,
-    });
-
-    if (calendarIntegrationEnabled()) {
-      const cancelStates = new Set(['cancelada', 'no_show']);
-      const shouldCancelInCalendar = cancelStates.has(effectiveStatus);
-
-      if (shouldCancelInCalendar && effectiveCalendarEventId) {
-        calendarSync = await syncAppointmentToGoogleCalendar({
-          action: 'cancel',
-          eventId: effectiveCalendarEventId,
-          payload: null,
-        });
-        if (calendarSync.status === 'synced') {
-          effectiveCalendarEventId = null;
-          updatePayload.google_calendar_event_id = null;
-        }
-      } else {
-        const context = await fetchCalendarContext({
-          patientId: current.paciente_id,
-          professionalId: current.fisioterapeuta_id,
-        });
-        const calendarEventPayload = buildCalendarEventPayload({
-          patientName: context.patientName,
-          patientPhone: context.patientPhone,
-          professionalName: context.professionalName,
-          startAt: nextStartAt,
-          endAt: nextEndAt,
-          reason: effectiveReason,
-          appointmentId: current.request_id || current.id,
-        });
-
-        if (effectiveCalendarEventId) {
-          calendarSync = await syncAppointmentToGoogleCalendar({
-            action: 'update',
-            eventId: effectiveCalendarEventId,
-            payload: calendarEventPayload,
-          });
-        } else {
-          calendarSync = await syncAppointmentToGoogleCalendar({
-            action: 'create',
-            eventId: null,
-            payload: calendarEventPayload,
-          });
-          if (calendarSync.status === 'synced' && calendarSync.event_id) {
-            effectiveCalendarEventId = calendarSync.event_id;
-            updatePayload.google_calendar_event_id = effectiveCalendarEventId;
-          }
-        }
-      }
-
-      if (GOOGLE_CALENDAR_REQUIRED && calendarSync.status === 'error') {
-        return res.status(502).json({
-          error: 'No se pudo sincronizar evento en Google Calendar',
-          calendar_sync: calendarSync,
-        });
-      }
-    }
+    updatePayload.calendar_sync_pending = calendarIntegrationEnabled();
 
     const { data, error } = await supabase
       .from('crm_citas')
       .update(updatePayload)
-      .eq('id', current.id)
+      .eq('id', current.id).eq('calendar_sync_pending', false).eq('updated_at', current.updated_at)
       .select(APPOINTMENT_SELECT)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) return res.status(409).json({ code: 'APPOINTMENT_CHANGED', error: 'La cita ha cambiado. Actualiza la agenda antes de modificarla.' });
 
-    res.json({
-      data: normalizeAppointmentRow(data),
-      calendar_sync: calendarSync,
-    });
+    res.json(await syncSavedAppointmentToCalendar(data));
   } catch (err) {
     next(err);
   }
@@ -2663,13 +2742,13 @@ router.get('/program-library', async (req, res, next) => {
     const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 60) : 24;
     const fetchLimit = Math.min(Math.max(limit * 3, 36), 180);
 
-    const { data: recommendations, error: recommendationsError } = await supabase
+    const { data: recommendations, error: recommendationsError, count: totalPlans } = await supabase
       .from('crm_recomendaciones')
       .select(`
         id, paciente_id, fisioterapeuta_id, estado, created_at,
         symptom_summary, selection_rationale, escalation_recommend_medical_attention,
         crm_recomendacion_items ( id )
-      `)
+      `, { count: 'exact' })
 
       .eq('fisioterapeuta_id', professionalId)
       .order('created_at', { ascending: false })
@@ -2690,6 +2769,7 @@ router.get('/program-library', async (req, res, next) => {
         ok: true,
         data: {
           summary: {
+            total_plans: totalPlans ?? 0,
             visible_plans: 0,
             visible_archived_reports: 0,
             visible_patients: 0,
@@ -2806,6 +2886,7 @@ router.get('/program-library', async (req, res, next) => {
       ok: true,
       data: {
         summary: {
+          total_plans: totalPlans ?? safeRecommendations.length,
           visible_plans: recentPlans.length,
           visible_archived_reports: visibleArchivedReports,
           visible_patients: visiblePatientCount,

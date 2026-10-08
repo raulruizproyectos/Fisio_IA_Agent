@@ -1,0 +1,404 @@
+/* ==========================================================================
+   FISIO CLINICAL — CANONICAL DESIGN SYSTEM (v5.0)
+   Precision Workspace UI Component Primitives
+   ========================================================================== */
+
+/* === STRICT PAGE SECTION VISIBILITY & ZERO-GAP SWITCHING === */
+.page-section:not(.active),
+.page-section[hidden],
+[data-page]:not(.active),
+[data-page][hidden] {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.page-section.active {
+  display: block !important;
+  height: auto !important;
+  min-height: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.page-section.active.ficha-workspace,
+.page-section.active[data-page="ficha-paciente"] {
+  display: flex !important;
+}
+
+/* === BUTTONS === */
+.precision-btn-primary {
+  background: var(--color-brand-primary, #175dd0);
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.55rem 1.15rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.08));
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
+}
+
+.precision-btn-primary:hover {
+  background: var(--color-brand-primary-hover, #104ab0);
+  box-shadow: var(--shadow-raised, 0 4px 6px -1px rgba(15, 23, 42, 0.1));
+}
+
+.precision-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.precision-btn-secondary {
+  background: #ffffff;
+  color: var(--color-ink-secondary, #334155);
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
+}
+
+.precision-btn-secondary:hover {
+  background: var(--color-surface-hover, #f1f5f9);
+  color: var(--color-ink, #142234);
+  border-color: var(--color-ink-muted, #536375);
+}
+
+.precision-btn-ghost {
+  background: transparent;
+  color: var(--color-ink-secondary, #334155);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.45rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.precision-btn-ghost:hover {
+  background: var(--color-surface-hover, #f1f5f9);
+  color: var(--color-ink, #142234);
+}
+
+.precision-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--color-border, #dce3ed);
+  background: #ffffff;
+  color: var(--color-ink-muted, #536375);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.precision-btn-icon:hover {
+  background: var(--color-surface-hover, #f1f5f9);
+  color: var(--color-ink, #142234);
+  border-color: var(--color-border-medium, #cbd5e1);
+}
+
+/* === BADGES & CLINICAL STATUS PILLS === */
+.precision-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full, 9999px);
+  white-space: nowrap;
+}
+
+.badge-success {
+  background: var(--color-success-bg, #dcfce7);
+  color: var(--color-success-text, #166534);
+  border: 1px solid var(--color-success-border, #86efac);
+}
+
+.badge-urgent {
+  background: var(--color-urgent-bg, #fee2e2);
+  color: var(--color-urgent-text, #991b1b);
+  border: 1px solid var(--color-urgent-border, #fca5a5);
+}
+
+.badge-warning {
+  background: var(--color-warning-bg, #ffedd5);
+  color: var(--color-warning-text, #9a3412);
+  border: 1px solid var(--color-warning-border, #fdba74);
+}
+
+.badge-info {
+  background: var(--color-info-bg, #dbeafe);
+  color: var(--color-info-text, #1e40af);
+  border: 1px solid var(--color-info-border, #93c5fd);
+}
+
+.badge-neutral {
+  background: var(--color-neutral-bg, #f1f5f9);
+  color: var(--color-neutral-text, #475569);
+  border: 1px solid var(--color-neutral-border, #cbd5e1);
+}
+
+/* EVA Score Badges */
+.badge-eva-high {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  font-weight: 700;
+}
+
+.badge-eva-mid {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  font-weight: 700;
+}
+
+.badge-eva-low {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+  font-weight: 700;
+}
+
+/* === FORM CONTROLS === */
+.precision-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.precision-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-ink-secondary, #334155);
+}
+
+.precision-input,
+.precision-select {
+  height: 38px;
+  padding: 0 0.85rem;
+  font-size: 0.875rem;
+  color: var(--color-ink, #142234);
+  background: #ffffff;
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.precision-input:focus,
+.precision-select:focus {
+  border-color: var(--color-brand-primary, #175dd0);
+  box-shadow: 0 0 0 3px rgba(23, 93, 208, 0.12);
+}
+
+.precision-input::placeholder {
+  color: var(--color-ink-disabled, #94a3b8);
+}
+
+/* Search input with icon */
+.precision-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.precision-search-wrap span {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--color-ink-muted, #536375);
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.precision-search-wrap input {
+  width: 100%;
+  height: 38px;
+  padding: 0 0.85rem 0 2.35rem;
+  font-size: 0.875rem;
+  color: var(--color-ink, #142234);
+  background: var(--color-surface-subtle, #f4f7fb);
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.precision-search-wrap input:focus {
+  background: #ffffff;
+  border-color: var(--color-brand-primary, #175dd0);
+  box-shadow: 0 0 0 3px rgba(23, 93, 208, 0.12);
+}
+
+/* === PANELS & CARDS === */
+.precision-panel {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
+  overflow: hidden;
+}
+
+.precision-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.15rem;
+  background: var(--color-surface-subtle, #f4f7fb);
+  border-bottom: 1px solid var(--color-border, #dce3ed);
+}
+
+.precision-panel-header h2,
+.precision-panel-header h3 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink, #142234);
+  margin: 0;
+}
+
+.precision-panel-body {
+  padding: 1rem 1.15rem;
+}
+
+/* === TABS === */
+.precision-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--color-border, #dce3ed);
+  background: #ffffff;
+  padding: 0 1rem;
+}
+
+.precision-tab {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-muted, #536375);
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.precision-tab:hover {
+  color: var(--color-ink, #142234);
+}
+
+.precision-tab[aria-selected="true"],
+.precision-tab.is-active {
+  color: var(--color-brand-primary, #175dd0);
+  font-weight: 600;
+  border-bottom-color: var(--color-brand-primary, #175dd0);
+}
+
+/* === SEGMENTED CONTROLS === */
+.precision-segments {
+  display: inline-flex;
+  background: var(--color-surface-hover, #f1f5f9);
+  padding: 2px;
+  border-radius: var(--radius-sm, 6px);
+  gap: 2px;
+}
+
+.precision-segments button {
+  border: none;
+  background: transparent;
+  color: var(--color-ink-secondary, #334155);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.precision-segments button:hover {
+  color: var(--color-ink, #142234);
+}
+
+.precision-segments button[aria-pressed="true"],
+.precision-segments button.is-active {
+  background: #ffffff;
+  color: var(--color-ink, #142234);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+/* === MODALS & DRAWERS === */
+.precision-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.precision-modal-dialog {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow: var(--shadow-flyout, 0 10px 25px -5px rgba(15, 23, 42, 0.2));
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.precision-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-left: 1px solid var(--color-border, #dce3ed);
+  box-shadow: -4px 0 20px rgba(15, 23, 42, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease-in-out;
+}

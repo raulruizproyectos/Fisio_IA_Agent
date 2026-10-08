@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
+import { normalizeAppointmentText, parseNaturalAppointmentSlots } from '../lib/appointment-text.js';
+import { getMessagingPilotConfig } from '../lib/openwa.js';
+import { createPilotLink, resolvePilotLink, claimMessagingEvent, finishMessagingEvent, respondToPatientBooking } from '../lib/patient-booking.js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
-import { supabase } from '../lib/supabase.js';
+import { supabase, serviceSupabase } from '../lib/supabase.js';
+import { getApprovedExerciseReport, reportError, respondReportError } from '../lib/approved-exercise-report.js';
 import { resolveAgentConversation } from './agent.js';
+import { publicErrorMessage } from '../lib/public-error.js';
 
 const router = Router();
 
@@ -165,150 +170,6 @@ function validateBookingSlot(slotStart) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-
-function extractIsoSlots(messageText = '') {
-  const matches = messageText.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?/g) || [];
-  return {
-    slotStart: matches[0] || null,
-    slotEnd: matches[1] || null,
-  };
-}
-
-function normalizeAppointmentText(text = '') {
-  return String(text || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\ba\s+als?\b/g, 'a las')
-    .replace(/\ba\s+asl\b/g, 'a las')
-    .replace(/\ba\s+lsa\b/g, 'a las')
-    .replace(/\ba\s+ls\b/g, 'a las')
-    .replace(/\balas\b/g, 'a las')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-
-function parseNaturalAppointmentSlots(text = '') {
-  const iso = extractIsoSlots(text);
-  if (iso.slotStart) return iso;
-
-  const MONTHS = {
-    enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
-    julio: 7, agosto: 8, septiembre: 9, octubre: 10, noviembre: 11, diciembre: 12,
-  };
-  const DAY_NAMES = {
-    lunes: 1, martes: 2, miercoles: 3,
-    jueves: 4, viernes: 5, sabado: 6, domingo: 0,
-  };
-
-  const t = normalizeAppointmentText(text);
-  const now = new Date();
-  const nowYear = now.getFullYear();
-  const nowMonth = now.getMonth() + 1;
-  const nowDay = now.getDate();
-  let day = null, month = null, year = nowYear;
-
-  const monthMatch = t.match(/\b(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/);
-  if (monthMatch) {
-    day = parseInt(monthMatch[1], 10);
-    month = MONTHS[monthMatch[2]];
-    if (month < nowMonth || (month === nowMonth && day < nowDay)) year = nowYear + 1;
-  }
-
-  if (!day && /\bmanana\b/.test(t)) {
-    const d = new Date(now);
-    d.setDate(d.getDate() + 1);
-    day = d.getDate();
-    month = d.getMonth() + 1;
-    year = d.getFullYear();
-  }
-
-  if (!day && /\bhoy\b/.test(t)) {
-    day = nowDay;
-    month = nowMonth;
-    year = nowYear;
-  }
-
-  if (!day) {
-    for (const [name, targetDow] of Object.entries(DAY_NAMES)) {
-      if (t.includes(name)) {
-        // Intentar extraer número de día explícito después del nombre del día (ej: "martes 14")
-        const explicitDayMatch = t.match(new RegExp(`${name}\\s+(\\d{1,2})(?!\\s*[:/h])`));
-        const explicitDay = explicitDayMatch ? parseInt(explicitDayMatch[1], 10) : null;
-        if (explicitDay && explicitDay >= 1 && explicitDay <= 31) {
-          // Buscar en qué mes cae ese día del mes con ese día de semana
-          day = explicitDay;
-          // Determinar mes: buscar el mes más próximo futuro donde ese día coincida
-          let candidate = new Date(now.getFullYear(), now.getMonth(), explicitDay);
-          for (let tries = 0; tries < 12; tries++) {
-            if (candidate.getDate() === explicitDay && candidate.getDay() === targetDow &&
-                (candidate > now || (candidate.getDate() === nowDay && candidate.getMonth() + 1 === nowMonth))) {
-              month = candidate.getMonth() + 1;
-              year = candidate.getFullYear();
-              break;
-            }
-            candidate = new Date(candidate.getFullYear(), candidate.getMonth() + 1, explicitDay);
-          }
-          if (!month) { month = now.getMonth() + 1; year = now.getFullYear(); }
-        } else {
-          const d = new Date(now);
-          let daysAhead = targetDow - d.getDay();
-          if (daysAhead <= 0) daysAhead += 7;
-          d.setDate(d.getDate() + daysAhead);
-          day = d.getDate();
-          month = d.getMonth() + 1;
-          year = d.getFullYear();
-        }
-        break;
-      }
-    }
-  }
-
-  let hours = null;
-  let minutes = 0;
-  const timeMatchFull = t.match(/\ba\s+la?s\s+(\d{1,2})(?::(\d{2}))?\b/);
-  const timeMatchStd = !timeMatchFull && t.match(/(?<!\d)(\d{1,2}):(\d{2})(?!\d)/);
-  const timeMatchH = !timeMatchFull && !timeMatchStd && t.match(/(?<!\d)(\d{1,2})\s*h(?:oras?)?(?!\d)/);
-  const tm = timeMatchFull || timeMatchStd || timeMatchH;
-  if (tm) {
-    const h = parseInt(tm[1], 10);
-    const m = parseInt(tm[2] || '0', 10);
-    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-      hours = h;
-      minutes = m;
-    }
-  }
-
-  if (!day && hours !== null) {
-    return { slotStart: null, slotEnd: null, missingDay: true, parsedHour: hours, parsedMinutes: minutes };
-  }
-  if (!day) return { slotStart: null, slotEnd: null };
-  if (hours === null) return { slotStart: null, slotEnd: null, missingTime: true, parsedDay: day, parsedMonth: month, parsedYear: year };
-
-  const pad = (n) => String(n).padStart(2, '0');
-
-  const refDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
-  const tzParts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', timeZoneName: 'shortOffset' })
-    .formatToParts(refDate);
-  const tzName = tzParts.find((p) => p.type === 'timeZoneName')?.value || 'GMT+1';
-  const offsetMatch = tzName.match(/GMT([+-])(\d+)(?::(\d+))?/);
-  const offsetSign = offsetMatch?.[1] || '+';
-  const offsetH = pad(parseInt(offsetMatch?.[2] || '1', 10));
-  const offsetM = pad(parseInt(offsetMatch?.[3] || '0', 10));
-  const tzOffset = `${offsetSign}${offsetH}:${offsetM}`;
-
-  const slotStart = `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00${tzOffset}`;
-  let endH = hours;
-  let endM = minutes + 60;
-  if (endM >= 60) {
-    endH += 1;
-    endM -= 60;
-  }
-  const slotEnd = `${year}-${pad(month)}-${pad(day)}T${pad(endH)}:${pad(endM)}:00${tzOffset}`;
-
-  return { slotStart, slotEnd };
-}
 
 const CHAT_HISTORY_MAX = 8;   // 4 exchanges max
 const CHAT_MSG_MAX_LEN = 250; // chars per message stored
@@ -1143,9 +1004,16 @@ async function getPatientTelegramLinkRecord(patientId) {
 }
 
 async function resolvePatientTelegramTarget({ patientId, chatId = null }) {
-  const explicitChatId = String(chatId || '').trim();
-  if (explicitChatId) {
-    return { chatId: explicitChatId, source: 'request_body', link: null };
+  if (String(chatId || '').trim()) throw reportError(400, 'El destino debe ser el vínculo Telegram guardado del paciente');
+
+  if (process.env.TELEGRAM_PILOT_BOOKING_ENABLED === 'true') {
+    const pilot = await supabase.from('crm_mensajeria_vinculos').select('chat_id, consentimiento_en, baja_en')
+      .eq('paciente_id', patientId).eq('canal', 'telegram').eq('clinica_id', getMessagingPilotConfig().clinicId).maybeSingle();
+    if (pilot.error) throw pilot.error;
+    if (pilot.data) {
+      const patient = await getTelegramLinkPatient(patientId);
+      return { patient, link: pilot.data, source: 'patient_pilot', chatId: pilot.data.consentimiento_en && !pilot.data.baja_en ? pilot.data.chat_id : null };
+    }
   }
 
   const patient = await getTelegramLinkPatient(patientId);
@@ -1358,7 +1226,7 @@ async function createAppointmentDirectFallback({
       ok: false,
       requestId,
       reason: error?.name === 'AbortError' ? 'direct_create_timeout' : 'direct_create_failed',
-      errorMessage: error.message,
+      errorMessage: publicErrorMessage(error, 'No se pudo confirmar el alta de la cita. Comprueba su estado antes de repetirla.'),
     };
   }
 }
@@ -1522,7 +1390,7 @@ async function patchAppointmentDirectFallback({ req, appointmentId, startAt = nu
     return {
       ok: false,
       reason: error?.name === 'AbortError' ? 'direct_patch_timeout' : 'direct_patch_failed',
-      errorMessage: error.message,
+      errorMessage: publicErrorMessage(error, 'No se pudo confirmar el cambio de cita. Comprueba su estado antes de repetirlo.'),
     };
   }
 }
@@ -1672,7 +1540,7 @@ async function triggerAppointmentWorkflow({
       ok: false,
       requestId,
       reason: error?.name === 'AbortError' ? 'timeout' : 'fetch_failed',
-      errorMessage: error.message,
+      errorMessage: publicErrorMessage(error, 'No se pudo confirmar la operación de cita. Comprueba su estado antes de repetirla.'),
       fallback: directFallback,
     };
   }
@@ -1732,193 +1600,96 @@ function getPatientAppointmentHelpMessage() {
   ].join('\n');
 }
 
-router.post('/physio-report/send', async (req, res, next) => {
+router.post('/pilot-link-code/:patientId', async (req, res) => {
   try {
-    const fisioterapeutaId = pickBodyValue(req.body, 'fisioterapeuta_id', 'professional_id');
-    const patientId = pickBodyValue(req.body, 'patient_id', 'paciente_id');
-    const patientName = pickBodyValue(req.body, 'patient_name', 'paciente_nombre');
-    const recommendationId = pickBodyValue(req.body, 'recommendation_id', 'recomendacion_id');
-    const chatId = pickBodyValue(req.body, 'chat_id');
-    const caption = pickBodyValue(req.body, 'caption') || `Informe profesional listo${patientName ? ` para ${patientName}` : ''}`;
-    const exercises = Array.isArray(req.body?.exercises) ? req.body.exercises : [];
-    const dryRun = parseBooleanFlag(req.query?.dry_run) || parseBooleanFlag(req.body?.dry_run);
+    if (process.env.TELEGRAM_PILOT_BOOKING_ENABLED !== 'true') throw reportError(503, 'El piloto de reservas de Telegram está desactivado');
+    res.json(await createPilotLink(req, 'telegram'));
+  } catch (error) { respondReportError(res, error, 'No se pudo preparar la invitación de Telegram'); }
+});
 
-    if (!fisioterapeutaId) {
-      return res.status(400).json({ error: 'fisioterapeuta_id es obligatorio' });
+router.post('/pilot-incoming', async (req, res) => {
+  let eventId;
+  try {
+    const config = getMessagingPilotConfig();
+    const message = req.body.message;
+    if (!message || message.chat?.type !== 'private' || message.from?.is_bot || typeof message.text !== 'string') return res.json({ ok: true, ignored: true });
+    if (!Number.isSafeInteger(req.body.update_id) || !Number.isSafeInteger(message.chat.id) || message.text.length > 4096) throw reportError(400, 'Mensaje de Telegram no válido');
+    const chatId = String(message.chat.id);
+    eventId = await claimMessagingEvent({ canal: 'telegram', sessionId: 'patient_pilot', event: 'message.received', messageId: String(req.body.update_id), chatId }, config);
+    if (!eventId) return res.json({ ok: true, duplicate: true });
+    const resolved = await resolvePilotLink('telegram', chatId, message.text, config);
+    const text = resolved.reply || await respondToPatientBooking(resolved.link, message.text, config);
+    await sendTelegramMessage(chatId, text, 'patient_appointments');
+    await finishMessagingEvent(eventId, 'procesado');
+    res.json({ ok: true });
+  } catch (error) {
+    if (eventId) {
+      try { await finishMessagingEvent(eventId, 'revision_manual'); } catch { /* A persisted claim prevents duplicate actions. */ }
+      return res.json({ ok: true, requires_manual_review: true, request_id: req.id });
     }
-
-    if (!exercises.length) {
-      return res.status(400).json({ error: 'No hay ejercicios para enviar por Telegram' });
-    }
-
-    const target = await resolvePhysioTelegramTarget({ fisioterapeutaId, chatId });
-    if (!target.chatId) {
-      return res.status(400).json({
-        error: 'No hay chat Telegram configurado para el fisioterapeuta. Vincula el bot profesional o define TELEGRAM_PHYSIO_REPORTS_CHAT_ID.',
-      });
-    }
-
-    const pdfPayload = {
-      ...req.body,
-      patient_id: patientId || null,
-      patient_name: patientName || null,
-      recommendation_id: recommendationId || null,
-      fisioterapeuta_id: fisioterapeutaId,
-    };
-
-    const pdfBuffer = await buildExerciseReportPdfBuffer(pdfPayload);
-
-    if (dryRun) {
-      return res.json({
-        ok: true,
-        dry_run: true,
-        delivered_via: 'telegram',
-        target_source: target.source,
-        recommendation_id: recommendationId || null,
-        pdf_bytes: pdfBuffer.length || 0,
-      });
-    }
-
-    await sendTelegramDocument({
-      chatId: target.chatId,
-      filename: `informe-ejercicios-${String(recommendationId || Date.now())}.pdf`,
-      buffer: pdfBuffer,
-      caption,
-      agentMode: 'physio_reports',
-    });
-
-    return res.json({
-      ok: true,
-      delivered_via: 'telegram',
-      target_source: target.source,
-      recommendation_id: recommendationId || null,
-    });
-  } catch (err) {
-    return next(err);
+    respondReportError(res, error, 'No se pudo aceptar el mensaje de Telegram');
   }
 });
 
-router.post('/patient-report/send', async (req, res, next) => {
+router.post('/physio-report/send', async (req, res) => {
+  try {
+    const recommendationId = pickBodyValue(req.body, 'recommendation_id', 'recomendacion_id');
+    const report = await getApprovedExerciseReport(recommendationId, pickBodyValue(req.body, 'patient_id', 'paciente_id'));
+    if (pickBodyValue(req.body, 'chat_id')) throw reportError(400, 'Usa el vínculo Telegram guardado del profesional');
+    const professionalId = req.auth?.profile_id || report.fisioterapeuta_id;
+    if (!professionalId) throw reportError(400, 'Falta el profesional asociado al plan');
+    const target = await resolvePhysioTelegramTarget({ fisioterapeutaId: professionalId });
+    if (!target.chatId) throw reportError(400, 'El profesional no tiene Telegram vinculado');
+    const pdfBuffer = await buildExerciseReportPdfBuffer(report);
+    if (parseBooleanFlag(req.query?.dry_run) || parseBooleanFlag(req.body?.dry_run)) {
+      return res.json({ ok: true, dry_run: true, recommendation_id: recommendationId, pdf_bytes: pdfBuffer.length });
+    }
+    await sendTelegramDocument({ chatId: target.chatId, filename: 'informe-ejercicios-' + recommendationId + '.pdf',
+      buffer: pdfBuffer, caption: 'Informe aprobado para ' + report.patient_name, agentMode: 'physio_reports' });
+    return res.json({ ok: true, delivered_via: 'telegram', target_source: target.source, recommendation_id: recommendationId });
+  } catch (err) {
+    return respondReportError(res, err, 'Error enviando informe al profesional');
+  }
+});
+
+router.post('/patient-report/send', async (req, res) => {
   try {
     const patientId = pickBodyValue(req.body, 'patient_id', 'paciente_id');
-    const patientName = pickBodyValue(req.body, 'patient_name', 'paciente_nombre');
     const recommendationId = pickBodyValue(req.body, 'recommendation_id', 'recomendacion_id');
-    const fisioterapeutaId = pickBodyValue(req.body, 'fisioterapeuta_id', 'professional_id');
-    const chatId = pickBodyValue(req.body, 'chat_id');
-    const dryRun = parseBooleanFlag(req.query?.dry_run) || parseBooleanFlag(req.body?.dry_run);
-    const exercises = Array.isArray(req.body?.exercises) ? req.body.exercises : [];
-    const patientIntro =
-      pickBodyValue(req.body, 'message_text', 'texto_mensaje') ||
-      pickBodyValue(req.body, 'message_to_patient', 'mensaje_paciente') ||
-      '';
-
-    if (!patientId) {
-      return res.status(400).json({ error: 'patient_id es obligatorio' });
+    if (!patientId) throw reportError(400, 'patient_id es obligatorio');
+    const report = await getApprovedExerciseReport(recommendationId, patientId);
+    const target = await resolvePatientTelegramTarget({ patientId, chatId: pickBodyValue(req.body, 'chat_id') });
+    if (!target.patient) throw reportError(404, 'Paciente no encontrado');
+    if (!target.chatId) throw reportError(400, 'El paciente no tiene Telegram vinculado; comparte su invitación y completa el enlace');
+    const pdfBuffer = await buildExerciseReportPdfBuffer(report);
+    if (parseBooleanFlag(req.query?.dry_run) || parseBooleanFlag(req.body?.dry_run)) {
+      return res.json({ ok: true, dry_run: true, delivered_via: 'telegram', target_source: target.source,
+        patient_id: patientId, recommendation_id: recommendationId, pdf_bytes: pdfBuffer.length });
     }
+    const patientIntro = truncateTelegramMessage(String(report.message_to_patient || '').trim(), 900);
+    if (patientIntro) await sendTelegramMessage(target.chatId, patientIntro, 'patient_appointments');
+    await sendTelegramDocument({ chatId: target.chatId, filename: 'plan-ejercicios-' + recommendationId + '.pdf',
+      buffer: pdfBuffer, caption: 'Tu plan de ejercicios - ' + report.patient_name, agentMode: 'patient_appointments' });
 
-    if (!recommendationId) {
-      return res.status(400).json({ error: 'recommendation_id es obligatorio para enviar al paciente' });
+    // Only the server marks delivery after Telegram confirms the document.
+    let stateRecorded = false;
+    try {
+      const { data: sent, error: stateError } = await serviceSupabase.from('crm_recomendaciones')
+        .update({ estado: 'enviada', updated_at: new Date().toISOString() }).eq('id', recommendationId)
+        .eq('report_version', report.report_version).in('estado', ['aprobada', 'enviada']).select('id').maybeSingle();
+      stateRecorded = !stateError && Boolean(sent);
+    } catch (error) {
+      console.warn('[telegram] delivery state not recorded:', error.message);
     }
-
-    const { data: approvedRecommendation, error: approvalError } = await supabase
-      .from('crm_recomendaciones')
-      .select('id, paciente_id, estado')
-      .eq('id', recommendationId)
-      .eq('paciente_id', patientId)
-      .single();
-    if (approvalError) throw approvalError;
-    if (!['aprobada', 'enviada'].includes(approvedRecommendation?.estado)) {
-      return res.status(409).json({
-        error: 'El informe debe ser aprobado por un fisioterapeuta antes de enviarlo al paciente',
-        code: 'professional_approval_required',
-      });
-    }
-
-    if (!exercises.length) {
-      return res.status(400).json({ error: 'No hay ejercicios para enviar al paciente por Telegram' });
-    }
-
-    const target = await resolvePatientTelegramTarget({ patientId, chatId });
-    if (!target.patient) {
-      return res.status(404).json({ error: 'Paciente no encontrado' });
-    }
-
-    if (!target.chatId) {
-      return res.status(400).json({
-        error: 'El paciente no tiene Telegram vinculado todavia. Genera su invitacion /start y completa el enlace antes de enviar el informe.',
-      });
-    }
-
-    const resolvedProfessionalId = fisioterapeutaId || target.patient?.profesional_id || null;
-    const resolvedPatientName = patientName || target.patient?.nombre_completo || null;
-    const caption =
-      pickBodyValue(req.body, 'caption') ||
-      `Tu plan de ejercicios${resolvedPatientName ? ` - ${resolvedPatientName}` : ''}`;
-    const pdfPayload = {
-      ...req.body,
-      patient_id: patientId,
-      patient_name: resolvedPatientName,
-      recommendation_id: recommendationId || null,
-      fisioterapeuta_id: resolvedProfessionalId,
-    };
-
-    const pdfBuffer = await buildExerciseReportPdfBuffer(pdfPayload);
-
-    if (dryRun) {
-      return res.json({
-        ok: true,
-        dry_run: true,
-        delivered_via: 'telegram',
-        target_source: target.source,
-        patient_id: patientId,
-        recommendation_id: recommendationId || null,
-        pdf_bytes: pdfBuffer.length || 0,
-      });
-    }
-
-    const safePatientIntro = truncateTelegramMessage(String(patientIntro || '').trim(), 900);
-    if (safePatientIntro) {
-      await sendTelegramMessage(target.chatId, safePatientIntro, 'patient_appointments');
-    }
-
-    await sendTelegramDocument({
-      chatId: target.chatId,
-      filename: `plan-ejercicios-${String(recommendationId || Date.now())}.pdf`,
-      buffer: pdfBuffer,
-      caption,
-      agentMode: 'patient_appointments',
-    });
-
-    await logCrmCommunication({
-      channel: 'telegram',
-      direction: 'outbound',
-      message_type: 'document',
-      message_text: safePatientIntro || `Informe PDF enviado al paciente ${resolvedPatientName || patientId}`,
-      payload: {
-        patient_id: patientId,
-        professional_id: resolvedProfessionalId,
-        recommendation_id: recommendationId || null,
-        chat_id: String(target.chatId),
-        target_source: target.source,
-        delivered_document: true,
-      },
-      status: 'sent',
-    });
-
-    await supabase
-      .from('crm_recomendaciones')
-      .update({ estado: 'enviada', updated_at: new Date().toISOString() })
-      .eq('id', recommendationId);
-
-    return res.json({
-      ok: true,
-      delivered_via: 'telegram',
-      target_source: target.source,
-      patient_id: patientId,
-      recommendation_id: recommendationId || null,
-    });
+    await logCrmCommunication({ paciente_id: patientId, fisioterapeuta_id: req.auth?.profile_id || report.fisioterapeuta_id,
+      recomendacion_id: recommendationId, channel: 'telegram', direction: 'outbound', message_type: 'event',
+      message_text: patientIntro || 'Plan de ejercicios aprobado enviado al paciente',
+      payload: { event: 'exercise_report_delivered', recommendation_id: recommendationId,
+        report_version: report.report_version, chat_id: String(target.chatId), state_recorded: stateRecorded }, status: 'sent' });
+    return res.json({ ok: true, delivered_via: 'telegram', patient_id: patientId, recommendation_id: recommendationId,
+      state_recorded: stateRecorded, warning: stateRecorded ? null : 'Telegram confirmó el envío, pero no se pudo registrar el estado. No repitas el envío.' });
   } catch (err) {
-    return next(err);
+    return respondReportError(res, err, 'Error enviando el plan al paciente');
   }
 });
 
@@ -2030,10 +1801,10 @@ router.post('/incoming', async (req, res, next) => {
 
       if (fromTelegramWebhook) {
         await sendTelegramMessage(chat_id, voiceReply, agentMode);
-        return res.status(200).json({ ok: true, transcription_error: voiceErr.message });
+        return res.status(200).json({ ok: true, transcription_error: publicErrorMessage(voiceErr, 'No se pudo transcribir el audio.') });
       }
 
-      return res.status(400).json({ error: voiceReply, detail: voiceErr.message });
+      return res.status(400).json({ error: voiceReply, detail: publicErrorMessage(voiceErr, 'No se pudo transcribir el audio.') });
     }
 
     const text = normalizeCommand(resolvedIncoming?.text || '');
@@ -2334,27 +2105,7 @@ router.post('/incoming', async (req, res, next) => {
         recoPayload.message_to_therapist ||
         'Informe generado correctamente.';
 
-      let pdfSent = false;
-      try {
-        const pdfBuffer = await buildExerciseReportPdfBuffer(recoPayload);
-        await sendTelegramDocument({
-          chatId: chat_id,
-          filename: `informe-ejercicios-${String(recoPayload.recommendation_id || Date.now())}.pdf`,
-          buffer: pdfBuffer,
-          caption: `Informe listo para paciente ${reportCommand.patientId}`,
-          agentMode: 'physio_reports',
-        });
-        pdfSent = true;
-      } catch (pdfErr) {
-        console.warn('[telegram] PDF generation/send error:', pdfErr.message);
-      }
-
-      if (pdfSent) {
-        return await reply(
-          `Informe generado para paciente ${reportCommand.patientId}.\nRecomendacion: ${recoPayload.recommendation_id || '-'}\nPDF enviado en este chat.`
-        );
-      }
-      return await reply(truncateTelegramMessage(reportText));
+      return await reply(truncateTelegramMessage('BORRADOR PENDIENTE DE REVISIÓN. Revisa y aprueba este plan en el CRM antes de exportarlo o enviarlo al paciente.\nRecomendación: ' + (recoPayload.recommendation_id || '-') + '\n\n' + reportText));
     }
 
     if (text.toLowerCase().startsWith('/start')) {

@@ -44,6 +44,9 @@
     document.querySelectorAll('.nav-item[data-section]').forEach((item) => {
       item.classList.toggle('active', item.getAttribute('data-section') === sidebarSection);
     });
+    const sectionLabel = document.querySelector('.nav-item.active .nav-label')?.textContent?.trim() || 'Ficha de paciente';
+    const breadcrumb = document.getElementById('topbarSectionLabel');
+    if (breadcrumb) breadcrumb.textContent = sectionLabel;
 
     const mobileDock = document.getElementById('mobileDock');
     mobileDock?.setAttribute('data-active-section', targetSection);

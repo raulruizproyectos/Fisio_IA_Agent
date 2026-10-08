@@ -1,99 +1,271 @@
 # Project Status
 
-Updated: 2026-09-20 (Definitive Product Recovery, Stitch Redesign & Hardening — Baseline `64934d7`)
+Actualizado: 2026-10-08, preparación de testing en producción. Precisión azul aceptada; copia CRM/Auth restaurada y migraciones ensayadas en local. Despliegue pendiente de autorización concreta.
 
-> **ESTADO DE VERIFICACIÓN EMPÍRICA (CERO FALSOS POSITIVOS)**: Este checkpoint (`64934d7`) SUPERSEDE formalmente a `b8f7980`, `23aeb40`, `c59556a` y anteriores. Se eliminó la falsa confianza y se verificó empíricamente con navegador real Playwright, backend real Node.js, PostgreSQL/Supabase real y OpenAI `gpt-4o-mini`.
+## GitHub y preparación de producción
 
-## Functional Recovery & Core Domains (Empirically Verified)
-- **Seguridad & Autenticación Failsafe**:
-  - `backend/src/middleware/security.js`: `dev-token` estrictamente restringido a `process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'`. En producción o con `NODE_ENV` ausente, falla de forma cerrada (401).
-  - `frontend/src/lib/auth.ts`: Diagnóstico explícito en consola cuando `PUBLIC_BACKEND_URL` falta en entornos de producción, eliminando fallbacks silenciosos no documentados.
-- **Dependencias Deterministas (Causa Raíz Resuelta)**:
-  - `frontend/package-lock.json`: Resuelta discrepancia de `@emnapi/wasi-threads@1.2.3`.
-  - `frontend/Dockerfile` y `.github/workflows/ci.yml`: Eliminado el bypass `|| npm install`. Ambas pipelines ejecutan ahora exclusivamente `npm ci` determinista.
-- **Rediseño Visual Google Stitch & Fin del Tema Oscuro Legacy**:
-  - Eliminadas las hojas de estilo obsidian legacy (`premium-clinic-ui.css` y `production-ui.css`) que forzaban fondos negros `#0b131c` / `#111a26`.
-  - Adoptado el sistema canónico de diseño en `DESIGN.md` (Stitch Project `15793182036642898909`): Canopy Green (`#0A3922`), Kinetic Coral (`#FF643B`), Lienzo Cálido (`#F7F5F1`), Mint (`#D2F2E3`), Cream (`#FAF7E8`), DM Sans.
-  - Agenda: Rediseñada completamente a planificador clínico sobre lienzo cálido con tarjetas blancas y etiquetas claras (eliminada la cuadrícula negra tipo hoja de cálculo).
-  - Copiloto IA: Reflow contextual de espacio de trabajo (~58% consulta / ~42% copiloto), eliminando el cajón oscuro desarticulado.
-- **Memoria Clínica Longitudinal & Síntesis de Voz**:
-  - `backend/src/routes/clinical-notes.js`: `updatePatientLongitudinalSummary` utiliza `serviceSupabase` para persistir la Capa 2 en segundo plano de forma fiable sin perder el contexto de base de datos.
-  - `backend/src/lib/clinical-voice.js`: Resolución segura de dolor EVA y zona corporal desde columnas de la tabla y `structured_data`.
-  - Verificada síntesis clínica estructurada (`/api/notas-clinicas/voice/synthesize`) y lectura longitudinal en Ficha de Paciente.
-- **Copiloto Clínico Grounded**:
-  - Contexto clínico real del paciente (resumen Capa 2 + notas recientes Capa 1) inyectado en `/api/agent/message`.
-  - OpenAI `gpt-4o-mini` responde con precisión clínica basada exclusivamente en el historial registrado (0 alucinaciones). Human-in-the-loop: botón `Revisar y aprobar`.
-- **Dashboard & KPIs Clínicos**:
-  - Carga cifras reales desde PostgreSQL: 9 pacientes activos, sesiones hoy, planes clínicos generados, ingresos mensuales.
-  - Tarjeta de foco "Ahora" en estado Libre/Próxima sesión con acción directa.
-- **Directorio de Pacientes**:
-  - Alta de paciente QA verificada con persistencia real en `crm_pacientes` y filtrado instantáneo en búsqueda.
-- **P1 Accesibilidad (WCAG AA & Astro Audit)**:
-  - Resueltos findings de labels sin control asociado en `FichaPacienteView.astro`, `PatientsView.astro` y `PagosView.astro`.
-  - `npx astro check` pasa con 0 errores y 0 warnings.
-  - Backend `npm test`: 21/21 tests pasando (100% verde).
-- **P2 Coherencia Visual & Reducción de Brillo**:
-  - Reconstruida `FichaPacienteView.astro` con superficies tonales clínicas cálidas (`#f8f7f4`, `#faf7e8`, `#ffffff` con sutil borde `rgba(0,0,0,0.06)`), eliminando el choque visual de fondo oscuro rígido (`#090e17`).
-  - Verificación visual completada con capturas de pantalla de Dashboard, Copiloto, Directorio de Pacientes y Ficha Clínica.
-- **P0 Pacientes**:
-  - Alta, listado y consulta individual verificados con persistencia real en PostgreSQL (`crm_pacientes`).
-  - `/ficha` corregido en `backend/src/routes/patients.js`: sustituida columna inexistente `fecha_hora` por `inicio_en, fin_en` con mapeo de compatibilidad.
-- **P1 Agenda & Citas**:
-  - Creación y listado de citas verificado contra `crm_citas`.
-  - Reserva pública (`/api/profesional/public-booking/slots` y `/appointments`) verificada end-to-end con asignación automática de paciente.
-- **P1 Planes Terapéuticos & Copiloto Clínico**:
-  - Generación de recomendaciones con motor clínico directo y persistencia confirmada en `crm_recomendaciones` y `crm_recomendacion_items`.
-  - `GET /api/profesional/program-library` corregido eliminando `nombre_completo` de `crm_pacientes`.
-- **P2 Finanzas & Pagos**:
-  - Registro de cobros verificado en `crm_pagos` (50.00 EUR), reflejado en `/pagos/resumen` y en la ficha del paciente.
-- **P2 Documentos & Firma Digital**:
-  - Creación de documento en `crm_documentos`, firma digital en base64 y generación de PDF con `pdfkit` verificado (3.7 KB).
-- **Frontend Fallback Sanitization**:
-  - Sanitizado `isDevMode` en `frontend/src/pages/index.astro` para requerir explícitamente `?demo=true` o `localStorage.getItem('fisio_dev_mode') === 'true'`. En modo estándar (`localhost`), la UI opera 100% contra backend y PostgreSQL real sin inyectar datos ficticios ni ocultar errores de red/API.
-  - Verificado mediante automatización de navegador con Playwright en `http://localhost:4321` (App boot, Catálogo, Agenda, Ficha Paciente y Cobros validados sin errores).
+- Rama `mejoras/auditoria-20260915` publicada y PR #2 abierto en borrador hacia `main`, por autorización del usuario. No fusionar ni desplegar por esa aprobación. Backend/n8n/frontend CI verdes en `28c201d`, incluido Docker/nginx real. Preservar secretos/copias locales fuera de Git y comprobar CI del commit documental final.
+- EasyPanel accesible por API HTTPS con el token existente: proyecto `fisio-ia-agent`, servicios frontend/backend y URLs localizados. Ambos siguen en `aa211205`, versión del 20 de septiembre; salud responde 200. La nueva versión local aún no está desplegada.
+- Supabase sano; faltan en Cloud las cinco migraciones de finanzas/reintentos/Calendar. Usuario completó cambio de contraseña; URI privada preparada. Copia nativa nueva: 35 tablas públicas y 27 Auth restauradas localmente y comparadas con origen por cantidades/hashes; cinco migraciones ensayadas sin perder filas. Recibo privado conservado, servidor local detenido. Alcance CRM/Auth; no acredita restauración completa de servicios internos gestionados. Consultar `PRODUCTION_TESTING.md` antes de aplicar SQL autorizado.
+- Backend lint/100 pruebas y frontend check/build pasan; CSP, guardas y 33 casos runtime pasan. Docker frontend excluye `.env*` y exige `npm ci`; CI elimina la clave placeholder que ahora rechazaba la guarda y ejecuta regresiones de navegador/runtime.
+- Destinos, bloqueos, cambios de configuración y recorrido de prueba registrados en `docs/PRODUCTION_TESTING.md`. No iniciar otra auditoría ni rediseño. Corregir los fallos reproducibles durante testing y verificar los flujos afectados.
 
-## Stable
-- **Backend Quality & Security**:
-  - Supabase Auth obligatorio con validación de JWT y extracción de perfil en `/api/me`.
-  - Row Level Security (RLS) activo en PostgreSQL con cliente por petición de usuario.
-  - Trazabilidad y auditoría clínica (R-2) implementada en `backend/src/lib/audit.js` (`crm_audit_log`).
-  - Procedimiento de supresión y anonimización RGPD (R-3) en `backend/src/routes/patients.js`.
-  - Seguridad clínica en prescripción de ejercicios (R-4): los ejercicios de apoyo visual adoptan sus propias precauciones y dosificación sin heredar contraindicaciones ajenas.
-  - Gating clínico (R-5): bloqueo estricto de generación de PDF o remisión si el informe no está aprobado; validación obligatoria de justificación ante *red flags*.
-  - Rate limiting (R-6) en generación de ejercicios clínicos (60 req/h por IP).
-  - Batería de 18/18 tests unitarios e integrados pasando (`npm test` en backend).
-- **Frontend & Visual System**:
-  - Reconstrucción visual v4.0 completada bajo el estándar de diseño editorial clínico *Turn.io* (Refero).
-  - Tipografía DM Sans unificada con `font-feature-settings: "ss03" 1`.
-  - Design Tokens centralizados en `frontend/src/styles/design-tokens.css`: Canopy Green (`#0a3922`), Coral Pulse (`#ff643b`) reservado a acciones primarias, paleta de lienzos pastel por contexto.
-  - Vistas adaptadas y verificadas visualmente: Inicio, Agenda, Pacientes, Ficha Paciente, Finanzas (eliminado duplicado en desktop), Mensajes (resuelto contraste blanco/blanco), Ajustes (estructurado en 6 bloques temáticos) y Copiloto Clínico (panel de 400px con compositor sticky y aire inferior).
-  - Verificación estática de Astro limpia (`npx astro check`: 0 errores, 0 warnings).
+## Precisión azul revisada; aceptada por ahora por el usuario
 
-## Working / needs validation
-- **Despliegue Productivo en Supabase Cloud**:
-  - La migración `database/migrations/20260901_production_security_hardening.sql` y sus scripts de validación previa (`database/preflight/`) están listos pero pendientes de ejecución en el proyecto de producción de Supabase.
-- **Despliegue de Aplicación**:
-  - Configuración de EasyPanel / VPS para frontend y backend.
-- **Workflows n8n**:
-  - Workflows en `n8n/Fisio_IA_Agent` validados estructuralmente en CI; pendientes de activación gradual y comprobación de credenciales reales en producción.
+- Revisadas las 39 capturas; mejoras locales de saludo, acciones móviles de Pacientes, búsqueda, descripciones completas y listas/tablas sin duplicados. Carga/errores conservan su aviso; IDs/data-* y reglas clínicas preservados.
+- Frontend check/build y regresiones de saludo/CSP pasan. QA acotada: 45 estados a 375/768/1280 px, incluidos registros y fallos HTTP ficticios en facturas/bonos/documentos/gestoría; cero overflow, errores JS y tráfico externo. Evidencia en `docs/design-exploration/reviews/2026-10-08/README.md`.
+- Galería estática actualizada con 14 capturas afectadas y originales conservados. El usuario acepta por ahora y pide avanzar al testing en producción. No iniciar otro rediseño ni repetir auditorías técnicas. Limitaciones de proveedores reales, proxy/HTTPS y móvil físico conservadas; la revisión visual fue local.
 
-## Known issues
-- `frontend/src/pages/index.astro`: Monolito de orquestación de vistas e hidratación de eventos (~8k líneas). Funcional y estable, pero candidato a extracción gradual de controladores por dominio sin alterar IDs ni atributos `data-*`.
-- `backend/src/routes/professional.js` y `telegram.js`: Rutas extensas pendientes de división en capas de servicio modulares.
+## Precisión azul elegida y aplicada en local
 
-## Next priorities
-1. Ejecutar scripts de preflight y aplicar la migración SQL `20260901_production_security_hardening.sql` en Supabase Cloud.
-2. Desplegar backend y frontend en la plataforma de hosting (EasyPanel / VPS).
-3. Activar y verificar flujos de n8n vinculando las credenciales de producción.
+- Continuar en un chat nuevo con **GPT-6.1-sol, razonamiento alto**, usando `docs/PROMPT_CONTINUAR.txt` y el primer bloque de `docs/CONTINUAR.md`. Árbol modificado/no rastreado preservado, sin commit ni push.
+- Galería conservada: `docs/design-exploration/precision-blue.html`, 39 capturas ficticias. Vista previa 48042 y API/datos del ensayo detenidos; sin listeners en 4323/4322/3002/54339 al cierre. Para reabrir solo la galería: `node tmp/serve-design-exploration.mjs` → `http://127.0.0.1:4323/precision-blue.html`. API/POST/traversal rechazados en la verificación previa.
+- QA adicional: editor clínico a 16 px y guardar accesible sobre el dock; Nueva cita sin campos recortados; PDF bloqueado y Telegram sin vínculo ofrece vinculación. Acceso HttpOnly/PKCE/cierre, Calendar vacío→confirmado→recarga y reserva/recarga bajo CSP pasan; red externa bloqueada. Fixtures reiniciados al alcanzar su rate limit, sin cambiar límites del producto.
 
-## Do not break
-- **Norma de Robustez**: Todo flujo crítico debe tener fallback funcional y registrar trazabilidad de errores (`request_id`). Ningún fallo externo debe romper el flujo principal.
-- **Gating Clínico**: No permitir la descarga de PDFs ni el envío de recomendaciones si `estado != 'aprobada'`.
-- **Disciplina de Color**: Coral Pulse (`#ff643b`) reservado estrictamente para la acción primaria contextual; nunca como adorno general.
-- **Contratos de Frontend**: No modificar ni eliminar IDs ni atributos `data-*` en `frontend/src/pages/index.astro` ni en los componentes de vistas, ya que gobiernan la hidratación del CRM.
-- **Secretos**: No versionar claves ni credenciales en el repositorio; la única fuente local autorizada es `.env.local`.
+- Usuario eligió la dirección 01, Precisión azul. Shell blanco/azul, tokens v6, agenda/ficha/biblioteca/finanzas/documentos/mensajes/historial/ajustes y acceso/reserva coherentes. Animación discreta 120/220/240 ms y movimiento reducido. Reconciliados DESIGN/AGENTS; historial visual conservado.
+- Menú completo web/móvil, ruta superior actual, overlays fuera del flujo, formularios de alta con foco/Escape, notas a 16 px y controles de 44 px. Sin cambios a permisos, Auth, reserva, revisión profesional ni mutaciones Calendar. Todos los contratos DOM estáticos preservados.
+- Chrome: 46 estados en 375/768/1280 sin overflow/errores JS/red externa; clínica ficticia y SQL local para pacientes/citas, dobles vacíos explícitos en otros módulos. Frontend check/build, regresiones de reserva/Calendar/Auth/contexto clínico/feedback/diálogos pasan; backend lint y 100 pruebas pasan. Capturas y recibos privados de QA, sin publicar datos privados.
+- Siguiente paso: revisión visual del acabado elegido y, si hay ajustes concretos, iterar sobre esta base. No repetir Calendar/seguridad ni comenzar de cero. Pendientes de producción del bloque HttpOnly siguen abiertos: proveedores reales, proxy/HTTPS, Auth y límites monetarios. EasyPanel aparcado; sin SQL Cloud, mensajes reales, dependencias nuevas, commits, push ni despliegue.
 
-## Decisions
-- **Abandono del Dark Dashboard**: Se sustituyó el tema oscuro genérico (`#0d1522`) por lienzos cálidos/pasteles (*Lavender Mist*, *Mint Wash*, *Peach Wash*, *Sky Wash*, *Sand Canvas*) con tarjetas blancas puras y *Canopy Green* como ancla de marca.
-- **Tipografía DM Sans**: Uso exclusivo de DM Sans con variante estilística `ss03` y números tabulares para datos clínicos y financieros.
-- **Multi-tenancy por RLS**: La seguridad y aislamiento entre profesionales recae en políticas de PostgreSQL mediante el JWT del usuario en Supabase Auth, evitando la dependencia de filtros manuales en backend.
+## Sesión HttpOnly y acceso desde el servidor
+
+- Login, sesión/renovación, cierre y recuperación de contraseña pasan por `/api/auth/*`. Tokens solo en cookies del backend HttpOnly, host-only, SameSite=Lax y Secure/`__Host-` en producción; HTTP rechazado allí. Respuestas sin tokens y sin caché. El navegador elimina el almacenamiento Auth legado del proyecto y ya no usa el SDK Supabase para autenticarse; runtime deja de publicar incluso la clave anon/publishable.
+- Middleware conserva Bearer de integraciones y valida también cookies con Auth y perfil/clínica activos bajo RLS en cada petición. Cookie exige cabecera CSRF y origen exacto (lectura same-origin permite Sec-Fetch-Site sin Origin); no se aceptan identidades del cuerpo. Fallo/lectura incompleta de Auth conserva sesión sin simular permiso ni renovar a ciegas. Renovación explícita agrupa concurrencia en una instancia; ninguna escritura clínica se reenvía automáticamente.
+- Login 10/15 min, reset 5/h, sesión 60/15 min y recuperación/cambio 10/15 min por IP, además del límite general. Recuperación PKCE guarda verifier HttpOnly y requiere el mismo navegador y último enlace; enlaces antiguos con tokens deben solicitarse de nuevo. Contraseñas nuevas: mínimo 10 caracteres y máximo 72 bytes UTF-8, hash delegado a Supabase. Inputs adicionales/incorrectos rechazados; errores de política no borran sesión válida. Error de logout conserva sesión y muestra aviso.
+- Backend lint y **100/100 pruebas**, frontend check/build, Auth, 16 regresiones reserva, aviso/acción de agenda, CSP, 33 casos runtime y scanner pasando. Chrome con clínica ficticia y SQL restaurado verifica cookies inaccesibles a JS, limpieza de token legado, recuperación/cierre, Calendar/recarga y móvil. Red externa bloqueada; recibo privado `connections-verification.json`.
+- Solo local: sin SQL/dependencias nuevos, Cloud, mensajes reales, commits, push ni despliegue. Antes de producción verificar mismo sitio HTTPS web/API (no usar cookies cross-site), CORS/redirect Auth, proxy/forwarded headers y ausencia de caché en API, límites Auth del proveedor, logout/rotación reales y topes de gasto. Sesiones actuales deberán iniciar sesión otra vez al adoptar este cambio. EasyPanel aparcado.
+- Siguiente bloque local: auditoría visual web/móvil siguiendo DESIGN.md, con datos ficticios y alcance de una clínica. Los límites externos anteriores quedan pendientes y no se acreditan mediante la auditoría visual.
+
+## Conexiones CSP desde la configuración real
+
+- El entrypoint genera `connect-sources.conf`; nginx añade `connect-src 'self'` más los orígenes efectivos de backend/Supabase en todas las locations. Runtime sustituye build, sin añadir ambos. El build guarda solo defaults de URLs en `.runtime-defaults.sh`, fuera del HTML y de Git; Docker los lleva a `/etc/fisio`. Se conservan los fallbacks antiguos cuando no hay URLs explícitas.
+- URLs HTTPS o HTTP loopback literal, con ruta opcional; sin credenciales, query, fragmento, comodines ni caracteres de configuración. Rechazo antes de publicar y escritura temporal al arrancar. Guardas de claves públicas también rechazan comillas y prefijo publishable vacío. No cambia URLs cliente ni consulta proveedores.
+- 33 casos runtime verifican prioridades/orígenes/rechazos y conservación de archivos; hook del build ensayado con URLs ficticias. Backend lint/90 pruebas, frontend check/build, 16 regresiones de reserva, guardas, CSP y scanner pasan. Chrome sobre build/SQL local con Auth/Calendar ficticios verifica acceso, agenda/recarga y reserva/recuperación; conexión ajena bloqueada por CSP antes del transporte. Servidores detenidos.
+- Solo local: sin dependencias/SQL nuevos, Cloud, mensajes reales, commits, push ni despliegue. Envsubst sustituido por un doble en Windows; nginx/proxy real no probado. Imágenes externas de catálogo conservadas; no afirmar protección universal de exfiltración. Modo CLI personalizado, micrófono físico y servicios reales no ensayados; IPv6 no admitido por la guarda actual. HttpOnly/Auth/topes monetarios siguen pendientes.
+
+## CSP del navegador y cabeceras locales
+
+- Los cuatro HTML compilados aplican CSP antes de cargar scripts: código inline generado con hash exacto y scripts propios; sin `unsafe-inline` de scripts, `eval` ni handlers de atributos. Objetos, frames, workers y cambios de URL base bloqueados; formularios al propio origen. Estilos de atributos permitidos para las vistas dinámicas existentes.
+- Controladores de Layout/reserva empaquetados como JS propio, configuración runtime síncrona al principio del body y dos `onclick` sustituidos por listeners. Nginx añade `frame-ancestors 'self'` y Permissions-Policy en todas las locations, permitiendo micrófono propio y bloqueando cámara/geolocalización/pagos del navegador.
+- Backend lint/90 pruebas, frontend check (39 archivos, cero errores/avisos/hints)/build, 16 regresiones de reserva, agenda/Auth/guardas y escaneo de 78 archivos pasando. Regresión del HTML compilado en `scripts/test-browser-policy.mjs`.
+- Chrome sobre build con clínica/Auth/Calendar ficticios y SQL local: login, botón de alta vacía, validación reset, Calendar bloqueado/recuperado/recarga y reserva pública con una escritura simulada y recuperación al recargar. Móvil 375 px sin desbordamiento. Script inline, handler inyectado y eval de un script servido por la página bloqueados; red externa bloqueada durante el ensayo. Servidores de ensayo detenidos.
+- Sin dependencias/SQL nuevos, Cloud, mensajes reales, commits, push ni despliegue. Nginx/proxy y Google/Auth/PostgREST reales no acreditados. Destinos de API/Storage runtime aún sin allowlist CSP; HttpOnly/Auth/topes monetarios y logs históricos pendientes. Build avisa de Shiki por defecto, sin páginas Markdown en estos flujos; CSP solo se comprueba con build/preview, no en dev.
+
+## Errores públicos y permisos de trabajos IA
+
+- En producción, los diagnósticos técnicos SQL/proveedor se sustituyen por mensajes seguros en el manejador global, finanzas, readiness, Calendar, generación/poll de ejercicios y respuestas Telegram afectadas. Incluye errores dentro de HTTP 200 y mensajes técnicos 4xx; conserva estados, códigos y mensajes de negocio controlados, sin presentar un fallo como datos vacíos.
+- Cada consulta de un trabajo IA comprueba de nuevo el acceso al paciente mediante RLS, también desde caché y tras cambios de clínica. Un trabajo sin paciente exige su profesional de sesión. Fallos SQL de lectura responden error, sin simular ausencia ni entregar el informe.
+- Diez regresiones cubren filtraciones reproducidas, diagnósticos históricos de trabajos fallidos, permisos de caché y fallos de lectura. Backend lint/90 pruebas, frontend check/build, acción/metadatos de agenda y ensayo SQL restaurado pasando; revisión profesional obligatoria preservada.
+- Solo local, sin SQL nuevo, dependencias nuevas, Cloud, mensajes reales, commits, push ni despliegue. No se modifican retrospectivamente informes clínicos/resultados históricos; logs y objetos históricos requieren revisión aparte. Google/Auth/PostgREST reales, HttpOnly, Auth, CSP/proxy y topes monetarios siguen pendientes. Calendar verificado permanece como se describe en el bloque siguiente.
+
+## Recuperación verificada de Calendar y seguridad local
+
+- POST profesional `appointments/:appointmentId/check-calendar` solo lee Calendar; exige sesión, permisos y versión. Alta con ID perdido/cambio: evento único con referencia CRM, operación, contenido y horario exactos. Cancelación: recurso cancelado del ID vinculado en el calendario original. Vacío, 404/410, timeout, lectura incompleta o petición en curso conservan bloqueo.
+- Migración CLI local `20261008090742_appointment_calendar_verification.sql`: operación, calendario y petición en curso persistidos. Escritura reclama antes de Calendar; vínculo/desbloqueo condicionados a la versión actual. Sin replay ni limpieza por timeout. Caída con marca en curso conserva bloqueo; recuperación administrativa no implementada.
+- «Comprobar Calendar» en tabla/móvil/detalle, aviso anunciado, doble clic bloqueado y respuestas antiguas ignoradas. Recuperación restaura acciones y sustituye su aviso anterior. Navegador con clínica/Auth/Calendar ficticios: vacío bloquea, lectura válida recupera vínculo, recarga lo conserva; SQL independiente confirma una fila. 1280/375 px sin desbordamiento y control de 44 px.
+- Guardas de claves públicas en build/runtime, escaneo frontend, CORS HTTPS explícito, límite por profesional para IA/audio, validación antes de gastos e identidad de sesión. Corregida herencia de cabeceras nginx. Astro 7.3.7 y auditoría npm sin avisos en ambos árboles. Los 16 puntos/gaps están en `docs/SECURITY_REVIEW_2026-10-08.md`; HttpOnly, configuración Auth y topes monetarios pendientes.
+- Backend lint/80 pruebas, frontend check/build y regresiones de agenda/reserva/Auth/avisos/guardas pasando. Ensayo restaurado verifica handlers/SQL/RLS y RLS habilitado en todas las tablas públicas; recibo `calendar_verification: true`. PostgreSQL con conexiones independientes prueba desbloqueo/CAS y versiones obsoletas; instancia temporal detenida.
+- Solo local: sin Cloud, mensajes, rotación GitHub, commits, push ni despliegue. Recuperación necesita lector directo; W5 no acredita completitud/cancelaciones. Google/Auth/PostgREST reales del bloque y contenedor nginx pendientes. EasyPanel aparcado.
+
+## Citas guardadas antes de Calendar
+
+- Altas públicas, agenda interna, reservas del agente y edición/cancelación guardan primero `crm_citas`. Migración local `20261008064542_appointment_calendar_pending.sql`: una marca booleana persiste el resultado aún no comprobado. Fallos de contexto, Calendar o vínculo posterior conservan la cita y responden con sus datos y aviso; incluso `GOOGLE_CALENDAR_REQUIRED=true` no deshace una cita guardada.
+- Solo una confirmación completa seguida de vínculo CRM confirmado limpia la marca. Pérdida de respuesta no crea ni cancela otro evento; reintentos públicos recuperan la fila. Una cita pendiente rechaza otra modificación con `CALENDAR_CHECK_REQUIRED`. No hay desbloqueo automático ni endpoint de recuperación todavía: siguiente bloque, comprobación verificada del evento antes de liberar esta marca. No habilitar esta versión en producción hasta completar ese flujo.
+- Reconciliación conserva filas pendientes y condiciona sus escrituras al estado/versionado `updated_at` leído; una lectura antigua no revierte un cambio en curso o completado. La referencia `CRM Appointment ID` usa el ID real de la cita antes de enviar Calendar y evita que una respuesta perdida genere otra cita CRM mediante backfill. Los rechazos SQL tardíos de inserción/edición ya no producen ninguna mutación externa; eliminada la compensación antigua.
+- Agenda y ficha de cita muestran «Calendar pendiente»; el estado general y los avisos de alta/cambio no afirman sincronización completa. Backend lint/69 pruebas, frontend check/build sin errores, 16 regresiones de reserva y regresión de metadatos UI pasando. Ensayo restaurado ejecuta handlers/SQL reales con Calendar ficticio; creación/edición/cancelación inciertas, pérdida de vínculo y conflictos tardíos comprobados.
+- PostgreSQL 18.3 temporal con tres conexiones independientes prueba que solo una operación reclama Calendar, un lector antiguo no puede reclamar tras liberarla y la reconciliación obsoleta no escribe. Instancia detenida. Nueva columna ensayada solo en local; readiness falla si falta. Sin cambios Cloud, migraciones aplicadas en producción, mensajes, commit, push ni despliegue. Sin prueba nueva de navegador ni Google/Auth/PostgREST reales; alta paciente/cita atómica y recuperación verificada siguen pendientes.
+
+## Calendar: escritura única por intento
+
+- El escritor compartido elige cuenta de servicio o W6 antes de escribir. Un error directo, respuesta perdida o creación sin ID devuelve error; nunca dispara una segunda mutación por n8n. Inserción, edición y borrado directos llevan `retry: false` y límite de 10 segundos. Borrado ya ausente (404/410) se considera confirmado.
+- W6 exige `ok: true` booleano, ID válido al crear y el mismo ID al editar; fallos HTTP, JSON incompleto y confirmación de otro evento no simulan éxito. Se mantiene W6 como alternativa cuando no hay cliente directo, sin modificar ni activar workflows.
+- Fallos originales reproducidos antes del cambio. Dos regresiones del escritor real con transportes sustituidos cubren creación/edición/borrado, pérdida de respuesta, 503, credenciales inválidas, respuestas incompletas y selección de transporte. Backend lint/68 pruebas y frontend check/build correctos. Sin escrituras reales en Calendar, cambios SQL ni despliegue.
+- Esto impide el reenvío automático entre transportes; no resuelve todavía Calendar antes del INSERT/UPDATE CRM, eventos/pacientes huérfanos, solicitudes simultáneas, reintentos internos de un workflow desplegado ni recuperación duradera de sincronización. Siguiente bloque: persistencia de la cita y resultado de Calendar sin perder coherencia.
+
+## Reserva pública: recuperación al recargar
+
+- `sessionStorage` guarda únicamente un UUID aleatorio por profesional antes de enviar la reserva. Conserva la referencia al recargar la misma pestaña; no guarda nombre, contacto, motivo ni horario. La confirmación mantiene la clave y «Reservar otra cita» la elimina explícitamente. Lectura/escritura/limpieza fallidas no permiten avanzar a una reserva sin recuperación.
+- Nuevo POST público `/public-booking/recovery`, con ambos alias y clave en cabecera, nunca en URL. Consulta por clave/profesional activo y exige marca de reserva pública; solo devuelve identificador, horario y estado, con `Cache-Control: no-store`. No crea paciente, cita ni evento. Clave inexistente o fallo de lectura no autoriza otra reserva; clave de cita interna o de otro profesional tampoco recupera datos.
+- «Comprobar reserva» consulta en vez de reenviar el guardado. Al recargar confirma fecha/hora guardadas en la zona de la clínica o conserva el bloqueo si el estado cambió o el resultado es incierto. Dieciséis regresiones del script real, ensayo SQL restaurado, backend lint/66 pruebas y frontend check/build correctos.
+- Navegador 375/1280 px con API ficticia: conexión cerrada después de guardar, recarga y recuperación con una sola clave/cita simulada, sin desbordamiento. Se observaron dos POST iniciales de transporte para la misma clave; una recarga adicional mantuvo ese contador en dos y aumentó solo consultas (de tres a cuatro). No confundir este ensayo HTTP con Supabase/Calendar reales. Captura privada `reserva-recuperada-recarga-movil.png`.
+- Sin nueva migración, dependencias, Cloud ni despliegue. Cerrar pestaña, borrar almacenamiento o cambiar navegador puede perder la referencia. Pendientes migración de hash autorizada, Auth/PostgREST reales y Calendar: creación atómica paciente/cita, transporte duplicado y resultado de solicitudes aún en curso antes de liberar una clave rechazada.
+
+## Citas: concurrencia real y recuperación pública sin duplicar
+
+- Se reutiliza `crm_citas_no_overlap` y el índice único de `request_id` existentes. Dos conexiones independientes a PostgreSQL 18.3 local comprueban bloqueo/rechazo de inserciones y ediciones solapadas, unicidad de solicitud, horarios contiguos, otro profesional y liberación tras cancelación. Script `scripts/test-appointment-concurrency.mjs`, instancia temporal detenida al finalizar; datos ficticios y SQL real de la aplicación. No acredita Supabase Cloud 17.6, Auth/PostgREST ni Calendar.
+- La reserva pública requiere `Idempotency-Key` UUID v4. Migración local `20261007214504_public_booking_retries.sql`: hash de la solicitud original en la misma fila, vinculado a la clave/profesional/datos/horario. Reintentos recuperan la cita antes de comprobar disponibilidad o crear pacientes/eventos. Claves con otros datos y citas canceladas/reprogramadas a otra hora se rechazan sin recrearlas; conflictos públicos no devuelven identificadores de otros pacientes. Readiness falla si falta la columna.
+- El bloque inicial conservaba clave y cuerpo en memoria ante respuesta perdida, 5xx o éxito incompleto. La recuperación entre recargas se amplía arriba: consulta estado sin reenviar la solicitud. Estados cambiados o Calendar incierto remiten a la clínica; no se persisten datos personales en el navegador.
+- Error SQL tardío de solape responde 409 en público y en el manejador global. Compensación Calendar compartida exige rechazo SQL definitivo, comprueba que el evento no pertenezca a una cita guardada y conserva eventos suministrados por el llamador. Transporte incierto no demuestra rollback y nunca autoriza cancelar el evento. Calendar sigue fuera de la transacción: pueden quedar eventos/pacientes sin cita al fallar o competir; reconciliación y entrega reales siguen pendientes.
+- Fallo original reproducido (500 tras guardado, reintento sin recuperación). Ensayo de copia restaurada pasa recuperación de acuse SQL perdido, cambio de datos/horario/estado, privacidad y validación; nueve regresiones del script de la página. Backend lint/65 pruebas y frontend check/build correctos. Sin cambios Cloud ni despliegue; nueva migración preparada únicamente en local.
+
+## Reserva pública: selección y confirmación protegidas en la interfaz
+
+- Peticiones de horarios conservan fecha/versión; respuestas y errores antiguos no reemplazan el día actual. Fallos de lectura se muestran como error, sin afirmar que no quedan horarios. El paciente debe seleccionar una hora explícitamente y la selección se anuncia mediante `aria-pressed` y etiqueta de intervalo.
+- Durante el envío se bloquean fecha, horarios, contacto y botón; inputs y submits repetidos no generan una segunda petición en curso. La confirmación utiliza una copia del horario enviado, recibe el foco y mantiene la fecha fija. «Reservar otra cita» desbloquea, limpia los datos y exige nueva selección. Un 409 conserva datos y aviso mientras se recargan horarios; una solicitud rechazada restaura controles.
+- Recuperados estilos de botones generados por JavaScript: selectores limitados a `#slotsGrid`, sin depender del atributo de estilos scoped de Astro. Avisos anunciados y separadores legibles; IDs y contrato API conservados.
+- `node scripts/test-public-booking.mjs`: seis regresiones del script real, con respuestas controladas; cinco fallos reproducidos antes del cambio. Navegador a 1280/375 px con API ficticia local: cambios rápidos, fallo de lectura, conflicto, bloqueo, selección, confirmación y reinicio; sin desbordamiento horizontal y botones de horario de más de 44 px. Capturas privadas `reserva-*.png` en `.private-backups/local-validation/`. Backend lint/63 pruebas y frontend check/build correctos.
+- Este bloque anterior validó la interfaz con API ficticia. La persistencia/concurrencia y recuperación entre recargas se describen arriba; Calendar, agenda interna y acabado completo de la página pública siguen pendientes. Sin despliegue ni mensajes; EasyPanel aparcado.
+
+## Ficha clínica: lectura y edición revisadas en web y móvil
+
+- Notas con texto de 16 px y párrafos conservados; resumen, tendencia EVA y registro de sesión separados en superficies claras. Metadatos de 13 px y acciones editar/eliminar de 44 px. Editor con campos de 44 px, nota de 144 px y guardado principal coral; botones completos en móvil y foco visible.
+- Restaurados estilos del feedback compartido: avisos sobre la navegación móvil, cierre de 44 px y texto de 15 px. Errores y advertencias permanecen hasta cierre manual; éxito/información caducan. Sin cambios de contratos DOM, persistencia, esquema ni dependencias.
+- Navegador a 1280/375 px con pacientes ficticios: sin desbordamiento horizontal, foco visible, botón Guardar accesible sobre el dock, historial vacío correcto y nota de voz/estructurada legible. Respuesta perdida tras guardar: formulario conservado, aviso persistente/cerrable y reintento con una sola fila confirmado en SQL local. Capturas en `.private-backups/local-validation/ficha-*-despues.png` y `ficha-aviso-movil.png`.
+- Backend lint y 63/63 pruebas; frontend check/build sin errores/avisos/hints; regresiones de feedback, contexto de ficha y recuperación pasando. El aislamiento bloqueó conexiones HTTP de la suite: la ejecución local autorizada fuera del aislamiento pasó. Auth ficticio/adaptador SQL limitado; no acredita PostgREST ni integraciones reales. Referencias/decisiones y QA registrados en DESIGN. Sin commit, push, mensajes, despliegue ni cambios Cloud; EasyPanel sigue aparcado.
+
+## Respuestas perdidas: recuperación sin duplicados comprobada en local
+
+- Altas de pacientes y notas (manual, voz y mapa) envían un identificador persistido en esta pestaña antes de escribir. Reintentar tras respuesta perdida o recarga recupera el mismo registro. Solo se guardan identificador y fechas técnicas; el texto clínico no se guarda en sessionStorage. Borradores entre dispositivos no se recuperan.
+- Una operación SQL deriva clínica/autor de la sesión, serializa el identificador y registra alta, asignación y auditoría en la misma transacción. Un fallo de auditoría revierte la operación. Cambiar el borrador tras un guardado incierto devuelve el registro anterior autorizado: el formulario conserva los cambios y el siguiente guardado lo actualiza. Una nota eliminada nunca se recrea por un reintento tardío.
+- Migración `20261007201534_clinic_creation_retries.sql` creada con Supabase CLI y ensayada; **no aplicada en Cloud**. Readiness comprueba su RPC sin escribir y bloquea cuando falta. Las altas antiguas sin identificador y las ediciones/bajas conservan su auditoría separada; no se acredita auditoría atómica para ellas.
+- Navegador normal con SQL/RLS locales: nota guardada con respuesta destruida, recarga y reintento dejan una sola fila; modificación desde móvil recupera y actualiza la original. Alta de paciente con respuesta perdida y nombre cambiado termina con una única ficha actualizada. Recibos SQL independientes y capturas privados. Auth ficticio/adaptador limitado: PostgREST y concurrencia entre conexiones reales pendientes.
+- Corregido orden de notas con la misma fecha/hora: creación e ID desempatan antes de paginar; resumen, historial y tendencia muestran la misma última nota. Ensayo EVA 0→4 muestra aumento y la segunda nota como actual, en lugar de una mejoría contradictoria.
+- Backend lint y 63/63 pruebas; frontend check/build sin errores/avisos; regresiones ejecutables de recuperación/ficha y ensayo SQL pasando. Referencias Sleek y REA registradas en DESIGN; REA revisado, no instalado. Sin commit, push, despliegue, mensajes ni cambios Cloud. EasyPanel sigue aparcado.
+
+## Respuestas tardías y fallos de recarga: protección local comprobada
+
+- Cancelada la preparación de la prueba en EasyPanel por decisión del usuario. Continúa el desarrollo local; no se ha desplegado ni actualizado Cloud.
+- Guardados de datos personales, notas manuales, voz y mapa de dolor conservan el paciente y la versión de la ficha. Respuestas de una ficha anterior no cierran borradores nuevos ni aplican datos a otra ficha, incluso al volver al mismo paciente. Recargas de notas fuera de orden conservan la respuesta más reciente.
+- Abrir otra ficha cierra la captura de voz y limpia la selección del mapa. Transcripción/síntesis tardías no rellenan una sesión nueva. Cancelar y reabrir un editor durante un guardado conserva el borrador nuevo.
+- Si la escritura está confirmada y falla la recarga, las notas, el resumen y la tendencia dejan de mostrarse como datos actuales; aparece un aviso de guardado confirmado sin repetición. Edición de paciente usa los campos confirmados por el servidor, actualiza el nombre visible y conserva el resumen clínico calculado, sin depender de otra lectura.
+- `node scripts/test-ficha-save-context.mjs` ejecuta handlers y recarga reales con respuestas controladas; el fallo original cerraba el nuevo editor. Navegador a 1280/375 px con API/SQL/RLS locales: fallo de lectura tras persistir registra una sola nota; respuesta retenida de A conserva el borrador de B. Consultas SQL independientes confirman dos notas ficticias en A, ninguna en B y autor de sesión. Nombre editado en B coincide en ficha y SQL. Captura y recibos privados en `.private-backups/local-validation/`.
+- Backend lint y 61/61 pruebas; frontend check/build sin errores/avisos; regresiones de ficha y diálogo pasando. Auth ficticio y adaptador SQL limitado: PostgREST real, IA/audio reales, auditoría atómica e integraciones siguen pendientes. **Una desconexión antes de recibir confirmación de escritura sigue requiriendo recuperación/idempotencia para impedir duplicados al reintentar**; esta protección no acredita ese caso.
+
+## Guardados de navegador: pacientes y notas verificados en copia local
+
+- Alta y edición de paciente, nota manual con EVA cero, edición desde móvil y borrado con confirmación ejecutados desde la interfaz normal (sin modo demo). Consultas independientes a SQL/API verifican una única nota, autor de sesión, cambios persistidos y resumen vacío tras borrar. Cancelar y Escape conservan la nota; Tab permanece en el diálogo y el foco vuelve a la acción de origen.
+- Corregido solapamiento de la navegación móvil con los botones inferiores: espacio y margen de desplazamiento en el contenedor compartido. A 375 px, el centro del botón Guardar recibe el clic y queda por encima de la barra. Acciones de notas tienen etiquetas accesibles y la fecha de última nota coincide con la hora de sesión mostrada en la tarjeta.
+- Corregido puente de eventos del diálogo compartido: las solicitudes de confirmación anteriores nunca abrían el modal y quedaban pendientes. `node scripts/test-confirm-dialog.mjs` ejecuta el script real; detecta la ausencia anterior del puente y comprueba apertura, retorno booleano/texto, Escape y foco.
+- Ensayo opcional `--browser-records`: routers reales y PostgreSQL/RLS restaurado con adaptador limitado reutilizado; Auth ficticio y red externa bloqueada. API solo en 127.0.0.1:3002; módulos fuera de pacientes/notas responden 503. No acredita Supabase Auth/PostgREST reales, errores de red después del guardado, integraciones ni toda la aplicación.
+- Backend lint y 61/61 pruebas, frontend check/build (0 errores/avisos), regresión de diálogo y ensayo completo SQL pasando. Recibo y capturas privados en `.private-backups/local-validation/`. Sin cambios Cloud ni despliegue. La propuesta de prueba en EasyPanel está aparcada; continuar local según el apartado actual anterior.
+
+## Pacientes y notas: guardado e historial corregidos en local
+
+- Alta con UUID de servidor e INSERT sin RETURNING: la política de propiedad no ve aún la fila nueva durante RETURNING. Fallo previo reproducido y alta/asignación/lectura posteriores comprobadas en PostgreSQL. Fallo de asignación adicional conserva la ficha, avisa y mantiene acceso por su creador.
+- Edición valida nombre/email/nacimiento y devuelve 404 si falta el registro. Baja exclusivamente lógica, comprobando errores; retirados fallback destructivo y borrado de fichas antiguas. Anonimización parcial anterior bloqueada con 409 hasta definir el procedimiento completo.
+- Notas validan texto, fecha y EVA, conservan cero y derivan autor de la sesión; cita comprobada contra paciente. Cambios inexistentes responden 404. Ficha/evolución calculan resumen determinista de las últimas 30 notas actuales con RLS; refleja edición/borrado y queda vacío sin notas. No escribe resúmenes en segundo plano ni añade llamadas IA; voz/ejercicios conservan sus motores.
+- Formularios de datos/notas usan `hidden` nativo y guardados bloquean doble clic. «Editar datos» activa su pestaña para mostrar el formulario desde el resumen. Apertura y cancelación comprobadas en navegador con paciente técnico; nota manual visible a 375 px sin desbordamiento horizontal. Recarga compartida en las cuatro vías de notas distingue persistencia confirmada de fallo de refresco. Respuestas antiguas no sustituyen otra ficha seleccionada después.
+- Backend lint y 61/61 pruebas, frontend check/build y handlers contra SQL/RLS pasando. Escrituras solo con fixtures locales; sin cambios Cloud. Navegador probado según el apartado anterior; pendientes PostgREST real, anonimización completa y auditoría atómica de pacientes/notas: la auditoría antigua separada todavía tolera fallos.
+
+## Bonos y facturas: corrección local, actualización Cloud pendiente
+
+- Migración `20261007154552_financial_integrity.sql` ensayada en la copia restaurada; **no aplicada en Supabase Cloud**. El backend actualizado depende de sus columnas/RPC y readiness devuelve 503 cuando faltan. No desplegar antes de preparar copia válida y obtener autorización específica para esa actualización.
+- Consumo de bono mediante UPDATE atómico: respeta capacidad, estado y fechas; dos solicitudes no pierden descuentos ni sobrepasan el límite. El botón se desactiva durante la operación en escritorio/móvil. Fechas y precios se validan al crear/editar.
+- Emisión, numeración, vínculo de cobros y auditoría en una transacción. Cada cobro se factura una vez; una factura emitida y sus importes no son editables/eliminables por el cliente. Fallo de auditoría revierte toda la emisión. Sesiones sin perfil, anon y service_role no pueden emitir ni consumir bonos.
+- El cobro se interpreta como precio final: no se añade IVA otra vez. Predeterminada exención de fisioterapia sanitaria, con referencia legal en el PDF; otros servicios requieren el tipo que corresponda. Fuentes y referencias de Terrassa en OPERATIONS. No se han cambiado tarifas ni emitido facturas reales.
+- Pendientes identificación fiscal del emisor, conservación de sus datos, rectificativas y adaptación SIF antes del uso fiscal real. Estas correcciones no acreditan cumplimiento fiscal completo. El ensayo utiliza PostgreSQL en memoria y un adaptador de consultas; no acredita concurrencia entre conexiones reales ni escrituras desde navegador.
+
+## Citas, pagos y revisión probados sobre una copia local
+
+- Restaurada una copia separada en `.private-backups/local-validation/flows/`, con comparación de las 31 tablas, las cuatro actualizaciones SQL y asignación de una cuenta Auth ficticia en memoria. Las pruebas llaman a los handlers reales mediante un adaptador limitado de consultas contra PostgreSQL/RLS; no equivalen a escrituras desde navegador ni a una plataforma Supabase local completa.
+- Citas: alta/cancelación, liberación del hueco, rechazo de fechas invertidas/solapamientos y dos reservas concurrentes con una sola cita guardada. Cuando Calendar está configurado, un fallo de lectura impide confirmar disponibilidad; la agenda CRM permanece consultable. Calendar sin conectar mantiene la agenda local operativa.
+- Pagos: alta, edición y lectura con céntimos persistidos en el esquema recuperado. Corregida validación compartida de importe/fecha/método al crear y editar; datos inválidos se rechazan antes de escribir. Pago inexistente devuelve 404 y los resúmenes suman en céntimos sin residuos decimales.
+- Aprobación: fixture técnico con alerta; versiones antiguas y nota insuficiente se rechazan. Revisión válida deriva el profesional y guarda una auditoría; duplicar revisión o modificar contenido aprobado queda bloqueado. No se aprobaron los planes reales de la clínica ni se enviaron mensajes.
+- Verificación fresca: backend lint y 61/61 pruebas, frontend check/build correctos y ensayo SQL financiero/pacientes/notas pasando. Recibo privado `flow-verification.json`, incluido hash del SQL financiero. Pendientes generación IA real, escrituras desde navegador/PostgREST, entregas, facturación fiscal completa y acabado visual completo.
+
+## Validación local con la cuenta real
+
+- Inicio de sesión y lecturas mediante el backend local verificados para Fisioterapia Carla JL. Directorio de 9 fichas (7 CRM y 2 antiguas), agenda semanal y ficha con notas, citas y pagos. Navegación revisada en escritorio de 1440 px y móvil de 375 px sin desbordamiento horizontal en estas vistas; quedan otros módulos y el acabado visual completo.
+- Vista previa privada con escrituras e integraciones salientes bloqueadas: no se crearon citas, pacientes, aprobaciones ni mensajes reales durante esta revisión. Esta comprobación no acredita los flujos completos de escritura.
+- Corregidos el total de informes (35, independiente del límite de la lista reciente), el nombre de la clínica y el estado de Calendar sin conectar. Un lector Calendar fallido o incompleto ya no se interpreta como una agenda vacía ni cancela las citas CRM.
+- EVA ausente se muestra como no disponible; las citas demo quedan fuera de la sesión real. Panel, directorio y ficha excluyen citas pasadas/finalizadas de la próxima sesión. El directorio muestra solo citas de la semana cargada, no toda la agenda futura.
+- Backend: lint y 47/47 pruebas. Frontend: check con 0 errores/avisos/hints y build correcto; pruebas ejecutables de autenticación y selección de próximas citas. Datos antiguos/de prueba conservados; revisar su limpieza por separado antes del uso real.
+
+## Estado Cloud tras la configuración autorizada
+
+- Aplicadas las cuatro actualizaciones y la asignación administrativa en `Fisio-IA-Agent`. Una sola clínica: **Fisioterapia Carla JL**, con una cuenta Auth confirmada y perfil admin. Inicio de sesión real y consulta Auth/PostgREST verificados; sin correo automático, despliegue, cambio de plan ni activación de bots.
+- Conservados 7 pacientes CRM, 18 citas, 35 informes recuperados como borradores y las dos fichas antiguas. Asignación con diez eventos de auditoría, tres restricciones de clínica validadas y exclusión de citas instalada. El usuario no puede modificar su rol, identidad Auth o clínica; anon no accede a pacientes, Vault sigue reservado al servidor y todas las tablas públicas tienen RLS.
+- Copia nueva previa en `.private-backups/2026-10-07T14-06-28-351Z-api/`: restauración y ensayo completos antes de escribir. Comparación posterior de las 31 tablas fuente mediante JSON canónico de PostgreSQL confirma conservación del contenido, excluyendo únicamente los cambios autorizados de cuenta/propietario/estado y timestamps. Recibos, hashes y plan con IDs reales permanecen privados.
+- Sesión real accede a pagos, documentos, notas, ejercicios y comunicaciones de pacientes. Las 22 comunicaciones antiguas sin paciente permanecen guardadas y ocultas por RLS; no se les asignó un paciente por suposición. Revisarlas si deben incorporarse al historial asistencial.
+- Advisors: cinco avisos INFO corresponden a tablas internas sin políticas, deliberadamente reservadas al servidor. Queda el aviso de [protección de contraseñas filtradas desactivada](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection); no se cambió configuración ni plan para resolverlo.
+- Backend: lint y 44/44 pruebas; frontend: check sin errores/avisos/hints y build completado. La base ya tiene V2; EasyPanel todavía ejecuta la aplicación anterior. Faltan validación completa de interfaz, revisión de planes históricos e integraciones y actualización coordinada de la aplicación.
+
+## Decisión de producto
+
+Se aprovecha el proyecto existente para gestionar exclusivamente la clínica del usuario. Prioridad: pacientes e historial, agenda, pagos y planes de ejercicios revisados por el fisioterapeuta, con entrega y reservas por Telegram/WhatsApp. La venta o incorporación de otros centros queda aplazada; no se añaden suscripciones, alta de clínicas ni administración global.
+
+Se conservan los permisos y el aislamiento ya preparados: cada perfil pertenece a una clínica; el administrador gestiona su centro y el fisioterapeuta accede a pacientes propios o asignados. Tener una sola clínica no justifica retirar estas protecciones ni reconstruir el CRM.
+
+### Entorno confirmado y costes
+
+- Captura del usuario: EasyPanel con 2 núcleos, 7,8 GB de RAM (2 GB usados en ese momento) y servicios `fisio-backend`, `fisio-frontend`, n8n y otro proyecto. Es una fotografía del consumo, no una prueba de capacidad o disponibilidad.
+- Consulta inicial de metadatos el 7 de octubre de 2026: proyecto `Fisio-IA-Agent` (`uewhbaejcouenoufuwlq`), región `eu-central-1`, estado `INACTIVE`, organización Free. Tras autorización expresa se reactivó y se verificó `ACTIVE_HEALTHY`; la organización sigue en Free. SQL de solo lectura confirmó PostgreSQL 17.6 y el esquema anterior. No se han leído registros de pacientes ni valores de Vault.
+- Decisión: conservar Supabase Cloud y el VPS existente. No se migra a PostgreSQL independiente ni se instala otro Supabase. OpenWA sigue limitado al piloto; su instalación no se ha activado.
+- No se contratan servicios ni se cambia de plan. La IA de ejercicios, alojamiento y copias tienen que presupuestarse por separado; no se promete coste total cero. Las reservas guiadas locales no añaden llamadas a IA.
+- Corrección de Vault aplicada tras autorización expresa: `public.vault_read_secret(text)` ya no es ejecutable por `anon`/`authenticated`; `service_role` conserva el permiso. SQL confirmó que la definición de la función no cambió y Advisors dejó de señalarla. Se aplicó exclusivamente el contenido de `20261007110637_vault_server_only.sql`, registrado en Cloud como `20261007111313_vault_server_only`. Sin lectura de secretos ni cambios de datos, plan o despliegues.
+
+### Inspección previa y ensayos (histórico anterior a la configuración)
+
+- Inventario agregado: 7 pacientes CRM, 18 citas, 35 recomendaciones, un perfil y ninguna cuenta en `auth.users`. El perfil no está vinculado a una cuenta existente; resolver el acceso y el mapeo explícito antes del despliegue. No se han consultado nombres, diagnósticos ni contactos.
+- Las recomendaciones están en `generada` (34) o `requiere_revision` (1); las 35 tienen un informe persistido en comunicaciones. No hay planes aprobados/enviados que deban perder su aprobación en esta fotografía. El endurecimiento pendiente convierte `generada` a `requiere_revision`. Consulta agregada sin solapamientos de citas; no sustituye la restricción SQL frente a nuevas reservas concurrentes.
+- Copia lógica del CRM creada usando el acceso de gestión existente, sin contraseña PostgreSQL nueva: `.private-backups/2026-10-07T13-03-57-819Z-api/`, excluida de Git. Incluye estructura/datos de las 31 tablas públicas, funciones, secuencias, restricciones, índices, triggers, políticas/permisos, metadatos del bucket e historial. Un único SELECT de solo lectura captura los datos; checksum SHA-256 verificado. No es una copia completa de Supabase: excluye valores Vault, configuración externa y componentes internos. Auth tiene cero cuentas y Storage cero objetos.
+- Restauración local comprobada con PGlite: cada fila de las 31 tablas coincide con la copia original; políticas restauradas y permisos de Vault conservados. Endurecimiento `20260901` y las tres migraciones V2 pasan sobre esa estructura/datos reales. Se conservan los registros, se recuperan los 35 informes y se instala la exclusión de citas. Los datos antiguos siguen sin clínica y ocultos hasta su asignación explícita. Manifiesto y verificaciones privadas guardan hashes de los SQL ensayados; Cloud no se ha modificado.
+- Preparada asignación para `Fisioterapia Carla JL` y el correo de acceso indicado por el usuario, como administradora. Plan con identificadores exactos en la carpeta privada de la copia; cuenta Auth todavía sin crear. `database/setup/assign_single_clinic.sql` conserva los dos propietarios existentes y asigna explícitamente los cinco pacientes sin creador al perfil existente, sin cambiar sus IDs ni duplicar las dos fichas del esquema antiguo. Vincula ambos perfiles a la misma cuenta y registra diez eventos de auditoría.
+- Ensayo de esa asignación sobre la copia real: sesión SQL de administradora ve 7 pacientes CRM, 18 citas, 35 planes y las dos fichas antiguas. Se conserva el contenido de las tablas no afectadas, se validan las tres restricciones de clínica y se bloquean cambios del propio rol/identidad/clínica, sesiones sin perfil y clínica inactiva. Un fallo de auditoría revierte toda la asignación; configuración incorrecta, inventario diferente o repetición se rechazan. Es una prueba SQL con cuenta Auth ficticia en memoria: acceso real Auth/PostgREST pendiente. Consulta Cloud posterior confirma que siguen sin existir cuenta ni tabla de clínicas.
+- 15 migraciones registradas tras la corrección de Vault; las tres V2 funcionales locales no están aplicadas. Faltan `crm_clinicas`, pertenencia de perfiles/pacientes, `report_snapshot`, `report_version`, RPC de revisión y las tres tablas de mensajería. No desplegar el backend local sobre esta base sin preparación coordinada.
+- 31 tablas públicas tienen RLS, pero esto no prueba que sus permisos sean correctos: `crm_pacientes` no tiene política SELECT para usuarios autenticados; diez tablas tienen RLS sin políticas. Algunas son deliberadamente de servidor, otras afectan a pagos, bonos, facturas e historial y deben revisarse.
+- No están instalados `btree_gist`, el esquema `private` ni ninguna restricción de exclusión en `crm_citas` que evite solapamientos.
+- El preflight antiguo enumera tres tablas ausentes (`crm_sesiones`, `crm_notas_seguimiento`, `eventos_visualizacion_video`) y cuatro columnas de la tabla de vídeo ausente. Revisar dependencias; no crear módulos de vídeo ni tablas opcionales por cumplir esa lista.
+- Advisors después de la corrección: Vault ya no aparece; quedan dos helpers privilegiados (`get_my_profesional_id`, `get_my_profile_id`), `search_path` mutable en `crm_set_updated_at` y diez tablas con RLS sin políticas. Revisar cada caso; no se han aplicado las otras migraciones ni cambiado estos permisos.
+
+### Mensajería y reservas solicitadas
+
+Telegram y WhatsApp deben permitir entregar los planes revisados y reservar citas mediante un agente conectado a la agenda de la clínica. Ambos canales utilizarán las mismas reglas de disponibilidad y confirmación; la identidad del paciente, los informes y la configuración de cada canal deben mantenerse dentro de su clínica.
+
+Decisión del usuario: OpenWA solo para piloto; se mantiene la API oficial de Meta como propuesta para producción. El conector y el flujo de reservas guiadas están preparados en local para una clínica. No se ha instalado OpenWA, conectado ningún número ni enviado mensajes reales. Véase [PILOTO_MENSAJERIA.md](PILOTO_MENSAJERIA.md) para alcance, configuración y límites.
+
+## Primer incremento: aislamiento por clínica
+
+- Migración `database/migrations/20261007091159_clinic_isolation.sql`: clínicas, pertenencia de perfiles/pacientes/asignaciones, RLS y claves foráneas que impiden vincular pacientes y profesionales de centros distintos.
+- La sesión obtiene la clínica del perfil almacenado. El cliente no puede elegirla enviando un identificador. Un perfil sin clínica activa no accede al CRM.
+- Eliminado el acceso privilegiado con `dev-token`, también en desarrollo. La demostración visual requiere modo de desarrollo y activación explícita; un catálogo real pequeño o vacío ya no se sustituye por pacientes ficticios.
+- Reservas públicas: requieren un profesional explícito y buscan/crean pacientes dentro de su clínica. Los datos de contacto proceden del centro asociado.
+- La migración conserva los datos existentes sin asignarles una clínica por suposición. Quedan ocultos hasta completar su asignación administrativa.
+- Reparado el lockfile del frontend con la versión que realmente incluye el paquete opcional de Tailwind; instalación limpia con `npm ci --offline` verificada.
+
+## Verificación
+
+- Backend: lint limpio y 50/50 pruebas pasando.
+- PostgreSQL en memoria (PGlite): ejecución de los esquemas y migraciones reales; dos clínicas, administradores, fisioterapeutas, pacientes y seis tablas relacionadas. Se verifica lectura/escritura cruzada denegada, prevención de autoasignación y conservación de datos antiguos.
+- Frontend: chequeo Astro con 0 errores, 0 avisos y 0 hints; compilación estática de cuatro páginas completada. Pruebas ejecutables de autenticación y próximas citas: producción ignora demo, localhost exige sesión, contexto conserva clínica y fechas pasadas/inválidas o estados finalizados no se presentan como próximas citas.
+- SQL y asignación ya aplicados en Supabase Cloud, con Auth/PostgREST verificados según el estado actual anterior. EasyPanel sigue sin actualizar; integraciones y flujos completos pendientes.
+
+## Segundo incremento: aprobación y entrega clínica
+
+- La aprobación se realiza mediante `review_exercise_recommendation`, con sesión profesional activa, permisos sobre el paciente, versión vigente, ejercicios persistidos válidos y justificación de al menos 12 caracteres ante alertas.
+- El informe completo y las pautas editadas se guardan en `crm_recomendaciones.report_snapshot`; aprobar congela su contenido y sus ejercicios. La auditoría se registra en la misma transacción y conserva el informe revisado. Si falla, tampoco se aprueba.
+- Seguimiento registra observaciones, adherencia y dolor; no cambia estados. La API directa de Supabase tampoco puede aprobar, falsificar el revisor, quitar alertas originales ni alterar/eliminar un plan aprobado.
+- PDF y Telegram comparten la lectura del contenido aprobado: paciente, ejercicios, pautas y mensaje no proceden del cuerpo enviado por el navegador. Las imágenes se resuelven desde el catálogo/media, con URLs firmadas renovadas cuando corresponde.
+- El envío utiliza el vínculo Telegram guardado. Solo el servidor registra `enviada` después de que Telegram confirme el documento. Si falla ese registro tras entregar, devuelve un aviso para no repetir el envío. El bot profesional devuelve los nuevos planes como borradores de texto, sin PDF previo a aprobación.
+- Migración `20261007094023_clinical_approval_integrity.sql` aplicada. En esta base no había planes aprobados/enviados; los 35 requieren revisión profesional. La migración conserva en auditoría los estados/firmas previos cuando existen y mantiene los eventos históricos de comunicación.
+- Pruebas ejecutadas: handlers reales del backend con dobles locales de API/base de datos; PDF real decodificado; rechazo de inyección de contenido y destinatario; errores de entrega/registro. SQL real en PGlite prueba permisos, cambios de versión, alertas, duplicados, inmutabilidad y rollback ante fallo de auditoría. No se han enviado mensajes reales.
+
+## Bloqueos para producción
+
+La auditoría del 7 de octubre detectó problemas que los checkpoints históricos no cubrían. Sus afirmaciones de preparación para producción y de aprobación clínica inviolable no describen el estado actual.
+
+1. Resolver los permisos funcionales y avisos restantes de la base. Supabase ya está disponible y la función de Vault tiene acceso exclusivo del servidor. Comprobar los destinos de Calendar, Telegram y n8n de la única clínica, incluido el destino de respaldo del bot profesional y los vínculos antiguos. Separar credenciales y procesos de varios centros queda aplazado hasta que se solicite esa expansión.
+2. Validar guardados con PostgREST real y fallos de recarga/red; endurecer auditoría de pacientes/notas. Alta/edición y notas de interfaz ya ensayadas en copia local. Definir supresión de identidad completa antes de habilitarla. Preparar configuración fiscal y aplicación autorizada del SQL financiero antes del uso real.
+3. Migraciones, asignación y acceso Auth/PostgREST comprobados. Validar apertura y nueva revisión de planes históricos con la aplicación actualizada antes del uso real.
+4. Validar flujos completos y acabado visual en escritorio/móvil con estados de carga, vacío y error reales. Las pruebas locales de esta fase no equivalen a validar toda la aplicación en producción.
+
+## Próximo paso
+
+Revisar los flujos de edición/guardado de la interfaz antes de finalizar el acabado visual. Preparar copia de seguridad actual, configuración fiscal y actualización financiera antes de solicitar acciones concretas en Supabase/EasyPanel. Cuenta y base V2 ya configuradas con autorización; no repetir esas migraciones ni la asignación. Revisar además el vínculo Telegram profesional antiguo y los dos vínculos de pacientes antes de activar integraciones. No hay autorización para esta nueva migración, despliegues, cambios de plan ni conexión/activación de números o bots.
+
+## Tercer incremento: piloto de mensajería
+
+- OpenWA habilitado solo mediante flag y configuración explícita de clínica, profesional y sesión. Webhook HMAC sobre bytes originales; una clave interna no sustituye su firma. No se confían clínica, profesional, teléfono ni contenido clínico enviados por el navegador.
+- Invitaciones temporales de un uso con consentimiento y baja. Vínculos, procesamiento de eventos y entregas son registros del servidor, con lecturas profesionales limitadas por RLS y claves foráneas por clínica/paciente.
+- Reservas guiadas compartidas en Telegram/WhatsApp para pacientes registrados y asignados: consulta de huecos, elección y confirmación explícita. Reutilizan el creador de citas del CRM; deduplicación persistida, selección con versión y exclusión SQL frente a solapamientos. Este incremento no incorpora conversación libre con un modelo de IA ni altas/cambios/cancelaciones automáticos.
+- PDF de WhatsApp desde el informe aprobado y destinatario vinculado. Aceptación y entrega son estados diferentes; recibos firmados confirman entrega/lectura. Los reintentos no repiten planes; resultados inciertos requieren revisión manual.
+- Botón WhatsApp en el resumen del paciente para invitación, envío y consulta. Invitaciones Telegram del piloto disponibles por API; su incorporación a la ficha y la comprobación visual siguen pendientes.
+- Migración `20261007101248_messaging_pilot.sql` aplicada en Supabase Cloud después del ensayo en PostgreSQL en memoria. Contratos HTTP probados con Express y servicios simulados. Piloto desactivado, sin despliegue en EasyPanel ni conexión real de números/bots.
+- Próximo paso del piloto: concretar entorno de pruebas, clínica/profesional y número/bot de pruebas, antes de solicitar despliegues o conexiones reales. Calendar/n8n siguen con configuración global; no activar este piloto para varias clínicas.
+
+## Contratos que se mantienen
+
+- Revisión profesional antes de entregar recomendaciones; justificación documentada ante alertas clínicas.
+- IDs y atributos `data-*` de las vistas para su hidratación.
+- DM Sans, lienzos cálidos, Canopy Green y coral reservado a la acción principal.
+- Secretos fuera del repositorio; commits, pushes y despliegues requieren autorización explícita.

@@ -1,0 +1,489 @@
+/* ==========================================================================
+   FISIO CLINICAL — PRECISION WORKSPACE FICHA PACIENTE (v5.0)
+   Patient Workspace, Clinical Timeline, Vitals & Anatomical Pain Map
+   ========================================================================== */
+
+.ficha-workspace {
+  background: var(--color-canvas, #f4f7fb);
+  min-height: 100%;
+  width: 100%;
+  color: var(--color-ink, #142234);
+}
+
+/* === TOPBAR & NAV === */
+.ficha-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border, #dce3ed);
+  flex-wrap: wrap;
+}
+
+.ficha-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-secondary, #334155);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.ficha-back-btn:hover {
+  background: var(--color-surface-hover, #f1f5f9);
+  color: var(--color-ink, #142234);
+}
+
+.ficha-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* === CLINICAL CONTEXT HERO === */
+.ficha-hero-panel {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-md, 10px);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .ficha-hero-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ficha-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ficha-hero-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-brand-primary, #175dd0);
+}
+
+.ficha-hero-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-ink, #142234);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.ficha-hero-summary {
+  font-size: 0.9375rem;
+  color: var(--color-ink-secondary, #334155);
+  margin: 0;
+  font-weight: 500;
+}
+
+.ficha-hero-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted, #536375);
+}
+
+.ficha-hero-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ficha-hero-contact-item span.material-symbols-rounded {
+  font-size: 18px;
+  color: var(--color-ink-muted, #536375);
+}
+
+.ficha-hero-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+/* === QUICK FACTS / VITALS GRID === */
+.ficha-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ficha-vital-card {
+  background: var(--color-surface-subtle, #f4f7fb);
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ficha-vital-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted, #536375);
+}
+
+.ficha-vital-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-ink, #142234);
+  letter-spacing: -0.01em;
+}
+
+.ficha-vital-meta {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted, #536375);
+  margin: 0;
+  white-space: normal;
+}
+
+/* === TABS NAVIGATION === */
+.ficha-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-md, 10px) var(--radius-md, 10px) 0 0;
+  border-bottom: 1px solid var(--color-border, #dce3ed);
+  padding: 0 0.5rem;
+  overflow-x: auto;
+}
+
+.ficha-tab {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-secondary, #334155);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.ficha-tab:hover {
+  color: var(--color-ink, #142234);
+}
+
+.ficha-tab.active,
+.ficha-tab[aria-selected="true"] {
+  color: var(--color-brand-primary, #175dd0);
+  font-weight: 600;
+  border-bottom-color: var(--color-brand-primary, #175dd0);
+}
+
+/* === WORKSPACE MAIN CONTENT === */
+.ficha-workspace-body {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #dce3ed);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md, 10px) var(--radius-md, 10px);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
+}
+
+.ficha-panel {
+  display: none;
+}
+
+.ficha-panel.active {
+  display: block;
+}
+
+/* === CLINICAL NOTE CARD === */
+.ficha-nota-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-md, 10px);
+  padding: 1.15rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  position: relative;
+  transition: border-color 0.15s ease;
+}
+
+.ficha-nota-card:hover {
+  border-color: var(--color-border-medium, #cbd5e1);
+}
+
+.ficha-nota-header {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ficha-nota-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink, #142234);
+}
+
+.ficha-nota-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.ficha-nota-text {
+  grid-column: 1 / -1;
+  max-width: 70ch;
+  font-size: 16px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--color-ink-secondary, #334155);
+}
+
+.ficha-nota-pruebas {
+  grid-column: 1 / -1;
+  background: var(--color-surface-subtle, #f4f7fb);
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.65rem 0.85rem;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--color-ink-secondary, #334155);
+}
+
+.ficha-nota-actions {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ficha-nota-actions button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  color: var(--color-ink-secondary);
+  cursor: pointer;
+}
+
+.ficha-nota-actions button:hover { background: var(--color-surface-hover); }
+
+/* Clinical reading and editing share the existing workspace controls. */
+.ficha-notes-heading,
+.ficha-clinical-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ficha-notes-heading h2 { font-size: 18px; line-height: 1.4; }
+.ficha-notes-heading p,
+.ficha-clinical-caption,
+.ficha-clinical-updated { font-size: 13px; line-height: 1.5; color: var(--color-ink-muted); }
+.ficha-notes-heading p { margin-top: 0.35rem; }
+.ficha-panel[data-ficha-panel="notas"] > * + * { margin-top: 1.5rem; }
+
+.ficha-clinical-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.ficha-summary-card,
+.ficha-note-editor {
+  min-width: 0;
+  padding: 1.25rem;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.ficha-clinical-card-heading h3,
+.ficha-note-editor h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.ficha-clinical-card-heading .material-symbols-rounded { font-size: 20px; color: var(--color-brand-primary); }
+.ficha-clinical-caption { margin-top: 0.5rem; }
+#fichaLongitudinalSummaryText { margin-top: 0.85rem; font-size: 16px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 70ch; }
+#fichaPainTrendTimeline { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
+.ficha-eva-point { display: grid; gap: 0.5rem; min-width: 7rem; padding: 0.85rem; background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
+.ficha-eva-date, .ficha-eva-zone { font-size: 13px; color: var(--color-ink-secondary); }
+.ficha-eva-zone { overflow-wrap: anywhere; }
+#fichaNotasTimeline { display: grid; gap: 1rem; }
+#fichaNotasSummary { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ficha-summary-chip,
+.ficha-nota-zona,
+.ficha-nota-eva { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.5rem; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.4; background: var(--color-neutral-bg, #f1f5f9); color: var(--color-ink-secondary); }
+.ficha-nota-zona .material-symbols-rounded { font-size: 16px; }
+.ficha-nota-eva { font-weight: 700; }
+#fichaPainTrendBadge { font-size: 13px; }
+.ficha-nota-eva.eva-low { color: #166534; background: #dcfce7; }
+.ficha-nota-eva.eva-mid { color: #9a3412; background: #ffedd5; }
+.ficha-nota-eva.eva-high { color: #991b1b; background: #fee2e2; }
+
+#fichaNotaForm { display: grid; gap: 1.25rem; margin-top: 1.25rem; }
+.ficha-note-field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+#fichaNotaForm .precision-field > span { font-size: 14px; line-height: 1.5; color: var(--color-ink-secondary); }
+#fichaNotaForm .precision-input,
+#fichaNotaForm .precision-select { width: 100%; min-width: 0; min-height: 44px; font-size: 16px; }
+#fichaNotaForm textarea.precision-input { height: auto; min-height: 5.5rem; padding: 0.75rem; line-height: 1.6; resize: vertical; }
+#fichaNotaForm textarea[name="nota"] { min-height: 144px; }
+.ficha-note-form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.75rem; padding-top: 0.25rem; }
+.ficha-notes-heading button,
+.ficha-note-form-actions button { min-height: 44px; font-size: 14px; }
+#fichaNotaForm button[type="submit"] { background: #ff643b; color: var(--color-ink); border-color: #ff643b; }
+#fichaNotaForm button[type="submit"]:hover { background: #f0542f; border-color: #f0542f; }
+.ficha-panel[data-ficha-panel="notas"] :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--color-border-focus, #175dd0); outline-offset: 3px; }
+
+@media (max-width: 767px) {
+  .ficha-workspace-body { padding: 1rem; }
+  .ficha-clinical-overview, .ficha-note-field-row { grid-template-columns: minmax(0, 1fr); }
+  .ficha-summary-card, .ficha-note-editor, .ficha-nota-card { padding: 1rem; }
+  .ficha-note-form-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .ficha-note-form-actions button { width: 100%; }
+}
+
+.ficha-note-action-icon {
+  font-size: 16px;
+  color: var(--color-ink-muted, #536375);
+  cursor: pointer;
+}
+
+.ficha-note-action-icon:hover {
+  color: var(--color-ink, #142234);
+}
+
+/* === PAIN MAP STYLING === */
+.pain-map-card {
+  background: #ffffff !important;
+  border: 1px solid var(--color-border, #dce3ed) !important;
+  border-radius: var(--radius-md, 10px) !important;
+  padding: 1.25rem !important;
+}
+
+.pain-map-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.pain-map-visual {
+  flex: 0 0 160px;
+  background: var(--color-surface-subtle, #f4f7fb);
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-md, 10px);
+  padding: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pain-map-svg {
+  width: 100%;
+  max-width: 120px;
+  height: auto;
+}
+
+.pain-zone-path {
+  fill: #cbd5e1;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.pain-zone-path:hover {
+  fill: #0284c7;
+}
+
+.pain-zone-path.is-selected {
+  fill: #175dd0;
+}
+
+.pain-zone-path.is-pain-high {
+  fill: #ef4444;
+}
+
+.pain-zone-path.is-pain-mid {
+  fill: #f59e0b;
+}
+
+.pain-zone-path.is-pain-low {
+  fill: #10b981;
+}
+
+/* === TABLES IN FICHA (CITAS, PAGOS) === */
+.ficha-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: var(--radius-md, 10px);
+}
+
+.ficha-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.ficha-table th {
+  background: var(--color-surface-subtle, #f4f7fb);
+  color: var(--color-ink-muted, #536375);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-border, #dce3ed);
+}
+
+.ficha-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-ink, #142234);
+  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  vertical-align: middle;
+}
+
+.ficha-table tr:hover td {
+  background: var(--color-surface-subtle, #f4f7fb);
+}

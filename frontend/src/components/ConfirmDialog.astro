@@ -3,7 +3,7 @@
 ---
 
 <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="confirmDialog" aria-hidden="true">
-  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+  <div role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage" class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
     <div class="px-6 py-5 border-b border-gray-100 flex items-start gap-4 bg-gray-50">
       <div class="bg-white p-2 rounded-full shadow-sm border border-gray-100">
         <span class="material-symbols-rounded text-emerald-600 text-[24px]" id="confirmIcon">help</span>
@@ -39,6 +39,33 @@
   const confirmInputField = document.getElementById('confirmInputField');
   const confirmInput = document.getElementById('confirmInput') as HTMLInputElement;
   const confirmInputLabel = document.getElementById('confirmInputLabel');
+  let previousFocus: HTMLElement | null = null;
+
+  document.addEventListener('fisio:open-confirm', (event: Event) => {
+    if (!modalState.get().confirm.isOpen) previousFocus = document.activeElement as HTMLElement | null;
+    const options = (event as CustomEvent).detail?.options || {};
+    modalState.setKey('confirm', { isOpen: true, options });
+  });
+  document.addEventListener('fisio:close-confirm', () => {
+    modalState.setKey('confirm', { isOpen: false, options: {} });
+    previousFocus?.focus();
+    previousFocus = null;
+  });
+  document.addEventListener('keydown', (event) => {
+    if (!modalState.get().confirm.isOpen) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      document.dispatchEvent(new CustomEvent('fisio:close-confirm', { detail: { value: false } }));
+    }
+    if (event.key === 'Tab') {
+      const controls = [confirmInputField?.hidden ? null : confirmInput, confirmCancelBtn, confirmOkBtn].filter(Boolean) as HTMLElement[];
+      const first = controls[0], last = controls[controls.length - 1];
+      if ((event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first)?.focus();
+      }
+    }
+  });
 
   modalState.subscribe((state) => {
     if (!confirmDialog || !inner) return;

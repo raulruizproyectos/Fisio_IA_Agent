@@ -171,11 +171,13 @@ async function fetchImageBuffer(url) {
   for (const candidate of [source, encodeURI(source)]) {
     try {
       const headers = { Accept: 'image/png,image/jpeg,image/*' };
-      if (serviceKey && supabaseBase && candidate.startsWith(supabaseBase)) {
+      const target = new URL(candidate);
+      if (!['http:', 'https:'].includes(target.protocol)) continue;
+      if (serviceKey && supabaseBase && target.origin === new URL(supabaseBase).origin) {
         headers['Authorization'] = `Bearer ${serviceKey}`;
         headers['apikey'] = serviceKey;
       }
-      const res = await fetch(candidate, { signal: AbortSignal.timeout(12000), redirect: 'follow', headers });
+      const res = await fetch(candidate, { signal: AbortSignal.timeout(12000), redirect: 'error', headers });
       if (!res.ok) continue;
       const arr = await res.arrayBuffer();
       if (!arr.byteLength) continue;

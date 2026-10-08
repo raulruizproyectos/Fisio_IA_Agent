@@ -9,7 +9,7 @@
       <div>
         <span class="clinic-kicker">Directorio clínico</span>
         <h1>Pacientes</h1>
-        <p>Busca, filtra y abre cada caso sin perder el contexto asistencial.</p>
+        <p>Directorio asistencial completo, gestión de expedientes y seguimiento clínico.</p>
       </div>
       <div class="patient-workspace-actions">
         <button id="addPatientBtn" type="button" class="patient-primary-action">
@@ -27,40 +27,39 @@
     </header>
 
     <div class="patient-vitals" aria-label="Resumen de pacientes">
-      <article>
+      <article class="vitals-total">
         <span>Total activo</span>
         <strong id="patientsTotalValue">0</strong>
         <p id="patientsTotalMeta">Cargando base clínica…</p>
       </article>
-      <article>
+      <article class="vitals-reach">
         <span>Contacto útil</span>
         <strong id="patientsReachValue">0%</strong>
         <p id="patientsReachMeta">Midiendo correo y teléfono disponibles.</p>
       </article>
-      <article>
+      <article class="vitals-urgent">
+        <span>Atención clínica</span>
+        <strong id="patientsAttentionValue">0</strong>
+        <p id="patientsAttentionMeta">Casos con dolor agudo (EVA ≥ 7).</p>
+      </article>
+      <article class="vitals-recent">
         <span>Altas recientes</span>
         <strong id="patientsRecentValue">0</strong>
-        <p id="patientsRecentMeta">Sin lectura todavía.</p>
+        <p id="patientsRecentMeta">Altas en los últimos 30 días.</p>
       </article>
     </div>
 
     <section class="patient-directory-toolbar" aria-label="Filtros de pacientes">
-      <label class="patient-directory-search" for="patientsFilterInput">
-        <span class="material-symbols-rounded" aria-hidden="true">search</span>
-        <input type="search" id="patientsFilterInput" name="busqueda_paciente" placeholder="Buscar por nombre, correo, teléfono o ID…" autocomplete="off" />
-      </label>
-
-      <div class="patient-directory-controls">
-        <div class="patient-segments" id="patientsSegmented">
-          <button type="button" data-patient-filter="all" aria-pressed="true">Todos</button>
-          <button type="button" data-patient-filter="contactable">Contactables</button>
-          <button type="button" data-patient-filter="incomplete">Incompletos</button>
-          <button type="button" data-patient-filter="recent">Recientes</button>
-        </div>
+      <div class="patient-directory-toolbar-top">
+        <label class="patient-directory-search" for="patientsFilterInput">
+          <span class="material-symbols-rounded" aria-hidden="true">search</span>
+          <input type="search" id="patientsFilterInput" name="busqueda_paciente" placeholder="Buscar por nombre, DNI, teléfono, email o patología…" autocomplete="off" />
+        </label>
         <label class="patient-sort" for="patientsSortSelect">
           <span class="sr-only">Orden de pacientes</span>
           <select id="patientsSortSelect" aria-label="Orden de pacientes">
             <option value="recent_desc">Más recientes</option>
+            <option value="eva_desc">Mayor dolor (EVA)</option>
             <option value="readiness">Priorizar incompletos</option>
             <option value="name_asc">Nombre A-Z</option>
             <option value="name_desc">Nombre Z-A</option>
@@ -68,26 +67,39 @@
           <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
         </label>
       </div>
+
+      <div class="patient-directory-toolbar-bottom">
+        <div class="patient-segments" id="patientsSegmented">
+          <button type="button" data-patient-filter="all" aria-pressed="true">Todos</button>
+          <button type="button" data-patient-filter="active">En tratamiento</button>
+          <button type="button" data-patient-filter="attention">Atención clínica</button>
+          <button type="button" data-patient-filter="contactable">Contactables</button>
+          <button type="button" data-patient-filter="incomplete">Incompletos</button>
+          <button type="button" data-patient-filter="recent">Recientes</button>
+        </div>
+      </div>
     </section>
 
+
     <section class="patient-directory">
-      <header>
+      <header class="patient-directory-head-bar">
         <div>
-          <h2>Listado clínico</h2>
+          <h2>Expedientes clínicos registrados</h2>
           <p id="patientsListMeta">Cargando pacientes del CRM…</p>
         </div>
-        <span id="patientsFilterChip">Todos los pacientes</span>
+        <span id="patientsFilterChip" class="patient-filter-chip">Todos los pacientes</span>
       </header>
 
       <div class="patient-directory-body" id="pacientesBody">
-        <div class="patient-directory-loading">
-          <span class="material-symbols-rounded" aria-hidden="true">hourglass_empty</span>
+        <div class="patient-loading-state">
+          <span class="material-symbols-rounded animate-spin" aria-hidden="true">sync</span>
           <p>Cargando pacientes…</p>
         </div>
       </div>
     </section>
   </section>
 </div>
+
 
 <!-- Modal -->
 <div class="patient-modal-overlay opacity-0 pointer-events-none" id="patientModal" aria-hidden="true">

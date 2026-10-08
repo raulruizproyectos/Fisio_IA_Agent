@@ -1,0 +1,113 @@
+/* ==========================================================================
+   FISIO CLINICAL — PRECISION MESSAGES / INTAKES (v5.0)
+   Covers: Triage Clínico, Bandeja de Entrada, Mensajes
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   ========================================================================== */
+
+.intakes-page {
+  background: var(--surface-page-canvas, #f4f7fb) !important;
+  min-height: 100%;
+}
+
+.intakes-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.intakes-card {
+  background: #ffffff !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.intakes-toolbar {
+  padding: 1rem 1.25rem !important;
+  border-bottom: 1px solid #dce3ed !important;
+}
+
+.intakes-filterbar select {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  color: #142234 !important;
+  font-size: 0.8125rem !important;
+  padding: 0.45rem 2rem 0.45rem 2.25rem !important;
+}
+
+.intakes-filterbar select:focus {
+  border-color: #175dd0 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(23, 93, 208, 0.15) !important;
+}
+
+.intakes-table-wrap {
+  overflow-x: auto;
+}
+
+.intakes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.intakes-table thead {
+  background: #f4f7fb;
+  border-bottom: 1px solid #dce3ed;
+}
+
+.intakes-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.intakes-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.intakes-table tbody tr:hover {
+  background: #f4f7fb;
+}
+
+/* Priority & Channel Badges */
+.intake-priority-high {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.intake-priority-normal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.intake-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #f0f9ff;
+  color: #0369a1;
+}

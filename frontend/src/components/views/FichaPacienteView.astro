@@ -3,79 +3,98 @@
 ---
 
 <!-- === PAGE: FICHA PACIENTE (detalle) === -->
-<div class="page-section min-h-full py-6 px-4 md:px-8 lg:px-12 flex flex-col space-y-6 text-charcoal" data-page="ficha-paciente">
+<div class="page-section ficha-workspace min-h-full py-6 px-4 md:px-8 lg:px-10 flex flex-col space-y-6" data-page="ficha-paciente">
   
-  <!-- Minimalist Topbar -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-black/[0.08] pb-4">
-    <div class="flex items-center gap-4">
-      <button class="flex items-center gap-1.5 text-slate-600 hover:text-black transition-colors font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-black/5" id="fichaBackBtn">
-        <span class="material-symbols-rounded text-lg">arrow_back</span> Volver a Pacientes
+  <!-- Precision Topbar -->
+  <header class="ficha-topbar">
+    <div class="flex items-center gap-3">
+      <button class="ficha-back-btn" id="fichaBackBtn" type="button">
+        <span class="material-symbols-rounded">arrow_back</span>
+        <span>Volver a Pacientes</span>
       </button>
-      <h1 class="text-2xl font-bold text-black flex items-center gap-2" id="fichaTitulo">
-        <span class="material-symbols-rounded text-[#0a3922]">person</span> Ficha clínica
+      <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2" id="fichaTitulo">
+        <span class="material-symbols-rounded text-sky-700">person</span> Ficha clínica
       </h1>
     </div>
-    <div class="flex items-center gap-3">
-      <button class="flex items-center gap-2 text-sm font-semibold text-black bg-white border border-black/10 hover:bg-black/5 px-4 py-2 rounded-full shadow-sm transition-all" id="fichaEditToggle">
-        <span class="material-symbols-rounded text-[18px]">edit</span> Editar datos
+    <div class="ficha-topbar-actions">
+      <button type="button" class="precision-btn-primary" id="btnVoiceSessionNote">
+        <span class="material-symbols-rounded">mic</span>
+        <span>Registrar por voz</span>
+      </button>
+      <button type="button" class="precision-btn-secondary" id="fichaEditToggle">
+        <span class="material-symbols-rounded">edit</span>
+        <span>Editar datos</span>
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- Clinical Context (Flotante y Minimalista) -->
-  <section class="bg-white rounded-3xl p-6 border border-black/[0.06] shadow-sm flex flex-col lg:flex-row gap-8 text-charcoal">
-    <div class="flex-1 space-y-4">
+  <!-- Clinical Context Hero (Precision Panel) -->
+  <section class="ficha-hero-panel">
+    <div class="ficha-hero-info">
       <div>
-        <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Contexto Clínico</span>
-        <h2 class="text-3xl font-extrabold text-black mt-1" id="fichaHeroName">Paciente no cargado</h2>
-        <p class="text-slate-600 font-normal mt-2" id="fichaHeroSummary">Selecciona un paciente para ver un resumen ejecutivo del caso, continuidad clínica y próximas acciones.</p>
+        <span class="ficha-hero-kicker">Expediente Clínico</span>
+        <h2 class="ficha-hero-name" id="fichaHeroName">Cargando paciente...</h2>
+        <p class="ficha-hero-summary" id="fichaHeroSummary">Resumen del caso, continuidad asistencial y evolución clínica.</p>
       </div>
-      <div class="flex flex-wrap gap-4 text-sm text-slate-600">
-        <span class="flex items-center gap-1.5"><span class="material-symbols-rounded text-[18px] text-slate-500">mail</span><span id="fichaHeroEmail">Sin email</span></span>
-        <span class="flex items-center gap-1.5"><span class="material-symbols-rounded text-[18px] text-slate-500">call</span><span id="fichaHeroPhone">Sin teléfono</span></span>
-        <span class="flex items-center gap-1.5"><span class="material-symbols-rounded text-[18px] text-slate-500">badge</span><span id="fichaHeroProfile">Sin datos clave</span></span>
+
+      <div class="ficha-hero-contact-row">
+        <span class="ficha-hero-contact-item">
+          <span class="material-symbols-rounded">mail</span>
+          <span id="fichaHeroEmail">Sin email</span>
+        </span>
+        <span class="ficha-hero-contact-item">
+          <span class="material-symbols-rounded">call</span>
+          <span id="fichaHeroPhone">Sin teléfono</span>
+        </span>
+        <span class="ficha-hero-contact-item">
+          <span class="material-symbols-rounded">badge</span>
+          <span id="fichaHeroProfile">DNI pendiente</span>
+        </span>
       </div>
-      <div class="flex flex-wrap gap-3 pt-2">
-        <button class="flex items-center gap-2 bg-[#ff643b] hover:bg-[#e8532c] text-white px-5 py-2.5 rounded-full font-semibold transition-colors shadow-sm" type="button" id="fichaHeroCopilotBtn">
-          <span class="material-symbols-rounded text-[20px]">exercise</span> Informe Clínico
+
+      <div class="ficha-hero-quick-actions">
+        <button class="precision-btn-primary" type="button" id="fichaHeroCopilotBtn">
+          <span class="material-symbols-rounded">smart_toy</span>
+          <span>Copiloto Clínico</span>
         </button>
-        <button class="flex items-center gap-2 bg-white border border-black/10 hover:bg-black/5 text-black px-5 py-2.5 rounded-full font-semibold transition-colors" type="button" id="fichaHeroAgendaBtn">
-          <span class="material-symbols-rounded text-[20px]">calendar_today</span> Agenda
+        <button class="precision-btn-secondary" type="button" id="fichaHeroAgendaBtn">
+          <span class="material-symbols-rounded">calendar_today</span>
+          <span>Agenda</span>
         </button>
-        <button class="flex items-center gap-2 bg-white border border-black/10 hover:bg-black/5 text-slate-700 px-5 py-2.5 rounded-full font-semibold transition-colors" type="button" id="fichaHeroDocsBtn">
-          <span class="material-symbols-rounded text-[20px]">description</span> Documentos
+        <button class="precision-btn-secondary" type="button" id="fichaHeroDocsBtn">
+          <span class="material-symbols-rounded">description</span>
+          <span>Documentos</span>
         </button>
       </div>
     </div>
     
     <!-- Quick Facts Grid -->
-    <div class="flex-1 grid grid-cols-2 gap-4">
-      <article class="bg-[#faf7e8] border border-black/[0.05] p-4 rounded-2xl flex flex-col gap-1">
-        <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Cadencia clínica</span>
-        <strong class="text-lg font-bold text-black" id="fichaHeroLastSession">Sin citas</strong>
-        <p class="text-xs text-slate-600" id="fichaHeroLastSessionMeta">Todavía no hay actividad.</p>
+    <div class="ficha-vitals-grid">
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Próxima sesión</span>
+        <strong class="ficha-vital-value" id="fichaHeroLastSession">Sin citas</strong>
+        <p class="ficha-vital-meta" id="fichaHeroLastSessionMeta">Todavía no hay citas agendadas.</p>
       </article>
-      <article class="bg-[#faf7e8] border border-black/[0.05] p-4 rounded-2xl flex flex-col gap-1">
-        <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Seguimiento</span>
-        <strong class="text-lg font-bold text-black" id="fichaHeroNotesCount">0 notas</strong>
-        <p class="text-xs text-slate-600 truncate" id="fichaHeroLatestNote">La línea temporal aparecerá aquí.</p>
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Evolución</span>
+        <strong class="ficha-vital-value" id="fichaHeroNotesCount">0 notas</strong>
+        <p class="ficha-vital-meta" id="fichaHeroLatestNote">La línea temporal aparecerá aquí.</p>
       </article>
-      <article class="bg-[#faf7e8] border border-black/[0.05] p-4 rounded-2xl flex flex-col gap-1">
-        <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Economía</span>
-        <strong class="text-lg font-bold text-black" id="fichaHeroPaymentsTotal">0,00 €</strong>
-        <p class="text-xs text-slate-600" id="fichaHeroPaymentsMeta">Sin pagos.</p>
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Historial pagos</span>
+        <strong class="ficha-vital-value" id="fichaHeroPaymentsTotal">0,00 €</strong>
+        <p class="ficha-vital-meta" id="fichaHeroPaymentsMeta">Sin pagos registrados.</p>
       </article>
-      <article class="bg-[#e4f7ee] p-4 rounded-2xl flex flex-col gap-1 border border-[#0a3922]/15">
-        <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Continuidad</span>
-        <strong class="text-lg font-bold text-[#0a3922]" id="fichaHeroContinuity">Listo para revisar</strong>
-        <p class="text-xs text-[#0a3922]/80" id="fichaHeroContinuityMeta">Usa el agente, documentos y agenda.</p>
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Continuidad</span>
+        <strong class="ficha-vital-value" id="fichaHeroContinuity">En tratamiento</strong>
+        <p class="ficha-vital-meta" id="fichaHeroContinuityMeta">Pauta activa.</p>
       </article>
     </div>
   </section>
 
-  <!-- Commands & Risk -->
-  <section class="bg-white rounded-3xl p-6 border border-black/[0.06] shadow-sm flex flex-col lg:flex-row gap-6 justify-between items-center hidden" aria-hidden="true">
-    <!-- Preserved IDs for JS but visually hidden or integrated differently to reduce clutter -->
+  <!-- Commands & Risk (Preserved IDs for JS) -->
+  <section class="hidden" aria-hidden="true">
     <strong id="fichaOpsRiskTitle"></strong><p id="fichaOpsRiskMeta"></p>
     <strong id="fichaOpsNextTitle"></strong><p id="fichaOpsNextMeta"></p>
     <strong id="fichaOpsPlanTitle"></strong><p id="fichaOpsPlanMeta"></p>
@@ -86,185 +105,200 @@
     <button id="fichaOpsCopilotBtn"></button>
   </section>
 
-  <!-- Main Workspace (Tabs) -->
-  <section class="flex-1 flex flex-col bg-white rounded-3xl border border-black/[0.06] shadow-sm overflow-hidden">
-    
+  <!-- Main Workspace (Tabs & Panels) -->
+  <section class="flex-1 flex flex-col">
     <!-- Tabs Navigation -->
-    <div class="flex overflow-x-auto border-b border-black/[0.06] p-2.5 gap-2 hide-scrollbar bg-[#f8f7f4]">
-      <button class="ficha-tab active px-5 py-2.5 rounded-full text-sm font-semibold bg-[#0a3922] text-white transition-all shadow-sm" data-ficha-tab="resumen">Resumen de caso</button>
-      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-slate-600 hover:text-black hover:bg-black/5 transition-all" data-ficha-tab="datos">Datos personales</button>
-      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-slate-600 hover:text-black hover:bg-black/5 transition-all" data-ficha-tab="notas">Notas clínicas</button>
-      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-slate-600 hover:text-black hover:bg-black/5 transition-all" data-ficha-tab="citas">Historial citas</button>
-      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-slate-600 hover:text-black hover:bg-black/5 transition-all" data-ficha-tab="pagos">Historial pagos</button>
-      <button class="ficha-tab px-5 py-2.5 rounded-full text-sm font-medium text-slate-600 hover:text-black hover:bg-black/5 transition-all" data-ficha-tab="documentos">Documentos</button>
+    <div class="ficha-tabs-nav">
+      <button class="ficha-tab active" data-ficha-tab="resumen" type="button">Resumen de caso</button>
+      <button class="ficha-tab" data-ficha-tab="notas" type="button">Notas clínicas</button>
+      <button class="ficha-tab" data-ficha-tab="citas" type="button">Historial citas</button>
+      <button class="ficha-tab" data-ficha-tab="pagos" type="button">Historial pagos</button>
+      <button class="ficha-tab" data-ficha-tab="documentos" type="button">Documentos</button>
+      <button class="ficha-tab" data-ficha-tab="datos" type="button">Datos personales</button>
     </div>
 
-    <p class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 p-3 m-4 rounded-lg" id="fichaAvailabilityNotice" hidden></p>
+    <p class="text-sm text-red-600 bg-red-50 border border-red-200 p-3 m-4 rounded-lg" id="fichaAvailabilityNotice" hidden></p>
 
-    <div class="p-6 overflow-y-auto">
+    <div class="ficha-workspace-body">
       
       <!-- Panel: Resumen -->
-      <div class="ficha-panel active space-y-8" data-ficha-panel="resumen">
+      <div class="ficha-panel active space-y-6" data-ficha-panel="resumen">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section class="bg-[#faf7e8] border border-black/[0.05] p-6 rounded-2xl">
-            <header class="mb-4">
-              <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Lectura rápida</span>
-              <h2 class="text-xl font-bold text-black">Todo el caso en un vistazo</h2>
+          <section class="precision-panel">
+            <header class="precision-panel-header">
+              <h3>Todo el caso en un vistazo</h3>
+              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Lectura rápida</span>
             </header>
-            <div class="text-slate-700 text-sm" id="fichaOverviewStats">El resumen ejecutivo del caso aparecerá aquí.</div>
+            <div class="precision-panel-body" id="fichaOverviewStats">
+              El resumen ejecutivo del caso aparecerá aquí.
+            </div>
           </section>
 
           <!-- MAPA ANATOMICO DE DOLOR INTERACTIVO -->
-          <section class="bg-[#f4ece9] border border-black/[0.05] p-6 rounded-2xl pain-map-card">
-            <header class="mb-4">
-              <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Lectura evolutiva</span>
-              <h2 class="text-xl font-bold text-black">Mapa Anat&oacute;mico de Dolor</h2>
+          <section class="precision-panel pain-map-card">
+            <header class="precision-panel-header">
+              <h3>Mapa Anatómico de Dolor</h3>
+              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Lectura evolutiva</span>
             </header>
-            <div class="pain-map-container">
-              <div class="pain-map-visual">
-                <svg viewBox="0 0 100 220" id="painMapSvg" class="pain-map-svg">
-                  <path id="zone-cervical" class="pain-zone-path" data-zone="cervical" d="M42,20 C42,10 58,10 58,20 C58,28 54,32 54,36 L46,36 C46,32 42,28 42,20 Z" />
-                  <path id="zone-hombro_izq" class="pain-zone-path" data-zone="hombro_brazo" d="M38,38 C28,40 22,48 18,58 L24,60 C26,52 32,46 38,44 Z" />
-                  <path id="zone-hombro_der" class="pain-zone-path" data-zone="hombro_brazo" d="M62,38 C72,40 78,48 82,58 L76,60 C74,52 68,46 62,44 Z" />
-                  <path id="zone-espalda" class="pain-zone-path" data-zone="espalda" d="M40,38 L60,38 L58,80 L42,80 Z" />
-                  <path id="zone-abdomen" class="pain-zone-path" data-zone="abdomen_core" d="M42,82 L58,82 L56,105 L44,105 Z" />
-                  <path id="zone-cadera" class="pain-zone-path" data-zone="cadera" d="M38,107 L62,107 L60,125 L40,125 Z" />
-                  <path id="zone-rodilla_izq" class="pain-zone-path" data-zone="rodilla" d="M38,127 L48,127 L46,165 L36,165 Z" />
-                  <path id="zone-rodilla_der" class="pain-zone-path" data-zone="rodilla" d="M52,127 L62,127 L64,165 L54,165 Z" />
-                  <path id="zone-tobillo_izq" class="pain-zone-path" data-zone="tobillo_pie" d="M36,167 L46,167 L44,205 C40,210 32,210 30,205 Z" />
-                  <path id="zone-tobillo_der" class="pain-zone-path" data-zone="tobillo_pie" d="M54,167 L64,167 L70,205 C68,210 60,210 56,205 Z" />
-                </svg>
-              </div>
-              <div class="pain-map-editor" id="painMapEditor" hidden>
-                <strong id="painMapSelectedZone" class="text-black">Cervical</strong>
-                <div class="pain-intensity-slider">
-                  <label for="painEvaSlider" class="text-slate-700">EVA: <span id="painEvaValue" class="text-[#0a3922] font-bold">5</span>/10</label>
-                  <input type="range" id="painEvaSlider" min="0" max="10" value="5" step="1" />
+            <div class="precision-panel-body">
+              <div class="pain-map-container">
+                <div class="pain-map-visual">
+                  <svg viewBox="0 0 100 220" id="painMapSvg" class="pain-map-svg">
+                    <path id="zone-cervical" class="pain-zone-path" data-zone="cervical" d="M42,20 C42,10 58,10 58,20 C58,28 54,32 54,36 L46,36 C46,32 42,28 42,20 Z" />
+                    <path id="zone-hombro_izq" class="pain-zone-path" data-zone="hombro_brazo" d="M38,38 C28,40 22,48 18,58 L24,60 C26,52 32,46 38,44 Z" />
+                    <path id="zone-hombro_der" class="pain-zone-path" data-zone="hombro_brazo" d="M62,38 C72,40 78,48 82,58 L76,60 C74,52 68,46 62,44 Z" />
+                    <path id="zone-espalda" class="pain-zone-path" data-zone="espalda" d="M40,38 L60,38 L58,80 L42,80 Z" />
+                    <path id="zone-abdomen" class="pain-zone-path" data-zone="abdomen_core" d="M42,82 L58,82 L56,105 L44,105 Z" />
+                    <path id="zone-cadera" class="pain-zone-path" data-zone="cadera" d="M38,107 L62,107 L60,125 L40,125 Z" />
+                    <path id="zone-rodilla_izq" class="pain-zone-path" data-zone="rodilla" d="M38,127 L48,127 L46,165 L36,165 Z" />
+                    <path id="zone-rodilla_der" class="pain-zone-path" data-zone="rodilla" d="M52,127 L62,127 L64,165 L54,165 Z" />
+                    <path id="zone-tobillo_izq" class="pain-zone-path" data-zone="tobillo_pie" d="M36,167 L46,167 L44,205 C40,210 32,210 30,205 Z" />
+                    <path id="zone-tobillo_der" class="pain-zone-path" data-zone="tobillo_pie" d="M54,167 L64,167 L70,205 C68,210 60,210 56,205 Z" />
+                  </svg>
                 </div>
-                <label for="painZoneNotes" class="block space-y-1">
-                  <span class="text-sm font-medium text-slate-700">Notas de dolor</span>
-                  <input type="text" id="painZoneNotes" class="w-full bg-white border border-black/10 rounded-lg px-3 py-2 text-sm text-black placeholder-slate-400" placeholder="Contractura, punzante..." />
-                </label>
-                <button type="button" class="btn-primary btn-sm bg-[#0a3922] text-white rounded-full py-2 hover:bg-[#0e4c2e] transition-colors flex items-center gap-1.5 justify-center text-xs font-semibold" id="btnSavePainZone" style="width:100%;"><span class="material-symbols-rounded text-sm">check</span> Guardar Nota</button>
+                <div class="flex-1 space-y-3" id="painMapEditor" hidden>
+                  <strong id="painMapSelectedZone" class="text-sm font-bold text-slate-900 block">Cervical</strong>
+                  <div class="space-y-1">
+                    <label for="painEvaSlider" class="text-xs font-semibold text-slate-700 flex justify-between">
+                      <span>Intensidad de dolor</span>
+                      <span class="text-sky-800 font-bold">EVA: <span id="painEvaValue">5</span>/10</span>
+                    </label>
+                    <input type="range" id="painEvaSlider" min="0" max="10" value="5" step="1" class="w-full accent-sky-800" />
+                  </div>
+                  <label for="painZoneNotes" class="block space-y-1">
+                    <span class="text-xs font-semibold text-slate-700">Notas clínicas de dolor</span>
+                    <input type="text" id="painZoneNotes" class="precision-input w-full" placeholder="Contractura, dolor punzante, limitación funcional..." />
+                  </label>
+                  <button type="button" class="precision-btn-primary w-full justify-center" id="btnSavePainZone">
+                    <span class="material-symbols-rounded">check</span>
+                    <span>Guardar Nota de Dolor</span>
+                  </button>
+                </div>
               </div>
             </div>
           </section>
 
-          <section class="bg-[#faf7e8] border border-black/[0.05] p-6 rounded-2xl">
-            <header class="mb-4">
-              <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Pulso terapéutico</span>
-              <h2 class="text-xl font-bold text-black">Progreso del paciente</h2>
+          <section class="precision-panel">
+            <header class="precision-panel-header">
+              <h3>Progreso del paciente</h3>
+              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Pulso terapéutico</span>
             </header>
-            <div class="text-slate-700 text-sm" id="fichaProgressPanel">Cuando haya dolor, adherencia o entregas registradas, verás aquí la lectura rápida del progreso clínico.</div>
+            <div class="precision-panel-body text-sm text-slate-600" id="fichaProgressPanel">
+              Cuando haya dolor, adherencia o entregas registradas, verás aquí la lectura rápida del progreso clínico.
+            </div>
           </section>
 
-          <section class="bg-[#faf7e8] border border-black/[0.05] p-6 rounded-2xl">
-            <header class="mb-4">
-              <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Movimiento reciente</span>
-              <h2 class="text-xl font-bold text-black">Clínica, agenda y decisiones</h2>
+          <section class="precision-panel">
+            <header class="precision-panel-header">
+              <h3>Clínica, agenda y decisiones</h3>
+              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Movimiento reciente</span>
             </header>
-            <div class="text-slate-700 text-sm" id="fichaOverviewStream">La actividad reciente del caso aparecerá aquí.</div>
+            <div class="precision-panel-body text-sm text-slate-600" id="fichaOverviewStream">
+              La actividad reciente del caso aparecerá aquí.
+            </div>
           </section>
 
-          <section class="bg-[#faf7e8] border border-black/[0.05] p-6 rounded-2xl">
-            <header class="mb-4">
-              <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Siguiente mejor acción</span>
-              <h2 class="text-xl font-bold text-black">Prioridades del caso</h2>
+          <section class="precision-panel">
+            <header class="precision-panel-header">
+              <h3>Prioridades del caso</h3>
+              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Siguiente mejor acción</span>
             </header>
-            <div class="text-slate-700 text-sm" id="fichaDecisionList">Todavía no hay decisiones sugeridas para este caso.</div>
+            <div class="precision-panel-body text-sm text-slate-600" id="fichaDecisionList">
+              Todavía no hay decisiones sugeridas para este caso.
+            </div>
           </section>
 
-          <section class="bg-[#faf7e8] border border-black/[0.05] p-6 rounded-2xl lg:col-span-2">
-            <header class="mb-4">
-              <span class="text-xs font-bold text-[#0a3922] uppercase tracking-wider">Protocolo clínico</span>
-              <p class="text-sm font-semibold text-black">Seguimiento de planes prescritos</p>
+          <section class="precision-panel lg:col-span-2">
+            <header class="precision-panel-header">
+              <h3>Seguimiento de planes prescritos</h3>
+              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Protocolo clínico</span>
             </header>
-            <div class="text-slate-300 text-sm" id="fichaPlanInsights">Cuando exista un plan de recuperación, verás aquí el circuito: plan, entrega, feedback y ajuste recomendado.</div>
+            <div class="precision-panel-body text-sm text-slate-600" id="fichaPlanInsights">
+              Cuando exista un plan de recuperación, verás aquí el circuito: plan, entrega, feedback y ajuste recomendado.
+            </div>
           </section>
         </div>
       </div>
 
       <!-- Panel: Datos -->
-      <div class="ficha-panel hidden" data-ficha-panel="datos">
-        <div id="fichaDatosView" class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 text-sm text-slate-300">
+      <div class="ficha-panel" data-ficha-panel="datos">
+        <div id="fichaDatosView" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-700">
           <!-- Rendered by JS -->
         </div>
-        <form id="fichaDatosForm" class="hidden space-y-6 max-w-3xl">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Nombre</span><input name="nombre" type="text" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" required /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Apellidos</span><input name="apellidos" type="text" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Email</span><input name="email" type="email" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Teléfono</span><input name="telefono" type="tel" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">DNI/NIF</span><input name="dni" type="text" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Fecha nac.</span><input name="fecha_nacimiento" type="date" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Dirección</span><input name="direccion" type="text" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Profesión</span><input name="profesion" type="text" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Médico derivador</span><input name="medico_derivador" type="text" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2"><span class="text-sm font-medium text-slate-300">Aseguradora</span><input name="aseguradora" type="text" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white" /></label>
-            <label class="block space-y-2 md:col-span-2"><span class="text-sm font-medium text-slate-300">Alergias</span><textarea name="alergias" rows="2" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white"></textarea></label>
-            <label class="block space-y-2 md:col-span-2"><span class="text-sm font-medium text-slate-300">Antecedentes</span><textarea name="antecedentes" rows="2" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white"></textarea></label>
-            <label class="block space-y-2 md:col-span-2"><span class="text-sm font-medium text-slate-300">Observaciones</span><textarea name="observaciones" rows="2" class="w-full bg-[#111a26] border border-white/10 rounded-xl px-4 py-2 text-white"></textarea></label>
+        <form id="fichaDatosForm" hidden class="space-y-6 max-w-3xl">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Nombre</span><input name="nombre" type="text" class="precision-input" required /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Apellidos</span><input name="apellidos" type="text" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Email</span><input name="email" type="email" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Teléfono</span><input name="telefono" type="tel" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">DNI/NIF</span><input name="dni" type="text" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Fecha nac.</span><input name="fecha_nacimiento" type="date" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Dirección</span><input name="direccion" type="text" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Profesión</span><input name="profesion" type="text" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Médico derivador</span><input name="medico_derivador" type="text" class="precision-input" /></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Aseguradora</span><input name="aseguradora" type="text" class="precision-input" /></label>
+            <label class="precision-field md:col-span-2"><span class="text-xs font-semibold text-slate-700">Alergias</span><textarea name="alergias" rows="2" class="precision-input h-auto py-2"></textarea></label>
+            <label class="precision-field md:col-span-2"><span class="text-xs font-semibold text-slate-700">Antecedentes</span><textarea name="antecedentes" rows="2" class="precision-input h-auto py-2"></textarea></label>
+            <label class="precision-field md:col-span-2"><span class="text-xs font-semibold text-slate-700">Observaciones</span><textarea name="observaciones" rows="2" class="precision-input h-auto py-2"></textarea></label>
           </div>
-          <div class="flex gap-3 justify-end">
-            <button type="button" class="px-5 py-2 rounded-full text-slate-400 hover:bg-white/5" id="fichaCancelEdit">Cancelar</button>
-            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-full flex items-center gap-2 font-medium"><span class="material-symbols-rounded text-sm">save</span> Guardar</button>
+          <div class="flex gap-3 justify-end pt-2">
+            <button type="button" class="precision-btn-secondary" id="fichaCancelEdit">Cancelar</button>
+            <button type="submit" class="precision-btn-primary"><span class="material-symbols-rounded">save</span> Guardar cambios</button>
           </div>
         </form>
       </div>
 
       <!-- Panel: Notas -->
-      <div class="ficha-panel hidden space-y-6" data-ficha-panel="notas">
-        <header class="flex flex-wrap justify-between items-center gap-3">
+      <div class="ficha-panel space-y-6" data-ficha-panel="notas">
+        <header class="ficha-notes-heading">
           <div>
-            <h2 class="text-xl font-bold text-white">Notas de evolución y sesiones</h2>
-            <p class="text-xs text-slate-400">Registro estructurado con síntesis clínica y memoria longitudinal.</p>
+            <h2 class="text-lg font-bold text-slate-900">Notas de evolución y sesiones</h2>
+            <p>Resumen de evolución y registros de cada sesión.</p>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors shadow-sm cursor-pointer" id="btnVoiceSessionNote">
-              <span class="material-symbols-rounded text-[18px]">mic</span> Registrar sesión por voz
-            </button>
-            <button type="button" class="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors border border-white/10 cursor-pointer" id="fichaAddNota">
-              <span class="material-symbols-rounded text-[18px]">add</span> Nota manual
+            <button type="button" class="precision-btn-secondary" id="fichaAddNota">
+              <span class="material-symbols-rounded">add</span>
+              <span>Nota manual</span>
             </button>
           </div>
         </header>
 
-        <!-- Memoria Longitudinal (Capa 2) -->
-        <div id="fichaLongitudinalCard" class="bg-[#111a26] border border-emerald-500/20 p-5 rounded-2xl hidden space-y-2">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-rounded text-emerald-400 text-base">history_edu</span>
-              <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Memoria Clínica Longitudinal (Capa 2)</span>
-            </div>
-            <span id="fichaLongitudinalUpdated" class="text-xs text-slate-500"></span>
+        <div class="ficha-clinical-overview">
+        <div id="fichaLongitudinalCard" class="ficha-summary-card hidden">
+          <div class="ficha-clinical-card-heading">
+            <h3><span class="material-symbols-rounded" aria-hidden="true">history_edu</span> Resumen de evolución</h3>
+            <span id="fichaLongitudinalUpdated" class="ficha-clinical-updated"></span>
           </div>
-          <p id="fichaLongitudinalSummaryText" class="text-sm text-slate-200 leading-relaxed"></p>
+          <p class="ficha-clinical-caption">Últimas 30 notas del historial</p>
+          <p id="fichaLongitudinalSummaryText"></p>
         </div>
 
         <!-- Tendencia de Dolor (EVA) -->
-        <div id="fichaPainTrendCard" class="bg-[#111a26] border border-white/[0.08] p-5 rounded-2xl hidden">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Evolución de Dolor (EVA)</span>
-            <span id="fichaPainTrendBadge" class="text-xs px-2.5 py-1 rounded-full font-medium"></span>
+        <div id="fichaPainTrendCard" class="ficha-summary-card hidden">
+          <div class="ficha-clinical-card-heading">
+            <h3>Evolución del dolor</h3>
+            <span id="fichaPainTrendBadge"></span>
           </div>
-          <div id="fichaPainTrendTimeline" class="flex flex-wrap gap-3"></div>
+          <p class="ficha-clinical-caption">Escala EVA · sesiones registradas</p>
+          <div id="fichaPainTrendTimeline"></div>
+        </div>
         </div>
 
-        <div id="fichaNotasSummary" class="text-sm text-slate-400"></div>
+        <div id="fichaNotasSummary" class="text-xs text-slate-500"></div>
         <div id="fichaNotasTimeline" class="space-y-4">
           <p class="text-slate-500 italic">Sin notas clínicas registradas</p>
         </div>
 
-        <section id="fichaNotaFormCard" class="bg-[#111a26] border border-white/[0.08] p-6 rounded-2xl hidden mt-8">
-          <header class="mb-4"><h2 id="fichaNotaFormTitle" class="text-lg font-bold text-white">Nueva nota clínica</h2></header>
-          <form id="fichaNotaForm" class="space-y-4 max-w-2xl">
+        <section id="fichaNotaFormCard" hidden class="ficha-note-editor">
+          <header><h3 id="fichaNotaFormTitle">Nueva nota clínica</h3></header>
+          <form id="fichaNotaForm">
             <input type="hidden" name="nota_id" />
-            <div class="grid grid-cols-2 gap-4">
-              <label class="block space-y-1"><span class="text-sm font-medium text-slate-300">Fecha</span><input name="fecha" type="date" class="w-full bg-[#0d1522] border border-white/10 rounded-lg px-3 py-2 text-white" required /></label>
-              <label class="block space-y-1"><span class="text-sm font-medium text-slate-300">Dolor (EVA 0-10)</span><input name="dolor_eva" type="number" min="0" max="10" class="w-full bg-[#0d1522] border border-white/10 rounded-lg px-3 py-2 text-white" /></label>
+            <div class="ficha-note-field-row">
+              <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Fecha</span><input name="fecha" type="date" class="precision-input" required /></label>
+              <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Dolor (EVA 0-10)</span><input name="dolor_eva" type="number" min="0" max="10" class="precision-input" /></label>
             </div>
-            <label class="block space-y-1"><span class="text-sm font-medium text-slate-300">Zona corporal</span>
-              <select name="zona_corporal" class="w-full bg-[#0d1522] border border-white/10 rounded-lg px-3 py-2 text-white">
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Zona corporal</span>
+              <select name="zona_corporal" class="precision-select">
                 <option value="">-- Seleccionar --</option>
                 <option value="cervical">Cervical</option>
                 <option value="espalda">Espalda</option>
@@ -273,26 +307,32 @@
                 <option value="pierna">Pierna</option>
               </select>
             </label>
-            <label class="block space-y-1"><span class="text-sm font-medium text-slate-300">Nota de sesión</span><textarea name="nota" rows="4" class="w-full bg-[#0d1522] border border-white/10 rounded-lg px-3 py-2 text-white" required></textarea></label>
-            <label class="block space-y-1"><span class="text-sm font-medium text-slate-300">Pruebas realizadas</span><textarea name="pruebas_realizadas" rows="2" class="w-full bg-[#0d1522] border border-white/10 rounded-lg px-3 py-2 text-white"></textarea></label>
-            <div class="flex gap-3 justify-end pt-2">
-              <button type="button" class="px-4 py-2 text-slate-400 hover:bg-white/5 rounded-lg" id="fichaNotaCancel">Cancelar</button>
-              <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><span class="material-symbols-rounded text-[18px]">save</span> Guardar nota</button>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Nota de sesión</span><textarea name="nota" rows="4" class="precision-input h-auto py-2" required></textarea></label>
+            <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Pruebas realizadas</span><textarea name="pruebas_realizadas" rows="2" class="precision-input h-auto py-2"></textarea></label>
+            <div class="ficha-note-form-actions">
+              <button type="button" class="precision-btn-secondary" id="fichaNotaCancel">Cancelar</button>
+              <button type="submit" class="precision-btn-primary"><span class="material-symbols-rounded">save</span> Guardar nota</button>
             </div>
           </form>
         </section>
       </div>
 
       <!-- Panel: Citas -->
-      <div class="ficha-panel hidden space-y-6" data-ficha-panel="citas">
-        <h2 class="text-xl font-bold text-white">Historial de citas</h2>
-        <div id="fichaCitasSummary" class="text-sm text-slate-400"></div>
-        <div class="overflow-x-auto rounded-xl border border-white/[0.08]">
-          <table class="w-full text-left border-collapse">
+      <div class="ficha-panel space-y-4" data-ficha-panel="citas">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-900">Historial de citas</h2>
+          <div id="fichaCitasSummary" class="text-xs text-slate-500"></div>
+        </div>
+        <div class="ficha-table-wrap">
+          <table class="ficha-table">
             <thead>
-              <tr class="border-b border-white/[0.08] bg-[#111a26]"><th class="py-3 px-4 font-semibold text-slate-400 text-xs uppercase tracking-wider">Fecha</th><th class="py-3 px-4 font-semibold text-slate-400 text-xs uppercase tracking-wider">Estado</th><th class="py-3 px-4 font-semibold text-slate-400 text-xs uppercase tracking-wider">Motivo</th></tr>
+              <tr>
+                <th>Fecha y hora</th>
+                <th>Estado</th>
+                <th>Motivo y canal</th>
+              </tr>
             </thead>
-            <tbody id="fichaCitasBody" class="divide-y divide-white/[0.04] bg-[#0d1522]">
+            <tbody id="fichaCitasBody">
               <tr><td colspan="3" class="py-8 text-center text-slate-500"><span class="material-symbols-rounded block mb-2 text-3xl">event_busy</span> Sin citas registradas</td></tr>
             </tbody>
           </table>
@@ -300,33 +340,42 @@
       </div>
 
       <!-- Panel: Pagos -->
-      <div class="ficha-panel hidden space-y-6" data-ficha-panel="pagos">
-        <h2 class="text-xl font-bold text-white">Historial de pagos</h2>
-        <div id="fichaPagosSummary" class="text-sm text-slate-400"></div>
-        <div class="overflow-x-auto rounded-xl border border-white/[0.08]">
-          <table class="w-full text-left border-collapse">
+      <div class="ficha-panel space-y-4" data-ficha-panel="pagos">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-900">Historial de pagos</h2>
+          <div id="fichaPagosSummary" class="text-xs text-slate-500"></div>
+        </div>
+        <div class="ficha-table-wrap">
+          <table class="ficha-table">
             <thead>
-              <tr class="border-b border-white/[0.08] bg-[#111a26]"><th class="py-3 px-4 font-semibold text-slate-400 text-xs uppercase tracking-wider">Fecha</th><th class="py-3 px-4 font-semibold text-slate-400 text-xs uppercase tracking-wider">Importe</th><th class="py-3 px-4 font-semibold text-slate-400 text-xs uppercase tracking-wider">Método</th><th class="py-3 px-4 font-semibold text-slate-400 text-xs uppercase tracking-wider">Concepto</th></tr>
+              <tr>
+                <th>Fecha</th>
+                <th>Importe</th>
+                <th>Método</th>
+                <th>Concepto</th>
+              </tr>
             </thead>
-            <tbody id="fichaPagosBody" class="divide-y divide-white/[0.04] bg-[#0d1522]">
+            <tbody id="fichaPagosBody">
               <tr><td colspan="4" class="py-8 text-center text-slate-500"><span class="material-symbols-rounded block mb-2 text-3xl">payments</span> Sin pagos registrados</td></tr>
             </tbody>
           </table>
         </div>
-        <div id="fichaPagosTotal" class="text-right text-lg font-bold text-white pt-4"></div>
+        <div id="fichaPagosTotal" class="text-right text-base font-bold text-slate-900 pt-2"></div>
       </div>
 
       <!-- Panel: Documentos -->
-      <div class="ficha-panel hidden space-y-6" data-ficha-panel="documentos">
-        <header class="flex justify-between items-center">
-          <h2 class="text-xl font-bold text-white">Documentación legal</h2>
+      <div class="ficha-panel space-y-4" data-ficha-panel="documentos">
+        <header class="flex justify-between items-center flex-wrap gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Documentación clínica y legal</h2>
+            <div id="fichaDocsSummary" class="text-xs text-slate-500"></div>
+          </div>
           <div class="flex gap-2">
-            <button class="border border-white/10 bg-white/5 text-sm px-3.5 py-1.5 rounded-full hover:bg-white/10 text-slate-200 transition-colors" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
-            <button class="border border-white/10 bg-white/5 text-sm px-3.5 py-1.5 rounded-full hover:bg-white/10 text-slate-200 transition-colors" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
-            <button class="border border-white/10 bg-white/5 text-sm px-3.5 py-1.5 rounded-full hover:bg-white/10 text-slate-200 transition-colors" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocación</button>
+            <button class="precision-btn-secondary" data-doc-tipo="consentimiento_informado" id="btnDocConsentimiento">+ Consentimiento</button>
+            <button class="precision-btn-secondary" data-doc-tipo="lopd" id="btnDocLopd">+ LOPD</button>
+            <button class="precision-btn-secondary" data-doc-tipo="revocacion" id="btnDocRevocacion">+ Revocación</button>
           </div>
         </header>
-        <div id="fichaDocsSummary" class="text-sm text-slate-400"></div>
         <div id="fichaDocsList" class="space-y-3">
           <p class="text-slate-500 italic py-8 text-center">Sin documentación clínica registrada</p>
         </div>
@@ -378,61 +427,61 @@
 </div>
 
 <!-- Modal Registro Sesion por Voz / Sintesis Clinica -->
-<div class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="voiceSessionModal" aria-hidden="true">
-  <div class="bg-[#0d1522] border border-white/[0.1] rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[92vh]">
-    <div class="px-6 py-4 border-b border-white/[0.08] flex items-center justify-between bg-[#111a26]">
+<div class="voice-modal-backdrop opacity-0 pointer-events-none" id="voiceSessionModal" aria-hidden="true">
+  <div class="voice-modal-container">
+    <div class="voice-modal-header">
       <div>
-        <p class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">SESIÓN CLÍNICA</p>
-        <h2 id="voiceSessionModalTitle" class="text-xl font-bold text-white">Registro de Sesión por Voz</h2>
+        <p class="voice-modal-kicker">Sesión Clínica</p>
+        <h2 id="voiceSessionModalTitle" class="voice-modal-title">Registro de Sesión por Voz</h2>
       </div>
-      <button type="button" class="text-slate-400 hover:bg-white/10 hover:text-white p-2 rounded-full transition-colors cursor-pointer" id="voiceSessionModalClose">
+      <button type="button" class="voice-modal-close-btn" id="voiceSessionModalClose" aria-label="Cerrar modal">
         <span class="material-symbols-rounded">close</span>
       </button>
     </div>
 
     <!-- Modal Content -->
-    <div class="p-6 overflow-y-auto space-y-6 flex-1 text-slate-200">
+    <div class="voice-modal-body">
       
       <!-- Paso 1: Captura (Audio o Texto) -->
       <div id="voiceStepCapture" class="space-y-4">
-        <div class="flex gap-2 p-1 bg-[#111a26] rounded-xl border border-white/10">
-          <button type="button" class="flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-emerald-500 text-white cursor-pointer" id="voiceModeAudioBtn">
+        <div class="voice-mode-tabs">
+          <button type="button" class="voice-mode-tab bg-emerald-500 text-white" id="voiceModeAudioBtn">
             <span class="material-symbols-rounded text-sm align-middle">mic</span> Grabar Audio
           </button>
-          <button type="button" class="flex-1 py-2 rounded-lg text-sm font-medium transition-colors text-slate-400 hover:text-white cursor-pointer" id="voiceModeTextBtn">
+          <button type="button" class="voice-mode-tab text-slate-400" id="voiceModeTextBtn">
             <span class="material-symbols-rounded text-sm align-middle">edit_note</span> Dictado / Texto
           </button>
         </div>
 
         <!-- Grabación de audio activa -->
-        <div id="voiceAudioSection" class="p-6 bg-[#111a26] border border-white/10 rounded-2xl text-center space-y-4">
-          <div class="flex justify-center">
-            <button type="button" id="voiceRecordToggleBtn" class="w-20 h-20 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer">
+        <div id="voiceAudioSection" class="voice-record-card">
+          <div>
+            <button type="button" id="voiceRecordToggleBtn" class="voice-record-btn bg-emerald-500">
               <span class="material-symbols-rounded text-3xl" id="voiceRecordIcon">mic</span>
             </button>
           </div>
           <div>
-            <div id="voiceRecordTimer" class="text-2xl font-mono font-bold text-white">00:00</div>
-            <p id="voiceRecordStatus" class="text-xs text-slate-400 mt-1">Pulsa para iniciar la grabación de la sesión</p>
+            <div id="voiceRecordTimer" class="voice-timer">00:00</div>
+            <p id="voiceRecordStatus" class="voice-status-text">Pulsa para iniciar la grabación de la sesión</p>
           </div>
-          <div id="voiceRecordVisualizer" class="h-6 flex items-center justify-center gap-1 opacity-40">
-            <span class="w-1 bg-emerald-400 h-2 rounded-full animate-pulse"></span>
-            <span class="w-1 bg-emerald-400 h-4 rounded-full animate-pulse"></span>
-            <span class="w-1 bg-emerald-400 h-6 rounded-full animate-pulse"></span>
-            <span class="w-1 bg-emerald-400 h-3 rounded-full animate-pulse"></span>
-            <span class="w-1 bg-emerald-400 h-5 rounded-full animate-pulse"></span>
+          <div id="voiceRecordVisualizer" class="voice-visualizer">
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
           </div>
         </div>
 
         <!-- Dictado o transcripción de texto -->
-        <div id="voiceTextSection" class="space-y-2">
-          <label for="voiceTranscriptInput" class="block text-sm font-medium text-slate-300">Transcripción o notas dictadas de la sesión:</label>
-          <textarea id="voiceTranscriptInput" rows="6" class="w-full bg-[#111a26] border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Habla o escribe lo sucedido en la sesión: motivo, dolor actual, maniobras y pruebas realizadas, técnicas aplicadas, feedback inmediato y tareas domiciliarias..."></textarea>
+        <div id="voiceTextSection" class="voice-textarea-wrap">
+          <label for="voiceTranscriptInput" class="voice-textarea-label">Transcripción o notas dictadas de la sesión:</label>
+          <textarea id="voiceTranscriptInput" rows="5" class="voice-textarea" placeholder="Habla o escribe lo sucedido en la sesión: motivo, dolor actual, maniobras y pruebas realizadas, técnicas aplicadas, feedback inmediato y tareas domiciliarias..."></textarea>
         </div>
 
-        <div id="voiceCaptureFeedback" class="text-sm text-red-400" hidden></div>
+        <div id="voiceCaptureFeedback" class="text-sm text-red-600 font-medium" hidden></div>
 
-        <button type="button" id="btnSynthesizeVoiceNote" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer">
+        <button type="button" id="btnSynthesizeVoiceNote" class="voice-synthesize-btn">
           <span class="material-symbols-rounded">clinical_notes</span>
           Sintetizar Nota Clínica Estructurada
         </button>
@@ -440,29 +489,29 @@
 
       <!-- Paso 2: Revisión y Confirmación Humana -->
       <div id="voiceStepReview" class="space-y-4 hidden">
-        <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between text-xs text-emerald-400">
+        <div class="voice-review-alert">
           <span>Revisa y ajusta los datos extraídos antes de confirmar.</span>
-          <button type="button" id="btnBackToCapture" class="text-slate-400 hover:text-white underline cursor-pointer">Volver al dictado</button>
+          <button type="button" id="btnBackToCapture" class="voice-back-to-capture-btn">Volver al dictado</button>
         </div>
 
         <div class="space-y-3">
           <label class="block">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Resumen Clínico de la Sesión</span>
-            <textarea id="voiceReviewSummary" rows="3" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-3 text-white text-sm" required></textarea>
+            <span class="voice-field-label">Resumen Clínico de la Sesión</span>
+            <textarea id="voiceReviewSummary" rows="3" class="voice-textarea" required></textarea>
           </label>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="voice-form-grid">
             <label class="block">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dolor (EVA 0-10)</span>
+              <span class="voice-field-label">Dolor (EVA 0-10)</span>
               <div class="flex items-center gap-2 mt-1">
-                <input id="voiceReviewEva" type="number" min="0" max="10" class="w-20 bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" />
-                <span id="voiceReviewEvaCompare" class="text-xs text-slate-400"></span>
+                <input id="voiceReviewEva" type="number" min="0" max="10" class="voice-input w-24" />
+                <span id="voiceReviewEvaCompare" class="text-xs text-slate-500"></span>
               </div>
             </label>
 
             <label class="block">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Zona Corporal</span>
-              <select id="voiceReviewZone" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm">
+              <span class="voice-field-label">Zona Corporal</span>
+              <select id="voiceReviewZone" class="voice-select">
                 <option value="">-- Seleccionar --</option>
                 <option value="cervical">Cervical</option>
                 <option value="espalda">Espalda</option>
@@ -478,15 +527,15 @@
             </label>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="voice-form-grid">
             <label class="block">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Movilidad / Pruebas</span>
-              <input id="voiceReviewMobility" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: flexión completa sin tope doloroso" />
+              <span class="voice-field-label">Movilidad / Pruebas</span>
+              <input id="voiceReviewMobility" type="text" class="voice-input" placeholder="Ej: flexión completa sin tope doloroso" />
             </label>
 
             <label class="block">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Evolución Percibida</span>
-              <select id="voiceReviewEvolution" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm">
+              <span class="voice-field-label">Evolución Percibida</span>
+              <select id="voiceReviewEvolution" class="voice-select">
                 <option value="favorable">Favorable / Mejoría</option>
                 <option value="estable">Estable / Sin cambios</option>
                 <option value="recaida">Recaída / Empeoramiento</option>
@@ -496,25 +545,25 @@
           </div>
 
           <label class="block">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tratamientos Aplicados en Consulta</span>
-            <input id="voiceReviewTreatment" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: Terapia manual, punción seca, movilizaciones" />
+            <span class="voice-field-label">Tratamientos Aplicados en Consulta</span>
+            <input id="voiceReviewTreatment" type="text" class="voice-input" placeholder="Ej: Terapia manual, punción seca, movilizaciones" />
           </label>
 
           <label class="block">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ejercicios Pautados para Casa</span>
-            <input id="voiceReviewExercises" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: Isométricos de cuádriceps 3x10, estiramientos" />
+            <span class="voice-field-label">Ejercicios Pautados para Casa</span>
+            <input id="voiceReviewExercises" type="text" class="voice-input" placeholder="Ej: Isométricos de cuádriceps 3x10, estiramientos" />
           </label>
 
           <label class="block">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Próximo Paso / Pauta</span>
-            <input id="voiceReviewNextStep" type="text" class="mt-1 w-full bg-[#111a26] border border-white/10 rounded-xl p-2.5 text-white text-sm" placeholder="Ej: Revisión en 7 días para progresar carga" />
+            <span class="voice-field-label">Próximo Paso / Pauta</span>
+            <input id="voiceReviewNextStep" type="text" class="voice-input" placeholder="Ej: Revisión en 7 días para progresar carga" />
           </label>
         </div>
 
-        <div class="flex gap-3 justify-end pt-3 border-t border-white/[0.08]">
-          <button type="button" id="voiceReviewCancelBtn" class="px-5 py-2.5 rounded-full text-slate-400 hover:bg-white/5 font-medium transition-colors cursor-pointer">Cancelar</button>
-          <button type="button" id="voiceReviewConfirmBtn" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors shadow-sm cursor-pointer">
-            <span class="material-symbols-rounded">check</span>
+        <div class="voice-modal-footer">
+          <button type="button" id="voiceReviewCancelBtn" class="voice-btn-cancel">Cancelar</button>
+          <button type="button" id="voiceReviewConfirmBtn" class="voice-btn-confirm">
+            <span class="material-symbols-rounded text-base">check</span>
             Confirmar y Guardar en Historial
           </button>
         </div>

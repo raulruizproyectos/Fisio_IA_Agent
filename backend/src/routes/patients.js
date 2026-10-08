@@ -1,6 +1,10 @@
 import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
 import { supabase } from '../lib/supabase.js';
 import { recordAudit } from '../lib/audit.js';
+import { isDate } from '../lib/finance.js';
+import { readClinicalSummary } from '../lib/clinical-summary.js';
+import { createOnce } from '../lib/clinic-creation.js';
 
 const router = Router();
 
@@ -16,6 +20,16 @@ function pickValue(obj, ...keys) {
 const CRM_FIELDS = 'id, nombre, apellidos, email, telefono, fecha_nacimiento, dni, direccion, profesion, medico_derivador, aseguradora, alergias, antecedentes, observaciones, activo, created_at, updated_at';
 
 const firstRow = (data) => (Array.isArray(data) && data.length ? data[0] : null);
+
+function validatePatient(fields) {
+  for (const [key,value] of Object.entries(fields)) {
+    if (value !== null && (typeof value!=='string' || value.length>10000)) return `Campo ${key} inválido`;
+  }
+  if ('nombre' in fields && !fields.nombre?.trim()) return 'El nombre es obligatorio';
+  if (fields.fecha_nacimiento != null && !isDate(fields.fecha_nacimiento)) return 'Fecha de nacimiento inválida';
+  if (fields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) return 'Email inválido';
+  return null;
+}
 
 const normalizeCrmPatient = (p) => ({
   ...p,
@@ -201,7 +215,7 @@ router.get('/:id/ficha', async (req, res, next) => {
     const [citasRes, pagosRes, notasRes] = await Promise.allSettled([
       supabase.from('crm_citas').select('id, inicio_en, fin_en, estado, motivo, created_at').eq('paciente_id', id).order('inicio_en', { ascending: false }).limit(50),
       supabase.from('crm_pagos').select('id, fecha, importe, metodo_pago, concepto, notas').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
-      supabase.from('crm_notas_clinicas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }).limit(100),
+      supabase.from('crm_notas_clinicas').select('*').eq('paciente_id', id).order('session_datetime', { ascending: false, nullsFirst: false }).order('fecha', { ascending: false }).order('created_at', { ascending: false }).order('id', { ascending: false }).limit(100),
     ]);
 
     const moduleAvailability = [
@@ -209,6 +223,12 @@ router.get('/:id/ficha', async (req, res, next) => {
       getSectionAvailability(pagosRes, { key: 'pagos', label: 'Historial de pagos', table: 'crm_pagos', migration: 'database/migrations/007_crm_pagos.sql' }),
       getSectionAvailability(notasRes, { key: 'notas', label: 'Notas clinicas', table: 'crm_notas_clinicas', migration: 'database/migrations/008_ficha_paciente_enriquecida.sql' }),
     ].filter(Boolean);
+    for (const [result,key,label] of [[citasRes,'citas','Historial de citas'],[pagosRes,'pagos','Historial de pagos'],[notasRes,'notas','Notas clínicas']]) {
+      if ((result.status==='rejected' || result.value.error) && !moduleAvailability.some(item=>item.key===key)) {
+        moduleAvailability.push({key,label,status:'unavailable',message:`No se pudo cargar ${label.toLowerCase()}. Vuelve a intentarlo.`});
+      }
+    }
+    const summary = moduleAvailability.some(item=>item.key==='notas') ? {longitudinal_summary:null,longitudinal_updated_at:null} : await readClinicalSummary(supabase,p);
 
     await recordAudit(req, {
       entity_type: 'paciente',
@@ -221,6 +241,8 @@ router.get('/:id/ficha', async (req, res, next) => {
       paciente: {
         ...p,
         nombre_completo: [p.nombre, p.apellidos].filter(Boolean).join(' ').trim(),
+        resumen_clinico_longitudinal: summary.longitudinal_summary,
+        resumen_actualizado_en: summary.longitudinal_updated_at,
       },
       citas: citasRes.status === 'fulfilled' && !citasRes.value.error
         ? (citasRes.value.data || []).map((c) => ({ ...c, fecha_hora: c.inicio_en }))
@@ -243,6 +265,8 @@ router.patch('/:id', async (req, res, next) => {
       if (req.body[key] !== undefined) fields[key] = req.body[key];
     }
     if (!Object.keys(fields).length) return res.status(400).json({ error: 'No fields to update' });
+    const validationError = validatePatient(fields);
+    if (validationError) return res.status(400).json({error:validationError});
 
     fields.updated_at = new Date().toISOString();
     const { data, error } = await supabase
@@ -250,7 +274,7 @@ router.patch('/:id', async (req, res, next) => {
       .update(fields)
       .eq('id', req.params.id)
       .select(CRM_FIELDS)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Paciente no encontrado' });
@@ -302,13 +326,17 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const fullName = String(pickValue(req.body, 'nombre_completo', 'full_name') || '').trim();
+    const nameInput = pickValue(req.body, 'nombre_completo', 'full_name');
+    if (typeof nameInput!=='string' || nameInput.length>200) return res.status(400).json({error:'Nombre completo inválido'});
+    const fullName = nameInput.trim();
     if (!fullName) return res.status(400).json({ error: 'nombre_completo es obligatorio' });
     const [nombre, ...surnameParts] = fullName.split(/\s+/);
     const profileId = req.auth?.profile_id;
-    if (!profileId) return res.status(403).json({ error: 'Perfil profesional no autorizado' });
+    const clinicId = req.auth?.clinic_id;
+    if (!profileId || !clinicId) return res.status(403).json({ error: 'Perfil profesional sin clinica autorizada' });
 
     const payload = {
+      id: randomUUID(),
       nombre,
       apellidos: surnameParts.join(' ') || null,
       fecha_nacimiento: pickValue(req.body, 'fecha_nacimiento', 'birth_date'),
@@ -316,25 +344,31 @@ router.post('/', async (req, res, next) => {
       telefono: pickValue(req.body, 'phone', 'telefono'),
       observaciones: formatLegacyNotes(pickValue(req.body, 'notas_medicas', 'medical_notes')),
       created_by_profile_id: profileId,
+      clinica_id: clinicId,
       activo: true,
     };
+    const validationError = validatePatient({nombre,fecha_nacimiento:payload.fecha_nacimiento,email:payload.email,telefono:payload.telefono});
+    if (validationError) return res.status(400).json({error:validationError});
 
-    const { data, error } = await supabase
+    const {id:_id,created_by_profile_id:_creator,clinica_id:_clinic,activo:_active,...creationFields}=payload;
+    if (await createOnce(req,res,'patient',creationFields,normalizeCrmPatient)) return;
+    // RLS reads ownership from the table; RETURNING cannot yet see the new row.
+    // Keep a server-generated ID and acknowledge the saved input without a second write.
+    const { error } = await supabase
       .from('crm_pacientes')
-      .insert(payload)
-      .select(CRM_FIELDS)
-      .single();
+      .insert(payload);
 
     if (error) throw error;
+    const data = {...payload};
 
     const { error: assignmentError } = await supabase
       .from('crm_asignaciones_fisio_paciente')
-      .upsert({ fisioterapeuta_id: profileId, paciente_id: data.id, estado: 'activa' }, {
+      .upsert({ fisioterapeuta_id: profileId, paciente_id: data.id, clinica_id: clinicId, estado: 'activa' }, {
         onConflict: 'fisioterapeuta_id,paciente_id',
       });
     if (assignmentError && !isMissingTableError({ status: 'fulfilled', value: { error: assignmentError } }, 'crm_asignaciones_fisio_paciente')) {
-      await supabase.from('crm_pacientes').delete().eq('id', data.id);
-      throw assignmentError;
+      // The creator already has access through RLS; never delete a saved patient as compensation.
+      data.assignment_warning = 'Ficha creada; no se pudo guardar la asignación adicional al profesional.';
     }
 
     await recordAudit(req, {
@@ -388,64 +422,12 @@ router.delete('/:id', async (req, res, next) => {
     const patientId = req.params.id;
     const shouldAnonymize = req.query.anonymize === 'true' || req.query.rgpd === 'true';
 
-    // 1. Manejo sobre CRM (fuente canónica)
-    if (shouldAnonymize) {
-      const anonymizedPayload = {
-        nombre: 'Paciente',
-        apellidos: 'Anonimizado RGPD',
-        email: null,
-        telefono: null,
-        dni: null,
-        direccion: null,
-        profesion: null,
-        medico_derivador: null,
-        aseguradora: null,
-        alergias: null,
-        antecedentes: null,
-        observaciones: 'Datos identificativos suprimidos conforme al Art. 17 RGPD',
-        activo: false,
-        updated_at: new Date().toISOString(),
-      };
-
-      await supabase
-        .from('crm_pacientes')
-        .update(anonymizedPayload)
-        .eq('id', patientId);
-
-      await recordAudit(req, {
-        entity_type: 'paciente',
-        entity_id: patientId,
-        action: 'gdpr_anonymize',
-        metadata: { reason: 'solicitud_supresion_rgpd' },
-      });
-    } else {
-      const { error: crmErr } = await supabase
-        .from('crm_pacientes')
-        .update({ activo: false, updated_at: new Date().toISOString() })
-        .eq('id', patientId);
-
-      if (crmErr) {
-        await supabase.from('crm_pacientes').delete().eq('id', patientId);
-      }
-
-      await recordAudit(req, {
-        entity_type: 'paciente',
-        entity_id: patientId,
-        action: 'delete',
-        metadata: { type: 'soft_delete' },
-      });
-    }
-
-    // 2. Limpieza de tabla legacy si existiera
-    try {
-      await supabase
-        .from('pacientes')
-        .delete()
-        .eq('id', patientId);
-    } catch {
-      // Ignorar si no existe en tabla legacy
-    }
-
+    if (shouldAnonymize) return res.status(409).json({error:'La supresión de identidad requiere revisar también historial, documentos y facturas. No se ha anonimizado ningún dato.'});
+    const {data,error} = await supabase.from('crm_pacientes')
+      .update({activo:false,updated_at:new Date().toISOString()}).eq('id',patientId).select('id').maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({error:'Paciente CRM no encontrado; no se modificó ninguna ficha antigua.'});
+    await recordAudit(req,{entity_type:'paciente',entity_id:patientId,action:'delete',metadata:{type:'soft_delete'}});
     res.status(204).send();
   } catch (err) {
     next(err);

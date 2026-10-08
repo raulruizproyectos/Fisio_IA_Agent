@@ -1,0 +1,143 @@
+/* ==========================================================================
+   FISIO CLINICAL — PRECISION DOCUMENTS (v5.0)
+   Covers: Documentos y Consentimientos Informados
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   ========================================================================== */
+
+.documentos-workbench {
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.documentos-workbench-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.documentos-workbench-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #142234;
+}
+
+/* Summary KPI Cards */
+.documentos-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .documentos-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+.documentos-summary .ops-signal {
+  background: #f4f7fb;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ops-signal-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #536375;
+}
+
+.ops-signal-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #142234;
+}
+
+.documentos-value-ok {
+  color: #047857;
+}
+
+.documentos-value-warn {
+  color: #b45309;
+}
+
+.ops-signal-hint {
+  font-size: 0.8125rem;
+  color: #94a3b8;
+}
+
+/* Documents Table */
+.documentos-table-wrap {
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: #ffffff;
+}
+
+.documentos-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.documentos-table thead {
+  background: #f4f7fb;
+  border-bottom: 1px solid #dce3ed;
+}
+
+.documentos-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.documentos-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.documentos-table tbody tr:hover {
+  background: #f4f7fb;
+}
+
+.documentos-status-signed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.documentos-status-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: #fffbeb;
+  color: #92400e;
+}

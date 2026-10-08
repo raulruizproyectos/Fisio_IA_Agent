@@ -42,19 +42,19 @@
   background: transparent !important;
 }
 
-/* === SIDEBAR (CANOPY GREEN BRAND ANCHOR) === */
+/* === SIDEBAR (PRECISION WORKSPACE DARK SLATE) === */
 .sidebar,
 aside.sidebar {
   width: clamp(230px, 18vw, 270px) !important;
-  background: var(--color-canopy-green) !important;
+  background: var(--sidebar-bg, #0f172a) !important;
   color: #ffffff !important;
   display: flex !important;
   flex-direction: column !important;
-  border-right: 0 !important;
-  padding: 1.5rem 1.15rem !important;
-  gap: 1.25rem !important;
+  border-right: 1px solid var(--sidebar-border, rgba(255, 255, 255, 0.08)) !important;
+  padding: 1.25rem 0.85rem !important;
+  gap: 1rem !important;
   flex-shrink: 0 !important;
-  box-shadow: 2px 0 16px rgba(10, 57, 34, 0.08) !important;
+  box-shadow: 2px 0 12px rgba(15, 23, 42, 0.2) !important;
   z-index: 20 !important;
 }
 
@@ -70,9 +70,9 @@ aside.sidebar {
 .brand-icon {
   width: 38px !important;
   height: 38px !important;
-  border-radius: 10px !important;
-  background: var(--color-mint-wash) !important;
-  color: var(--color-canopy-green) !important;
+  border-radius: 8px !important;
+  background: #0f5b78 !important;
+  color: #ffffff !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -89,7 +89,7 @@ aside.sidebar {
 
 .brand-info small {
   display: block !important;
-  color: var(--color-mint-wash) !important;
+  color: #38bdf8 !important;
   font-size: 10px !important;
   font-weight: 700 !important;
   letter-spacing: 0.08em !important;
@@ -98,10 +98,10 @@ aside.sidebar {
 
 /* Quick Status Badge */
 .clinic-status-badge {
-  background: rgba(210, 242, 227, 0.12) !important;
-  border: 1px solid rgba(210, 242, 227, 0.2) !important;
-  border-radius: 12px !important;
-  padding: 0.6rem 0.85rem !important;
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  border-radius: 8px !important;
+  padding: 0.55rem 0.85rem !important;
   display: flex !important;
   align-items: center !important;
   gap: 0.6rem !important;
@@ -111,8 +111,8 @@ aside.sidebar {
   width: 8px !important;
   height: 8px !important;
   border-radius: 9999px !important;
-  background: var(--color-leaf-bright) !important;
-  box-shadow: 0 0 8px var(--color-leaf-bright) !important;
+  background: #10b981 !important;
+  box-shadow: 0 0 8px #10b981 !important;
 }
 
 .clinic-status-badge strong {
@@ -122,17 +122,17 @@ aside.sidebar {
 }
 
 .clinic-status-badge span {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: #94a3b8 !important;
   font-size: 11px !important;
   display: block !important;
 }
 
 /* "Nuevo plan con IA" Callout Button */
 .btn-new-plan-ai {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: var(--radius-card) !important;
-  padding: 0.85rem 1rem !important;
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid rgba(51, 65, 85, 0.8) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 0.9rem !important;
   color: #ffffff !important;
   display: flex !important;
   align-items: center !important;
@@ -142,40 +142,40 @@ aside.sidebar {
 }
 
 .btn-new-plan-ai:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(51, 65, 85, 0.9) !important;
+  border-color: #38bdf8 !important;
 }
 
 .btn-new-plan-ai strong {
   display: block !important;
-  font-size: 13px !important;
+  font-size: 12.5px !important;
   font-weight: 600 !important;
   color: #ffffff !important;
 }
 
 .btn-new-plan-ai small {
   display: block !important;
-  font-size: 11px !important;
-  color: var(--color-mint-wash) !important;
+  font-size: 10.5px !important;
+  color: #38bdf8 !important;
 }
 
 /* Nav groups */
 .nav-group-title {
-  color: rgba(210, 242, 227, 0.55) !important;
-  font-size: 11px !important;
+  color: #94a3b8 !important;
+  font-size: 10.5px !important;
   font-weight: 700 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
-  padding: 0.75rem 0.5rem 0.35rem !important;
+  padding: 0.65rem 0.5rem 0.25rem !important;
 }
 
 .nav-item {
   display: flex !important;
   align-items: center !important;
   gap: 0.75rem !important;
-  padding: 0.6rem 0.95rem !important;
-  border-radius: var(--radius-button) !important;
-  color: rgba(255, 255, 255, 0.8) !important;
+  padding: 0.55rem 0.85rem !important;
+  border-radius: 6px !important;
+  color: #cbd5e1 !important;
   font-size: 13.5px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
@@ -187,45 +187,46 @@ aside.sidebar {
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(30, 41, 59, 0.8) !important;
   color: #ffffff !important;
 }
 
 .nav-item.active {
-  background: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(15, 91, 120, 0.35) !important;
   color: #ffffff !important;
   font-weight: 600 !important;
+  border-left: 3px solid #38bdf8 !important;
 }
 
 .nav-item .material-symbols-rounded {
-  color: var(--color-mint-wash) !important;
+  color: #94a3b8 !important;
   font-size: 20px !important;
 }
 
 .nav-item.active .material-symbols-rounded {
-  color: #ffffff !important;
+  color: #38bdf8 !important;
 }
 
 /* User block at sidebar bottom */
 .sidebar-user {
   margin-top: auto !important;
-  padding-top: 1rem !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding-top: 0.85rem !important;
+  border-top: 1px solid #1e293b !important;
   display: flex !important;
   align-items: center !important;
   gap: 0.75rem !important;
 }
 
 .user-avatar {
-  width: 36px !important;
-  height: 36px !important;
-  border-radius: 9999px !important;
-  background: var(--color-deep-teal) !important;
-  color: var(--color-mint-wash) !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 6px !important;
+  background: #0f5b78 !important;
+  color: #ffffff !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
   font-weight: 700 !important;
 }
 

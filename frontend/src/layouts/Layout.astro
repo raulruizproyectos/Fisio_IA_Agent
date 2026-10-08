@@ -8,10 +8,22 @@ const { title, description = 'Plataforma integral de gestión clínica y seguimi
 import '../styles/global.css';
 import '../styles/design-tokens.css';
 import '../styles/editorial-primitives.css';
-import '../styles/editorial-shell.css';
 import '../styles/editorial-views.css';
+import '../styles/precision-system.css';
+import '../styles/precision-patients.css';
+import '../styles/precision-ficha.css';
+import '../styles/precision-agenda.css';
 import '../styles/assistant-rail.css';
+import '../styles/precision-dashboard.css';
+import '../styles/precision-plantillas.css';
+import '../styles/precision-voice.css';
+import '../styles/precision-finance.css';
+import '../styles/precision-documents.css';
+import '../styles/precision-messages.css';
+import '../styles/precision-history.css';
+import '../styles/precision-settings.css';
 import '../styles/global-shell.css';
+import '../styles/precision-blue.css';
 import '@fontsource-variable/dm-sans';
 ---
 
@@ -22,8 +34,7 @@ import '@fontsource-variable/dm-sans';
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, shrink-to-fit=no" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
-    <meta name="fisio-build" content="2026-04-13-clinic-editorial-v4" />
-    <script is:inline src="/runtime-config.js"></script>
+    <meta name="fisio-build" content="2026-10-08-precision-blue-v6" />
     <link rel="stylesheet" href="/material-symbols.css" />
     <style is:inline>
       :root {
@@ -61,186 +72,9 @@ import '@fontsource-variable/dm-sans';
     <title>{title}</title>
   </head>
   <body>
+    <script is:inline src="/runtime-config.js"></script>
     <slot />
-    <script is:inline>
-      /* === ICON LIGATURE TO UNICODE FIX === */
-      (() => {
-        const M={home:'\ue88a',group:'\ue7ef',calendar_today:'\ue935',calendar_month:'\ue935',prescriptions:'\uf0e3',payments:'\uef63',account_balance:'\ue84f',receipt_long:'\uef6b',receipt:'\ue8b0',confirmation_number:'\ue638',card_giftcard:'\ue8f6',forward_to_inbox:'\uf187',folder_open:'\ue2c8',settings:'\ue8b8',menu:'\ue5d2',psychology:'\uea4a',neurology:'\ue138',event_available:'\ue614',euro:'\uea15',person:'\ue7fd',person_add:'\ue7fe',person_search:'\uf106',person_off:'\ue510',close:'\ue5cd',picture_as_pdf:'\ue415',electric_bolt:'\uec1c',arrow_upward:'\ue5d8',arrow_forward:'\ue5c8',arrow_back:'\ue5c4',arrow_outward:'\uf8ce',medical_services:'\uf109',right_panel_open:'\uf7cf',notifications:'\ue7f4',search:'\ue8b6',report:'\ue160',refresh:'\ue5d5',sync:'\ue627',edit:'\ue3c9',delete:'\ue872',save:'\ue161',add:'\ue145',add_card:'\ueb86',check:'\ue5ca',visibility:'\ue8f4',visibility_off:'\ue8f5',expand_more:'\ue5cf',expand_less:'\ue5ce',content_copy:'\ue14d',done:'\ue876',info:'\ue88e',warning:'\ue002',error:'\ue000',help:'\ue887',smart_toy:'\uefff',description:'\ue873',assignment:'\ue85d',library_books:'\ue02f',check_circle:'\ue86c',cancel:'\ue5c9',more_vert:'\ue5d4',star:'\ue838',favorite:'\ue87d',schedule:'\ue8b5',place:'\ue55f',phone:'\ue0cd',call:'\uf0d4',email:'\ue0be',mail:'\ue158',chat:'\ue0b7',send:'\ue163',attach_file:'\ue226',download:'\uf090',upload:'\uf09b',print:'\ue8ad',share:'\ue80d',link:'\ue157',open_in_new:'\ue89e',fullscreen:'\ue5d0',zoom_in:'\ue8ff',zoom_out:'\ue900',undo:'\ue166',redo:'\ue15a',filter_list:'\ue152',sort:'\ue164',drag_indicator:'\ue945',chevron_left:'\ue5cb',chevron_right:'\ue5cc',keyboard_arrow_down:'\ue313',keyboard_arrow_up:'\ue316',first_page:'\ue5dc',last_page:'\ue5dd',navigate_before:'\ue408',navigate_next:'\ue409',radio_button_unchecked:'\ue836',radio_button_checked:'\ue837',check_box:'\ue834',check_box_outline_blank:'\ue835',indeterminate_check_box:'\ue909',toggle_on:'\ue9f6',toggle_off:'\ue9f5',lock:'\ue897',lock_open:'\ue898',verified:'\uef76',task_alt:'\ue2e6',pending:'\uef64',hourglass_empty:'\ue88b',hourglass_top:'\ue88b',timer:'\ue425',update:'\ue923',history:'\ue889',trending_up:'\ue8e5',trending_down:'\ue8e3',bar_chart:'\ue26b',pie_chart:'\ue6c4',analytics:'\uef3e',dashboard:'\ue871',inventory:'\ue179',local_hospital:'\ue548',healing:'\ue3f3',fitness_center:'\ueb43',accessibility_new:'\ue92c',self_improvement:'\uea78',spa:'\ueb4c',sports:'\uea30',directions_run:'\ue566',elderly:'\uf21a',restart_alt:'\uf053',draw:'\ue746',robot_2:'\uf5d0',clinical_notes:'\uf1dc',note_add:'\ue89c',cloud_off:'\ue2c1'};
-        const fix = () => {
-          document.querySelectorAll('.material-symbols-rounded').forEach(el => {
-            const t = el.textContent.trim();
-            if (M[t]) el.textContent = M[t];
-          });
-        };
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
-        else fix();
-        new MutationObserver(muts => {
-          for (const m of muts) {
-            for (const n of m.addedNodes) {
-              if (n.nodeType === 1) {
-                if (n.classList?.contains('material-symbols-rounded')) {
-                  const t = n.textContent.trim();
-                  if (M[t]) n.textContent = M[t];
-                }
-                n.querySelectorAll?.('.material-symbols-rounded')?.forEach(el => {
-                  const t = el.textContent.trim();
-                  if (M[t]) el.textContent = M[t];
-                });
-              }
-            }
-          }
-        }).observe(document.documentElement, {childList: true, subtree: true});
-      })();
-    </script>
-    <script is:inline>
-      (() => {
-        const MOJIBAKE_RE = /(?:\u00C3|\u00C2|\u00E2|\u00F0|\u00D0|\u00D1|\uFFFD|\u0152|\u0153|\u0161|\u0178|\u00EF\u00BF\u00BD)/;
-        const CP1252_UNICODE_TO_BYTE = {
-          0x20ac: 0x80,
-          0x201a: 0x82,
-          0x0192: 0x83,
-          0x201e: 0x84,
-          0x2026: 0x85,
-          0x2020: 0x86,
-          0x2021: 0x87,
-          0x02c6: 0x88,
-          0x2030: 0x89,
-          0x0160: 0x8a,
-          0x2039: 0x8b,
-          0x0152: 0x8c,
-          0x017d: 0x8e,
-          0x2018: 0x91,
-          0x2019: 0x92,
-          0x201c: 0x93,
-          0x201d: 0x94,
-          0x2022: 0x95,
-          0x2013: 0x96,
-          0x2014: 0x97,
-          0x02dc: 0x98,
-          0x2122: 0x99,
-          0x0161: 0x9a,
-          0x203a: 0x9b,
-          0x0153: 0x9c,
-          0x017e: 0x9e,
-          0x0178: 0x9f,
-        };
-
-        const toLegacyBytes = (text) => {
-          const bytes = [];
-          for (const ch of text) {
-            const code = ch.codePointAt(0);
-            if (typeof code !== 'number') continue;
-            if (code <= 0xff) {
-              bytes.push(code);
-              continue;
-            }
-            const mapped = CP1252_UNICODE_TO_BYTE[code];
-            if (typeof mapped === 'number') {
-              bytes.push(mapped);
-              continue;
-            }
-            return null;
-          }
-          return new Uint8Array(bytes);
-        };
-
-        const decodeUtf8Bytes = (bytes) => {
-          try {
-            return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-          } catch {
-            try {
-              return new TextDecoder('utf-8').decode(bytes);
-            } catch {
-              return '';
-            }
-          }
-        };
-
-        const decodeMojibake = (value) => {
-          let current = String(value ?? '');
-          if (!MOJIBAKE_RE.test(current)) return current;
-
-          for (let pass = 0; pass < 3; pass += 1) {
-            const bytes = toLegacyBytes(current);
-            if (!bytes) break;
-            const decoded = decodeUtf8Bytes(bytes);
-            if (!decoded || decoded === current) break;
-            current = decoded;
-            if (!MOJIBAKE_RE.test(current)) break;
-          }
-
-          return typeof current.normalize === 'function' ? current.normalize('NFC') : current;
-        };
-
-        const sanitizeTextNode = (node) => {
-          const original = node.nodeValue || '';
-          if (!MOJIBAKE_RE.test(original)) return;
-          const fixed = decodeMojibake(original);
-          if (fixed && fixed !== original) node.nodeValue = fixed;
-        };
-
-        const sanitizeAttributes = (element) => {
-          if (!element || typeof element.getAttribute !== 'function') return;
-          const attrs = ['title', 'aria-label', 'placeholder', 'alt'];
-          attrs.forEach((attr) => {
-            const original = element.getAttribute(attr);
-            if (!original || !MOJIBAKE_RE.test(original)) return;
-            const fixed = decodeMojibake(original);
-            if (fixed && fixed !== original) element.setAttribute(attr, fixed);
-          });
-        };
-
-        const sanitizeTree = (root) => {
-          if (!root) return;
-          if (root.nodeType === Node.TEXT_NODE) {
-            sanitizeTextNode(root);
-            return;
-          }
-          if (root.nodeType === Node.ELEMENT_NODE) {
-            sanitizeAttributes(root);
-            const nodeList = root.querySelectorAll
-              ? root.querySelectorAll('[title],[aria-label],[placeholder],[alt]')
-              : [];
-            nodeList.forEach((node) => sanitizeAttributes(node));
-          }
-          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-          let current = walker.nextNode();
-          while (current) {
-            sanitizeTextNode(current);
-            current = walker.nextNode();
-          }
-        };
-
-        const sanitizeDocument = () => {
-          document.title = decodeMojibake(document.title);
-          sanitizeTree(document.body);
-        };
-
-        sanitizeDocument();
-
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.type === 'characterData' && mutation.target) {
-              sanitizeTextNode(mutation.target);
-              return;
-            }
-            if (mutation.type === 'attributes' && mutation.target) {
-              sanitizeAttributes(mutation.target);
-              return;
-            }
-            mutation.addedNodes.forEach((node) => sanitizeTree(node));
-          });
-        });
-
-        observer.observe(document.documentElement, {
-          childList: true,
-          subtree: true,
-          characterData: true,
-          attributes: true,
-          attributeFilter: ['title', 'aria-label', 'placeholder', 'alt'],
-        });
-      })();
-    </script>
+    <script src="../scripts/layout.js"></script>
   </body>
 </html>
 
@@ -253,87 +87,12 @@ import '@fontsource-variable/dm-sans';
     padding: 0;
   }
 
-  :root {
-    /* === BACKGROUNDS === */
-    --bg-base: #f6f1e8;
-    --bg-card: #fffdfa;
-    --bg-card-hover: #faf5ed;
-    --bg-elevated: #fffefc;
-    --bg-surface: #f3eee5;
-
-    /* === BRAND / ACCENT === */
-    --accent: hsl(174, 65%, 22%);
-    --accent-hover: hsl(174, 65%, 15%);
-    --accent-soft: rgba(23, 107, 99, 0.1);
-    --accent-glow: rgba(23, 107, 99, 0.2);
-    --premium: #a67c39;
-    --premium-soft: rgba(166, 124, 57, 0.12);
-
-    /* === TYPOGRAPHY === */
-    --text-primary: #162231;
-    --text-secondary: #526071;
-    --text-muted: #7e8a98;
-    --font-ui: 'Manrope', 'Segoe UI', system-ui, sans-serif;
-    --font-display: 'Manrope', 'Segoe UI', system-ui, sans-serif;
-
-    /* === BORDERS === */
-    --border: #ddd3c3;
-    --border-light: #eee6d9;
-    --border-strong: #cbbda7;
-
-    /* === SEMANTIC COLORS === */
-    --danger: hsl(350, 70%, 50%);
-    --danger-soft: rgba(220, 79, 82, 0.08);
-    --warning: #bf8a31;
-    --warning-soft: rgba(191, 138, 49, 0.12);
-    --success: hsl(150, 60%, 40%);
-    --success-soft: rgba(33, 145, 110, 0.1);
-    --info: #456b99;
-    --info-soft: rgba(69, 107, 153, 0.1);
-
-    /* === RADIUS === */
-    --radius-xs: 6px;
-    --radius-sm: 10px;
-    --radius-md: 14px;
-    --radius-lg: 18px;
-    --radius-xl: 24px;
-
-    /* === SHADOWS === */
-    --shadow-xs: 0 1px 2px rgba(22, 34, 49, 0.04);
-    --shadow-sm: 0 10px 24px rgba(42, 42, 42, 0.05), 0 2px 6px rgba(22, 34, 49, 0.04);
-    --shadow-md: 0 18px 38px rgba(42, 42, 42, 0.08), 0 4px 12px rgba(22, 34, 49, 0.05);
-    --shadow-lg: 0 24px 56px rgba(42, 42, 42, 0.11), 0 8px 18px rgba(22, 34, 49, 0.06);
-    --shadow-xl: 0 36px 74px rgba(42, 42, 42, 0.14), 0 10px 24px rgba(22, 34, 49, 0.08);
-
-    /* === GLASS === */
-    --glass: rgba(255, 251, 245, 0.88);
-    --glass-border: rgba(203, 189, 167, 0.55);
-
-    /* === SIDEBAR === */
-    --sidebar-bg: #162331;
-    --sidebar-bg2: #101924;
-    --sidebar-border: rgba(166, 124, 57, 0.16);
-    --sidebar-text: #b8c7d8;
-    --sidebar-text-hover: #f5f7fa;
-    --sidebar-active-bg: linear-gradient(135deg, rgba(23, 107, 99, 0.34), rgba(166, 124, 57, 0.2));
-    --sidebar-active-color: #f4f1eb;
-
-    /* === TRANSITIONS === */
-    --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* === FLUID SIDEBAR WIDTH === */
-    --sidebar-width: clamp(200px, 16vw, 260px);
-    --sidebar-collapsed: clamp(48px, 4vw, 64px);
-    --topbar-height: 62px;
-  }
-
   html {
     font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Fluid base font: 14px on small screens, 15px on desktop, 16px on large */
-    font-size: clamp(13.5px, 0.9vw + 10px, 15.5px);
+    /* Stable reading size across desktop and mobile. */
+    font-size: 15px;
     scroll-behavior: smooth;
     width: 100%;
     max-width: 100%;
@@ -348,19 +107,16 @@ import '@fontsource-variable/dm-sans';
     width: 100%;
     max-width: 100%;
     overflow-x: clip;
-    background:
-      radial-gradient(circle at top left, rgba(166, 124, 57, 0.08), transparent 28%),
-      radial-gradient(circle at top right, rgba(23, 107, 99, 0.06), transparent 24%),
-      linear-gradient(180deg, #f8f3eb 0%, var(--bg-base) 48%, #f2ebe2 100%);
-    color: var(--text-primary);
+    background: var(--color-canvas);
+    color: var(--color-ink);
     line-height: 1.5;
   }
 
   h1, h2, h3, h4, .page-title {
     font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1.04;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
   }
 
   .brand-text {

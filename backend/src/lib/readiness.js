@@ -1,4 +1,34 @@
+import { publicErrorMessage } from './public-error.js';
+
 const TABLE_CHECKS = [
+  {
+    key: 'calendar_verification', label: 'Comprobación verificada de Calendar', table: 'crm_citas',
+    columns: 'calendar_sync_in_flight, calendar_sync_operation_id, calendar_sync_calendar_id', severity: 'core',
+    migration: 'database/migrations/20261008090742_appointment_calendar_verification.sql',
+  },
+  {
+    key: 'calendar_persistence', label: 'Guardado de citas antes de Calendar', table: 'crm_citas', columns: 'calendar_sync_pending', severity: 'core',
+    migration: 'database/migrations/20261008064542_appointment_calendar_pending.sql',
+  },
+  {
+    key: 'financial_integrity', label: 'Vinculación de cobros y facturas', table: 'crm_pagos', columns: 'factura_id', severity: 'core',
+    migration: 'database/migrations/20261007154552_financial_integrity.sql',
+  },
+  {
+    key: 'exercise_approval',
+    label: 'Contenido y revisión de planes',
+    table: 'crm_recomendaciones',
+    columns: 'report_snapshot, report_version, reviewed_at, reviewed_by_profile_id',
+    severity: 'core',
+    migration: 'database/migrations/20261007094023_clinical_approval_integrity.sql',
+  },
+  {
+    key: 'clinicas',
+    label: 'Clinicas CRM',
+    table: 'crm_clinicas',
+    severity: 'core',
+    migration: 'database/migrations/20261007091159_clinic_isolation.sql',
+  },
   {
     key: 'pacientes',
     label: 'Pacientes CRM',
@@ -10,8 +40,9 @@ const TABLE_CHECKS = [
     key: 'citas',
     label: 'Citas CRM',
     table: 'crm_citas',
+    columns: 'request_id, public_booking_hash',
     severity: 'core',
-    migration: 'database/schema_vnext.sql',
+    migration: 'database/migrations/20261007214504_public_booking_retries.sql',
   },
   {
     key: 'pagos',
@@ -31,8 +62,9 @@ const TABLE_CHECKS = [
     key: 'facturas',
     label: 'Facturacion',
     table: 'crm_facturas',
+    columns: 'id, exencion_iva',
     severity: 'optional',
-    migration: 'database/migrations/009_crm_facturas.sql',
+    migration: 'database/migrations/20261007154552_financial_integrity.sql',
   },
   {
     key: 'documentos',
@@ -96,6 +128,23 @@ export function buildIntegrationConfigurationReport(env = {}) {
       mode: 'patient_bot',
     },
     {
+      key: 'whatsapp_pilot',
+      label: 'WhatsApp de pruebas',
+      criticality: env.OPENWA_PILOT_ENABLED === 'true' ? 'core' : 'optional',
+      status: env.OPENWA_PILOT_ENABLED !== 'true' ? 'not_used'
+        : hasAll(env, ['OPENWA_BASE_URL', 'OPENWA_API_KEY', 'OPENWA_SESSION_ID', 'OPENWA_WEBHOOK_SECRET', 'MESSAGING_PILOT_CLINIC_ID', 'MESSAGING_PILOT_PROFESSIONAL_ID']) ? 'configured' : 'missing',
+      mode: 'openwa_single_clinic_pilot',
+      note: 'Configuración declarada; no comprueba conexión del número ni entrega de mensajes.',
+    },
+    {
+      key: 'telegram_booking_pilot',
+      label: 'Reservas de pruebas por Telegram',
+      criticality: env.TELEGRAM_PILOT_BOOKING_ENABLED === 'true' ? 'core' : 'optional',
+      status: env.TELEGRAM_PILOT_BOOKING_ENABLED !== 'true' ? 'not_used'
+        : hasAll(env, ['TELEGRAM_PATIENT_BOT_TOKEN', 'TELEGRAM_PILOT_WEBHOOK_SECRET', 'MESSAGING_PILOT_CLINIC_ID', 'MESSAGING_PILOT_PROFESSIONAL_ID']) ? 'configured' : 'missing',
+      mode: 'shared_patient_booking_pilot',
+    },
+    {
       key: 'google_calendar',
       label: 'Google Calendar',
       criticality: String(env.GOOGLE_CALENDAR_REQUIRED || '').toLowerCase() === 'true' ? 'core' : 'optional',
@@ -129,11 +178,11 @@ const buildCheckMessage = (check, error) => {
     return `Falta tabla ${check.table}. Ejecuta ${check.migration}.`;
   }
 
-  return String(error?.message || `No se pudo verificar ${check.table}.`);
+  return publicErrorMessage(error, `No se pudo verificar ${check.table}.`);
 };
 
 const checkTable = async (supabase, check) => {
-  const { error } = await supabase.from(check.table).select('*', { head: true, count: 'exact' }).limit(1);
+  const { error } = await supabase.from(check.table).select(check.columns || '*', { head: true, count: 'exact' }).limit(1);
 
   if (!error) {
     return {
@@ -160,6 +209,12 @@ const checkTable = async (supabase, check) => {
 
 export async function buildReadinessReport({ supabase, env }) {
   const integrationReport = buildIntegrationConfigurationReport(env);
+  const tableChecks = [...TABLE_CHECKS];
+  if (env.OPENWA_PILOT_ENABLED === 'true' || env.TELEGRAM_PILOT_BOOKING_ENABLED === 'true') {
+    for (const table of ['crm_mensajeria_vinculos', 'crm_mensajeria_eventos', 'crm_whatsapp_envios']) tableChecks.push({
+      key: table, table, label: table, severity: 'core', migration: 'database/migrations/20261007101248_messaging_pilot.sql',
+    });
+  }
   const envStatus = {
     supabase_url_configured: Boolean(env.SUPABASE_URL),
     supabase_service_role_configured: Boolean(env.SUPABASE_SERVICE_ROLE_KEY),
@@ -172,7 +227,7 @@ export async function buildReadinessReport({ supabase, env }) {
       timestamp: new Date().toISOString(),
       environment: envStatus,
       summary: {
-        total_checks: TABLE_CHECKS.length,
+        total_checks: tableChecks.length,
         ok_checks: 0,
         missing_checks: 0,
         error_checks: 0,
@@ -190,7 +245,14 @@ export async function buildReadinessReport({ supabase, env }) {
   let checks;
 
   try {
-    checks = await Promise.all(TABLE_CHECKS.map((check) => checkTable(supabase, check)));
+    checks = await Promise.all(tableChecks.map((check) => checkTable(supabase, check)));
+    // Null input cannot create a row. service_role must be denied; PGRST202 means the migration is absent.
+    const creation = await supabase.rpc('create_clinic_record_once', {operation_id:null,kind:null,fields:null});
+    checks.push({key:'creation_retries',label:'Guardados sin duplicados',severity:'core',
+      migration:'database/migrations/20261007201534_clinic_creation_retries.sql',
+      status:creation.error?.code==='42501' ? 'ok' : creation.error?.code==='PGRST202' ? 'missing' : 'error',
+      ...(creation.error?.code==='42501' ? {} : {message:'No se pudo verificar la protección de altas. Revisa la migración de guardados.',code:creation.error?.code || null}),
+    });
   } catch (error) {
     return {
       status: 'error',
@@ -198,7 +260,7 @@ export async function buildReadinessReport({ supabase, env }) {
       timestamp: new Date().toISOString(),
       environment: envStatus,
       summary: {
-        total_checks: TABLE_CHECKS.length,
+        total_checks: tableChecks.length,
         ok_checks: 0,
         missing_checks: 0,
         error_checks: 1,
@@ -209,7 +271,7 @@ export async function buildReadinessReport({ supabase, env }) {
       integrations: integrationReport.checks,
       integration_summary: integrationReport.summary,
       missing_tables: [],
-      message: String(error?.message || 'No se pudo completar la comprobacion de readiness.'),
+      message: publicErrorMessage(error, 'No se pudo completar la comprobacion de readiness.'),
     };
   }
 
