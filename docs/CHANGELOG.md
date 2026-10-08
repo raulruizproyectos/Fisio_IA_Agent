@@ -4,7 +4,7 @@
 
 - PR #2 fusionado; cinco migraciones Cloud aplicadas y verificadas; frontend/backend desplegados en el VPS existente. CSP/runtime, rechazo anónimo, CSRF y cookies de proxy comprobados.
 - Usuario reconectó Google. Workflows actuales autenticados y exportados sin secretos; bot paciente sin segunda reserva y cuerpos JSON corregidos. W6 permite lectura íntegra/paginada para la recuperación de Calendar.
-- Recordatorios conservan entregas inciertas y verifican errores de lectura/recibo. Comprobación Calendar OAuth y rechazo de W5 vacío con pruebas de regresión. Backend lint/106 pruebas y frontend check/build pasan. Despliegue de esta corrección y validación de cron pendientes en este punto.
+- Recordatorios conservan entregas inciertas y verifican errores de lectura/recibo. Comprobación Calendar OAuth y rechazo de W5 vacío con pruebas de regresión. Backend lint/106 pruebas y frontend check/build pasan. Desplegado 79bfeee con CI verde. Readiness 13/13, seis integraciones completas; Calendar CRUD ficticio, login/cookies/logout reales y Gmail por lectura pasan. Doce workflows coinciden con fuente; Calendar sync sano cada dos minutos y recordatorios horarios activos por autorización específica, endpoint comprobado con cero envíos.
 
 ## 2026-10-08 — Preparación de GitHub y testing en producción
 
