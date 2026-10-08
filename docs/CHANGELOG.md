@@ -2,7 +2,9 @@
 
 ## 2026-10-08 — Preparación de GitHub y testing en producción
 
-- Precisión azul aceptada por ahora. EasyPanel/API HTTPS y dominios actuales comprobados; servicios aún en la versión del 20 de septiembre. Pendientes: copia nativa actual y cinco migraciones, configuración/deploy autorizados y pruebas con proveedores reales.
+- Rama publicada y PR #2 en borrador; CI backend/n8n/frontend verde en `28c201d`, incluido contenedor Docker/nginx. Corregidos lockfile npm, scanner sin dependencia backend, variables libpq vacías y espera de arranque del contenedor.
+- Usuario completó cambio de contraseña PostgreSQL. Copia nativa actual creada y restaurada localmente: 35 tablas públicas/27 Auth coinciden por cantidades y hashes; cinco migraciones ensayadas sin perder filas. Recibos/copias privados; ensayo CRM/Auth, no restauración completa de internos gestionados. URI solo en `.env.local`. Main/Cloud/servicios siguen sin actualizar.
+- Precisión azul aceptada por ahora. EasyPanel/API HTTPS y dominios actuales comprobados; servicios aún en la versión del 20 de septiembre. Pendientes: aplicar las cinco migraciones ensayadas, configurar/desplegar con autorización y probar proveedores reales.
 - Docker frontend excluye archivos `.env*` y usa instalación estricta del lockfile. CI elimina una clave placeholder incompatible con las guardas actuales, usa `npm ci` y verifica CSP/runtime/saludo y ausencia de secretos cliente.
 - Backend lint/100 pruebas, frontend check/build y regresiones CSP/configuración/runtime pasan. Estado y recorrido operativo en `PRODUCTION_TESTING.md`; actualización GitHub mediante rama/PR, sin fusionar ni desplegar automáticamente.
 

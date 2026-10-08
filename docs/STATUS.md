@@ -1,12 +1,12 @@
 # Project Status
 
-Actualizado: 2026-10-08, preparación de testing en producción. Precisión azul aceptada por ahora; despliegue pendiente de copia verificable y autorización concreta.
+Actualizado: 2026-10-08, preparación de testing en producción. Precisión azul aceptada; copia CRM/Auth restaurada y migraciones ensayadas en local. Despliegue pendiente de autorización concreta.
 
 ## GitHub y preparación de producción
 
-- Rama `mejoras/auditoria-20260915` publicada y PR #2 abierto en borrador hacia `main`, por autorización del usuario. No fusionar ni desplegar por esa aprobación. Primer CI: backend/n8n pasan, frontend encuentra entradas opcionales ausentes; lockfile reparado con npm 11.19.0 y dry-run limpio pasando. Verificar la siguiente ejecución en el PR; preservar secretos/copias locales fuera de Git.
+- Rama `mejoras/auditoria-20260915` publicada y PR #2 abierto en borrador hacia `main`, por autorización del usuario. No fusionar ni desplegar por esa aprobación. Backend/n8n/frontend CI verdes en `28c201d`, incluido Docker/nginx real. Preservar secretos/copias locales fuera de Git y comprobar CI del commit documental final.
 - EasyPanel accesible por API HTTPS con el token existente: proyecto `fisio-ia-agent`, servicios frontend/backend y URLs localizados. Ambos siguen en `aa211205`, versión del 20 de septiembre; salud responde 200. La nueva versión local aún no está desplegada.
-- Supabase sano; faltan las cinco migraciones de finanzas/reintentos/Calendar. Copia antigua incompatible con el inventario actual (35 tablas, una cuenta Auth); falta `SUPABASE_DB_URL` para copia nativa. Usuario entró en el panel y no conserva la contraseña PostgreSQL: cambio controlado preparado, formulario sin enviar; nueva credencial/confirmación a cargo del usuario. No aplicar SQL antes de obtener y verificar copia actual.
+- Supabase sano; faltan en Cloud las cinco migraciones de finanzas/reintentos/Calendar. Usuario completó cambio de contraseña; URI privada preparada. Copia nativa nueva: 35 tablas públicas y 27 Auth restauradas localmente y comparadas con origen por cantidades/hashes; cinco migraciones ensayadas sin perder filas. Recibo privado conservado, servidor local detenido. Alcance CRM/Auth; no acredita restauración completa de servicios internos gestionados. Consultar `PRODUCTION_TESTING.md` antes de aplicar SQL autorizado.
 - Backend lint/100 pruebas y frontend check/build pasan; CSP, guardas y 33 casos runtime pasan. Docker frontend excluye `.env*` y exige `npm ci`; CI elimina la clave placeholder que ahora rechazaba la guarda y ejecuta regresiones de navegador/runtime.
 - Destinos, bloqueos, cambios de configuración y recorrido de prueba registrados en `docs/PRODUCTION_TESTING.md`. No iniciar otra auditoría ni rediseño. Corregir los fallos reproducibles durante testing y verificar los flujos afectados.
 
