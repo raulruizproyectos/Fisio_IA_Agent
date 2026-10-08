@@ -1,146 +1,106 @@
-import { createClient, type Session } from '@supabase/supabase-js';
-
 declare global {
   interface Window {
     __FISIO_RUNTIME_CONFIG__?: {
       PUBLIC_SUPABASE_URL?: string;
-      PUBLIC_SUPABASE_ANON_KEY?: string;
       PUBLIC_BACKEND_URL?: string;
     };
   }
 }
 
 const runtimeConfig = (typeof window !== 'undefined' && window.__FISIO_RUNTIME_CONFIG__) || {};
-const supabaseUrl = String(
-  runtimeConfig.PUBLIC_SUPABASE_URL ||
-  import.meta.env.PUBLIC_SUPABASE_URL ||
-  'https://fisio-dev.supabase.co'
-).trim();
-const supabaseKey = String(
-  runtimeConfig.PUBLIC_SUPABASE_ANON_KEY ||
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dev-anon-key'
-).trim();
+const isLocalEnv = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const defaultBackendBase = typeof window !== 'undefined' && window.location.hostname.includes('b5xbaf.easypanel.host')
+  ? 'https://fisio-backend.b5xbaf.easypanel.host' : isLocalEnv ? `http://${window.location.hostname}:3001` : '';
+export const backendBase = String(runtimeConfig.PUBLIC_BACKEND_URL || import.meta.env.PUBLIC_BACKEND_URL || defaultBackendBase).replace(/\/+$/, '');
 
-const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-const defaultBackendBase = (typeof window !== 'undefined' && window.location.hostname.includes('b5xbaf.easypanel.host'))
-  ? 'https://fisio-backend.b5xbaf.easypanel.host'
-  : (isLocalEnv ? 'http://localhost:3001' : '');
-
-export const backendBase = String(
-  runtimeConfig.PUBLIC_BACKEND_URL || import.meta.env.PUBLIC_BACKEND_URL || defaultBackendBase
-).replace(/\/+$/, '');
-
-if (!runtimeConfig.PUBLIC_BACKEND_URL && !import.meta.env.PUBLIC_BACKEND_URL && !isLocalEnv && typeof window !== 'undefined') {
-  console.warn('[Fisio Config] PUBLIC_BACKEND_URL no configurada explícitamente; usando fallback de host:', backendBase);
+// Existing browser sessions must log in again; remove only this project's legacy Supabase storage.
+if (typeof window !== 'undefined') {
+  try {
+    const url = new URL(runtimeConfig.PUBLIC_SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || 'https://fisio-dev.supabase.co');
+    const key = `sb-${url.hostname.split('.')[0]}-auth-token`;
+    for (const suffix of ['', '-user', '-code-verifier']) window.localStorage.removeItem(key + suffix);
+  } catch { /* Storage may be disabled; authentication no longer uses it. */ }
 }
 
-export const authClient = createClient(
-  supabaseUrl,
-  supabaseKey,
-  {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-  }
-);
-
 let installed = false;
-let currentSession: Session | null = null;
+const nativeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
+let checkingSession: ReturnType<typeof requestAuth> | null = null;
 
-function installAuthenticatedFetch() {
+export async function requestAuth(action: string, body: Record<string, string> = {}) {
+  try {
+    const response = await nativeFetch(`${backendBase}/api/auth/${action}`, {
+      method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Fisio-CSRF': '1' },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    return { data: response.ok ? data : null, error: response.ok ? null : String(data.error || 'No se pudo verificar la sesión'), status: response.status };
+  } catch { return { data: null, error: 'No se pudo conectar con el servidor', status: 503 }; }
+}
+
+function checkSession() {
+  if (!checkingSession) checkingSession = requestAuth('session').finally(() => { checkingSession = null; });
+  return checkingSession;
+}
+
+function installAuthenticatedFetch(demo = false) {
   if (installed) return;
   installed = true;
-  const nativeFetch = window.fetch.bind(window);
-  let backendOrigin = '';
-  try {
-    backendOrigin = new URL(backendBase || window.location.origin, window.location.origin).origin;
-  } catch {
-    backendOrigin = window.location.origin;
-  }
-
+  const api = new URL(`${backendBase}/api/`, window.location.origin);
   window.fetch = async (input: RequestInfo | URL, init: RequestInit = {}) => {
-    let target: URL;
-    try {
-      target = new URL(
-        typeof input === 'string' ? input : input instanceof URL ? input.href : input.url,
-        window.location.origin
-      );
-    } catch {
-      return nativeFetch(input, init);
-    }
-    if (backendOrigin && target.origin !== backendOrigin) return nativeFetch(input, init);
-
+    const target = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url, window.location.origin);
+    if (target.origin !== api.origin || !target.pathname.startsWith(api.pathname)) return nativeFetch(input, init);
+    const method = String(init.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
     const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-    if (currentSession?.access_token) headers.set('Authorization', `Bearer ${currentSession.access_token}`);
-    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const isDev = isLocalHost || (window.location.search.includes('demo=true') || window.localStorage.getItem('fisio_dev_mode') === 'true');
-    const response = await nativeFetch(input, { ...init, headers });
-
-    if (response.status === 401 && !target.pathname.endsWith('/api/health') && !isDev) {
-      await authClient.auth.signOut({ scope: 'local' });
-      window.location.replace('/login?reason=session_expired');
+    if (demo) {
+      headers.set('Authorization', 'Bearer dev-token');
+      return nativeFetch(input, { ...init, headers, credentials: 'omit' });
     }
+    headers.set('X-Fisio-CSRF', '1');
+    const safe = ['GET', 'HEAD', 'OPTIONS'].includes(method);
+    if (!safe) {
+      const session = await checkSession();
+      if (session.error) {
+        if (session.status === 401) window.location.replace('/login?reason=session_expired');
+        return Response.json({ error: session.error }, { status: session.status });
+      }
+    }
+    const options = { ...init, headers, credentials: 'include' as RequestCredentials };
+    let response = await nativeFetch(input, options);
+    if (safe && response.status === 401) {
+      const failure = await response.clone().json().catch(() => ({}));
+      if (failure.code === 'AUTH_SESSION_REQUIRED') {
+        const session = await checkSession();
+        if (!session.error) response = await nativeFetch(input, options);
+        else if (session.status !== 401) return Response.json({ error: session.error }, { status: session.status });
+      }
+    }
+    // Mutations are sent once. Authentication failures never replay a clinical write.
+    if (response.status === 401) window.location.replace('/login?reason=session_expired');
     return response;
   };
 }
 
 export async function initializeProtectedApp() {
-  const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const isMockSupabase = supabaseUrl.includes('fisio-dev.supabase.co') || !supabaseUrl;
-  const isDevBypass = isLocalHost || isMockSupabase || (typeof window !== 'undefined' && (window.location.search.includes('demo=true') || window.localStorage.getItem('fisio_dev_mode') === 'true'));
-
+  const isDevBypass = import.meta.env.DEV && typeof window !== 'undefined'
+    && (new URLSearchParams(window.location.search).get('demo') === 'true' || window.localStorage.getItem('fisio_dev_mode') === 'true');
   if (isDevBypass) {
-    currentSession = {
-      access_token: 'dev-token',
-      token_type: 'bearer',
-      user: {
-        id: 'dev-physio-id',
-        email: 'carmen.martinez@clinica.es',
-        app_metadata: {},
-        user_metadata: { full_name: 'Dra. Carmen Martínez' },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      },
-    } as unknown as Session;
-    installAuthenticatedFetch();
-    return {
-      session: currentSession,
-      profileId: '6dae4ef6-b6b3-4cb0-91d9-0320d10db255',
-      role: 'fisioterapeuta',
-      name: 'Dra. Carmen Martínez',
-      email: 'carmen.martinez@clinica.es',
-    };
+    installAuthenticatedFetch(true);
+    return { profileId: '6dae4ef6-b6b3-4cb0-91d9-0320d10db255', clinicId: '', clinicName: '', role: 'fisioterapeuta', name: 'Dra. Carmen Martínez', email: 'carmen.martinez@clinica.es' };
   }
-
-  if (!supabaseUrl || !supabaseKey) throw new Error('Supabase Auth no esta configurado en el frontend');
   if (!backendBase) throw new Error('El backend no esta configurado en el frontend');
-  const { data, error } = await authClient.auth.getSession();
-  if (error || !data.session) {
-    window.location.replace('/login');
-    throw new Error('Autenticacion requerida');
+  const session = await checkSession();
+  if (session.error) {
+    if (session.status === 401) window.location.replace('/login');
+    throw new Error(session.status === 401 ? 'Autenticacion requerida' : session.error);
   }
-  currentSession = data.session;
   installAuthenticatedFetch();
-
-  const response = await window.fetch(`${backendBase}/api/me`);
-  if (!response.ok) throw new Error('No se pudo cargar el perfil profesional');
-  const profile = await response.json();
-
-  authClient.auth.onAuthStateChange((_event, session) => {
-    currentSession = session;
-    if (!session) window.location.replace('/login');
-  });
-
-  return {
-    session: currentSession,
-    profileId: profile?.profile_id || '',
-    role: profile?.role || 'fisioterapeuta',
-    name: profile?.name || currentSession.user.email || 'Profesional',
-    email: profile?.email || currentSession.user.email || '',
-  };
+  const profile = session.data;
+  return { profileId: profile?.profile_id || '', clinicId: profile?.clinic_id || '', clinicName: profile?.clinic_name || '',
+    role: profile?.role || 'fisioterapeuta', name: profile?.name || profile?.email || 'Profesional', email: profile?.email || '' };
 }
 
 export async function signOut() {
-  await authClient.auth.signOut();
+  const { error, status } = await requestAuth('logout');
+  if (error && status !== 401) throw new Error(error);
   window.location.replace('/login');
 }

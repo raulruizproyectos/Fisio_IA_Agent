@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
+
 ---
 
 <Layout title="Reserva online | Fisio Clinical" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
@@ -82,7 +82,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
             <span>Huecos disponibles</span>
             <small id="bookingWindowHint">Cargando horarios...</small>
           </div>
-          <div id="slotsState" class="booking-inline-note">Selecciona un dia para ver horas disponibles.</div>
+          <div id="slotsState" class="booking-inline-note" role="status">Selecciona un dia para ver horas disponibles.</div>
           <div id="slotsGrid" class="slots-grid"></div>
         </div>
 
@@ -111,7 +111,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
             <p>Elige primero una fecha y una hora para continuar.</p>
           </div>
 
-          <p id="bookingFeedback" class="booking-feedback" hidden></p>
+          <p id="bookingFeedback" class="booking-feedback" role="status" aria-live="polite" hidden></p>
 
           <div class="booking-actions">
             <button id="bookingSubmitBtn" class="booking-submit" type="submit" disabled>Confirmar reserva</button>
@@ -120,7 +120,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       </div>
     </section>
 
-    <section id="bookingSuccess" class="booking-success" hidden>
+    <section id="bookingSuccess" class="booking-success" tabindex="-1" hidden>
       <span class="booking-kicker">Reserva registrada</span>
       <h2>Cita creada correctamente</h2>
       <p id="bookingSuccessText">Tu hueco ha quedado guardado. Si necesitas cambiarlo, contacta con la clinica.</p>
@@ -128,312 +128,20 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     </section>
   </main>
 
-  <script is:inline define:vars={{ configuredBackendBase }}>
-    (() => {
-      const runtimeBackendBase = String(window.__FISIO_RUNTIME_CONFIG__?.PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
-      const defaultBackend = window.location.hostname.includes('b5xbaf.easypanel.host')
-        ? 'https://fisio-backend.b5xbaf.easypanel.host'
-        : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-          ? 'http://localhost:3001'
-          : '');
-      const BACKEND_BASE = runtimeBackendBase
-        || configuredBackendBase
-        || defaultBackend;
-
-      const params = new URLSearchParams(window.location.search);
-      const professionalId = params.get('professional_id') || params.get('profesional_id') || '';
-
-      const clinicNameEl = document.getElementById('clinicName');
-      const clinicLocationEl = document.getElementById('clinicLocation');
-      const clinicLeadEl = document.getElementById('clinicLead');
-      const professionalNameEl = document.getElementById('professionalName');
-      const professionalMetaEl = document.getElementById('professionalMeta');
-      const clinicContactRowEl = document.getElementById('clinicContactRow');
-      const clinicContactEl = document.getElementById('clinicContact');
-      const timezoneEl = document.getElementById('bookingTimezone');
-      const dateInput = document.getElementById('bookingDate');
-      const windowHintEl = document.getElementById('bookingWindowHint');
-      const slotsStateEl = document.getElementById('slotsState');
-      const slotsGridEl = document.getElementById('slotsGrid');
-      const bookingForm = document.getElementById('bookingForm');
-      const patientNameInput = document.getElementById('patientNameInput');
-      const patientPhoneInput = document.getElementById('patientPhoneInput');
-      const patientEmailInput = document.getElementById('patientEmailInput');
-      const reasonInput = document.getElementById('bookingReasonInput');
-      const summaryEl = document.getElementById('bookingSummary');
-      const feedbackEl = document.getElementById('bookingFeedback');
-      const submitBtn = document.getElementById('bookingSubmitBtn');
-      const successEl = document.getElementById('bookingSuccess');
-      const successTextEl = document.getElementById('bookingSuccessText');
-      const resetBtn = document.getElementById('bookingResetBtn');
-
-      let bookingConfig = null;
-      let selectedSlot = null;
-      let currentSlots = [];
-
-      if (!BACKEND_BASE) {
-        if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta configurada en este entorno.';
-        if (windowHintEl) windowHintEl.textContent = 'Configuracion pendiente';
-        return;
-      }
-
-      const setFeedback = (text = '', state = 'error') => {
-        if (!feedbackEl) return;
-        if (!text) {
-          feedbackEl.hidden = true;
-          feedbackEl.textContent = '';
-          feedbackEl.removeAttribute('data-state');
-          return;
-        }
-        feedbackEl.hidden = false;
-        feedbackEl.textContent = text;
-        feedbackEl.setAttribute('data-state', state);
-      };
-
-      const escapeHtml = (value) => String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-
-      const buildUrl = (path, extra = {}) => {
-        const base = BACKEND_BASE || window.location.origin;
-        const url = new URL(path, base);
-        if (professionalId) url.searchParams.set('professional_id', professionalId);
-        Object.entries(extra).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
-        });
-        return url.toString();
-      };
-
-      const fetchJson = async (url, options = {}) => {
-        const response = await fetch(url, options);
-        const rawText = await response.text();
-        const payload = rawText ? JSON.parse(rawText) : {};
-        if (!response.ok) {
-          const error = new Error(payload?.error || payload?.message || `HTTP ${response.status}`);
-          error.payload = payload;
-          throw error;
-        }
-        return payload;
-      };
-
-      const setSummary = (slot = null) => {
-        if (!summaryEl) return;
-        if (!slot) {
-          summaryEl.innerHTML = '<strong>Sin hueco seleccionado</strong><p>Elige primero una fecha y una hora para continuar.</p>';
-          return;
-        }
-        summaryEl.innerHTML = `
-          <strong>${escapeHtml(slot.date_label || '')} ? ${escapeHtml(slot.start_local)} - ${escapeHtml(slot.end_local)}</strong>
-          <p>Tu reserva se registrara para ${escapeHtml(bookingConfig?.professional?.nombre_completo || 'el profesional')} en horario ${escapeHtml(bookingConfig?.booking?.time_zone || 'Europe/Madrid')}.</p>
-        `;
-      };
-
-      const updateSubmitState = () => {
-        const hasContact = Boolean(String(patientPhoneInput?.value || '').trim() || String(patientEmailInput?.value || '').trim());
-        const ready = Boolean(selectedSlot && String(patientNameInput?.value || '').trim() && hasContact);
-        if (submitBtn) submitBtn.disabled = !ready;
-      };
-
-      const renderSlots = (slots = [], dateValue = '') => {
-        currentSlots = Array.isArray(slots) ? slots : [];
-        if (slotsGridEl) slotsGridEl.innerHTML = '';
-        if (!slotsStateEl) return;
-
-        if (!dateValue) {
-          slotsStateEl.textContent = 'Selecciona un dia para ver horas disponibles.';
-          slotsStateEl.hidden = false;
-          setSummary(null);
-          selectedSlot = null;
-          updateSubmitState();
-          return;
-        }
-
-        if (!currentSlots.length) {
-          slotsStateEl.textContent = 'No quedan huecos en ese dia. Prueba otra fecha.';
-          slotsStateEl.hidden = false;
-          setSummary(null);
-          selectedSlot = null;
-          updateSubmitState();
-          return;
-        }
-
-        slotsStateEl.hidden = true;
-        const dateLabel = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(`${dateValue}T12:00:00`));
-        currentSlots.forEach((slot, index) => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'slot-pill';
-          button.innerHTML = `<strong>${escapeHtml(slot.start_local)}</strong><span>${escapeHtml(slot.end_local)}</span>`;
-          button.addEventListener('click', () => {
-            selectedSlot = { ...slot, date_label: dateLabel };
-            slotsGridEl.querySelectorAll('.slot-pill').forEach((node) => node.classList.remove('is-selected'));
-            button.classList.add('is-selected');
-            setSummary(selectedSlot);
-            setFeedback();
-            updateSubmitState();
-          });
-          if (index === 0 && !selectedSlot) {
-            selectedSlot = { ...slot, date_label: dateLabel };
-            button.classList.add('is-selected');
-            setSummary(selectedSlot);
-          }
-          slotsGridEl.appendChild(button);
-        });
-        updateSubmitState();
-      };
-
-      const loadConfig = async () => {
-        const payload = await fetchJson(buildUrl('/api/profesional/public-booking/config'));
-        bookingConfig = payload?.data || null;
-        if (!bookingConfig) throw new Error('No se pudo cargar la configuracion de reserva online.');
-
-        if (clinicNameEl) clinicNameEl.textContent = bookingConfig.clinic?.name || 'Fisio Clinical';
-        if (clinicLocationEl) clinicLocationEl.textContent = bookingConfig.clinic?.location || '';
-        if (clinicLeadEl) clinicLeadEl.textContent = `Reserva online con ${bookingConfig.professional?.nombre_completo || 'tu fisioterapeuta'} y huecos reales sincronizados con la agenda activa.`;
-        if (professionalNameEl) professionalNameEl.textContent = bookingConfig.professional?.nombre_completo || 'Fisioterapeuta';
-        if (professionalMetaEl) professionalMetaEl.textContent = bookingConfig.professional?.email || 'Agenda sincronizada con Google Calendar';
-        if (timezoneEl) timezoneEl.textContent = bookingConfig.booking?.time_zone || 'Europe/Madrid';
-        if (dateInput) {
-          dateInput.min = bookingConfig.booking?.min_date || '';
-          dateInput.max = bookingConfig.booking?.max_date || '';
-          dateInput.value = bookingConfig.booking?.min_date || '';
-        }
-
-        const contactLines = [bookingConfig.clinic?.phone, bookingConfig.clinic?.email].filter(Boolean);
-        if (clinicContactRowEl && clinicContactEl && contactLines.length) {
-          clinicContactRowEl.hidden = false;
-          clinicContactEl.textContent = contactLines.join(' ? ');
-        }
-
-        const windowsText = Array.isArray(bookingConfig.booking?.windows)
-          ? bookingConfig.booking.windows.map((window) => `${window.start}-${window.end}`).join(' ? ')
-          : '09:00-13:00 ? 15:00-19:00';
-        if (windowHintEl) windowHintEl.textContent = `${windowsText} ? bloques de ${bookingConfig.booking?.slot_minutes || 60} min`;
-      };
-
-      const loadSlots = async () => {
-        const dateValue = dateInput?.value || '';
-        selectedSlot = null;
-        setSummary(null);
-        updateSubmitState();
-        if (slotsStateEl) {
-          slotsStateEl.hidden = false;
-          slotsStateEl.textContent = 'Consultando huecos disponibles...';
-        }
-        if (slotsGridEl) slotsGridEl.innerHTML = '';
-        setFeedback();
-
-        if (!dateValue) {
-          renderSlots([], '');
-          return;
-        }
-
-        try {
-          const payload = await fetchJson(buildUrl('/api/profesional/public-booking/slots', { date: dateValue }));
-          renderSlots(payload?.data?.slots || [], dateValue);
-        } catch (error) {
-          renderSlots([], dateValue);
-          setFeedback(error.message || 'No se pudieron cargar los huecos.', 'error');
-        }
-      };
-
-      dateInput?.addEventListener('change', loadSlots);
-      patientNameInput?.addEventListener('input', updateSubmitState);
-      patientPhoneInput?.addEventListener('input', updateSubmitState);
-      patientEmailInput?.addEventListener('input', updateSubmitState);
-
-      bookingForm?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        if (!selectedSlot) {
-          setFeedback('Selecciona antes un hueco disponible.', 'error');
-          return;
-        }
-
-        if (submitBtn) submitBtn.disabled = true;
-        setFeedback('Registrando reserva...', 'success');
-
-        try {
-          const payload = {
-            professional_id: professionalId || bookingConfig?.professional?.id || '',
-            full_name: patientNameInput?.value?.trim() || '',
-            phone: patientPhoneInput?.value?.trim() || '',
-            email: patientEmailInput?.value?.trim() || '',
-            reason: reasonInput?.value?.trim() || '',
-            start_at: selectedSlot.start_at,
-            end_at: selectedSlot.end_at,
-          };
-
-          const response = await fetchJson(buildUrl('/api/profesional/public-booking/appointments'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-
-          if (bookingForm) bookingForm.hidden = true;
-          if (successEl) successEl.hidden = false;
-          if (successTextEl) {
-            successTextEl.textContent = `Tu cita para ${selectedSlot.date_label || 'la fecha elegida'} a las ${selectedSlot.start_local} ha quedado registrada con ${response?.booking?.professional_name || bookingConfig?.professional?.nombre_completo || 'la clinica'}.`;
-          }
-          if (slotsGridEl) slotsGridEl.innerHTML = '';
-          if (slotsStateEl) {
-            slotsStateEl.hidden = true;
-            slotsStateEl.textContent = '';
-          }
-        } catch (error) {
-          const payload = error?.payload || {};
-          if (payload?.available === false) {
-            setFeedback('Ese hueco acaba de ocuparse. Te muestro los horarios actualizados.', 'error');
-            await loadSlots();
-          } else {
-            setFeedback(error.message || 'No se pudo registrar la reserva.', 'error');
-          }
-          updateSubmitState();
-        } finally {
-          if (submitBtn && !successEl?.hidden) {
-            submitBtn.disabled = true;
-          } else {
-            updateSubmitState();
-          }
-        }
-      });
-
-      resetBtn?.addEventListener('click', async () => {
-        if (bookingForm) bookingForm.hidden = false;
-        if (successEl) successEl.hidden = true;
-        bookingForm?.reset();
-        selectedSlot = null;
-        setSummary(null);
-        updateSubmitState();
-        await loadSlots();
-      });
-
-      (async () => {
-        try {
-          await loadConfig();
-          await loadSlots();
-        } catch (error) {
-          setFeedback(error.message || 'No se pudo cargar la reserva online.', 'error');
-          if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta disponible ahora mismo.';
-        }
-      })();
-    })();
-  </script>
+  <script src="../scripts/public-booking.js"></script>
 
   <style>
     :root {
-      --booking-bg: linear-gradient(180deg, #f7f4ec 0%, #edf4f2 100%);
-      --booking-surface: rgba(255, 252, 246, 0.88);
-      --booking-border: rgba(15, 91, 88, 0.12);
-      --booking-ink: #123c39;
-      --booking-muted: #5b7472;
-      --booking-accent: #0f766e;
-      --booking-accent-soft: #d7f1ec;
-      --booking-highlight: #f2c66d;
+      --booking-bg: #f4f7fb;
+      --booking-surface: #ffffff;
+      --booking-border: #dce3ed;
+      --booking-ink: #142234;
+      --booking-muted: #536375;
+      --booking-accent: #175dd0;
+      --booking-accent-soft: #eaf1fe;
+      --booking-highlight: #eaf1fe;
       --booking-danger: #b42318;
-      --booking-shadow: 0 30px 80px rgba(13, 46, 43, 0.12);
+      --booking-shadow: none;
     }
 
     body {
@@ -442,7 +150,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       min-height: 100dvh;
       background: var(--booking-bg);
       color: var(--booking-ink);
-      font-family: 'Manrope', sans-serif;
+      font-family: var(--font-family-base);
     }
 
     .booking-shell {
@@ -473,8 +181,8 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       gap: 1.5rem;
       align-content: start;
       background:
-        radial-gradient(circle at top right, rgba(15, 118, 110, 0.18), transparent 34%),
-        radial-gradient(circle at bottom left, rgba(242, 198, 109, 0.24), transparent 28%),
+        radial-gradient(circle at top right, rgba(23, 93, 208, 0.18), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(23, 93, 208, 0.24), transparent 28%),
         rgba(255, 252, 246, 0.9);
     }
 
@@ -493,7 +201,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     .booking-panel h2,
     .booking-success h2 {
       margin: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: var(--font-family-base);
       font-weight: 700;
       letter-spacing: -0.04em;
       line-height: 0.96;
@@ -523,7 +231,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       padding: 1.15rem;
       border-radius: 24px;
       background: rgba(255, 255, 255, 0.62);
-      border: 1px solid rgba(15, 118, 110, 0.1);
+      border: 1px solid rgba(23, 93, 208, 0.1);
     }
 
     .booking-clinic-line {
@@ -563,7 +271,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       gap: 0.9rem;
       align-items: start;
       padding: 0.7rem 0;
-      border-top: 1px solid rgba(18, 60, 57, 0.08);
+      border-top: 1px solid rgba(20, 34, 52, 0.08);
     }
 
     .booking-rhythm article:first-child {
@@ -633,7 +341,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     .booking-field input,
     .booking-field textarea {
       width: 100%;
-      border: 1px solid rgba(18, 60, 57, 0.12);
+      border: 1px solid rgba(20, 34, 52, 0.12);
       border-radius: 18px;
       background: rgba(255, 255, 255, 0.78);
       padding: 0.9rem 1rem;
@@ -646,8 +354,8 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
 
     .booking-field input:focus,
     .booking-field textarea:focus {
-      border-color: rgba(15, 118, 110, 0.5);
-      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+      border-color: rgba(23, 93, 208, 0.5);
+      box-shadow: 0 0 0 4px rgba(23, 93, 208, 0.1);
       transform: translateY(-1px);
     }
 
@@ -666,8 +374,8 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     .booking-inline-note {
       padding: 0.9rem 1rem;
       border-radius: 16px;
-      background: rgba(18, 60, 57, 0.04);
-      border: 1px dashed rgba(18, 60, 57, 0.14);
+      background: rgba(20, 34, 52, 0.04);
+      border: 1px dashed rgba(20, 34, 52, 0.14);
       font-size: 0.96rem;
     }
 
@@ -677,8 +385,8 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       gap: 0.75rem;
     }
 
-    .slot-pill {
-      border: 1px solid rgba(18, 60, 57, 0.12);
+    :global(#slotsGrid .slot-pill) {
+      border: 1px solid rgba(20, 34, 52, 0.12);
       border-radius: 20px;
       background: rgba(255, 255, 255, 0.84);
       color: var(--booking-ink);
@@ -688,24 +396,24 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
     }
 
-    .slot-pill span {
+    :global(#slotsGrid .slot-pill span) {
       display: block;
       margin-top: 0.25rem;
       color: var(--booking-muted);
       font-size: 0.86rem;
     }
 
-    .slot-pill:hover,
-    .slot-pill:focus-visible {
+    :global(#slotsGrid .slot-pill:hover),
+    :global(#slotsGrid .slot-pill:focus-visible) {
       transform: translateY(-2px);
-      border-color: rgba(15, 118, 110, 0.3);
-      box-shadow: 0 16px 32px rgba(18, 60, 57, 0.08);
+      border-color: rgba(23, 93, 208, 0.3);
+      box-shadow: 0 16px 32px rgba(20, 34, 52, 0.08);
       outline: none;
     }
 
-    .slot-pill.is-selected {
-      background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(242, 198, 109, 0.18));
-      border-color: rgba(15, 118, 110, 0.45);
+    :global(#slotsGrid .slot-pill.is-selected) {
+      background: var(--booking-accent-soft);
+      border-color: rgba(23, 93, 208, 0.45);
     }
 
     .booking-form {
@@ -726,8 +434,8 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     .booking-summary {
       padding: 1rem 1.05rem;
       border-radius: 20px;
-      background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(242, 198, 109, 0.14));
-      border: 1px solid rgba(15, 118, 110, 0.12);
+      background: var(--booking-accent-soft);
+      border: 1px solid rgba(23, 93, 208, 0.12);
     }
 
     .booking-feedback {
@@ -744,9 +452,9 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     }
 
     .booking-feedback[data-state='success'] {
-      background: rgba(15, 118, 110, 0.08);
+      background: rgba(23, 93, 208, 0.08);
       color: var(--booking-accent);
-      border-color: rgba(15, 118, 110, 0.14);
+      border-color: rgba(23, 93, 208, 0.14);
     }
 
     .booking-actions {
@@ -767,9 +475,9 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     }
 
     .booking-submit {
-      background: linear-gradient(135deg, var(--booking-accent), #0b5f59);
+      background: var(--booking-accent);
       color: #f8f5ef;
-      box-shadow: 0 18px 28px rgba(15, 118, 110, 0.24);
+      box-shadow: none;
     }
 
     .booking-submit:disabled {
@@ -784,7 +492,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
     }
 
     .booking-reset {
-      background: rgba(18, 60, 57, 0.08);
+      background: rgba(20, 34, 52, 0.08);
       color: var(--booking-ink);
     }
 
@@ -793,8 +501,8 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       align-content: center;
       gap: 1rem;
       background:
-        radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 26%),
-        radial-gradient(circle at bottom right, rgba(242, 198, 109, 0.18), transparent 28%),
+        radial-gradient(circle at top left, rgba(23, 93, 208, 0.14), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(23, 93, 208, 0.18), transparent 28%),
         rgba(255, 252, 246, 0.9);
     }
 

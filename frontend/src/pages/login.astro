@@ -49,10 +49,10 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { authClient } from '../lib/auth';
+  import { requestAuth } from '../lib/auth';
 
-  const existing = await authClient.auth.getSession();
-  if (existing.data.session) window.location.replace('/');
+  const existing = await requestAuth('session');
+  if (existing.data) window.location.replace('/');
 
   const form = document.getElementById('loginForm') as HTMLFormElement;
   const errorBox = document.getElementById('loginError') as HTMLElement;
@@ -75,9 +75,7 @@ import Layout from '../layouts/Layout.astro';
       errorBox.hidden = false;
       return;
     }
-    const { error } = await authClient.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    const { error } = await requestAuth('reset-request', { email });
     errorBox.textContent = error
       ? 'No se ha podido enviar el enlace. Inténtalo de nuevo en unos minutos.'
       : 'Si la cuenta existe, recibirás un enlace seguro para crear una contraseña nueva.';
@@ -91,12 +89,12 @@ import Layout from '../layouts/Layout.astro';
     errorBox.classList.remove('is-success');
     submit.disabled = true;
     const data = new FormData(form);
-    const { error } = await authClient.auth.signInWithPassword({
+    const { error } = await requestAuth('login', {
       email: String(data.get('email') || '').trim(),
       password: String(data.get('password') || ''),
     });
     if (error) {
-      errorBox.textContent = 'No se ha podido iniciar sesión. Comprueba las credenciales.';
+      errorBox.textContent = error;
       errorBox.hidden = false;
       submit.disabled = false;
       return;

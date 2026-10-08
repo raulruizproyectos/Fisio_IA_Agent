@@ -271,6 +271,7 @@ export async function generateLongitudinalSummary({
   patientName = 'Paciente',
   notes = [],
   timeoutMs = 20000,
+  useAi = true,
 }) {
   if (!Array.isArray(notes) || notes.length === 0) {
     return null;
@@ -290,9 +291,10 @@ export async function generateLongitudinalSummary({
   }
 
   // Ordenar cronológicamente (más antigua a más reciente)
-  const sorted = [...notes].sort((a, b) => new Date(a.fecha || a.session_datetime).getTime() - new Date(b.fecha || b.session_datetime).getTime());
+  const sorted = [...notes].sort((a, b) => new Date(a.session_datetime || a.fecha).getTime() - new Date(b.session_datetime || b.fecha).getTime()
+    || new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime() || String(a.id || '').localeCompare(String(b.id || '')));
 
-  if (!OPENAI_API_KEY) {
+  if (!useAi || !OPENAI_API_KEY) {
     // Generación determinista
     const first = sorted[0];
     const latest = sorted[sorted.length - 1];

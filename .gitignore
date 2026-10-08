@@ -14,6 +14,7 @@ dist/
 build/
 .output/
 .astro/
+frontend/.runtime-defaults.sh
 
 # IDE
 .vscode/
@@ -40,6 +41,7 @@ renders/
 
 # Supabase
 .supabase/
+.private-backups/
 
 # n8n remote exports (can contain sensitive data)
 docs/data/n8n/workflows_snapshot_*_raw.json

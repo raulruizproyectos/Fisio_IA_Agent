@@ -1,0 +1,554 @@
+{
+  "findings": [
+    {
+      "width": 1280,
+      "section": "dashboard",
+      "overflow": false,
+      "small": [],
+      "greeting": "Buenas tardes",
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [],
+      "tables": []
+    },
+    {
+      "width": 1280,
+      "section": "pacientes",
+      "overflow": false,
+      "small": [],
+      "searchPadding": 35.25,
+      "actionHeights": [
+        44,
+        44,
+        44
+      ],
+      "descriptions": [
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        }
+      ],
+      "mobile": [],
+      "tables": []
+    },
+    {
+      "width": 1280,
+      "section": "facturas",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 1280,
+      "section": "bonos",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 1280,
+      "section": "gestoria",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 1280,
+      "section": "documentos",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 1280,
+      "section": "ficha",
+      "descriptions": [
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "section": "dashboard",
+      "overflow": false,
+      "small": [],
+      "greeting": "Buenas tardes",
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [],
+      "tables": []
+    },
+    {
+      "width": 768,
+      "section": "pacientes",
+      "overflow": false,
+      "small": [],
+      "searchPadding": 35.25,
+      "actionHeights": [
+        44,
+        44,
+        44
+      ],
+      "descriptions": [
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        }
+      ],
+      "mobile": [],
+      "tables": []
+    },
+    {
+      "width": 768,
+      "section": "facturas",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 768,
+      "section": "bonos",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 768,
+      "section": "gestoria",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 768,
+      "section": "documentos",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 768,
+      "section": "ficha",
+      "descriptions": [
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "width": 375,
+      "section": "dashboard",
+      "overflow": false,
+      "small": [],
+      "greeting": "Buenas tardes",
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [],
+      "tables": []
+    },
+    {
+      "width": 375,
+      "section": "pacientes",
+      "overflow": false,
+      "small": [],
+      "searchPadding": 35.25,
+      "actionHeights": [
+        44,
+        44,
+        44
+      ],
+      "descriptions": [
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        }
+      ],
+      "mobile": [],
+      "tables": []
+    },
+    {
+      "width": 375,
+      "section": "facturas",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 375,
+      "section": "bonos",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 375,
+      "section": "gestoria",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 375,
+      "section": "documentos",
+      "overflow": false,
+      "small": [],
+      "searchPadding": null,
+      "actionHeights": [],
+      "descriptions": [],
+      "mobile": [
+        false
+      ],
+      "tables": [
+        true
+      ]
+    },
+    {
+      "width": 375,
+      "section": "ficha",
+      "descriptions": [
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        },
+        {
+          "wrap": "normal",
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "section": "facturas",
+      "mode": "populated",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 1280,
+      "section": "bonos",
+      "mode": "populated",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 1280,
+      "section": "documentos",
+      "mode": "populated",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 1280,
+      "section": "gestoria",
+      "mode": "populated",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 1280,
+      "section": "facturas",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 1280,
+      "section": "bonos",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 1280,
+      "section": "documentos",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 1280,
+      "section": "gestoria",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 768,
+      "section": "facturas",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 768,
+      "section": "bonos",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 768,
+      "section": "documentos",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 768,
+      "section": "gestoria",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 768,
+      "section": "facturas",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 768,
+      "section": "bonos",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 768,
+      "section": "documentos",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 768,
+      "section": "gestoria",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 375,
+      "section": "facturas",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 375,
+      "section": "bonos",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 375,
+      "section": "documentos",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 375,
+      "section": "gestoria",
+      "mode": "populated",
+      "mobile": true,
+      "table": false
+    },
+    {
+      "width": 375,
+      "section": "facturas",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 375,
+      "section": "bonos",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 375,
+      "section": "documentos",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    },
+    {
+      "width": 375,
+      "section": "gestoria",
+      "mode": "error",
+      "mobile": false,
+      "table": true
+    }
+  ],
+  "browserErrors": [],
+  "external_network": [],
+  "synthetic_clinic": true,
+  "empty_module_doubles": true
+}

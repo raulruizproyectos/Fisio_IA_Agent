@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
-import { supabase } from '../lib/supabase.js';
+import { supabase, getRequestContext } from '../lib/supabase.js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 import { EXERCISE_AGENT_PROMPT, EXERCISE_AGENT_PROMPT_VERSION } from '../lib/exercise-agent-prompt.js';
 import { recordAudit } from '../lib/audit.js';
+import { getApprovedExerciseReport, respondReportError } from '../lib/approved-exercise-report.js';
+import { publicErrorMessage, publicHttpErrorMessage } from '../lib/public-error.js';
 
 const router = Router();
 
@@ -98,20 +100,32 @@ router.post('/recommend/async', async (req, res) => {
 // --- GET /api/exercises/recommend/jobs/:jobId ---
 // Returns queued/running/done/error so the frontend can poll until the report is ready.
 router.get('/recommend/jobs/:jobId', async (req, res) => {
-  const job = await getExerciseRecommendationJob(req.params.jobId);
-  if (!job) {
-    return res.status(404).json({
-      ok: false,
-      error: 'Trabajo asincrono no encontrado o expirado',
-      code: 'async_job_not_found',
-    });
-  }
+  try {
+    const job = await getExerciseRecommendationJob(req.params.jobId);
+    const auth = getRequestContext()?.auth;
+    let accessible = Boolean(job);
+    if (job && auth?.profile_id) {
+      if (job.patient_id) {
+        // A cache hit must still pass current patient RLS, including a clinic change.
+        const patient = await supabase.from('crm_pacientes').select('id').eq('id', job.patient_id).maybeSingle();
+        if (patient.error) throw patient.error;
+        accessible = Boolean(patient.data);
+      } else accessible = job.fisioterapeuta_id === auth.profile_id;
+    }
+    if (!accessible) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Trabajo asincrono no encontrado o expirado',
+        code: 'async_job_not_found',
+      });
+    }
 
-  const payload = serializeExerciseRecommendationJob(job);
-  res.json({
-    ok: job.status !== 'error',
-    ...payload,
-  });
+    const payload = serializeExerciseRecommendationJob(job);
+    res.json({
+      ok: job.status !== 'error',
+      ...payload,
+    });
+  } catch (error) { sendRecommendationError(res, error); }
 });
 
 // --- GET /api/exercises/:id/media ---
@@ -167,6 +181,10 @@ router.post('/recommend', async (req, res) => {
       channel = 'crm_web',
       fisioterapeuta_id,
     } = req.body;
+
+    if (typeof symptoms !== 'string' || !symptoms.trim() || symptoms.length > 12000) {
+      return res.status(400).json({ ok: false, error: 'symptoms debe contener entre 1 y 12000 caracteres' });
+    }
 
     const rawPatientId = patient_id || paciente_id || null;
     const resolvedInput = await resolveRecommendationIdentity({
@@ -277,7 +295,7 @@ router.post('/recommend', async (req, res) => {
     if (engineCall.ok) {
       n8nResult = engineCall.data;
     } else {
-      fallbackReason = engineCall.error?.message || 'engine_unreachable';
+      fallbackReason = publicErrorMessage(engineCall.error, 'engine_unreachable');
       engineObservability.fallback_reason = fallbackReason;
       console.warn('[exercises/recommend] fallback activated:', fallbackReason);
       if (persistRecommendation) {
@@ -436,7 +454,7 @@ router.post('/recommend', async (req, res) => {
             approval_state: existing?.estado || null,
           });
         }
-        persistenceWarning = persistenceErr?.message || 'recommendation_persistence_failed';
+        persistenceWarning = publicErrorMessage(persistenceErr, 'No se pudo confirmar el guardado del informe. Comprueba su estado antes de repetirlo.');
         console.warn('[exercises/recommend] persistence warning:', persistenceWarning);
       }
     }
@@ -561,6 +579,10 @@ router.post('/recommend', async (req, res) => {
     };
 
     if (persistRecommendation && recommendationId) {
+      const { data: saved, error: snapshotError } = await supabase.from('crm_recomendaciones')
+        .update({ report_snapshot: response }).eq('id', recommendationId).select('report_version').single();
+      if (snapshotError) throw snapshotError;
+      response.report_version = saved.report_version;
       await logComm(supabase, {
         paciente_id: patId,
         fisioterapeuta_id: resolvedFisioterapeutaId || null,
@@ -624,7 +646,7 @@ router.get('/recommendations/:patientId', async (req, res) => {
     const { data, error } = await supabase
       .from('crm_recomendaciones')
       .select(`
-        id, origen, symptom_summary, red_flags_present, red_flags_items,
+        id, origen, symptom_summary, red_flags_present, red_flags_items, report_snapshot, report_version,
         selection_rationale, message_to_patient_es, message_to_therapist_es,
         escalation_recommend_medical_attention, escalation_reason,
         estado, request_id, created_at,
@@ -692,7 +714,7 @@ router.get('/recommendations/:patientId', async (req, res) => {
       ...row,
       follow_ups: followUpsByRecommendation.get(row.id) || [],
       archived_reports: archivedReportsByRecommendation.get(row.id) || [],
-      report_snapshot: reportSnapshotByRecommendation.get(row.id) || null,
+      report_snapshot: row.report_snapshot ? { ...row.report_snapshot, report_version: row.report_version } : reportSnapshotByRecommendation.get(row.id) || null,
     }));
 
     res.json({ ok: true, data: enriched, total: enriched.length });
@@ -708,15 +730,15 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
     const noteText = String(req.body?.note_text || req.body?.texto_nota || '').trim();
     const adherenceStatus = String(req.body?.adherence_status || '').trim() || null;
     const painScale = parsePainScale(req.body?.pain_scale ?? req.body?.escala_dolor);
-    const requestedState = sanitizeRecommendationState(
-      req.body?.estado || req.body?.recommendation_state || null
-    );
-    const fisioterapeutaId = req.body?.fisioterapeuta_id || null;
+    if (req.body?.estado || req.body?.recommendation_state) {
+      return res.status(400).json({ ok: false, error: 'El seguimiento no cambia el estado del plan. Usa la revisión profesional o el envío.', code: 'follow_up_state_forbidden' });
+    }
+    const fisioterapeutaId = req.auth?.profile_id || null;
 
-    if (!noteText && adherenceStatus === null && painScale === null && !requestedState) {
+    if (!noteText && adherenceStatus === null && painScale === null) {
       return res.status(400).json({
         ok: false,
-        error: 'Debes enviar al menos uno: note_text, adherence_status, pain_scale o estado',
+        error: 'Debes enviar una observación, adherencia o escala de dolor',
       });
     }
 
@@ -731,27 +753,13 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
       return res.status(404).json({ ok: false, error: 'Recomendacion no encontrada' });
     }
 
-    let currentState = recommendationRow.estado;
-    if (requestedState && requestedState !== currentState) {
-      const { data: updatedRow, error: updateErr } = await supabase
-        .from('crm_recomendaciones')
-        .update({
-          estado: requestedState,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', recommendationId)
-        .select('estado')
-        .single();
-      if (updateErr) throw updateErr;
-      currentState = updatedRow?.estado || requestedState;
-    }
+    const currentState = recommendationRow.estado;
 
     const followUpPayload = {
       event: 'recommendation_follow_up',
       note_text: noteText || null,
       adherence_status: adherenceStatus,
       pain_scale: painScale,
-      estado_objetivo: requestedState || null,
       estado_actual: currentState,
     };
 
@@ -802,13 +810,16 @@ router.patch('/recommendations/:recommendationId/draft', async (req, res) => {
 
     const { data: current, error: currentError } = await supabase
       .from('crm_recomendaciones')
-      .select('id, paciente_id, fisioterapeuta_id, estado, request_id')
+      .select('id, paciente_id, fisioterapeuta_id, estado, request_id, report_version, red_flags_present, red_flags_items')
       .eq('id', recommendationId)
       .single();
     if (currentError) throw currentError;
     if (!current) return res.status(404).json({ ok: false, error: 'Recomendación no encontrada' });
     if (!['requiere_revision', 'rechazada'].includes(current.estado)) {
       return res.status(409).json({ ok: false, error: 'El informe ya no admite cambios' });
+    }
+    if (!Number.isInteger(incoming.report_version) || incoming.report_version !== current.report_version) {
+      return res.status(409).json({ ok: false, error: 'El informe ha cambiado; recarga antes de editarlo' });
     }
 
     const { data: storedItems, error: itemsError } = await supabase
@@ -829,6 +840,7 @@ router.patch('/recommendations/:recommendationId/draft', async (req, res) => {
       .filter((exercise) => allowedExerciseIds.has(String(exercise?.exercise_id || exercise?.id || '')))
       .map((exercise, index) => ({
         ...exercise,
+        exercise_id: String(exercise?.exercise_id || exercise?.id),
         nombre: cleanText(exercise?.nombre || exercise?.name || `Ejercicio ${index + 1}`, 160),
         procedimiento: cleanText(exercise?.procedimiento || exercise?.descripcion || '', 1800),
         why: cleanText(exercise?.why || exercise?.reason || '', 600),
@@ -860,19 +872,24 @@ router.patch('/recommendations/:recommendationId/draft', async (req, res) => {
       edited_at: editedAt,
       approval_required: true,
       approval_state: 'requiere_revision',
+      red_flags: { present: current.red_flags_present, items: current.red_flags_items },
     };
 
-    const { error: updateError } = await supabase
+    const { data: saved, error: updateError } = await supabase
       .from('crm_recomendaciones')
       .update({
         symptom_summary: symptomSummary,
         message_to_patient_es: messageToPatient,
         message_to_therapist_es: messageToTherapist,
         estado: 'requiere_revision',
+        report_snapshot: report,
         updated_at: editedAt,
       })
-      .eq('id', recommendationId);
+      .eq('id', recommendationId).eq('report_version', current.report_version)
+      .in('estado', ['requiere_revision', 'rechazada']).select('report_version').maybeSingle();
     if (updateError) throw updateError;
+    if (!saved) return res.status(409).json({ ok: false, error: 'El informe ha cambiado; recarga antes de editarlo' });
+    report.report_version = saved.report_version;
 
     await logComm(supabase, {
       paciente_id: current.paciente_id,
@@ -891,162 +908,48 @@ router.patch('/recommendations/:recommendationId/draft', async (req, res) => {
     return res.json({ ok: true, data: { report, edited_at: editedAt } });
   } catch (err) {
     console.error('[exercises/recommendations/draft] Error:', err.message);
-    return res.status(500).json({ ok: false, error: 'Error guardando la revisión del informe' });
+    return respondReportError(res, err, 'Error guardando la revisión del informe');
   }
 });
 
 router.post('/recommendations/:recommendationId/review', async (req, res) => {
   try {
+    if (!req.auth?.profile_id || !['admin', 'fisioterapeuta'].includes(req.auth.role)) {
+      return res.status(403).json({ ok: false, error: 'Se requiere una sesión profesional activa' });
+    }
     const recommendationId = String(req.params.recommendationId || '').trim();
     const decision = String(req.body?.decision || '').trim().toLowerCase();
-    const note = String(req.body?.note || req.body?.approval_note || '').trim();
-    if (!['approve', 'reject'].includes(decision)) {
-      return res.status(400).json({ ok: false, error: 'decision debe ser approve o reject' });
+    const note = String(req.body?.note || req.body?.approval_note || '').trim().slice(0, 2000);
+    if (!['approve', 'reject'].includes(decision) || !Number.isInteger(req.body?.report_version)) {
+      return res.status(400).json({ ok: false, error: 'decision y report_version válidos son obligatorios' });
     }
-
-    const { data: current, error: currentError } = await supabase
-      .from('crm_recomendaciones')
-      .select('id, paciente_id, fisioterapeuta_id, estado, red_flags_present, request_id')
-      .eq('id', recommendationId)
-      .single();
-    if (currentError) throw currentError;
-    if (!current) return res.status(404).json({ ok: false, error: 'Recomendacion no encontrada' });
-    if (!['requiere_revision', 'rechazada'].includes(current.estado)) {
-      return res.status(409).json({ ok: false, error: `La recomendacion ya esta en estado ${current.estado}` });
-    }
-    if (decision === 'approve' && current.red_flags_present && note.length < 12) {
-      return res.status(400).json({
-        ok: false,
-        error: 'La aprobacion con alertas rojas requiere una nota clinica justificativa',
-      });
-    }
-    if (decision === 'approve') {
-      const { count: itemCount, error: itemCountError } = await supabase
-        .from('crm_recomendacion_items')
-        .select('id', { count: 'exact', head: true })
-        .eq('recomendacion_id', recommendationId);
-      if (itemCountError) throw itemCountError;
-      if (!itemCount) {
-        return res.status(409).json({
-          ok: false,
-          code: 'empty_recommendation',
-          error: 'No se puede aprobar una recomendacion sin ejercicios validos',
-        });
-      }
-    }
-
-    const reviewedAt = new Date().toISOString();
-    const nextState = decision === 'approve' ? 'aprobada' : 'rechazada';
-    const { data, error } = await supabase
-      .from('crm_recomendaciones')
-      .update({
-        estado: nextState,
-        reviewed_by_profile_id: req.auth?.profile_id || current.fisioterapeuta_id || null,
-        reviewed_at: reviewedAt,
-        approval_note: note || null,
-        updated_at: reviewedAt,
-      })
-      .eq('id', recommendationId)
-      .select('id, estado, reviewed_by_profile_id, reviewed_at, approval_note')
-      .single();
+    const { data, error } = await supabase.rpc('review_exercise_recommendation', {
+      target_id: recommendationId, decision, note, expected_version: req.body.report_version,
+    });
     if (error) throw error;
-
-    await logComm(supabase, {
-      paciente_id: current.paciente_id,
-      fisioterapeuta_id: current.fisioterapeuta_id || req.auth?.profile_id || null,
-      recomendacion_id: recommendationId,
-      channel: 'crm_web',
-      direction: 'internal',
-      message_type: 'event',
-      message_text: decision === 'approve' ? 'Informe aprobado por el profesional' : 'Informe rechazado por el profesional',
-      payload: { event: 'recommendation_reviewed', decision, note: note || null },
-      request_id: current.request_id || null,
-      status: 'processed',
-      occurred_at: reviewedAt,
-    });
-
-    await recordAudit(req, {
-      entity_type: 'recommendation',
-      entity_id: recommendationId,
-      action: decision === 'approve' ? 'approve_recommendation' : 'reject_recommendation',
-      after_state: data,
-      metadata: { decision, note: note || null },
-    });
-
     return res.json({ ok: true, data });
   } catch (err) {
     console.error('[exercises/recommendations/review] Error:', err.message);
-    return res.status(500).json({ ok: false, error: 'Error revisando recomendacion' });
+    return respondReportError(res, err, 'Error revisando recomendación');
   }
 });
 
 router.post('/reports/pdf', async (req, res) => {
   try {
-    const rawPayload = req.body?.payload && typeof req.body.payload === 'object'
-      ? req.body.payload
-      : (req.body || {});
-    const exercises = Array.isArray(rawPayload?.exercises) ? rawPayload.exercises : [];
-
-    if (!exercises.length) {
-      return res.status(400).json({
-        ok: false,
-        error: 'El informe no incluye ejercicios para exportar',
-      });
-    }
-
-    const recommendationId = String(
-      rawPayload?.recommendation_id || rawPayload?.recomendacion_id || ''
-    ).trim();
-
-    if (!recommendationId) {
-      return res.status(400).json({ ok: false, error: 'recommendation_id es obligatorio' });
-    }
-    const { data: approvedRecommendation, error: approvalError } = await supabase
-      .from('crm_recomendaciones')
-      .select('id, estado')
-      .eq('id', recommendationId)
-      .single();
-    if (approvalError) throw approvalError;
-    if (!['aprobada', 'enviada'].includes(approvedRecommendation?.estado)) {
-      return res.status(409).json({
-        ok: false,
-        error: 'El informe debe ser aprobado por un fisioterapeuta antes de exportarlo',
-        code: 'professional_approval_required',
-      });
-    }
-
-    const pdfPayload = {
-      ...rawPayload,
-      recommendation_id: recommendationId || null,
-      patient_id: rawPayload?.patient_id || rawPayload?.paciente_id || null,
-      patient_name: rawPayload?.patient_name || rawPayload?.paciente_nombre || null,
-      request_id: rawPayload?.request_id || null,
-      exercises,
-    };
-
-    const buffer = await buildExerciseReportPdfBuffer(pdfPayload);
-    const fallbackSuffix = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
-    const filenameSuffix = recommendationId || fallbackSuffix;
-
+    const input = req.body?.payload && typeof req.body.payload === 'object' ? req.body.payload : (req.body || {});
+    const recommendationId = String(input.recommendation_id || input.recomendacion_id || '').trim();
+    const report = await getApprovedExerciseReport(recommendationId, input.patient_id || input.paciente_id || null);
+    const buffer = await buildExerciseReportPdfBuffer(report);
     await recordAudit(req, {
-      entity_type: 'recommendation',
-      entity_id: recommendationId,
-      action: 'export_pdf',
-      metadata: {
-        patient_id: pdfPayload.patient_id,
-        exercise_count: exercises.length,
-      },
+      entity_type: 'recommendation', entity_id: recommendationId, action: 'export_pdf',
+      metadata: { patient_id: report.patient_id, exercise_count: report.exercises.length, report_version: report.report_version },
     });
-
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="informe-ejercicios-${filenameSuffix}.pdf"`);
+    res.setHeader('Content-Disposition', 'attachment; filename="informe-ejercicios-' + recommendationId + '.pdf"');
     res.status(200).send(buffer);
   } catch (err) {
     console.error('[exercises/reports/pdf] Error:', err.message);
-    res.status(500).json({
-      ok: false,
-      error: 'Error generando PDF de ejercicios',
-    });
+    return respondReportError(res, err, 'Error generando PDF de ejercicios');
   }
 });
 
@@ -1326,7 +1229,7 @@ async function resolveCrmProfessionalId(rawProfessionalId) {
 
 async function resolveRecommendationIdentity(input = {}) {
   const rawPatientId = input.patient_id || input.paciente_id || null;
-  const rawProfessionalId = input.fisioterapeuta_id || null;
+  const rawProfessionalId = getRequestContext()?.auth?.profile_id || input.fisioterapeuta_id || null;
   const patientId = rawPatientId ? await resolveCrmPatientId(rawPatientId) : null;
   const fisioterapeutaId = rawProfessionalId ? await resolveCrmProfessionalId(rawProfessionalId) : null;
 
@@ -1532,7 +1435,7 @@ async function callEngineWithRetry({
       status_code: statusCode,
       timed_out: timedOut,
       duration_ms: Date.now() - startedAttemptAt,
-      error: String(lastError?.message || 'engine_error'),
+      error: publicErrorMessage(lastError, 'engine_error'),
     });
 
     const retry = shouldRetryAttempt({
@@ -1859,6 +1762,9 @@ export function scoreExerciseForSymptoms(exercise, symptomText, inferredZone) {
 
 
 function normalizeAsyncRecommendationInput(body = {}) {
+  if (typeof body.symptoms !== 'string' || !body.symptoms.trim() || body.symptoms.length > 12000) {
+    throw createRecommendationHttpError(400, 'symptoms debe contener entre 1 y 12000 caracteres');
+  }
   const symptoms = String(body?.symptoms || '').trim();
   const patientId = body?.patient_id || body?.paciente_id || null;
   const channel = String(body?.channel || 'crm_web').trim() || 'crm_web';
@@ -1887,6 +1793,7 @@ function normalizeAsyncRecommendationInput(body = {}) {
 function createRecommendationHttpError(status, message, code = null) {
   const error = new Error(message);
   error.status = status;
+  error.expose = true;
   if (code) error.code = code;
   return error;
 }
@@ -1895,7 +1802,7 @@ function sendRecommendationError(res, err, requestId = null) {
   const status = Number(err?.status || 500);
   const payload = {
     ok: false,
-    error: err?.message || 'Error generando recomendacion',
+    error: publicHttpErrorMessage(err, status, 'No se pudo generar el informe de ejercicios.'),
   };
 
   if (err?.code) payload.code = err.code;
@@ -2013,7 +1920,7 @@ async function persistExerciseRecommendationJob(job) {
 }
 
 async function fetchPersistedExerciseRecommendationJob(jobId) {
-  if (exerciseAsyncJobPersistenceEnabled === false) return null;
+  if (exerciseAsyncJobPersistenceEnabled === false) throw Object.assign(new Error('No se puede comprobar el trabajo de ejercicios.'), { status: 503 });
 
   try {
     const { data, error } = await supabase
@@ -2031,10 +1938,10 @@ async function fetchPersistedExerciseRecommendationJob(jobId) {
   } catch (error) {
     if (isAsyncJobTableMissingError(error)) {
       exerciseAsyncJobPersistenceEnabled = false;
-      return null;
+      throw Object.assign(error, { status: 503 });
     }
     console.warn('[exercises/recommend/async] fetch warning:', error?.message || error);
-    return null;
+    throw error;
   }
 }
 
@@ -2131,7 +2038,7 @@ function serializeExerciseRecommendationJob(job) {
   }
 
   if (job.status === 'error') {
-    payload.error = job.error || 'Error generando recomendacion';
+    payload.error = publicErrorMessage(job.error, 'No se pudo generar el informe de ejercicios. Comprueba su estado antes de repetirlo.');
     payload.code = job.code || null;
   }
 
@@ -2181,7 +2088,7 @@ async function runExerciseRecommendationJob(jobId) {
     }
 
     if (!response.ok || !parsed?.ok) {
-      const errorMessage = parsed?.error || ('HTTP ' + response.status);
+      const errorMessage = publicErrorMessage(parsed?.error || ('HTTP ' + response.status), 'No se pudo generar el informe de ejercicios.');
       job = await updateExerciseRecommendationJob(jobId, {
         status: 'error',
         progress_message: 'No se pudo generar el informe.',
@@ -2216,7 +2123,7 @@ async function runExerciseRecommendationJob(jobId) {
   } catch (error) {
     const errorMessage = error?.name === 'AbortError'
       ? 'exercise_async_timeout'
-      : error?.message || 'exercise_async_failed';
+      : publicErrorMessage(error, 'exercise_async_failed');
 
     job = await updateExerciseRecommendationJob(jobId, {
       status: 'error',

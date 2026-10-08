@@ -1,4 +1,7 @@
 node_modules/
 dist/
 .astro/
+.runtime-defaults.sh
 node_modules_stuck*/
+.env
+.env.*

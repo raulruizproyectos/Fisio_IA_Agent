@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
 import PDFDocument from 'pdfkit';
+import { isMoney, respondFinanceError } from '../lib/finance.js';
 
 const router = Router();
 const INVOICES_TABLE = 'crm_facturas';
@@ -38,28 +39,13 @@ const CLINIC = {
   email: '',
 };
 
-// Generate next invoice number: FACT-YYYY-NNNN
-async function nextInvoiceNumber(year) {
-  const { data, error } = await supabase
-    .from(INVOICES_TABLE)
-    .select('numero')
-    .like('numero', `FACT-${year}-%`)
-    .order('numero', { ascending: false })
-    .limit(1);
-
-  if (error) throw error;
-
-  if (data?.length) {
-    const last = parseInt(data[0].numero.split('-')[2], 10) || 0;
-    return `FACT-${year}-${String(last + 1).padStart(4, '0')}`;
-  }
-  return `FACT-${year}-0001`;
-}
-
 // GET /api/facturas - list invoices with filters
 router.get('/', async (req, res, next) => {
   try {
     const { anio, mes, paciente_id } = req.query;
+    if ((anio && !/^\d{4}$/.test(String(anio))) || (mes && (!anio || !/^\d{1,2}$/.test(String(mes)) || Number(mes)<1 || Number(mes)>12))) {
+      return res.status(400).json({ error: 'Selecciona un año y mes válidos' });
+    }
     let query = supabase
       .from(INVOICES_TABLE)
       .select('id, numero, paciente_id, fecha, importe_total, iva_pct, importe_iva, importe_bruto, estado, created_at, crm_pacientes(nombre, apellidos)')
@@ -71,7 +57,8 @@ router.get('/', async (req, res, next) => {
     }
     if (mes && anio) {
       const m = String(mes).padStart(2, '0');
-      query = query.gte('fecha', `${anio}-${m}-01`).lte('fecha', `${anio}-${m}-31`);
+      const nextMonth = Number(mes)===12 ? `${Number(anio)+1}-01-01` : `${anio}-${String(Number(mes)+1).padStart(2,'0')}-01`;
+      query = query.gte('fecha', `${anio}-${m}-01`).lt('fecha', nextMonth);
     }
     if (paciente_id) {
       query = query.eq('paciente_id', paciente_id);
@@ -91,70 +78,21 @@ router.get('/', async (req, res, next) => {
 // POST /api/facturas - create invoice from payment(s)
 router.post('/', async (req, res, next) => {
   try {
-    const { paciente_id, pago_ids, iva_pct = 21, notas } = req.body;
+    const { paciente_id, pago_ids, iva_pct = 0, notas } = req.body;
     if (!paciente_id) return res.status(400).json({ error: 'paciente_id requerido' });
-
-    const { data: paciente } = await supabase
-      .from('crm_pacientes')
-      .select('id, nombre, apellidos, dni, direccion, email, telefono')
-      .eq('id', paciente_id)
-      .single();
-
-    if (!paciente) return res.status(404).json({ error: 'Paciente no encontrado' });
-
-    let pagosQuery = supabase
-      .from('crm_pagos')
-      .select('id, fecha, importe, metodo_pago, concepto')
-      .eq('paciente_id', paciente_id)
-      .order('fecha', { ascending: true });
-
-    if (pago_ids?.length) {
-      pagosQuery = pagosQuery.in('id', pago_ids);
+    if (!isMoney(iva_pct,true) || Number(iva_pct)>100) return res.status(400).json({ error: 'Porcentaje de IVA inválido' });
+    if (pago_ids !== undefined && (!Array.isArray(pago_ids) || !pago_ids.length || pago_ids.length>500
+      || pago_ids.some(id => typeof id!=='string' || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)) || new Set(pago_ids.map(id=>id.toLowerCase())).size!==pago_ids.length)) {
+      return res.status(400).json({ error: 'Selecciona cobros válidos sin duplicados' });
     }
-
-    const { data: pagos } = await pagosQuery;
-    if (!pagos?.length) return res.status(400).json({ error: 'No hay pagos para facturar' });
-
-    const importe_bruto = pagos.reduce((s, p) => s + Number(p.importe), 0);
-    const ivaPct = Number(iva_pct);
-    const importe_iva = Math.round(importe_bruto * ivaPct) / 100;
-    const importe_total = importe_bruto + importe_iva;
-
-    const year = new Date().getFullYear();
-    let numero;
-    try {
-      numero = await nextInvoiceNumber(year);
-    } catch (error) {
-      if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res, { write: true });
-      throw error;
-    }
-
-    const { data: factura, error } = await supabase
-      .from(INVOICES_TABLE)
-      .insert({
-        numero,
-        paciente_id,
-        fecha: new Date().toISOString().slice(0, 10),
-        lineas: pagos.map((p) => ({
-          concepto: p.concepto || 'Sesion de fisioterapia',
-          fecha: p.fecha,
-          importe: Number(p.importe),
-        })),
-        importe_bruto: Math.round(importe_bruto * 100) / 100,
-        iva_pct: ivaPct,
-        importe_iva: Math.round(importe_iva * 100) / 100,
-        importe_total: Math.round(importe_total * 100) / 100,
-        estado: 'emitida',
-        notas: notas || null,
-      })
-      .select('*')
-      .single();
-
+    const { data: factura, error } = await supabase.rpc('issue_clinic_invoice', {
+      target_patient: paciente_id, payment_ids: pago_ids || null, tax_percent: Number(iva_pct), invoice_notes: notas || null,
+    });
     if (error) {
       if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res, { write: true });
-      throw error;
+      return respondFinanceError(res, error);
     }
-    res.status(201).json({ data: { ...factura, paciente } });
+    res.status(201).json({ data: factura });
   } catch (err) {
     next(err);
   }
@@ -239,6 +177,11 @@ router.get('/:id/pdf', async (req, res, next) => {
     doc.font('Helvetica-Bold').fontSize(12);
     doc.text('TOTAL:', 350, yLine);
     doc.text(`${Number(factura.importe_total).toFixed(2)} EUR`, 430, yLine, { align: 'right', width: 100 });
+
+    if (factura.exencion_iva) {
+      yLine += 25;
+      doc.fontSize(9).font('Helvetica').text(factura.exencion_iva, 50, yLine, { width: 490 });
+    }
 
     if (factura.notas) {
       yLine += 40;

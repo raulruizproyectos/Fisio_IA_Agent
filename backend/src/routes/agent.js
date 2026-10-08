@@ -337,15 +337,22 @@ ${clinicalContext.notes.map((n, i) => `  ${i + 1}. [${n.session_datetime || n.fe
 
 router.post('/message', async (req, res, next) => {
   try {
-    const channel = req.body.channel || 'web';
-    const role = req.body.role || 'professional';
+    const channel = req.auth?.profile_id ? 'web' : req.body.channel || 'web';
+    const role = req.auth?.profile_id ? 'professional' : req.body.role || 'professional';
     const chatId = pickValue(req.body, 'chat_id');
     const patientId = pickValue(req.body, 'paciente_id', 'patient_id');
-    const professionalId = pickValue(req.body, 'profesional_id', 'professional_id');
+    const professionalId = req.auth?.profile_id || pickValue(req.body, 'profesional_id', 'professional_id');
     const text = pickValue(req.body, 'text', 'texto_mensaje', 'message_text');
 
-    if (!text || !String(text).trim()) {
-      return res.status(400).json({ error: 'text es obligatorio' });
+    if (typeof text !== 'string' || !text.trim() || text.length > 12000) {
+      return res.status(400).json({ error: 'text debe contener entre 1 y 12000 caracteres' });
+    }
+
+    if (patientId) {
+      if (typeof patientId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(patientId)) return res.status(400).json({ error: 'Identificador de paciente inválido' });
+      const patient = await supabase.from('crm_pacientes').select('id').eq('id', patientId).maybeSingle();
+      if (patient.error) throw patient.error;
+      if (!patient.data) return res.status(404).json({ error: 'Paciente no encontrado' });
     }
 
     const result = await resolveAgentConversation({

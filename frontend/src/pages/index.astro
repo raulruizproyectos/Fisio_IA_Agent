@@ -29,19 +29,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     <strong>Preparando tu consulta</strong>
     <span>Verificando la sesión y cargando el espacio clínico seguro…</span>
   </div>
-  <script is:inline>
-    // Fast dismiss for localhost / demo mode to prevent any boot screen hang
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.search.includes('demo=true')) {
-      setTimeout(() => {
-        const b = document.getElementById('appBoot');
-        if (b) {
-          b.setAttribute('hidden', '');
-          b.classList.add('is-hidden');
-          b.style.display = 'none';
-        }
-      }, 500);
-    }
-  </script>
   <div class="app-shell">
     <SidebarNav />
 
@@ -79,14 +66,26 @@ import ConfigView from '../components/views/ConfigView.astro';
 
 <script>
   import { backendBase, initializeProtectedApp, signOut } from '../lib/auth';
-  import { DEMO_PATIENTS, DEMO_APPOINTMENTS, DEMO_INTAKES, DEMO_EXERCISES_CATALOG } from '../lib/demoData';
+  import { upcomingAppointments } from '../lib/appointments';
+  import { DEMO_PATIENTS, DEMO_APPOINTMENTS, DEMO_EXERCISES_CATALOG } from '../lib/demoData';
 
-  const isDevMode = typeof window !== 'undefined' && (
-    window.location.search.includes('demo=true') ||
+  const isDevMode = import.meta.env.DEV && typeof window !== 'undefined' && (
+    new URLSearchParams(window.location.search).get('demo') === 'true' ||
     window.localStorage.getItem('fisio_dev_mode') === 'true'
   );
 
   // === CONFIG ===
+  // Keep the existing local/demo boot timing inside the bundled script allowed by CSP.
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.search.includes('demo=true')) {
+    setTimeout(() => {
+      const boot = document.getElementById('appBoot');
+      if (boot) {
+        boot.setAttribute('hidden', '');
+        boot.classList.add('is-hidden');
+        boot.style.display = 'none';
+      }
+    }, 500);
+  }
   const appBoot = document.getElementById('appBoot');
   const authContext = await initializeProtectedApp().catch((error) => {
     if (appBoot) {
@@ -95,8 +94,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         <div class="app-boot-mark"><span class="material-symbols-rounded">cloud_off</span></div>
         <strong>No se pudo abrir la consulta</strong>
         <span>No hemos podido verificar la sesión. Comprueba la conexión e inténtalo de nuevo.</span>
-        <button type="button" onclick="window.location.reload()">Reintentar</button>
+        <button type="button" data-action="retry-app">Reintentar</button>
       `;
+      appBoot.querySelector('[data-action="retry-app"]')?.addEventListener('click', () => window.location.reload());
     }
     throw error;
   });
@@ -122,12 +122,20 @@ import ConfigView from '../components/views/ConfigView.astro';
   if (sidebarUserName) sidebarUserName.textContent = displayName;
   if (sidebarUserRole) sidebarUserRole.textContent = authContext.role === 'admin' ? 'Administración clínica' : 'Fisioterapeuta';
   if (sidebarUserInitials) sidebarUserInitials.textContent = initials;
-  document.getElementById('logoutBtn')?.addEventListener('click', () => void signOut());
+  const sidebarClinicName = document.getElementById('sidebarClinicName');
+  if (sidebarClinicName && authContext.clinicName) sidebarClinicName.textContent = authContext.clinicName;
+  document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    const button = document.getElementById('logoutBtn') as HTMLButtonElement;
+    button.disabled = true;
+    try { await signOut(); }
+    catch { showToast('No se pudo cerrar la sesión. Comprueba la conexión e inténtalo de nuevo.', 'error'); }
+    finally { button.disabled = false; }
+  });
   const dashboardTitle = document.getElementById('dashboardTitle');
   if (dashboardTitle) {
     const hour = new Date().getHours();
     const greeting = hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
-    dashboardTitle.textContent = `${greeting}, ${displayName}`;
+    dashboardTitle.textContent = displayName.includes('@') ? greeting : `${greeting}, ${displayName}`;
   }
 
   const openProtectedUrl = async (url: string) => {
@@ -159,8 +167,8 @@ import ConfigView from '../components/views/ConfigView.astro';
   const CLINIC_CONFIG_KEY = 'fisio_clinic_config';
   const getClinicConfig = () => {
     try {
-      return JSON.parse(localStorage.getItem(CLINIC_CONFIG_KEY) || '{}');
-    } catch { return {}; }
+      return { nombre: authContext.clinicName || '', ...JSON.parse(localStorage.getItem(CLINIC_CONFIG_KEY) || '{}') };
+    } catch { return { nombre: authContext.clinicName || '' }; }
   };
   const saveClinicConfig = (cfg: Record<string, string>) => {
     localStorage.setItem(CLINIC_CONFIG_KEY, JSON.stringify(cfg));
@@ -380,6 +388,8 @@ import ConfigView from '../components/views/ConfigView.astro';
   const patientsTotalMeta = document.getElementById('patientsTotalMeta') as HTMLElement | null;
   const patientsReachValue = document.getElementById('patientsReachValue') as HTMLElement | null;
   const patientsReachMeta = document.getElementById('patientsReachMeta') as HTMLElement | null;
+  const patientsAttentionValue = document.getElementById('patientsAttentionValue') as HTMLElement | null;
+  const patientsAttentionMeta = document.getElementById('patientsAttentionMeta') as HTMLElement | null;
   const patientsRecentValue = document.getElementById('patientsRecentValue') as HTMLElement | null;
   const patientsRecentMeta = document.getElementById('patientsRecentMeta') as HTMLElement | null;
   const patientsListMeta = document.getElementById('patientsListMeta') as HTMLElement | null;
@@ -455,7 +465,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     toast.setAttribute('role', tone === 'error' || tone === 'warning' ? 'alert' : 'status');
     const icon = tone === 'success' ? 'check_circle' : tone === 'warning' ? 'warning' : tone === 'error' ? 'error' : 'info';
     toast.innerHTML = `
-      <span class="toast-icon material-symbols-rounded">${icon}</span>
+      <span class="toast-icon material-symbols-rounded" aria-hidden="true">${icon}</span>
       <div class="toast-copy">
         ${title ? `<strong>${escapeHtml(title)}</strong>` : ''}
         <p>${escapeHtml(message)}</p>
@@ -468,7 +478,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     };
     toast.querySelector('.toast-close')?.addEventListener('click', close);
     toastRegion.appendChild(toast);
-    window.setTimeout(close, tone === 'error' ? 6500 : 4400);
+    if (tone === 'success' || tone === 'info') window.setTimeout(close, 4400);
+    return toast;
   };
 
   type ConfirmOptions = {
@@ -728,20 +739,45 @@ import ConfigView from '../components/views/ConfigView.astro';
       }
       let message = detail ? `HTTP ${r.status}: ${detail.slice(0, 220)}` : `HTTP ${r.status}`;
       let code = '';
+      let recoveredData: any = null;
       if (detail) {
         try {
           const errorPayload = JSON.parse(detail);
           message = String(errorPayload?.error || errorPayload?.message || message);
           code = String(errorPayload?.code || '');
+          if (code === 'CREATE_ALREADY_SAVED') recoveredData = errorPayload.data;
         } catch {}
       }
       const error: any = new Error(message);
       error.status = r.status;
       error.code = code || null;
+      error.recoveredData = recoveredData;
       throw error;
     }
     const payload = await r.json();
     return sanitizePayload(payload);
+  };
+  const createClinicRecord = async (url: string, body: any, timeoutMs = 8000, editor = 'manual') => {
+    // ponytail: pending IDs survive reloads in this tab; cross-device draft recovery would need a server-side draft.
+    const storageKey = `fisio.pending-create:${authContext.profileId}:${url}:${body.paciente_id || 'patient'}:${body.audio_processed !== undefined ? 'voice' : editor}`;
+    const pending = JSON.parse(sessionStorage.getItem(storageKey) || 'null') || {
+      key: crypto.randomUUID(),
+      ...(body.audio_processed !== undefined ? { fecha: body.fecha, session_datetime: body.session_datetime } : {}),
+    };
+    sessionStorage.setItem(storageKey, JSON.stringify(pending)); // Fail before writing if durable tab storage is unavailable.
+    const fields = { ...body, ...(body.audio_processed !== undefined ? { fecha: pending.fecha, session_datetime: pending.session_datetime } : {}) };
+    try {
+      const result = await fetchJson(url, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': pending.key }, body: JSON.stringify(fields),
+      }, timeoutMs);
+      if (!result?.data?.id) throw new Error('Respuesta de guardado incompleta');
+      sessionStorage.removeItem(storageKey);
+      return result;
+    } catch (err: any) {
+      if (err.code === 'CREATE_ALREADY_SAVED' && err.recoveredData?.id) sessionStorage.removeItem(storageKey);
+      if (!err.status) err.message = 'No se ha recibido confirmación. Conserva el formulario y vuelve a guardar: se comprobará el mismo guardado sin duplicarlo.';
+      throw err;
+    }
   };
   const sanitizePageTextNodes = () => {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -1378,6 +1414,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         <button type="button" class="assistant-chip" data-assistant-brief-action="update-plan"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
         <button type="button" class="assistant-chip" data-report-action="pdf"><span class="material-symbols-rounded">picture_as_pdf</span> Exportar PDF</button>
         <button type="button" class="assistant-chip" data-report-action="telegram"><span class="material-symbols-rounded">send</span> ${telegramActionLabel}</button>
+        <button type="button" class="assistant-chip" data-report-action="whatsapp"><span class="material-symbols-rounded">chat</span> WhatsApp</button>
       </div>
       <div class="assistant-brief-history">
         <div>
@@ -2188,6 +2225,10 @@ import ConfigView from '../components/views/ConfigView.astro';
         exerciseTelegramBtn?.click();
         return;
       }
+      if (reportActionName === 'whatsapp') {
+        void sendCurrentReportWhatsApp(reportAction);
+        return;
+      }
     }
 
     const actionBtn = target?.closest('[data-assistant-brief-action]') as HTMLButtonElement | null;
@@ -2282,7 +2323,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes`);
       const pts = payload.data || [];
-      if (!pts.length && isDevMode) {
+      if (isDevMode) {
         patientCatalog = DEMO_PATIENTS.map((p: any) => ({
           ...p,
           id: p.id,
@@ -2291,7 +2332,15 @@ import ConfigView from '../components/views/ConfigView.astro';
           phone: p.telefono,
           telefono: p.telefono,
           fecha_nacimiento: p.fecha_nacimiento,
-          creado_en: new Date().toISOString(),
+          dni: p.dni,
+          patologia_principal: p.patologia_principal,
+          eva_actual: p.eva_actual,
+          estado: p.estado,
+          ultima_visita: p.ultima_visita,
+          sesiones_realizadas: p.sesiones_realizadas,
+          alergias: p.alergias,
+          banderas_rojas: p.banderas_rojas,
+          creado_en: p.creado_en || new Date().toISOString(),
           _source: 'crm',
         }));
       } else {
@@ -2303,33 +2352,42 @@ import ConfigView from '../components/views/ConfigView.astro';
           phone: p.phone || p.telefono || null,
           telefono: p.telefono || p.phone || null,
           fecha_nacimiento: p.fecha_nacimiento || null,
+          dni: p.dni || null,
+          patologia_principal: p.patologia_principal || 'Sin patología registrada',
+          eva_actual: p.eva_actual ?? null,
+          estado: p.estado || 'activo',
           creado_en: p.creado_en || p.created_at || null,
           _source: p._source || 'crm',
         }));
       }
     } catch (err) {
-      if (isDevMode) {
-        patientCatalog = DEMO_PATIENTS.map((p: any) => ({
-          ...p,
-          id: p.id,
-          nombre_completo: p.nombre_completo,
-          email: p.email,
-          phone: p.telefono,
-          telefono: p.telefono,
-          fecha_nacimiento: p.fecha_nacimiento,
-          creado_en: new Date().toISOString(),
-          _source: 'crm',
-        }));
-      } else {
-        patientCatalog = [];
-        console.error('Error al cargar catalogo de pacientes desde backend:', err);
-      }
+      if (!isDevMode) throw err;
+      patientCatalog = DEMO_PATIENTS.map((p: any) => ({
+        ...p,
+        id: p.id,
+        nombre_completo: p.nombre_completo,
+        email: p.email,
+        phone: p.telefono,
+        telefono: p.telefono,
+        fecha_nacimiento: p.fecha_nacimiento,
+        dni: p.dni,
+        patologia_principal: p.patologia_principal,
+        eva_actual: p.eva_actual,
+        estado: p.estado,
+        ultima_visita: p.ultima_visita,
+        sesiones_realizadas: p.sesiones_realizadas,
+        alergias: p.alergias,
+        banderas_rojas: p.banderas_rojas,
+        creado_en: new Date().toISOString(),
+        _source: 'crm',
+      }));
     }
     restoreSelectedPatientFromStorage();
     renderChatPatientOptions();
     renderAppointmentPatientOptions();
     return patientCatalog;
   };
+
 
   const setPatientFormFeedback = (text = '', state: 'error' | 'success' = 'error') => {
     if (!patientFormFeedback) return;
@@ -2345,7 +2403,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     patientFormFeedback.setAttribute('data-state', state);
   };
 
+  let recoveredPatientId: string | null = null;
+  let patientFormVersion = 0;
+  const patientCreateLabel = patientSubmitBtn?.innerHTML || '';
   const resetPatientForm = () => {
+    patientFormVersion++;
+    recoveredPatientId = null;
+    if (patientSubmitBtn) patientSubmitBtn.innerHTML = patientCreateLabel;
     patientForm?.reset();
     setPatientFormFeedback();
   };
@@ -3268,7 +3332,6 @@ import ConfigView from '../components/views/ConfigView.astro';
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         note_text: buildTelegramDeliveryFollowUpNote(payload),
-        recommendation_state: 'enviada',
         fisioterapeuta_id: PROF_ID,
       }),
     });
@@ -3301,7 +3364,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${recommendationId}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ decision: 'approve', note }),
+        body: JSON.stringify({ decision: 'approve', note, report_version: lastExerciseReportPayload?.report_version }),
       });
       const approvalState = String(payload?.data?.estado || 'aprobada');
       lastExerciseReportPayload = {
@@ -3310,6 +3373,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         approval_state: approvalState,
         estado: approvalState,
         reviewed_at: payload?.data?.reviewed_at || new Date().toISOString(),
+        report_version: payload?.data?.report_version,
       };
       updateExerciseApproveButton();
       updateExercisePdfButton();
@@ -3325,6 +3389,34 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   exerciseApproveBtn?.addEventListener('click', () => void approveCurrentExerciseReport());
+
+  const sendCurrentReportWhatsApp = async (button: HTMLButtonElement | null) => {
+    if (!selectedPatientId) { addMessage('Selecciona un paciente antes de usar WhatsApp.', 'agent'); return; }
+    if (button) button.disabled = true;
+    const patientId = selectedPatientId;
+    try {
+      const status = await fetchJson(`${BACKEND_BASE}/api/whatsapp/patient-status/${patientId}`);
+      if (selectedPatientId !== patientId) return;
+      if (!status?.linked) {
+        const invitation = await fetchJson(`${BACKEND_BASE}/api/whatsapp/link-code/${patientId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        if (!invitation?.linked) { addMessage(`Comparte esta invitación con el paciente. Caduca en 30 minutos:\n\n${invitation.invitation}`, 'agent'); return; }
+      }
+      if (!lastExerciseReportPayload || !hasUsableExerciseReport() || !isExerciseReportApproved()) {
+        addMessage('Genera, revisa y aprueba el plan antes de enviarlo por WhatsApp.', 'agent'); return;
+      }
+      const prior = status?.deliveries?.find((item: any) => item.recomendacion_id === lastExerciseReportPayload?.recommendation_id
+        && item.report_version === lastExerciseReportPayload?.report_version);
+      if (prior) {
+        const labels: Record<string, string> = { procesando: 'Procesando', aceptado: 'Aceptado, pendiente de entrega', entregado: 'Entregado', leido: 'Leído', fallido: 'Fallido', desconocido: 'Resultado desconocido; requiere comprobación de la clínica' };
+        addMessage(`Estado de WhatsApp: ${labels[prior.estado] || prior.estado}. El envío registrado no se repetirá automáticamente.`, 'agent'); return;
+      }
+      const delivery = await fetchJson(`${BACKEND_BASE}/api/whatsapp/patient-report/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patient_id: patientId, recommendation_id: lastExerciseReportPayload.recommendation_id }) }, 60000);
+      addMessage(delivery?.warning || delivery?.message || 'Pulsa WhatsApp otra vez para consultar el estado del envío.', 'agent');
+    } catch (error: any) {
+      addMessage(`WhatsApp: ${error?.message || 'No se pudo completar la operación.'}`, 'agent');
+    } finally { if (button) button.disabled = false; }
+  };
 
   exerciseTelegramBtn?.addEventListener('click', async () => {
     if (!selectedPatientId) {
@@ -3358,7 +3450,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       upsertAgentProgress('Enviando informe al paciente por Telegram...');
       setSending(true, 'exercise');
       const recommendationId = String(lastExerciseReportPayload?.recommendation_id || '').trim();
-      await fetchJson(`${BACKEND_BASE}/api/telegram/patient-report/send`, {
+      const delivery = await fetchJson(`${BACKEND_BASE}/api/telegram/patient-report/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3373,6 +3465,8 @@ import ConfigView from '../components/views/ConfigView.astro';
             '',
         }),
       });
+
+      if (delivery?.warning) addMessage(delivery.warning, 'agent');
 
       let followUpRegistered = false;
       if (recommendationId) {
@@ -3394,7 +3488,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       addMessage(
         followUpRegistered
           ? 'Informe enviado por Telegram y registrado como seguimiento breve en la ficha del paciente.'
-          : 'Informe enviado por Telegram. No pude registrar el seguimiento porque falta la recomendacion asociada.',
+          : 'El envío por Telegram se ha confirmado; no se pudo guardar el seguimiento breve.',
         'agent'
       );
     } catch (err: any) {
@@ -3603,7 +3697,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!next) {
       setDashboardChip(dashboardNextSessionStatus, 'Libre', 'aprobado');
       dashboardNextSessionTitle.textContent = 'Sin próxima sesión cargada';
-      dashboardNextSessionMeta.textContent = 'No hay citas programadas.';
+      dashboardNextSessionMeta.textContent = 'No hay próximas citas en la semana cargada.';
       if (dashboardNextSessionBtn) {
         dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Abrir agenda';
       }
@@ -3803,7 +3897,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         const libraryData = await fetchJson(`${BACKEND_BASE}/api/profesional/program-library?profesional_id=${PROF_ID}&limit=1`);
         const elInformes = document.getElementById('metricInformes');
         if (elInformes) {
-          const totalPlans = Number(libraryData?.data?.summary?.visible_plans || 0);
+          const totalPlans = Number(libraryData?.data?.summary?.total_plans ?? libraryData?.data?.summary?.visible_plans ?? 0);
           elInformes.textContent = String(totalPlans);
         }
       } catch (err) {
@@ -3893,8 +3987,8 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   // === LOAD PACIENTES ===
   let patientDirectory: any[] = [];
-  let patientDirectoryFilter: 'all' | 'contactable' | 'incomplete' | 'recent' = 'all';
-  let patientDirectorySort: 'recent_desc' | 'readiness' | 'name_asc' | 'name_desc' = 'recent_desc';
+  let patientDirectoryFilter: 'all' | 'active' | 'attention' | 'contactable' | 'incomplete' | 'recent' = 'all';
+  let patientDirectorySort: 'recent_desc' | 'eva_desc' | 'readiness' | 'name_asc' | 'name_desc' = 'recent_desc';
 
   const getPatientPrimaryPhone = (patient: any) => String(patient?.phone || patient?.telefono || '').trim();
   const getPatientCreatedAt = (patient: any) => String(patient?.creado_en || patient?.created_at || '').trim();
@@ -3951,6 +4045,11 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (patientDirectorySort === 'name_desc') {
         return collator.compare(String(b?.nombre_completo || ''), String(a?.nombre_completo || ''));
       }
+      if (patientDirectorySort === 'eva_desc') {
+        const evaA = Number(a?.eva_actual || 0);
+        const evaB = Number(b?.eva_actual || 0);
+        if (evaB !== evaA) return evaB - evaA;
+      }
       if (patientDirectorySort === 'readiness') {
         const readinessDelta = getPatientReadinessRank(a) - getPatientReadinessRank(b);
         if (readinessDelta !== 0) return readinessDelta;
@@ -3963,41 +4062,55 @@ import ConfigView from '../components/views/ConfigView.astro';
     const contactable = allPatients.filter((patient) => Boolean(String(patient?.email || '').trim()) || Boolean(getPatientPrimaryPhone(patient))).length;
     const recent = allPatients.filter((patient) => isRecentPatient(patient)).length;
     const incomplete = allPatients.filter((patient) => getPatientReadinessMeta(patient).tone === 'soft').length;
+    const attention = allPatients.filter((patient) => Number(patient?.eva_actual || 0) >= 7 || Boolean(patient?.banderas_rojas)).length;
     const query = patientsFilterInput?.value.trim() || '';
-    const visibleLabel = `${visiblePatients.length} ${visiblePatients.length === 1 ? 'caso visible' : 'casos visibles'}`;
+    const visibleLabel = `${visiblePatients.length} ${visiblePatients.length === 1 ? 'expediente visible' : 'expedientes visibles'}`;
 
     if (patientsTotalValue) patientsTotalValue.textContent = String(total);
-    if (patientsTotalMeta) patientsTotalMeta.textContent = total ? `${incomplete} ficha${incomplete === 1 ? '' : 's'} necesitan completar contacto.` : 'Sin pacientes activos todavia.';
+    if (patientsTotalMeta) patientsTotalMeta.textContent = total ? `${incomplete} ficha${incomplete === 1 ? '' : 's'} necesitan completar contacto.` : 'Sin pacientes activos todavía.';
     if (patientsReachValue) patientsReachValue.textContent = total ? `${Math.round((contactable / total) * 100)}%` : '0%';
-    if (patientsReachMeta) patientsReachMeta.textContent = total ? `${contactable} pacientes con email o telefono listos para seguimiento.` : 'Aun no hay vias de contacto registradas.';
+    if (patientsReachMeta) patientsReachMeta.textContent = total ? `${contactable} pacientes con email o teléfono.` : 'Aún no hay vías registradas.';
+    if (patientsAttentionValue) patientsAttentionValue.textContent = String(attention);
+    if (patientsAttentionMeta) patientsAttentionMeta.textContent = attention ? `${attention} caso${attention === 1 ? '' : 's'} requieren supervisión prioritaria.` : 'Sin alertas de dolor agudo.';
     if (patientsRecentValue) patientsRecentValue.textContent = String(recent);
-    if (patientsRecentMeta) patientsRecentMeta.textContent = recent ? `Altas creadas en los ultimos 30 dias.` : 'Sin altas nuevas en los ultimos 30 dias.';
+    if (patientsRecentMeta) patientsRecentMeta.textContent = recent ? `Altas en los últimos 30 días.` : 'Sin altas en los últimos 30 días.';
+
     if (patientsListMeta) {
       const filterCopy = patientDirectoryFilter === 'all'
-        ? 'Mostrando toda la base activa.'
-        : patientDirectoryFilter === 'contactable'
-          ? 'Mostrando solo pacientes con via de contacto.'
-          : patientDirectoryFilter === 'incomplete'
-            ? 'Mostrando fichas que necesitan completar datos.'
-            : 'Mostrando altas recientes del ultimo mes.';
-      patientsListMeta.textContent = `${visibleLabel}. ${filterCopy}${query ? ` Busqueda: "${query}".` : ''}`;
+        ? 'Base completa de pacientes.'
+        : patientDirectoryFilter === 'active'
+          ? 'Pacientes en tratamiento activo.'
+          : patientDirectoryFilter === 'attention'
+            ? 'Casos con dolor agudo (EVA ≥ 7) o banderas rojas.'
+            : patientDirectoryFilter === 'contactable'
+              ? 'Pacientes con vía de contacto directa.'
+              : patientDirectoryFilter === 'incomplete'
+                ? 'Fichas que requieren completar datos.'
+                : 'Altas recientes del último mes.';
+      patientsListMeta.textContent = `${visibleLabel}. ${filterCopy}${query ? ` Búsqueda: "${query}".` : ''}`;
     }
     if (patientsFilterChip) {
       const filterLabel = patientDirectoryFilter === 'all'
-        ? 'Vista completa'
-        : patientDirectoryFilter === 'contactable'
-          ? 'Filtro: contactables'
-          : patientDirectoryFilter === 'incomplete'
-            ? 'Filtro: incompletos'
-            : 'Filtro: recientes';
+        ? 'Todos'
+        : patientDirectoryFilter === 'active'
+          ? 'En tratamiento'
+          : patientDirectoryFilter === 'attention'
+            ? 'Atención clínica'
+            : patientDirectoryFilter === 'contactable'
+              ? 'Contactables'
+              : patientDirectoryFilter === 'incomplete'
+                ? 'Incompletos'
+                : 'Recientes';
       const sortLabel = patientDirectorySort === 'recent_desc'
-        ? 'Orden: recientes'
-        : patientDirectorySort === 'readiness'
-          ? 'Orden: prioridad'
-          : patientDirectorySort === 'name_asc'
-            ? 'Orden: A-Z'
-            : 'Orden: Z-A';
-      patientsFilterChip.textContent = `${filterLabel} | ${sortLabel}`;
+        ? 'Más recientes'
+        : patientDirectorySort === 'eva_desc'
+          ? 'Mayor dolor'
+          : patientDirectorySort === 'readiness'
+            ? 'Incompletos primero'
+            : patientDirectorySort === 'name_asc'
+              ? 'Nombre A-Z'
+              : 'Nombre Z-A';
+      patientsFilterChip.textContent = `${filterLabel} · ${sortLabel}`;
     }
     patientsSegmentButtons.forEach((button) => {
       const isActive = button.dataset.patientFilter === patientDirectoryFilter;
@@ -4014,19 +4127,25 @@ import ConfigView from '../components/views/ConfigView.astro';
     const filtered = patientDirectory.filter((patient) => {
       const matchesSegment = patientDirectoryFilter === 'all'
         ? true
-        : patientDirectoryFilter === 'contactable'
-          ? Boolean(String(patient?.email || '').trim()) || Boolean(getPatientPrimaryPhone(patient))
-          : patientDirectoryFilter === 'incomplete'
-            ? getPatientReadinessMeta(patient).tone === 'soft'
-            : isRecentPatient(patient);
+        : patientDirectoryFilter === 'active'
+          ? patient?.estado !== 'alta'
+          : patientDirectoryFilter === 'attention'
+            ? Number(patient?.eva_actual || 0) >= 7 || Boolean(patient?.banderas_rojas)
+            : patientDirectoryFilter === 'contactable'
+              ? Boolean(String(patient?.email || '').trim()) || Boolean(getPatientPrimaryPhone(patient))
+              : patientDirectoryFilter === 'incomplete'
+                ? getPatientReadinessMeta(patient).tone === 'soft'
+                : isRecentPatient(patient);
 
       if (!matchesSegment) return false;
       if (!query) return true;
 
       const haystack = [
         patient?.nombre_completo || '',
+        patient?.dni || '',
         patient?.email || '',
         getPatientPrimaryPhone(patient),
+        patient?.patologia_principal || '',
         patient?.id || '',
       ]
         .map((value) => normalizeSearchValue(String(value)))
@@ -4039,64 +4158,202 @@ import ConfigView from '../components/views/ConfigView.astro';
     renderPatientsDirectorySummary(patientDirectory, sorted);
 
     if (!patientDirectory.length) {
-      setListState(pacientesBody, 'person_off', 'Sin pacientes registrados');
+      pacientesBody.innerHTML = `
+        <div class="patient-empty-state">
+          <span class="material-symbols-rounded">group_off</span>
+          <h3>Sin pacientes registrados</h3>
+          <p>La base de datos clínica está vacía. Añade tu primer paciente para comenzar.</p>
+          <button type="button" class="patient-primary-action" id="emptyAddPatientBtn">
+            <span class="material-symbols-rounded">person_add</span>
+            <span>Nuevo paciente</span>
+          </button>
+        </div>
+      `;
+      document.getElementById('emptyAddPatientBtn')?.addEventListener('click', () => document.getElementById('addPatientBtn')?.click());
       return;
     }
 
     if (!sorted.length) {
-      setListState(pacientesBody, 'search_off', 'No hay pacientes que coincidan con los filtros actuales.');
+      pacientesBody.innerHTML = `
+        <div class="patient-empty-state">
+          <span class="material-symbols-rounded">search_off</span>
+          <h3>Sin resultados</h3>
+          <p>No hay pacientes que coincidan con los filtros o el término de búsqueda actual.</p>
+        </div>
+      `;
       return;
     }
 
-    pacientesBody.innerHTML = sorted.map((patient: any) => {
+    // Generate table rows and mobile cards
+    const tableRows = sorted.map((patient: any) => {
       const patientName = patient?.nombre_completo || 'Sin nombre';
       const patientEmail = String(patient?.email || '').trim();
       const patientPhone = getPatientPrimaryPhone(patient);
       const patientBirthMeta = getPatientBirthMeta(patient);
-      const createdAt = getPatientCreatedAt(patient);
-      const createdLabel = createdAt ? fmtDate(createdAt) : 'Alta sin fecha';
-      const readiness = getPatientReadinessMeta(patient);
-      const sourceLabel = patient?._source === 'legacy' ? 'Legacy' : 'CRM';
-      const channelBits = [
-        patientEmail || 'Sin email',
-        patientPhone || 'Sin telefono',
-        patientBirthMeta,
-      ];
-      const callAction = patientPhone
-        ? `<button type="button" class="btn-ghost btn-sm" data-action="patient-call" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-phone="${escapeAttr(patientPhone)}"><span class="material-symbols-rounded">call</span> Llamar</button>`
-        : '';
-      const emailAction = patientEmail
-        ? `<button type="button" class="btn-ghost btn-sm" data-action="patient-email" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-email="${escapeAttr(patientEmail)}"><span class="material-symbols-rounded">mail</span> Email</button>`
-        : '';
+      const patientDni = patient?.dni || 'DNI pendiente';
+      const pathology = patient?.patologia_principal || 'Sin patología registrada';
+      const evaScore = patient?.eva_actual == null || patient.eva_actual === '' ? null : Number(patient.eva_actual);
+      const isUrgent = (evaScore !== null && evaScore >= 7) || Boolean(patient?.banderas_rojas);
+      const status = patient?.estado === 'alta' ? 'Alta médica' : isUrgent ? 'Atención prioritaria' : 'En tratamiento';
+      const statusClass = patient?.estado === 'alta' ? 'status-alta' : isUrgent ? 'status-attention' : 'status-active';
+      const avatarClass = isUrgent ? 'avatar-urgent' : 'avatar-success';
+      const evaClass = evaScore === null ? '' : evaScore >= 7 ? 'eva-high' : evaScore >= 4 ? 'eva-mid' : 'eva-low';
+
+      // Find appointment
+      const appointmentRows = isDevMode ? DEMO_APPOINTMENTS : latestAgendaAppointments;
+      const appt = upcomingAppointments(appointmentRows).find((a: any) => a.paciente_id === patient.id);
+      let apptHtml = '<span class="patient-no-appt">Sin próxima cita esta semana</span>';
+      if (appt) {
+        const apptDate = new Date(appt.inicio_en);
+        const timeStr = !Number.isNaN(apptDate.getTime())
+          ? `${apptDate.toDateString() === new Date().toDateString() ? 'Hoy' : 'Próx'}, ${String(apptDate.getHours()).padStart(2, '0')}:${String(apptDate.getMinutes()).padStart(2, '0')}`
+          : 'Programada';
+        apptHtml = `
+          <div class="patient-cell-appt">
+            <span class="patient-appt-time">${escapeHtml(timeStr)}</span>
+            <span class="patient-appt-status">${escapeHtml(appt.estado || 'pendiente')}</span>
+          </div>
+        `;
+      }
+
+      const contactHtml = `
+        <div class="patient-cell-contact">
+          ${patientPhone
+            ? `<a href="tel:${escapeAttr(patientPhone)}" class="patient-contact-link" title="Llamar"><span class="material-symbols-rounded">call</span> ${escapeHtml(patientPhone)}</a>`
+            : '<span class="patient-missing-contact">Sin teléfono</span>'
+          }
+          ${patientEmail
+            ? `<a href="mailto:${escapeAttr(patientEmail)}" class="patient-contact-link" title="Enviar email"><span class="material-symbols-rounded">mail</span> ${escapeHtml(patientEmail)}</a>`
+            : '<span class="patient-missing-contact">Sin email</span>'
+          }
+        </div>
+      `;
+
       return `
-        <article class="patient-directory-item tone-${escapeAttr(readiness.tone)}">
-          <div class="patient-directory-main">
-            <div class="patient-directory-avatar" aria-hidden="true">${escapeHtml(getPatientInitials(patientName))}</div>
-            <div class="patient-directory-copy">
-              <div class="patient-directory-head">
-                <div>
-                  <strong>${escapeHtml(patientName)}</strong>
-                  <p>${escapeHtml(channelBits.join(' | '))}</p>
-                </div>
-                <span class="patient-status-chip is-${escapeAttr(readiness.tone)}">${escapeHtml(readiness.label)}</span>
-              </div>
-              <div class="patient-directory-meta">
-                <span class="patient-directory-pill">${escapeHtml(sourceLabel)}</span>
-                <span class="patient-directory-pill">${isRecentPatient(patient) ? 'Alta reciente' : 'Base activa'}</span>
-                <span class="patient-directory-pill">Actualizado ${escapeHtml(createdLabel)}</span>
+        <tr>
+          <td class="cell-patient">
+            <div class="patient-cell-identity">
+              <div class="patient-avatar ${avatarClass}" aria-hidden="true">${escapeHtml(getPatientInitials(patientName))}</div>
+              <div class="patient-info">
+                <button type="button" class="patient-name-btn" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" title="Abrir expediente de ${escapeAttr(patientName)}">
+                  ${escapeHtml(patientName)}
+                </button>
+                <span class="patient-submeta">${escapeHtml(patientDni)} · ${escapeHtml(patientBirthMeta)}</span>
               </div>
             </div>
+          </td>
+          <td class="cell-contact">${contactHtml}</td>
+          <td class="cell-clinical">
+            <div class="patient-cell-clinical">
+              <span class="patient-pathology" title="${escapeAttr(pathology)}">${escapeHtml(pathology)}</span>
+              <div class="patient-clinical-badges">
+                <span class="patient-eva-badge ${evaClass}">${evaScore === null ? 'EVA no disponible' : `EVA ${evaScore}/10`}</span>
+                ${isUrgent ? '<span class="patient-attention-tag">Atención</span>' : ''}
+              </div>
+            </div>
+          </td>
+          <td class="cell-appt">${apptHtml}</td>
+          <td class="cell-status">
+            <span class="patient-status-badge ${statusClass}">${escapeHtml(status)}</span>
+          </td>
+          <td class="cell-actions">
+            <div class="patient-actions-group">
+              <button type="button" class="btn-open-ficha" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" title="Abrir ficha clínica">
+                <span class="material-symbols-rounded">folder_open</span>
+                <span>Abrir ficha</span>
+              </button>
+              ${patientPhone ? `
+                <button type="button" class="btn-icon-action" data-action="patient-call" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-phone="${escapeAttr(patientPhone)}" title="Llamar">
+                  <span class="material-symbols-rounded">call</span>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const mobileCards = sorted.map((patient: any) => {
+      const patientName = patient?.nombre_completo || 'Sin nombre';
+      const patientEmail = String(patient?.email || '').trim();
+      const patientPhone = getPatientPrimaryPhone(patient);
+      const patientBirthMeta = getPatientBirthMeta(patient);
+      const patientDni = patient?.dni || 'DNI pendiente';
+      const pathology = patient?.patologia_principal || 'Sin patología registrada';
+      const evaScore = patient?.eva_actual == null || patient.eva_actual === '' ? null : Number(patient.eva_actual);
+      const isUrgent = (evaScore !== null && evaScore >= 7) || Boolean(patient?.banderas_rojas);
+      const status = patient?.estado === 'alta' ? 'Alta médica' : isUrgent ? 'Atención prioritaria' : 'En tratamiento';
+      const statusClass = patient?.estado === 'alta' ? 'status-alta' : isUrgent ? 'status-attention' : 'status-active';
+      const avatarClass = isUrgent ? 'avatar-urgent' : 'avatar-success';
+      const evaClass = evaScore === null ? '' : evaScore >= 7 ? 'eva-high' : evaScore >= 4 ? 'eva-mid' : 'eva-low';
+
+      return `
+        <article class="patient-mobile-card">
+          <header class="patient-mobile-card-header">
+            <div class="patient-mobile-card-identity">
+              <div class="patient-avatar ${avatarClass}">${escapeHtml(getPatientInitials(patientName))}</div>
+              <div class="patient-info">
+                <button type="button" class="patient-name-btn" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}">
+                  ${escapeHtml(patientName)}
+                </button>
+                <span class="patient-submeta">${escapeHtml(patientDni)} · ${escapeHtml(patientBirthMeta)}</span>
+              </div>
+            </div>
+            <span class="patient-status-badge ${statusClass}">${escapeHtml(status)}</span>
+          </header>
+
+          <div class="patient-mobile-card-body">
+            <span class="patient-pathology">${escapeHtml(pathology)}</span>
+            <div class="patient-clinical-badges">
+              <span class="patient-eva-badge ${evaClass}">${evaScore === null ? 'EVA no disponible' : `EVA ${evaScore}/10`}</span>
+              ${isUrgent ? '<span class="patient-attention-tag">Atención</span>' : ''}
+            </div>
           </div>
-          <div class="patient-directory-actions">
-            ${callAction}
-            ${emailAction}
-            <button type="button" class="btn-secondary btn-sm" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">person</span> Abrir ficha</button>
-            <button type="button" class="btn-ghost btn-sm" data-action="patient-telegram" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}"><span class="material-symbols-rounded">forum</span> Seguimiento</button>
+
+          <div class="patient-mobile-card-actions">
+            <button type="button" class="btn-open-ficha" data-action="view-patient" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}">
+              <span class="material-symbols-rounded">folder_open</span>
+              <span>Abrir ficha</span>
+            </button>
+            ${patientPhone ? `
+              <button type="button" class="btn-icon-action" data-action="patient-call" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-phone="${escapeAttr(patientPhone)}" title="Llamar">
+                <span class="material-symbols-rounded">call</span>
+              </button>
+            ` : ''}
+            ${patientEmail ? `
+              <button type="button" class="btn-icon-action" data-action="patient-email" data-patient-id="${escapeAttr(patient.id)}" data-patient-name="${escapeAttr(patientName)}" data-patient-email="${escapeAttr(patientEmail)}" title="Email">
+                <span class="material-symbols-rounded">mail</span>
+              </button>
+            ` : ''}
           </div>
         </article>
       `;
     }).join('');
+
+    pacientesBody.innerHTML = `
+      <div class="patient-table-container">
+        <table class="patient-table">
+          <thead>
+            <tr>
+              <th class="col-patient">Paciente</th>
+              <th class="col-contact">Contacto</th>
+              <th class="col-clinical">Diagnóstico y dolor</th>
+              <th class="col-appt">Cita esta semana</th>
+              <th class="col-status">Estado</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      </div>
+      <div class="patient-mobile-card-list">
+        ${mobileCards}
+      </div>
+    `;
   };
+
   const loadPacientes = async () => {
     if (!pacientesBody) return;
     setListState(pacientesBody, 'sync', 'Cargando pacientes...', true);
@@ -4120,12 +4377,12 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
   patientsSortSelect?.addEventListener('change', () => {
     const nextSort = String(patientsSortSelect.value || 'recent_desc') as typeof patientDirectorySort;
-    patientDirectorySort = ['recent_desc', 'readiness', 'name_asc', 'name_desc'].includes(nextSort) ? nextSort : 'recent_desc';
+    patientDirectorySort = ['recent_desc', 'eva_desc', 'readiness', 'name_asc', 'name_desc'].includes(nextSort) ? nextSort : 'recent_desc';
     renderPatientsDirectory();
   });
   patientsSegmentButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      patientDirectoryFilter = (button.dataset.patientFilter as 'all' | 'contactable' | 'incomplete' | 'recent') || 'all';
+      patientDirectoryFilter = (button.dataset.patientFilter as typeof patientDirectoryFilter) || 'all';
       renderPatientsDirectory();
     });
   });
@@ -4193,6 +4450,8 @@ import ConfigView from '../components/views/ConfigView.astro';
   addPatientBtn?.addEventListener('click', openPatientModal);
   patientForm?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
+    if (patientSubmitBtn?.disabled) return;
+    const formVersion = patientFormVersion;
 
     const fullName = patientNameInput?.value.trim() || '';
     if (!fullName) {
@@ -4209,20 +4468,27 @@ import ConfigView from '../components/views/ConfigView.astro';
     setPatientFormFeedback('Creando ficha del paciente...', 'success');
 
     try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/pacientes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const fields = {
           nombre_completo: fullName,
           fecha_nacimiento: patientBirthDateInput?.value || null,
           email: patientEmailInput?.value.trim() || null,
           phone: patientPhoneInput?.value.trim() || null,
           profesional_id: PROF_ID,
-        }),
-      }, 15000);
+        };
+      const [nombre,...apellidos] = fullName.split(/\s+/);
+      const payload = recoveredPatientId
+        ? await fetchJson(`${BACKEND_BASE}/api/pacientes/${recoveredPatientId}`, {
+          method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,apellidos:apellidos.join(' ') || null,
+            email:fields.email,telefono:fields.phone,fecha_nacimiento:fields.fecha_nacimiento}),
+        },15000)
+        : await createClinicRecord(`${BACKEND_BASE}/api/pacientes`, fields, 15000);
 
       const createdPatient = payload?.data || {};
+      if (formVersion !== patientFormVersion) return;
+      recoveredPatientId = createdPatient.id || recoveredPatientId;
+      if (createdPatient.assignment_warning) showToast(createdPatient.assignment_warning, 'warning');
       await loadPacientes();
+      if (formVersion !== patientFormVersion) return;
 
       const createdId = createdPatient.id || null;
       const createdName =
@@ -4240,11 +4506,13 @@ import ConfigView from '../components/views/ConfigView.astro';
         void openFichaPaciente(createdId);
       }
     } catch (err: any) {
-      setPatientFormFeedback(`No se pudo crear el paciente: ${err?.message || 'error no identificado'}`);
+      if (formVersion !== patientFormVersion) return;
+      if (err.recoveredData?.id) recoveredPatientId = err.recoveredData.id;
+      setPatientFormFeedback(err?.message || 'No se pudo confirmar el guardado del paciente.');
     } finally {
       if (patientSubmitBtn) {
         patientSubmitBtn.disabled = false;
-        patientSubmitBtn.innerHTML = previousLabel;
+        patientSubmitBtn.innerHTML = recoveredPatientId ? 'Actualizar paciente recuperado' : formVersion === patientFormVersion ? previousLabel : patientCreateLabel;
       }
     }
   });
@@ -4763,7 +5031,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     dashboardRuntime.agendaState = 'ready';
     dashboardRuntime.weekAppointments = activeAppointments;
     dashboardRuntime.todayAppointments = activeAppointments.filter((c: any) => isTodayDate(c.inicio_en || ''));
-    dashboardRuntime.nextAppointment = activeAppointments.find((c: any) => new Date(c.inicio_en).getTime() >= now) || activeAppointments[0] || null;
+    dashboardRuntime.nextAppointment = upcomingAppointments(activeAppointments, now)[0] || null;
     syncDashboardCommandCenter();
 
     if (!citas.length) {
@@ -4773,7 +5041,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const todayStr = new Date().toDateString();
     const todayCitas = citas.filter((c: any) => c.inicio_en && new Date(c.inicio_en).toDateString() === todayStr);
-    const upcomingCitas = citas.filter((c: any) => !c.inicio_en || new Date(c.inicio_en).toDateString() !== todayStr).slice(0, 4);
+    const upcomingCitas = upcomingAppointments(activeAppointments, now).filter((c: any) => new Date(c.inicio_en).toDateString() !== todayStr).slice(0, 4);
 
     const renderItem = (cita: any, isToday: boolean) => {
       const stateClass = String(cita.estado || 'pendiente')
@@ -4920,6 +5188,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const getAgendaMirrorMeta = (cita: any) => {
     const state = String(cita?.calendar_sync_state || '').trim();
     const origin = String(cita?.calendar_origin || '').trim();
+    if (cita?.calendar_sync_pending || state === 'calendar_pending') return { label: 'Calendar pendiente', chipClass: 'pendiente', note: 'Cita guardada en CRM. Comprueba Calendar antes de volver a modificarla.' };
     if (state === 'calendar_only') {
       const blockMeta = getAgendaCalendarBlockMeta(cita);
       return { label: 'Solo Calendar', chipClass: 'pendiente', note: blockMeta.note };
@@ -4939,13 +5208,28 @@ import ConfigView from '../components/views/ConfigView.astro';
     const persisted = Number(summary?.persisted || 0);
     const fetched = Number(summary?.fetched || 0);
     const trigger = String(syncStatus?.trigger || '').trim();
+    const pending = Number(liveSummary?.pending ?? summary?.pending ?? 0);
 
     let chipLabel = 'Sin datos';
     let chipClass = 'caducado';
     let title = 'Sync Google Calendar';
     let meta = 'Todavia no hay estado del sincronizador.';
 
-    if (uiStatus === 'syncing') {
+    if (pending > 0) {
+      chipLabel = 'Requiere comprobación';
+      chipClass = 'pendiente';
+      title = 'Citas guardadas en CRM';
+      meta = `${pending} cita(s) con Calendar pendiente. Comprueba los eventos antes de repetir o modificar estas citas.`;
+    } else if (syncStatus?.enabled === false || summary?.enabled === false) {
+      chipLabel = 'Sin conectar';
+      title = 'Agenda de la clínica';
+      meta = 'Las citas se gestionan en el CRM. Google Calendar todavía no está conectado.';
+    } else if (liveSummary?.available === false) {
+      chipLabel = 'Lectura no disponible';
+      chipClass = 'pendiente';
+      title = 'Google Calendar no responde';
+      meta = 'Se muestran las citas guardadas en el CRM; no se han reconciliado con Calendar.';
+    } else if (uiStatus === 'syncing') {
       chipLabel = 'Sincronizando';
       chipClass = 'pendiente';
       title = 'W6 sincronizando agenda';
@@ -5171,7 +5455,7 @@ import ConfigView from '../components/views/ConfigView.astro';
                 ? 'Google Calendar'
                 : cita?.canal_origen === 'crm_web' ? 'CRM Web' : cita?.canal_origen === 'telegram' ? 'Telegram' : String(cita?.canal_origen || 'Canal CRM');
               const apptId = escapeAttr(cita?.id || cita?.appointment_id || '');
-              const canConfirm = !calendarOnly && estado === 'pendiente';
+              const canConfirm = !calendarOnly && !cita.calendar_sync_pending && estado === 'pendiente';
               const statusLabel = calendarOnly ? (blockMeta?.shortLabel || mirror.label) : estado;
               const itemClass = calendarOnly ? ` is-calendar-only agenda-mobile-${escapeAttr(getCalendarBlockKind(cita))}` : '';
               return `
@@ -5189,6 +5473,7 @@ import ConfigView from '../components/views/ConfigView.astro';
                   </div>
                   <div class="agenda-mobile-item-actions">
                     <button type="button" class="btn-sm btn-outline" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle de la cita"><span class="material-symbols-rounded">right_panel_open</span> Detalle</button>
+                    ${cita.calendar_sync_pending ? `<button type="button" class="btn-sm btn-outline" data-appt-action="check-calendar" data-appt-id="${apptId}"><span class="material-symbols-rounded">sync</span> Comprobar Calendar</button>` : ''}
                     ${canConfirm ? `<button type="button" class="btn-sm" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar cita"><span class="material-symbols-rounded">check</span> Confirmar</button>` : ''}
                     ${calendarOnly ? '' : `<button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>`}
                   </div>
@@ -5201,7 +5486,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     }).join('');
   };
 
+  let appointmentDetailId: string | null = null;
   const closeAppointmentDetailDrawer = () => {
+    appointmentDetailId = null;
     appointmentDetailDrawer?.classList.remove('open');
     appointmentDetailDrawer?.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('has-modal-open');
@@ -5212,6 +5499,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const openAppointmentDetailDrawer = (cita: any) => {
     if (!appointmentDetailDrawer || !appointmentDetailBody) return;
+    appointmentDetailId = String(cita.id || cita.appointment_id || '');
     const patientName = String(cita?.nombre_paciente || 'Paciente sin nombre');
     const patientId = String(cita?.paciente_id || '');
     const estado = String(cita?.estado || 'pendiente');
@@ -5237,7 +5525,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       appointmentDetailSubtitle.textContent = `${day} | ${time}`;
     }
 
-    const canAct = !calendarOnly && Boolean(apptId);
+    const canAct = !calendarOnly && !cita.calendar_sync_pending && Boolean(apptId);
     const statusActions: string[] = [];
     if (canAct && estado === 'pendiente') statusActions.push(`<button class="btn-secondary" type="button" data-appt-action="confirmada" data-appt-id="${apptId}"><span class="material-symbols-rounded">check</span> Confirmar</button>`);
     if (canAct && ['pendiente', 'confirmada'].includes(estado)) statusActions.push(`<button class="btn-secondary" type="button" data-appt-action="completada" data-appt-id="${apptId}"><span class="material-symbols-rounded">check_circle</span> Completar</button>`);
@@ -5270,6 +5558,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <strong>${escapeHtml(mirror.label)}</strong>
         </article>
       </section>
+      ${cita.calendar_sync_pending ? `<section class="drawer-summary-card"><div><p>${escapeHtml(mirror.note)}</p><p id="appointmentCalendarFeedback" role="status" aria-live="polite"></p><button class="btn-secondary" type="button" data-appt-action="check-calendar" data-appt-id="${apptId}"><span class="material-symbols-rounded">sync</span> Comprobar Calendar</button></div></section>` : ''}
       <section class="drawer-action-stack">
         <button class="btn-primary" type="button" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patientAttr}" data-patient-name="${patientNameAttr}" ${patientId ? '' : 'disabled'}>
           <span class="material-symbols-rounded">person</span>
@@ -5365,10 +5654,11 @@ import ConfigView from '../components/views/ConfigView.astro';
         const patientLabel = cita.nombre_paciente || 'Paciente';
         const patName = escapeAttr(patientLabel);
         const actions: string[] = [];
-        if (estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar">&#x2713;</button>`);
-        if (estado === 'confirmada' || estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded agenda-action-icon">check_circle</span></button>`);
-        if (estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded agenda-action-icon">close</span></button>`);
-        if (estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded agenda-action-icon">person_off</span></button>`);
+        if (cita.calendar_sync_pending) actions.push(`<button class="btn-secondary" type="button" data-appt-action="check-calendar" data-appt-id="${apptId}">Comprobar Calendar</button>`);
+        if (!cita.calendar_sync_pending && estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar">&#x2713;</button>`);
+        if (!cita.calendar_sync_pending && (estado === 'confirmada' || estado === 'pendiente')) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded agenda-action-icon">check_circle</span></button>`);
+        if (!cita.calendar_sync_pending && estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded agenda-action-icon">close</span></button>`);
+        if (!cita.calendar_sync_pending && estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded agenda-action-icon">person_off</span></button>`);
         actions.push(`<button class="btn-ghost btn-xs" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle"><span class="material-symbols-rounded agenda-action-icon">right_panel_open</span></button>`);
         actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>`);
         return `<tr>
@@ -5530,7 +5820,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         }),
       });
       if (res.error) throw new Error(res.error);
-      setAppointmentFormFeedback('Cita creada correctamente', 'success');
+      setAppointmentFormFeedback(res.data?.calendar_sync_pending ? 'Cita guardada. Calendar pendiente de comprobación.' : 'Cita creada correctamente', 'success');
+      if (res.data?.calendar_sync_pending) showToast('Cita guardada en CRM. Comprueba Calendar antes de repetir o modificar esta cita.', 'warning');
       if (pendingIntakeIdForAppointment) {
         intakeScheduledSet.add(pendingIntakeIdForAppointment);
         persistIntakeScheduledSet();
@@ -5546,6 +5837,45 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   // === APPOINTMENT ACTIONS (table + calendar) ===
+  const pendingCalendarChecks = new Set<string>();
+  const checkAppointmentCalendar = async (appointmentId: string) => {
+    const cita = findAgendaAppointmentById(appointmentId);
+    if (!cita || pendingCalendarChecks.has(appointmentId)) return;
+    const expectedVersion = cita.updated_at;
+    pendingCalendarChecks.add(appointmentId);
+    document.querySelectorAll(`[data-calendar-check-id="${appointmentId}"]`).forEach(toast => toast.remove());
+    const buttons = () => document.querySelectorAll<HTMLButtonElement>('[data-appt-action="check-calendar"]');
+    const setBusy = (busy: boolean) => buttons().forEach(btn => {
+      if (btn.dataset.apptId === appointmentId) { btn.disabled = busy; btn.setAttribute('aria-busy', String(busy)); }
+    });
+    setBusy(true);
+    const feedback = () => appointmentDetailId === appointmentId ? document.getElementById('appointmentCalendarFeedback') : null;
+    const startingFeedback = feedback();
+    if (startingFeedback) startingFeedback.textContent = 'Comprobando Calendar…';
+    try {
+      const res = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments/${encodeURIComponent(appointmentId)}/check-calendar`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ updated_at: expectedVersion }),
+      }, 30000);
+      if (res.error || !res.data || !res.calendar_check) throw new Error(res.error || 'No se pudo confirmar la comprobación.');
+      const current = findAgendaAppointmentById(appointmentId);
+      if (current?.updated_at !== expectedVersion) { showToast('La cita ha cambiado. Actualiza la agenda para ver su estado.', 'warning'); return; }
+      latestAgendaAppointments = latestAgendaAppointments.map((row: any) => String(row.id) === appointmentId ? res.data : row);
+      const message = res.calendar_check.message;
+      showToast(message, res.data.calendar_sync_pending ? 'warning' : 'success')?.setAttribute('data-calendar-check-id', appointmentId);
+      if (appointmentDetailId === appointmentId) {
+        openAppointmentDetailDrawer(res.data);
+        const finalFeedback = feedback();
+        if (finalFeedback) finalFeedback.textContent = message;
+      }
+      await loadCitas();
+    } catch (err: any) {
+      const message = err?.message || 'No se pudo comprobar Calendar. La cita continúa bloqueada.';
+      const errorFeedback = feedback();
+      if (errorFeedback) errorFeedback.textContent = message;
+      showToast(message, 'error')?.setAttribute('data-calendar-check-id', appointmentId);
+    } finally { pendingCalendarChecks.delete(appointmentId); setBusy(false); }
+  };
+
   const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
     try {
       const res = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments/${appointmentId}`, {
@@ -5554,9 +5884,11 @@ import ConfigView from '../components/views/ConfigView.astro';
         body: JSON.stringify({ estado: newStatus }),
       });
       if (res.error) throw new Error(res.error);
+      if (res.data?.calendar_sync_pending) showToast('Cambio guardado en CRM. Calendar requiere comprobación.', 'warning');
       loadCitas();
     } catch (err: any) {
       console.error('Error updating appointment:', err);
+      showToast(err?.message || 'No se pudo modificar la cita.', 'error');
     }
   };
 
@@ -5566,7 +5898,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (actionBtn) {
       const action = actionBtn.getAttribute('data-appt-action')!;
       const apptId = actionBtn.getAttribute('data-appt-id')!;
-      if (action === 'detalle') {
+      if (action === 'check-calendar') {
+        void checkAppointmentCalendar(apptId);
+      } else if (action === 'detalle') {
         const cita = findAgendaAppointmentById(apptId);
         if (cita) openAppointmentDetailDrawer(cita);
       } else if (action === 'ficha') {
@@ -5649,13 +5983,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     feedbackEl.setAttribute('data-state', state);
   };
 
-  const recommendationFollowUpStateOptions = [
-    { value: 'generada', label: 'Generada' },
-    { value: 'enviada', label: 'Enviada al paciente' },
-    { value: 'requiere_revision', label: 'Requiere revision' },
-    { value: 'error', label: 'Error' },
-  ];
-
   const recommendationFollowUpAdherenceOptions = [
     { value: '', label: 'Sin clasificar' },
     { value: 'alta', label: 'Alta' },
@@ -5674,7 +6001,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const lastTouch = latestFollowUp?.created_at || latestFollowUp?.fecha || null;
     const adherenceMeta = getRecommendationAdherenceMeta(defaultAdherence);
     const adherenceOptionsHtml = recommendationFollowUpAdherenceOptions.map((option) => `<option value="${escapeAttr(option.value)}"${option.value === defaultAdherence ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
-    const stateOptionsHtml = recommendationFollowUpStateOptions.map((option) => `<option value="${escapeAttr(option.value)}"${option.value === currentState ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+    const stateOptionsHtml = `<option value="${escapeAttr(currentState)}">${escapeHtml(currentState.replace(/_/g, ' '))}</option>`;
 
     return `
       <div class="recommendation-followup-shell">
@@ -5700,7 +6027,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             </label>
             <label class="recommendation-followup-field">
               <span>Estado del plan</span>
-              <select name="recommendation_state">${stateOptionsHtml}</select>
+              <select name="recommendation_state" disabled title="El estado se registra al revisar o enviar el plan">${stateOptionsHtml}</select>
             </label>
           </div>
           <label class="recommendation-followup-field">
@@ -6085,7 +6412,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               <div class="recommendation-section recommendation-section-followup">
                 <div class="recommendation-section-head">
                   <h5>Registrar feedback rapido</h5>
-                  <p>Actualiza adherencia, dolor y estado sin salir del historial.</p>
+                  <p>Registra adherencia, dolor y observaciones sin salir del historial.</p>
                 </div>
                 ${followUpFormHtml}
               </div>
@@ -6288,16 +6615,14 @@ import ConfigView from '../components/views/ConfigView.astro';
       const noteInput = formEl.elements.namedItem('note_text') as HTMLTextAreaElement | null;
       const adherenceInput = formEl.elements.namedItem('adherence_status') as HTMLSelectElement | null;
       const painInput = formEl.elements.namedItem('pain_scale') as HTMLInputElement | null;
-      const stateInput = formEl.elements.namedItem('recommendation_state') as HTMLSelectElement | null;
       const submitBtn = formEl.querySelector('button[type="submit"]') as HTMLButtonElement | null;
 
       const noteText = noteInput?.value.trim() || '';
       const adherenceStatus = adherenceInput?.value || '';
       const painValue = painInput?.value?.trim() || '';
-      const recommendationState = stateInput?.value || '';
 
-      if (!recommendationId || (!noteText && !adherenceStatus && !painValue && !recommendationState)) {
-        setHistoryNoteFeedback(formEl, 'Anade al menos una observacion, adherencia, dolor o estado para guardar el follow-up.');
+      if (!recommendationId || (!noteText && !adherenceStatus && !painValue)) {
+        setHistoryNoteFeedback(formEl, 'Añade una observación, adherencia o dolor para guardar el seguimiento.');
         noteInput?.focus();
         return;
       }
@@ -6318,7 +6643,6 @@ import ConfigView from '../components/views/ConfigView.astro';
             note_text: noteText || null,
             adherence_status: adherenceStatus || null,
             pain_scale: painValue === '' ? null : Number(painValue),
-            recommendation_state: recommendationState || null,
           }),
         }, 15000);
 
@@ -7089,7 +7413,6 @@ import ConfigView from '../components/views/ConfigView.astro';
       fichaAddNota.disabled = Boolean(notasUnavailable);
       fichaAddNota.title = notasUnavailable?.message || '';
     }
-    if (notasUnavailable && fichaNotaFormCard) fichaNotaFormCard.hidden = true;
   };
 
   const activateFichaTab = (tabName: string) => {
@@ -7208,7 +7531,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const buildFichaPainSeries = (notas: any[] = [], latestFollowUp: any = null) => {
     const noteSeries = (Array.isArray(notas) ? notas : [])
       .filter((nota: any) => nota?.fecha && nota?.dolor_eva !== null && nota?.dolor_eva !== undefined && nota?.dolor_eva !== '')
-      .map((nota: any) => ({ date: nota.fecha, value: Number(nota.dolor_eva), label: 'Nota clinica' }))
+      .map((nota: any) => ({ date: nota.session_datetime || nota.fecha, created_at: nota.created_at, id: nota.id, value: Number(nota.dolor_eva), label: 'Nota clinica' }))
       .filter((item: any) => item.date && Number.isFinite(item.value));
 
     const followUpPain = latestFollowUp?.pain_scale;
@@ -7218,7 +7541,8 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     return [...followUpSeries, ...noteSeries]
       .filter((item: any) => item.date && Number.isFinite(item.value))
-      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        || new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime() || String(b.id || '').localeCompare(String(a.id || '')))
       .slice(0, 4);
   };
 
@@ -7363,7 +7687,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         <article class="ficha-overview-stat">
           <span>Estado del caso</span>
           <strong>${unavailableModules.length ? 'Vista parcial' : latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoracion'}</strong>
-          <p>${escapeHtml(unavailableModules.length ? 'Algunos modulos requieren migracion.' : latestNote ? 'Hay notas clinicas registradas.' : citas.length ? 'Sin notas de seguimiento.' : 'Sin sesiones registradas.')}</p>
+          <p>${escapeHtml(unavailableModules.length ? 'Algunas secciones no están disponibles.' : latestNote ? 'Hay notas clinicas registradas.' : citas.length ? 'Sin notas de seguimiento.' : 'Sin sesiones registradas.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Sesiones</span>
@@ -7567,7 +7891,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     let primaryLabel = 'Informe IA';
     let nextTitle = unavailableModules.length ? 'Recuperar integridad del CRM' : 'Cerrar continuidad clinica';
     let nextMeta = unavailableModules.length
-      ? 'Hay modulos de la ficha pendientes de migracion. Revisa readiness antes de tomar decisiones basadas en ausencia de datos.'
+      ? 'Hay secciones sin datos actualizados. Revisa los avisos de la ficha antes de tomar decisiones clínicas.'
       : 'El caso ya tiene contexto suficiente para preparar siguiente sesion, actualizar plan o dejar PDF listo.';
 
     if (!citasUnavailable && !citas.length) {
@@ -7682,7 +8006,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const notasUnavailable = isFichaModuleUnavailable('notas');
     const patientName = getPatientFullName(patient);
     const ageLabel = getPatientAgeLabel(patient?.fecha_nacimiento);
-    const latestAppointment = citasUnavailable ? null : getFichaLatestAppointment(citas);
+    const nextAppointment = citasUnavailable ? null : upcomingAppointments(citas)[0] || null;
     const latestNote = notasUnavailable ? null : (notas[0] || null);
     const totalPayments = pagosUnavailable ? 0 : pagos.reduce((sum: number, payment: any) => sum + Number(payment?.importe || 0), 0);
     const continuityLabel = latestNote
@@ -7713,14 +8037,14 @@ import ConfigView from '../components/views/ConfigView.astro';
           ? `Derivador ${patient.medico_derivador}`
           : 'Sin datos clave';
     }
-    if (fichaHeroLastSession) fichaHeroLastSession.textContent = citasUnavailable ? 'Historial no disponible' : latestAppointment?.fecha_hora ? fmtDate(latestAppointment.fecha_hora) : 'Sin citas registradas';
-    if (fichaHeroLastSessionMeta) fichaHeroLastSessionMeta.textContent = citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : latestAppointment?.motivo || 'Todavia no hay actividad clinica registrada.';
+    if (fichaHeroLastSession) fichaHeroLastSession.textContent = citasUnavailable ? 'Historial no disponible' : nextAppointment?.fecha_hora ? fmtDate(nextAppointment.fecha_hora) : 'Sin próxima cita';
+    if (fichaHeroLastSessionMeta) fichaHeroLastSessionMeta.textContent = citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : nextAppointment?.motivo || 'Consulta las sesiones anteriores en el historial de citas.';
     if (fichaHeroNotesCount) fichaHeroNotesCount.textContent = notasUnavailable ? 'Modulo no disponible' : `${notas.length} nota${notas.length === 1 ? '' : 's'}`;
     if (fichaHeroLatestNote) fichaHeroLatestNote.textContent = notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : latestNote?.nota ? trimAgentBriefText(latestNote.nota, 140) : 'La linea temporal del caso aparecera aqui cuando empieces a registrar seguimiento.';
     if (fichaHeroPaymentsTotal) fichaHeroPaymentsTotal.textContent = pagosUnavailable ? 'Modulo no disponible' : `${totalPayments.toFixed(2)} EUR`;
     if (fichaHeroPaymentsMeta) fichaHeroPaymentsMeta.textContent = pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} pago${pagos.length === 1 ? '' : 's'} registrado${pagos.length === 1 ? '' : 's'} en el caso.` : 'Sin pagos registrados todavia.';
     if (fichaHeroContinuity) fichaHeroContinuity.textContent = fichaModuleAvailability.size ? 'Vista parcial del caso' : continuityLabel;
-    if (fichaHeroContinuityMeta) fichaHeroContinuityMeta.textContent = fichaModuleAvailability.size ? 'Hay modulos del CRM pendientes de migracion. La ficha sigue disponible, pero con datos parciales.' : continuityMeta;
+    if (fichaHeroContinuityMeta) fichaHeroContinuityMeta.textContent = fichaModuleAvailability.size ? 'Algunas secciones no están disponibles. Revisa los avisos; la ficha muestra datos parciales.' : continuityMeta;
   };
 
   fichaHeroCopilotBtn?.addEventListener('click', () => {
@@ -7867,8 +8191,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     });
   });
 
+  let fichaLoadVersion = 0;
+  const isCurrentFicha = (patientId: string, loadVersion: number) =>
+    patientId === fichaPatientId && loadVersion === fichaLoadVersion;
   const openFichaPaciente = async (patientId: string) => {
+    const loadVersion = ++fichaLoadVersion;
     fichaPatientId = patientId;
+    fichaData = null;
     syncFichaAvailabilityUi([]);
     // Switch to ficha page
     (window as any).__fisioShellNavigate?.('ficha-paciente');
@@ -7889,47 +8218,68 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (fichaDatosForm) fichaDatosForm.hidden = true;
     if (fichaDatosView) fichaDatosView.hidden = false;
     if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
+    closeVoiceSessionModal();
+    if (painMapEditor) painMapEditor.hidden = true;
+    activeSelectedZone = null;
+    document.querySelectorAll('.pain-zone-path').forEach(p => p.classList.remove('active-selected'));
 
     // Load data
     try {
       let payload: any = null;
+      if (isDevMode) {
+        const demoPat = DEMO_PATIENTS.find(p => p.id === patientId || p.nombre_completo?.toLowerCase().includes(patientId.toLowerCase())) || DEMO_PATIENTS[0];
+        payload = {
+          paciente: demoPat,
+          citas: DEMO_APPOINTMENTS.filter(c => c.paciente_id === demoPat.id || c.nombre_paciente?.includes(demoPat.nombre)),
+          pagos: [
+            { id: 'p1', fecha: '2026-09-18', importe: 55, metodo_pago: 'tarjeta' },
+            { id: 'p2', fecha: '2026-09-10', importe: 55, metodo_pago: 'efectivo' },
+          ],
+          notas: demoPat.notas_clinicas || [],
+          recommendations: DEMO_EXERCISES_CATALOG.slice(0, 3),
+          module_availability: [],
+        };
+        fichaData = payload;
+        selectedPatientId = patientId;
+        selectedPatientName = getPatientFullName(payload.paciente);
+        syncFichaAvailabilityUi(payload?.module_availability || []);
+        try { renderFichaHero(payload); } catch (e) { console.warn('renderFichaHero err:', e); }
+        try { renderFichaWorkspace(payload); } catch (e) { console.warn('renderFichaWorkspace err:', e); }
+        try { renderFichaDatos(payload.paciente); } catch (e) { console.warn('renderFichaDatos err:', e); }
+        try { renderFichaCitas(payload.citas); } catch (e) { console.warn('renderFichaCitas err:', e); }
+        try { renderFichaPagos(payload.pagos); } catch (e) { console.warn('renderFichaPagos err:', e); }
+        try { renderFichaNotas(payload.notas); } catch (e) { console.warn('renderFichaNotas err:', e); }
+        if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
+      }
+
+      // Background or live fetch
       try {
         const [resPayload, recommendationsResp] = await Promise.all([
-          fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`),
-          fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`).catch(() => ({ data: [] })),
+          fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`, undefined, 2000),
+          fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`, undefined, 2000).catch(() => ({ data: [] })),
         ]);
-        payload = resPayload;
-        payload.recommendations = Array.isArray(recommendationsResp?.data) ? recommendationsResp.data : [];
-      } catch (fetchErr: any) {
-        if (isDevMode) {
-          const demoPat = DEMO_PATIENTS.find(p => p.id === patientId || p.nombre_completo?.toLowerCase().includes(patientId.toLowerCase())) || DEMO_PATIENTS[0];
-          payload = {
-            paciente: demoPat,
-            citas: DEMO_APPOINTMENTS.filter(c => c.paciente_id === demoPat.id || c.nombre_paciente?.includes(demoPat.nombre)),
-            pagos: [
-              { id: 'p1', fecha: '2026-09-18', importe: 55, metodo_pago: 'tarjeta' },
-              { id: 'p2', fecha: '2026-09-10', importe: 55, metodo_pago: 'efectivo' },
-            ],
-            notas: demoPat.notas_clinicas || [],
-            recommendations: DEMO_EXERCISES_CATALOG.slice(0, 3),
-            module_availability: [],
-          };
-        } else {
-          throw fetchErr;
+        if (loadVersion !== fichaLoadVersion || patientId !== fichaPatientId) return;
+        if (resPayload && resPayload.paciente) {
+          payload = resPayload;
+          payload.recommendations = Array.isArray(recommendationsResp?.data) ? recommendationsResp.data : [];
+          fichaData = payload;
+          selectedPatientId = patientId;
+          selectedPatientName = getPatientFullName(payload.paciente);
+          syncFichaAvailabilityUi(payload?.module_availability || []);
+          renderFichaHero(payload);
+          renderFichaWorkspace(payload);
+          renderFichaDatos(payload.paciente);
+          renderFichaCitas(payload.citas);
+          renderFichaPagos(payload.pagos);
+          renderFichaNotas(payload.notas);
+          if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
         }
+      } catch (fetchErr: any) {
+        if (!isDevMode && !patientId.startsWith('demo-')) throw fetchErr;
       }
-      fichaData = payload;
-      selectedPatientId = patientId;
-      selectedPatientName = getPatientFullName(payload.paciente);
-      syncFichaAvailabilityUi(payload?.module_availability || []);
-      renderFichaHero(payload);
-      renderFichaWorkspace(payload);
-      renderFichaDatos(payload.paciente);
-      renderFichaCitas(payload.citas);
-      renderFichaPagos(payload.pagos);
-      renderFichaNotas(payload.notas);
-      if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
     } catch (err: any) {
+      if (loadVersion !== fichaLoadVersion) return;
+      console.error('Error loading ficha:', err);
       syncFichaAvailabilityUi([]);
       if (fichaDatosView) fichaDatosView.innerHTML = `<p class="empty-inline">Error al cargar ficha: ${escapeHtml(err?.message || '')}</p>`;
     }
@@ -7973,8 +8323,11 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   // Edit toggle
+  let fichaDatosEditVersion = 0;
   fichaEditToggle?.addEventListener('click', () => {
     if (!fichaData?.paciente || !fichaDatosForm) return;
+    fichaDatosEditVersion++;
+    activateFichaTab('datos');
     const p = fichaData.paciente;
     if (fichaDatosView) fichaDatosView.hidden = true;
     fichaDatosForm.hidden = false;
@@ -7990,6 +8343,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   fichaCancelEdit?.addEventListener('click', () => {
+    fichaDatosEditVersion++;
     if (fichaDatosForm) fichaDatosForm.hidden = true;
     if (fichaDatosView) fichaDatosView.hidden = false;
   });
@@ -7997,21 +8351,40 @@ import ConfigView from '../components/views/ConfigView.astro';
   fichaDatosForm?.addEventListener('submit', async (e: Event) => {
     e.preventDefault();
     if (!fichaPatientId) return;
+    const patientId = fichaPatientId;
+    const loadVersion = fichaLoadVersion;
+    const editVersion = fichaDatosEditVersion;
+    const submit = fichaDatosForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    if (submit?.disabled) return;
+    if (submit) submit.disabled = true;
     const fd = new FormData(fichaDatosForm);
     const body: any = {};
     for (const [k, v] of fd.entries()) body[k] = (v as string) || null;
     try {
-      await fetchJson(`${BACKEND_BASE}/api/pacientes/${fichaPatientId}`, {
+      const saved = await fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      // Reload ficha
-      await openFichaPaciente(fichaPatientId);
-      showToast('Datos del paciente actualizados.', 'success');
+      if (isCurrentFicha(patientId, loadVersion) && fichaData && saved.data) {
+        for (const key of Object.keys(body)) fichaData.paciente[key] = saved.data[key] ?? null;
+        fichaData.paciente.nombre_completo = [fichaData.paciente.nombre, fichaData.paciente.apellidos].filter(Boolean).join(' ').trim();
+        selectedPatientName = getPatientFullName(fichaData.paciente);
+        if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(selectedPatientName)}`;
+        renderFichaHero(fichaData);
+        renderFichaWorkspace(fichaData);
+        renderFichaDatos(fichaData.paciente);
+        if (editVersion === fichaDatosEditVersion) {
+          fichaDatosForm.hidden = true;
+          if (fichaDatosView) fichaDatosView.hidden = false;
+        }
+        showToast('Datos del paciente actualizados.', 'success');
+      }
+      void loadPacientes();
     } catch (err: any) {
-      showToast(err?.message || 'No se pudieron guardar los datos del paciente.', 'error');
+      if (isCurrentFicha(patientId, loadVersion)) showToast(err?.message || 'No se pudieron guardar los datos del paciente.', 'error');
     }
+    finally { if (submit) submit.disabled = false; }
   });
 
   // Render citas
@@ -8022,12 +8395,10 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (citasUnavailable) {
         fichaCitasSummary.innerHTML = `<span class="ficha-summary-chip">Modulo no disponible</span>`;
       } else {
-        const nextCita = [...citas]
-          .filter((c: any) => c?.fecha_hora)
-          .sort((a: any, b: any) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())[0] || null;
+        const nextCita = upcomingAppointments(citas)[0] || null;
         fichaCitasSummary.innerHTML = `
           <span class="ficha-summary-chip"><strong>${citas.length}</strong> sesion${citas.length === 1 ? '' : 'es'}</span>
-          <span class="ficha-summary-chip">${escapeHtml(nextCita?.fecha_hora ? `Ultima o proxima: ${fmtDate(nextCita.fecha_hora)}` : 'Sin agenda registrada')}</span>`;
+          <span class="ficha-summary-chip">${escapeHtml(nextCita?.fecha_hora ? `Próxima: ${fmtDate(nextCita.fecha_hora)}` : 'Sin próxima cita')}</span>`;
       }
     }
     if (citasUnavailable) {
@@ -8107,7 +8478,8 @@ import ConfigView from '../components/views/ConfigView.astro';
   const renderFichaNotas = (notas: any[]) => {
     if (!fichaNotasTimeline) return;
     const notasUnavailable = isFichaModuleUnavailable('notas');
-    const notasOrdenadas = [...notas].sort((a: any, b: any) => new Date(b.session_datetime || b.fecha || '').getTime() - new Date(a.session_datetime || a.fecha || '').getTime());
+    const notasOrdenadas = (notasUnavailable ? [] : [...notas]).sort((a: any, b: any) => new Date(b.session_datetime || b.fecha || '').getTime() - new Date(a.session_datetime || a.fecha || '').getTime()
+      || new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime() || String(b.id || '').localeCompare(String(a.id || '')));
     const latestNote = notasOrdenadas[0] || null;
     const highPainCount = notasOrdenadas.filter((n: any) => Number(n?.dolor_eva || 0) >= 7).length;
 
@@ -8115,7 +8487,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const fichaLongitudinalCard = document.getElementById('fichaLongitudinalCard');
     const fichaLongitudinalSummaryText = document.getElementById('fichaLongitudinalSummaryText');
     const fichaLongitudinalUpdated = document.getElementById('fichaLongitudinalUpdated');
-    const longSummary = fichaData?.paciente?.resumen_clinico_longitudinal || null;
+    const longSummary = notasUnavailable ? null : fichaData?.paciente?.resumen_clinico_longitudinal || null;
     if (longSummary && fichaLongitudinalCard && fichaLongitudinalSummaryText) {
       fichaLongitudinalCard.classList.remove('hidden');
       fichaLongitudinalSummaryText.textContent = longSummary;
@@ -8142,29 +8514,29 @@ import ConfigView from '../components/views/ConfigView.astro';
       const latestEva = Number(evaNotes[evaNotes.length - 1].dolor_eva);
       const prevEva = evaNotes.length > 1 ? Number(evaNotes[evaNotes.length - 2].dolor_eva) : null;
       let badgeText = `Actual: ${latestEva}/10`;
-      let badgeClass = 'bg-slate-800 text-slate-200';
+      let badgeClass = 'badge-neutral';
       if (prevEva !== null) {
         const diff = latestEva - prevEva;
         if (diff < 0) {
           badgeText = `Mejoría (-${Math.abs(diff)} pts EVA)`;
-          badgeClass = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+          badgeClass = 'badge-success';
         } else if (diff > 0) {
           badgeText = `Aumento (+${diff} pts EVA)`;
-          badgeClass = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+          badgeClass = 'badge-urgent';
         } else {
           badgeText = 'Estable (sin cambio EVA)';
-          badgeClass = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+          badgeClass = 'badge-warning';
         }
       }
       if (fichaPainTrendBadge) {
         fichaPainTrendBadge.textContent = badgeText;
-        fichaPainTrendBadge.className = `text-xs px-2.5 py-1 rounded-full font-medium ${badgeClass}`;
+        fichaPainTrendBadge.className = `precision-badge ${badgeClass}`;
       }
       fichaPainTrendTimeline.innerHTML = evaNotes.map((pt: any) => `
-        <div class="flex flex-col items-center p-2.5 rounded-xl bg-[#0d1522] border border-white/5 min-w-[70px]">
-          <span class="text-[10px] text-slate-400 mb-1">${fmtDate(pt.session_datetime || pt.fecha)}</span>
-          <span class="text-sm font-bold ${evaClass(pt.dolor_eva)}">EVA ${pt.dolor_eva}</span>
-          <span class="text-[10px] text-slate-500 truncate max-w-[60px]">${escapeHtml(zonaLabels[pt.zona_corporal] || pt.zona_corporal || '')}</span>
+        <div class="ficha-eva-point">
+          <span class="ficha-eva-date">${fmtDate(pt.session_datetime || pt.fecha)}</span>
+          <strong class="ficha-nota-eva ${evaClass(pt.dolor_eva)}">EVA ${pt.dolor_eva}/10</strong>
+          <span class="ficha-eva-zone">${escapeHtml(zonaLabels[pt.zona_corporal] || pt.zona_corporal || '')}</span>
         </div>
       `).join('');
     } else if (fichaPainTrendCard) {
@@ -8176,7 +8548,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         ? `<span class="ficha-summary-chip">Modulo no disponible</span>`
         : `
         <span class="ficha-summary-chip"><strong>${notasOrdenadas.length}</strong> nota${notasOrdenadas.length === 1 ? '' : 's'}</span>
-        <span class="ficha-summary-chip">${escapeHtml(latestNote?.fecha ? `Ultima: ${fmtDate(latestNote.fecha)}` : 'Sin seguimiento')}</span>
+        <span class="ficha-summary-chip">${escapeHtml(latestNote ? `Ultima: ${fmtDate(latestNote.session_datetime || latestNote.fecha)}` : 'Sin seguimiento')}</span>
         <span class="ficha-summary-chip">${highPainCount} EVA alto</span>`;
     }
     if (notasUnavailable) {
@@ -8191,7 +8563,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const zonaLabel = zonaLabels[n.zona_corporal] || n.zona_corporal || '';
       const evaHtml = n.dolor_eva != null ? `<span class="ficha-nota-eva ${evaClass(n.dolor_eva)}">EVA ${n.dolor_eva}/10</span>` : '';
       const zonaHtml = zonaLabel ? `<span class="ficha-nota-zona">${escapeHtml(zonaLabel)}</span>` : '';
-      const voiceBadge = n.source === 'voice' || n.audio_processed ? `<span class="ficha-nota-zona bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="material-symbols-rounded text-xs align-middle">mic</span> Voz</span>` : '';
+      const voiceBadge = n.source === 'voice' || n.audio_processed ? `<span class="ficha-nota-zona"><span class="material-symbols-rounded" aria-hidden="true">mic</span> Voz</span>` : '';
       const pruebasHtml = n.pruebas_realizadas ? `<div class="ficha-nota-pruebas"><strong>Pruebas</strong><p>${escapeHtml(n.pruebas_realizadas)}</p></div>` : '';
       
       let structuredHtml = '';
@@ -8203,14 +8575,14 @@ import ConfigView from '../components/views/ConfigView.astro';
         if (sd.ejercicios) items.push(`<strong>Pauta:</strong> ${escapeHtml(sd.ejercicios)}`);
         if (sd.proximo_paso) items.push(`<strong>Próximo paso:</strong> ${escapeHtml(sd.proximo_paso)}`);
         if (items.length > 0) {
-          structuredHtml = `<div class="ficha-nota-pruebas mt-2 bg-white/[0.02] border border-white/5 p-2.5 rounded-lg text-xs space-y-1 text-slate-300">${items.map(it => `<div>${it}</div>`).join('')}</div>`;
+          structuredHtml = `<div class="ficha-nota-pruebas">${items.map(it => `<div>${it}</div>`).join('')}</div>`;
         }
       }
 
       return `<div class="ficha-nota-card">
         <div class="ficha-nota-actions">
-          <button title="Editar" data-action="edit-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded ficha-note-action-icon">edit</span></button>
-          <button title="Eliminar" data-action="delete-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded ficha-note-action-icon">delete</span></button>
+          <button title="Editar" aria-label="Editar nota clínica" data-action="edit-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded ficha-note-action-icon" aria-hidden="true">edit</span></button>
+          <button title="Eliminar" aria-label="Eliminar nota clínica" data-action="delete-nota" data-nota-id="${n.id}"><span class="material-symbols-rounded ficha-note-action-icon" aria-hidden="true">delete</span></button>
         </div>
         <div class="ficha-nota-header">
           <div class="ficha-nota-headline">
@@ -8232,7 +8604,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   const voiceModeAudioBtn = document.getElementById('voiceModeAudioBtn');
   const voiceModeTextBtn = document.getElementById('voiceModeTextBtn');
   const voiceAudioSection = document.getElementById('voiceAudioSection');
-  const voiceTextSection = document.getElementById('voiceTextSection');
   const voiceRecordToggleBtn = document.getElementById('voiceRecordToggleBtn');
   const voiceRecordIcon = document.getElementById('voiceRecordIcon');
   const voiceRecordTimer = document.getElementById('voiceRecordTimer');
@@ -8253,7 +8624,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const voiceReviewExercises = document.getElementById('voiceReviewExercises') as HTMLInputElement | null;
   const voiceReviewNextStep = document.getElementById('voiceReviewNextStep') as HTMLInputElement | null;
   const voiceReviewCancelBtn = document.getElementById('voiceReviewCancelBtn');
-  const voiceReviewConfirmBtn = document.getElementById('voiceReviewConfirmBtn');
+  const voiceReviewConfirmBtn = document.getElementById('voiceReviewConfirmBtn') as HTMLButtonElement | null;
 
   let mediaRecorder: MediaRecorder | null = null;
   let audioChunks: Blob[] = [];
@@ -8261,9 +8632,13 @@ import ConfigView from '../components/views/ConfigView.astro';
   let recordSeconds = 0;
   let recordedAudioBase64: string | null = null;
   let isRecording = false;
+  let voiceSessionVersion = 0;
+  let voiceRecoveredNoteId: string | null = null;
 
   const openVoiceSessionModal = () => {
-    if (!voiceSessionModal) return;
+    if (!voiceSessionModal || !fichaData || isFichaModuleUnavailable('notas')) return;
+    voiceSessionVersion++;
+    voiceRecoveredNoteId = null;
     recordedAudioBase64 = null;
     audioChunks = [];
     isRecording = false;
@@ -8288,6 +8663,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   const closeVoiceSessionModal = () => {
+    voiceSessionVersion++;
     if (!voiceSessionModal) return;
     if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
       try { mediaRecorder.stop(); } catch (_) {}
@@ -8323,24 +8699,28 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   // Audio recording toggle
   voiceRecordToggleBtn?.addEventListener('click', async () => {
+    const sessionVersion = voiceSessionVersion;
     if (!isRecording) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (sessionVersion !== voiceSessionVersion) { stream.getTracks().forEach(track => track.stop()); return; }
         audioChunks = [];
         const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
         mediaRecorder = new MediaRecorder(stream, { mimeType });
 
         mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) audioChunks.push(e.data);
+          if (sessionVersion === voiceSessionVersion && e.data.size > 0) audioChunks.push(e.data);
         };
 
         mediaRecorder.onstop = async () => {
           stream.getTracks().forEach((track) => track.stop());
+          if (sessionVersion !== voiceSessionVersion) return;
           clearInterval(recordTimerInterval);
           if (voiceRecordStatus) voiceRecordStatus.textContent = 'Procesando audio con Whisper...';
           const blob = new Blob(audioChunks, { type: mimeType });
           const reader = new FileReader();
           reader.onloadend = async () => {
+            if (sessionVersion !== voiceSessionVersion) return;
             const base64 = (reader.result as string)?.split(',')[1] || '';
             recordedAudioBase64 = base64;
             try {
@@ -8349,11 +8729,13 @@ import ConfigView from '../components/views/ConfigView.astro';
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ audio_base64: base64, mime_type: mimeType }),
               });
+              if (sessionVersion !== voiceSessionVersion) return;
               if (res?.transcript && voiceTranscriptInput) {
                 voiceTranscriptInput.value = res.transcript;
                 if (voiceRecordStatus) voiceRecordStatus.textContent = 'Audio transcrito correctamente.';
               }
             } catch (err: any) {
+              if (sessionVersion !== voiceSessionVersion) return;
               if (voiceRecordStatus) voiceRecordStatus.textContent = 'Error en transcripción. Puedes escribir manualmente.';
               showToast('Error al transcribir audio: ' + (err?.message || ''), 'error');
             }
@@ -8377,6 +8759,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         voiceRecordToggleBtn.classList.remove('bg-emerald-500');
         voiceRecordToggleBtn.classList.add('bg-rose-500', 'animate-pulse');
       } catch (err: any) {
+        if (sessionVersion !== voiceSessionVersion) return;
         if (voiceRecordStatus) voiceRecordStatus.textContent = 'Permiso de micrófono denegado. Escribe las notas abajo.';
         showToast('Acceso al micrófono denegado.', 'error');
       }
@@ -8393,6 +8776,10 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   // Synthesize Note
   btnSynthesizeVoiceNote?.addEventListener('click', async () => {
+    if (!fichaPatientId || btnSynthesizeVoiceNote.hasAttribute('disabled')) return;
+    const patientId = fichaPatientId;
+    const loadVersion = fichaLoadVersion;
+    const sessionVersion = voiceSessionVersion;
     const text = voiceTranscriptInput?.value?.trim() || '';
     if (!text) {
       if (voiceCaptureFeedback) {
@@ -8412,10 +8799,11 @@ import ConfigView from '../components/views/ConfigView.astro';
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          paciente_id: fichaPatientId,
+          paciente_id: patientId,
         }),
       });
 
+      if (!isCurrentFicha(patientId, loadVersion) || sessionVersion !== voiceSessionVersion) return;
       const preview = synthRes?.note_preview || {};
       if (voiceReviewSummary) voiceReviewSummary.value = preview.clinical_summary || text;
       if (voiceReviewEva) voiceReviewEva.value = preview.dolor_eva !== null && preview.dolor_eva !== undefined ? String(preview.dolor_eva) : '';
@@ -8434,7 +8822,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       voiceStepCapture?.classList.add('hidden');
       voiceStepReview?.classList.remove('hidden');
     } catch (err: any) {
-      showToast('Error al sintetizar nota: ' + (err?.message || ''), 'error');
+      if (isCurrentFicha(patientId, loadVersion) && sessionVersion === voiceSessionVersion) showToast('Error al sintetizar nota: ' + (err?.message || ''), 'error');
     } finally {
       btnSynthesizeVoiceNote?.removeAttribute('disabled');
       btnSynthesizeVoiceNote!.innerHTML = '<span class="material-symbols-rounded">clinical_notes</span> Sintetizar Nota Clínica Estructurada';
@@ -8446,9 +8834,50 @@ import ConfigView from '../components/views/ConfigView.astro';
     voiceStepCapture?.classList.remove('hidden');
   });
 
+  let fichaNotesRefreshVersion = 0;
+  const refreshFichaNotes = async (patientId: string, loadVersion: number) => {
+    if (!isCurrentFicha(patientId, loadVersion)) return false;
+    const refreshVersion = ++fichaNotesRefreshVersion;
+    try {
+      const [notesPayload, evolution] = await Promise.all([
+        fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${patientId}`),
+        fetchJson(`${BACKEND_BASE}/api/notas-clinicas/evolution/${patientId}`),
+      ]);
+      if (!isCurrentFicha(patientId, loadVersion) || refreshVersion !== fichaNotesRefreshVersion || !fichaData) return false;
+      if (notesPayload.unavailable || !Array.isArray(notesPayload.data)) throw new Error('Notas no disponibles');
+      fichaData.module_availability = (fichaData.module_availability || []).filter((item: any) => item.key !== 'notas');
+      syncFichaAvailabilityUi(fichaData.module_availability);
+      fichaData.notas = notesPayload.data || [];
+      fichaData.paciente.resumen_clinico_longitudinal = evolution.longitudinal_summary || null;
+      fichaData.paciente.resumen_actualizado_en = evolution.longitudinal_updated_at || null;
+      renderFichaHero(fichaData);
+      renderFichaWorkspace(fichaData);
+      renderFichaNotas(fichaData.notas);
+      return true;
+    } catch {
+      if (!isCurrentFicha(patientId, loadVersion) || refreshVersion !== fichaNotesRefreshVersion) return false;
+      if (fichaData) {
+        fichaData.module_availability = [
+          ...(fichaData.module_availability || []).filter((item: any) => item.key !== 'notas'),
+          { key: 'notas', label: 'Notas clínicas', message: 'El cambio está guardado. Recarga la ficha para consultar las notas actualizadas; no repitas el guardado.' },
+        ];
+        syncFichaAvailabilityUi(fichaData.module_availability);
+        fichaData.paciente.resumen_clinico_longitudinal = null;
+        renderFichaHero(fichaData);
+        renderFichaWorkspace(fichaData);
+        renderFichaNotas(fichaData.notas || []);
+      }
+      showToast('El cambio se ha guardado, pero no se pudo actualizar la vista. Recarga la ficha; no repitas el guardado.', 'warning');
+      return false;
+    }
+  };
+
   // Confirm and save session note
   voiceReviewConfirmBtn?.addEventListener('click', async () => {
-    if (!fichaPatientId) return;
+    if (!fichaPatientId || voiceReviewConfirmBtn.disabled) return;
+    const patientId = fichaPatientId;
+    const loadVersion = fichaLoadVersion;
+    const sessionVersion = voiceSessionVersion;
     const summary = voiceReviewSummary?.value?.trim() || '';
     if (!summary) {
       showToast('El resumen clínico es requerido.', 'error');
@@ -8460,7 +8889,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       voiceReviewConfirmBtn!.innerHTML = '<span class="material-symbols-rounded animate-spin">refresh</span> Guardando...';
 
       const savePayload = {
-        paciente_id: fichaPatientId,
+        paciente_id: patientId,
         fecha: new Date().toISOString().slice(0, 10),
         session_datetime: new Date().toISOString(),
         zona_corporal: voiceReviewZone?.value || null,
@@ -8478,34 +8907,20 @@ import ConfigView from '../components/views/ConfigView.astro';
         source: recordedAudioBase64 ? 'voice' : 'text',
       };
 
-      await fetchJson(`${BACKEND_BASE}/api/notas-clinicas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(savePayload),
+      if (voiceRecoveredNoteId) await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${voiceRecoveredNoteId}`, {
+        method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload),
       });
+      else await createClinicRecord(`${BACKEND_BASE}/api/notas-clinicas`, savePayload);
 
-      closeVoiceSessionModal();
+      if (!isCurrentFicha(patientId, loadVersion)) return;
+      if (sessionVersion === voiceSessionVersion) closeVoiceSessionModal();
 
-      // Refresh ficha data
-      const [notasPayload, evolutionPayload] = await Promise.all([
-        fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`),
-        fetchJson(`${BACKEND_BASE}/api/notas-clinicas/evolution/${fichaPatientId}`).catch(() => null),
-      ]);
-
-      if (fichaData) {
-        fichaData.notas = notasPayload.data || [];
-        if (evolutionPayload?.longitudinal_summary) {
-          fichaData.paciente.resumen_clinico_longitudinal = evolutionPayload.longitudinal_summary;
-          fichaData.paciente.resumen_actualizado_en = evolutionPayload.longitudinal_updated_at;
-        }
-      }
-
-      renderFichaHero(fichaData || {});
-      renderFichaWorkspace(fichaData || {});
-      renderFichaNotas(fichaData?.notas || []);
-      showToast('Sesión clínica confirmada y guardada en historial.', 'success');
+      if (await refreshFichaNotes(patientId, loadVersion)) showToast('Sesión clínica confirmada y guardada en historial.', 'success');
     } catch (err: any) {
-      showToast('Error al guardar sesión: ' + (err?.message || ''), 'error');
+      if (isCurrentFicha(patientId, loadVersion) && sessionVersion === voiceSessionVersion) {
+        if (err.recoveredData?.id) voiceRecoveredNoteId = err.recoveredData.id;
+        showToast(err?.message || 'No se pudo confirmar el guardado de la sesión.', err.recoveredData ? 'warning' : 'error');
+      }
     } finally {
       voiceReviewConfirmBtn?.removeAttribute('disabled');
       voiceReviewConfirmBtn!.innerHTML = '<span class="material-symbols-rounded">check</span> Confirmar y Guardar en Historial';
@@ -8513,8 +8928,10 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   // Nota actions (add / edit / delete)
+  let fichaNotaEditVersion = 0;
   fichaAddNota?.addEventListener('click', () => {
     if (!fichaNotaFormCard || !fichaNotaForm) return;
+    fichaNotaEditVersion++;
     fichaNotaForm.reset();
     const notaIdInput = fichaNotaForm.querySelector('[name="nota_id"]') as HTMLInputElement;
     if (notaIdInput) notaIdInput.value = '';
@@ -8526,16 +8943,23 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   fichaNotaCancel?.addEventListener('click', () => {
+    fichaNotaEditVersion++;
     if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
   });
 
   fichaNotaForm?.addEventListener('submit', async (e: Event) => {
     e.preventDefault();
-    if (!fichaPatientId) return;
+    if (!fichaPatientId || isFichaModuleUnavailable('notas')) return;
+    const patientId = fichaPatientId;
+    const loadVersion = fichaLoadVersion;
+    const editVersion = fichaNotaEditVersion;
+    const submit = fichaNotaForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    if (submit?.disabled) return;
+    if (submit) submit.disabled = true;
     const fd = new FormData(fichaNotaForm);
     const notaId = fd.get('nota_id') as string;
     const body: any = {
-      paciente_id: fichaPatientId,
+      paciente_id: patientId,
       fecha: fd.get('fecha') || new Date().toISOString().slice(0, 10),
       zona_corporal: fd.get('zona_corporal') || null,
       dolor_eva: fd.get('dolor_eva') ? Number(fd.get('dolor_eva')) : null,
@@ -8548,20 +8972,22 @@ import ConfigView from '../components/views/ConfigView.astro';
           method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
         });
       } else {
-        await fetchJson(`${BACKEND_BASE}/api/notas-clinicas`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-        });
+        await createClinicRecord(`${BACKEND_BASE}/api/notas-clinicas`, body);
       }
-      if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
-      const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
-      if (fichaData) fichaData.notas = notasPayload.data || [];
-      renderFichaHero(fichaData || {});
-      renderFichaWorkspace(fichaData || {});
-      renderFichaNotas(fichaData?.notas || []);
-      showToast('Nota clinica guardada.', 'success');
+      if (!isCurrentFicha(patientId, loadVersion)) return;
+      if (fichaNotaFormCard && editVersion === fichaNotaEditVersion) fichaNotaFormCard.hidden = true;
+      if (await refreshFichaNotes(patientId, loadVersion)) showToast('Nota clinica guardada.', 'success');
     } catch (err: any) {
-      showToast(err?.message || 'No se pudo guardar la nota.', 'error');
+      if (isCurrentFicha(patientId, loadVersion) && editVersion === fichaNotaEditVersion) {
+        if (err.recoveredData?.id) {
+          const idInput = fichaNotaForm.querySelector('[name="nota_id"]') as HTMLInputElement | null;
+          if (idInput) idInput.value = err.recoveredData.id;
+          if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Actualizar nota recuperada';
+        }
+        showToast(err?.message || 'No se pudo confirmar el guardado de la nota.', err.recoveredData ? 'warning' : 'error');
+      }
     }
+    finally { if (submit) submit.disabled = false; }
   });
 
   // Delegate nota edit/delete clicks
@@ -8572,31 +8998,29 @@ import ConfigView from '../components/views/ConfigView.astro';
     const action = btn.getAttribute('data-action');
     const notaId = btn.getAttribute('data-nota-id');
     if (!notaId || !fichaPatientId) return;
+    const patientId = fichaPatientId;
 
     if (action === 'delete-nota') {
+      const loadVersion = fichaLoadVersion;
       const confirmed = await requestConfirm({
         title: 'Eliminar nota clinica',
         message: 'La nota se eliminara del seguimiento del paciente.',
         confirmLabel: 'Eliminar',
         tone: 'error',
       });
-      if (!confirmed) return;
+      if (!confirmed || !isCurrentFicha(patientId, loadVersion)) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
-        const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
-        if (fichaData) fichaData.notas = notasPayload.data || [];
-        renderFichaHero(fichaData || {});
-        renderFichaWorkspace(fichaData || {});
-        renderFichaNotas(fichaData?.notas || []);
-        showToast('Nota clinica eliminada.', 'success');
+        if (await refreshFichaNotes(patientId, loadVersion)) showToast('Nota clinica eliminada.', 'success');
       } catch (err: any) {
-        showToast(err?.message || 'No se pudo eliminar la nota.', 'error');
+        if (isCurrentFicha(patientId, loadVersion)) showToast(err?.message || 'No se pudo eliminar la nota.', 'error');
       }
     }
 
     if (action === 'edit-nota') {
       const nota = fichaData?.notas?.find((n: any) => n.id === notaId);
       if (!nota || !fichaNotaForm || !fichaNotaFormCard) return;
+      fichaNotaEditVersion++;
       fichaNotaForm.reset();
       const fill = (name: string, val: string) => {
         const el = fichaNotaForm.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
@@ -8829,7 +9253,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const pacienteId = facturaPacienteSelect.value;
     if (!pacienteId) { facturaPreview.hidden = true; return; }
     try {
-      const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?paciente_id=${pacienteId}`);
+      const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?paciente_id=${pacienteId}&pendientes_factura=true`);
       const pagos = payload.data || [];
       if (!pagos.length) {
         facturaPreview.innerHTML = '<p class="empty-inline">Este paciente no tiene pagos para facturar</p>';
@@ -8840,7 +9264,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       facturaPreview.innerHTML = `
         <p class="factura-preview-summary">${pagos.length} pago(s) registrados - ${total.toFixed(2)} EUR pendientes de facturar</p>
         <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Metodo</th><th>Importe</th></tr></thead><tbody>
-        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesion')}</td><td>${escapeHtml(p.metodo || '')}</td><td>${Number(p.importe || 0).toFixed(2)} EUR</td></tr>`).join('')}
+        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesion')}</td><td>${escapeHtml(p.metodo_pago || '')}</td><td>${Number(p.importe || 0).toFixed(2)} EUR</td></tr>`).join('')}
         </tbody></table></div>`;
       facturaPreview.hidden = false;
     } catch {
@@ -8863,7 +9287,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paciente_id: pacienteId,
-          iva_pct: Number(facturaIvaPct?.value || 21),
+          iva_pct: Number(facturaIvaPct?.value || 0),
           notas: facturaNotas?.value || null,
         }),
       });
@@ -9088,7 +9512,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       nombre: (document.getElementById('bonoNombre') as HTMLInputElement)?.value,
       sesiones_total: Number((document.getElementById('bonoSesiones') as HTMLInputElement)?.value),
       precio: Number((document.getElementById('bonoPrecio') as HTMLInputElement)?.value),
-      fecha_inicio: (document.getElementById('bonoFechaInicio') as HTMLInputElement)?.value || null,
+      fecha_inicio: (document.getElementById('bonoFechaInicio') as HTMLInputElement)?.value || undefined,
       fecha_caducidad: (document.getElementById('bonoFechaCaducidad') as HTMLInputElement)?.value || null,
       notas: (document.getElementById('bonoNotas') as HTMLTextAreaElement)?.value || null,
     };
@@ -9109,18 +9533,20 @@ import ConfigView from '../components/views/ConfigView.astro';
   // Table actions
   bonosBody?.addEventListener('click', async (e: Event) => {
     const btn = (e.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
     const action = btn.getAttribute('data-action');
     const bonoId = btn.getAttribute('data-bono-id');
     if (!bonoId) return;
     if (bonosUnavailableMessage) { showToast(bonosUnavailableMessage, 'warning'); return; }
 
     if (action === 'usar-bono') {
+      btn.disabled = true;
       try {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
         showToast('Sesion descontada del bono.', 'success');
         await loadBonos();
       } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
+      finally { btn.disabled = false; }
     }
     if (action === 'edit-bono') {
       const row = btn.closest('tr') as HTMLTableRowElement | null;
@@ -9892,18 +10318,20 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
   bonosMobileList?.addEventListener('click', async (e: Event) => {
     const btn = (e.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
     const action = btn.getAttribute('data-action');
     const bonoId = btn.getAttribute('data-bono-id');
     if (!bonoId) return;
     if (bonosUnavailableMessage) { showToast(bonosUnavailableMessage, 'warning'); return; }
 
     if (action === 'usar-bono') {
+      btn.disabled = true;
       try {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
         showToast('Sesion descontada del bono.', 'success');
         await loadBonos();
       } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
+      finally { btn.disabled = false; }
       return;
     }
     if (action === 'edit-bono') {
@@ -10143,9 +10571,11 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   const painEvaSlider = document.getElementById('painEvaSlider') as HTMLInputElement | null;
   const painEvaValue = document.getElementById('painEvaValue');
   const painZoneNotes = document.getElementById('painZoneNotes') as HTMLInputElement | null;
-  const btnSavePainZone = document.getElementById('btnSavePainZone');
+  const btnSavePainZone = document.getElementById('btnSavePainZone') as HTMLButtonElement | null;
 
   let activeSelectedZone: string | null = null;
+  let painMapEditVersion = 0;
+  let painRecoveredNoteId: string | null = null;
 
   if (painMapSvg) {
     painMapSvg.addEventListener('click', (e: Event) => {
@@ -10155,6 +10585,9 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
       const zone = path.getAttribute('data-zone');
       if (!zone) return;
+      if (isFichaModuleUnavailable('notas')) return;
+      painMapEditVersion++;
+      painRecoveredNoteId = null;
 
       // Reset selection highlights
       document.querySelectorAll('.pain-zone-path').forEach(p => p.classList.remove('active-selected'));
@@ -10185,12 +10618,17 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   if (btnSavePainZone) {
     btnSavePainZone.addEventListener('click', async () => {
       if (!fichaPatientId || !activeSelectedZone) return;
+      const patientId = fichaPatientId;
+      const loadVersion = fichaLoadVersion;
+      const editVersion = painMapEditVersion;
+      if (btnSavePainZone.disabled) return;
+      btnSavePainZone.disabled = true;
       
       const eva = painEvaSlider ? Number(painEvaSlider.value) : 5;
       const notes = painZoneNotes ? painZoneNotes.value.trim() : '';
       
       const body = {
-        paciente_id: fichaPatientId,
+        paciente_id: patientId,
         fecha: new Date().toISOString().slice(0, 10),
         zona_corporal: activeSelectedZone,
         dolor_eva: eva,
@@ -10200,26 +10638,27 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
       try {
         // Save note in Express database
-        await fetchJson(`${BACKEND_BASE}/api/notas-clinicas`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+        if (painRecoveredNoteId) await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${painRecoveredNoteId}`, {
+          method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),
         });
+        else await createClinicRecord(`${BACKEND_BASE}/api/notas-clinicas`, body, 8000, 'map');
 
+        if (!isCurrentFicha(patientId, loadVersion)) return;
         // Hide editor and reset selection
-        if (painMapEditor) painMapEditor.hidden = true;
-        document.querySelectorAll('.pain-zone-path').forEach(p => p.classList.remove('active-selected'));
+        if (editVersion === painMapEditVersion) {
+          if (painMapEditor) painMapEditor.hidden = true;
+          document.querySelectorAll('.pain-zone-path').forEach(p => p.classList.remove('active-selected'));
+        }
 
         // Refresh notes timeline & Ficha workspace
-        const notasPayload = await fetchJson(`${BACKEND_BASE}/api/notas-clinicas?paciente_id=${fichaPatientId}`);
-        if (fichaData) fichaData.notas = notasPayload.data || [];
-        
-        renderFichaHero(fichaData || {});
-        renderFichaWorkspace(fichaData || {});
-        renderFichaNotas(fichaData?.notas || []);
+        await refreshFichaNotes(patientId, loadVersion);
       } catch (err: any) {
-        alert(`Error al guardar zona de dolor: ${err?.message || 'inténtelo de nuevo'}`);
+        if (isCurrentFicha(patientId, loadVersion) && editVersion === painMapEditVersion) {
+          if (err.recoveredData?.id) painRecoveredNoteId = err.recoveredData.id;
+          showToast(err?.message || 'No se pudo confirmar el guardado.', err.recoveredData ? 'warning' : 'error');
+        }
       }
+      finally { btnSavePainZone.disabled = false; }
     });
   }
 

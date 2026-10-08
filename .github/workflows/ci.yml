@@ -53,7 +53,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci || npm install
+        run: npm ci
 
       - name: Check frontend types
         working-directory: frontend
@@ -64,13 +64,35 @@ jobs:
         env:
           ASTRO_TELEMETRY_DISABLED: "1"
           PUBLIC_SUPABASE_URL: "https://example.supabase.co"
-          PUBLIC_SUPABASE_ANON_KEY: "ci-placeholder-key"
           PUBLIC_BACKEND_URL: "https://api.example.com"
         run: npm run build
 
+      - name: Verify browser policy and runtime configuration
+        run: |
+          node scripts/test-browser-policy.mjs
+          node scripts/test-public-config.mjs
+          node scripts/test-runtime-connections.mjs
+          node scripts/test-dashboard-greeting.mjs
+          node scripts/check-client-secrets.mjs
+
       - name: Audit frontend production dependencies
         working-directory: frontend
-        run: npm audit --omit=dev --audit-level=high || true
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build and smoke test the frontend container
+        run: |
+          docker build -t fisio-frontend-ci ./frontend
+          docker run --rm fisio-frontend-ci nginx -t
+          docker run -d --name fisio-frontend-ci -p 127.0.0.1:8080:80 \
+            -e PUBLIC_BACKEND_URL=https://api.example.test \
+            -e PUBLIC_SUPABASE_URL=https://example.supabase.co fisio-frontend-ci
+          trap 'docker rm -f fisio-frontend-ci' EXIT
+          curl --fail --retry 10 --retry-delay 1 --retry-connrefused http://127.0.0.1:8080/health
+          curl --fail --silent --dump-header /tmp/fisio-headers http://127.0.0.1:8080/login/ --output /tmp/fisio-login.html
+          grep -F "connect-src 'self' https://api.example.test https://example.supabase.co" /tmp/fisio-headers
+          grep -F 'no-store' /tmp/fisio-headers
+          curl --fail --silent http://127.0.0.1:8080/runtime-config.js --output /tmp/fisio-runtime.js
+          grep -F 'https://api.example.test' /tmp/fisio-runtime.js
 
   n8n_json_validate:
     runs-on: ubuntu-latest

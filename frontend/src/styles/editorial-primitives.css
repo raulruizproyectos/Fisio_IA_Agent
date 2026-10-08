@@ -1,7 +1,7 @@
 /* ==========================================================================
-   FISIO CLINICAL — EDITORIAL PRIMITIVES (v4.0)
-   Strict button discipline: Coral Pulse (#ff643b) exclusively for primary action
-   Canopy Green (#0a3922) for brand identity & active states
+   FISIO CLINICAL — SHARED PRIMITIVES (v6.0)
+   Primary blue (#175dd0) for the main action
+   Semantic colors remain separate from brand and selection
    ========================================================================== */
 
 /* === BUTTONS === */
@@ -43,7 +43,7 @@ button:active, .btn:active {
 #sendBtn:hover,
 #pagoSubmitBtn:hover,
 #btnSaveFicha:hover {
-  background: #f0542b !important;
+  background: #104ab0 !important;
   color: #ffffff !important;
 }
 
@@ -117,7 +117,7 @@ button:active, .btn:active {
 
 .btn-brand:hover,
 .btn-canopy:hover {
-  background: #0d4a2d !important;
+  background: #104ab0 !important;
 }
 
 /* === FORM CONTROLS === */
@@ -140,7 +140,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--color-canopy-green) !important;
-  box-shadow: 0 0 0 3px rgba(10, 57, 34, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(20, 34, 52, 0.12) !important;
   background: #ffffff !important;
   color: #000000 !important;
 }
@@ -180,7 +180,7 @@ textarea::placeholder {
   align-items: center !important;
   gap: 0.45rem !important;
   cursor: pointer !important;
-  transition: all var(--duration-micro) ease !important;
+  transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
 .finance-tab:hover,
@@ -240,7 +240,7 @@ td {
 }
 
 tbody tr:hover td {
-  background: rgba(10, 57, 34, 0.02) !important;
+  background: rgba(20, 34, 52, 0.02) !important;
 }
 
 td.td-patient,
@@ -337,7 +337,7 @@ td:first-child strong {
   font-weight: 700 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
-  box-shadow: 0 4px 14px rgba(10, 57, 34, 0.25) !important;
+  box-shadow: 0 4px 14px rgba(20, 34, 52, 0.25) !important;
   transform: translateY(-200%) !important;
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
@@ -383,7 +383,7 @@ td:first-child strong {
   align-items: center !important;
   justify-content: center !important;
   padding: 1.5rem !important;
-  background: rgba(10, 57, 34, 0.38) !important;
+  background: rgba(20, 34, 52, 0.38) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   opacity: 0 !important;
@@ -416,7 +416,7 @@ td:first-child strong {
   background: #ffffff !important;
   border-radius: var(--radius-card, 16px) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 20px 40px -12px rgba(10, 57, 34, 0.18), 0 0 1px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 20px 40px -12px rgba(20, 34, 52, 0.18), 0 0 1px rgba(0, 0, 0, 0.15) !important;
 }
 
 .crm-drawer-shell {
@@ -434,13 +434,13 @@ td:first-child strong {
   border-right: 0 !important;
   border-bottom: 0 !important;
   border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
-  transform: translateX(100%) !important;
+  transform: translateX(100%);
   transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .crm-drawer-shell.open .crm-drawer-panel,
 .crm-drawer-shell:not([aria-hidden="true"]) .crm-drawer-panel {
-  transform: translateX(0) !important;
+  transform: translateX(0);
 }
 
 .modal-header {
@@ -470,7 +470,7 @@ td:first-child strong {
 
 .drawer-subtitle {
   font-size: 0.85rem !important;
-  color: var(--color-slate, #64748b) !important;
+  color: var(--color-slate, #536375) !important;
   margin: 0 !important;
 }
 
@@ -480,12 +480,12 @@ td:first-child strong {
   border-radius: 8px !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
   background: var(--color-sand, #f7f5f1) !important;
-  color: var(--color-slate, #64748b) !important;
+  color: var(--color-slate, #536375) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
 .modal-close:hover {
@@ -514,11 +514,12 @@ td:first-child strong {
 /* Form Layout Primitives */
 .form-grid {
   display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 1.15rem !important;
 }
 
 .field {
+  min-width: 0;
   display: flex !important;
   flex-direction: column !important;
   gap: 0.35rem !important;

@@ -1,10 +1,22 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { isMoney, isDate, respondFinanceError } from '../lib/finance.js';
 
 const router = Router();
 const BONOS_TABLE = 'crm_bonos';
 
 const BONO_SELECT = 'id, paciente_id, nombre, sesiones_total, sesiones_usadas, precio, estado, fecha_inicio, fecha_caducidad, notas, created_at, updated_at, crm_pacientes(nombre, apellidos)';
+
+function validateBono(fields) {
+  if (fields.sesiones_total !== undefined && (!['string','number'].includes(typeof fields.sesiones_total)
+    || !/^\d+$/.test(String(fields.sesiones_total)) || Number(fields.sesiones_total)<1 || Number(fields.sesiones_total)>32767)) return 'El número de sesiones debe ser un entero positivo';
+  if (fields.precio !== undefined && !isMoney(fields.precio, true)) return 'El precio debe ser válido y tener como máximo dos decimales';
+  if (fields.estado !== undefined && !['activo','agotado','caducado','anulado'].includes(fields.estado)) return 'Estado de bono inválido';
+  if (fields.fecha_inicio !== undefined && !isDate(fields.fecha_inicio)) return 'Fecha de inicio inválida';
+  if (fields.fecha_caducidad != null && !isDate(fields.fecha_caducidad)) return 'Fecha de caducidad inválida';
+  if (fields.fecha_caducidad && fields.fecha_inicio && fields.fecha_caducidad<fields.fecha_inicio) return 'La caducidad no puede ser anterior al inicio';
+  return null;
+}
 
 const isMissingBonosTableError = (error) => {
   const message = String(error?.message || '').toLowerCase();
@@ -53,6 +65,9 @@ router.post('/', async (req, res, next) => {
     if (!paciente_id || !sesiones_total || precio == null) {
       return res.status(400).json({ error: 'paciente_id, sesiones_total y precio son requeridos' });
     }
+    const startDate = fecha_inicio === undefined ? new Date().toISOString().slice(0, 10) : fecha_inicio;
+    const validationError = validateBono({ ...req.body, fecha_inicio: startDate });
+    if (validationError) return res.status(400).json({ error: validationError });
     const { data, error } = await supabase
       .from(BONOS_TABLE)
       .insert({
@@ -60,7 +75,7 @@ router.post('/', async (req, res, next) => {
         nombre: nombre || 'Bono de sesiones',
         sesiones_total: Number(sesiones_total),
         precio: Number(precio),
-        fecha_inicio: fecha_inicio || new Date().toISOString().slice(0, 10),
+        fecha_inicio: startDate,
         fecha_caducidad: fecha_caducidad || null,
         notas: notas || null,
       })
@@ -68,7 +83,7 @@ router.post('/', async (req, res, next) => {
       .single();
     if (error) {
       if (isMissingBonosTableError(error)) return respondBonosUnavailable(res, { write: true });
-      throw error;
+      return respondFinanceError(res, error);
     }
     res.status(201).json({ data });
   } catch (err) { next(err); }
@@ -88,30 +103,11 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/bonos/:id/usar - use one session from bono
 router.post('/:id/usar', async (req, res, next) => {
   try {
-    const { data: bono, error: fetchErr } = await supabase
-      .from(BONOS_TABLE)
-      .select('id, sesiones_total, sesiones_usadas, estado')
-      .eq('id', req.params.id)
-      .single();
-
-    if (fetchErr && isMissingBonosTableError(fetchErr)) return respondBonosUnavailable(res, { write: true });
-    if (fetchErr || !bono) return res.status(404).json({ error: 'Bono no encontrado' });
-    if (bono.estado !== 'activo') return res.status(400).json({ error: 'Bono no activo' });
-    if (bono.sesiones_usadas >= bono.sesiones_total) return res.status(400).json({ error: 'Bono agotado' });
-
-    const newUsadas = bono.sesiones_usadas + 1;
-    const newEstado = newUsadas >= bono.sesiones_total ? 'agotado' : 'activo';
-
-    const { data, error } = await supabase
-      .from(BONOS_TABLE)
-      .update({ sesiones_usadas: newUsadas, estado: newEstado, updated_at: new Date().toISOString() })
-      .eq('id', req.params.id)
-      .select(BONO_SELECT)
-      .single();
+    const { data, error } = await supabase.rpc('consume_clinic_bono', { target_id: req.params.id });
 
     if (error) {
       if (isMissingBonosTableError(error)) return respondBonosUnavailable(res, { write: true });
-      throw error;
+      return respondFinanceError(res, error);
     }
     res.json({ data });
   } catch (err) { next(err); }
@@ -120,16 +116,22 @@ router.post('/:id/usar', async (req, res, next) => {
 // PATCH /api/bonos/:id - update bono
 router.patch('/:id', async (req, res, next) => {
   try {
-    const allowed = ['nombre', 'sesiones_total', 'precio', 'estado', 'fecha_caducidad', 'notas'];
+    const allowed = ['nombre', 'sesiones_total', 'precio', 'estado', 'fecha_inicio', 'fecha_caducidad', 'notas'];
     const fields = {};
     for (const k of allowed) if (req.body[k] !== undefined) fields[k] = req.body[k];
+    if (!Object.keys(fields).length) return res.status(400).json({ error: 'No hay cambios para aplicar' });
+    const validationError = validateBono(fields);
+    if (validationError) return res.status(400).json({ error: validationError });
+    if (fields.sesiones_total !== undefined) fields.sesiones_total = Number(fields.sesiones_total);
+    if (fields.precio !== undefined) fields.precio = Number(fields.precio);
     fields.updated_at = new Date().toISOString();
     const { data, error } = await supabase
-      .from(BONOS_TABLE).update(fields).eq('id', req.params.id).select(BONO_SELECT).single();
+      .from(BONOS_TABLE).update(fields).eq('id', req.params.id).select(BONO_SELECT).maybeSingle();
     if (error) {
       if (isMissingBonosTableError(error)) return respondBonosUnavailable(res, { write: true });
-      throw error;
+      return respondFinanceError(res, error);
     }
+    if (!data) return res.status(404).json({ error: 'Bono no encontrado' });
     res.json({ data });
   } catch (err) { next(err); }
 });

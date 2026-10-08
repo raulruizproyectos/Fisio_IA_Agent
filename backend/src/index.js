@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import patientsRouter from './routes/patients.js';
 import telegramRouter from './routes/telegram.js';
+import whatsappRouter from './routes/whatsapp.js';
 import professionalRouter from './routes/professional.js';
 import agentRouter from './routes/agent.js';
 import exercisesRouter from './routes/exercises.js';
@@ -17,13 +18,17 @@ import remindersRouter from './routes/reminders.js';
 import invoicesRouter from './routes/invoices.js';
 import documentsRouter from './routes/documents.js';
 import bonosRouter from './routes/bonos.js';
+import authRouter from './routes/auth.js';
 import { buildReadinessReport, getReadinessStatusCode } from './lib/readiness.js';
 import { serviceSupabase, supabase } from './lib/supabase.js';
 import { authorizeRequest, requestIdentity } from './middleware/security.js';
+import { allowedBrowserOrigins, PAID_API_PATHS, paidApiLimiter } from './lib/http-security.js';
+import { publicHttpErrorMessage } from './lib/public-error.js';
 
 // Configuracion
 const app = express();
 const DEFAULT_PORT = 3001;
+const LISTEN_HOST = process.env.HOST || '0.0.0.0';
 const PLATFORM_PORT = Number.parseInt(process.env.PORT || '', 10);
 const PRIMARY_PORT = Number.isFinite(PLATFORM_PORT) ? PLATFORM_PORT : DEFAULT_PORT;
 const EXTRA_LISTEN_PORTS = (process.env.EXTRA_LISTEN_PORTS || (process.env.PORT ? '' : '3000'))
@@ -32,23 +37,7 @@ const EXTRA_LISTEN_PORTS = (process.env.EXTRA_LISTEN_PORTS || (process.env.PORT 
   .filter((value) => Number.isFinite(value));
 const LISTEN_PORTS = Array.from(new Set([PRIMARY_PORT, DEFAULT_PORT, ...EXTRA_LISTEN_PORTS]));
 const ERROR_WEBHOOK_URL = process.env.N8N_ERROR_WEBHOOK_URL || null;
-const DEFAULT_ALLOWED_ORIGINS = [
-  'http://localhost:4321',
-  'http://127.0.0.1:4321',
-  'https://fisio-frontend.b5xbaf.easypanel.host',
-  'https://fisio-staging-fisio-frontend-staging.b5xbaf.easypanel.host',
-];
-
-const allowedOrigins = Array.from(
-  new Set([
-    ...DEFAULT_ALLOWED_ORIGINS,
-    ...(process.env.FRONTEND_URLS || '')
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean),
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL.trim()] : []),
-  ])
-);
+const allowedOrigins = allowedBrowserOrigins(process.env);
 
 // Middleware
 app.set('trust proxy', 1);
@@ -69,10 +58,11 @@ app.use(cors({
       return callback(null, true);
     }
 
-    return callback(new Error(`Origin no permitido por CORS: ${origin}`));
+    return callback(Object.assign(new Error('Origen no permitido por CORS'), { status: 403 }));
   },
   credentials: true,
 }));
+app.use('/api/whatsapp/incoming', express.raw({ type: 'application/json', limit: '128kb', verify: (req, _res, buffer) => { req.rawBody = buffer; } }));
 app.use('/api/notas-clinicas/voice/transcribe', express.json({ limit: '15mb' }));
 app.use(express.json({ limit: '512kb', strict: true }));
 app.use(rateLimit({
@@ -92,23 +82,12 @@ app.use([
   legacyHeaders: false,
   message: { error: 'Demasiadas solicitudes de reserva. Inténtalo más tarde.' },
 }));
-app.use('/api/telegram/incoming', rateLimit({
+app.use(['/api/telegram/incoming', '/api/telegram/pilot-incoming', '/api/whatsapp/incoming'], rateLimit({
   windowMs: 60 * 1000,
   limit: Number(process.env.TELEGRAM_RATE_LIMIT || 180),
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   message: { error: 'Límite temporal de mensajes alcanzado.' },
-}));
-app.use([
-  '/api/exercises/recommend',
-  '/api/exercises/recommend/async',
-  '/api/recommendations/generate',
-], rateLimit({
-  windowMs: 60 * 60 * 1000,
-  limit: Number(process.env.AI_GENERATION_RATE_LIMIT || 60),
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-  message: { error: 'Límite de generación clínica por hora alcanzado. Inténtalo más tarde.' },
 }));
 
 // Health check
@@ -136,7 +115,9 @@ app.get('/', (_req, res) => {
   });
 });
 
+app.use('/api/auth', authRouter);
 app.use(authorizeRequest);
+app.use(PAID_API_PATHS, paidApiLimiter(process.env));
 
 app.get('/api/me', (req, res) => {
   res.json(req.auth || {});
@@ -151,6 +132,7 @@ app.get('/api/health/readiness', async (_req, res) => {
 app.use('/api/patients', patientsRouter);
 app.use('/api/pacientes', patientsRouter);
 app.use('/api/telegram', telegramRouter);
+app.use('/api/whatsapp', whatsappRouter);
 app.use('/api/professional', professionalRouter);
 app.use('/api/profesional', professionalRouter);
 app.use('/api/agent', agentRouter);
@@ -166,6 +148,10 @@ app.use('/api/bonos', bonosRouter);
 
 // Error handler
 app.use((err, req, res, _next) => {
+  if (err.code === '23P01') {
+    return res.status(409).json({available:false,code:'appointment_overlap',error:'Ese horario acaba de ser ocupado. Actualiza la agenda y elige otro hueco.',request_id:req.id});
+  }
+  const diagnostic = req.path.startsWith('/api/auth/') ? 'Error en solicitud de autenticación' : err.message || 'Error interno del servidor';
   if (ERROR_WEBHOOK_URL) {
     fetch(ERROR_WEBHOOK_URL, {
       method: 'POST',
@@ -178,9 +164,9 @@ app.use((err, req, res, _next) => {
       body: JSON.stringify({
         severity: 'CRITICAL',
         service: 'fisio-ia-agent-api',
-        route: req.originalUrl,
+        route: req.path.startsWith('/api/auth/') ? req.path : req.originalUrl,
         method: req.method,
-        message: err.message || 'Error interno del servidor',
+        message: diagnostic,
         timestamp: new Date().toISOString(),
       }),
     }).catch(() => {
@@ -192,21 +178,19 @@ app.use((err, req, res, _next) => {
     level: 'error',
     request_id: req.id,
     method: req.method,
-    route: req.originalUrl,
-    message: err.message || 'Error interno del servidor',
+    route: req.path.startsWith('/api/auth/') ? req.path : req.originalUrl,
+    message: diagnostic,
   }));
   const status = Number(err.status || 500);
-  const safeMessage = status >= 500 && process.env.NODE_ENV === 'production'
-    ? 'Error interno del servidor'
-    : (err.message || 'Error interno del servidor');
+  const safeMessage = publicHttpErrorMessage(err, status, status >= 500 ? 'Error interno del servidor' : 'No se pudo completar la solicitud. Revisa los datos y permisos.');
   res.status(status).json({ error: safeMessage, request_id: req.id });
 });
 
 // Start
 const servers = LISTEN_PORTS.map((port, index) => {
   const isPrimary = index === 0;
-  const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`\nFisio Clinical API\n------------------\nServidor activo en http://0.0.0.0:${port}${isPrimary ? '' : ' (compat)'}\nHealth check:     http://0.0.0.0:${port}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
+  const server = app.listen(port, LISTEN_HOST, () => {
+    console.log(`\nFisio Clinical API\n------------------\nServidor activo en http://${LISTEN_HOST}:${port}${isPrimary ? '' : ' (compat)'}\nHealth check:     http://${LISTEN_HOST}:${port}/api/health\nSupabase:         ${process.env.SUPABASE_URL || 'No configurado'}\n`);
   });
 
   server.on('error', (error) => {
