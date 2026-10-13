@@ -73,6 +73,9 @@ jobs:
           node scripts/test-public-config.mjs
           node scripts/test-runtime-connections.mjs
           node scripts/test-dashboard-greeting.mjs
+          node scripts/test-clinical-motion.mjs
+          node scripts/test-ficha-save-context.mjs
+          node scripts/test-confirm-dialog.mjs
           node scripts/check-client-secrets.mjs
 
       - name: Audit frontend production dependencies

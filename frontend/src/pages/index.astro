@@ -1842,6 +1842,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   document.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key !== 'Escape') return;
     if (!assistantRail?.classList.contains('open')) return;
+    event.preventDefault();
     closeAssistantRail();
   });
 
@@ -2122,14 +2123,15 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (icon === 'search_off') return 'Prueba menos filtros o elimina la busqueda para recuperar resultados.';
     if (icon === 'person_off') return 'Crea la primera ficha para activar agenda, historial y documentos.';
     if (icon === 'event_busy') return 'Puedes crear una cita manual o revisar bloqueos externos de Calendar.';
-    if (icon === 'sync' || normalized.includes('cargando') || normalized.includes('actualizando')) return 'Estamos sincronizando datos en tiempo real.';
+    if (icon === 'sync' || normalized.includes('cargando') || normalized.includes('actualizando')) return 'Consultando los datos de la consulta.';
     return '';
   };
   const renderState = (icon: string, text: string, compact = false, loading = false) => {
     const cls = compact ? 'empty-state-sm' : 'empty-state';
     const loadingCls = loading ? ' state-loading' : '';
     const hint = getStateHint(icon, text);
-    return `<div class="${cls}${loadingCls}"><span class="material-symbols-rounded">${icon}</span><p>${escapeHtml(text)}</p>${hint ? `<small class="empty-state-hint">${escapeHtml(hint)}</small>` : ''}</div>`;
+    const skeleton = loading ? '<span class="loading-lines" aria-hidden="true"><span></span><span></span><span></span></span>' : '';
+    return `<div class="${cls}${loadingCls}"${loading ? ' role="status" aria-live="polite"' : ''}>${skeleton}<span class="material-symbols-rounded" aria-hidden="true">${icon}</span><p>${escapeHtml(text)}</p>${hint ? `<small class="empty-state-hint">${escapeHtml(hint)}</small>` : ''}</div>`;
   };
   const setTableState = (tbody: HTMLElement | null, colspan: number, icon: string, text: string, loading = false) => {
     if (!tbody) return;
@@ -5789,6 +5791,16 @@ import ConfigView from '../components/views/ConfigView.astro';
   appointmentModal?.addEventListener('click', (e) => { if (e.target === appointmentModal) closeAppointmentModal(); });
   document.getElementById('closeAppointmentDetailDrawerBtn')?.addEventListener('click', closeAppointmentDetailDrawer);
   appointmentDetailDrawer?.addEventListener('click', (e) => { if (e.target === appointmentDetailDrawer) closeAppointmentDetailDrawer(); });
+  document.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Escape' || event.defaultPrevented) return;
+    if (appointmentModal?.classList.contains('open')) {
+      event.preventDefault();
+      closeAppointmentModal();
+    } else if (appointmentDetailDrawer?.classList.contains('open')) {
+      event.preventDefault();
+      closeAppointmentDetailDrawer();
+    }
+  });
 
   appointmentForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -7686,7 +7698,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       fichaOverviewStats.innerHTML = `
         <article class="ficha-overview-stat">
           <span>Estado del caso</span>
-          <strong>${unavailableModules.length ? 'Vista parcial' : latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoracion'}</strong>
+          <strong>${unavailableModules.length ? 'Vista parcial' : latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoración'}</strong>
           <p>${escapeHtml(unavailableModules.length ? 'Algunas secciones no están disponibles.' : latestNote ? 'Hay notas clinicas registradas.' : citas.length ? 'Sin notas de seguimiento.' : 'Sin sesiones registradas.')}</p>
         </article>
         <article class="ficha-overview-stat">
@@ -7700,7 +7712,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <p>${escapeHtml(notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : latestEva != null ? `Dolor actual reportado: EVA ${latestEva}/10.` : 'Aun no hay una evolucion clinica documentada.')}</p>
         </article>
         <article class="ficha-overview-stat">
-          <span>Actividad economica</span>
+          <span>Actividad económica</span>
           <strong>${pagosUnavailable ? 'No disponible' : `${totalPayments.toFixed(2)} EUR`}</strong>
           <p>${escapeHtml(pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay pagos asociados al caso.')}</p>
         </article>`;
@@ -8013,7 +8025,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       ? 'Caso con seguimiento activo'
       : citas.length
         ? 'Caso listo para reactivar'
-        : 'Primera valoracion pendiente';
+        : 'Primera valoración pendiente';
     const continuityMeta = latestNote
       ? 'Tienes contexto clinico para iterar con el agente, documentar y programar la siguiente sesion.'
       : citas.length
@@ -8022,10 +8034,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (fichaHeroName) fichaHeroName.textContent = patientName;
     if (fichaHeroSummary) {
-      const bits = [patient?.email || '', patient?.telefono || '', ageLabel].filter(Boolean);
-      fichaHeroSummary.textContent = bits.length
-        ? bits.join(' | ')
-        : 'Completa datos, continuidad clinica y proximas acciones desde una sola vista.';
+      fichaHeroSummary.textContent = fichaModuleAvailability.size ? 'Vista parcial del caso' : continuityLabel;
     }
     if (fichaHeroEmail) fichaHeroEmail.textContent = patient?.email || 'Sin email registrado';
     if (fichaHeroPhone) fichaHeroPhone.textContent = patient?.telefono || 'Sin telefono registrado';
@@ -8955,7 +8964,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     const editVersion = fichaNotaEditVersion;
     const submit = fichaNotaForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
     if (submit?.disabled) return;
-    if (submit) submit.disabled = true;
+    const submitLabel = submit?.querySelector('[data-note-submit-label]');
+    if (submit) { submit.disabled = true; submit.setAttribute('aria-busy', 'true'); }
+    if (submitLabel) submitLabel.textContent = 'Guardando nota…';
     const fd = new FormData(fichaNotaForm);
     const notaId = fd.get('nota_id') as string;
     const body: any = {
@@ -8987,7 +8998,10 @@ import ConfigView from '../components/views/ConfigView.astro';
         showToast(err?.message || 'No se pudo confirmar el guardado de la nota.', err.recoveredData ? 'warning' : 'error');
       }
     }
-    finally { if (submit) submit.disabled = false; }
+    finally {
+      if (submit) { submit.disabled = false; submit.removeAttribute('aria-busy'); }
+      if (submitLabel) submitLabel.textContent = 'Guardar nota';
+    }
   });
 
   // Delegate nota edit/delete clicks
@@ -10578,6 +10592,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   let painRecoveredNoteId: string | null = null;
 
   if (painMapSvg) {
+    painMapSvg.addEventListener('keydown', (event: KeyboardEvent) => {
+      const target = event.target as SVGElement;
+      if (!target.matches('.pain-zone-path') || !['Enter', ' '].includes(event.key)) return;
+      event.preventDefault();
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
     painMapSvg.addEventListener('click', (e: Event) => {
       const target = e.target as SVGElement;
       const path = target.closest('.pain-zone-path') as SVGElement | null;

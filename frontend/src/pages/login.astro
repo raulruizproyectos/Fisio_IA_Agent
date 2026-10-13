@@ -10,6 +10,11 @@ import Layout from '../layouts/Layout.astro';
         <span class="brand-kicker">Fisio Clinical</span>
         <h1>La consulta, bajo control.</h1>
         <p>Agenda, seguimiento clínico e informes terapéuticos en un entorno privado diseñado para profesionales.</p>
+        <div class="login-care-path" aria-label="Agenda, seguimiento y revisión profesional">
+          <span><span class="material-symbols-rounded" aria-hidden="true">calendar_today</span> Agenda</span>
+          <span><span class="material-symbols-rounded" aria-hidden="true">history</span> Seguimiento</span>
+          <span><span class="material-symbols-rounded" aria-hidden="true">verified</span> Revisión</span>
+        </div>
       </div>
       <div class="trust-note"><span class="material-symbols-rounded">verified</span><span>Acceso cifrado y datos protegidos por perfil profesional</span></div>
     </section>
@@ -88,6 +93,9 @@ import Layout from '../layouts/Layout.astro';
     errorBox.hidden = true;
     errorBox.classList.remove('is-success');
     submit.disabled = true;
+    submit.setAttribute('aria-busy', 'true');
+    const label = submit.querySelector('span:not(.material-symbols-rounded)');
+    if (label) label.textContent = 'Verificando acceso…';
     const data = new FormData(form);
     const { error } = await requestAuth('login', {
       email: String(data.get('email') || '').trim(),
@@ -97,6 +105,8 @@ import Layout from '../layouts/Layout.astro';
       errorBox.textContent = error;
       errorBox.hidden = false;
       submit.disabled = false;
+      submit.removeAttribute('aria-busy');
+      if (label) label.textContent = 'Entrar de forma segura';
       return;
     }
     window.location.replace('/');

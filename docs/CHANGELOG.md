@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-13 — Refinamiento de Precisión azul en local
+
+- Cierre para primera prueba: Tab/Shift+Tab permanecen dentro de los modales y copiloto móvil; firma/voz cerrados no admiten foco. Regresión reproducida y corregida, check/build y navegación Chromium pasan. Recorrido de prueba documentado.
+
+- Tras feedback visual, corregida la silueta del mapa corporal: proporciones/brazos, centrado e indicación de selección. Zonas/IDs conservados; activación con Enter/Espacio y QA móvil/escritorio del editor.
+
+- Ficha con identidad principal, resumen en filas y datos complementarios plegables; selección deslizante de las seis pestañas. IDs/data-* previos conservados.
+- Transiciones de entrada/salida de paneles, exclusión del foco al cerrar y retorno al control de origen; Escape en los paneles de citas. Movimiento reducido en los componentes afectados.
+- Skeleton de carga y feedback de guardado real, sin cambiar confirmaciones, recuperación de escrituras ni errores persistentes. Acceso y recuperación con profundidad discreta; acceso con recorrido clínico de marca y estado ocupado.
+- Frontend check/build, regresiones, backend lint/106 pruebas y Chromium 375/768/1280 con datos ficticios pasan. Sin dependencias nuevas, commit/push, publicación o efectos en producción. Evidencia privada y límites en [la revisión](design-exploration/reviews/2026-10-13/README.md).
+
 ## 2026-10-08 — Producción e integraciones
 
 - PR #2 fusionado; cinco migraciones Cloud aplicadas y verificadas; frontend/backend desplegados en el VPS existente. CSP/runtime, rechazo anónimo, CSRF y cookies de proxy comprobados.

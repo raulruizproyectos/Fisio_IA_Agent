@@ -165,6 +165,7 @@
   --duration-fast: 120ms;
   --duration-default: 220ms;
   --duration-slow: 240ms;
+  --duration-exit: 180ms;
   --ease-out: cubic-bezier(.2, 0, 0, 1);
   --ease-editorial: var(--ease-out);
   --transition: 120ms var(--ease-out);

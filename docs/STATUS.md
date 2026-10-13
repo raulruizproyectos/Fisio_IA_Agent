@@ -1,5 +1,15 @@
 # Project Status
 
+## Estado local — 2026-10-13: refinamiento visual implementado, sin publicar
+
+Preparación local terminada para la primera prueba del refinamiento. En el cierre final se corrigió y verificó la circulación Tab/Shift+Tab dentro de modales y copiloto móvil, además de excluir firma/voz cerrados del foco. El copiloto de escritorio conserva la navegación hacia el espacio de trabajo. Recorrido de prueba registrado en la revisión enlazada abajo.
+
+El usuario pidió estudiar 25 recursos y después autorizó implementar las mejoras recomendadas. Precisión azul conserva sus tokens/fuente: ficha más compacta, resumen legible, métricas complementarias plegables, selección deslizante de pestañas, entrada/salida de paneles, foco restaurado e interacción bloqueada mientras están cerrados. Skeleton de carga, guardado de notas/acceso con estado ocupado real y composición del acceso/recuperación afinada. No se añadieron dependencias.
+
+Frontend check (40 archivos sin diagnósticos)/build y regresiones afectadas pasan. Backend lint y 106/106 pruebas pasan; la primera ejecución del sandbox falló por conexiones loopback EACCES y la ejecución autorizada fuera de esa restricción confirmó la suite. Chromium con el build real y API/Auth ficticias: 375/768/1280 px, cero overflow/errores JS/red externa; guardado aceptado/rechazado y doble envío bloqueado, datos parciales explícitos, paneles/foco/Escape/reapertura y movimiento reducido. [Detalle de la revisión](design-exploration/reviews/2026-10-13/README.md).
+
+Cambios conservados únicamente en local: sin commit/push, despliegue, Cloud, envíos reales ni IA con gasto. La URL pública sigue en la versión del cierre del 8 de octubre; no tiene este refinamiento. Primera prueba del usuario todavía sin resultados comunicados. `CONTINUAR.md` y `PROMPT_CONTINUAR.txt` se conservan intactos respecto al comienzo de este trabajo. Próximo paso: revisión del acabado local o publicación del frontend cuando el usuario autorice expresamente las acciones y destino necesarios. No repetir migraciones, auditorías ni la preparación operativa completada.
+
 ## Estado vigente — 2026-10-08: preparado para la primera prueba
 
 CRM en https://fisio-frontend.b5xbaf.easypanel.host/login/. PR #2 fusionado; cinco migraciones ensayadas aplicadas y verificadas en Supabase uewhbaejcouenoufuwlq. Backend desplegado en 79bfeeee3d9c8839128d51a09e3def3ffb2337c9; frontend en 0fce17529fb0ea7b99644a0c305cd37b6613a799. CI del backend desplegado: tres checks verdes. Main incluye posteriormente el cierre documental y el archivo del cron.

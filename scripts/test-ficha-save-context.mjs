@@ -24,7 +24,8 @@ function setup(fetchJson) {
     classList:{add(){},remove(){}},setAttribute(key){this.attributes.add(key);if(key==='disabled')this.disabled=true;},
     removeAttribute(key){this.attributes.delete(key);if(key==='disabled')this.disabled=false;},
     hasAttribute(key){return this.attributes.has(key);},addEventListener:(_event,handler)=>{handlers[name]=handler;}});
-  const button = {disabled:false};
+  const submitLabel = {textContent:'Guardar nota'};
+  const button = {...element('submit'),querySelector:()=>submitLabel};
   const form = {fields:new Map([['fecha','2026-10-07'],['nota','Nota ficticia'],['dolor_eva','0']]),
     querySelector:selector=>selector.includes('nota_id') ? {get value(){return form.fields.get('nota_id');},set value(v){form.fields.set('nota_id',v);}} : button,
     addEventListener:(_event,handler)=>{handlers.note=handler;}};
@@ -70,7 +71,7 @@ function setup(fetchJson) {
     'globalThis.refresh = refreshFichaNotes;',
   ].join('\n');
   runInNewContext(transpileModule(script,{}).outputText,context);
-  return {context,handlers,button,renders,toasts,reloads,data};
+  return {context,handlers,button,submitLabel,renders,toasts,reloads,data};
 }
 const submit = handler => handler({preventDefault(){}});
 
@@ -140,9 +141,13 @@ for (const [name,version] of [['note','fichaNotaEditVersion'],['pain','painMapEd
 {
   const write=deferred();let count=0;const h=setup(()=>{count++;return write.promise;});
   const pending=submit(h.handlers.note);await submit(h.handlers.note);
+  assert.equal(h.submitLabel.textContent,'Guardando nota…');
+  assert.equal(h.button.attributes.has('aria-busy'),true);
   assert.equal(count,1);write.reject(new Error('EVA inválida'));await pending;
   assert.equal(h.context.fichaNotaFormCard.hidden,false);assert.equal(h.button.disabled,false);
   assert.equal(h.toasts[0][1],'error');
+  assert.equal(h.submitLabel.textContent,'Guardar nota');
+  assert.equal(h.button.attributes.has('aria-busy'),false);
 }
 
 // Selecting A again is a new view, even though the patient ID matches.

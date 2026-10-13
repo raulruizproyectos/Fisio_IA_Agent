@@ -12,7 +12,7 @@
         <span class="material-symbols-rounded">arrow_back</span>
         <span>Volver a Pacientes</span>
       </button>
-      <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2" id="fichaTitulo">
+      <h1 class="sr-only" id="fichaTitulo">
         <span class="material-symbols-rounded text-sky-700">person</span> Ficha clínica
       </h1>
     </div>
@@ -67,30 +67,6 @@
         </button>
       </div>
     </div>
-    
-    <!-- Quick Facts Grid -->
-    <div class="ficha-vitals-grid">
-      <article class="ficha-vital-card">
-        <span class="ficha-vital-kicker">Próxima sesión</span>
-        <strong class="ficha-vital-value" id="fichaHeroLastSession">Sin citas</strong>
-        <p class="ficha-vital-meta" id="fichaHeroLastSessionMeta">Todavía no hay citas agendadas.</p>
-      </article>
-      <article class="ficha-vital-card">
-        <span class="ficha-vital-kicker">Evolución</span>
-        <strong class="ficha-vital-value" id="fichaHeroNotesCount">0 notas</strong>
-        <p class="ficha-vital-meta" id="fichaHeroLatestNote">La línea temporal aparecerá aquí.</p>
-      </article>
-      <article class="ficha-vital-card">
-        <span class="ficha-vital-kicker">Historial pagos</span>
-        <strong class="ficha-vital-value" id="fichaHeroPaymentsTotal">0,00 €</strong>
-        <p class="ficha-vital-meta" id="fichaHeroPaymentsMeta">Sin pagos registrados.</p>
-      </article>
-      <article class="ficha-vital-card">
-        <span class="ficha-vital-kicker">Continuidad</span>
-        <strong class="ficha-vital-value" id="fichaHeroContinuity">En tratamiento</strong>
-        <p class="ficha-vital-meta" id="fichaHeroContinuityMeta">Pauta activa.</p>
-      </article>
-    </div>
   </section>
 
   <!-- Commands & Risk (Preserved IDs for JS) -->
@@ -108,7 +84,8 @@
   <!-- Main Workspace (Tabs & Panels) -->
   <section class="flex-1 flex flex-col">
     <!-- Tabs Navigation -->
-    <div class="ficha-tabs-nav">
+    <div class="ficha-tabs-nav" role="group" aria-label="Secciones de la ficha">
+      <span class="ficha-tab-indicator" aria-hidden="true"></span>
       <button class="ficha-tab active" data-ficha-tab="resumen" type="button">Resumen de caso</button>
       <button class="ficha-tab" data-ficha-tab="notas" type="button">Notas clínicas</button>
       <button class="ficha-tab" data-ficha-tab="citas" type="button">Historial citas</button>
@@ -137,25 +114,26 @@
           <!-- MAPA ANATOMICO DE DOLOR INTERACTIVO -->
           <section class="precision-panel pain-map-card">
             <header class="precision-panel-header">
-              <h3>Mapa Anatómico de Dolor</h3>
+              <h3>Mapa corporal de dolor</h3>
               <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Lectura evolutiva</span>
             </header>
             <div class="precision-panel-body">
               <div class="pain-map-container">
-                <div class="pain-map-visual">
-                  <svg viewBox="0 0 100 220" id="painMapSvg" class="pain-map-svg">
-                    <path id="zone-cervical" class="pain-zone-path" data-zone="cervical" d="M42,20 C42,10 58,10 58,20 C58,28 54,32 54,36 L46,36 C46,32 42,28 42,20 Z" />
-                    <path id="zone-hombro_izq" class="pain-zone-path" data-zone="hombro_brazo" d="M38,38 C28,40 22,48 18,58 L24,60 C26,52 32,46 38,44 Z" />
-                    <path id="zone-hombro_der" class="pain-zone-path" data-zone="hombro_brazo" d="M62,38 C72,40 78,48 82,58 L76,60 C74,52 68,46 62,44 Z" />
-                    <path id="zone-espalda" class="pain-zone-path" data-zone="espalda" d="M40,38 L60,38 L58,80 L42,80 Z" />
-                    <path id="zone-abdomen" class="pain-zone-path" data-zone="abdomen_core" d="M42,82 L58,82 L56,105 L44,105 Z" />
-                    <path id="zone-cadera" class="pain-zone-path" data-zone="cadera" d="M38,107 L62,107 L60,125 L40,125 Z" />
-                    <path id="zone-rodilla_izq" class="pain-zone-path" data-zone="rodilla" d="M38,127 L48,127 L46,165 L36,165 Z" />
-                    <path id="zone-rodilla_der" class="pain-zone-path" data-zone="rodilla" d="M52,127 L62,127 L64,165 L54,165 Z" />
-                    <path id="zone-tobillo_izq" class="pain-zone-path" data-zone="tobillo_pie" d="M36,167 L46,167 L44,205 C40,210 32,210 30,205 Z" />
-                    <path id="zone-tobillo_der" class="pain-zone-path" data-zone="tobillo_pie" d="M54,167 L64,167 L70,205 C68,210 60,210 56,205 Z" />
+                <figure class="pain-map-visual">
+                  <svg viewBox="0 0 100 220" id="painMapSvg" class="pain-map-svg" role="group" aria-label="Seleccionar zona corporal">
+                    <path id="zone-cervical" class="pain-zone-path" data-zone="cervical" role="button" tabindex="0" aria-label="Cervical" d="M41 16 C41 7 45 3 50 3 C55 3 59 7 59 16 C59 22 56 26 55 29 L55 34 L45 34 L45 29 C44 26 41 22 41 16Z" />
+                    <path id="zone-hombro_izq" class="pain-zone-path" data-zone="hombro_brazo" role="button" tabindex="0" aria-label="Hombro y brazo" d="M43 35 C39 35 31 36 27 43 C24 49 24 61 22 71 L17 99 C16 105 14 111 15 117 C15 122 18 125 21 122 L25 115 L27 101 L31 73 L34 59 L36 47 C39 44 42 40 43 35Z" />
+                    <path id="zone-hombro_der" class="pain-zone-path" data-zone="hombro_brazo" role="button" tabindex="0" aria-label="Hombro y brazo" d="M57 35 C61 35 69 36 73 43 C76 49 76 61 78 71 L83 99 C84 105 86 111 85 117 C85 122 82 125 79 122 L75 115 L73 101 L69 73 L66 59 L64 47 C61 44 58 40 57 35Z" />
+                    <path id="zone-espalda" class="pain-zone-path" data-zone="espalda" role="button" tabindex="0" aria-label="Espalda" d="M43 35 L57 35 C57 40 61 44 65 46 L63 64 C62 69 60 75 60 80 L40 80 C40 75 38 69 37 64 L35 46 C39 44 43 40 43 35Z" />
+                    <path id="zone-abdomen" class="pain-zone-path" data-zone="abdomen_core" role="button" tabindex="0" aria-label="Abdomen y core" d="M40 81 L60 81 C59 88 59 95 61 100 L39 100 C41 95 41 88 40 81Z" />
+                    <path id="zone-cadera" class="pain-zone-path" data-zone="cadera" role="button" tabindex="0" aria-label="Cadera" d="M39 101 L61 101 C64 107 64 115 63 123 L55 126 L50 118 L45 126 L37 123 C36 115 36 107 39 101Z" />
+                    <path id="zone-rodilla_izq" class="pain-zone-path" data-zone="rodilla" role="button" tabindex="0" aria-label="Rodilla" d="M37 124 L45 127 L49 122 C49 134 46 146 45 157 L44 164 L35 164 C34 154 33 143 34 134Z" />
+                    <path id="zone-rodilla_der" class="pain-zone-path" data-zone="rodilla" role="button" tabindex="0" aria-label="Rodilla" d="M63 124 L55 127 L51 122 C51 134 54 146 55 157 L56 164 L65 164 C66 154 67 143 66 134Z" />
+                    <path id="zone-tobillo_izq" class="pain-zone-path" data-zone="tobillo_pie" role="button" tabindex="0" aria-label="Tobillo y pie" d="M35 165 L44 165 C44 174 41 184 41 195 L41 202 C42 207 42 211 39 212 L28 212 C25 212 25 208 28 207 L33 201 C33 194 32 184 32 175 C32 171 33 167 35 165Z" />
+                    <path id="zone-tobillo_der" class="pain-zone-path" data-zone="tobillo_pie" role="button" tabindex="0" aria-label="Tobillo y pie" d="M65 165 L56 165 C56 174 59 184 59 195 L59 202 C58 207 58 211 61 212 L72 212 C75 212 75 208 72 207 L67 201 C67 194 68 184 68 175 C68 171 67 167 65 165Z" />
                   </svg>
-                </div>
+                  <figcaption>Selecciona una zona</figcaption>
+                </figure>
                 <div class="flex-1 space-y-3" id="painMapEditor" hidden>
                   <strong id="painMapSelectedZone" class="text-sm font-bold text-slate-900 block">Cervical</strong>
                   <div class="space-y-1">
@@ -311,7 +289,7 @@
             <label class="precision-field"><span class="text-xs font-semibold text-slate-700">Pruebas realizadas</span><textarea name="pruebas_realizadas" rows="2" class="precision-input h-auto py-2"></textarea></label>
             <div class="ficha-note-form-actions">
               <button type="button" class="precision-btn-secondary" id="fichaNotaCancel">Cancelar</button>
-              <button type="submit" class="precision-btn-primary"><span class="material-symbols-rounded">save</span> Guardar nota</button>
+              <button type="submit" class="precision-btn-primary"><span class="material-symbols-rounded" aria-hidden="true">save</span> <span data-note-submit-label>Guardar nota</span></button>
             </div>
           </form>
         </section>
@@ -383,6 +361,33 @@
 
     </div>
   </section>
+
+  <!-- Main clinical content precedes complementary metrics on mobile. -->
+  <details class="ficha-followup">
+    <summary>Seguimiento del caso <span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+    <div class="ficha-vitals-grid">
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Próxima sesión</span>
+        <strong class="ficha-vital-value" id="fichaHeroLastSession">Sin citas</strong>
+        <p class="ficha-vital-meta" id="fichaHeroLastSessionMeta">Todavía no hay citas agendadas.</p>
+      </article>
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Evolución</span>
+        <strong class="ficha-vital-value" id="fichaHeroNotesCount">0 notas</strong>
+        <p class="ficha-vital-meta" id="fichaHeroLatestNote">La línea temporal aparecerá aquí.</p>
+      </article>
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Historial pagos</span>
+        <strong class="ficha-vital-value" id="fichaHeroPaymentsTotal">0,00 €</strong>
+        <p class="ficha-vital-meta" id="fichaHeroPaymentsMeta">Sin pagos registrados.</p>
+      </article>
+      <article class="ficha-vital-card">
+        <span class="ficha-vital-kicker">Continuidad</span>
+        <strong class="ficha-vital-value" id="fichaHeroContinuity">En tratamiento</strong>
+        <p class="ficha-vital-meta" id="fichaHeroContinuityMeta">Pauta activa.</p>
+      </article>
+    </div>
+  </details>
 
   <!-- Preserved IDs from Sidebar (Hidden for JS compatibility) -->
   <div class="hidden" aria-hidden="true">
