@@ -41,7 +41,7 @@ router.post('/', async (req, res, next) => {
     const { data: citas, error } = await supabase
       .from('crm_citas')
       .select('id, paciente_id, inicio_en, motivo')
-      .in('estado', ['confirmada', 'CONFIRMADA', 'pendiente'])
+      .in('estado', ['confirmada', 'CONFIRMADA', 'pendiente', 'reprogramada'])
       .gte('inicio_en', from.toISOString())
       .lte('inicio_en', to.toISOString());
 
@@ -58,6 +58,14 @@ router.post('/', async (req, res, next) => {
       .in('paciente_id', pacienteIds);
     if (linkError) throw linkError;
 
+    // Booking-assistant links override legacy ones for the same bot; an opt-out (baja) stops reminders.
+    const { data: assistantLinks, error: assistantError } = await supabase
+      .from('crm_mensajeria_vinculos')
+      .select('paciente_id, chat_id, consentimiento_en, baja_en')
+      .eq('canal', 'telegram')
+      .in('paciente_id', pacienteIds);
+    if (assistantError) throw assistantError;
+
     // Get patient names
     const { data: pacientes, error: patientError } = await supabase
       .from('crm_pacientes')
@@ -67,6 +75,10 @@ router.post('/', async (req, res, next) => {
 
     const chatMap = {};
     for (const v of (vinculos || [])) chatMap[v.paciente_id] = v.telegram_chat_id;
+    for (const v of (assistantLinks || [])) {
+      if (v.baja_en || !v.consentimiento_en || !v.chat_id) delete chatMap[v.paciente_id];
+      else chatMap[v.paciente_id] = v.chat_id;
+    }
     const nameMap = {};
     for (const p of (pacientes || [])) nameMap[p.id] = [p.nombre, p.apellidos].filter(Boolean).join(' ');
 
@@ -112,7 +124,7 @@ router.post('/', async (req, res, next) => {
       }
       if (claimError && claimError.code !== '23505') throw claimError;
 
-      const message = `📋 <b>Recordatorio de cita</b>\n\nHola ${escapeTelegramHtml(nombre)}, te recordamos que tienes una cita de fisioterapia:\n\n📅 <b>${escapeTelegramHtml(dia)}</b>\n🕐 <b>${escapeTelegramHtml(hora)}h</b>${cita.motivo ? `\n📝 ${escapeTelegramHtml(cita.motivo)}` : ''}\n\nSi necesitas cancelar o cambiar la cita, escríbenos por aquí.\n\n— Clínica de Fisioterapia`;
+      const message = `📋 <b>Recordatorio de cita</b>\n\nHola ${escapeTelegramHtml(nombre)}, te recordamos que tienes una cita de fisioterapia:\n\n📅 <b>${escapeTelegramHtml(dia)}</b>\n🕐 <b>${escapeTelegramHtml(hora)}h</b>${cita.motivo ? `\n📝 ${escapeTelegramHtml(cita.motivo)}` : ''}\n\nSi necesitas cambiarla o anularla, escríbenos por aquí. Con menos de 24 horas de antelación lo gestiona directamente la clínica.\n\n— Clínica de Fisioterapia`;
 
       const status = await sendTelegramReminder(chatId, message);
       const { error: saveError } = await supabase
@@ -146,7 +158,7 @@ router.get('/preview', async (req, res, next) => {
     const { data: citas, error } = await supabase
       .from('crm_citas')
       .select('id, paciente_id, inicio_en, motivo, estado, crm_pacientes(nombre, apellidos)')
-      .in('estado', ['confirmada', 'CONFIRMADA', 'pendiente'])
+      .in('estado', ['confirmada', 'CONFIRMADA', 'pendiente', 'reprogramada'])
       .gte('inicio_en', from.toISOString())
       .lte('inicio_en', to.toISOString());
 

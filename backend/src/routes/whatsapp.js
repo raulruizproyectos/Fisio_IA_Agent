@@ -3,7 +3,7 @@ import { supabase, serviceSupabase } from '../lib/supabase.js';
 import { getOpenWAConfig, sendOpenWAPdf, sendOpenWAText } from '../lib/openwa.js';
 import { getApprovedExerciseReport, reportError, respondReportError } from '../lib/approved-exercise-report.js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
-import { createPilotLink, getPilotPatient, resolvePilotLink, claimMessagingEvent, finishMessagingEvent, respondToPatientBooking } from '../lib/patient-booking.js';
+import { createPilotLink, getPilotPatient, claimMessagingEvent, finishMessagingEvent, handlePatientMessage } from '../lib/patient-booking.js';
 
 const router = Router();
 
@@ -124,9 +124,8 @@ router.post('/incoming', async (req, res) => {
     if (!eventId) return res.json({ ok: true, duplicate: true });
     if (payload.event !== 'message.received') await recordReceipt(config, messageId, data.status);
     else {
-      const resolved = await resolvePilotLink('whatsapp', chatId, data.body, config);
-      const text = resolved.reply || await respondToPatientBooking(resolved.link, data.body, config);
-      await sendOpenWAText(config, chatId, text);
+      const answer = await handlePatientMessage({ canal: 'whatsapp', chatId, text: data.body }, config);
+      await sendOpenWAText(config, chatId, answer.options.length ? `${answer.text}\n\nOpciones: ${answer.options.join(' · ')}` : answer.text);
     }
     await finishMessagingEvent(eventId, 'procesado');
     res.json({ ok: true });

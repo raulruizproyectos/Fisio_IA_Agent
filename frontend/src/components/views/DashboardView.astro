@@ -85,6 +85,19 @@
       </article>
     </section>
 
+    <!-- Booking agent plan B: people waiting for a call from the clinic. Hidden until the API answers. -->
+    <section class="clinic-panel contact-requests-panel" id="contactRequestsPanel" aria-labelledby="contactRequestsTitle" hidden>
+      <div class="clinic-card-head">
+        <div>
+          <span class="clinic-kicker">Asistente de citas</span>
+          <h2 id="contactRequestsTitle">Solicitudes de contacto</h2>
+        </div>
+        <span class="status-chip pendiente" id="contactRequestsCount">0 pendientes</span>
+      </div>
+      <p class="contact-requests-help">Personas que el asistente no pudo atender del todo. Llámalas y marca la solicitud al terminar.</p>
+      <div class="clinic-priority-list" id="contactRequestsList" aria-live="polite"></div>
+    </section>
+
     <section class="clinic-dashboard-grid">
       <article class="clinic-panel clinic-panel-primary">
         <div class="clinic-card-head">

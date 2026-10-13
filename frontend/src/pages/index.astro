@@ -3983,9 +3983,76 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
   };
 
-  pageLoaders['dashboard'] = loadDashboardKPIs;
+  // === BOOKING AGENT: contact requests (plan B) ===
+  const contactRequestsPanel = document.getElementById('contactRequestsPanel') as HTMLElement | null;
+  const contactRequestsList = document.getElementById('contactRequestsList') as HTMLElement | null;
+  const contactRequestsCount = document.getElementById('contactRequestsCount') as HTMLElement | null;
+  const CONTACT_REQUEST_TYPES: Record<string, string> = { reservar: 'Quiere reservar cita', cambiar: 'Quiere cambiar su cita', anular: 'Quiere anular su cita', otro: 'Quiere hablar con la clínica' };
+  const CONTACT_REQUEST_REASONS: Record<string, string> = {
+    sin_hueco: 'No había hueco el día pedido', lectura_fallida: 'El asistente no pudo leer la agenda', incierto: 'Resultado sin confirmar',
+    conflicto: 'Cita pendiente de comprobación', otro_profesional: 'Cita con otro profesional', telefono_existente: 'Su teléfono ya está en otra ficha: dale su código',
+    no_entendido: 'El asistente no le entendió', menos_24h: 'Faltan menos de 24 h para su cita', revisar_paciente_nuevo: 'Paciente nuevo: confirma su cita en Agenda',
+    peticion_paciente: 'Ha pedido que le llamen',
+  };
+  const formatContactRequestWhen = (row: any) => {
+    const parts: string[] = [];
+    if (row.fecha_deseada) parts.push(new Date(`${row.fecha_deseada}T12:00:00Z`).toLocaleDateString('es-ES', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' }));
+    if (row.hora_deseada) parts.push(`a las ${row.hora_deseada}`);
+    return parts.join(' ');
+  };
+  const loadContactRequests = async () => {
+    if (!contactRequestsPanel || !contactRequestsList || isDevMode) return;
+    try {
+      const response = await fetchJson(`${BACKEND_BASE}/api/profesional/contact-requests`);
+      if (response?.available === false) { contactRequestsPanel.hidden = true; return; }
+      const rows: any[] = Array.isArray(response?.data) ? response.data : [];
+      contactRequestsPanel.hidden = false;
+      if (contactRequestsCount) contactRequestsCount.textContent = `${rows.length} ${rows.length === 1 ? 'pendiente' : 'pendientes'}`;
+      if (!rows.length) {
+        contactRequestsList.innerHTML = '<p class="empty-inline">No hay nadie esperando una llamada.</p>';
+        return;
+      }
+      contactRequestsList.innerHTML = rows.map((row) => {
+        const name = [row.crm_pacientes?.nombre, row.crm_pacientes?.apellidos].filter(Boolean).join(' ') || 'Sin ficha vinculada';
+        const when = formatContactRequestWhen(row);
+        const created = new Date(row.created_at).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
+        const status = row.estado === 'en_gestion' ? 'En gestión · ' : '';
+        const alert = row.aviso_estado === 'enviado' ? '' : ' · Aviso a la clínica sin confirmar';
+        const tel = String(row.telefono || '').replace(/[^+\d]/g, '');
+        return `<article class="priority-item contact-request-item"><div class="priority-copy"><span>${escapeHtml(`${status}${created}${alert}`)}</span>`
+          + `<strong>${escapeHtml(name)} · ${escapeHtml(row.telefono || '')}</strong>`
+          + `<p>${escapeHtml(CONTACT_REQUEST_TYPES[row.tipo] || row.tipo)}${when ? ` ${escapeHtml(when)}` : ''}. ${escapeHtml(CONTACT_REQUEST_REASONS[row.motivo] || row.motivo)}.</p>`
+          + `<div class="contact-request-actions">${tel ? `<a class="btn-secondary btn-xs" href="tel:${escapeAttr(tel)}">Llamar</a>` : ''}`
+          + (row.estado === 'pendiente' ? `<button type="button" class="btn-ghost btn-xs" data-contact-request-id="${escapeAttr(row.id)}" data-contact-request-state="en_gestion">En gestión</button>` : '')
+          + `<button type="button" class="btn-ghost btn-xs" data-contact-request-id="${escapeAttr(row.id)}" data-contact-request-state="resuelta">Resuelta</button></div></div></article>`;
+      }).join('');
+    } catch {
+      contactRequestsPanel.hidden = false;
+      if (contactRequestsCount) contactRequestsCount.textContent = 'Sin leer';
+      contactRequestsList.innerHTML = '<p class="empty-inline">No he podido leer las solicitudes. Vuelve a intentarlo en unos minutos.</p>';
+    }
+  };
+  contactRequestsList?.addEventListener('click', async (event: Event) => {
+    const button = (event.target as HTMLElement).closest('[data-contact-request-id]') as HTMLButtonElement | null;
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    try {
+      await fetchJson(`${BACKEND_BASE}/api/profesional/contact-requests/${encodeURIComponent(button.dataset.contactRequestId || '')}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: button.dataset.contactRequestState }),
+      });
+      showToast(button.dataset.contactRequestState === 'resuelta' ? 'Solicitud resuelta.' : 'Solicitud en gestión.', 'success');
+    } catch {
+      showToast('No se pudo actualizar la solicitud.', 'error');
+    }
+    await loadContactRequests();
+  });
+
+  pageLoaders['dashboard'] = async () => { await Promise.all([loadDashboardKPIs(), loadContactRequests()]); };
   // Auto-load on first paint
   loadDashboardKPIs();
+  loadContactRequests();
 
   // === LOAD PACIENTES ===
   let patientDirectory: any[] = [];
@@ -8203,7 +8270,36 @@ import ConfigView from '../components/views/ConfigView.astro';
   let fichaLoadVersion = 0;
   const isCurrentFicha = (patientId: string, loadVersion: number) =>
     patientId === fichaPatientId && loadVersion === fichaLoadVersion;
+  // Records created by the booking assistant wait for the clinic's review (their bookings stay "pendiente").
+  const fichaReviewBanner = document.getElementById('fichaReviewBanner') as HTMLElement | null;
+  const fichaReviewBtn = document.getElementById('fichaReviewBtn') as HTMLButtonElement | null;
+  const loadFichaReview = async (patientId: string, loadVersion: number) => {
+    if (fichaReviewBanner) fichaReviewBanner.hidden = true;
+    try {
+      const response = await fetchJson(`${BACKEND_BASE}/api/profesional/patients/${encodeURIComponent(patientId)}/review`);
+      if (loadVersion !== fichaLoadVersion || patientId !== fichaPatientId) return;
+      if (fichaReviewBanner) fichaReviewBanner.hidden = !response?.data?.needs_review;
+    } catch {
+      // Without the review data the ficha works as before.
+    }
+  };
+  fichaReviewBtn?.addEventListener('click', async () => {
+    const patientId = fichaPatientId;
+    if (!patientId || fichaReviewBtn.disabled) return;
+    fichaReviewBtn.disabled = true;
+    try {
+      await fetchJson(`${BACKEND_BASE}/api/profesional/patients/${encodeURIComponent(patientId)}/review`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      if (fichaReviewBanner) fichaReviewBanner.hidden = true;
+      showToast('Ficha revisada. Sus próximas reservas se confirmarán directamente.', 'success');
+    } catch {
+      showToast('No se pudo marcar la ficha como revisada.', 'error');
+    } finally {
+      fichaReviewBtn.disabled = false;
+    }
+  });
+
   const openFichaPaciente = async (patientId: string) => {
+    if (fichaReviewBanner) fichaReviewBanner.hidden = true;
     const loadVersion = ++fichaLoadVersion;
     fichaPatientId = patientId;
     fichaData = null;
@@ -8282,6 +8378,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           renderFichaPagos(payload.pagos);
           renderFichaNotas(payload.notas);
           if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
+          void loadFichaReview(patientId, loadVersion);
         }
       } catch (fetchErr: any) {
         if (!isDevMode && !patientId.startsWith('demo-')) throw fetchErr;
@@ -10406,6 +10503,17 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       const el = document.getElementById(id) as HTMLInputElement | null;
       if (el) el.value = val;
     });
+    // Phone and email are shared with the booking assistant: the server copy wins.
+    if (!isDevMode) {
+      fetchJson(`${BACKEND_BASE}/api/profesional/clinic-settings`).then((response: any) => {
+        const clinic = response?.data;
+        if (!clinic) return;
+        const phoneInput = document.getElementById('cfgClinicTelefono') as HTMLInputElement | null;
+        const emailInput = document.getElementById('cfgClinicEmail') as HTMLInputElement | null;
+        if (phoneInput) phoneInput.value = clinic.telefono || '';
+        if (emailInput) emailInput.value = clinic.email || '';
+      }).catch(() => {});
+    }
     syncBookingLinkUi();
     setBookingLinkFeedback();
 
@@ -10482,7 +10590,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   pageLoaders['config'] = loadConfig;
 
   // Clinic config form save
-  document.getElementById('clinicConfigForm')?.addEventListener('submit', (e: Event) => {
+  document.getElementById('clinicConfigForm')?.addEventListener('submit', async (e: Event) => {
     e.preventDefault();
     const get = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() || '';
     saveClinicConfig({
@@ -10493,8 +10601,21 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       email: get('cfgClinicEmail'),
       web: get('cfgClinicWeb'),
     });
+    let message = 'Datos guardados correctamente';
+    if (!isDevMode) {
+      try {
+        await fetchJson(`${BACKEND_BASE}/api/profesional/clinic-settings`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telefono: get('cfgClinicTelefono'), email: get('cfgClinicEmail') }),
+        });
+      } catch (err: any) {
+        const detail = String(err?.message || '').match(/"error":"([^"]+)"/)?.[1];
+        message = `Guardado en este navegador, pero no en la clínica: ${detail || 'inténtalo de nuevo'}`;
+      }
+    }
     const fb = document.getElementById('clinicConfigFeedback');
-    if (fb) { fb.textContent = 'Datos guardados correctamente'; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 3000); }
+    if (fb) { fb.textContent = message; fb.hidden = false; setTimeout(() => { fb.hidden = true; }, 5000); }
   });
   bookingOpenBtn?.addEventListener('click', () => {
     syncBookingLinkUi();

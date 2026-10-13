@@ -1,4 +1,18 @@
-# Primera prueba en producción — 2026-10-08
+# Primera prueba en producción — estado actualizado 2026-10-13
+
+## Estado vigente y próximo encargo
+
+Frontend `c06296701f6f7214b788ef1f461aa62146e1de6a` y backend `ee3449c61644d7d0d978c4c1fa822835557f8c2e` ya desplegados en los servicios existentes. Main publicado `ee3449c`; documentación de este traspaso modificada en local, sin nueva publicación. CI frontend [38375833160](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38375833160) y backend [38377245576](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38377245576) completos verdes. No necesitas hacer esos deploy manualmente.
+
+Después del despliegue: diez controles HTTP y readiness 13/13 pasan, seis integraciones configuradas/cero ausentes. Supabase ACTIVE_HEALTHY; una clínica, 35 tablas públicas con RLS, cero perfiles/pacientes sin clínica y cero citas Calendar pendientes/en curso. Doce workflows activos/coincidentes; Calendar OAuth responde y sync healthy tras reiniciar, éxito observado `2026-10-13T09:40:25.068Z`. Recordatorios horarios activos para vinculados/citas 23–25 horas, vista previa cero candidatos; no acredita entrega del primer tick. Pilotos separados WhatsApp/Telegram booking desactivados.
+
+Backend lint/108 pruebas y frontend check 40 archivos/cero diagnósticos/build cuatro páginas pasan. Handlers/SQL con fixtures cubren pacientes/notas, citas, pagos/bonos/facturas, revisión y recuperación. Chromium 375/768/1280 sobre archivos públicos con API/Auth ficticias pasa; no equivale a una sesión profesional real ni todos los proveedores. Login válido y Calendar CRUD del 8 siguen siendo evidencia histórica.
+
+Durante casos negativos Auth hubo un email automático de monitorización real mostrado por el usuario. Causa: errores 4xx enviados como CRITICAL; corregido y desplegado en `ee3449c` (solo 5xx notifican). No se han enviado documentos/mensajes clínicos a pacientes ni ejecutado IA con gasto. [Evidencia y límites](design-exploration/reviews/2026-10-13/production.md).
+
+La preparación permite empezar con datos ficticios; el usuario ha pedido primero una segunda auditoría independiente con CloudCode y completar **en local** el agente de citas Telegram si falta. Requisitos confirmados: nuevos/existentes con contacto verificado, reserva/consulta/cambio/cancelación/recordatorio, cambios/cancelaciones con al menos 24 horas, después clínica; WhatsApp futuro. [Prompt completo y recursos](PROMPT_AUDITORIA_CLOUDCODE.txt), [contrato conversacional](PROMPT_AGENTE_CITAS.txt) y [requisitos](PILOTO_MENSAJERIA.md). No hay resultados comunicados de la primera prueba manual. Este encargo no autoriza mutaciones de datos reales, migraciones Cloud, activaciones, envíos reales o gasto. Las secciones siguientes conservan el cierre y la guía del 8 de octubre; versiones y afirmaciones fechadas son históricas.
+
+## Historia — cierre del 8 de octubre
 
 El usuario autorizó fusionar PR #2, aplicar las cinco migraciones ensayadas, configurar/desplegar los servicios existentes y probar con datos ficticios. Amplió el alcance a Calendar, mensajería y cron. Autorizó expresamente commit/push a main, recordatorios horarios para pacientes vinculados y comprobación temporal Gmail. Eligió terminar la preparación del producto; no se cambió la versión del software n8n.
 

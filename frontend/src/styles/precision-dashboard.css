@@ -440,3 +440,35 @@
   max-height: 80px;
   width: 100%;
 }
+
+/* Booking agent: contact requests waiting for a call */
+.contact-requests-panel {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.contact-requests-help {
+  margin: 0;
+  color: #536375;
+  font-size: 0.875rem;
+}
+
+.contact-request-item .priority-copy p {
+  margin: 0.15rem 0 0;
+}
+
+.contact-request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.contact-request-actions a,
+.contact-request-actions button {
+  min-height: 44px;
+}
+
+.contact-requests-panel[hidden] {
+  display: none !important;
+}

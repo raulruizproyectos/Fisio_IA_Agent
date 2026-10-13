@@ -60,6 +60,7 @@ function database() {
         (tables[table] ||= []).push(row); rows = [row];
       }
       if (operation === 'update') rows.forEach(row => Object.assign(row, structuredClone(payload)));
+      if (operation === 'delete') tables[table] = tables[table].filter(row => !rows.includes(row));
       if (sort) rows.sort((a,b) => String(b[sort]).localeCompare(String(a[sort])));
       if (limit) rows = rows.slice(0,limit);
       return { data: structuredClone(single ? rows[0] || null : rows) };
@@ -73,6 +74,7 @@ function database() {
       lt(key, value) { filters.push(row => get(row,key) < value); return this; },
       order(key) { sort = key; return this; }, limit(value) { limit = value; return this; },
       insert(value) { operation = 'insert'; payload = value; return this; }, update(value) { operation = 'update'; payload = value; return this; },
+      delete() { operation = 'delete'; return this; },
       single() { single = true; return Promise.resolve(result()); }, maybeSingle() { single = true; return Promise.resolve(result()); },
       then(resolve, reject) { return Promise.resolve(result()).then(resolve,reject); },
     };

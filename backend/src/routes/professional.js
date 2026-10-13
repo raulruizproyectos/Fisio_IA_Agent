@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { createHash, randomUUID } from 'node:crypto';
 import { JWT } from 'google-auth-library';
 import { calendar as createCalendarClient } from 'googleapis/build/src/apis/calendar/index.js';
-import { supabase } from '../lib/supabase.js';
+import { supabase, serviceSupabase } from '../lib/supabase.js';
+import { enqueueAppointmentNotice, normalizeContactPhone } from '../lib/agent-notices.js';
 import { readAppointmentCalendarEvidence, confirmAppointmentCalendarEvidence } from '../lib/appointment-calendar-check.js';
 import { publicErrorMessage } from '../lib/public-error.js';
+import { isClinicHoliday, parseBookingWindows } from '../lib/clinic-calendar.js';
 
 const router = Router();
 
@@ -195,20 +197,9 @@ function formatMinutesAsClock(totalMinutes) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
+// Readiness reports a missing or invalid PUBLIC_BOOKING_WINDOWS; this fallback only keeps local runs usable.
 function parsePublicBookingWindows(rawValue = '') {
-  const parsed = String(rawValue || '')
-    .split(/[;,]+/)
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .map((entry) => {
-      const [startRaw, endRaw] = entry.split('-').map((value) => value.trim());
-      const startMinutes = parseClockToMinutes(startRaw);
-      const endMinutes = parseClockToMinutes(endRaw);
-      if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) return null;
-      return { startMinutes, endMinutes };
-    })
-    .filter(Boolean);
-
+  const parsed = parseBookingWindows(rawValue);
   if (parsed.length) return parsed;
 
   return [
@@ -1008,11 +999,12 @@ function isWeekendDateInTimeZone(dateOnly, timeZone = PUBLIC_BOOKING_TIMEZONE) {
   return weekday === 'Sat' || weekday === 'Sun';
 }
 
-export async function buildPublicBookingSlots({ professionalId, dateOnly, durationMinutes = PUBLIC_BOOKING_SLOT_MINUTES }) {
+// Opening-hours grid for one day, before checking occupancy. Weekends and holidays have none.
+function publicBookingCandidates(dateOnly, durationMinutes = PUBLIC_BOOKING_SLOT_MINUTES) {
   if (!parsePublicBookingDateOnly(dateOnly)) return [];
-  if (isWeekendDateInTimeZone(dateOnly, PUBLIC_BOOKING_TIMEZONE)) return [];
+  if (isWeekendDateInTimeZone(dateOnly, PUBLIC_BOOKING_TIMEZONE) || isClinicHoliday(dateOnly)) return [];
 
-  const slots = [];
+  const candidates = [];
 
   for (const window of PUBLIC_BOOKING_WINDOWS) {
     for (let cursor = window.startMinutes; cursor + durationMinutes <= window.endMinutes; cursor += durationMinutes) {
@@ -1022,15 +1014,7 @@ export async function buildPublicBookingSlots({ professionalId, dateOnly, durati
       const endAt = zonedDateTimeToUtcIso(dateOnly, endClock, PUBLIC_BOOKING_TIMEZONE);
       if (!startAt || !endAt || Date.parse(startAt) <= Date.now()) continue;
 
-      const availability = await resolveAppointmentAvailability({
-        professionalId,
-        startAt,
-        endAt,
-      });
-
-      if (!availability.available) continue;
-
-      slots.push({
+      candidates.push({
         start_at: startAt,
         end_at: endAt,
         start_local: startClock,
@@ -1038,8 +1022,37 @@ export async function buildPublicBookingSlots({ professionalId, dateOnly, durati
       });
     }
   }
+  return candidates;
+}
 
-  return slots;
+// True only for a future slot of the published grid: open weekday, opening hours, not a holiday.
+export function isOfferedPublicBookingSlot(startAt, endAt) {
+  const minutes = Math.round((Date.parse(endAt) - Date.parse(startAt)) / 60000);
+  if (!Number.isFinite(minutes) || minutes < 15 || minutes > 180) return false;
+  const dateOnly = getDateOnlyInTimeZone(new Date(startAt), PUBLIC_BOOKING_TIMEZONE);
+  return publicBookingCandidates(dateOnly, minutes)
+    .some((slot) => Date.parse(slot.start_at) === Date.parse(startAt) && Date.parse(slot.end_at) === Date.parse(endAt));
+}
+
+export async function buildPublicBookingSlots({ professionalId, dateOnly, durationMinutes = PUBLIC_BOOKING_SLOT_MINUTES, excludeId = null, excludeEventId = null }) {
+  const candidates = publicBookingCandidates(dateOnly, durationMinutes);
+  if (!candidates.length) return [];
+
+  // One CRM and one Calendar read for the whole day; creation re-checks the slot and SQL excludes overlaps.
+  const fromAt = candidates.reduce((min, slot) => (slot.start_at < min ? slot.start_at : min), candidates[0].start_at);
+  const toAt = candidates.reduce((max, slot) => (slot.end_at > max ? slot.end_at : max), candidates[0].end_at);
+  const [localConflicts, calendarConflicts] = await Promise.all([
+    findAppointmentConflicts({ professionalId, startAt: fromAt, endAt: toAt, excludeId }),
+    findCalendarBusyConflicts({ startAt: fromAt, endAt: toAt, excludeEventId }),
+  ]);
+  const busy = [...localConflicts, ...calendarConflicts]
+    .map((conflict) => [Date.parse(conflict.inicio_en), Date.parse(conflict.fin_en || conflict.inicio_en)]);
+
+  return candidates.filter((slot) => {
+    const startMs = Date.parse(slot.start_at);
+    const endMs = Date.parse(slot.end_at);
+    return !busy.some(([busyStart, busyEnd]) => busyStart < endMs && busyEnd > startMs);
+  });
 }
 
 router.get('/intakes/pending', async (req, res, next) => {
@@ -1484,7 +1497,7 @@ async function fetchCalendarAppointments(timeMin, timeMax) {
   throw Object.assign(new Error('Lectura de Google Calendar no disponible; se conservan las citas CRM.'), { status: 503 });
 }
 
-async function fetchCalendarBusyEvents(timeMin, timeMax) {
+async function fetchCalendarBusyEvents(timeMin, timeMax, { withHolidays = true } = {}) {
   let busyEvents = null;
 
   if (calendarDirectEnabled()) {
@@ -1503,7 +1516,7 @@ async function fetchCalendarBusyEvents(timeMin, timeMax) {
     throw Object.assign(new Error('Lectura de Google Calendar no disponible; no se puede confirmar este horario.'), { status: 503 });
   }
 
-  const holidayEvents = await fetchHolidayCalendarBusyEvents(timeMin, timeMax);
+  const holidayEvents = withHolidays ? await fetchHolidayCalendarBusyEvents(timeMin, timeMax) : [];
   const seen = new Set();
 
   return normalizeCalendarEventCollection([...busyEvents, ...holidayEvents])
@@ -1537,7 +1550,8 @@ function isHolidayCalendarEvent(event) {
 
 async function findCalendarBusyConflicts({ startAt, endAt, excludeEventId = null }) {
   if (!calendarIntegrationEnabled()) return [];
-  const events = await fetchCalendarBusyEvents(startAt, endAt);
+  // Holidays are informative and never block booking, so the public ICS is not downloaded here.
+  const events = await fetchCalendarBusyEvents(startAt, endAt, { withHolidays: false });
   const startMs = new Date(startAt).getTime();
   const endMs = new Date(endAt).getTime();
 
@@ -2085,6 +2099,11 @@ router.post('/public-booking/appointments', async (req, res, next) => {
     const recovered=await recoverPublicBooking(requestId,payloadHash,professional,startAt,endAt);
     if(recovered) return res.status(200).json(recovered);
 
+    // The browser only offers grid slots; a direct request cannot book a holiday, a weekend or closed hours.
+    if (!isOfferedPublicBookingSlot(startAt, endAt)) {
+      return res.status(409).json({ available: false, code: 'slot_not_offered', error: 'Ese horario no está disponible para reserva online. Elige uno de los huecos ofrecidos.' });
+    }
+
     const availability = await resolveAppointmentAvailability({
       professionalId: professional.id,
       startAt,
@@ -2397,6 +2416,43 @@ export async function createCrmAppointment({ patientId, professionalId, startAt,
   return syncSavedAppointmentToCalendar(data);
 }
 
+// `current` is the row the caller already authorized; its updated_at is the version this change is based on.
+export async function updateCrmAppointment(current, { startAt = current.inicio_en, endAt = current.fin_en, status = null, reason = null, calendarEventId = null } = {}) {
+  if (current.calendar_sync_pending) throw appointmentFailure(409, { code: 'CALENDAR_CHECK_REQUIRED',
+    error: 'La cita está guardada y Calendar requiere comprobación antes de modificarla.' });
+
+  const effectiveStatus = status || current.estado;
+  if (APPOINTMENT_ACTIVE_STATUSES.includes(effectiveStatus)) {
+    const availability = await resolveAppointmentAvailability({
+      professionalId: current.fisioterapeuta_id,
+      startAt,
+      endAt,
+      excludeId: current.id,
+      excludeEventId: calendarEventId !== null ? (calendarEventId || null) : (current.google_calendar_event_id || null),
+    });
+    if (!availability.available) throw appointmentFailure(409, availability);
+  }
+
+  const updatePayload = { inicio_en: startAt, fin_en: endAt, calendar_sync_pending: calendarIntegrationEnabled() };
+  if (status) updatePayload.estado = status;
+  if (reason !== null) updatePayload.motivo = reason || null;
+  if (calendarEventId !== null) updatePayload.google_calendar_event_id = calendarEventId || null;
+
+  const { data, error } = await supabase
+    .from('crm_citas')
+    .update(updatePayload)
+    .eq('id', current.id).eq('calendar_sync_pending', false).eq('updated_at', current.updated_at)
+    .select(APPOINTMENT_SELECT)
+    .maybeSingle();
+
+  if (error?.code === '23P01') throw appointmentFailure(409, { code: 'appointment_overlap',
+    error: 'Ese horario acaba de ser ocupado. Actualiza la agenda y elige otro hueco.' });
+  if (error) throw error;
+  if (!data) throw appointmentFailure(409, { code: 'APPOINTMENT_CHANGED', error: 'La cita ha cambiado. Actualiza la agenda antes de modificarla.' });
+
+  return syncSavedAppointmentToCalendar(data);
+}
+
 router.post('/appointments', async (req, res, next) => {
   try {
     const slot = req.body?.slot || {};
@@ -2441,6 +2497,8 @@ router.post('/appointments', async (req, res, next) => {
     }
 
     const result = await createCrmAppointment({ patientId, professionalId, startAt, endAt, status, channel, reason, requestId, googleCalendarEventId });
+    // The patient hears about it through the booking channel; the queue makes the notice survive n8n outages.
+    void enqueueAppointmentNotice(null, result.data);
     res.status(201).json(result);
   } catch (err) {
     if (err.responsePayload) return res.status(err.status).json(err.responsePayload);
@@ -2510,9 +2568,6 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
       return res.status(404).json({ error: 'Cita no encontrada' });
     }
 
-    if (current.calendar_sync_pending) return res.status(409).json({ code: 'CALENDAR_CHECK_REQUIRED',
-      error: 'La cita está guardada y Calendar requiere comprobación antes de modificarla.' });
-
     const nextStatus = pickValue(req.body, 'estado', 'status');
     const nextStartRaw = pickValue(req.body, 'inicio_en', 'start_at', 'slot_start');
     const nextEndRaw = pickValue(req.body, 'fin_en', 'end_at', 'slot_end');
@@ -2546,46 +2601,115 @@ router.patch('/appointments/:appointmentId', async (req, res, next) => {
       return res.status(400).json({ error: 'fin_en/end_at debe ser posterior a inicio_en/start_at' });
     }
 
-    const effectiveStatus = nextStatus || current.estado;
-    const shouldCheckConflicts = APPOINTMENT_ACTIVE_STATUSES.includes(effectiveStatus);
-    if (shouldCheckConflicts) {
-      const availability = await resolveAppointmentAvailability({
-        professionalId: current.fisioterapeuta_id,
-        startAt: nextStartAt,
-        endAt: nextEndAt,
-        excludeId: current.id,
-        excludeEventId: nextCalendarEventId !== null
-          ? (nextCalendarEventId || null)
-          : (current.google_calendar_event_id || null),
-      });
+    const result = await updateCrmAppointment(current, {
+      startAt: nextStartAt, endAt: nextEndAt, status: nextStatus, reason: nextReason, calendarEventId: nextCalendarEventId,
+    });
+    void enqueueAppointmentNotice(current, result.data);
+    res.json(result);
+  } catch (err) {
+    if (err.responsePayload) return res.status(err.status).json(err.responsePayload);
+    next(err);
+  }
+});
 
-      if (!availability.available) {
-        return res.status(409).json(availability);
-      }
+// --- Booking agent: contact requests (plan B), clinic contact data and review of self-registered patients ---
+const CONTACT_REQUEST_STATES = ['en_gestion', 'resuelta'];
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+router.get('/contact-requests', async (req, res, next) => {
+  try {
+    const { data, error } = await supabase.from('crm_solicitudes_contacto')
+      .select('id, paciente_id, canal, telefono, tipo, motivo, fecha_deseada, hora_deseada, cita_id, estado, aviso_estado, created_at, gestionada_en, crm_pacientes(nombre, apellidos)')
+      .neq('estado', 'resuelta').order('created_at', { ascending: true }).limit(50);
+    if (error) {
+      if (isMissingTableError(error, 'crm_solicitudes_contacto')) return res.json({ data: [], available: false });
+      throw error;
     }
+    res.json({ data: data || [], available: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
-    const updatePayload = {
-      inicio_en: nextStartAt,
-      fin_en: nextEndAt,
-    };
-
-    if (nextStatus) updatePayload.estado = nextStatus;
-    if (nextReason !== null) updatePayload.motivo = nextReason || null;
-    if (nextCalendarEventId !== null) updatePayload.google_calendar_event_id = nextCalendarEventId || null;
-
-    updatePayload.calendar_sync_pending = calendarIntegrationEnabled();
-
-    const { data, error } = await supabase
-      .from('crm_citas')
-      .update(updatePayload)
-      .eq('id', current.id).eq('calendar_sync_pending', false).eq('updated_at', current.updated_at)
-      .select(APPOINTMENT_SELECT)
-      .maybeSingle();
-
+router.patch('/contact-requests/:requestId', async (req, res, next) => {
+  try {
+    const { requestId } = req.params;
+    const estado = pickValue(req.body, 'estado', 'status');
+    if (!UUID_PATTERN.test(requestId)) return res.status(400).json({ error: 'Solicitud no válida' });
+    if (!CONTACT_REQUEST_STATES.includes(estado)) return res.status(400).json({ error: `estado debe ser ${CONTACT_REQUEST_STATES.join(' o ')}` });
+    // Visible through RLS first: only staff of the clinic who may see that patient can manage it.
+    const visible = await supabase.from('crm_solicitudes_contacto').select('id, estado').eq('id', requestId).maybeSingle();
+    if (visible.error) throw visible.error;
+    if (!visible.data) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const { data, error } = await serviceSupabase.from('crm_solicitudes_contacto')
+      .update({ estado, gestionada_por: req.auth.profile_id, gestionada_en: new Date().toISOString() })
+      .eq('id', requestId).eq('clinica_id', req.auth.clinic_id).neq('estado', 'resuelta').select('id, estado, gestionada_en').maybeSingle();
     if (error) throw error;
-    if (!data) return res.status(409).json({ code: 'APPOINTMENT_CHANGED', error: 'La cita ha cambiado. Actualiza la agenda antes de modificarla.' });
+    if (!data) return res.status(409).json({ error: 'La solicitud ya estaba resuelta' });
+    res.json({ data });
+  } catch (err) {
+    next(err);
+  }
+});
 
-    res.json(await syncSavedAppointmentToCalendar(data));
+const CLINIC_EMAIL_PATTERN = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
+
+router.get('/clinic-settings', async (req, res, next) => {
+  try {
+    const { data, error } = await supabase.from('crm_clinicas').select('nombre, telefono, email').eq('id', req.auth.clinic_id).maybeSingle();
+    if (error) throw error;
+    res.json({ data: data || null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Contact data the booking assistant gives as a last resort; editable from Configuración.
+router.patch('/clinic-settings', async (req, res, next) => {
+  try {
+    const rawPhone = String(pickValue(req.body, 'telefono', 'phone') ?? '').trim();
+    const rawEmail = String(pickValue(req.body, 'email') ?? '').trim();
+    if (rawPhone && (!normalizeContactPhone(rawPhone) || rawPhone.length > 24)) return res.status(400).json({ error: 'Teléfono no válido. Ejemplo: 623 98 37 31 o +34 623 98 37 31' });
+    if (rawEmail && !CLINIC_EMAIL_PATTERN.test(rawEmail)) return res.status(400).json({ error: 'Correo electrónico no válido' });
+    const { data, error } = await serviceSupabase.from('crm_clinicas')
+      .update({ telefono: rawPhone || null, email: rawEmail ? rawEmail.toLowerCase() : null })
+      .eq('id', req.auth.clinic_id).select('nombre, telefono, email').maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Clínica no encontrada' });
+    res.json({ data });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Before the migration the columns do not exist: the ficha then simply shows no review banner.
+router.get('/patients/:patientId/review', async (req, res, next) => {
+  try {
+    const { patientId } = req.params;
+    if (!UUID_PATTERN.test(patientId)) return res.status(400).json({ error: 'Paciente no válido' });
+    const { data, error } = await supabase.from('crm_pacientes').select('id, origen_alta, revisada_en').eq('id', patientId).maybeSingle();
+    if (error?.code === '42703') return res.json({ data: null, available: false });
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Paciente no encontrado' });
+    res.json({ data: { ...data, needs_review: data.origen_alta === 'asistente_telegram' && !data.revisada_en }, available: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// A record created by the assistant stops being "new" once the clinic has checked it (identity, duplicates).
+router.post('/patients/:patientId/review', async (req, res, next) => {
+  try {
+    const { patientId } = req.params;
+    if (!UUID_PATTERN.test(patientId)) return res.status(400).json({ error: 'Paciente no válido' });
+    const visible = await supabase.from('crm_pacientes').select('id, origen_alta, revisada_en').eq('id', patientId).maybeSingle();
+    if (visible.error) throw visible.error;
+    if (!visible.data) return res.status(404).json({ error: 'Paciente no encontrado' });
+    if (visible.data.revisada_en) return res.json({ data: visible.data });
+    const { data, error } = await serviceSupabase.from('crm_pacientes').update({ revisada_en: new Date().toISOString() })
+      .eq('id', patientId).eq('clinica_id', req.auth.clinic_id).is('revisada_en', null).select('id, origen_alta, revisada_en').maybeSingle();
+    if (error) throw error;
+    res.json({ data: data || visible.data });
   } catch (err) {
     next(err);
   }

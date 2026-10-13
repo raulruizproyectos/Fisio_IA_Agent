@@ -47,3 +47,17 @@ test('una reclamación anterior solo permite reintentar rechazos confirmados, no
   assert.equal(calls, 0); assert.equal(result.results[0].status, 'already_processed');
   assert.ok(filters.some(([key, value]) => key === 'estado' && value === 'failed'));
 });
+
+test('la baja del asistente de citas anula el vínculo heredado y no envía recordatorio', async () => {
+  let calls = 0; let result; const inserts = [];
+  const rows = { crm_citas: [{ id: 'fixture', paciente_id: 'patient', inicio_en: '2040-01-01T09:00Z' }],
+    vinculos_telegram_pacientes: [{ paciente_id: 'patient', telegram_chat_id: 'legacy-chat' }],
+    crm_mensajeria_vinculos: [{ paciente_id: 'patient', chat_id: null, consentimiento_en: '2026-10-01T10:00Z', baja_en: '2026-10-02T10:00Z' }],
+    crm_pacientes: [{ id: 'patient', nombre: 'Fixture' }] };
+  const chain = (value) => { const q = { then: (resolve) => Promise.resolve(value).then(resolve), select: () => q, in: () => q, eq: () => q, gte: () => q, lte: () => q }; return q; };
+  const db = { from: (table) => table === 'crm_recordatorio_envios' ? { insert: async (row) => { inserts.push(row); return {}; } } : chain({ data: rows[table] || [], error: null }) };
+  const { routes } = harness(async () => { calls++; }, db);
+  await routes['/']({}, { json: (value) => { result = value; } }, error => { throw error; });
+  assert.equal(calls, 0); assert.equal(inserts.length, 0);
+  assert.equal(result.results[0].status, 'no_telegram_link');
+});

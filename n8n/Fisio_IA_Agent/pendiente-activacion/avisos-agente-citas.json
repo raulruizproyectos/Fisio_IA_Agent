@@ -1,0 +1,129 @@
+{
+  "name": "Avisos agente de citas",
+  "nodes": [
+    {
+      "name": "Solicitud de contacto",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [200, 200],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fisio/agente/solicitud-contacto",
+        "responseMode": "responseNode",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "credentials": { "httpHeaderAuth": { "id": "9WNxfibVAwfGcekQ", "name": "N8N_FISIO_HEADER_CREDENTIAL_ID" } }
+    },
+    {
+      "name": "Aviso al fisio",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [460, 200],
+      "onError": "continueErrorOutput",
+      "parameters": {
+        "chatId": "={{ $json.body.professional_chat_id || 'PENDIENTE_CHAT_ID_FISIO' }}",
+        "text": "={{ $json.body.text }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "credentials": { "telegramApi": { "id": "6PkC23M5FI8DavpT", "name": "FisioIAAgent" } }
+    },
+    {
+      "name": "Aviso al fisio enviado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 140],
+      "parameters": { "respondWith": "json", "responseBody": "={\"sent\": true}" }
+    },
+    {
+      "name": "Aviso al fisio no enviado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 260],
+      "parameters": { "respondWith": "json", "responseBody": "={\"sent\": false}" }
+    },
+    {
+      "name": "Aviso al paciente",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [200, 460],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fisio/agente/aviso-paciente",
+        "responseMode": "responseNode",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "credentials": { "httpHeaderAuth": { "id": "9WNxfibVAwfGcekQ", "name": "N8N_FISIO_HEADER_CREDENTIAL_ID" } }
+    },
+    {
+      "name": "Mensaje al paciente",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [460, 460],
+      "onError": "continueErrorOutput",
+      "parameters": {
+        "chatId": "={{ $json.body.chat_id }}",
+        "text": "={{ $json.body.text }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "credentials": { "telegramApi": { "id": "Y2lad9wx7Ifpxm4z", "name": "citas_fisioterapia_bot" } }
+    },
+    {
+      "name": "Mensaje al paciente enviado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 400],
+      "parameters": { "respondWith": "json", "responseBody": "={\"sent\": true}" }
+    },
+    {
+      "name": "Mensaje al paciente no enviado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 520],
+      "parameters": { "respondWith": "json", "responseBody": "={\"sent\": false}" }
+    },
+    {
+      "name": "Cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 720],
+      "parameters": { "rule": { "interval": [{ "field": "minutes", "minutesInterval": 15 }] } }
+    },
+    {
+      "name": "Reenviar avisos pendientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 720],
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/cron/avisos-agente",
+        "options": { "timeout": 120000 },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": { "httpHeaderAuth": { "id": "R7toe2gVBNi7E4pH", "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID" } }
+    }
+  ],
+  "connections": {
+    "Solicitud de contacto": { "main": [[{ "node": "Aviso al fisio", "type": "main", "index": 0 }]] },
+    "Aviso al fisio": { "main": [
+      [{ "node": "Aviso al fisio enviado", "type": "main", "index": 0 }],
+      [{ "node": "Aviso al fisio no enviado", "type": "main", "index": 0 }]
+    ] },
+    "Aviso al paciente": { "main": [[{ "node": "Mensaje al paciente", "type": "main", "index": 0 }]] },
+    "Mensaje al paciente": { "main": [
+      [{ "node": "Mensaje al paciente enviado", "type": "main", "index": 0 }],
+      [{ "node": "Mensaje al paciente no enviado", "type": "main", "index": 0 }]
+    ] },
+    "Cada 15 minutos": { "main": [[{ "node": "Reenviar avisos pendientes", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  }
+}

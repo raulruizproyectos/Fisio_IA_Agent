@@ -1,4 +1,5 @@
 import { publicErrorMessage } from './public-error.js';
+import { parseBookingWindows } from './clinic-calendar.js';
 
 const TABLE_CHECKS = [
   {
@@ -145,6 +146,23 @@ export function buildIntegrationConfigurationReport(env = {}) {
       mode: 'shared_patient_booking_pilot',
     },
     {
+      // Public booking is always published and the agent offers the same grid: hours must be explicit.
+      key: 'booking_hours',
+      label: 'Horario de reserva (web y agente)',
+      criticality: 'core',
+      status: parseBookingWindows(env.PUBLIC_BOOKING_WINDOWS).length ? 'configured' : 'missing',
+      mode: 'PUBLIC_BOOKING_WINDOWS',
+    },
+    {
+      key: 'booking_agent_notices',
+      label: 'Avisos del agente de citas por n8n',
+      criticality: 'optional',
+      status: env.TELEGRAM_PILOT_BOOKING_ENABLED !== 'true' ? 'not_used'
+        : hasAll(env, ['N8N_CONTACT_REQUEST_WEBHOOK_URL', 'N8N_PATIENT_NOTICE_WEBHOOK_URL', 'N8N_WEBHOOK_SECRET']) ? 'configured' : 'missing',
+      mode: 'n8n_telegram',
+      note: 'Sin estos webhooks las solicitudes y avisos se guardan igualmente y se reenvían al configurarlos.',
+    },
+    {
       key: 'google_calendar',
       label: 'Google Calendar',
       criticality: String(env.GOOGLE_CALENDAR_REQUIRED || '').toLowerCase() === 'true' ? 'core' : 'optional',
@@ -214,6 +232,14 @@ export async function buildReadinessReport({ supabase, env }) {
     for (const table of ['crm_mensajeria_vinculos', 'crm_mensajeria_eventos', 'crm_whatsapp_envios']) tableChecks.push({
       key: table, table, label: table, severity: 'core', migration: 'database/migrations/20261007101248_messaging_pilot.sql',
     });
+  }
+  if (env.TELEGRAM_PILOT_BOOKING_ENABLED === 'true') {
+    const migration = 'database/migrations/20261013150000_contact_requests_patient_notices.sql';
+    tableChecks.push(
+      { key: 'agent_onboarding', label: 'Alta de pacientes por el agente', table: 'crm_pacientes', columns: 'origen_alta, revisada_en', severity: 'core', migration },
+      { key: 'contact_requests', label: 'Solicitudes de contacto', table: 'crm_solicitudes_contacto', severity: 'core', migration },
+      { key: 'patient_notices', label: 'Avisos al paciente', table: 'crm_avisos_paciente', severity: 'core', migration },
+    );
   }
   const envStatus = {
     supabase_url_configured: Boolean(env.SUPABASE_URL),

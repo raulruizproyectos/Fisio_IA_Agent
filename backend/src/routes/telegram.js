@@ -2,12 +2,13 @@ import { Router } from 'express';
 import crypto from 'node:crypto';
 import { normalizeAppointmentText, parseNaturalAppointmentSlots } from '../lib/appointment-text.js';
 import { getMessagingPilotConfig } from '../lib/openwa.js';
-import { createPilotLink, resolvePilotLink, claimMessagingEvent, finishMessagingEvent, respondToPatientBooking } from '../lib/patient-booking.js';
+import { createPilotLink, claimMessagingEvent, finishMessagingEvent, handlePatientMessage } from '../lib/patient-booking.js';
 import { buildExerciseReportPdfBuffer } from '../lib/exercise-report-pdf.js';
 import { supabase, serviceSupabase } from '../lib/supabase.js';
 import { getApprovedExerciseReport, reportError, respondReportError } from '../lib/approved-exercise-report.js';
 import { resolveAgentConversation } from './agent.js';
 import { publicErrorMessage } from '../lib/public-error.js';
+import { isClinicHoliday } from '../lib/clinic-calendar.js';
 
 const router = Router();
 
@@ -79,54 +80,9 @@ function getPhysioHelpMessage() {
 
 // ── Clinic slot validation ─────────────────────────────────────────────────
 
-function getEasterSunday(year) {
-  // Meeus/Jones/Butcher algorithm
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19 * a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const l = (32 + 2 * e + 2 * i - h - k) % 7;
-  const m = Math.floor((a + 11 * h + 22 * l) / 451);
-  const month = Math.floor((h + l - 7 * m + 114) / 31);
-  const day = ((h + l - 7 * m + 114) % 31) + 1;
-  return { month, day };
-}
-
+// Same working calendar as the web and the booking agent (national, Catalan and BOOKING_EXTRA_HOLIDAYS).
 function isPublicHolidayCatalunya(year, month, day) {
-  // Fixed national + Cataluña festivos (month/day)
-  const fixed = [
-    [1, 1],   // Año Nuevo
-    [1, 6],   // Reyes Magos
-    [5, 1],   // Día del Trabajo
-    [6, 24],  // Sant Joan (Cataluña)
-    [8, 15],  // Asunción
-    [9, 11],  // Diada Nacional de Catalunya
-    [9, 24],  // La Mercè (Barcelona/comarca)
-    [10, 12], // Fiesta Nacional de España
-    [11, 1],  // Todos los Santos
-    [12, 6],  // Día de la Constitución
-    [12, 8],  // Inmaculada Concepción
-    [12, 25], // Navidad
-    [12, 26], // Sant Esteve (Cataluña)
-    // Terrassa local
-    [7, 22],  // Sant Marçal (patrón de Terrassa)
-  ];
-  for (const [m, d] of fixed) {
-    if (month === m && day === d) return true;
-  }
-  // Dynamic: Easter-based
-  const easter = getEasterSunday(year);
-  const easterMs = Date.UTC(year, easter.month - 1, easter.day);
-  const testMs = Date.UTC(year, month - 1, day);
-  if (testMs === easterMs - 2 * 86400000) return true; // Viernes Santo
-  if (testMs === easterMs + 86400000) return true;      // Lunes de Pascua (Cataluña)
-  return false;
+  return isClinicHoliday(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
 }
 
 function validateBookingSlot(slotStart) {
@@ -669,14 +625,15 @@ function resolveTelegramToken(agentMode = 'legacy') {
   return process.env.TELEGRAM_BOT_TOKEN || TELEGRAM_PATIENT_BOT_TOKEN || TELEGRAM_PHYSIO_BOT_TOKEN || null;
 }
 
-async function sendTelegramMessage(chatId, text, agentMode = 'legacy') {
+async function sendTelegramMessage(chatId, text, agentMode = 'legacy', replyMarkup = undefined) {
   const token = resolveTelegramToken(agentMode);
   if (!token) throw new Error('No hay token Telegram configurado para este agente');
 
   const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
+    body: JSON.stringify({ chat_id: chatId, text, ...(replyMarkup ? { reply_markup: replyMarkup } : {}) }),
+    signal: AbortSignal.timeout(10000),
   });
 
   const payload = await response.json();
@@ -1607,25 +1564,43 @@ router.post('/pilot-link-code/:patientId', async (req, res) => {
   } catch (error) { respondReportError(res, error, 'No se pudo preparar la invitación de Telegram'); }
 });
 
+// Options become a one-time reply keyboard; tapping one sends its text, so typing works the same.
+function telegramReplyMarkup({ options = [], requestContact = false }) {
+  if (requestContact) return { keyboard: [[{ text: 'Compartir mi teléfono', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true };
+  if (!options.length) return { remove_keyboard: true };
+  const rows = [];
+  for (let index = 0; index < options.length; index += 3) rows.push(options.slice(index, index + 3).map(text => ({ text })));
+  return { keyboard: rows, resize_keyboard: true, one_time_keyboard: true };
+}
+
+// Receives native Telegram updates, either from Telegram's webhook or forwarded unchanged by the n8n patient bot.
 router.post('/pilot-incoming', async (req, res) => {
   let eventId;
+  let chatId;
   try {
     const config = getMessagingPilotConfig();
     const message = req.body.message;
-    if (!message || message.chat?.type !== 'private' || message.from?.is_bot || typeof message.text !== 'string') return res.json({ ok: true, ignored: true });
-    if (!Number.isSafeInteger(req.body.update_id) || !Number.isSafeInteger(message.chat.id) || message.text.length > 4096) throw reportError(400, 'Mensaje de Telegram no válido');
-    const chatId = String(message.chat.id);
+    const contact = message?.contact || null;
+    if (!message || message.chat?.type !== 'private' || message.from?.is_bot || (typeof message.text !== 'string' && !contact)) return res.json({ ok: true, ignored: true });
+    if (!Number.isSafeInteger(req.body.update_id) || !Number.isSafeInteger(message.chat.id) || String(message.text || '').length > 4096
+      || (contact && (typeof contact.phone_number !== 'string' || contact.phone_number.length > 32))) throw reportError(400, 'Mensaje de Telegram no válido');
+    chatId = String(message.chat.id);
     eventId = await claimMessagingEvent({ canal: 'telegram', sessionId: 'patient_pilot', event: 'message.received', messageId: String(req.body.update_id), chatId }, config);
     if (!eventId) return res.json({ ok: true, duplicate: true });
-    const resolved = await resolvePilotLink('telegram', chatId, message.text, config);
-    const text = resolved.reply || await respondToPatientBooking(resolved.link, message.text, config);
-    await sendTelegramMessage(chatId, text, 'patient_appointments');
+    const answer = await handlePatientMessage({ canal: 'telegram', chatId, fromId: message.from?.id ?? null, text: message.text || '', contact }, config);
+    await sendTelegramMessage(chatId, answer.text, 'patient_appointments', telegramReplyMarkup(answer));
     await finishMessagingEvent(eventId, 'procesado');
     res.json({ ok: true });
   } catch (error) {
     if (eventId) {
-      try { await finishMessagingEvent(eventId, 'revision_manual'); } catch { /* A persisted claim prevents duplicate actions. */ }
-      return res.json({ ok: true, requires_manual_review: true, request_id: req.id });
+      // A version conflict means two messages raced; nothing was applied by this one.
+      const raced = error.status === 409;
+      try { await finishMessagingEvent(eventId, raced ? 'procesado' : 'revision_manual'); } catch { /* A persisted claim prevents duplicate actions. */ }
+      try {
+        await sendTelegramMessage(chatId, raced ? 'He recibido dos mensajes a la vez. Repite tu última respuesta, por favor.'
+          : 'No he podido completar tu mensaje. No repetiré ninguna operación; la clínica lo revisará.', 'patient_appointments');
+      } catch { /* The event state already records the failure. */ }
+      return res.json({ ok: true, requires_manual_review: !raced, request_id: req.id });
     }
     respondReportError(res, error, 'No se pudo aceptar el mensaje de Telegram');
   }
@@ -1693,9 +1668,29 @@ router.post('/patient-report/send', async (req, res) => {
   }
 });
 
+// With the booking assistant enabled the CRM uses its single-use, hashed, expiring invitations.
+// The code cannot be read back later, so a pending invitation is reported as not linked.
+async function bookingAssistantLinkState(req) {
+  const config = getMessagingPilotConfig();
+  if (req.auth?.clinic_id !== config.clinicId) throw reportError(403, 'Se requiere sesión de la clínica');
+  const { data: patient, error } = await supabase.from('crm_pacientes').select('id, nombre, apellidos')
+    .eq('id', req.params.patientId).eq('clinica_id', config.clinicId).maybeSingle();
+  if (error) throw error;
+  if (!patient) throw reportError(404, 'Paciente no encontrado');
+  const link = await supabase.from('crm_mensajeria_vinculos').select('chat_id, consentimiento_en, baja_en')
+    .eq('paciente_id', patient.id).eq('canal', 'telegram').maybeSingle();
+  if (link.error) throw link.error;
+  const linked = Boolean(link.data?.chat_id && link.data.consentimiento_en && !link.data.baja_en);
+  return { data: { patient_id: patient.id, patient_name: [patient.nombre, patient.apellidos].filter(Boolean).join(' '),
+    link_status: linked ? 'linked' : 'not_linked', telegram_chat_id: linked ? link.data.chat_id : null, telegram_username: null,
+    vinculado_en: linked ? link.data.consentimiento_en : null, codigo_vinculacion: null, telegram_start_command: null, telegram_deep_link: null,
+    baja_en: link.data?.baja_en || null } };
+}
+
 router.get('/link-code/:patientId', async (req, res, next) => {
   try {
     const { patientId } = req.params;
+    if (process.env.TELEGRAM_PILOT_BOOKING_ENABLED === 'true') return res.json(await bookingAssistantLinkState(req));
     const patient = await getTelegramLinkPatient(patientId);
     if (!patient) return res.status(404).json({ error: 'Paciente no encontrado' });
 
@@ -1722,6 +1717,15 @@ router.post('/link-code/:patientId', async (req, res, next) => {
     const { patientId } = req.params;
     const regenerate = parseBooleanFlag(pickBodyValue(req.body, 'regenerate')) || parseBooleanFlag(req.query?.regenerate);
     const resetLinked = parseBooleanFlag(pickBodyValue(req.body, 'reset_linked', 'force_reset')) || parseBooleanFlag(req.query?.reset_linked);
+
+    if (process.env.TELEGRAM_PILOT_BOOKING_ENABLED === 'true') {
+      const invitation = await createPilotLink(req, 'telegram');
+      const state = await bookingAssistantLinkState(req);
+      if (invitation.linked) return res.json({ ...state, warning: 'patient_already_linked' });
+      const code = invitation.invitation.match(/VINCULAR ([\dA-F]{24})/)[1];
+      return res.json({ data: { ...state.data, link_status: 'pending', codigo_vinculacion: code, telegram_start_command: `/start ${code}`,
+        telegram_deep_link: invitation.deep_link, codigo_expira_en: invitation.expires_at }, instructions: invitation.invitation });
+    }
 
     const patient = await getTelegramLinkPatient(patientId);
     if (!patient) return res.status(404).json({ error: 'Paciente no encontrado' });

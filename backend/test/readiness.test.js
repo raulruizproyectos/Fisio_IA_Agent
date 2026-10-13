@@ -106,6 +106,7 @@ test('readiness acepta motor IA directo y Calendar por cuenta de servicio', () =
     GOOGLE_CALENDAR_ID: 'calendar@example.com',
     GOOGLE_CLIENT_EMAIL: 'service@example.iam.gserviceaccount.com',
     GOOGLE_PRIVATE_KEY: 'private-key',
+    PUBLIC_BOOKING_WINDOWS: '09:00-13:00,15:00-19:00',
   });
 
   assert.equal(report.checks.find((item) => item.key === 'clinical_ai').mode, 'openai_direct');
@@ -122,4 +123,13 @@ test('readiness exige secreto en los puentes n8n', () => {
 
   assert.equal(report.checks.find((item) => item.key === 'clinical_ai').status, 'missing');
   assert.equal(report.checks.find((item) => item.key === 'google_calendar').status, 'missing');
+});
+
+test('readiness exige el horario de reserva explícito y válido', () => {
+  const hours = (env) => buildIntegrationConfigurationReport(env).checks.find((item) => item.key === 'booking_hours');
+  assert.equal(hours({}).status, 'missing');
+  assert.equal(hours({}).criticality, 'core');
+  assert.equal(hours({ PUBLIC_BOOKING_WINDOWS: '09:00-13:00' }).status, 'configured');
+  assert.equal(hours({ PUBLIC_BOOKING_WINDOWS: '[{"start":"09:00","end":"13:00"},{"start":"15:00","end":"19:00"}]' }).status, 'configured');
+  assert.equal(hours({ PUBLIC_BOOKING_WINDOWS: '13:00-09:00' }).status, 'missing');
 });

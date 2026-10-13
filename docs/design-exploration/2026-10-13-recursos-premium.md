@@ -1,5 +1,7 @@
 # Recursos para afinar Precisión azul — 13 de octubre de 2026
 
+**Actualización:** las recomendaciones principales se implementaron y el frontend está desplegado en `c062967`; [evidencia actual](reviews/2026-10-13/production.md). El usuario pide ahora una segunda opinión independiente: [prompt para CloudCode](../PROMPT_AUDITORIA_CLOUDCODE.txt). Este estudio conserva los 25 recursos y el criterio inicial, que el nuevo auditor puede cuestionar con evidencia; no es una lista de componentes obligatorios ni describe novedades pendientes por sí solo.
+
 ## Conclusión
 
 Sí hay mejoras aprovechables. La recomendación es conservar Precisión azul y añadir una capa coherente de interacción: selección que se desplaza, paneles que entran y salen con continuidad y estados de carga/guardado que se entienden. La ficha móvil también merece una cabecera más compacta para llegar antes al contenido clínico.

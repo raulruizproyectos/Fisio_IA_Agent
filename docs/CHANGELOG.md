@@ -1,9 +1,22 @@
 # Changelog
 
+## 2026-10-13 — Agente de citas: Plan B, festivos, citas pendientes y avisos (local, sin commit)
+
+- Plan B: toda petición que el agente no completa se guarda en `crm_solicitudes_contacto` antes de decir «registrada» (sin duplicados; mensaje honesto si falla el guardado). Tarjeta «Solicitudes de contacto» en Inicio y aviso al fisio vía n8n. Cambios/anulaciones con menos de 24 h siguen esta vía.
+- Festivos nacionales, de Cataluña y `BOOKING_EXTRA_HOLIDAYS` bloquean la web pública (también la API directa), el agente y la ruta heredada (`lib/clinic-calendar.js`). `PUBLIC_BOOKING_WINDOWS` obligatoria en readiness y aceptada también en JSON (el ejemplo anterior en JSON se ignoraba en silencio).
+- Pacientes dados de alta por el bot: `origen_alta`/`revisada_en`; sus reservas quedan `pendiente` hasta «Marcar ficha revisada». Avisos al paciente cuando la clínica crea, confirma, cambia o anula una cita (`crm_avisos_paciente`, n8n, reintento seguro `/api/cron/avisos-agente`). Datos de contacto de la clínica editables en Configuración.
+- Migración local `20261013150000_contact_requests_patient_notices.sql` y flujo `pendiente-activacion/avisos-agente-citas.json`. Backend 135/135 y lint; frontend check 0 diagnósticos y build. 4 mutaciones detectadas por las pruebas.
+
+## 2026-10-13 — Cierre de producción y traspaso para segunda auditoría
+
+- Frontend `c062967` y backend `ee3449c` desplegados y confirmados en EasyPanel; ambos CI verdes. HTTP/readiness 13/13 correctos y Calendar healthy tras reiniciar. La falsa alerta CRITICAL por 4xx queda corregida; la sesión sí generó un email automático de monitorización antes del fix.
+- Por petición posterior del usuario se actualizan los documentos de seguimiento y se prepara `PROMPT_AUDITORIA_CLOUDCODE.txt`, con repositorio exacto, alcance independiente, evidencia/limitaciones, agentes IA/n8n/reserva y los 25 recursos de diseño. La documentación de este traspaso queda local, sin nuevo commit/push por esta petición; los cierres previos se conservan como historia.
+- El usuario exige además completar el agente de citas Telegram en local: nuevos/existentes con verificación de contacto, reservas/consulta/cambios/cancelaciones/recordatorios y límite de 24 horas para cambios/cancelaciones (después clínica). WhatsApp futuro. Requisitos registrados en `PILOTO_MENSAJERIA.md` y contrato en `PROMPT_AGENTE_CITAS.txt`; no se activa ni se integra por escribir la documentación.
+
 ## 2026-10-13 — Publicación y corrección de alertas de autenticación
 
 - Frontend `c062967` en producción tras CI verde; controles HTTP y BBDD correctos. Doce workflows activos/coincidentes y Calendar sync sano. Handlers/SQL con fixtures prueban pacientes/notas, citas, finanzas, aprobación y recuperación.
-- Tras un correo automático mostrado por el usuario, el handler global conserva los rechazos esperados 4xx sin enviar alertas CRITICAL; errores 5xx siguen notificándose. Regresión reproduce el fallo anterior; lint/108 pruebas pasan. Despliegue backend autorizado, pendiente de completar; detalles en la revisión de producción.
+- Tras un correo automático mostrado por el usuario, el handler global conserva los rechazos esperados 4xx sin enviar alertas CRITICAL; errores 5xx siguen notificándose. Regresión reproduce el fallo anterior; lint/108 pruebas pasan. Corrección publicada y desplegada en `ee3449c`; detalles en la revisión de producción.
 
 ## 2026-10-13 — Refinamiento de Precisión azul en local
 

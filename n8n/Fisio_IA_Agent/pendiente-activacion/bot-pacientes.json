@@ -1,0 +1,70 @@
+{
+  "name": "Fisio IA | Bot paciente",
+  "nodes": [
+    {
+      "parameters": { "updates": ["message"], "additionalFields": {} },
+      "id": "7d1c5f0e-2b8a-4c1e-9a51-2f1e0c3b6a01",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "44766c45-5dca-4c61-ae29-6c1e7027850e",
+      "credentials": { "telegramApi": { "id": "Y2lad9wx7Ifpxm4z", "name": "citas_fisioterapia_bot" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/telegram/pilot-incoming",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ update_id: $json.update_id, message: $json.message }) }}",
+        "options": { "timeout": 30000, "response": { "response": { "neverError": true, "fullResponse": true } } }
+      },
+      "id": "7d1c5f0e-2b8a-4c1e-9a51-2f1e0c3b6a02",
+      "name": "Agente de citas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "credentials": { "httpHeaderAuth": { "id": "PENDIENTE_CREAR", "name": "Fisio Telegram Agente Citas" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const status = Number($json.statusCode || 0);\nconst body = $json.body || {};\n// The backend replies to the patient itself, also when it records a manual review.\nreturn status >= 200 && status < 300 && body.ok === true ? [] : [{ json: { chat_id: $('Telegram').item.json.message?.chat?.id } }];"
+      },
+      "id": "7d1c5f0e-2b8a-4c1e-9a51-2f1e0c3b6a03",
+      "name": "Sin respuesta del agente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "No he podido procesar tu mensaje ahora. No se ha confirmado ninguna operación nueva; inténtalo más tarde o contacta con la clínica.",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "id": "7d1c5f0e-2b8a-4c1e-9a51-2f1e0c3b6a04",
+      "name": "Aviso seguro",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [960, 300],
+      "webhookId": "6688abb0-7b7a-4d83-94b4-ef6f5c835f65",
+      "credentials": { "telegramApi": { "id": "Y2lad9wx7Ifpxm4z", "name": "citas_fisioterapia_bot" } }
+    }
+  ],
+  "connections": {
+    "Telegram": { "main": [[{ "node": "Agente de citas", "type": "main", "index": 0 }]] },
+    "Agente de citas": { "main": [[{ "node": "Sin respuesta del agente", "type": "main", "index": 0 }]] },
+    "Sin respuesta del agente": { "main": [[{ "node": "Aviso seguro", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  }
+}

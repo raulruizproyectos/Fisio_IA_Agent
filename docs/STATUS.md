@@ -1,12 +1,29 @@
 # Project Status
 
-## Producción — 2026-10-13: frontend actualizado; cierre de alertas backend
+## Estado vigente — 2026-10-13 (noche): agente de citas con Plan B, festivos y citas pendientes, en local
+
+Informe en [auditoria-cloudcode/](auditoria-cloudcode/AUDITORIA.md). Detalle y checklist de activación en [AGENTE_CITAS.md](auditoria-cloudcode/AGENTE_CITAS.md).
+
+- **P0 sigue abierto:** el bot de pacientes activo (n8n «Bot paciente» → `/api/telegram/incoming`) crea fichas sin verificar y se presenta como persona. No usarlo con pacientes reales hasta completar la activación (pasos 1–9 del checklist).
+- **Hecho en local (sin commit):**
+  - Plan B: solicitudes de llamada guardadas antes de prometer nada, sin duplicados, tarjeta en Inicio y aviso al fisio por n8n.
+  - Horario L–V 9–13 y 15–19, huecos de 60 min; festivos nacionales, de Cataluña y locales (`BOOKING_EXTRA_HOLIDAYS`) bloquean web, agente y API.
+  - Pacientes nuevos del bot: reservas `pendiente` hasta «Marcar ficha revisada».
+  - Avisos al paciente siempre que la clínica crea, confirma, cambia o anula su cita.
+  - Datos de contacto de la clínica editables en Configuración (teléfono 623983731; email provisional de Raúl, a cargar en la activación).
+- **Verificación:** backend lint y 135/135; frontend check (0 diagnósticos) y build; 4 mutaciones detectadas.
+- **Pendiente:** autorización de cada paso del checklist; festivos locales de Terrassa 2027 y cierres de la clínica; después, automatizaciones n8n (PROPUESTA_PRODUCTO.md §8) y piloto de WhatsApp con OpenWA (número dedicado).
+- **Sin commit, push, despliegue, SQL Cloud, activación, envíos ni IA con gasto.**
+
+## Estado anterior — 2026-10-13: producto desplegado; segunda opinión solicitada
 
 Frontend `c062967` publicado y desplegado en `fisio-frontend`; CI backend/frontend/n8n verde y diez controles HTTP posteriores/readiness 13/13 correctos. Supabase sano, 35 tablas públicas con RLS, una clínica, cero perfiles/pacientes sin clínica y cero citas pendientes/en curso Calendar. Doce workflows coinciden con fuente; sync healthy y OAuth responde. No se necesita un deploy manual del frontend.
 
-El usuario recibió una alerta automática CRITICAL durante los casos negativos Auth: el handler global notificaba también los rechazos 4xx. Corrección local verificada (solo 5xx notifican; lint y 108 pruebas), despliegue backend autorizado expresamente y pendiente de CI/publicación. La sesión sí provocó al menos un correo automático de monitorización. [Evidencia y límites](design-exploration/reviews/2026-10-13/production.md). Las entradas siguientes conservan historia.
+Backend `ee3449c` publicado y desplegado; [CI 38377245576](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38377245576) verde en los tres trabajos, lint/108 pruebas. Los 4xx conservan respuesta y logs sin generar correos CRITICAL; los 5xx mantienen el notificador. Diez controles HTTP posteriores y readiness 13/13 pasan. Calendar vuelve a `healthy` tras reiniciar, con éxito observado en `2026-10-13T09:40:25.068Z`. La sesión sí provocó al menos un correo automático de monitorización antes de corregir el fallo. [Evidencia y límites](design-exploration/reviews/2026-10-13/production.md).
 
-## Estado local — 2026-10-13: refinamiento visual implementado, sin publicar
+El usuario ha pedido preparar una segunda auditoría independiente con CloudCode antes de la primera prueba manual, que sigue sin resultados comunicados. Encargo nuevo explícito: revisar eficiencia, funcionalidades, UX/diseño/presentación, arquitectura, seguridad, agentes IA y n8n; propuestas priorizadas para mejoras generales. Además exige completar e implementar **en local** el agente de citas Telegram si faltan funciones: nuevos/existentes con contacto verificado, reservas/consulta/cambios/cancelaciones/recordatorios; cambios/cancelaciones con al menos 24 horas, después deriva a clínica. WhatsApp queda como integración futura. No se autoriza activación, gasto o despliegue por este encargo. [Prompt completo](PROMPT_AUDITORIA_CLOUDCODE.txt), [contrato del agente](PROMPT_AGENTE_CITAS.txt) y [requisitos confirmados](PILOTO_MENSAJERIA.md). Se actualiza la documentación de traspaso en local; `main` publicado al cierre funcional sigue en `ee3449c`. Las entradas siguientes conservan historia.
+
+## Historia previa a publicar — 2026-10-13: QA local del refinamiento
 
 Preparación local terminada para la primera prueba del refinamiento. En el cierre final se corrigió y verificó la circulación Tab/Shift+Tab dentro de modales y copiloto móvil, además de excluir firma/voz cerrados del foco. El copiloto de escritorio conserva la navegación hacia el espacio de trabajo. Recorrido de prueba registrado en la revisión enlazada abajo.
 
@@ -16,7 +33,7 @@ Frontend check (40 archivos sin diagnósticos)/build y regresiones afectadas pas
 
 Cambios conservados únicamente en local: sin commit/push, despliegue, Cloud, envíos reales ni IA con gasto. La URL pública sigue en la versión del cierre del 8 de octubre; no tiene este refinamiento. Primera prueba del usuario todavía sin resultados comunicados. `CONTINUAR.md` y `PROMPT_CONTINUAR.txt` se conservan intactos respecto al comienzo de este trabajo. Próximo paso: revisión del acabado local o publicación del frontend cuando el usuario autorice expresamente las acciones y destino necesarios. No repetir migraciones, auditorías ni la preparación operativa completada.
 
-## Estado vigente — 2026-10-08: preparado para la primera prueba
+## Estado histórico — 2026-10-08: preparado para la primera prueba
 
 CRM en https://fisio-frontend.b5xbaf.easypanel.host/login/. PR #2 fusionado; cinco migraciones ensayadas aplicadas y verificadas en Supabase uewhbaejcouenoufuwlq. Backend desplegado en 79bfeeee3d9c8839128d51a09e3def3ffb2337c9; frontend en 0fce17529fb0ea7b99644a0c305cd37b6613a799. CI del backend desplegado: tres checks verdes. Main incluye posteriormente el cierre documental y el archivo del cron.
 

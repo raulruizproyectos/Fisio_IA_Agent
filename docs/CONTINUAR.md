@@ -1,6 +1,34 @@
-# Punto de continuidad — 8 de octubre de 2026
+# Punto de continuidad — 13 de octubre de 2026
 
-## Estado vigente — 2026-10-08: preparado para la primera prueba
+## Cierre vigente — segunda auditoría independiente solicitada
+
+Repositorio real: `C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent`; carpeta contenedora distinta: `C:\Visual Code\FISIO_IA_AGENT`. GitHub `raulruizproyectos/Fisio_IA_Agent`, rama `main`, publicado en `ee3449c61644d7d0d978c4c1fa822835557f8c2e`. Verificar `git status` antes de trabajar: la documentación de este traspaso queda actualizada en local y sin nuevo commit/push. Se conservan los bloques anteriores, no se descarta su contenido ni el árbol local.
+
+Frontend desplegado `c06296701f6f7214b788ef1f461aa62146e1de6a`; backend `ee3449c`. CI del frontend [38375833160](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38375833160) y del backend [38377245576](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38377245576) completos verdes. Diez controles HTTP posteriores, readiness 13/13, seis integraciones configuradas/cero ausentes; una clínica, RLS activo en 35 tablas públicas y cero perfiles/pacientes sin clínica. No repetir deploy por cambios solo documentales.
+
+Doce workflows n8n activos y coincidentes con fuente. Calendar OAuth responde y sync cada dos minutos healthy tras reiniciar (éxito observado `2026-10-13T09:40:25.068Z`); cero citas Calendar pendientes/en curso. Recordatorios horarios activos para pacientes vinculados y citas entre 23 y 25 horas, vista previa cero candidatos. Bots Telegram válidos/dry_run; pilotos separados WhatsApp/Telegram booking desactivados. No actualizar el software n8n.
+
+Refinamiento Precisión azul publicado: ficha compacta, pestañas/transiciones/guardado, foco/teclado y mapa corporal corregido tras feedback. Frontend check 40 archivos/cero diagnósticos y build cuatro páginas; backend lint/108 pruebas. QA Chromium a 375/768/1280 tanto build local como archivos públicos con API/Auth ficticias; handlers/SQL locales verifican recorridos clínicos/financieros y recuperación. No confundir esto con pruebas clínicas de proveedores reales.
+
+Durante los casos negativos Auth/CSRF se generó al menos un email real de monitorización CRITICAL. El usuario mostró la recepción. Causa: handler global notificaba también errores 4xx; corregido y desplegado en `ee3449c`, solo 5xx notifican. No se enviaron mensajes clínicos a pacientes ni se ejecutó IA con gasto; no se acredita el primer tick de entrega de recordatorios. Login válido y Calendar CRUD ficticio del 8 de octubre son evidencia histórica. Recibos privados fuera de Git; secretos y copias remotas con credenciales solo en `.env.local` raíz. Copia ensayada CRM/Auth, no todo Supabase gestionado.
+
+**Próximo encargo:** el usuario pide una segunda opinión profunda con CloudCode antes de su primera prueba manual, todavía sin resultados comunicados. Preparado [PROMPT_AUDITORIA_CLOUDCODE.txt](PROMPT_AUDITORIA_CLOUDCODE.txt): eficiencia, funcionalidades, usabilidad, diseño/presentación/movimiento/gráficos, arquitectura, seguridad, agentes IA clínicos/seguimiento/reserva Telegram y n8n, con los 25 recursos. Auditar y proponer mejoras generales; completar e implementar en local el agente de citas si faltan funciones, según la instrucción posterior expresa. Nuevos/existentes con contacto verificado; reserva/consulta/cambio/cancelación/recordatorio; cambios/cancelaciones con al menos 24 horas, después deriva a clínica; WhatsApp futuro. [Contrato conversacional](PROMPT_AGENTE_CITAS.txt) y [requisitos](PILOTO_MENSAJERIA.md), no integrados/activados por documentarlos. Producción, mensajes y gasto siguen sin autorización nueva. La prohibición histórica de reiniciar auditorías queda superada por este encargo explícito.
+
+Leer este bloque y `STATUS.md`, `PRODUCTION_TESTING.md` y la revisión de producción del 13; después la arquitectura/diseño/operaciones pertinentes. Commit, push, producción, envíos y gasto necesitan autorización expresa por acción/destino; los permisos de esta sesión no se transfieren al siguiente agente. Mantener una clínica, RLS, aprobación profesional antes de PDF/envío y contratos DOM. Las siguientes entradas son historia, no tareas ni nuevas autorizaciones. La preferencia de modelo del usuario para Codex sigue siendo GPT-6.1-sol con razonamiento alto; no impone un modelo a CloudCode.
+
+## Cierre histórico exacto — 2026-10-08, 20:20 Europe/Madrid
+
+El producto está preparado para que Raül realice su primera prueba como usuario final. Todavía no ha comunicado resultados de esa prueba. Próximo trabajo: recibir sus sensaciones o fallos, reproducir el caso concreto y corregirlo con comprobaciones proporcionales. No reiniciar auditorías, rediseño ni preparación de producción.
+
+GitHub main quedó publicado en a7d1b056e19c26629832636ff81c7b0ad71bc7d9, árbol limpio antes de este cierre y CI final completado con éxito: https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/37822946356 . PR #2 fusionado y descripción actualizada. Backend ejecuta 79bfeee y frontend 0fce175; el commit posterior solo registra documentación y la fuente del cron ya activo. No desplegar de nuevo por esa diferencia de hashes.
+
+Calendar probado con evento ficticio creado/leído/editado/cancelado. Sincronización cada dos minutos sana; recordatorios cada hora activos para pacientes con vínculo Telegram y citas entre 23 y 25 horas, según autorización específica. Telegram conectado y probado en dry_run; Gmail conectado y probado con lectura de perfil. No se probaron entregas reales, IA con gasto ni el primer tick horario de recordatorios. WhatsApp y la reserva Telegram separada siguen desactivados. El usuario aclaró que desea terminar el producto, sin actualizar la versión del software n8n.
+
+Acceso: https://fisio-frontend.b5xbaf.easypanel.host/login/ con la cuenta profesional existente. Diagnóstico detallado y límites en docs/PRODUCTION_TESTING.md; instrucciones para un chat nuevo en docs/PROMPT_CONTINUAR.txt. Modelo que el usuario venía usando: GPT-6.1-sol con razonamiento alto.
+
+Este cierre modifica únicamente CONTINUAR.md y PROMPT_CONTINUAR.txt en local para enviarlos por correo al usuario. No crea commit/push ni altera producción; main publicado permanece en a7d1b05. Conservar ambos cambios locales y estos adjuntos. No considerar los documentos una autorización nueva para commits, push, despliegues, migraciones, cambios de credenciales ni envíos clínicos. Las autorizaciones previas se limitan a las acciones expresamente solicitadas; comprobar alcance para el siguiente caso.
+
+## Estado histórico — 2026-10-08: preparado para la primera prueba
 
 CRM en https://fisio-frontend.b5xbaf.easypanel.host/login/. PR #2 fusionado; cinco migraciones ensayadas aplicadas y verificadas en Supabase uewhbaejcouenoufuwlq. Backend desplegado en 79bfeeee3d9c8839128d51a09e3def3ffb2337c9; frontend en 0fce17529fb0ea7b99644a0c305cd37b6613a799. CI del backend desplegado: tres checks verdes. Main incluye posteriormente el cierre documental y el archivo del cron.
 
@@ -12,7 +40,7 @@ Verificados login profesional real, lectura autorizada, cookies __Host-/Secure/H
 
 Copia nativa CRM/Auth restaurada y comprobada; no es una restauración completa de servicios internos gestionados. Secretos y recuperación remota solo en .env.local; recibos/copias privados fuera de Git. A partir de aquí, el usuario probará el producto y comunicará fallos concretos. No repetir auditorías/rediseño ni migraciones ya aplicadas. Las entradas siguientes documentan historia.
 
-## Prioridad vigente: GitHub y testing en producción
+## Historia anterior — GitHub y testing en producción (estado superado)
 
 El usuario acepta por ahora Precisión azul y pide continuar hasta probar en producción, corregir los fallos de testing y actualizar GitHub. Rama `mejoras/auditoria-20260915` publicada y PR #2 en borrador hacia `main`; no autoriza por ello fusionar, aplicar SQL ni desplegar. CI backend/n8n/frontend verde en `28c201d`, incluido Docker/nginx real. Usuario completó cambio de contraseña PostgreSQL; URI solo en `.env.local`. Copia nativa nueva restaurada localmente: 35 tablas públicas y 27 Auth coinciden por cantidades/hashes; cinco migraciones pasan sin perder filas. Ensayo limitado al CRM/Auth, no a todos los internos gestionados de Supabase. Servidor local detenido. Consultar `docs/PRODUCTION_TESTING.md`: destinos, recuperación y autorización concreta para merge/SQL/configuración/despliegue, después prueba ficticia acotada. Mantener secretos, copias y diagnósticos privados fuera de Git. Los bloques siguientes son históricos.
 

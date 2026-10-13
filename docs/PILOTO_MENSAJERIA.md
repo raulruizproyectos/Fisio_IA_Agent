@@ -1,5 +1,32 @@
 # Piloto de Telegram y WhatsApp
 
+## Estado vigente — 2026-10-13
+
+Backend `ee3449c` y frontend `c062967` desplegados. Los bots Telegram paciente/profesional y los doce workflows n8n de Fisio están activos y coinciden con fuente; getMe/dry_run comprobados, sin entrega clínica real de mensajes. Recordatorios horarios ya activos para pacientes vinculados y citas entre 23 y 25 horas; vista previa cero candidatos.
+
+El piloto separado de reserva `TELEGRAM_PILOT_BOOKING_ENABLED` y OpenWA/WhatsApp siguen desactivados. La reserva pública web y el código de reserva guiada no equivalen a activar ese piloto. Telegram es la preferencia actual del usuario por facilidad/coste; la segunda auditoría debe seguir cada entrada/bot/workflow y separar implementado, activo, comprobado y pendiente. [Prompt](PROMPT_AUDITORIA_CLOUDCODE.txt). No activar canales, vincular pacientes o enviar para «comprobar» sin autorización específica.
+
+## Requisitos nuevos confirmados — implementación local para CloudCode
+
+El usuario exige completar el agente de citas, no dejarlo como propuesta si faltan funciones. CloudCode debe auditar y completar su implementación local y pruebas; los flags productivos siguen desactivados hasta autorización de activación. [Contrato conversacional](PROMPT_AGENTE_CITAS.txt), todavía sin integrar.
+
+| Decisión | Requisito de aceptación |
+| --- | --- |
+| Telegram primero, WhatsApp futuro | Lógica de negocio reutilizable sin instalar/activar ahora otro proveedor; contratos y límites por canal documentados. |
+| Nuevos y existentes | Alta mínima y verificación concreta del contacto; no vincular/revelar historia por nombre/teléfono/email sin comprobar titularidad. |
+| Reserva y gestión completa | Consultar citas propias, reservar, cambiar y cancelar con confirmación explícita; solo disponibilidad/configuración real, sin horarios/precios inventados. |
+| Antelación | Cambios/cancelaciones permitidos con al menos 24 horas hasta el inicio; con menos, deriva a clínica. Comparar instantes en servidor y mostrar Europe/Madrid; probar umbral exacto y DST. |
+| Recordatorios | Mantener pacientes vinculados/cita activa entre 23–25 horas; deduplicación y estado de entrega persistidos. |
+| Naturalidad y fiabilidad | Respuestas claras de asistente, intención ambigua aclarada; backend determina permisos/estado/acciones, el modelo no los inventa. |
+| Calendar e incertidumbre | Persistencia CRM y evidencia Calendar diferenciadas; recuperación por lectura, idempotencia y exclusión SQL, sin recrear ni reenviar a ciegas. |
+| Pruebas | Fixtures para identidad ajena, nuevos/existentes, solapamiento, doble mensaje, cambios/cancelación/24h, selección caducada, caída/timeout/reinicio, baja y entrega incierta. Separar probado localmente de validación/activación real. |
+
+Estas son decisiones objetivo del 13 de octubre, no afirmaciones de que el piloto desplegado ya cumpla todas las funciones. Horarios, duración, servicios, profesionales y contacto proceden de la configuración real; lo ausente se consulta al usuario. LLM con gasto/envíos reales/publicación/activación necesitan permisos separados. Las reservas guiadas históricas siguientes solo cubrían un alcance menor.
+
+Las secciones siguientes describen la preparación histórica del piloto del 7 de octubre; no son instrucciones para reaplicar migraciones o desplegar versiones ya superadas. [Estado y pruebas actuales](PRODUCTION_TESTING.md).
+
+## Historia — preparación del piloto
+
 Decisión del usuario: OpenWA solo para piloto. Código preparado el 7 de octubre de 2026; sin despliegue, números conectados ni envíos reales. La API oficial de Meta continúa siendo la opción propuesta para producción.
 
 El producto se centra exclusivamente en Fisioterapia Carla JL. Se conserva el VPS de EasyPanel y Supabase Cloud (`ACTIVE_HEALTHY`, plan Free). Cuenta admin, endurecimiento, tres migraciones V2 y asignación ya aplicados con autorización; login/Auth/PostgREST verificados y Vault reservado al servidor. El piloto sigue desactivado, sin aplicación actualizada en EasyPanel ni números/bots conectados. Antes de preparar conexiones reales, seguir OPERATIONS; no se necesita otro servidor ni gestión comercial de varias clínicas.

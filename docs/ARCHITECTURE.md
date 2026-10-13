@@ -1,6 +1,12 @@
 # Architecture
 
-## Estado vigente — 2026-10-08: preparado para la primera prueba
+## Referencia vigente — 2026-10-13
+
+Frontend Astro 7.3.7/JS-TS/Nanostores y Precisión azul, desplegado `c062967`; backend Express con cookies HttpOnly/CSRF y Supabase RLS, desplegado `ee3449c`. Calendar actual opera mediante los puentes OAuth n8n; el código conserva alternativa directa por cuenta de servicio. Doce workflows activos coinciden con `n8n/Fisio_IA_Agent/production`. Una clínica; pilots WhatsApp/Telegram booking desactivados. Bots Telegram activos, reserva web y piloto de reserva son recorridos distintos.
+
+La corrección de alertas globales notifica solo errores 5xx. Readiness 13/13 y sync Calendar healthy tras ambos despliegues; contenedor nginx/proxy/headers sí comprobados. [Versiones y evidencia](design-exploration/reviews/2026-10-13/production.md). [Encargo de segunda auditoría](PROMPT_AUDITORIA_CLOUDCODE.txt): cuestionar diseño/acoplamientos/eficiencia y proponer mejoras generales. El usuario sí autoriza completar localmente agente de citas Telegram/recorridos asociados: contacto verificado de nuevos/existentes, reserva/consulta/cambio/cancelación/recordatorio y límite servidor de 24 horas; WhatsApp futuro. Ver [requisitos](PILOTO_MENSAJERIA.md). No ejecutar efectos externos ni activar por esa autorización local. Los siguientes estados fechados son historia; la estructura técnica posterior describe el código salvo límites históricos señalados.
+
+## Estado histórico — 2026-10-08: preparado para la primera prueba
 
 CRM en https://fisio-frontend.b5xbaf.easypanel.host/login/. PR #2 fusionado; cinco migraciones ensayadas aplicadas y verificadas en Supabase uewhbaejcouenoufuwlq. Backend desplegado en 79bfeeee3d9c8839128d51a09e3def3ffb2337c9; frontend en 0fce17529fb0ea7b99644a0c305cd37b6613a799. CI del backend desplegado: tres checks verdes. Main incluye posteriormente el cierre documental y el archivo del cron.
 
@@ -21,7 +27,7 @@ graph TD
     Client[Navegador / Frontend Astro 7] -->|Cookies HttpOnly / CSRF / API REST| Backend[Backend Express Node.js]
     Backend -->|Auth / PKCE / renovación| SupabaseAuth[Supabase Auth]
     Backend -->|JWT con RLS / Service Role| Postgres[(Supabase PostgreSQL)]
-    Backend -->|Service Account API| GCal[Google Calendar]
+    Backend -->|API directa o puentes OAuth n8n| GCal[Google Calendar]
     Backend -->|Webhook / API| Telegram[Telegram Bot API]
     Backend -->|PDF / webhook HMAC - solo piloto| OpenWA[OpenWA WhatsApp]
     Backend -->|Disparo Webhook / Header Secret| N8N[n8n Orquestador]
@@ -33,11 +39,11 @@ La sesión del navegador pasa por `/api/auth` en Express. Access/refresh y verif
 
 Cada petición profesional valida usuario con Auth y perfil/clínica activos mediante cliente JWT con RLS; no hay cliente privilegiado de respaldo. Las cookies requieren origen exacto y cabecera propia incluso en lecturas; GET/HEAD same-origin permiten Origin ausente con Sec-Fetch-Site. `/session` renueva solo tras una denegación de acceso comprobada o ausencia de access cookie, nunca ante fallo/incompletitud del proveedor. La renovación concurrente se comparte en una instancia. Frontend verifica sesión antes de mutar y solo reintenta lecturas: no vuelve a enviar una escritura clínica incierta.
 
-Sesión Auth y respuestas profesionales no se cachean. La duración efectiva/revocación la controla Supabase; las cookies duran como máximo 30 días y no prueban por sí mismas autorización. Recuperación PKCE requiere mismo navegador/último enlace; datos de Auth incompletos fallan cerrados. Contraseñas siguen en Supabase, sin almacén propio. Sitio HTTPS común web/API, proxy/cache, configuración Auth y proveedores reales deben verificarse antes de desplegar; EasyPanel sigue aparcado.
+Sesión Auth y respuestas profesionales no se cachean. La duración efectiva/revocación la controla Supabase; las cookies duran como máximo 30 días y no prueban por sí mismas autorización. Recuperación PKCE requiere mismo navegador/último enlace; datos de Auth incompletos fallan cerrados. Contraseñas siguen en Supabase, sin almacén propio. HTTPS/proxy/cache y controles HTTP fueron verificados en producción; login válido del 8 de octubre es histórico, no una prueba nueva del 13. Los límites de proveedores actuales están en PRODUCTION_TESTING.md.
 
 ## Frontend
 - **Framework**: Astro 7.3.7 en modo estático (`output: 'static'`) con controladores en cliente y almacenamiento mediante `nanostores`; `compressHTML` conserva el comportamiento anterior.
-- **CSP**: HTML compilado con política nativa de Astro antes de cargar scripts; hashes de código generado y scripts propios, sin eval/handlers de atributos. Layout y reserva usan controladores JS empaquetados. Configuración runtime síncrona al comienzo del body. Nginx limita conexiones a self y orígenes efectivos backend/Supabase (runtime antes que build), con frame-ancestors/Permissions-Policy por location. Defaults de URLs del build fuera del HTML; entrypoint rechaza configuraciones inseguras antes de publicar. Estilos de atributos/imágenes externas de catálogo conservados; micrófono propio permitido. Contenedor/proxy no acreditados.
+- **CSP**: HTML compilado con política nativa de Astro antes de cargar scripts; hashes de código generado y scripts propios, sin eval/handlers de atributos. Layout y reserva usan controladores JS empaquetados. Configuración runtime síncrona al comienzo del body. Nginx limita conexiones a self y orígenes efectivos backend/Supabase (runtime antes que build), con frame-ancestors/Permissions-Policy por location. Defaults de URLs del build fuera del HTML; entrypoint rechaza configuraciones inseguras antes de publicar. Estilos de atributos/imágenes externas de catálogo conservados; micrófono propio permitido. Contenedor/nginx/proxy y cabeceras comprobados en CI y producción; las pruebas del 13 no sustituyen todos los recorridos autenticados o de proveedores.
 - **Diseño**: Precisión azul, DESIGN.md v6; referencias Planhat (estructura) y Ramp (acciones).
   - Tipografía: `@fontsource-variable/dm-sans` con `font-feature-settings: "ss03" 1`.
   - Tokens: `frontend/src/styles/design-tokens.css` (azul `#175dd0` para acción/foco, lienzo `#f4f7fb`, superficies blancas y estados semánticos etiquetados).

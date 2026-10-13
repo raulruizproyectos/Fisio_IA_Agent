@@ -28,6 +28,16 @@
     </div>
   </header>
 
+  <!-- Records created by the booking assistant: their bookings stay "pendiente" until the clinic reviews the record. -->
+  <section class="ficha-review-banner" id="fichaReviewBanner" role="status" hidden>
+    <span class="material-symbols-rounded" aria-hidden="true">how_to_reg</span>
+    <p><strong>Alta desde el asistente de citas.</strong> Comprueba identidad y posibles duplicados. Mientras no la marques como revisada, sus reservas por el asistente quedan pendientes de tu confirmación.</p>
+    <button type="button" class="precision-btn-secondary" id="fichaReviewBtn" data-ficha-review-action="mark-reviewed">
+      <span class="material-symbols-rounded">task_alt</span>
+      <span>Marcar ficha revisada</span>
+    </button>
+  </section>
+
   <!-- Clinical Context Hero (Precision Panel) -->
   <section class="ficha-hero-panel">
     <div class="ficha-hero-info">

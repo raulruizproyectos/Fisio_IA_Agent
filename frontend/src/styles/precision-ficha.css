@@ -487,3 +487,34 @@
 .ficha-table tr:hover td {
   background: var(--color-surface-subtle, #f4f7fb);
 }
+
+/* Record created by the booking assistant, pending review by the clinic */
+.ficha-review-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #f0c36d;
+  border-radius: 12px;
+  background: #fff8e8;
+  color: #142234;
+}
+
+.ficha-review-banner[hidden] {
+  display: none;
+}
+
+.ficha-review-banner > .material-symbols-rounded {
+  color: #9a5b00;
+}
+
+.ficha-review-banner p {
+  flex: 1 1 18rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.ficha-review-banner button {
+  min-height: 44px;
+}
