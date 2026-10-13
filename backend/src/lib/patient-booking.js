@@ -6,6 +6,7 @@ import { normalizeAppointmentText, parseNaturalAppointmentSlots } from './appoin
 import { buildPublicBookingSlots, getPublicBookingBounds, PUBLIC_BOOKING_TIMEZONE, createCrmAppointment, updateCrmAppointment } from '../routes/professional.js';
 import { holidayName } from './clinic-calendar.js';
 import { CONTACT_REQUEST_ALREADY, CONTACT_REQUEST_REGISTERED, normalizeContactPhone, notifyContactRequest, registerContactRequest } from './agent-notices.js';
+import { bookingAiEnabled, composeReply, interpretMessage, URGENT_NOTICE, urgentByKeywords } from './booking-ai.js';
 
 // Channel-neutral booking assistant. Transports (Telegram now, WhatsApp later) only
 // deliver text/contact and render `{ text, options, requestContact }`.
@@ -22,6 +23,10 @@ const CONFIRM_OPTIONS = ['CONFIRMAR', 'NO'];
 export const patientMayChange = (startAt, now = Date.now()) => Date.parse(startAt) - now >= CHANGE_NOTICE_MS;
 
 const reply = (text, options = [], extra = {}) => ({ text, options, ...extra });
+// Internal hand-over of a saved conversation state; never rendered or sent to the model.
+const NEXT_STATE = Symbol('nextState');
+const PARTS = { manana: 'mañana', tarde: 'tarde' };
+const inPart = (slot, part) => (part === 'manana' ? slot.start_local < '14:00' : slot.start_local >= '14:00');
 
 export async function getPilotPatient(patientId, config = getMessagingPilotConfig()) {
   const { data, error } = await supabase.from('crm_pacientes').select('id, nombre, apellidos, telefono, clinica_id, created_by_profile_id, origen_alta, revisada_en')
@@ -252,14 +257,45 @@ const isGreeting = (text) => {
 export async function handlePatientMessage({ canal, chatId, fromId = null, text = '', contact = null }, config) {
   const code = linkCodeFrom(text);
   if (code) return linkWithCode(canal, chatId, code, config);
+  // The model reads the words in parallel with the lookups; it never sees who is writing.
+  const understanding = contact ? Promise.resolve(null) : interpretMessage(text, getPublicBookingBounds()).catch(() => null);
   const clinic = await getClinic(config);
   const found = await serviceSupabase.from('crm_mensajeria_vinculos').select('*')
     .eq('clinica_id', config.clinicId).eq('canal', canal).eq('chat_id', chatId).is('baja_en', null).maybeSingle();
   if (found.error) throw found.error;
   const link = found.data;
-  if (link?.paciente_id && link.consentimiento_en) return respondToPatientBooking(link, contact ? '' : text, config, clinic);
-  if (canal !== 'telegram') return reply('Pide a tu clínica una invitación para vincularte y reservar citas.');
-  return registerNewPatient({ link, chatId, fromId, text, contact, clinic }, config);
+  const hint = await understanding;
+  let answer;
+  if (link?.paciente_id && link.consentimiento_en) answer = await respondToPatientBooking(link, contact ? '' : text, config, clinic, hint);
+  else if (canal !== 'telegram') answer = reply('Pide a tu clínica una invitación para vincularte y reservar citas.');
+  else answer = await registerNewPatient({ link, chatId, fromId, text, contact, clinic }, config);
+  return finishReply(answer, { link, text: contact ? '' : text, hint });
+}
+
+// Tone from CRM facts only: "habitual" needs a reviewed record and a past appointment.
+async function patientTone(link) {
+  if (!link?.paciente_id) return { tone: 'nuevo' };
+  const { data: patient, error } = await supabase.from('crm_pacientes').select('nombre, origen_alta, revisada_en').eq('id', link.paciente_id).maybeSingle();
+  if (error || !patient || needsClinicReview(patient)) return { tone: 'nuevo' };
+  const past = await supabase.from('crm_citas').select('id').eq('paciente_id', link.paciente_id)
+    .in('estado', ['completada', 'confirmada', 'reprogramada']).lt('inicio_en', new Date().toISOString()).limit(1);
+  return past.error || !past.data?.length ? { tone: 'nuevo' } : { tone: 'habitual', firstName: patient.nombre || null };
+}
+
+// The backend's reply is the source of truth: the model may only reword it, and the safety notice is never reworded.
+async function finishReply(answer, { link, text, hint }) {
+  const result = { ...answer };
+  delete result[NEXT_STATE];
+  const urgent = Boolean(text) && (hint?.urgent === true || urgentByKeywords(text));
+  if (bookingAiEnabled() && result.text) {
+    const { tone, firstName } = await patientTone(link).catch(() => ({ tone: 'nuevo' }));
+    const composed = await composeReply({ base: result.text, tone, firstName, worried: Boolean(hint?.worried || urgent), patientText: text });
+    if (composed) result.text = composed;
+  }
+  if (urgent) result.text = `${URGENT_NOTICE}
+
+${result.text}`;
+  return result;
 }
 
 const intentOf = (t) => {
@@ -276,11 +312,14 @@ const intentOf = (t) => {
   return null;
 };
 
-export async function respondToPatientBooking(link, text, config, clinic = null) {
+// `hint` is the model's reading of free text: it may fill an intent, day, time or part of the day that the
+// keywords missed, but it can never confirm, unsubscribe or change any rule.
+export async function respondToPatientBooking(link, text, config, clinic = null, hint = null) {
   clinic ||= await getClinic(config);
   const patient = await getPilotPatient(link.paciente_id, config);
   const normalized = normalizeAppointmentText(text).trim();
-  const intent = intentOf(normalized);
+  const keywordIntent = intentOf(normalized);
+  const intent = keywordIntent || hint?.intent || null;
   let version = link.version;
   const save = async (reserva) => {
     const result = await serviceSupabase.from('crm_mensajeria_vinculos').update({ reserva, version: version + 1 })
@@ -304,7 +343,11 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
   if (state.processing) return recoverProcessing({ state, patient, save, callback: (intro, details) => callback(intro, { ...details, keepState: true }),
     onCreated: (row) => announceCreated({ row, startAt: row.inicio_en, patient, link, config }) });
   const valid = state.expires_at && Date.parse(state.expires_at) > Date.now() ? state : {};
-  const keep = (next) => save({ ...next, expires_at: new Date(Date.now() + SELECTION_TTL_MS).toISOString() });
+  const keep = async (next) => {
+    const stored = { ...next, expires_at: new Date(Date.now() + SELECTION_TTL_MS).toISOString() };
+    await save(stored);
+    return stored;
+  };
   // Whatever the agent cannot complete becomes a stored request for a call (plan B).
   const derive = (intro, details) => callback(intro, details);
 
@@ -322,7 +365,8 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
     await keep(valid.intent === 'reschedule' && valid.appointment ? { intent: 'reschedule', appointment: valid.appointment, awaiting: 'date' } : { intent: 'book', awaiting: 'date' });
     return reply('¿Qué otro día te viene bien?');
   }
-  if (intent === 'thanks') return reply('De nada. Si necesitas algo más, elige una opción.', MENU);
+  // A "vale" or "gracias" while a confirmation is pending is not consent: the guard below asks for CONFIRMAR.
+  if (intent === 'thanks' && valid.awaiting !== 'confirm') return reply('De nada. Si necesitas algo más, elige una opción.', MENU);
 
   if (intent === 'menu') { await save({}); return reply(`Soy el asistente automático de citas${clinic.nombre ? ` de ${clinic.nombre}` : ''}. ¿Qué quieres hacer?`, MENU); }
   if (intent === 'discard' || (intent === 'discard_or_cancel' && (valid.selection || valid.appointment || valid.slots))) {
@@ -336,6 +380,23 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
     if (valid.intent === 'reschedule' && valid.selection && valid.appointment) return confirmChange({ valid, patient, clinic, save, derive, config });
     if (valid.selection && valid.intent !== 'reschedule') return confirmBooking({ valid, patient, save, derive, config, link });
     return reply('No hay ninguna operación pendiente de confirmar. ¿Qué quieres hacer?', MENU);
+  }
+
+  const exactDate = normalized.match(/\b(\d{4}-\d{2}-\d{2})\b/)?.[1];
+  const parsed = parseNaturalAppointmentSlots(text);
+  const parsedDate = parsed.slotStart?.slice(0, 10) || (parsed.parsedYear ? `${parsed.parsedYear}-${String(parsed.parsedMonth).padStart(2, '0')}-${String(parsed.parsedDay).padStart(2, '0')}` : null);
+  const textDate = exactDate || parsedDate || hint?.date || null;
+  const clock = normalized.match(/^(?:a\s+las?\s+)?(\d{1,2}):(\d{2})$/);
+  const wanted = clock ? `${clock[1].padStart(2, '0')}:${clock[2]}` : parsed.slotStart?.slice(11, 16)
+    || (parsed.missingDay ? `${String(parsed.parsedHour).padStart(2, '0')}:${String(parsed.parsedMinutes).padStart(2, '0')}` : null)
+    || hint?.time || null;
+  const partOfDay = normalized.match(/\bpor la (manana|tarde)\b/)?.[1] || hint?.partOfDay || valid.part_of_day || null;
+
+  // Only the literal CONFIRMAR applies a change: "sí, resérvala", "perfecto, gracias" or a reading by the model is not consent.
+  if (valid.awaiting === 'confirm' && (valid.selection || valid.intent === 'cancel') && !textDate && !wanted
+    && (!intent || intent === 'thanks' || (intent === 'book' && !keywordIntent))) {
+    return reply(valid.intent === 'cancel' ? 'Para anular la cita, pulsa CONFIRMAR. Si prefieres mantenerla, pulsa NO.'
+      : 'Para confirmarlo, pulsa CONFIRMAR. Si prefieres no hacerlo, pulsa NO.', CONFIRM_OPTIONS);
   }
 
   let appointments;
@@ -356,7 +417,14 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
     const own = appointments.filter(row => row.fisioterapeuta_id === config.professionalId);
     if (!own.length && appointments.length) return derive('Esas citas las gestiona directamente la clínica.', { tipo, motivo: 'otro_profesional', appointmentId: appointments[0].id });
     if (!own.length) { await save({}); return reply('No tienes citas próximas que pueda gestionar por aquí.', MENU); }
-    if (own.length === 1) return chooseAppointment({ row: own[0], action: intent, keep, derive });
+    if (own.length === 1) {
+      const chosen = await chooseAppointment({ row: own[0], action: intent, keep, derive });
+      // "Move my appointment to Friday": the day already given goes straight to the free slots.
+      if (intent === 'reschedule' && textDate && chosen[NEXT_STATE]) {
+        return respondToPatientBooking({ ...link, version, reserva: chosen[NEXT_STATE] }, '', config, clinic, { date: textDate, time: wanted, partOfDay });
+      }
+      return chosen;
+    }
     await keep({ intent, awaiting: 'pick', choices: own.map(row => row.id) });
     return reply(`¿Qué cita quieres ${intent === 'cancel' ? 'anular' : 'cambiar'}?\n${own.map((row, index) => `${index + 1}. ${appointmentLine(row)}`).join('\n')}`, own.map((_row, index) => String(index + 1)));
   }
@@ -370,9 +438,8 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
     return chooseAppointment({ row, action: valid.intent, keep, derive });
   }
 
-  const clock = normalized.match(/^(?:a\s+las?\s+)?(\d{1,2}):(\d{2})$/);
-  const picked = number ? valid.slots?.[Number(number) - 1]
-    : clock ? valid.slots?.find(slot => slot.start_local === `${clock[1].padStart(2, '0')}:${clock[2]}`) : null;
+  const pickTime = clock ? wanted : !textDate ? hint?.time : null;
+  const picked = number ? valid.slots?.[Number(number) - 1] : pickTime ? valid.slots?.find(slot => slot.start_local === pickTime) : null;
   if (picked && valid.awaiting === 'slot') {
     await keep({ ...valid, selection: picked, awaiting: 'confirm', request_id: valid.request_id || crypto.randomUUID() });
     return reply(valid.intent === 'reschedule'
@@ -380,14 +447,11 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
       : `Has elegido el ${dateTimeLabel(picked.start_at)}. ¿Confirmas la reserva?`, CONFIRM_OPTIONS);
   }
 
-  const exactDate = normalized.match(/\b(\d{4}-\d{2}-\d{2})\b/)?.[1];
-  const parsed = parseNaturalAppointmentSlots(text);
-  const parsedDate = parsed.slotStart?.slice(0, 10) || (parsed.parsedYear ? `${parsed.parsedYear}-${String(parsed.parsedMonth).padStart(2, '0')}-${String(parsed.parsedDay).padStart(2, '0')}` : null);
-  const date = exactDate || parsedDate || (parsed.missingDay ? valid.date : null);
+  const date = textDate || (parsed.missingDay ? valid.date : null);
   const flow = intent !== 'book' && valid.intent === 'reschedule' && valid.appointment ? 'reschedule' : 'book';
   if (!date) {
     if (intent === 'book' || valid.awaiting === 'date') {
-      await keep(flow === 'reschedule' ? { ...valid, awaiting: 'date' } : { intent: 'book', awaiting: 'date' });
+      await keep(flow === 'reschedule' ? { ...valid, awaiting: 'date', part_of_day: partOfDay } : { intent: 'book', awaiting: 'date', part_of_day: partOfDay });
       const { today, maxDate } = getPublicBookingBounds();
       return reply(`¿Para qué día? Por ejemplo «mañana», «el lunes» o una fecha entre ${dateLabel(today)} y ${dateLabel(maxDate)}.`);
     }
@@ -402,8 +466,6 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
   const { today, maxDate } = getPublicBookingBounds();
   if (date < today || date > maxDate) return reply(`Solo puedo consultar fechas entre ${dateLabel(today)} y ${dateLabel(maxDate)}. ¿Qué día prefieres?`);
 
-  const wanted = clock ? `${clock[1].padStart(2, '0')}:${clock[2]}` : parsed.slotStart?.slice(11, 16)
-    || (parsed.missingDay ? `${String(parsed.parsedHour).padStart(2, '0')}:${String(parsed.parsedMinutes).padStart(2, '0')}` : null);
   const offer = { tipo: flow === 'reschedule' ? 'cambiar' : 'reservar', motivo: 'sin_hueco', date, hour: wanted || null,
     appointment_id: flow === 'reschedule' ? valid.appointment.id : null };
   let slots;
@@ -420,12 +482,16 @@ export async function respondToPatientBooking(link, text, config, clinic = null)
     return reply(`No quedan huecos libres el ${dateLabel(date)}.${closed} Puedes elegir otro día o pedir que te llamemos.`, ['Otro día', CALLBACK]);
   }
   const selection = wanted ? slots.find(slot => slot.start_local === wanted) : null;
-  await keep({ ...base, date, slots, selection: selection || null, awaiting: selection ? 'confirm' : 'slot', request_id: crypto.randomUUID(), callback_offer: offer });
+  // "Thursday afternoon": only that part of the day is offered, unless it is full.
+  const inWanted = !wanted && partOfDay ? slots.filter(slot => inPart(slot, partOfDay)) : [];
+  const shown = inWanted.length ? inWanted : slots;
+  const partNote = !wanted && partOfDay && !inWanted.length ? `Por la ${PARTS[partOfDay]} no quedan huecos ese día. ` : '';
+  await keep({ ...base, date, slots: shown, selection: selection || null, awaiting: selection ? 'confirm' : 'slot', request_id: crypto.randomUUID(), callback_offer: offer });
   if (selection) return reply(flow === 'reschedule'
     ? `Hay hueco el ${dateTimeLabel(selection.start_at)}. ¿Confirmas el cambio de tu cita del ${dateTimeLabel(valid.appointment.inicio_en)}?`
     : `Hay un hueco el ${dateTimeLabel(selection.start_at)}. ¿Confirmas la reserva?`, CONFIRM_OPTIONS);
-  return reply(`${wanted ? `A las ${wanted} no hay hueco. ` : ''}Horarios libres el ${dateLabel(date)}:\n${slots.map((slot, index) => `${index + 1}. ${slot.start_local}`).join('\n')}\nElige una hora, u otro día, o pide que te llamemos.`,
-    [...slots.map(slot => slot.start_local), CALLBACK]);
+  return reply(`${wanted ? `A las ${wanted} no hay hueco. ` : partNote}Horarios libres el ${dateLabel(date)}${inWanted.length ? ` por la ${PARTS[partOfDay]}` : ''}:\n${shown.map((slot, index) => `${index + 1}. ${slot.start_local}`).join('\n')}\nElige una hora, u otro día, o pide que te llamemos.`,
+    [...shown.map(slot => slot.start_local), CALLBACK]);
 }
 
 async function chooseAppointment({ row, action, keep, derive }) {
@@ -438,8 +504,8 @@ async function chooseAppointment({ row, action, keep, derive }) {
     await keep({ intent: 'cancel', appointment, awaiting: 'confirm' });
     return reply(`¿Confirmas que quieres anular tu cita del ${dateTimeLabel(row.inicio_en)}?`, CONFIRM_OPTIONS);
   }
-  await keep({ intent: 'reschedule', appointment, awaiting: 'date' });
-  return reply(`Vamos a cambiar tu cita del ${dateTimeLabel(row.inicio_en)}. ¿Para qué día la quieres?`);
+  const next = await keep({ intent: 'reschedule', appointment, awaiting: 'date' });
+  return reply(`Vamos a cambiar tu cita del ${dateTimeLabel(row.inicio_en)}. ¿Para qué día la quieres?`, [], { [NEXT_STATE]: next });
 }
 
 async function confirmBooking({ valid, patient, save, derive, config, link }) {

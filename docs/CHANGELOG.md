@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-13 — Capa de IA híbrida del agente de citas
+
+- `lib/booking-ai.js` (gpt-4o-mini, `BOOKING_AI_ENABLED`): interpreta el texto libre (intención, día tal como lo escribe, franja, hora, síntomas graves, preocupación) y redacta la respuesta final con la personalidad de `PROMPT_PERSONALIDAD_AGENTE_CITAS.md`. El backend sigue decidiendo huecos, reservas, 24 h, Plan B y estados.
+- Validador anti-alucinación: la redacción se descarta si añade u omite números, días o meses, afirma un resultado (confirmada, anulada, te llamaremos…) que el texto del backend no dice, pierde CONFIRMAR/VINCULAR o un botón, añade enlaces, consejo clínico o se presenta como persona. Fallo, timeout (4 s) o JSON no válido ⇒ respuesta determinista.
+- Solo el CONFIRMAR literal aplica cambios: «sí, resérvamela», «vale» o «gracias» con una confirmación pendiente recuerdan pulsar CONFIRMAR.
+- «Jueves por la tarde» muestra solo los huecos de la tarde; «cambia mi cita al lunes» va directo a los huecos de ese día.
+- Síntomas potencialmente graves (modelo o palabras clave): aviso fijo de 112/urgencias, sin diagnóstico y sin emojis.
+- Al modelo solo llegan el texto del paciente, el texto del backend, el tono y, con pacientes habituales, el nombre de pila. Nunca teléfono, apellidos ni identificadores (`store: false`).
+- Corregido el intérprete de fechas: «pasado mañana» son dos días y «por la mañana» ya no significa mañana.
+
 ## 2026-10-13 — Rediseño del copiloto clínico
 
 - Una sola columna: paciente y modo arriba, contexto del caso plegable (resumen + campos estructurados), conversación y acciones en dos filas (acción principal; aprobar / PDF / Telegram). Desaparece la columna lateral de 260 px que se cortaba y superponía texto.

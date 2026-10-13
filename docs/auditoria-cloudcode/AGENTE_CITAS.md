@@ -41,12 +41,7 @@ Telegram ──▶ n8n «Bot paciente» (Telegram Trigger) ──▶ POST /api/t
 - **Independiente del canal.** El dominio devuelve `{ text, options, requestContact }`:
   - Telegram muestra las opciones como teclado.
   - WhatsApp ya usa la misma función y añade «Opciones: …» como texto.
-- **Sin LLM.** La conversación se resuelve con botones, palabras clave y el intérprete de fechas existente (Europe/Madrid).
-  - Coste por mensaje: 0 €.
-  - Latencia: lo que tarden las lecturas.
-  - El modelo no puede inventar horarios ni confirmaciones.
-  
-  Un LLM solo aportaría frases libres más naturales. Si se añade, debe limitarse a clasificar la intención y redactar, con presupuesto autorizado.
+- **Determinista con IA híbrida opcional.** Botones, palabras clave y el intérprete de fechas (Europe/Madrid) siguen siendo el núcleo. Con `BOOKING_AI_ENABLED=true` se añade la capa de IA descrita en «Capa de IA híbrida»: solo interpreta y redacta.
 - **Estado persistido** en `crm_mensajeria_vinculos.reserva` con versión optimista. Las selecciones caducan a los 10 minutos.
 
 ## Funciones y reglas implementadas
@@ -85,6 +80,29 @@ Telegram ──▶ n8n «Bot paciente» (Telegram Trigger) ──▶ POST /api/t
 **Avisos al paciente (siempre, a cualquier paciente con el chat vinculado).** Cuando la clínica crea, confirma, cambia o anula una cita desde el CRM, se guarda un aviso en `crm_avisos_paciente` (uno por versión de la cita) y n8n lo envía por el bot de pacientes. Sin baja (BAJA) y solo citas futuras. Un envío dudoso no se repite; lo que seguro no salió se reintenta cada 15 min (`/api/cron/avisos-agente`, máximo 5 intentos).
 
 No existen en el modelo de datos servicios ni precios, así que el agente no los menciona.
+
+## Capa de IA híbrida (13-oct-2026, decisión de Raúl)
+
+```
+texto libre ─▶ interpretMessage (gpt-4o-mini, en paralelo con las lecturas) ─▶ pista {intención, día literal, franja, hora, urgente, preocupado}
+                                                                              │ el backend convierte el día con su propio intérprete
+respondToPatientBooking (reglas, huecos, 24 h, Plan B, estados) ─▶ texto base (hechos)
+                                                                              ▼
+composeReply (tono nuevo/habitual) ─▶ rejectComposition(base, propuesta) ─▶ válida: se envía · no válida/fallo: texto base
+                                                                              ▼
+                                                    urgente ⇒ se antepone el aviso fijo de 112 (nunca lo redacta la IA)
+```
+
+- **Dónde vive: backend** (`lib/booking-ai.js`), no n8n. Pros: el validador necesita los hechos del backend; un salto menos (≈1–2,5 s añadidos); pruebas deterministas con la IA simulada; respaldo inmediato. Contra: no se ve en el lienzo de n8n. n8n sigue orquestando el disparador de Telegram y los avisos.
+- **La IA no decide nada.** Sus intenciones solo rellenan lo que las palabras clave no entendieron (nunca CONFIRMAR ni BAJA). El día lo copia tal como lo escribe el paciente y el backend lo convierte. Botones, horas, números, códigos y confirmaciones no se envían al modelo.
+- **Solo el CONFIRMAR literal** aplica una reserva, cambio o anulación. «Sí, resérvamela», «vale» o «gracias» con una confirmación pendiente responden «pulsa CONFIRMAR».
+- **Validador** (`rejectComposition`): se descarta la redacción si añade u omite números (salvo el año), añade días o meses, afirma un resultado que el texto base no contiene (confirmada, reservada, anulada, registrada, te llamaremos, avisada…), pierde palabras en MAYÚSCULAS o botones «…», añade enlaces o emails, da consejo clínico, se presenta como persona o hace preguntas nuevas.
+- **Tono** según el CRM: «habitual» = ficha revisada y alguna cita pasada; si no, «nuevo» (formal, sin emojis). Sin emojis si el paciente está preocupado.
+- **Síntomas graves**: el modelo o una lista de palabras clave (funciona sin IA) activan el aviso fijo «…llama al 112 o acude a urgencias». Sin diagnóstico.
+- **Privacidad**: al modelo solo llegan el texto del paciente, el texto base, el tono y el nombre de pila de los habituales. `store: false`.
+- **Variables**: `BOOKING_AI_ENABLED`, `BOOKING_AI_MODEL` (gpt-4o-mini), `BOOKING_AI_TIMEOUT_MS` (4000). Usa `OPENAI_API_KEY`. Con la variable a `false` el agente vuelve a ser 100 % determinista.
+- **Coste**: dos llamadas cortas por mensaje de texto libre y una por pulsación de botón; céntimos al día.
+- **Pruebas**: `test/booking-ai.test.js` (validador, filtro de entrada, palabras clave, fechas) y 6 casos en `test/booking-agent.test.js` (franja, alucinación de confirmación y hora inventada, fallos/timeout/JSON no válido, 112, privacidad y tono, cambio con día). Mutaciones del validador y de la guarda de CONFIRMAR detectadas.
 
 ## Archivos modificados o nuevos
 
@@ -131,7 +149,7 @@ Paciente: CONFIRMAR                         Bot: Cita confirmada para el jueves,
 
 ## Límites conocidos
 
-- Comprensión de texto libre limitada: palabras clave y fechas. Lo que no entiende vuelve al menú. Una petición como «quiero mover la cita al viernes» inicia el cambio, pero pregunta el día otra vez.
+- Sin IA, la comprensión de texto libre se limita a palabras clave y fechas; lo que no entiende vuelve al menú. Con IA mejora, pero «la semana que viene» sin día concreto sigue preguntando el día. Con varias citas, el día dicho al pedir el cambio se vuelve a preguntar tras elegir la cita.
 - Un solo profesional (configuración del piloto). Las citas con otros profesionales se derivan a la clínica.
 - Si n8n contesta con error a un envío de Telegram que en realidad salió, el reintento podría duplicar ese aviso (caso raro; los tiempos de espera y los 5xx no se reintentan).
 - Los festivos locales de Terrassa de 2027 aún no están en `BOOKING_EXTRA_HOLIDAYS`: hay que añadirlos cuando el Ayuntamiento los publique.

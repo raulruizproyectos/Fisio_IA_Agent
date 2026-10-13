@@ -50,9 +50,11 @@ export function parseNaturalAppointmentSlots(text = '', reference = new Date()) 
     if (month < nowMonth || (month === nowMonth && day < nowDay)) year = nowYear + 1;
   }
 
-  if (!day && /\bmanana\b/.test(t)) {
+  // "por la mañana" is a part of the day, not tomorrow; "pasado mañana" is two days ahead.
+  const relative = t.replace(/\bpor la manana\b/g, ' ');
+  if (!day && /\bmanana\b/.test(relative)) {
     const d = new Date(now);
-    d.setDate(d.getDate() + 1);
+    d.setDate(d.getDate() + (/\bpasado manana\b/.test(relative) ? 2 : 1));
     day = d.getDate();
     month = d.getMonth() + 1;
     year = d.getFullYear();

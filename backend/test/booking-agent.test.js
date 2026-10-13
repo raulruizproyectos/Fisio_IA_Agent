@@ -22,6 +22,7 @@ const { patientMayChange } = await import('../src/lib/patient-booking.js');
 const { holidayName } = await import('../src/lib/clinic-calendar.js');
 const { isOfferedPublicBookingSlot } = await import('../src/routes/professional.js');
 const { enqueueAppointmentNotice, dispatchPendingNotices } = await import('../src/lib/agent-notices.js');
+const { URGENT_NOTICE } = await import('../src/lib/booking-ai.js');
 
 const clinic = process.env.MESSAGING_PILOT_CLINIC_ID;
 const professional = process.env.MESSAGING_PILOT_PROFESSIONAL_ID;
@@ -104,7 +105,16 @@ async function withAgent(fn) {
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const sent = [];
+  const aiCalls = [];
+  let aiHandler = null;
   globalThis.fetch = async (url, options) => {
+    // The model double: tests choose what the "AI" answers; its requests are kept apart from deliveries.
+    if (String(url).startsWith('https://api.openai.com/')) {
+      const body = JSON.parse(options.body);
+      aiCalls.push(body);
+      if (!aiHandler) throw new Error('unexpected AI call');
+      return aiHandler(body, options);
+    }
     sent.push({ url: String(url), body: JSON.parse(options.body), headers: options.headers });
     // n8n answers {sent:true} once Telegram accepted the message.
     return String(url).startsWith('https://n8n.example/') ? Response.json({ sent: true }) : Response.json({ ok: true, result: {} });
@@ -126,7 +136,8 @@ async function withAgent(fn) {
     db.tables.crm_citas.push(row);
     return row;
   };
-  try { await fn({ db, post, say, sent, link, appointment }); }
+  const ai = (handler) => { aiHandler = handler; };
+  try { await fn({ db, post, say, sent, link, appointment, ai, aiCalls }); }
   finally { globalThis.fetch = originalFetch; serviceSupabase.from = previousFrom; await new Promise(resolve => server.close(resolve)); }
 }
 
@@ -502,4 +513,110 @@ test('avisos: sin n8n quedan pendientes y el reenvío solo repite lo que seguro 
     assert.deepEqual(db.tables.crm_avisos_paciente.map(row => row.estado), ['enviado', 'incierto']);
     assert.equal(sent.length, 1);
   } finally { delete process.env.N8N_PATIENT_NOTICE_WEBHOOK_URL; delete process.env.N8N_WEBHOOK_SECRET; }
+}));
+
+// Capa de IA híbrida: el modelo se simula; solo interpreta y redacta, y el backend valida todo.
+const modelAnswer = (content) => Response.json({ choices: [{ message: { content: typeof content === 'string' ? content : JSON.stringify(content) } }] });
+const fakeModel = ({ interpret = () => ({ intent: 'otro' }), compose = (facts) => ({ text: facts.mensaje_base }) } = {}) => (body) => (
+  body.messages[0].content.startsWith('Clasificas')
+    ? modelAnswer(interpret(JSON.parse(body.messages[1].content.split('Mensaje del paciente: ')[1])))
+    : modelAnswer(compose(JSON.parse(body.messages[1].content))));
+async function withAi(fn) {
+  process.env.BOOKING_AI_ENABLED = 'true';
+  process.env.OPENAI_API_KEY = 'sk-test-local';
+  try { await fn(); } finally { for (const name of ['BOOKING_AI_ENABLED', 'OPENAI_API_KEY', 'BOOKING_AI_TIMEOUT_MS']) delete process.env[name]; }
+}
+const optionsOf = (result) => (result.reply.reply_markup.keyboard || []).flat().map(button => button.text);
+
+test('IA híbrida: «la semana que viene por la tarde» va a los huecos de la tarde y la redacción conserva los datos', async () => withAi(() => withAgent(async ({ db, say, link, ai }) => {
+  link(patientA, 2000);
+  const date = weekday(7);
+  ai(fakeModel({ interpret: () => ({ intent: 'reservar', day: date, part_of_day: 'tarde', time: null, urgent: false, worried: false }),
+    compose: (facts) => ({ text: facts.mensaje_base.replace('Horarios libres', 'Claro, vamos a verlo. Estos son los huecos libres') }) }));
+  const result = await say('Quería venir la semana que viene por la tarde', 2000);
+  assert.match(result.reply.text, /^Claro, vamos a verlo/);
+  const hours = optionsOf(result).filter(option => /^\d\d:\d\d$/.test(option));
+  assert.ok(hours.length > 0 && hours.every(hour => hour >= '14:00'), hours.join());
+  assert.equal(db.tables.crm_citas.length, 0);
+  ai(fakeModel({ interpret: () => ({ intent: 'hablar_clinica' }) }));
+  assert.match((await say('¿Puedo hablar con Carla?', 2000)).reply.text, /registrada/);
+  assert.equal(db.tables.crm_solicitudes_contacto.length, 1);
+})));
+
+test('IA híbrida: una redacción que «confirma» sin cita creada o inventa una hora se descarta; solo CONFIRMAR reserva', async () => withAi(() => withAgent(async ({ db, say, link, ai }) => {
+  link(patientA, 2010);
+  const date = weekday(8);
+  ai(fakeModel({ compose: (facts) => ({ text: `¡Hecho! Tu cita queda confirmada. ${facts.mensaje_base}` }) }));
+  const offered = await say(`${date} a las 10:00`, 2010);
+  assert.match(offered.reply.text, /^Hay un hueco/);
+  assert.doesNotMatch(offered.reply.text, /confirmada/);
+  ai(fakeModel({ interpret: () => ({ intent: 'reservar' }), compose: (facts) => ({ text: `${facts.mensaje_base} También tengo libre a las 11:30.` }) }));
+  const affirmative = await say('Sí, venga, resérvamela', 2010);
+  assert.match(affirmative.reply.text, /pulsa CONFIRMAR/);
+  assert.doesNotMatch(affirmative.reply.text, /11:30/);
+  assert.match((await say('perfecto, muchas gracias', 2010)).reply.text, /pulsa CONFIRMAR/);
+  assert.equal(db.tables.crm_citas.length, 0);
+  ai(fakeModel());
+  assert.match((await say('CONFIRMAR', 2010)).reply.text, /Cita confirmada/);
+  assert.equal(db.tables.crm_citas.length, 1);
+})));
+
+test('IA híbrida: error, tiempo agotado o respuesta no válida dejan la respuesta determinista', async () => withAi(() => withAgent(async ({ db, say, link, ai }) => {
+  link(patientA, 2020);
+  process.env.BOOKING_AI_TIMEOUT_MS = '500';
+  const failures = [
+    () => { throw new Error('network'); },
+    () => new Response('fail', { status: 500 }),
+    () => modelAnswer('esto no es JSON'),
+    () => modelAnswer({ intent: 'confirmar', text: '' }),
+    (_body, options) => new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(options.signal.reason))),
+  ];
+  for (const failure of failures) {
+    ai(failure);
+    assert.match((await say('Me gustaría reservar cita', 2020)).reply.text, /^¿Para qué día\?/);
+  }
+  assert.equal(db.tables.crm_citas.length, 0);
+})));
+
+test('síntomas graves: se recomienda el 112 sin diagnosticar, con o sin IA, y sin emojis', async () => withAgent(async ({ say, link, ai }) => {
+  link(patientA, 2030);
+  assert.ok((await say('Tengo un dolor fuerte en el pecho y me cuesta respirar', 2030)).reply.text.startsWith(URGENT_NOTICE));
+  await withAi(async () => {
+    ai(fakeModel({ interpret: () => ({ intent: 'reservar', day: null, part_of_day: null, time: null, urgent: true, worried: true }),
+      compose: (facts) => ({ text: `${facts.paciente_preocupado ? 'Vaya, lo siento. ' : ''}${facts.mensaje_base} 😊` }) }));
+    const answer = (await say('Desde la caída tengo la pierna rara y no la noto bien', 2030)).reply.text;
+    assert.ok(answer.startsWith(URGENT_NOTICE));
+    assert.match(answer, /Vaya, lo siento\. ¿Para qué día\?/);
+    assert.doesNotMatch(answer, /😊/);
+  });
+  assert.ok((await say('me he desmayado y me duele la espalda', 2031)).reply.text.startsWith(URGENT_NOTICE));
+}));
+
+test('IA híbrida: a la IA no llegan teléfono, apellidos ni identificadores; tono según el CRM', async () => withAi(() => withAgent(async ({ db, say, link, appointment, ai, aiCalls }) => {
+  db.tables.crm_pacientes[0].apellidos = 'Apellidoprivado';
+  link(patientA, 2040); link(patientB, 2041);
+  appointment(patientB, Date.now() - 72 * HOUR, { estado: 'completada' });
+  const seen = [];
+  ai(fakeModel({ compose: (facts) => { seen.push(facts); return { text: `${facts.mensaje_base} 🙂` }; } }));
+  const first = await say('Hola, ¿qué tal? Quería saber qué puedo hacer por aquí', 2040);
+  const second = await say('Hola, ¿qué tal? Quería saber qué puedo hacer por aquí', 2041);
+  assert.deepEqual([seen[0].tono, seen[0].nombre_paciente, seen[1].tono, seen[1].nombre_paciente], ['nuevo', null, 'habitual', 'Berta']);
+  assert.doesNotMatch(first.reply.text, /🙂/);
+  assert.match(second.reply.text, /🙂/);
+  const payload = JSON.stringify(aiCalls);
+  for (const secret of ['Apellidoprivado', '600 111 222', '600 333 444', patientA, patientB, clinic, professional, '"2040"', '"2041"']) assert.ok(!payload.includes(secret), secret);
+})));
+
+test('cambiar con el día en el mismo mensaje: muestra los huecos sin volver a preguntarlo', async () => withAgent(async ({ db, say, link, appointment }) => {
+  link(patientA, 2050);
+  const original = appointment(patientA, madridNoon(weekday(5)));
+  const target = weekday(10);
+  const offered = await say(`Quiero cambiar mi cita al ${target}`, 2050);
+  assert.match(offered.reply.text, /Horarios libres/);
+  assert.match((await say(offered.reply.reply_markup.keyboard[0][0].text, 2050)).reply.text, /Vas a cambiar tu cita/);
+  assert.match((await say('vale', 2050)).reply.text, /pulsa CONFIRMAR/);
+  assert.match((await say('CONFIRMAR', 2050)).reply.text, /Tu cita ha cambiado/);
+  assert.equal(db.tables.crm_citas.length, 1);
+  assert.equal(db.tables.crm_citas[0].id, original.id);
+  assert.equal(db.tables.crm_citas[0].inicio_en.slice(0, 10), target);
 }));
