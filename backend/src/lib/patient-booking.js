@@ -107,7 +107,8 @@ const lastResort = (clinic) => (clinic.telefono || clinic.email ? ` Si es urgent
 const needsClinicReview = (patient) => patient?.origen_alta === 'asistente_telegram' && !patient.revisada_en;
 
 // Plan B: store the request first, then promise the call. Without a stored row nothing is promised.
-async function storeCallback({ clinic, config, link, patient, save, intro = '', pending, phone, keepState = false }) {
+async function storeCallback({ clinic, config, link, patient, save, intro = '', pending, phone, keepState = false,
+  registered = CONTACT_REQUEST_REGISTERED, already = CONTACT_REQUEST_ALREADY, keyboard = MENU }) {
   const prefix = intro ? `${intro} ` : '';
   try {
     const { row, created } = await registerContactRequest({ clinicId: config.clinicId, patientId: patient?.id || null, linkId: link?.id || null,
@@ -115,9 +116,9 @@ async function storeCallback({ clinic, config, link, patient, save, intro = '', 
       date: pending.date || null, hour: pending.hour || null, appointmentId: pending.appointment_id || null, requestId: pending.request_id || crypto.randomUUID() });
     if (!keepState && save) await save({}).catch(() => {});
     if (created) await notifyContactRequest(row, { patientName: patient ? `${patient.nombre} ${patient.apellidos || ''}`.trim() : null, professionalId: config.professionalId });
-    return reply(`${prefix}${created ? CONTACT_REQUEST_REGISTERED : CONTACT_REQUEST_ALREADY}`, MENU);
+    return reply(`${prefix}${created ? registered : already}`, keyboard);
   } catch {
-    return reply(`${prefix}Ahora no he podido registrar tu petición. Inténtalo de nuevo en unos minutos.${lastResort(clinic)}`, MENU);
+    return reply(`${prefix}Ahora no he podido registrar tu petición. Inténtalo de nuevo en unos minutos.${lastResort(clinic)}`, keyboard);
   }
 }
 
@@ -190,7 +191,8 @@ async function registerNewPatient({ link, chatId, fromId, text, contact, clinic 
     if ((patients.data || []).some(row => lastNine(row.telefono).length === 9 && lastNine(row.telefono) === lastNine(digits))) {
       // Plan B: the clinic calls this verified number and gives the personal code.
       return storeCallback({ clinic, config, link: { canal: 'telegram', chat_id: chatId }, patient: null,
-        intro: 'Este teléfono ya figura en la clínica. Para proteger tus datos, la vinculación se hace con un código personal (VINCULAR CÓDIGO) que te dará la clínica.',
+        intro: 'Este teléfono ya figura en la clínica. Para proteger tus datos, la vinculación se hace con un código personal que te dará la clínica.',
+        registered: EXISTING_PHONE_REGISTERED, already: EXISTING_PHONE_WAITING, keyboard: [],
         pending: { tipo: 'otro', motivo: 'telefono_existente' }, phone: normalizeContactPhone(digits) });
     }
     const payload = { clinica_id: config.clinicId, canal: 'telegram', chat_id: chatId, telefono: digits, paciente_id: null, reserva: { onboarding: 'name' } };
@@ -224,8 +226,28 @@ async function registerNewPatient({ link, chatId, fromId, text, contact, clinic 
   }
   if (link?.reserva?.onboarding === 'creating') return reply(`Tu alta está pendiente de revisión por la clínica.${lastResort(clinic)}`);
 
-  return reply(`${welcome} Si ya eres paciente, envía VINCULAR y el código que te dé la clínica. Si es tu primera vez, pulsa «Compartir mi teléfono» para darte de alta: usaremos este chat solo para gestionar tus citas y enviarte recordatorios.`, [], { requestContact: true });
+  // Already asked the clinic for a code from this chat: say so instead of starting over.
+  const waiting = await serviceSupabase.from('crm_solicitudes_contacto').select('id').eq('clinica_id', config.clinicId)
+    .eq('canal', 'telegram').eq('chat_id', String(chatId)).eq('motivo', 'telefono_existente').neq('estado', 'resuelta').limit(1);
+  if (!waiting.error && waiting.data?.length) return reply(`${EXISTING_PHONE_WAITING}${lastResort(clinic)}`);
+
+  // The full welcome on a greeting or a first contact; whoever already got it today gets a short reminder of the button.
+  const seen = isGreeting(text) ? null : await serviceSupabase.from('crm_mensajeria_eventos').select('id').eq('clinica_id', config.clinicId)
+    .eq('chat_id', String(chatId)).eq('estado', 'procesado').gte('created_at', new Date(Date.now() - 86_400_000).toISOString()).limit(1);
+  if (!seen || seen.error || !seen.data?.length) {
+    return reply(`${welcome} Si ya eres paciente, envía VINCULAR y el código que te dé la clínica. Si es tu primera vez, pulsa «Compartir mi teléfono» para darte de alta: usaremos este chat solo para gestionar tus citas y enviarte recordatorios.`, [], { requestContact: true });
+  }
+  return reply('Antes de nada necesito verificar tu teléfono: pulsa el botón «Compartir mi teléfono» de abajo (no hace falta escribirlo). Si ya eres paciente y tienes código, envía VINCULAR y el código.', [], { requestContact: true });
 }
+
+const EXISTING_PHONE_REGISTERED = 'Te llamaremos a este número para darte tu código. Cuando lo tengas, envíalo aquí así: VINCULAR y el código.';
+const EXISTING_PHONE_WAITING = 'Tu petición ya está registrada: la clínica te llamará para darte tu código. Cuando lo tengas, envíalo aquí así: VINCULAR y el código.';
+
+// First contact ("/start", "hola", empty) gets the full welcome; anything else gets the short reminder.
+const isGreeting = (text) => {
+  const value = String(text || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return !value || value.startsWith('/start') || /^(hola|buenas|buenos dias|buenas tardes|buenas noches|hi|hello|ey|hey)\b[\s!.,¡?¿]*$/.test(value);
+};
 
 export async function handlePatientMessage({ canal, chatId, fromId = null, text = '', contact = null }, config) {
   const code = linkCodeFrom(text);

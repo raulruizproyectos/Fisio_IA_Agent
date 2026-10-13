@@ -181,7 +181,7 @@ test('paciente nuevo: contacto propio verificado, alta mínima y sin crear dos f
 test('teléfono de una ficha existente: no vincula ni crea ficha y pide el código de la clínica', async () => withAgent(async ({ db, post, appointment }) => {
   appointment(patientA, Date.now() + 72 * HOUR);
   const answer = await post({ chat: 901, from: 901, body: { contact: { phone_number: '34600111222', user_id: 901 } } });
-  assert.match(answer.reply.text, /VINCULAR CÓDIGO/);
+  assert.match(answer.reply.text, /código personal.*VINCULAR y el código/s);
   assert.doesNotMatch(answer.reply.text, /Ana|cita del/);
   assert.equal(db.tables.crm_mensajeria_vinculos.length, 0);
   assert.equal(db.tables.crm_pacientes.length, 2);
@@ -425,10 +425,24 @@ test('plan B: sin teléfono en la ficha se pide solo ese dato antes de registrar
 
 test('teléfono ya registrado en otra ficha: se registra la llamada con el teléfono verificado', async () => withAgent(async ({ db, post }) => {
   const answer = await post({ chat: 1500, from: 1500, body: { contact: { phone_number: '34600111222', user_id: 1500 } } });
-  assert.match(answer.reply.text, /código personal.*Tu petición ha quedado registrada/s);
+  assert.match(answer.reply.text, /código personal.*Te llamaremos a este número/s);
+  assert.doesNotMatch(answer.reply.text, /confirmarte la cita/);
+  assert.equal(answer.reply.reply_markup?.keyboard, undefined);
   assert.deepEqual(db.tables.crm_solicitudes_contacto.map(row => [row.motivo, row.telefono, row.paciente_id, row.chat_id]),
     [['telefono_existente', '+34600111222', null, '1500']]);
   assert.equal(db.tables.crm_mensajeria_vinculos.length, 0);
+  // Writing again does not start over: the open request is acknowledged and nothing is duplicated.
+  const again = await post({ chat: 1500, from: 1500, body: { text: 'Mis citas' } });
+  assert.match(again.reply.text, /ya está registrada.*VINCULAR y el código/s);
+  assert.equal(db.tables.crm_solicitudes_contacto.length, 1);
+}));
+
+test('sin verificar: bienvenida completa al saludar o la primera vez; después, solo el recordatorio del botón', async () => withAgent(async ({ say }) => {
+  assert.match((await say('Quiero una cita', 1600)).reply.text, /asistente automático de citas/);
+  const second = (await say('Carmen Prueba Ficticia', 1600)).reply;
+  assert.match(second.text, /^Antes de nada necesito verificar tu teléfono/);
+  assert.equal(second.reply_markup.keyboard[0][0].request_contact, true);
+  assert.match((await say('Hola', 1600)).reply.text, /asistente automático de citas/);
 }));
 
 test('paciente nuevo: su cita queda pendiente de la clínica hasta revisar la ficha', async () => withAgent(async ({ db, say, post }) => {
