@@ -1,28 +1,27 @@
 ---
-// AssistantRail.astro
+// AssistantRail.astro — clinical copilot. One column: patient and mode, collapsible case context,
+// conversation, composer and the plan actions (generate → approve → PDF / Telegram).
+// IDs, data-* and the classes read by index.astro are contracts: keep them.
 ---
 
-<aside class="fixed inset-y-0 right-0 z-50 w-full md:w-[480px] lg:w-[560px] bg-white border-l border-gray-200 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col assistant-rail" id="assistantRail" aria-label="Copiloto clinico" aria-hidden="true" data-copilot-build="clinical-copilot-20260518">
-  
-  <header class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+<aside class="assistant-rail translate-x-full" id="assistantRail" aria-label="Copiloto clínico" aria-hidden="true" data-copilot-build="clinical-copilot-20260518">
+
+  <header class="cp-header">
     <div class="assistant-rail-heading">
       <span class="assistant-brand-mark material-symbols-rounded" aria-hidden="true">clinical_notes</span>
-      <div>
-      <div class="flex items-center gap-2 mb-0.5">
-        <span class="text-[11px] font-medium text-emerald-600 uppercase tracking-widest">Copiloto clínico</span>
-        <div class="flex items-center gap-1.5 bg-emerald-50 px-2 py-0.5 rounded-full">
-          <span class="relative flex h-2 w-2" id="agentDot">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      <div class="cp-heading-text">
+        <div class="cp-eyebrow">
+          <span>Copiloto clínico</span>
+          <span class="cp-status">
+            <span class="cp-status-dot" id="agentDot" aria-hidden="true"></span>
+            <span id="agentStatusText">Conectado</span>
           </span>
-          <span class="text-[10px] font-medium text-emerald-700 uppercase tracking-wider" id="agentStatusText">Conectado</span>
         </div>
-      </div>
-      <h2 class="text-base font-medium text-[#11181C]">Conversación y plan terapéutico</h2>
+        <h2>Plan terapéutico asistido</h2>
       </div>
     </div>
-    <button type="button" class="text-[#687076] hover:bg-gray-100 p-2 rounded-full transition-colors" id="assistantRailClose" aria-label="Cerrar copiloto">
-      <span class="material-symbols-rounded">close</span>
+    <button type="button" class="cp-icon-btn" id="assistantRailClose" aria-label="Cerrar copiloto">
+      <span class="material-symbols-rounded" aria-hidden="true">close</span>
     </button>
   </header>
 
@@ -33,161 +32,165 @@
     <li><span>4</span><strong>Entrega</strong></li>
   </ol>
 
-  <div class="flex-1 overflow-hidden flex flex-col md:flex-row bg-[#FAFAF8]">
-    
-    <!-- Chat Section -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden border-r border-gray-100" aria-label="Conversacion con el copiloto">
-      
-      <!-- Top controls -->
-      <div class="bg-white px-4 py-3 border-b border-gray-100 flex flex-col gap-3">
-        <div class="relative flex items-center w-full">
-          <span class="material-symbols-rounded absolute left-3 text-gray-400 text-lg">person_search</span>
-          <select id="chatPatientSelect" aria-label="Paciente del informe" class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-2 focus:ring-emerald-50 rounded-xl py-2 pl-10 pr-4 text-sm text-[#11181C] appearance-none outline-none transition-all">
+  <div class="cp-body">
+    <main class="cp-main" aria-label="Conversación con el copiloto">
+
+      <section class="cp-setup" aria-label="Paciente y modo de trabajo">
+        <div class="cp-select">
+          <span class="material-symbols-rounded cp-select-icon" aria-hidden="true">person_search</span>
+          <select id="chatPatientSelect" aria-label="Paciente del informe">
             <option value="">Selecciona paciente para informe...</option>
           </select>
+          <span class="material-symbols-rounded cp-select-chevron" aria-hidden="true">expand_more</span>
         </div>
-        
-        <div class="flex items-center gap-1 p-1 bg-gray-100 rounded-xl overflow-x-auto hide-scrollbar" id="assistantModeSwitch" aria-label="Modo de trabajo del copilot">
-          <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-emerald-700 bg-white shadow-sm flex-1 whitespace-nowrap transition-all" data-assistant-mode="new-plan" aria-pressed="true">
-            <span class="material-symbols-rounded text-[18px]">electric_bolt</span> Plan
+        <div class="cp-segmented" id="assistantModeSwitch" role="group" aria-label="Modo de trabajo del copiloto">
+          <button type="button" class="is-active" data-assistant-mode="new-plan" aria-pressed="true">
+            <span class="material-symbols-rounded" aria-hidden="true">electric_bolt</span> Plan nuevo
           </button>
-          <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] flex-1 whitespace-nowrap transition-all" data-assistant-mode="update-plan" aria-pressed="false">
-            <span class="material-symbols-rounded text-[18px]">neurology</span> Ajuste
+          <button type="button" data-assistant-mode="update-plan" aria-pressed="false">
+            <span class="material-symbols-rounded" aria-hidden="true">tune</span> Ajustar
           </button>
-          <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#687076] hover:text-[#11181C] flex-1 whitespace-nowrap transition-all" data-assistant-mode="next-session" aria-pressed="false">
-            <span class="material-symbols-rounded text-[18px]">event_available</span> Visita
+          <button type="button" data-assistant-mode="next-session" aria-pressed="false">
+            <span class="material-symbols-rounded" aria-hidden="true">event_available</span> Próxima visita
+          </button>
+        </div>
+      </section>
+
+      <details class="cp-context">
+        <summary class="cp-context-summary">
+          <span class="material-symbols-rounded cp-context-icon" aria-hidden="true">badge</span>
+          <span class="cp-context-text">
+            <strong id="assistantPatientLabel">Sin paciente seleccionado</strong>
+            <span id="assistantPatientMeta">Selecciona uno para vincular la conversación.</span>
+          </span>
+          <span class="cp-context-toggle">Contexto<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></span>
+        </summary>
+
+        <div class="cp-context-body" aria-label="Contexto clínico del paciente">
+          <div class="cp-brief" id="assistantPatientBrief" aria-live="polite"></div>
+
+          <div class="cp-diagnostic" id="assistantDiagnosticCard">
+            <div class="cp-diagnostic-head">
+              <div>
+                <span class="cp-kicker">Contexto estructurado</span>
+                <strong>Afinar la propuesta</strong>
+              </div>
+              <button type="button" class="cp-link-btn" id="assistantDiagnosticToggle" aria-expanded="false" aria-controls="assistantDiagnosticGrid">Añadir contexto</button>
+            </div>
+            <div class="cp-diagnostic-grid" id="assistantDiagnosticGrid">
+              <label>
+                <span>Área afectada</span>
+                <select id="assistantAreaInput">
+                  <option value="">Seleccionar...</option>
+                  <option value="Cervical">Cervical</option><option value="Dorsal">Dorsal</option>
+                  <option value="Lumbar">Lumbar</option><option value="Hombro">Hombro</option>
+                  <option value="Codo y muñeca">Codo y muñeca</option><option value="Cadera">Cadera</option>
+                  <option value="Rodilla">Rodilla</option><option value="Tobillo y pie">Tobillo y pie</option>
+                </select>
+              </label>
+              <label>
+                <span>Tipo de caso</span>
+                <select id="assistantInjuryTypeInput">
+                  <option value="">Seleccionar...</option>
+                  <option value="Dolor mecanico">Dolor mecánico</option>
+                  <option value="Lesion deportiva">Lesión deportiva</option>
+                  <option value="Postoperatorio">Postoperatorio</option>
+                  <option value="Dolor cronico">Dolor crónico</option>
+                </select>
+              </label>
+              <label>
+                <span>Duración</span>
+                <input id="assistantDurationInput" type="text" placeholder="Ej. 3 semanas" />
+              </label>
+              <label>
+                <span>Dolor (0–10)</span>
+                <select id="assistantPainLevelInput">
+                  <option value="">Escala</option>
+                  <option value="0/10">0</option><option value="1/10">1</option><option value="2/10">2</option>
+                  <option value="3/10">3</option><option value="4/10">4</option><option value="5/10">5</option>
+                  <option value="6/10">6</option><option value="7/10">7</option><option value="8/10">8</option>
+                  <option value="9/10">9</option><option value="10/10">10</option>
+                </select>
+              </label>
+              <label class="cp-span-2">
+                <span>Objetivo</span>
+                <textarea id="assistantObjectiveInput" rows="2" placeholder="Ej. volver a correr 5 km sin dolor"></textarea>
+              </label>
+            </div>
+            <p class="cp-diagnostic-summary" id="assistantDiagnosticSummary">Rellena 2 o 3 campos para una propuesta más precisa.</p>
+          </div>
+        </div>
+      </details>
+
+      <div class="assistant-dialog-surface">
+        <div class="assistant-dialog-scroll">
+          <div class="cp-log" id="chatLog"></div>
+        </div>
+      </div>
+
+      <div class="assistant-quick-actions" id="assistantQuickActions">
+        <span class="quick-actions-label">Atajos</span>
+        <div class="quick-action-chips">
+          <button type="button" class="quick-action-chip" data-prompt="Diseña un plan de ejercicios para hernia discal lumbar L5-S1 con foco en core (Bird-Dog, planchas laterales y puentes glúteos). Habilita el PDF para casa.">
+            <span class="material-symbols-rounded" aria-hidden="true">fitness_center</span> Hernia L5-S1
+          </button>
+          <button type="button" class="quick-action-chip" data-prompt="Genera una nota SOAP evolutiva para un esguince de tobillo grado II. Incluye progresión en rango de movimiento, movilizaciones manuales y propiocepción.">
+            <span class="material-symbols-rounded" aria-hidden="true">edit_note</span> Nota SOAP tobillo
+          </button>
+          <button type="button" class="quick-action-chip" data-prompt="Optimiza mi agenda de mañana: analiza solapamientos de citas, propón descansos operativos de 10 minutos y sugiere huecos ideales.">
+            <span class="material-symbols-rounded" aria-hidden="true">schedule</span> Optimizar agenda
           </button>
         </div>
       </div>
 
-      <!-- Chat Log Surface -->
-      <div class="flex-1 overflow-hidden flex flex-col relative assistant-dialog-surface">
-        <div class="flex-1 overflow-y-auto p-4 space-y-4 assistant-dialog-scroll">
-          <div class="flex flex-col gap-4" id="chatLog"></div>
+      <form id="agentForm" class="ai-input-area">
+        <div class="hidden" id="assistantAgentCanvas" aria-label="Prompts rápidos del agente clínico">
+          <button type="button" data-assistant-mode="new-plan" data-assistant-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias. Genera un plan domiciliario progresivo, seguro y facil de explicar.">Plan lumbar</button>
+          <button type="button" data-assistant-mode="update-plan" data-assistant-prompt="Revisa el plan activo del paciente. Propon ajuste segun dolor, adherencia, progresion y criterios para avanzar o bajar carga.">Ajustar plan</button>
+          <button type="button" data-assistant-mode="next-session" data-assistant-prompt="Prepara una checklist breve para la proxima visita: que preguntar, que medir, que ejercicio revisar y que decision tomar.">Proxima visita</button>
         </div>
 
-        <!-- Atajos clínicos -->
-        <div class="assistant-quick-actions" id="assistantQuickActions">
-          <span class="quick-actions-label">Atajos del Copilot:</span>
-          <div class="quick-action-chips">
-            <button type="button" class="quick-action-chip" data-prompt="Diseña un plan de ejercicios para hernia discal lumbar L5-S1 con foco en core (Bird-Dog, planchas laterales y puentes glúteos). Habilita el PDF para casa.">
-              <span class="material-symbols-rounded">fitness_center</span> Hernia L5-S1
-            </button>
-            <button type="button" class="quick-action-chip" data-prompt="Genera una nota SOAP evolutiva para un esguince de tobillo grado II. Incluye progresión en rango de movimiento, movilizaciones manuales y propiocepción.">
-              <span class="material-symbols-rounded">edit_note</span> Nota SOAP Tobillo
-            </button>
-            <button type="button" class="quick-action-chip" data-prompt="Optimiza mi agenda de mañana: analiza solapamientos de citas, propón descansos operativos de 10 minutos y sugiere huecos ideales.">
-              <span class="material-symbols-rounded">schedule</span> Optimizar Agenda
-            </button>
-          </div>
+        <div class="cp-input">
+          <label class="sr-only" for="agentInput">Mensaje para el copiloto</label>
+          <textarea id="agentInput" rows="1" placeholder="Describe el caso: objetivo, síntomas, restricciones o material disponible…"></textarea>
+          <button type="submit" class="cp-send" id="sendBtn" aria-label="Enviar mensaje" title="Enviar mensaje">
+            <span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span>
+          </button>
         </div>
 
-        <form id="agentForm" class="bg-white border-t border-gray-100 p-4 flex flex-col gap-3 z-10 ai-input-area relative">
-          
-          <div class="hidden flex-col gap-2 mb-2" id="assistantAgentCanvas" aria-label="Prompts rapidos del agente clinico">
-            <div class="text-xs text-[#687076] uppercase tracking-wider font-medium">Arranque rápido</div>
-            <div class="flex flex-wrap gap-2">
-              <button type="button" class="text-xs font-medium bg-gray-50 hover:bg-gray-100 border border-gray-200 text-[#11181C] px-3 py-1.5 rounded-full transition-colors" data-assistant-mode="new-plan" data-assistant-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias. Genera un plan domiciliario progresivo, seguro y facil de explicar.">Plan lumbar</button>
-              <button type="button" class="text-xs font-medium bg-gray-50 hover:bg-gray-100 border border-gray-200 text-[#11181C] px-3 py-1.5 rounded-full transition-colors" data-assistant-mode="update-plan" data-assistant-prompt="Revisa el plan activo del paciente. Propon ajuste segun dolor, adherencia, progresion y criterios para avanzar o bajar carga.">Ajustar plan</button>
-              <button type="button" class="text-xs font-medium bg-gray-50 hover:bg-gray-100 border border-gray-200 text-[#11181C] px-3 py-1.5 rounded-full transition-colors" data-assistant-mode="next-session" data-assistant-prompt="Prepara una checklist breve para la proxima visita: que preguntar, que medir, que ejercicio revisar y que decision tomar.">Proxima visita</button>
-            </div>
-          </div>
-
-          <div class="relative bg-gray-50 border border-gray-200 rounded-2xl flex items-end p-1 transition-colors focus-within:border-emerald-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-50">
-            <textarea id="agentInput" rows="1" placeholder="Escribe el objetivo clínico, síntomas, restricciones o material disponible..." class="w-full bg-transparent resize-none outline-none p-3 text-sm text-[#11181C] placeholder-gray-400 max-h-32 overflow-y-auto"></textarea>
-            <button type="submit" class="p-2.5 bg-[#11181C] hover:bg-black text-white rounded-xl mb-1 mr-1 transition-colors disabled:opacity-50 flex-shrink-0" id="sendBtn" aria-label="Enviar mensaje" title="Enviar mensaje">
-              <span class="material-symbols-rounded text-xl">arrow_upward</span>
+        <div class="cp-actions" aria-label="Acciones del plan">
+          <button type="button" class="cp-btn cp-btn-primary" id="exerciseRecoBtn" aria-label="Generar plan de ejercicios">
+            <span class="material-symbols-rounded" aria-hidden="true">electric_bolt</span> Generar plan
+          </button>
+          <div class="cp-delivery" role="group" aria-label="Revisión y entrega">
+            <button type="button" class="cp-btn cp-btn-approve" id="exerciseApproveBtn" aria-label="Aprobar plan tras revisión clínica" title="Genera un plan para revisarlo" disabled>
+              <span class="material-symbols-rounded" aria-hidden="true">verified</span> Aprobar
+            </button>
+            <button type="button" class="cp-btn cp-btn-secondary" id="exercisePdfBtn" aria-label="PDF disponible tras aprobar el plan" title="Genera y aprueba un plan para habilitar el PDF" disabled>
+              <span class="material-symbols-rounded" aria-hidden="true">picture_as_pdf</span> PDF
+            </button>
+            <button type="button" class="cp-btn cp-btn-secondary" id="exerciseTelegramBtn" aria-label="Enviar plan por Telegram" title="Vincula Telegram para enviar el plan al paciente" disabled>
+              <span class="material-symbols-rounded" aria-hidden="true">send</span> Telegram
             </button>
           </div>
-
-          <div class="flex flex-wrap items-center gap-2" aria-label="Acciones rapidas del copiloto">
-            <button type="button" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-sm font-medium transition-colors" id="exerciseRecoBtn" aria-label="Generar Plan de Ejercicios">
-              <span class="material-symbols-rounded text-[18px]">electric_bolt</span> Generar plan
-            </button>
-            <button type="button" class="flex items-center gap-1.5 px-4 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 rounded-full text-sm font-medium transition-colors disabled:opacity-50" id="exerciseApproveBtn" aria-label="Aprobar plan tras revisión clínica" title="Genera un plan para revisarlo" disabled>
-              <span class="material-symbols-rounded text-[18px]">verified</span> Aprobar plan
-            </button>
-            <button type="button" class="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[#11181C] rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:bg-gray-50" id="exercisePdfBtn" aria-label="PDF disponible tras generar un plan" title="Genera un plan para habilitar el PDF" disabled>
-              <span class="material-symbols-rounded text-[18px]">picture_as_pdf</span> Exportar PDF
-            </button>
-            <button type="button" class="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-blue-50 border border-gray-200 text-[#11181C] hover:text-blue-700 hover:border-blue-200 rounded-full text-sm font-medium transition-colors disabled:opacity-50" id="exerciseTelegramBtn" aria-label="Enviar plan por Telegram" title="Vincula Telegram para enviar el plan al paciente" disabled>
-              <span class="material-symbols-rounded text-[18px]">send</span> Telegram
-            </button>
-            <div class="hidden">
-              <button type="button" data-agent-shortcut="Añade una evolución clínica..."></button>
-              <button type="button" data-agent-shortcut="Reescribe las instrucciones..."></button>
-            </div>
+          <div hidden>
+            <button type="button" data-agent-shortcut="Añade una evolución clínica..."></button>
+            <button type="button" data-agent-shortcut="Reescribe las instrucciones..."></button>
           </div>
-        </form>
-      </div>
+        </div>
+        <p class="cp-guard"><span class="material-symbols-rounded" aria-hidden="true">lock</span> El PDF y el envío al paciente solo se habilitan tras tu aprobación.</p>
+      </form>
     </main>
 
-    <!-- Right Panel (Context & Diagnostics) -->
-    <aside class="hidden lg:flex w-[260px] flex-col overflow-y-auto bg-white" aria-label="Contexto clinico del paciente">
-      
-      <div class="p-5 border-b border-gray-100 bg-gray-50">
-        <span class="text-[10px] font-medium text-[#687076] uppercase tracking-wider block mb-1">Paciente Activo</span>
-        <strong class="text-sm font-medium text-[#11181C] block" id="assistantPatientLabel">Sin paciente seleccionado</strong>
-        <p class="text-xs text-[#687076] mt-1" id="assistantPatientMeta">Selecciona uno para vincular la conversación.</p>
+    <!-- Hidden elements required by index.astro -->
+    <div hidden aria-hidden="true">
+      <div id="assistantModeCard"><strong id="assistantModeTitle"></strong><p id="assistantModeSummary"></p><span id="assistantModeOutput"></span><span id="assistantModeRequirement"></span><p id="assistantModeTip"></p></div>
+      <div id="assistantFlowCard"><strong id="assistantFlowTitle"></strong><div id="assistantFlowSteps"></div><p id="assistantFlowHint"></p><p id="assistantFlowDraft"></p></div>
+      <div id="assistantDeliveryCard"><strong id="assistantDeliveryStatus"></strong><p id="assistantDeliverySummary"></p><div id="assistantDeliveryPills"></div></div>
+      <div id="assistantShortcuts">
+        <button type="button" data-agent-shortcut="..."></button>
       </div>
-
-      <div class="p-5 border-b border-gray-100 hidden" id="assistantPatientBrief" aria-live="polite"></div>
-
-      <div class="p-5 border-b border-gray-100 bg-white" id="assistantDiagnosticCard">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <span class="text-[10px] font-medium text-[#687076] uppercase tracking-wider block mb-0.5">Contexto Estructurado</span>
-            <strong class="text-xs font-semibold text-[#11181C]">Afinar asistente</strong>
-          </div>
-          <button type="button" class="text-xs font-medium text-emerald-600 hover:text-emerald-700" id="assistantDiagnosticToggle" aria-expanded="false">Expandir</button>
-        </div>
-        
-        <div class="hidden flex-col gap-3" id="assistantDiagnosticGrid">
-          <label class="block">
-            <span class="block text-xs font-medium text-[#11181C] mb-1">Área afectada</span>
-            <select id="assistantAreaInput" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-emerald-400">
-              <option value="">Seleccionar...</option>
-              <option value="Cervical">Cervical</option><option value="Lumbar">Lumbar</option>
-              <option value="Hombro">Hombro</option><option value="Rodilla">Rodilla</option>
-            </select>
-          </label>
-          <label class="block">
-            <span class="block text-xs font-medium text-[#11181C] mb-1">Tipo de caso</span>
-            <select id="assistantInjuryTypeInput" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-emerald-400">
-              <option value="">Seleccionar...</option>
-              <option value="Dolor mecanico">Dolor mecánico</option>
-              <option value="Postoperatorio">Postoperatorio</option>
-            </select>
-          </label>
-          <label class="block">
-            <span class="block text-xs font-medium text-[#11181C] mb-1">Duración</span>
-            <input id="assistantDurationInput" type="text" placeholder="Ej. 3 semanas" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-emerald-400" />
-          </label>
-          <label class="block">
-            <span class="block text-xs font-medium text-[#11181C] mb-1">Dolor (0-10)</span>
-            <select id="assistantPainLevelInput" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-emerald-400">
-              <option value="">Escala</option>
-              <option value="2/10">2</option><option value="5/10">5</option><option value="8/10">8</option>
-            </select>
-          </label>
-          <label class="block">
-            <span class="block text-xs font-medium text-[#11181C] mb-1">Objetivo</span>
-            <textarea id="assistantObjectiveInput" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-emerald-400"></textarea>
-          </label>
-        </div>
-        <p class="text-[11px] text-[#687076] mt-3" id="assistantDiagnosticSummary">Rellena campos para mayor precisión.</p>
-      </div>
-
-      <!-- Hidden elements required by JS -->
-      <div hidden aria-hidden="true">
-        <div id="assistantModeCard"><strong id="assistantModeTitle"></strong><p id="assistantModeSummary"></p><span id="assistantModeOutput"></span><span id="assistantModeRequirement"></span><p id="assistantModeTip"></p></div>
-        <div id="assistantFlowCard"><strong id="assistantFlowTitle"></strong><div id="assistantFlowSteps"></div><p id="assistantFlowHint"></p><p id="assistantFlowDraft"></p></div>
-        <div id="assistantDeliveryCard"><strong id="assistantDeliveryStatus"></strong><p id="assistantDeliverySummary"></p><div id="assistantDeliveryPills"></div></div>
-        <div id="assistantShortcuts">
-          <button type="button" data-agent-shortcut="..."></button>
-        </div>
-      </div>
-    </aside>
+    </div>
   </div>
 
   <section class="exercise-editor" id="exerciseReportEditor" hidden aria-hidden="true" aria-labelledby="exerciseEditorTitle">

@@ -567,13 +567,13 @@ import ConfigView from '../components/views/ConfigView.astro';
       const empty = document.createElement('section');
       empty.className = 'assistant-chat-empty';
       empty.innerHTML = `
-        <span class="material-symbols-rounded assistant-chat-empty-icon">chat</span>
-        <strong>Inicio rapido</strong>
-        <p>Describe el caso o usa una plantilla para arrancar.</p>
+        <span class="material-symbols-rounded assistant-chat-empty-icon" aria-hidden="true">auto_awesome</span>
+        <strong>¿Qué preparamos hoy?</strong>
+        <p>Elige al paciente, describe el caso y genera una propuesta. Nada llega al paciente sin tu aprobación.</p>
         <div class="assistant-chat-empty-chips">
-          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias.">Dolor lumbar 3 semanas</button>
-          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Tras esguince de tobillo, preparar progresion segura para volver a correr en 4 semanas.">Vuelta a correr</button>
-          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Preparar checklist de siguiente visita para revisar adherencia, dolor y progresion del caso actual.">Checklist visita</button>
+          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias."><span class="material-symbols-rounded" aria-hidden="true">accessibility_new</span><span><b>Dolor lumbar</b><small>3 semanas, recuperar flexión</small></span></button>
+          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Tras esguince de tobillo, preparar progresion segura para volver a correr en 4 semanas."><span class="material-symbols-rounded" aria-hidden="true">directions_run</span><span><b>Vuelta a correr</b><small>Esguince de tobillo, 4 semanas</small></span></button>
+          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Preparar checklist de siguiente visita para revisar adherencia, dolor y progresion del caso actual."><span class="material-symbols-rounded" aria-hidden="true">checklist</span><span><b>Próxima visita</b><small>Adherencia, dolor y progresión</small></span></button>
         </div>
       `;
       log.appendChild(empty);
@@ -1014,7 +1014,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       ? 'Ocultar contexto'
       : hasData
         ? 'Editar contexto'
-        : 'Anadir contexto';
+        : 'Añadir contexto';
     queueAssistantLayoutEnforce();
   };
 

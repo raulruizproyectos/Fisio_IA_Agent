@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-13 — Rediseño del copiloto clínico
+
+- Una sola columna: paciente y modo arriba, contexto del caso plegable (resumen + campos estructurados), conversación y acciones en dos filas (acción principal; aprobar / PDF / Telegram). Desaparece la columna lateral de 260 px que se cortaba y superponía texto.
+- Estado vacío útil con tres casos tipo; los atajos solo aparecen cuando hay conversación; aviso fijo de que PDF y envío requieren aprobación.
+- `assistant-rail.css` pasa a ser la única fuente de estilos del panel: se elimina el bloque duplicado de `editorial-views.css`, y se estilan mensajes, informe del plan, resumen del paciente y editor, que solo tenían estilos en `production-ui.css` (hoja que ya no se carga). IDs, `data-*` y clases leídas por `index.astro` sin cambios. Escala de dolor 0–10 completa y más áreas/tipos de caso.
+
 ## 2026-10-13 — Activación del agente de citas y resúmenes al fisio
 
 - Agente de citas activado en producción (checklist 1–9 de AGENTE_CITAS.md); P0 del bot heredado cerrado.
