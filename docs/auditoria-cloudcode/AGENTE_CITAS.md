@@ -143,6 +143,8 @@ Paciente: CONFIRMAR                         Bot: Cita confirmada para el jueves,
 
 Orden pensado para no dejar nunca a un paciente sin respuesta. Marca cada paso al terminarlo.
 
+**Estado 2026-10-13:** pasos 1–9 hechos y verificados (detalle en [STATUS.md](../STATUS.md)). Pendientes el 10 (prueba de Raúl) y el 11.
+
 1. **Copia previa de Supabase** (Dashboard › Database › Backups, o `pg_dump`). Comprobar que existe y su fecha.
 2. **Migraciones en Supabase**, en este orden, desde el SQL Editor:
    1. `database/migrations/20261013120000_booking_agent_onboarding.sql`

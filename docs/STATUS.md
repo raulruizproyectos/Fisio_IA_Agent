@@ -1,6 +1,17 @@
 # Project Status
 
-## Estado vigente — 2026-10-13 (noche): agente de citas con Plan B, festivos y citas pendientes, en local
+## Estado vigente — 2026-10-13: agente de citas ACTIVADO en producción (pasos 1–9 del checklist)
+
+- **P0 cerrado:** el workflow n8n «Fisio IA | Bot paciente» (`f1PcLN8s9YiOXj3w`, mismo ID y disparador) ahora reenvía a `/api/telegram/pilot-incoming` con la credencial «Fisio Telegram Agente Citas». Webhook de Telegram → n8n sin errores ni pendientes; `pilot-incoming` sin secreto responde 401.
+- 1 Copia lógica de `public` (35 tablas, 787 filas) en `.private-backups/supabase-2026-10-13T11-43-06-605Z/` (Supabase Free no tiene copias propias).
+- 2 Migraciones `booking_agent_onboarding` y `contact_requests_patient_notices` aplicadas y verificadas (2 tablas, 2 columnas, 2 políticas).
+- 3 `crm_clinicas`: teléfono 623983731 y email provisional de Raúl.
+- 4 Commit `445f625` en `main`.
+- 5–6 Variables del agente en `fisio-backend` (env anterior guardado en `.private-backups/`); backend y frontend redesplegados; readiness 200 con 29 controles correctos (solo `whatsapp_pilot` sin usar).
+- 7–9 Credencial n8n creada; flujo «Avisos agente de citas» (`onz3pv7hIrPMnzSi`) activo; bot sustituido. Copia del flujo anterior en `.private-backups/n8n-before-agent-*`.
+- **Pendiente:** paso 10, prueba con paciente ficticio desde el Telegram de Raúl ([PRIMERA_PRUEBA.md](auditoria-cloudcode/PRIMERA_PRUEBA.md), parte B); paso 11 tras una semana. Festivos locales de Terrassa 2027 y cierres. Después, automatizaciones n8n de PROPUESTA_PRODUCTO.md §8 y piloto de WhatsApp.
+
+## Estado anterior — 2026-10-13 (noche): agente de citas con Plan B, festivos y citas pendientes, en local
 
 Informe en [auditoria-cloudcode/](auditoria-cloudcode/AUDITORIA.md). Detalle y checklist de activación en [AGENTE_CITAS.md](auditoria-cloudcode/AGENTE_CITAS.md).
 
