@@ -1,5 +1,7 @@
 # Refinamiento de Precisión azul — 13 de octubre de 2026
 
+**Actualización de publicación:** el frontend ya está desplegado en `c062967`. Este documento conserva la QA local previa; consultar [production.md](production.md) para estado publicado, comprobaciones reales y la alerta automática ocurrida durante las pruebas negativas Auth.
+
 Implementación local de las mejoras autorizadas por el usuario tras [el estudio de 25 recursos](../../2026-10-13-recursos-premium.md). Se conserva el sistema visual vigente y no se reconstruye el producto.
 
 ## Resultado

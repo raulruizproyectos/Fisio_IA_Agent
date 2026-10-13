@@ -1,5 +1,11 @@
 # Project Status
 
+## Producción — 2026-10-13: frontend actualizado; cierre de alertas backend
+
+Frontend `c062967` publicado y desplegado en `fisio-frontend`; CI backend/frontend/n8n verde y diez controles HTTP posteriores/readiness 13/13 correctos. Supabase sano, 35 tablas públicas con RLS, una clínica, cero perfiles/pacientes sin clínica y cero citas pendientes/en curso Calendar. Doce workflows coinciden con fuente; sync healthy y OAuth responde. No se necesita un deploy manual del frontend.
+
+El usuario recibió una alerta automática CRITICAL durante los casos negativos Auth: el handler global notificaba también los rechazos 4xx. Corrección local verificada (solo 5xx notifican; lint y 108 pruebas), despliegue backend autorizado expresamente y pendiente de CI/publicación. La sesión sí provocó al menos un correo automático de monitorización. [Evidencia y límites](design-exploration/reviews/2026-10-13/production.md). Las entradas siguientes conservan historia.
+
 ## Estado local — 2026-10-13: refinamiento visual implementado, sin publicar
 
 Preparación local terminada para la primera prueba del refinamiento. En el cierre final se corrigió y verificó la circulación Tab/Shift+Tab dentro de modales y copiloto móvil, además de excluir firma/voz cerrados del foco. El copiloto de escritorio conserva la navegación hacia el espacio de trabajo. Recorrido de prueba registrado en la revisión enlazada abajo.

@@ -151,8 +151,9 @@ app.use((err, req, res, _next) => {
   if (err.code === '23P01') {
     return res.status(409).json({available:false,code:'appointment_overlap',error:'Ese horario acaba de ser ocupado. Actualiza la agenda y elige otro hueco.',request_id:req.id});
   }
+  const status = Number(err.status || 500);
   const diagnostic = req.path.startsWith('/api/auth/') ? 'Error en solicitud de autenticación' : err.message || 'Error interno del servidor';
-  if (ERROR_WEBHOOK_URL) {
+  if (ERROR_WEBHOOK_URL && status >= 500) {
     fetch(ERROR_WEBHOOK_URL, {
       method: 'POST',
       headers: {
@@ -181,7 +182,6 @@ app.use((err, req, res, _next) => {
     route: req.path.startsWith('/api/auth/') ? req.path : req.originalUrl,
     message: diagnostic,
   }));
-  const status = Number(err.status || 500);
   const safeMessage = publicHttpErrorMessage(err, status, status >= 500 ? 'Error interno del servidor' : 'No se pudo completar la solicitud. Revisa los datos y permisos.');
   res.status(status).json({ error: safeMessage, request_id: req.id });
 });

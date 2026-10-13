@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-13 — Publicación y corrección de alertas de autenticación
+
+- Frontend `c062967` en producción tras CI verde; controles HTTP y BBDD correctos. Doce workflows activos/coincidentes y Calendar sync sano. Handlers/SQL con fixtures prueban pacientes/notas, citas, finanzas, aprobación y recuperación.
+- Tras un correo automático mostrado por el usuario, el handler global conserva los rechazos esperados 4xx sin enviar alertas CRITICAL; errores 5xx siguen notificándose. Regresión reproduce el fallo anterior; lint/108 pruebas pasan. Despliegue backend autorizado, pendiente de completar; detalles en la revisión de producción.
+
 ## 2026-10-13 — Refinamiento de Precisión azul en local
 
 - Cierre para primera prueba: Tab/Shift+Tab permanecen dentro de los modales y copiloto móvil; firma/voz cerrados no admiten foco. Regresión reproducida y corregida, check/build y navegación Chromium pasan. Recorrido de prueba documentado.
