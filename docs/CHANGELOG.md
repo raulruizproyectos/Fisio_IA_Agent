@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-13 — Activación del agente de citas y resúmenes al fisio
+
+- Agente de citas activado en producción (checklist 1–9 de AGENTE_CITAS.md); P0 del bot heredado cerrado.
+- `POST /api/cron/resumenes/:tipo` (`agenda_diaria`, `calendar_pendiente`, `bonos_pagos`, `reactivacion`) y flujo n8n `production/resumenes-fisio.json`. El backend decide si hay algo que contar y redacta; n8n programa y entrega por el bot profesional. Sin datos clínicos ni mensajes a pacientes. Backend 143/143 y lint.
+
 ## 2026-10-13 — Agente de citas: Plan B, festivos, citas pendientes y avisos (local, sin commit)
 
 - Plan B: toda petición que el agente no completa se guarda en `crm_solicitudes_contacto` antes de decir «registrada» (sin duplicados; mensaje honesto si falla el guardado). Tarjeta «Solicitudes de contacto» en Inicio y aviso al fisio vía n8n. Cambios/anulaciones con menos de 24 h siguen esta vía.

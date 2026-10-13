@@ -9,7 +9,8 @@
 - 4 Commit `445f625` en `main`.
 - 5–6 Variables del agente en `fisio-backend` (env anterior guardado en `.private-backups/`); backend y frontend redesplegados; readiness 200 con 29 controles correctos (solo `whatsapp_pilot` sin usar).
 - 7–9 Credencial n8n creada; flujo «Avisos agente de citas» (`onz3pv7hIrPMnzSi`) activo; bot sustituido. Copia del flujo anterior en `.private-backups/n8n-before-agent-*`.
-- **Pendiente:** paso 10, prueba con paciente ficticio desde el Telegram de Raúl ([PRIMERA_PRUEBA.md](auditoria-cloudcode/PRIMERA_PRUEBA.md), parte B); paso 11 tras una semana. Festivos locales de Terrassa 2027 y cierres. Después, automatizaciones n8n de PROPUESTA_PRODUCTO.md §8 y piloto de WhatsApp.
+- **Resúmenes al fisio (PROPUESTA_PRODUCTO.md §8, puntos 3, 4, 6 y 7):** `POST /api/cron/resumenes/:tipo` (clave interna) decide y redacta; n8n «Fisio IA | Resúmenes al fisio» ([resumenes-fisio.json](../n8n/Fisio_IA_Agent/production/resumenes-fisio.json)) programa y entrega por el bot profesional. Agenda del día L–V 7:30 (no en festivos), citas sin Calendar cada hora (cada problema una vez), bonos/facturas y pacientes sin próxima cita los lunes. Solo nombre e inicial, horas e importes; nunca datos clínicos ni mensajes a pacientes.
+- **Pendiente:** paso 10, prueba con paciente ficticio desde el Telegram de Raúl ([PRIMERA_PRUEBA.md](auditoria-cloudcode/PRIMERA_PRUEBA.md), parte B); paso 11 tras una semana. Festivos locales de Terrassa 2027 y cierres. Seguimiento tras `no_show` (punto 5) espera decisión de texto y modo. Piloto de WhatsApp.
 
 ## Estado anterior — 2026-10-13 (noche): agente de citas con Plan B, festivos y citas pendientes, en local
 

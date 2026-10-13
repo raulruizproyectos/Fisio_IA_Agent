@@ -89,3 +89,18 @@ test('avisos del agente: webhooks con secreto, n8n solo transporta y responde si
   assert.match(byName['Reenviar avisos pendientes'].parameters.url, /\/api\/cron\/avisos-agente$/);
   assert.equal(byName['Reenviar avisos pendientes'].credentials.httpHeaderAuth.name, 'N8N_INTERNAL_HEADER_CREDENTIAL_ID');
 });
+
+test('resúmenes al fisio: n8n solo programa y entrega lo que el backend decide enviar', () => {
+  const flow = workflow('resumenes-fisio.json');
+  const calls = flow.nodes.filter(n => n.type === 'n8n-nodes-base.httpRequest');
+  assert.deepEqual(calls.map(n => n.parameters.url.split('/').pop()).sort(), ['agenda_diaria', 'bonos_pagos', 'calendar_pendiente', 'reactivacion']);
+  for (const n of calls) {
+    assert.match(n.parameters.url, /\/api\/cron\/resumenes\//);
+    assert.equal(n.credentials.httpHeaderAuth.id, 'R7toe2gVBNi7E4pH');
+    assert.deepEqual(flow.connections[n.name].main[0].map(c => c.node), ['Solo si hay algo que contar']);
+  }
+  const filter = flow.nodes.find(n => n.name === 'Solo si hay algo que contar');
+  assert.match(filter.parameters.jsCode, /send === true/);
+  assert.deepEqual(flow.connections[filter.name].main[0].map(c => c.node), ['Mensaje al fisio']);
+  assert.equal(flow.settings.timezone, 'Europe/Madrid');
+});

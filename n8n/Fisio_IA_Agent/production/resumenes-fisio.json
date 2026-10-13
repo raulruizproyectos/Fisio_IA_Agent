@@ -1,0 +1,319 @@
+{
+  "name": "Fisio IA | Resúmenes al fisio",
+  "nodes": [
+    {
+      "name": "Laborables 7:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Agenda del día",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/cron/resumenes/agenda_diaria",
+        "options": {
+          "timeout": 60000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "R7toe2gVBNi7E4pH",
+          "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID"
+        }
+      }
+    },
+    {
+      "name": "Cada hora",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        400
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "5 * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Citas sin Calendar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/cron/resumenes/calendar_pendiente",
+        "options": {
+          "timeout": 60000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "R7toe2gVBNi7E4pH",
+          "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID"
+        }
+      }
+    },
+    {
+      "name": "Lunes 9:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        600
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Bonos y cobros",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        600
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/cron/resumenes/bonos_pagos",
+        "options": {
+          "timeout": 60000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "R7toe2gVBNi7E4pH",
+          "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID"
+        }
+      }
+    },
+    {
+      "name": "Lunes 9:15",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        800
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 9 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pacientes sin próxima cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        800
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/cron/resumenes/reactivacion",
+        "options": {
+          "timeout": 60000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "R7toe2gVBNi7E4pH",
+          "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID"
+        }
+      }
+    },
+    {
+      "name": "Solo si hay algo que contar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        500
+      ],
+      "parameters": {
+        "jsCode": "// El backend decide si merece un mensaje; n8n solo lo entrega.\nreturn $input.all().filter(item => item.json.send === true && item.json.chat_id && item.json.text);"
+      }
+    },
+    {
+      "name": "Mensaje al fisio",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        980,
+        500
+      ],
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "6PkC23M5FI8DavpT",
+          "name": "FisioIAAgent"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Laborables 7:30": {
+      "main": [
+        [
+          {
+            "node": "Agenda del día",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agenda del día": {
+      "main": [
+        [
+          {
+            "node": "Solo si hay algo que contar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cada hora": {
+      "main": [
+        [
+          {
+            "node": "Citas sin Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Citas sin Calendar": {
+      "main": [
+        [
+          {
+            "node": "Solo si hay algo que contar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lunes 9:00": {
+      "main": [
+        [
+          {
+            "node": "Bonos y cobros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bonos y cobros": {
+      "main": [
+        [
+          {
+            "node": "Solo si hay algo que contar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lunes 9:15": {
+      "main": [
+        [
+          {
+            "node": "Pacientes sin próxima cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pacientes sin próxima cita": {
+      "main": [
+        [
+          {
+            "node": "Solo si hay algo que contar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solo si hay algo que contar": {
+      "main": [
+        [
+          {
+            "node": "Mensaje al fisio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all"
+  }
+}
