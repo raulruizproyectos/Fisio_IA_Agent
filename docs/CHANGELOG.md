@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-14 — Anulaciones en Calendar y síntomas graves
+
+- **Bug previo corregido:** al anular una cita, el backend pedía a W6 la acción `cancel`, que el flujo n8n rechaza (solo acepta `delete`). La cita quedaba anulada en el CRM pero el evento seguía en Calendar ocupando el hueco, con «Calendar pendiente». Ahora se envía `delete`; una prueba compara las acciones enviadas con las que acepta `production/w6-calendar-writer.json`. La única cita afectada (prueba de Raúl) se borró en Calendar por W6 y se marcó sincronizada.
+- Ante síntomas graves, el agente responde solo con el aviso del 112 y el menú, sin proponer reservar ni redactar con IA. La IA no lamenta las anulaciones.
+
 ## 2026-10-14 — Vinculación automática por teléfono verificado
 
 - Pacientes con ficha: «Compartir mi teléfono» en el bot basta si el número verificado por Telegram coincide con una sola ficha activa y asignada; ya no hace falta el código de la clínica (queda como alternativa). Número compartido, ficha inactiva o sin asignar ⇒ Plan B, sin vincular.
