@@ -926,6 +926,18 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
   let activeAssistantMode: AssistantWorkMode = 'new-plan';
   let currentPatientTelegramLinkState: any = null;
+  // The server keeps only a hash of a fresh invitation, so its code and link live here until they expire or are used.
+  const freshTelegramInvitations = new Map<string, any>();
+  const withFreshTelegramInvitation = (patientId: string, state: any) => {
+    const invitation = freshTelegramInvitations.get(patientId);
+    if (!invitation) return state;
+    const expired = !invitation.codigo_expira_en || Date.parse(invitation.codigo_expira_en) <= Date.now();
+    if (expired || state?.link_status === 'linked') {
+      freshTelegramInvitations.delete(patientId);
+      return state;
+    }
+    return state?.link_status === 'not_linked' || !state ? { ...state, ...invitation } : state;
+  };
   let pendingHistoryAnchor: 'telegram' | 'recommendations' | null = null;
   let lastExerciseReportPayload: any = null;
   let lastExerciseRequestText = '';
@@ -6239,6 +6251,8 @@ import ConfigView from '../components/views/ConfigView.astro';
             <div class="telegram-link-field"><span>Codigo</span><strong>${escapeHtml(linkState?.codigo_vinculacion || 'No generado')}</strong></div>
           </div>
           ${startCommand ? `<div class="telegram-link-command"><code>${escapeHtml(startCommand)}</code></div>` : ''}
+          ${normalizedStatus === 'pending' && deepLink ? `<div class="telegram-link-command"><code>${escapeHtml(deepLink)}</code></div>` : ''}
+          ${normalizedStatus === 'pending' && linkState?.codigo_expira_en ? `<p class="detail-caption">Caduca a las ${escapeHtml(new Date(linkState.codigo_expira_en).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }))} y solo sirve una vez.</p>` : ''}
           ${actions.length ? `<div class="telegram-link-actions">${actions.join('')}</div>` : ''}
         </div>
       </div>
@@ -6282,7 +6296,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const patient = patientPiece.response?.data || {};
       const notes = historyPiece.response?.data?.notas_seguimiento || [];
       const recommendations = recommendationsPiece.response?.data || [];
-      const telegramLink = telegramPiece.response?.data || null;
+      const telegramLink = withFreshTelegramInvitation(String(selectedPatientId), telegramPiece.response?.data || null);
       const telegramLinkError = telegramPiece.error || '';
       currentPatientTelegramLinkState = telegramLink;
       updateExerciseTelegramButton();
@@ -6656,6 +6670,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       }, 15000);
 
       currentPatientTelegramLinkState = payload?.data || null;
+      if (payload?.data?.link_status === 'pending') freshTelegramInvitations.set(String(selectedPatientId), payload.data);
       await loadHistorial();
 
       if (payload?.warning === 'patient_already_linked') {
