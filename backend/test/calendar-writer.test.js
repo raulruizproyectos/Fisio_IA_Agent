@@ -68,10 +68,19 @@ test('Calendar exige confirmaciones completas y usa W6 solamente si no hay clien
   const mismatch = writer({ response: () => Response.json({ ok: true, event_id: 'other-event' }) });
   assert.equal((await mismatch.sync({ action: 'update', eventId: 'event-a', payload: {} })).status, 'error');
   for (const action of ['create', 'update', 'cancel']) {
-    const fallback = writer({ response: () => Response.json({ ok: true, event_id: action === 'cancel' ? null : 'event-a' }) });
+    // W6 answers a delete with the deleted event's id (see n8n production/w6-calendar-writer.json).
+    const fallback = writer({ response: () => Response.json({ ok: true, event_id: 'event-a' }) });
     assert.equal((await fallback.sync({ action, eventId: action === 'create' ? null : 'event-a', payload: {} })).status, 'synced');
     assert.equal(fallback.calls.length, 1);
-    assert.equal(fallback.calls[0].action, action);
+    assert.equal(fallback.calls[0].action, action === 'cancel' ? 'delete' : action);
+  }
+  // The writer must only send actions that W6 accepts.
+  const w6 = JSON.parse(readFileSync(new URL('../../n8n/Fisio_IA_Agent/production/w6-calendar-writer.json', import.meta.url), 'utf8'));
+  const accepted = w6.nodes.find(node => node.name === 'Validar operación').parameters.jsCode.match(/\[('create'[^\]]*)\]\.includes\(action\)/)[1];
+  for (const action of ['create', 'update', 'cancel']) {
+    const probe = writer({ response: () => Response.json({ ok: true, event_id: 'event-a' }) });
+    await probe.sync({ action, eventId: action === 'create' ? null : 'event-a', payload: {} });
+    assert.ok(accepted.includes(`'${probe.calls[0].action}'`), `W6 no acepta «${probe.calls[0].action}»`);
   }
   for (const response of [() => { throw new Error('Response lost'); }, () => new Response('', { status: 503 }), () => new Response('not json')]) {
     const failed = writer({ response });

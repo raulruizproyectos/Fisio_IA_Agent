@@ -503,7 +503,8 @@ async function syncAppointmentViaW6({ action, eventId, payload }) {
   }
   try {
     const body = {
-      action,
+      // W6 speaks Calendar's verbs: an appointment cancellation deletes its event.
+      action: action === 'cancel' ? 'delete' : action,
       event_id: eventId || undefined,
       calendar_id: GOOGLE_CALENDAR_ID,
       summary: payload?.summary || 'Cita fisioterapia',

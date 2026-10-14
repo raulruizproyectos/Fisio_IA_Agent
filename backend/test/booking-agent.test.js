@@ -603,9 +603,10 @@ test('síntomas graves: se recomienda el 112 sin diagnosticar, con o sin IA, y s
     ai(fakeModel({ interpret: () => ({ intent: 'reservar', day: null, part_of_day: null, time: null, urgent: true, worried: true }),
       compose: (facts) => ({ text: `${facts.paciente_preocupado ? 'Vaya, lo siento. ' : ''}${facts.mensaje_base} 😊` }) }));
     const answer = (await say('Desde la caída tengo la pierna rara y no la noto bien', 2030)).reply.text;
+    // Safety first: no booking flow is pushed and the model does not reword the notice.
     assert.ok(answer.startsWith(URGENT_NOTICE));
-    assert.match(answer, /Vaya, lo siento\. ¿Para qué día\?/);
-    assert.doesNotMatch(answer, /😊/);
+    assert.match(answer, /Cuando estés bien/);
+    assert.doesNotMatch(answer, /¿Para qué día|Vaya|😊/);
   });
   assert.ok((await say('me he desmayado y me duele la espalda', 2031)).reply.text.startsWith(URGENT_NOTICE));
 }));

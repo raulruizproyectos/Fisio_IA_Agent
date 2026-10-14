@@ -295,6 +295,12 @@ export async function handlePatientMessage({ canal, chatId, fromId = null, text 
   if (found.error) throw found.error;
   const link = found.data;
   const hint = await understanding;
+  // Possibly serious symptoms: safety first. No booking flow is pushed and nothing is reworded; the menu stays available.
+  if (link?.paciente_id && link.consentimiento_en && !contact && (hint?.urgent === true || urgentByKeywords(text))) {
+    return reply(`${URGENT_NOTICE}
+
+Cuando estés bien, si quieres pedir, cambiar o anular una cita, puedes hacerlo aquí.`, MENU);
+  }
   let answer;
   if (link?.paciente_id && link.consentimiento_en) answer = await respondToPatientBooking(link, contact ? '' : text, config, clinic, hint);
   else if (canal !== 'telegram') answer = reply('Pide a tu clínica una invitación para vincularte y reservar citas.');
