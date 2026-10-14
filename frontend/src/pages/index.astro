@@ -10633,14 +10633,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     try {
       const r = await fetch(`${BACKEND_BASE}/api/health`, {signal: AbortSignal.timeout(5000)});
       if (cfgBackendStatus) { cfgBackendStatus.textContent = r.ok ? 'OK' : 'Error'; cfgBackendStatus.className = `status-chip ${r.ok ? 'aprobado' : 'rechazado'}`; }
-    } catch { if (cfgBackendStatus) { cfgBackendStatus.textContent = 'Offline'; cfgBackendStatus.className = 'status-chip rechazado'; } }
+    } catch { if (cfgBackendStatus) { cfgBackendStatus.textContent = 'Sin conexión'; cfgBackendStatus.className = 'status-chip rechazado'; } }
     if (cfgAgent) cfgAgent.textContent = BACKEND_BASE + '/api/agent/message';
     try {
       const r = await fetch(`${BACKEND_BASE}/api/agent/message`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'test',channel:'web',text:'health check'}),signal:AbortSignal.timeout(10000)});
       const data = await r.json();
       const ok = r.ok && !data.n8n_unreachable;
       if (cfgAgentStatus) { cfgAgentStatus.textContent = ok ? (data.fallback_used ? 'Fallback' : 'OK') : 'Error'; cfgAgentStatus.className = `status-chip ${ok ? 'aprobado' : 'rechazado'}`; }
-    } catch { if (cfgAgentStatus) { cfgAgentStatus.textContent = 'Offline'; cfgAgentStatus.className = 'status-chip rechazado'; } }
+    } catch { if (cfgAgentStatus) { cfgAgentStatus.textContent = 'Sin conexión'; cfgAgentStatus.className = 'status-chip rechazado'; } }
     if (cfgReadiness) cfgReadiness.textContent = 'Comprobando modulos...';
     if (cfgReadinessStatus) { cfgReadinessStatus.textContent = 'Comprobando'; cfgReadinessStatus.className = 'status-chip pendiente'; }
     if (cfgReadinessDetail) {
@@ -10672,22 +10672,22 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       if (cfgReadinessDetail && missingTables.length) {
         cfgReadinessDetail.hidden = false;
         if (readinessStatus === 'error') cfgReadinessDetail.setAttribute('data-state', 'error');
-        cfgReadinessDetail.textContent = `Migraciones pendientes: ${missingTables.map((item: any) => `${item.label} -> ${item.migration}`).join(' | ')}`;
+        cfgReadinessDetail.textContent = `Faltan actualizaciones de la base de datos: ${missingTables.map((item: any) => `${item.label} (${item.migration})`).join(' · ')}`;
       } else if (cfgReadinessDetail && readinessStatus !== 'ok' && data.message) {
         cfgReadinessDetail.hidden = false;
         if (readinessStatus === 'error') cfgReadinessDetail.setAttribute('data-state', 'error');
         cfgReadinessDetail.textContent = String(data.message);
       }
     } catch {
-      if (cfgReadiness) cfgReadiness.textContent = 'No pude comprobar el readiness';
+      if (cfgReadiness) cfgReadiness.textContent = 'No se pudo comprobar la conexión con el servidor';
       if (cfgReadinessStatus) {
-        cfgReadinessStatus.textContent = 'Offline';
+        cfgReadinessStatus.textContent = 'Sin conexión';
         cfgReadinessStatus.className = 'status-chip rechazado';
       }
       if (cfgReadinessDetail) {
         cfgReadinessDetail.hidden = false;
         cfgReadinessDetail.setAttribute('data-state', 'error');
-        cfgReadinessDetail.textContent = 'No se pudo consultar /api/health/readiness.';
+        cfgReadinessDetail.textContent = 'No se pudo consultar el estado del servidor. Vuelve a intentarlo en unos minutos.';
       }
     }
   };

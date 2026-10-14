@@ -407,3 +407,77 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   .user-profile-summary .user-actions { flex-basis: 100%; }
 }
 .status-chip .status-dot { background: currentColor !important; }
+
+/* Inicio (14-oct): the low-value finance strip stays in the DOM for its controllers but is not shown. */
+.clinic-finance-strip[hidden] { display: none !important; }
+
+/* Inicio · «Semana clínica»: hour | patient + reason | state, grouped under quiet day labels. */
+#dashCitasBody .dash-section-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  margin: 0 !important;
+  padding: 0.25rem 0 0.5rem !important;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #175dd0 !important;
+}
+#dashCitasBody .dash-section-label.dash-section-label-muted { color: #536375 !important; }
+#dashCitasBody .dash-section-label.dash-section-label-spaced { margin-top: 0.75rem !important; padding-top: 1rem !important; border-top: 1px solid #e8edf4 !important; color: #536375 !important; }
+#dashCitasBody .clean-list-item {
+  display: grid !important;
+  grid-template-columns: 4.25rem minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  min-height: 56px !important;
+  padding: 0.5rem 0.5rem !important;
+  margin: 0 -0.5rem !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition: background-color 120ms ease !important;
+}
+#dashCitasBody .clean-list-item:hover { background: #f4f7fb !important; }
+#dashCitasBody .clean-list-item + .clean-list-item { border-top: 1px solid #eef2f7 !important; border-radius: 0 !important; }
+#dashCitasBody .dash-cita-hora { display: block !important; }
+#dashCitasBody .cita-hora-badge {
+  display: inline-block !important;
+  font-size: 0.9375rem !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+  color: #142234 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+#dashCitasBody .cita-hora-badge.cita-badge-upcoming { font-size: 0.8125rem !important; color: #536375 !important; }
+#dashCitasBody .clean-list-main { min-width: 0 !important; display: grid !important; gap: 0.125rem !important; }
+#dashCitasBody .clean-list-title {
+  margin: 0 !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: #142234 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+#dashCitasBody .clean-list-meta {
+  margin: 0 !important;
+  font-size: 0.8125rem !important;
+  color: #536375 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+#dashCitasBody .status-chip { justify-self: end !important; }
+@media (max-width: 480px) {
+  #dashCitasBody .clean-list-item { grid-template-columns: 3.5rem minmax(0, 1fr) !important; }
+  #dashCitasBody .clean-list-item .status-chip { grid-column: 2 !important; justify-self: start !important; }
+}
+
+/* Finanzas: hidden duplicate action cards must not leave a gap (header already has Registrar pago / Factura). */
+.finance-action-card[hidden] { display: none !important; }
+.finance-action-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; }
