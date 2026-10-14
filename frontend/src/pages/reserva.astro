@@ -9,8 +9,8 @@ import Layout from '../layouts/Layout.astro';
     <section class="booking-hero">
       <div class="booking-hero-copy">
         <span class="booking-kicker">Reserva online</span>
-        <h1>Una reserva clara, rapida y sin friccion.</h1>
-        <p id="clinicLead">Selecciona un dia, elige un hueco disponible y deja tus datos para confirmar la cita.</p>
+        <h1>Una reserva clara, rápida y sin friccion.</h1>
+        <p id="clinicLead">Selecciona un día, elige un hueco disponible y deja tus datos para confirmar la cita.</p>
       </div>
 
       <div class="booking-hero-card">
@@ -41,7 +41,7 @@ import Layout from '../layouts/Layout.astro';
         <article>
           <span>1</span>
           <div>
-            <strong>Elige el dia</strong>
+            <strong>Elige el día</strong>
             <p>Solo veras fechas dentro de la ventana abierta para reservas.</p>
           </div>
         </article>
@@ -73,7 +73,7 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="booking-grid">
         <label class="booking-field booking-field-date">
-          <span>Dia</span>
+          <span>Día</span>
           <input id="bookingDate" type="date" />
         </label>
 
@@ -82,7 +82,7 @@ import Layout from '../layouts/Layout.astro';
             <span>Huecos disponibles</span>
             <small id="bookingWindowHint">Cargando horarios...</small>
           </div>
-          <div id="slotsState" class="booking-inline-note" role="status">Selecciona un dia para ver horas disponibles.</div>
+          <div id="slotsState" class="booking-inline-note" role="status">Selecciona un día para ver horas disponibles.</div>
           <div id="slotsGrid" class="slots-grid"></div>
         </div>
 
@@ -93,7 +93,7 @@ import Layout from '../layouts/Layout.astro';
               <input id="patientNameInput" type="text" placeholder="Ej. Laura Gomez" required />
             </label>
             <label class="booking-field">
-              <span>Telefono</span>
+              <span>Teléfono</span>
               <input id="patientPhoneInput" type="tel" placeholder="600 123 123" />
             </label>
             <label class="booking-field booking-field-wide">
@@ -123,7 +123,7 @@ import Layout from '../layouts/Layout.astro';
     <section id="bookingSuccess" class="booking-success" tabindex="-1" hidden>
       <span class="booking-kicker">Reserva registrada</span>
       <h2>Cita creada correctamente</h2>
-      <p id="bookingSuccessText">Tu hueco ha quedado guardado. Si necesitas cambiarlo, contacta con la clinica.</p>
+      <p id="bookingSuccessText">Tu hueco ha quedado guardado. Si necesitas cambiarlo, contacta con la clínica.</p>
       <button id="bookingResetBtn" type="button" class="booking-reset">Reservar otra cita</button>
     </section>
   </main>

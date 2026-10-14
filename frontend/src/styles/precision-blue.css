@@ -328,3 +328,75 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   button[aria-busy="true"]::before { animation: none !important; }
   *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Status chips (14-oct): one semantic palette for every stored state.
+   Labels come from statusText(), so no Title Case transform. */
+.status-chip {
+  text-transform: none !important;
+  white-space: nowrap;
+  border: 1px solid transparent !important;
+  background: #eef2f7 !important;
+  color: #3d4c5e !important;
+}
+.status-chip.completada, .status-chip.aprobado, .status-chip.aprobada, .status-chip.activo, .status-chip.activa,
+.status-chip.firmado, .status-chip.pagada, .status-chip.sincronizado, .status-chip.chip-success, .status-chip.al_dia,
+.status-chip.ok, .status-chip.active {
+  background: #ecfdf3 !important; border-color: #b7ebcd !important; color: #146c43 !important;
+}
+.status-chip.confirmada, .status-chip.en_consulta, .status-chip.en_curso, .status-chip.reprogramada,
+.status-chip.generada, .status-chip.enviada, .status-chip.emitida, .status-chip.chip-info {
+  background: #eaf1fe !important; border-color: #c9dafb !important; color: #175dd0 !important;
+}
+.status-chip.pendiente, .status-chip.pendiente_revision, .status-chip.requiere_revision, .status-chip.chip-warning,
+.status-chip.is-warning, .status-chip.checking {
+  background: #fff7e6 !important; border-color: #f6d9a1 !important; color: #8a5300 !important;
+}
+.status-chip.cancelada, .status-chip.rechazado, .status-chip.rechazada, .status-chip.no_show, .status-chip.anulada,
+.status-chip.error, .status-chip.fallido {
+  background: #fdecec !important; border-color: #f5c2c2 !important; color: #b42318 !important;
+}
+.status-chip.caducado, .status-chip.agotado {
+  background: #eef2f7 !important; border-color: #dce3ed !important; color: #536375 !important;
+}
+
+/* Page headers (14-oct): Finanzas and Ajustes share the Pacientes kicker and breathing room. */
+.view-kicker {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-brand-primary, #175dd0);
+}
+.page-header-row .page-subtitle {
+  margin-top: 6px;
+  color: var(--color-ink-muted, #536375);
+}
+.page-header-row .page-tools {
+  margin-top: 16px;
+}
+
+/* Integrations on phones (14-oct): status goes under the text instead of squeezing it letter by letter. */
+@media (max-width: 640px) {
+  .integration-item {
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr);
+    align-items: start;
+    gap: 6px 12px;
+  }
+  .integration-meta { overflow-wrap: break-word; word-break: normal; }
+  .integration-badge-wrap { grid-column: 2; justify-self: start; }
+  .integration-badge-wrap .status-chip { white-space: nowrap !important; overflow-wrap: normal; }
+}
+@media (max-width: 480px) {
+  .clinic-hero-actions { display: grid !important; grid-template-columns: minmax(0, 1fr); }
+  .clinic-hero-actions > button,
+  .clinic-hero-actions > a { width: 100%; justify-content: center; }
+}
+@media (max-width: 640px) {
+  .user-profile-summary { flex-wrap: wrap; }
+  .user-profile-summary .user-details { min-width: 0; flex: 1 1 180px; overflow-wrap: anywhere; }
+  .user-profile-summary .user-actions { flex-basis: 100%; }
+}
+.status-chip .status-dot { background: currentColor !important; }

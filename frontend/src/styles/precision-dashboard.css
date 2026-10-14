@@ -472,3 +472,51 @@
 .contact-requests-panel[hidden] {
   display: none !important;
 }
+
+/* Priority items rendered by index.astro: eyebrow, title and body on their own lines. */
+.clinic-priority-list .priority-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #dce3ed;
+}
+
+.clinic-priority-list .priority-item:last-child {
+  border-bottom: 0;
+}
+
+.clinic-priority-list .priority-copy {
+  min-width: 0;
+}
+
+.clinic-priority-list .priority-copy > span {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #175dd0;
+}
+
+.clinic-priority-list .priority-copy strong {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.9375rem;
+  color: #142234;
+}
+
+.clinic-priority-list .priority-copy p:empty {
+  display: none;
+}
+
+.clinic-priority-list .priority-item > button {
+  flex-shrink: 0;
+  min-height: 44px;
+}
+
+/* Metrics (14-oct): numbers share one baseline even when a label wraps to two lines. */
+.clinic-metric-grid article {
+  align-items: flex-start;
+}

@@ -22,7 +22,7 @@ import DocumentosView from '../components/views/DocumentosView.astro';
 import ConfigView from '../components/views/ConfigView.astro';
 ---
 
-<Layout title="Fisio Clinical - CRM y Gestion Clinica">
+<Layout title="Fisio Clinical - CRM y Gestion Clínica">
   <a class="skip-link" href="#mainContent">Saltar al contenido principal</a>
   <div class="app-boot" id="appBoot" role="status" aria-live="polite">
     <div class="app-boot-mark"><span class="material-symbols-rounded">medical_services</span></div>
@@ -704,6 +704,25 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
     return value;
   };
+  const euroFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  const fmtEuro = (value: unknown) => euroFormatter.format(Number(value) || 0);
+  // Human labels for stored states (chips keep the raw value as their CSS class).
+  const STATUS_TEXT: Record<string, string> = {
+    pendiente: 'Pendiente', confirmada: 'Confirmada', reprogramada: 'Reprogramada', completada: 'Completada',
+    cancelada: 'Cancelada', no_show: 'No asistió', en_consulta: 'En consulta', en_curso: 'En curso',
+    requiere_revision: 'Requiere revisión', pendiente_revision: 'Pendiente de revisión', aprobada: 'Aprobada',
+    aprobado: 'Aprobado', rechazada: 'Rechazada', generada: 'Generada', enviada: 'Enviada', activo: 'Activo',
+    activa: 'Activa', agotado: 'Agotado', caducado: 'Caducado', pagada: 'Pagada', emitida: 'Emitida',
+    anulada: 'Anulada', firmado: 'Firmado', sincronizado: 'Sincronizado',
+  };
+  const statusText = (value: unknown) => {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    const known = STATUS_TEXT[raw.toLowerCase()];
+    if (known) return known;
+    const plain = raw.replace(/_/g, ' ');
+    return plain.charAt(0).toUpperCase() + plain.slice(1);
+  };
   const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'N/D'; } };
@@ -888,7 +907,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     tip: string;
   }> = {
     'new-plan': {
-      placeholder: 'Describe dolor, restriccion funcional u objetivo clinico para generar un plan...',
+      placeholder: 'Describe dolor, restriccion funcional u objetivo clínico para generar un plan...',
       primaryLabel: 'Generar plan',
       primaryBusyLabel: 'Generando...',
       primaryIcon: 'electric_bolt',
@@ -900,24 +919,24 @@ import ConfigView from '../components/views/ConfigView.astro';
       tip: 'Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.',
     },
     'update-plan': {
-      placeholder: 'Indica que cambio quieres hacer en el plan actual o que evolucion ha habido...',
+      placeholder: 'Indica que cambio quieres hacer en el plan actual o que evolución ha habido...',
       primaryLabel: 'Actualizar plan',
       primaryBusyLabel: 'Actualizando...',
       primaryIcon: 'neurology',
       action: 'exercise',
       title: 'Actualizar plan actual',
-      summary: 'Reformula o progresa el plan existente con el contexto clinico del paciente ya cargado.',
+      summary: 'Reformula o progresa el plan existente con el contexto clínico del paciente ya cargado.',
       outputLabel: 'Salida: plan ajustado',
       requirementLabel: 'Requiere: paciente con contexto',
-      tip: 'Ideal cuando el dolor cambia, el paciente mejora o hace falta ajustar la dosificacion.',
+      tip: 'Ideal cuando el dolor cambia, el paciente mejora o hace falta ajustar la dosificación.',
     },
     'next-session': {
-      placeholder: 'Escribe que quieres revisar en la proxima visita: dolor, adherencia, progresion o dudas...',
+      placeholder: 'Escribe que quieres revisar en la próxima visita: dolor, adherencia, progresión o dudas...',
       primaryLabel: 'Crear checklist',
       primaryBusyLabel: 'Preparando...',
       primaryIcon: 'event_available',
       action: 'chat',
-      title: 'Preparar proxima visita',
+      title: 'Preparar próxima visita',
       summary: 'Resume que revisar en consulta y deja una checklist breve para la siguiente visita.',
       outputLabel: 'Salida: checklist de visita',
       requirementLabel: 'Requiere: paciente con historial',
@@ -982,9 +1001,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     const entries = [
       { label: 'Area afectada', value: String(assistantAreaInput?.value || '').trim() },
       { label: 'Tipo de caso', value: String(assistantInjuryTypeInput?.value || '').trim() },
-      { label: 'Duracion', value: String(assistantDurationInput?.value || '').trim() },
+      { label: 'Duración', value: String(assistantDurationInput?.value || '').trim() },
       { label: 'Dolor actual', value: String(assistantPainLevelInput?.value || '').trim() },
-      { label: 'Objetivo clinico', value: String(assistantObjectiveInput?.value || '').trim() },
+      { label: 'Objetivo clínico', value: String(assistantObjectiveInput?.value || '').trim() },
     ];
     return entries.filter((entry) => entry.value);
   };
@@ -1009,7 +1028,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const summary = getAssistantDiagnosticSummaryText(220);
     assistantDiagnosticSummary.textContent = summary
       ? `Ficha lista para IA: ${summary}`
-      : 'Sin ficha estructurada todavia. Completa 2 o 3 campos y el agente trabajara con una entrada mas clinica.';
+      : 'Sin ficha estructurada todavía. Completa 2 o 3 campos y el agente trabajará con una entrada más clínica.';
     syncAssistantDiagnosticPanel();
   };
 
@@ -1091,19 +1110,19 @@ import ConfigView from '../components/views/ConfigView.astro';
       `Paciente: ${brief.patientName}`,
       brief.patientEmail ? `Email: ${brief.patientEmail}` : '',
       brief.latestPainScale !== null && brief.latestPainScale !== undefined
-        ? `Ultimo dolor registrado: ${brief.latestPainScale}/10`
-        : 'Ultimo dolor registrado: no disponible',
-      brief.latestNoteText ? `Ultima nota de seguimiento: ${brief.latestNoteText}` : 'Ultima nota de seguimiento: no disponible',
-      brief.therapistNote ? `Nota clinica del ultimo plan: ${brief.therapistNote}` : '',
+        ? `Último dolor registrado: ${brief.latestPainScale}/10`
+        : 'Último dolor registrado: no disponible',
+      brief.latestNoteText ? `Última nota de seguimiento: ${brief.latestNoteText}` : 'Última nota de seguimiento: no disponible',
+      brief.therapistNote ? `Nota clínica del último plan: ${brief.therapistNote}` : '',
       brief.patientMessage ? `Mensaje previo al paciente: ${brief.patientMessage}` : '',
-      brief.exerciseCount ? `Ejercicios del ultimo plan: ${brief.exerciseCount}` : '',
-      brief.latestRecommendationState ? `Estado del ultimo plan: ${brief.latestRecommendationState}` : '',
+      brief.exerciseCount ? `Ejercicios del último plan: ${brief.exerciseCount}` : '',
+      brief.latestRecommendationState ? `Estado del último plan: ${brief.latestRecommendationState}` : '',
       brief.redFlagsPresent ? 'Hay alertas rojas previas a tener en cuenta.' : '',
     ].filter(Boolean);
 
     const task = action === 'next-session'
-      ? 'Con este contexto, resume el objetivo de la siguiente sesion, que revisar en consulta y que progresion o regresion valorar.'
-      : 'Con este contexto, actualiza el plan de ejercicios domiciliarios con progresion segura, objetivo clinico, red flags y criterio de seguimiento.';
+      ? 'Con este contexto, resume el objetivo de la siguiente sesión, que revisar en consulta y que progresión o regresion valorar.'
+      : 'Con este contexto, actualiza el plan de ejercicios domiciliarios con progresión segura, objetivo clínico, red flags y criterio de seguimiento.';
 
     return contextLines.join('\n') + '\n\n' + task;
   };
@@ -1149,7 +1168,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!hasPatient && activeAssistantMode !== 'new-plan') {
       assistantModeRequirement.textContent = 'Paso previo: selecciona un paciente';
-      assistantModeTip.textContent = 'Este modo usa el contexto clinico del caso. Primero vincula el copilot al paciente correcto.';
+      assistantModeTip.textContent = 'Este modo usa el contexto clínico del caso. Primero vincula el copilot al paciente correcto.';
       assistantModeCard.classList.add('is-blocked');
       assistantModeCard.classList.remove('is-ready', 'is-complete');
       syncAssistantDiagnosticPanel();
@@ -1185,10 +1204,10 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const getAssistantModeDraft = (mode: AssistantWorkMode) => {
     if (mode === 'update-plan') {
-      return 'Ajusta el plan segun la evolucion del dolor, tolerancia y adherencia.';
+      return 'Ajusta el plan según la evolución del dolor, tolerancia y adherencia.';
     }
     if (mode === 'next-session') {
-      return 'Resume que revisar en consulta y que progresion o regresion valorar.';
+      return 'Resume que revisar en consulta y que progresión o regresion valorar.';
     }
     return '';
   };
@@ -1363,9 +1382,9 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!hasPatient) {
       assistantFlowTitle.textContent = 'Empezamos vinculando el caso al historial correcto';
-      assistantFlowHint.textContent = 'Selecciona un paciente para que plan, PDF y seguimiento queden unidos al caso clinico.';
+      assistantFlowHint.textContent = 'Selecciona un paciente para que plan, PDF y seguimiento queden unidos al caso clínico.';
     } else if (!hasGoal) {
-      assistantFlowTitle.textContent = 'El caso ya esta listo para recibir un objetivo clinico';
+      assistantFlowTitle.textContent = 'El caso ya esta listo para recibir un objetivo clínico';
       assistantFlowHint.textContent = 'Describe dolor, restriccion funcional o meta terapeutica para orientar el plan.';
     } else {
       assistantFlowTitle.textContent = 'Buen briefing: ahora toca pedir la propuesta del agente';
@@ -1374,7 +1393,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     assistantFlowDraft.textContent = draftSummary
       ? 'Objetivo actual: ' + draftSummary
-      : 'Sin objetivo redactado todavia.';
+      : 'Sin objetivo redactado todavía.';
   };
   const renderAssistantPatientBrief = (brief: any = null, options: { loading?: boolean; error?: boolean } = {}) => {
     if (!assistantPatientBrief) return;
@@ -1383,7 +1402,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!selectedPatientId && !brief) {
       currentAssistantPatientBrief = null;
-      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>Sin paciente seleccionado</strong></div>';
+      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clínico</span><strong>Sin paciente seleccionado</strong></div>';
       assistantPatientBrief.removeAttribute('data-state');
       return;
     }
@@ -1391,19 +1410,19 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (loading) {
       const loadingName = escapeHtml(brief?.patientName || selectedPatientName || 'Paciente seleccionado');
       assistantPatientBrief.setAttribute('data-state', 'loading');
-      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>Cargando ${loadingName}...</strong></div>`;
+      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clínico</span><strong>Cargando ${loadingName}...</strong></div>`;
       return;
     }
 
     if (error) {
       const errorName = escapeHtml(brief?.patientName || selectedPatientName || 'el paciente seleccionado');
       assistantPatientBrief.setAttribute('data-state', 'error');
-      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>No se pudo cargar ${errorName}.</strong></div>`;
+      assistantPatientBrief.innerHTML = `<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clínico</span><strong>No se pudo cargar ${errorName}.</strong></div>`;
       return;
     }
 
     if (!brief) {
-      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clinico</span><strong>Sin contexto disponible</strong></div>';
+      assistantPatientBrief.innerHTML = '<div class="assistant-patient-brief-empty"><span class="assistant-brief-kicker">Resumen clínico</span><strong>Sin contexto disponible</strong></div>';
       assistantPatientBrief.removeAttribute('data-state');
       return;
     }
@@ -1418,9 +1437,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     assistantPatientBrief.removeAttribute('data-state');
     assistantPatientBrief.innerHTML = `
       <div class="assistant-brief-head assistant-brief-head-compact">
-        <span class="assistant-brief-kicker">Ultimo plan</span>
+        <span class="assistant-brief-kicker">Último plan</span>
         <strong>${planCount ? escapeHtml(latestPlanDate) : 'Sin plan'}</strong>
-        <small>${planCount ? `${brief.exerciseCount || 0} ejercicio(s)` : 'Aun no generado'}</small>
+        <small>${planCount ? `${brief.exerciseCount || 0} ejercicio(s)` : 'Aún no generado'}</small>
       </div>
       <div class="assistant-brief-actions assistant-brief-actions-primary">
         <button type="button" class="assistant-chip" data-assistant-brief-action="update-plan"><span class="material-symbols-rounded">neurology</span> Actualizar plan</button>
@@ -1430,11 +1449,11 @@ import ConfigView from '../components/views/ConfigView.astro';
       </div>
       <div class="assistant-brief-history">
         <div>
-          <span>Ultimo seguimiento</span>
+          <span>Último seguimiento</span>
           <strong>${latestNote}</strong>
         </div>
         <div>
-          <span>Ultima dolencia</span>
+          <span>Última dolencia</span>
           <strong>${latestAilment}</strong>
         </div>
         <div>
@@ -1663,7 +1682,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
     <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
     <button type="button" class="finance-tab" data-dashboard-nav="bonos"><span class="material-symbols-rounded">confirmation_number</span> Bonos</button>
-    <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestoria</button>
+    <button type="button" class="finance-tab" data-dashboard-nav="gestoria"><span class="material-symbols-rounded">account_balance</span> Gestoría</button>
   `;
   document.querySelectorAll<HTMLElement>('.finance-tabs[data-finance-tabs]').forEach((nav) => {
     nav.innerHTML = financeTabsMarkup;
@@ -2004,7 +2023,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (deliveryState) {
       assistantDeliveryStatus.textContent = 'Informe enviado al paciente';
-      assistantDeliverySummary.textContent = 'El PDF ya se envio por Telegram en esta sesion. Si haces cambios en el plan, podras reenviarlo con el boton principal.';
+      assistantDeliverySummary.textContent = 'El PDF ya se envio por Telegram en esta sesión. Si haces cambios en el plan, podras reenviarlo con el boton principal.';
       assistantDeliveryPills.innerHTML = [
         pill('Telegram vinculado', 'is-ready'),
         pill('PDF enviado', 'is-ready'),
@@ -2044,7 +2063,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!isLinked) {
       exerciseTelegramBtn.innerHTML = '<span class="material-symbols-rounded">link</span> Vincular Telegram';
-      exerciseTelegramBtn.title = 'Este paciente aun no tiene Telegram vinculado';
+      exerciseTelegramBtn.title = 'Este paciente aún no tiene Telegram vinculado';
       exerciseTelegramBtn.setAttribute('aria-label', 'Vincular Telegram del paciente');
       syncAssistantActionGrid();
       return;
@@ -2163,7 +2182,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       progress = document.createElement('article');
       progress.id = 'agentProgressMsg';
       progress.className = 'msg agent msg-progress';
-      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clinico</span><p></p></div>';
+      progress.innerHTML = '<div class="msg-avatar"><span class="material-symbols-rounded">sync</span></div><div class="msg-body"><span class="msg-sender">Asistente clínico</span><p></p></div>';
       log.appendChild(progress);
     }
     const p = progress.querySelector('p');
@@ -2251,7 +2270,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const action = String(actionBtn.getAttribute('data-assistant-brief-action') || '') as 'update-plan' | 'next-session';
     const prompt = buildAssistantBriefPrompt(action);
     if (!prompt) {
-      addMessage('Selecciona un paciente con historial para preparar un prompt clinico guiado.', 'agent');
+      addMessage('Selecciona un paciente con historial para preparar un prompt clínico guiado.', 'agent');
       return;
     }
 
@@ -2573,7 +2592,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       exercise?.repeticiones ? `${exercise.repeticiones} repeticiones` : '',
       exercise?.duracion_segundos ? `${exercise.duracion_segundos}s` : '',
     ].filter(Boolean);
-    return dose.length ? dose.join(' | ') : 'Dosificacion a revisar en consulta';
+    return dose.length ? dose.join(' | ') : 'Dosificación a revisar en consulta';
   };
 
   const renderReportActionButton = (action: string, icon: string, label: string, primary = false) => {
@@ -2756,7 +2775,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     html += '<div>';
     html += '<span class="exercise-report-kicker">Plan terapeutico generado</span>';
     html += `<strong>Propuesta revisable para ${escapeHtml(patientName)}</strong>`;
-    html += `<p>${escapeHtml(symptomSummary || 'Caso procesado con el contexto clinico disponible.')}</p>`;
+    html += `<p>${escapeHtml(symptomSummary || 'Caso procesado con el contexto clínico disponible.')}</p>`;
     html += '</div>';
     html += '<div class="exercise-report-status">';
     html += metaPills.map((pill) => `<span class="exercise-report-pill">${escapeHtml(pill)}</span>`).join('');
@@ -2767,13 +2786,13 @@ import ConfigView from '../components/views/ConfigView.astro';
       html += '<section class="exercise-alert"><span class="material-symbols-rounded">warning</span><div><strong>Revisa antes de entregar</strong>';
       html += redFlagItems.length
         ? `<p>${escapeHtml(redFlagItems.join(' | '))}</p>`
-        : '<p>El motor ha marcado posibles alertas clinicas. Valida el caso antes de enviar el plan.</p>';
+        : '<p>El motor ha marcado posibles alertas clínicas. Valida el caso antes de enviar el plan.</p>';
       html += '</div></section>';
     }
 
     html += '<section class="exercise-report-section exercise-report-summary">';
-    html += '<div><span>Resumen clinico usado</span>';
-    html += `<p>${escapeHtml(symptomSummary || therapistNote || 'Sin resumen clinico estructurado devuelto por el motor.')}</p></div>`;
+    html += '<div><span>Resumen clínico usado</span>';
+    html += `<p>${escapeHtml(symptomSummary || therapistNote || 'Sin resumen clínico estructurado devuelto por el motor.')}</p></div>`;
     html += '<dl>';
     html += `<div><dt>Fecha</dt><dd>${escapeHtml(reportDate)}</dd></div>`;
     html += `<div><dt>Paciente</dt><dd>${escapeHtml(patientName)}</dd></div>`;
@@ -2797,7 +2816,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     html += '<section class="exercise-report-section">';
     html += '<div class="exercise-report-section-head">';
     html += '<span>Ejercicios recomendados</span>';
-    html += `<small>${escapeHtml(imageLabel)} disponibles para PDF y revision visual</small>`;
+    html += `<small>${escapeHtml(imageLabel)} disponibles para PDF y revisión visual</small>`;
     html += '</div>';
 
     if (!exercises.length) {
@@ -2839,7 +2858,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (recommendationId) {
       html += '<footer class="exercise-report-foot">';
-      html += `<span>Historial clinico actualizado</span><code>${escapeHtml(recommendationId)}</code>`;
+      html += `<span>Historial clínico actualizado</span><code>${escapeHtml(recommendationId)}</code>`;
       html += '</footer>';
     }
     html += '</article></div>';
@@ -2994,7 +3013,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const handleAssistantChat = async (requestText: string, visibleText: string, busySource: 'chat' | 'exercise' = 'chat') => {
     addMessage(visibleText, 'user');
     resizeAgentInput();
-    upsertAgentProgress('Consultando al asistente clinico...');
+    upsertAgentProgress('Consultando al asistente clínico...');
     setSending(true, busySource);
     const activePatientId = selectedPatientId || fichaPatientId || chatPatientSelect?.value || null;
     try {
@@ -3027,7 +3046,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         );
         setAgentStatus(true);
       } else {
-        addMessage('Error de conexion con el agente.', 'agent');
+        addMessage('Error de conexión con el agente.', 'agent');
         setAgentStatus(false);
       }
     } finally {
@@ -3042,7 +3061,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!payload) {
       addMessage(
         activeAssistantMode === 'new-plan'
-          ? 'Describe un objetivo clinico o dolor principal antes de generar un plan.'
+          ? 'Describe un objetivo clínico o dolor principal antes de generar un plan.'
           : 'Selecciona un paciente con historial para usar este modo guiado del copilot.',
         'agent'
       );
@@ -3081,7 +3100,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (options.showUserMessage !== false) {
       addMessage(visibleText, 'user');
     }
-    upsertAgentProgress('Analizando caso clinico...');
+    upsertAgentProgress('Analizando caso clínico...');
     setSending(true, 'exercise');
     try {
       let payload: any = null;
@@ -3161,7 +3180,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       renderExerciseOpsMetric();
 
       if (!payload.ok) {
-        addMessage(`Error: ${payload.error || 'No se pudo generar recomendacion'}`, 'agent');
+        addMessage(`Error: ${payload.error || 'No se pudo generar recomendación'}`, 'agent');
         return;
       }
 
@@ -3206,7 +3225,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         addMessage('El informe sigue generandose. Pulsa `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
       } else if (isTimeoutError(err)) {
         pendingExerciseRecommendationJobId = null;
-        addMessage('El agente de ejercicios tarda mas de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
+        addMessage('El agente de ejercicios tarda más de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
       } else {
         pendingExerciseRecommendationJobId = null;
         addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
@@ -3247,7 +3266,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (action === 'regenerate') {
       const requestText = lastExerciseRequestText || lastExerciseVisibleText;
       if (!requestText) {
-        addMessage('No tengo un briefing anterior para regenerar. Escribe el caso clinico y vuelve a generar.', 'agent');
+        addMessage('No tengo un briefing anterior para regenerar. Escribe el caso clínico y vuelve a generar.', 'agent');
         return;
       }
       void handleExerciseRecommend(
@@ -3440,7 +3459,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!hasLinkedTelegramPatient()) {
       pendingHistoryAnchor = 'telegram';
-      addMessage('Este paciente aun no tiene Telegram vinculado. Te llevo a su ficha para completar el enlace.', 'agent');
+      addMessage('Este paciente aún no tiene Telegram vinculado. Te llevo a su ficha para completar el enlace.', 'agent');
       closeAssistantRail();
       openPatientHistory(selectedPatientId, selectedPatientName);
       window.setTimeout(() => focusHistoryAnchor('telegram'), 650);
@@ -3592,7 +3611,9 @@ import ConfigView from '../components/views/ConfigView.astro';
   const getDashboardFirstName = (value: unknown) => {
     const label = String(value || 'Paciente').trim();
     if (!label) return 'Paciente';
-    return label.split(/\s+/)[0] || label;
+    // Skip courtesy titles so «Dr. Alejandro» reads «Alejandro», not «Dr.».
+    const words = label.split(/\s+/).filter((word) => !/^(dr|dra|sr|sra|srta|d|dña)\.?$/i.test(word));
+    return words[0] || label;
   };
 
   const getDashboardActiveAppointments = (citas: any[] = []) => {
@@ -3660,9 +3681,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     try {
       const bookingUrl = buildPublicBookingUrl();
       const parsed = new URL(bookingUrl);
-      dashboardBookingMeta.textContent = `Publicada en ${parsed.host}${parsed.pathname}. Compartela por web o como derivacion rapida desde Telegram.`;
+      dashboardBookingMeta.textContent = `Publicada en ${parsed.host}${parsed.pathname}. Compártela por web o como derivación rápida desde Telegram.`;
     } catch {
-      dashboardBookingMeta.textContent = 'Comparte la pagina publica para captar nuevas altas y completar huecos de agenda.';
+      dashboardBookingMeta.textContent = 'Comparte la página publica para captar nuevas altas y completar huecos de agenda.';
     }
   };
 
@@ -3670,7 +3691,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!dashboardLiveSummary) return;
     const todayCount = dashboardRuntime.todayAppointments.length;
     const intakeCount = dashboardRuntime.pendingIntakes.length;
-    const syncLabel = dashboardRuntime.syncUi?.chipLabel || 'Sync en revision';
+    const syncLabel = dashboardRuntime.syncUi?.chipLabel || 'Sync en revisión';
     const next = dashboardRuntime.nextAppointment;
 
     if (dashboardRuntime.agendaState === 'error') {
@@ -3680,7 +3701,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (next) {
       const hour = fmtHourOnly(next.inicio_en || '');
-      dashboardLiveSummary.textContent = `${todayCount} cita${todayCount === 1 ? '' : 's'} hoy. Proxima sesion ${hour} con ${getDashboardFirstName(next.nombre_paciente)}. ${intakeCount ? `${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} pendientes en Telegram/web.` : 'Bandeja de entrada al dia.'} ${syncLabel}.`;
+      dashboardLiveSummary.textContent = `${todayCount} cita${todayCount === 1 ? '' : 's'} hoy. Próxima sesión ${hour} con ${getDashboardFirstName(next.nombre_paciente)}. ${intakeCount ? `${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} pendientes en Telegram/web.` : 'Bandeja de entrada al día.'} ${syncLabel}.`;
       return;
     }
 
@@ -3700,7 +3721,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (dashboardRuntime.agendaState === 'error') {
       setDashboardChip(dashboardNextSessionStatus, 'Error', 'rechazado');
-      dashboardNextSessionTitle.textContent = 'Error de conexion';
+      dashboardNextSessionTitle.textContent = 'Error de conexión';
       dashboardNextSessionMeta.textContent = 'No se pudo cargar la agenda.';
       if (dashboardNextSessionBtn) {
         dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Ver agenda';
@@ -3722,7 +3743,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const hour = fmtHourOnly(next.inicio_en || '');
     const label = next.nombre_paciente || 'Paciente';
     const reason = String(next.motivo || '').trim();
-    setDashboardChip(dashboardNextSessionStatus, sameDay ? 'Hoy' : 'Proxima', sameDay ? 'confirmada' : 'pendiente');
+    setDashboardChip(dashboardNextSessionStatus, sameDay ? 'Hoy' : 'Próxima', sameDay ? 'confirmada' : 'pendiente');
     dashboardNextSessionTitle.textContent = label;
     dashboardNextSessionMeta.textContent = `${sameDay ? hour : `${fmtDate(next.inicio_en || '')} | ${hour}`}${reason ? ` | ${reason}` : ''}`;
     if (dashboardNextSessionBtn) {
@@ -3738,13 +3759,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (dashboardRuntime.intakeState === 'error') {
       setDashboardChip(dashboardIntakeStatus, 'Error', 'rechazado');
       dashboardIntakeTitle.textContent = 'No se pudo actualizar la bandeja';
-      dashboardIntakeMeta.textContent = 'La bandeja sigue accesible, pero el resumen rapido no se ha podido refrescar.';
+      dashboardIntakeMeta.textContent = 'La bandeja sigue accesible, pero el resumen rápido no se ha podido refrescar.';
       return;
     }
 
     const count = dashboardRuntime.pendingIntakes.length;
     if (!count) {
-      setDashboardChip(dashboardIntakeStatus, 'Al dia', 'aprobado');
+      setDashboardChip(dashboardIntakeStatus, 'Al día', 'aprobado');
       dashboardIntakeTitle.textContent = 'Bandeja en orden';
       dashboardIntakeMeta.textContent = 'Sin pacientes pendientes desde Telegram o formulario web.';
       return;
@@ -3756,7 +3777,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const createdAt = fmtDate(first.creado_en || first.created_at || '');
     setDashboardChip(dashboardIntakeStatus, `${count} en cola`, 'pendiente');
     dashboardIntakeTitle.textContent = `${count} paciente${count === 1 ? '' : 's'} esperan triage`;
-    dashboardIntakeMeta.textContent = `${patientName} via ${source}${createdAt ? ` | ${createdAt}` : ''}`;
+    dashboardIntakeMeta.textContent = `${patientName} vía ${source}${createdAt ? ` | ${createdAt}` : ''}`;
   };
 
   const renderDashboardPriorityList = () => {
@@ -3779,11 +3800,11 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (next) {
       priorities.push({
-        label: 'Proxima sesion',
-        title: `${getDashboardFirstName(next.nombre_paciente)} ${fmtHourOnly(next.inicio_en || '')}`,
+        label: 'Próxima sesión',
+        title: `${fmtHourOnly(next.inicio_en || '')} · ${next.nombre_paciente || 'Paciente'}`,
         body: next.motivo ? String(next.motivo) : '',
         tone: 'accent',
-        actionLabel: String(next.paciente_id || '').trim() ? 'Abrir agente' : 'Ver agenda',
+        actionLabel: String(next.paciente_id || '').trim() ? 'Abrir copiloto' : 'Ver agenda',
         action: String(next.paciente_id || '').trim() ? 'open-copilot' : 'open-agenda',
       });
     }
@@ -3791,8 +3812,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (['error', 'stale'].includes(syncUiStatus)) {
       priorities.push({
         label: 'Calendar',
-        title: dashboardRuntime.syncUi?.title || 'Revisar sincronizacion',
-        body: dashboardRuntime.syncUi?.meta || 'Revisar conexion.',
+        title: dashboardRuntime.syncUi?.title || 'Revisar sincronización',
+        body: dashboardRuntime.syncUi?.meta || 'Revisar conexión.',
         tone: 'danger',
         actionLabel: 'Abrir agenda',
         nav: 'citas',
@@ -3801,7 +3822,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!dashboardRuntime.todayAppointments.length) {
       priorities.push({
-        label: 'Captacion',
+        label: 'Captación',
         title: 'Sin citas hoy',
         body: 'Comparte la reserva online.',
         tone: 'ready',
@@ -3812,11 +3833,11 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!priorities.length) {
       priorities.push({
-        label: 'Todo al dia',
+        label: 'Todo al día',
         title: 'Sin tareas pendientes',
         body: '',
         tone: 'ready',
-        actionLabel: 'Abrir agente',
+        actionLabel: 'Abrir copiloto',
         action: 'open-copilot',
       });
     }
@@ -3865,7 +3886,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <p class="clean-list-meta">${escapeHtml(ch)} | ${escapeHtml(f)}</p>
           </div>
           <div class="clean-list-action">
-            <span class="status-chip ${st}">${escapeHtml(st)}</span>
+            <span class="status-chip ${st}">${escapeHtml(statusText(st))}</span>
             <button class="btn-sm" data-action="review-intake" data-intake-id="${i.id||''}" data-patient-id="${i.paciente_id||''}" data-patient-name="${escapeAttr(patientName)}">Revisar</button>
           </div>
         </article>`;
@@ -3904,7 +3925,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
       const elIngresos = document.getElementById('metricIngresosMes');
       const elSesiones = document.getElementById('metricSesionesMes');
-      if (elIngresos) elIngresos.textContent = `${ingresosMes.toFixed(0)} EUR`;
+      if (elIngresos) elIngresos.textContent = fmtEuro(ingresosMes);
       if (elSesiones) elSesiones.textContent = String(sesionesMes);
 
       try {
@@ -4082,7 +4103,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     let age = today.getFullYear() - birth.getFullYear();
     const monthDelta = today.getMonth() - birth.getMonth();
     if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) age -= 1;
-    return `${Math.max(age, 0)} anos`;
+    return `${Math.max(age, 0)} años`;
   };
   const getPatientInitials = (name: string) =>
     String(name || '')
@@ -4148,7 +4169,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const visibleLabel = `${visiblePatients.length} ${visiblePatients.length === 1 ? 'expediente visible' : 'expedientes visibles'}`;
 
     if (patientsTotalValue) patientsTotalValue.textContent = String(total);
-    if (patientsTotalMeta) patientsTotalMeta.textContent = total ? `${incomplete} ficha${incomplete === 1 ? '' : 's'} necesitan completar contacto.` : 'Sin pacientes activos todavía.';
+    if (patientsTotalMeta) patientsTotalMeta.textContent = total ? `${incomplete} ficha${incomplete === 1 ? '' : 's'} pendiente${incomplete === 1 ? '' : 's'} de completar contacto.` : 'Sin pacientes activos todavía.';
     if (patientsReachValue) patientsReachValue.textContent = total ? `${Math.round((contactable / total) * 100)}%` : '0%';
     if (patientsReachMeta) patientsReachMeta.textContent = total ? `${contactable} pacientes con email o teléfono.` : 'Aún no hay vías registradas.';
     if (patientsAttentionValue) patientsAttentionValue.textContent = String(attention);
@@ -4292,7 +4313,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         apptHtml = `
           <div class="patient-cell-appt">
             <span class="patient-appt-time">${escapeHtml(timeStr)}</span>
-            <span class="patient-appt-status">${escapeHtml(appt.estado || 'pendiente')}</span>
+            <span class="patient-appt-status">${escapeHtml(statusText(appt.estado || 'pendiente'))}</span>
           </div>
         `;
       }
@@ -4300,11 +4321,11 @@ import ConfigView from '../components/views/ConfigView.astro';
       const contactHtml = `
         <div class="patient-cell-contact">
           ${patientPhone
-            ? `<a href="tel:${escapeAttr(patientPhone)}" class="patient-contact-link" title="Llamar"><span class="material-symbols-rounded">call</span> ${escapeHtml(patientPhone)}</a>`
+            ? `<a href="tel:${escapeAttr(patientPhone)}" class="patient-contact-link" title="Llamar"><span class="material-symbols-rounded">call</span> <span class="patient-contact-text">${escapeHtml(patientPhone)}</span></a>`
             : '<span class="patient-missing-contact">Sin teléfono</span>'
           }
           ${patientEmail
-            ? `<a href="mailto:${escapeAttr(patientEmail)}" class="patient-contact-link" title="Enviar email"><span class="material-symbols-rounded">mail</span> ${escapeHtml(patientEmail)}</a>`
+            ? `<a href="mailto:${escapeAttr(patientEmail)}" class="patient-contact-link" title="Enviar email"><span class="material-symbols-rounded">mail</span> <span class="patient-contact-text">${escapeHtml(patientEmail)}</span></a>`
             : '<span class="patient-missing-contact">Sin email</span>'
           }
         </div>
@@ -4615,7 +4636,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const rawPhone = btn.getAttribute('data-patient-phone') || '';
       const phone = String(rawPhone).replace(/[^\d+]/g, '');
       if (!phone) {
-        addMessage(`No hay telefono disponible para ${patientName || 'este paciente'}.`, 'agent');
+        addMessage(`No hay teléfono disponible para ${patientName || 'este paciente'}.`, 'agent');
         return;
       }
       window.location.href = `tel:${phone}`;
@@ -4629,7 +4650,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         addMessage(`No hay email disponible para ${patientName || 'este paciente'}.`, 'agent');
         return;
       }
-      const subject = encodeURIComponent(`Seguimiento clinico - ${patientName || 'Paciente'}`);
+      const subject = encodeURIComponent(`Seguimiento clínico - ${patientName || 'Paciente'}`);
       window.location.href = `mailto:${email}?subject=${subject}`;
       addMessage(`Abriendo email para ${patientName || 'paciente'}.`, 'agent');
       return;
@@ -4683,7 +4704,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         templateHistoryBody,
         6,
         'inventory_2',
-        'Aun no hay planes clínicos registrados en esta biblioteca. Genera uno desde el copiloto o entra en un paciente para empezar.',
+        'Aún no hay planes clínicos registrados en esta biblioteca. Genera uno desde el copiloto o entra en un paciente para empezar.',
       );
       return;
     }
@@ -4715,7 +4736,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <div class="template-plan-cell">
               <strong>${escapeHtml(plan?.title || 'Plan de ejercicios IA')}</strong>
               <p>${escapeHtml(note)}</p>
-              <span class="status-chip ${escapeHtml(statusClass)}">${escapeHtml(statusRaw)}</span>
+              <span class="status-chip ${escapeHtml(statusClass)}">${escapeHtml(statusText(statusRaw))}</span>
             </div>
           </td>
           <td>
@@ -4753,7 +4774,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
-    if (templateHistoryBody) setTableState(templateHistoryBody, 6, 'sync', 'Cargando biblioteca clinica...', true);
+    if (templateHistoryBody) setTableState(templateHistoryBody, 6, 'sync', 'Cargando biblioteca clínica...', true);
     try {
       if (!patientCatalog.length) await fetchPatientCatalog();
       const libraryPayload = await fetchJson(`${BACKEND_BASE}/api/profesional/program-library?profesional_id=${PROF_ID}&limit=24`);
@@ -4873,7 +4894,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         recentPlans: [],
       };
       renderTemplateLibrarySummary({}, []);
-      if (templateHistoryBody) setTableState(templateHistoryBody, 6, 'cloud_off', 'Error al cargar la biblioteca clinica.');
+      if (templateHistoryBody) setTableState(templateHistoryBody, 6, 'cloud_off', 'Error al cargar la biblioteca clínica.');
     }
   };
 
@@ -5135,7 +5156,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <p class="clean-list-title">${escapeHtml(cita.nombre_paciente || 'Paciente sin nombre')}</p>
           <p class="clean-list-meta">${isToday ? escapeHtml(cita.motivo || 'Consulta general') : escapeHtml(fmtDate(cita.inicio_en || '')) + (cita.motivo ? ' · ' + escapeHtml(cita.motivo) : '')}</p>
         </div>
-        <span class="status-chip ${stateClass}">${escapeHtml(cita.estado || 'pendiente')}</span>
+        <span class="status-chip ${stateClass}">${escapeHtml(statusText(cita.estado || 'pendiente'))}</span>
       </article>`;
     };
 
@@ -5215,7 +5236,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return {
         label: 'Cita detectada en Google Calendar',
         shortLabel: 'Calendar',
-        note: 'Evento detectado en Google Calendar todavia no enlazado con ficha CRM.',
+        note: 'Evento detectado en Google Calendar todavía no enlazado con ficha CRM.',
         colors: { bg: '#ecfeff', color: '#155e75', border: '#06b6d4' },
       };
     }
@@ -5275,7 +5296,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return { label: 'Solo Calendar', chipClass: 'pendiente', note: blockMeta.note };
     }
     if (state === 'backfilled') return { label: 'Backfill', chipClass: 'pendiente', note: 'La cita se recupero desde Google Calendar y ya tiene correspondencia en CRM.' };
-    if (state === 'crm_only') return { label: 'Solo CRM', chipClass: 'caducado', note: 'La cita existe en CRM pero todavia no aparece enlazada en Google Calendar.' };
+    if (state === 'crm_only') return { label: 'Solo CRM', chipClass: 'caducado', note: 'La cita existe en CRM pero todavía no aparece enlazada en Google Calendar.' };
     if (state === 'linked' || origin === 'calendar' || origin === 'crm') return { label: 'CRM + Calendar', chipClass: 'aprobado', note: 'La cita esta enlazada entre CRM y Google Calendar.' };
     return { label: 'Sin traza', chipClass: 'caducado', note: 'No hay metadata suficiente para determinar el estado de espejo con Google Calendar.' };
   };
@@ -5294,7 +5315,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     let chipLabel = 'Sin datos';
     let chipClass = 'caducado';
     let title = 'Sync Google Calendar';
-    let meta = 'Todavia no hay estado del sincronizador.';
+    let meta = 'Todavía no hay estado del sincronizador.';
 
     if (pending > 0) {
       chipLabel = 'Requiere comprobación';
@@ -5316,15 +5337,15 @@ import ConfigView from '../components/views/ConfigView.astro';
       title = 'W6 sincronizando agenda';
       meta = 'El sincronizador background esta reconciliando Google Calendar ahora mismo.';
     } else if (uiStatus === 'healthy') {
-      chipLabel = 'Al dia';
+      chipLabel = 'Al día';
       chipClass = 'aprobado';
-      title = 'W6 al dia';
+      title = 'W6 al día';
       meta = `${fmtRelativeSyncAge(lastSuccessAt)} | ${persisted} nuevas | ${updated} actualizadas | ${cancelled} canceladas`;
     } else if (uiStatus === 'stale') {
       chipLabel = 'Con retraso';
       chipClass = 'caducado';
       title = 'W6 con retraso';
-      meta = `${fmtRelativeSyncAge(lastSuccessAt)} | ultima lectura ${fetched} evento(s)`;
+      meta = `${fmtRelativeSyncAge(lastSuccessAt)} | última lectura ${fetched} evento(s)`;
     } else if (uiStatus === 'error') {
       chipLabel = 'Error';
       chipClass = 'rechazado';
@@ -5343,9 +5364,9 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const facts: Array<{ label: string; value: string }> = [];
     if (summary?.enabled !== undefined) facts.push({ label: 'Lectura', value: summary?.enabled ? 'Calendar activo' : 'Calendar desactivado' });
-    if (lastSuccessAt) facts.push({ label: 'Ultimo ciclo', value: fmtRelativeSyncAge(lastSuccessAt) });
-    if (syncStatus?.next_expected_at) facts.push({ label: 'Proximo', value: fmtRelativeSyncAge(syncStatus.next_expected_at) });
-    if (syncStatus?.error) facts.push({ label: 'Ultimo error', value: String(syncStatus.error) });
+    if (lastSuccessAt) facts.push({ label: 'Último ciclo', value: fmtRelativeSyncAge(lastSuccessAt) });
+    if (syncStatus?.next_expected_at) facts.push({ label: 'Próximo', value: fmtRelativeSyncAge(syncStatus.next_expected_at) });
+    if (syncStatus?.error) facts.push({ label: 'Último error', value: String(syncStatus.error) });
 
     const viewModel = { uiStatus, chipLabel, chipClass, title, meta, facts };
     dashboardRuntime.syncUi = viewModel;
@@ -5358,7 +5379,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const cal = document.getElementById('agendaCalendar');
     if (!cal) return;
 
-    const HOUR_SLOTS = [9, 10, 11, 12, 15, 16, 17, 18];
+    const CLINIC_HOURS = [9, 10, 11, 12, 15, 16, 17, 18];
     const weekDays: Date[] = Array.from({ length: 5 }, (_, i) => {
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
@@ -5377,14 +5398,15 @@ import ConfigView from '../components/views/ConfigView.astro';
         allDayMap.get(dayIdx)!.push(cita);
         continue;
       }
-      const hour = start.getHours();
-      const slotHour = HOUR_SLOTS.find(h => hour >= h && hour < h + 1);
-      if (slotHour === undefined) continue;
+      // Appointments in the lunch pause or outside opening hours get their own row instead of vanishing.
+      const slotHour = start.getHours();
       const key = `${dayIdx}-${slotHour}`;
       if (!apptMap.has(key)) apptMap.set(key, []);
       apptMap.get(key)!.push(cita);
     }
 
+    const extraHours = [...apptMap.keys()].map((key) => Number(key.split('-')[1])).filter((h) => !CLINIC_HOURS.includes(h));
+    const HOUR_SLOTS = [...new Set([...CLINIC_HOURS, ...extraHours])].sort((a, b) => a - b);
     const todayStr = new Date().toDateString();
 
     let html = `<div class="agenda-board-shell">
@@ -5413,16 +5435,18 @@ import ConfigView from '../components/views/ConfigView.astro';
     for (let si = 0; si < HOUR_SLOTS.length; si++) {
       const hour = HOUR_SLOTS[si];
       const prevHour = si > 0 ? HOUR_SLOTS[si - 1] : null;
-      if (prevHour !== null && hour - prevHour > 1) {
+      if (prevHour === 12 && hour === 15) {
         html += `<div class="agenda-break-cell" role="row" aria-label="Pausa 13:00 - 15:00">
-          <span>Pausa clinica</span>
+          <span>Pausa clínica</span>
           <strong>13:00 - 15:00</strong>
         </div>`;
       }
 
       const timeLabel = `${String(hour).padStart(2,'0')}:00`;
-      html += `<div class="agenda-board-row" role="row">
-        <div class="agenda-time-cell" role="rowheader">${timeLabel}</div>`;
+      const offHours = !CLINIC_HOURS.includes(hour);
+      const offLabel = hour === 13 || hour === 14 ? 'Pausa' : 'Fuera de horario';
+      html += `<div class="agenda-board-row${offHours ? ' is-off-hours' : ''}" role="row">
+        <div class="agenda-time-cell" role="rowheader">${timeLabel}${offHours ? `<small>${offLabel}</small>` : ''}</div>`;
 
       for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
         const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
@@ -5437,11 +5461,11 @@ import ConfigView from '../components/views/ConfigView.astro';
             : `agenda-event-${String(st || 'pendiente').replace(/[^a-z0-9_-]/gi, '_')}`;
           const firstName = calendarOnly
             ? (blockMeta?.shortLabel || 'Bloqueo')
-            : (a.nombre_paciente || 'Paciente').split(' ')[0];
+            : getDashboardFirstName(a.nombre_paciente);
           const timeStr = fmtHourOnly(a.inicio_en);
           const motivo = calendarOnly
-            ? ((a.motivo || a.nombre_paciente || blockMeta?.label || 'Google Calendar').slice(0, 26))
-            : (a.motivo ? a.motivo.slice(0, 22) : '');
+            ? String(a.motivo || a.nombre_paciente || blockMeta?.label || 'Google Calendar')
+            : String(a.motivo || '');
           const tipLabel = calendarOnly
             ? `${blockMeta?.label || 'Bloqueo Google Calendar'}${a.motivo ? ` - ${a.motivo}` : ''}`
             : `${a.nombre_paciente || ''}${a.motivo ? ` - ${a.motivo}` : ''}`;
@@ -5480,8 +5504,8 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (!sorted.length) {
       agendaMobileSummary.textContent = calendarOnlySummary.total
-        ? `Sin citas clinicas en esta semana. Google Calendar aporta ${calendarOnlySummary.total} bloqueo(s) de contexto.`
-        : 'Sin citas clinicas en esta semana.';
+        ? `Sin citas clínicas en esta semana. Google Calendar aporta ${calendarOnlySummary.total} bloqueo(s) de contexto.`
+        : 'Sin citas clínicas en esta semana.';
       setListState(agendaMobileList, 'event_busy', 'No hay citas ni bloqueos para mostrar en timeline movil.');
       return;
     }
@@ -5495,7 +5519,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const todayItems = sorted.filter((cita: any) => isTodayDate(cita.inicio_en || ''));
     const clinicalCount = operationalCitas.length;
-    agendaMobileSummary.textContent = `${clinicalCount} cita(s) clinicas | ${todayItems.length} evento(s) hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
+    agendaMobileSummary.textContent = `${clinicalCount} cita(s) clínicas | ${todayItems.length} evento(s) hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
 
     agendaMobileList.innerHTML = weekDays.map((date) => {
       const key = date.toDateString();
@@ -5510,7 +5534,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               <strong>${escapeHtml(dayTitle)}</strong>
               <span>Sin citas</span>
             </header>
-            <p class="agenda-mobile-empty">Dia libre para captacion, seguimiento o documentacion.</p>
+            <p class="agenda-mobile-empty">Día libre para captación, seguimiento o documentación.</p>
           </article>
         `;
       }
@@ -5531,13 +5555,13 @@ import ConfigView from '../components/views/ConfigView.astro';
                 ? String(cita?.motivo || cita?.nombre_paciente || blockMeta?.label || 'Google Calendar')
                 : String(cita?.nombre_paciente || 'Paciente');
               const patientId = String(cita?.paciente_id || '');
-              const hour = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita?.inicio_en);
+              const hour = isAllDayAppointment(cita) ? 'Todo el día' : fmtHourOnly(cita?.inicio_en);
               const canal = calendarOnly
                 ? 'Google Calendar'
                 : cita?.canal_origen === 'crm_web' ? 'CRM Web' : cita?.canal_origen === 'telegram' ? 'Telegram' : String(cita?.canal_origen || 'Canal CRM');
               const apptId = escapeAttr(cita?.id || cita?.appointment_id || '');
               const canConfirm = !calendarOnly && !cita.calendar_sync_pending && estado === 'pendiente';
-              const statusLabel = calendarOnly ? (blockMeta?.shortLabel || mirror.label) : estado;
+              const statusLabel = calendarOnly ? (blockMeta?.shortLabel || mirror.label) : statusText(estado);
               const itemClass = calendarOnly ? ` is-calendar-only agenda-mobile-${escapeAttr(getCalendarBlockKind(cita))}` : '';
               return `
                 <article class="agenda-mobile-item${itemClass}">
@@ -5546,7 +5570,7 @@ import ConfigView from '../components/views/ConfigView.astro';
                       <strong>${escapeHtml(hour)} | ${escapeHtml(patientName)}</strong>
                       <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(statusLabel)}</span>
                     </div>
-                    <p>${escapeHtml(calendarOnly ? (blockMeta?.note || 'Evento procedente de Google Calendar.') : (cita?.motivo || 'Sesion clinica sin motivo especificado.'))}</p>
+                    <p>${escapeHtml(calendarOnly ? (blockMeta?.note || 'Evento procedente de Google Calendar.') : (cita?.motivo || 'Sesión clínica sin motivo especificado.'))}</p>
                     <div class="agenda-mobile-item-meta">
                       <span class="agenda-mobile-meta-pill">${escapeHtml(canal)}</span>
                       <span class="agenda-mobile-meta-pill">${escapeHtml(mirror.label)}</span>
@@ -5590,7 +5614,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const end = cita?.fin_en ? new Date(cita.fin_en) : null;
     const day = start ? start.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', timeZone: 'Europe/Madrid' }) : 'Fecha no disponible';
     const time = isAllDayAppointment(cita)
-      ? 'Todo el dia'
+      ? 'Todo el día'
       : `${start ? fmtHourOnly(cita.inicio_en) : '--:--'}${end ? ` - ${fmtHourOnly(cita.fin_en)}` : ''}`;
     const canal = cita?.canal_origen === 'telegram'
       ? 'Telegram'
@@ -5619,11 +5643,11 @@ import ConfigView from '../components/views/ConfigView.astro';
           <strong>${escapeHtml(patientName)}</strong>
           <p>${escapeHtml(cita?.motivo || mirror.note || 'Sin motivo especifico registrado.')}</p>
         </div>
-        <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(calendarOnly ? mirror.label : estado)}</span>
+        <span class="status-chip ${escapeAttr(estado)}">${escapeHtml(calendarOnly ? mirror.label : statusText(estado))}</span>
       </section>
       <section class="drawer-info-grid">
         <article>
-          <span>Dia</span>
+          <span>Día</span>
           <strong>${escapeHtml(day)}</strong>
         </article>
         <article>
@@ -5713,7 +5737,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (!citasBody) return;
       if (!operationalCitas.length) {
         const externalMessage = calendarOnlySummary.total
-          ? `No hay citas clinicas esta semana. Google Calendar aporta ${calendarOnlySummary.blocking} bloqueo${calendarOnlySummary.blocking === 1 ? '' : 's'} real${calendarOnlySummary.blocking === 1 ? '' : 'es'}, ${calendarOnlySummary.managed} cita${calendarOnlySummary.managed === 1 ? '' : 's'} solo Calendar y ${calendarOnlySummary.holidays} festivo${calendarOnlySummary.holidays === 1 ? '' : 's'} de referencia.`
+          ? `No hay citas clínicas esta semana. Google Calendar aporta ${calendarOnlySummary.blocking} bloqueo${calendarOnlySummary.blocking === 1 ? '' : 's'} real${calendarOnlySummary.blocking === 1 ? '' : 'es'}, ${calendarOnlySummary.managed} cita${calendarOnlySummary.managed === 1 ? '' : 's'} solo Calendar y ${calendarOnlySummary.holidays} festivo${calendarOnlySummary.holidays === 1 ? '' : 's'} de referencia.`
           : 'No hay citas esta semana.';
         setTableState(citasBody, 8, 'event_busy', externalMessage);
         return;
@@ -5722,7 +5746,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       citasBody.innerHTML = sorted.map((cita: any) => {
         const start = new Date(cita.inicio_en);
         const dayStr = fmtDayFull(start);
-        const hourStr = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita.inicio_en);
+        const hourStr = isAllDayAppointment(cita) ? 'Todo el día' : fmtHourOnly(cita.inicio_en);
         const canal = cita.canal_origen === 'telegram'
           ? 'Telegram'
           : cita.canal_origen === 'crm_web'
@@ -5749,7 +5773,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <td>${escapeHtml(cita.motivo || '-')}</td>
           <td>${escapeHtml(canal)}</td>
           <td><span class="status-chip ${mirror.chipClass}" title="${escapeAttr(mirror.note)}">${escapeHtml(mirror.label)}</span></td>
-          <td><span class="status-chip ${estado}">${escapeHtml(estado)}</span></td>
+          <td><span class="status-chip ${estado}">${escapeHtml(statusText(estado))}</span></td>
           <td class="td-actions">${actions.join('')}</td>
         </tr>`;
       }).join('');
@@ -5770,7 +5794,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           citasBody.innerHTML = sorted.map((cita: any) => {
             const start = new Date(cita.inicio_en);
             const dayStr = fmtDayFull(start);
-            const hourStr = isAllDayAppointment(cita) ? 'Todo el dia' : fmtHourOnly(cita.inicio_en);
+            const hourStr = isAllDayAppointment(cita) ? 'Todo el día' : fmtHourOnly(cita.inicio_en);
             const apptId = escapeAttr(cita.id);
             const patId = escapeAttr(cita.paciente_id || '');
             const patientLabel = cita.nombre_paciente || 'Paciente';
@@ -5781,7 +5805,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               <td>${escapeHtml(cita.motivo || '-')}</td>
               <td>${escapeHtml(cita.canal || 'Presencial')}</td>
               <td><span class="status-chip sync-ok">Sincronizado</span></td>
-              <td><span class="status-chip ${cita.estado}">${escapeHtml(cita.estado)}</span></td>
+              <td><span class="status-chip ${cita.estado}">${escapeHtml(statusText(cita.estado))}</span></td>
               <td class="td-actions">
                 <button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${escapeAttr(patientLabel)}" title="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>
               </td>
@@ -6046,7 +6070,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const historyNoteComposerHtml = `
     <form class="history-note-form" data-role="history-note-form">
       <label class="history-note-field">
-        <span>Nueva nota clinica</span>
+        <span>Nueva nota clínica</span>
         <textarea name="texto_nota" rows="4" placeholder="Ej.: mejor tolerancia a la movilidad, mantiene dolor 3/10 y cumple ejercicios domiciliarios." required></textarea>
       </label>
       <input type="hidden" name="fuente" value="crm_web" />
@@ -6092,18 +6116,18 @@ import ConfigView from '../components/views/ConfigView.astro';
     const lastTouch = latestFollowUp?.created_at || latestFollowUp?.fecha || null;
     const adherenceMeta = getRecommendationAdherenceMeta(defaultAdherence);
     const adherenceOptionsHtml = recommendationFollowUpAdherenceOptions.map((option) => `<option value="${escapeAttr(option.value)}"${option.value === defaultAdherence ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
-    const stateOptionsHtml = `<option value="${escapeAttr(currentState)}">${escapeHtml(currentState.replace(/_/g, ' '))}</option>`;
+    const stateOptionsHtml = `<option value="${escapeAttr(currentState)}">${escapeHtml(statusText(currentState))}</option>`;
 
     return `
       <div class="recommendation-followup-shell">
         <div class="recommendation-followup-summary">
           <div>
-            <strong>${lastTouch ? 'Ultimo feedback registrado' : 'Seguimiento pendiente'}</strong>
+            <strong>${lastTouch ? 'Último feedback registrado' : 'Seguimiento pendiente'}</strong>
             <p>${lastTouch ? `Actualizado ${escapeHtml(fmtDate(lastTouch))}.` : 'Guarda adherencia, dolor y siguiente paso para que el caso tenga continuidad domiciliaria.'}</p>
           </div>
           <div class="recommendation-followup-chips">
             <span class="status-chip ${escapeAttr(adherenceMeta.tone)}">${escapeHtml(adherenceMeta.label)}</span>
-            <span class="status-chip ${escapeAttr(currentState === 'enviada' ? 'aprobado' : currentState === 'requiere_revision' ? 'rechazado' : 'pendiente')}">${escapeHtml(currentState.replace(/_/g, ' '))}</span>
+            <span class="status-chip ${escapeAttr(currentState === 'enviada' ? 'aprobado' : currentState === 'requiere_revision' ? 'rechazado' : 'pendiente')}">${escapeHtml(statusText(currentState))}</span>
           </div>
         </div>
         <form class="recommendation-followup-form" data-role="recommendation-followup-form" data-recommendation-id="${escapeAttr(recommendationId)}">
@@ -6122,8 +6146,8 @@ import ConfigView from '../components/views/ConfigView.astro';
             </label>
           </div>
           <label class="recommendation-followup-field">
-            <span>Nota clinica rapida</span>
-            <textarea name="note_text" rows="3" placeholder="Ej.: mejor tolerancia, mantener progresion, revisar tecnica en proxima sesion.">${escapeHtml(defaultNote)}</textarea>
+            <span>Nota clínica rápida</span>
+            <textarea name="note_text" rows="3" placeholder="Ej.: mejor tolerancia, mantener progresión, revisar técnica en próxima sesión.">${escapeHtml(defaultNote)}</textarea>
           </label>
           <p class="recommendation-followup-feedback" data-role="history-note-feedback" hidden></p>
           <div class="recommendation-followup-actions">
@@ -6139,7 +6163,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const TELEGRAM_LINK_STATUS_META: Record<string, { label: string; chipClass: string }> = {
     linked: { label: 'Vinculado', chipClass: 'aprobado' },
-    pending: { label: 'Codigo pendiente', chipClass: 'pendiente' },
+    pending: { label: 'Código pendiente', chipClass: 'pendiente' },
     not_linked: { label: 'Sin vincular', chipClass: 'rechazado' },
   };
 
@@ -6192,7 +6216,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <div class="telegram-link-head">
             <div>
               <h3>Canal Telegram</h3>
-              <p class="detail-caption">No he podido comprobar ahora la vinculacion de Telegram. Puedes seguir trabajando el caso y reintentar despues.</p>
+              <p class="detail-caption">No he podido comprobar ahora la vinculación de Telegram. Puedes seguir trabajando el caso y reintentar después.</p>
             </div>
             <span class="status-chip pendiente">No disponible</span>
           </div>
@@ -6220,7 +6244,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (deepLink) {
         actions.push(`<button type="button" class="btn-sm btn-outline" data-action="telegram-copy-link" data-copy-value="${escapeAttr(deepLink)}">Copiar enlace</button>`);
       }
-      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-regenerate">Regenerar codigo</button>');
+      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-regenerate">Regenerar código</button>');
     }
 
     if (normalizedStatus === 'linked' && deepLink) {
@@ -6228,9 +6252,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
 
     const hint = normalizedStatus === 'linked'
-      ? 'El paciente ya tiene un chat Telegram vinculado. No genero un codigo nuevo para no romper ese enlace.'
+      ? 'El paciente ya tiene un chat Telegram vinculado. No genero un código nuevo para no romper ese enlace.'
       : normalizedStatus === 'pending'
-        ? 'Comparte el comando o el enlace con el paciente para completar la vinculacion desde Telegram.'
+        ? 'Comparte el comando o el enlace con el paciente para completar la vinculación desde Telegram.'
         : 'El paciente se vincula solo: que abra el bot de citas y pulse «Compartir mi teléfono». Basta con que su teléfono esté bien en la ficha. La invitación con código queda solo como alternativa.';
 
     return `
@@ -6247,8 +6271,8 @@ import ConfigView from '../components/views/ConfigView.astro';
           <div class="telegram-link-grid">
             <div class="telegram-link-field"><span>Paciente</span><strong>${escapeHtml(linkState?.patient_name || selectedPatientName || 'Paciente seleccionado')}</strong></div>
             <div class="telegram-link-field"><span>Usuario</span><strong>${escapeHtml(username || 'Sin username')}</strong></div>
-            <div class="telegram-link-field"><span>Vinculado</span><strong>${escapeHtml(linkedAt || 'Aun no')}</strong></div>
-            <div class="telegram-link-field"><span>Codigo</span><strong>${escapeHtml(linkState?.codigo_vinculacion || 'No generado')}</strong></div>
+            <div class="telegram-link-field"><span>Vinculado</span><strong>${escapeHtml(linkedAt || 'Aún no')}</strong></div>
+            <div class="telegram-link-field"><span>Código</span><strong>${escapeHtml(linkState?.codigo_vinculacion || 'No generado')}</strong></div>
           </div>
           ${startCommand ? `<div class="telegram-link-command"><code>${escapeHtml(startCommand)}</code></div>` : ''}
           ${normalizedStatus === 'pending' && deepLink ? `<div class="telegram-link-command"><code>${escapeHtml(deepLink)}</code></div>` : ''}
@@ -6279,7 +6303,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     };
     const getHistoryPieceCopy = (label: string) => {
       if (label === 'datos del paciente') return 'Ficha resumida no disponible';
-      if (label === 'notas clinicas') return 'Notas clinicas no disponibles';
+      if (label === 'notas clínicas') return 'Notas clínicas no disponibles';
       if (label === 'planes de ejercicios') return 'Planes clínicos no disponibles';
       if (label === 'Telegram') return 'Telegram no comprobado';
       return `${label} no disponible`;
@@ -6288,7 +6312,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     try {
       const [patientPiece, historyPiece, recommendationsPiece, telegramPiece] = await Promise.all([
         loadPiece('datos del paciente', fetchJson(`${BACKEND_BASE}/api/pacientes/${selectedPatientId}`)),
-        loadPiece('notas clinicas', fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`)),
+        loadPiece('notas clínicas', fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`)),
         loadPiece('planes de ejercicios', fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${selectedPatientId}?limit=25`)),
         loadPiece('Telegram', fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`)),
       ]);
@@ -6311,7 +6335,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         ? `<div class="detail-block detail-block-warning history-service-notice">
             <div>
               <h3>Seguimiento disponible parcialmente</h3>
-              <p>Algunos servicios no respondieron, pero puedes abrir ficha, revisar lo disponible y guardar una nota clinica.</p>
+              <p>Algunos servicios no respondieron, pero puedes abrir ficha, revisar lo disponible y guardar una nota clínica.</p>
             </div>
             <div class="history-service-list">${unavailablePieces.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
           </div>`
@@ -6366,12 +6390,12 @@ import ConfigView from '../components/views/ConfigView.astro';
               <article class="recommendation-summary-card">
                 <span>Entregas archivadas</span>
                 <strong>${recommendationsSummary.totalArchivedReports}</strong>
-                <p>${recommendationsSummary.latestArchivedReportAt ? `Ultima entrega ${escapeHtml(fmtDate(recommendationsSummary.latestArchivedReportAt))}` : 'Sin entregas archivadas todavia.'}</p>
+                <p>${recommendationsSummary.latestArchivedReportAt ? `Última entrega ${escapeHtml(fmtDate(recommendationsSummary.latestArchivedReportAt))}` : 'Sin entregas archivadas todavía.'}</p>
               </article>
               <article class="recommendation-summary-card">
                 <span>Seguimientos</span>
                 <strong>${recommendationsSummary.totalFollowUps}</strong>
-                <p>Registros de evolucion y feedback del paciente.</p>
+                <p>Registros de evolución y feedback del paciente.</p>
               </article>
             </div>
             <div class="recommendation-list">${recommendations.map((rec: any) => {
@@ -6409,13 +6433,13 @@ import ConfigView from '../components/views/ConfigView.astro';
           const patientMsg = report?.message_to_patient || rec?.message_to_patient_es || '';
           const exercisesHtml = exercises.length
             ? `<ul class="recommendation-exercises">${exercises.slice(0, 8).map((ex: any, idx: number) => `<li><strong>${idx + 1}. ${escapeHtml(ex?.nombre || ex?.name || 'Ejercicio')}</strong>${ex?.why ? ` - ${escapeHtml(ex.why)}` : ''}</li>`).join('')}</ul>`
-            : '<p class="detail-empty">Sin ejercicios detallados en esta recomendacion.</p>';
+            : '<p class="detail-empty">Sin ejercicios detallados en esta recomendación.</p>';
           const followUpsHtml = sortedFollowUps.length
             ? `<ul class="detail-list">${sortedFollowUps.slice(0, 5).map((fu: any) => `<li><strong>${fmtDate(fu?.created_at || '')}</strong><br>${escapeHtml(fu?.note_text || 'Seguimiento sin nota')}${fu?.pain_scale !== null && fu?.pain_scale !== undefined ? ` - Dolor ${escapeHtml(fu.pain_scale)}/10` : ''}</li>`).join('')}</ul>`
-            : '<p class="detail-empty">Sin seguimiento registrado todavia.</p>';
+            : '<p class="detail-empty">Sin seguimiento registrado todavía.</p>';
           const archivedReportsHtml = sortedArchivedReports.length
             ? `<ul class="detail-list">${sortedArchivedReports.slice(0, 5).map((item: any) => `<li><strong>${fmtDate(item?.archived_at || '')}</strong><br>${escapeHtml((item?.format || 'pdf').toUpperCase())}${item?.source ? ` - ${escapeHtml(item.source)}` : ''}${item?.message_text ? ` - ${escapeHtml(item.message_text)}` : ''}</li>`).join('')}</ul>`
-            : '<p class="detail-empty">Sin entregas o archivados registrados todavia.</p>';
+            : '<p class="detail-empty">Sin entregas o archivados registrados todavía.</p>';
           const activityTimeline = [
             {
               icon: 'assignment',
@@ -6453,17 +6477,17 @@ import ConfigView from '../components/views/ConfigView.astro';
                   </div>
                 </article>
               `).join('')}</div>`
-            : '<p class="detail-empty">Sin actividad cronologica registrada todavia.</p>';
+            : '<p class="detail-empty">Sin actividad cronologica registrada todavía.</p>';
 
           return `
             <article class="recommendation-card">
               <div class="recommendation-head">
                 <div>
-                  <h4>Recomendacion ${escapeHtml(rec?.id || '-')}</h4>
+                  <h4>Recomendación ${escapeHtml(rec?.id || '-')}</h4>
                   <p>${fmtDate(rec?.created_at || '')}</p>
                 </div>
                 <div class="recommendation-chips">
-                  <span class="status-chip ${stateClass}">${escapeHtml(rec?.estado || 'generada')}</span>
+                  <span class="status-chip ${stateClass}">${escapeHtml(statusText(rec?.estado || 'generada'))}</span>
                   ${redFlagsHtml}
                 </div>
               </div>
@@ -6481,14 +6505,14 @@ import ConfigView from '../components/views/ConfigView.astro';
                   <strong>${sortedFollowUps.length}</strong>
                 </div>
                 <div class="recommendation-meta-item">
-                  <span>Ultima actividad</span>
+                  <span>Última actividad</span>
                   <strong>${latestTouchAt ? escapeHtml(fmtDate(latestTouchAt)) : 'Sin actividad'}</strong>
                 </div>
               </div>
-              ${therapistNote ? `<p class="recommendation-note"><strong>Nota clinica:</strong> ${escapeHtml(therapistNote)}</p>` : ''}
+              ${therapistNote ? `<p class="recommendation-note"><strong>Nota clínica:</strong> ${escapeHtml(therapistNote)}</p>` : ''}
               ${patientMsg ? `<p class="recommendation-note"><strong>Mensaje paciente:</strong> ${escapeHtml(patientMsg)}</p>` : ''}
               <div class="recommendation-section">
-                <h5>Linea temporal</h5>
+                <h5>Línea temporal</h5>
                 ${activityTimelineHtml}
               </div>
               <div class="recommendation-section">
@@ -6504,7 +6528,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               </div>
               <div class="recommendation-section recommendation-section-followup">
                 <div class="recommendation-section-head">
-                  <h5>Registrar feedback rapido</h5>
+                  <h5>Registrar feedback rápido</h5>
                   <p>Registra adherencia, dolor y observaciones sin salir del historial.</p>
                 </div>
                 ${followUpFormHtml}
@@ -6528,7 +6552,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <article>
               <span>Planes</span>
               <strong>${recommendations.length}</strong>
-              <p>${latestRecommendation?.created_at ? `Ultimo plan ${escapeHtml(fmtDate(latestRecommendation.created_at))}` : 'Planes guardados para este paciente.'}</p>
+              <p>${latestRecommendation?.created_at ? `Último plan ${escapeHtml(fmtDate(latestRecommendation.created_at))}` : 'Planes guardados para este paciente.'}</p>
             </article>
             <article>
               <span>Ejercicios</span>
@@ -6538,14 +6562,14 @@ import ConfigView from '../components/views/ConfigView.astro';
             <article>
               <span>Entregas</span>
               <strong>${recommendationsSummary.totalArchivedReports}</strong>
-              <p>${recommendationsSummary.latestArchivedReportAt ? `Ultima entrega ${escapeHtml(fmtDate(recommendationsSummary.latestArchivedReportAt))}` : 'Sin entregas archivadas.'}</p>
+              <p>${recommendationsSummary.latestArchivedReportAt ? `Última entrega ${escapeHtml(fmtDate(recommendationsSummary.latestArchivedReportAt))}` : 'Sin entregas archivadas.'}</p>
             </article>
           </div>
           <div class="history-plan-actions">
             <button type="button" class="btn-secondary btn-sm" data-history-action="open-ficha"><span class="material-symbols-rounded">person</span> Ver en ficha</button>
             <button type="button" class="btn-ghost btn-sm" data-history-action="open-library"><span class="material-symbols-rounded">account_tree</span> Abrir biblioteca</button>
           </div>`
-        : `<p class="detail-empty">Sin planes domiciliarios registrados. Genera el primero desde Copiloto cuando haya un objetivo clinico claro.</p>`;
+        : `<p class="detail-empty">Sin planes domiciliarios registrados. Genera el primero desde Copiloto cuando haya un objetivo clínico claro.</p>`;
 
       historialContent.innerHTML = `
         ${historyPartialNotice}
@@ -6566,7 +6590,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         ${renderPatientTelegramLinkBlock(telegramLink, telegramLinkError)}
         <div class="detail-block">
           <h3>Registrar seguimiento</h3>
-          <p class="detail-caption">Guarda observaciones clinicas del paciente directamente desde el CRM. Usa Ctrl+Enter para enviar mas rapido.</p>
+          <p class="detail-caption">Guarda observaciones clínicas del paciente directamente desde el CRM. Usa Ctrl+Enter para enviar más rápido.</p>
           ${historyNoteComposerHtml}
         </div>
         <div class="detail-block">
@@ -6575,7 +6599,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         </div>
         <div class="detail-block" id="patientRecommendationsBlock">
           <h3>Planes domiciliarios</h3>
-          <p class="detail-caption">Resumen rapido. El detalle y las acciones clinicas quedan en ficha, biblioteca y Copiloto.</p>
+          <p class="detail-caption">Resumen rápido. El detalle y las acciones clínicas quedan en ficha, biblioteca y Copiloto.</p>
           ${simplifiedRecommendationsHtml}
         </div>
       `;
@@ -6675,7 +6699,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
       if (payload?.warning === 'patient_already_linked') {
         addMessage(
-          `Telegram ya estaba vinculado para ${patientName}. No genero un codigo nuevo para no romper el chat actual.`,
+          `Telegram ya estaba vinculado para ${patientName}. No genero un código nuevo para no romper el chat actual.`,
           'agent'
         );
         return;
@@ -7048,7 +7072,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const remainingSessions = bonos.reduce((sum: number, b: any) => sum + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
       const lowBonos = bonos.filter((b: any) => Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0) <= 2);
       if (financeBonosValue) financeBonosValue.textContent = String(bonos.length);
-      if (financeBonosMeta) financeBonosMeta.textContent = `${remainingSessions} sesion${remainingSessions === 1 ? '' : 'es'} disponibles.`;
+      if (financeBonosMeta) financeBonosMeta.textContent = `${remainingSessions} ${remainingSessions === 1 ? 'sesión disponible' : 'sesiones disponibles'}.`;
 
       if (pendingInvoices.length) {
         setFinancePriority(
@@ -7060,7 +7084,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       } else if (lowBonos.length) {
         setFinancePriority(
           `${lowBonos.length} bono${lowBonos.length === 1 ? '' : 's'} cerca de agotarse`,
-          'Conviene revisar renovaciones antes de la siguiente sesion.',
+          'Conviene revisar renovaciones antes de la siguiente sesión.',
           { label: 'Revisar bonos', icon: 'confirmation_number', action: 'bonos' },
           { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
         );
@@ -7069,14 +7093,14 @@ import ConfigView from '../components/views/ConfigView.astro';
           'Sin cobros en este filtro',
           'Registra el primer cobro o cambia el periodo para revisar caja anterior.',
           { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
-          { label: 'Ver gestoria', icon: 'account_balance', action: 'gestoria' },
+          { label: 'Ver gestoría', icon: 'account_balance', action: 'gestoria' },
         );
       } else {
         setFinancePriority(
-          'Caja al dia',
+          'Caja al día',
           `${fmtMoney(paidTotal)} cobrados en ${rows.length} movimiento${rows.length === 1 ? '' : 's'}.`,
           { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
-          { label: 'Ver gestoria', icon: 'account_balance', action: 'gestoria' },
+          { label: 'Ver gestoría', icon: 'account_balance', action: 'gestoria' },
         );
       }
 
@@ -7105,7 +7129,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         { label: 'Registrar pago', icon: 'add_card', action: 'pago' },
         { label: 'Reintentar', icon: 'refresh', action: 'pagos' },
       );
-      if (financePendingMeta) financePendingMeta.textContent = 'No se pudo actualizar facturacion.';
+      if (financePendingMeta) financePendingMeta.textContent = 'No se pudo actualizar facturación.';
       if (financeBonosMeta) financeBonosMeta.textContent = 'No se pudo actualizar bonos.';
       if (financeTrendMeta) financeTrendMeta.textContent = 'No se pudo calcular la tendencia mensual.';
     }
@@ -7129,7 +7153,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span>
           </header>
           <p>${escapeHtml(fmtDate(p.fecha))}</p>
-          <div class="pagos-mobile-amount">${Number(p.importe || 0).toFixed(2)} EUR</div>
+          <div class="pagos-mobile-amount">${fmtEuro(p.importe || 0)}</div>
           <div class="pagos-mobile-actions">
             <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
             <button class="btn-sm btn-outline pagos-mobile-delete" data-action="delete-pago" data-pago-id="${p.id}">Eliminar</button>
@@ -7215,7 +7239,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <td>${fmtDate(p.fecha)}</td>
             <td class="td-patient">${escapeHtml(patientName)}</td>
             <td><span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
-            <td class="text-right">${Number(p.importe || 0).toFixed(2)} EUR</td>
+            <td class="text-right">${fmtEuro(p.importe || 0)}</td>
             <td>
               <div class="table-actions">
                 <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
@@ -7234,7 +7258,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <td>${fmtDate(p.fecha)}</td>
           <td class="td-patient">${escapeHtml(patientName)}</td>
           <td><span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
-          <td class="text-right">${Number(p.importe || 0).toFixed(2)} EUR</td>
+          <td class="text-right">${fmtEuro(p.importe || 0)}</td>
           <td>
             <div class="table-actions">
               <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
@@ -7289,7 +7313,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <td>${fmtDate(p.fecha)}</td>
             <td class="td-patient">${escapeHtml(patientName)}</td>
             <td><span class="pagos-chip ${metodoClass}">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
-            <td class="text-right">${Number(p.importe || 0).toFixed(2)} EUR</td>
+            <td class="text-right">${fmtEuro(p.importe || 0)}</td>
             <td>
               <div class="table-actions">
                 <button class="btn-sm btn-outline" data-action="edit-pago" data-pago-id="${p.id}">Editar</button>
@@ -7342,7 +7366,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (action === 'delete-pago') {
       const confirmed = await requestConfirm({
         title: 'Eliminar pago',
-        message: 'Este pago desaparecera del historial financiero. La accion no se puede deshacer.',
+        message: 'Este pago desaparecera del historial financiero. La acción no se puede deshacer.',
         confirmLabel: 'Eliminar',
         tone: 'error',
       });
@@ -7469,11 +7493,12 @@ import ConfigView from '../components/views/ConfigView.astro';
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age -= 1;
-    return age > 0 ? `${age} anos` : '';
+    return age > 0 ? `${age} años` : '';
   };
 
   const getFichaLatestAppointment = (citas: any[] = []) =>
     [...citas]
+      .map((cita: any) => (cita?.fecha_hora || !cita?.inicio_en ? cita : { ...cita, fecha_hora: cita.inicio_en }))
       .filter((cita: any) => cita?.fecha_hora)
       .sort((a: any, b: any) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime())[0] || null;
 
@@ -7496,7 +7521,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const primaryMessage = unavailableModules.find((item: any) => item?.key === 'legacy')?.message;
       fichaAvailabilityNotice.hidden = !unavailableModules.length;
       fichaAvailabilityNotice.textContent = unavailableModules.length
-        ? primaryMessage || `Algunas secciones de la ficha no estan disponibles: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.${needsMigration ? ' Revisa Configuracion > Conexiones y ejecuta las migraciones pendientes.' : ''}`
+        ? primaryMessage || `Algunas secciones de la ficha no estan disponibles: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.${needsMigration ? ' Revisa Configuración > Conexiones y ejecuta las migraciones pendientes.' : ''}`
         : '';
       if (unavailableModules.length && needsMigration) fichaAvailabilityNotice.setAttribute('data-state', 'error');
       else fichaAvailabilityNotice.removeAttribute('data-state');
@@ -7589,7 +7614,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         type: 'cita',
         date: cita.fecha_hora,
         label: cita.estado ? `Cita ${String(cita.estado).toLowerCase()}` : 'Cita registrada',
-        title: cita.motivo || 'Sesion clinica',
+        title: cita.motivo || 'Sesión clínica',
         meta: cita.fecha_hora ? fmtDate(cita.fecha_hora) : 'Fecha no disponible',
       }));
 
@@ -7598,8 +7623,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       .map((nota: any) => ({
         type: 'nota',
         date: nota.fecha,
-        label: nota?.dolor_eva != null ? `EVA ${nota.dolor_eva}/10` : 'Nota clinica',
-        title: trimAgentBriefText(nota.nota || 'Seguimiento clinico', 88),
+        label: nota?.dolor_eva != null ? `EVA ${nota.dolor_eva}/10` : 'Nota clínica',
+        title: trimAgentBriefText(nota.nota || 'Seguimiento clínico', 88),
         meta: nota.fecha ? fmtDate(nota.fecha) : 'Fecha no disponible',
       }));
 
@@ -7625,7 +7650,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   const buildFichaPainSeries = (notas: any[] = [], latestFollowUp: any = null) => {
     const noteSeries = (Array.isArray(notas) ? notas : [])
       .filter((nota: any) => nota?.fecha && nota?.dolor_eva !== null && nota?.dolor_eva !== undefined && nota?.dolor_eva !== '')
-      .map((nota: any) => ({ date: nota.session_datetime || nota.fecha, created_at: nota.created_at, id: nota.id, value: Number(nota.dolor_eva), label: 'Nota clinica' }))
+      .map((nota: any) => ({ date: nota.session_datetime || nota.fecha, created_at: nota.created_at, id: nota.id, value: Number(nota.dolor_eva), label: 'Nota clínica' }))
       .filter((item: any) => item.date && Number.isFinite(item.value));
 
     const followUpPain = latestFollowUp?.pain_scale;
@@ -7645,7 +7670,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return {
         headline: 'Sin lectura EVA',
         tone: 'soft',
-        summary: 'Aun no hay una escala de dolor registrada para medir evolucion.',
+        summary: 'Aún no hay una escala de dolor registrada para medir evolución.',
         deltaLabel: 'Sin historico',
       };
     }
@@ -7659,7 +7684,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return {
         headline: 'Dolor alto',
         tone: 'alert',
-        summary: `Ultima lectura EVA ${latest.value}/10. Conviene revisar carga, tecnica y siguiente sesion.`,
+        summary: `Última lectura EVA ${latest.value}/10. Conviene revisar carga, técnica y siguiente sesión.`,
         deltaLabel,
       };
     }
@@ -7668,7 +7693,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return {
         headline: 'Mejorando',
         tone: 'ready',
-        summary: `El dolor baja ${Math.abs(delta)} puntos en las ultimas ${series.length} lecturas disponibles.`,
+        summary: `El dolor baja ${Math.abs(delta)} puntos en las últimas ${series.length} lecturas disponibles.`,
         deltaLabel,
       };
     }
@@ -7686,7 +7711,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return {
         headline: 'Bajo control',
         tone: 'ready',
-        summary: `Ultima lectura EVA ${latest.value}/10 con cuadro contenido y margen para progresar.`,
+        summary: `Última lectura EVA ${latest.value}/10 con cuadro contenido y margen para progresar.`,
         deltaLabel,
       };
     }
@@ -7694,7 +7719,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     return {
       headline: 'Estable',
       tone: 'soft',
-      summary: delta === null ? `Ultima lectura EVA ${latest.value}/10.` : `La variacion reciente es ${delta > 0 ? '+' : ''}${delta} puntos sin cambios bruscos.`,
+      summary: delta === null ? `Última lectura EVA ${latest.value}/10.` : `La variacion reciente es ${delta > 0 ? '+' : ''}${delta} puntos sin cambios bruscos.`,
       deltaLabel,
     };
   };
@@ -7732,21 +7757,21 @@ import ConfigView from '../components/views/ConfigView.astro';
         : 'Sin continuidad activa';
     const continuityMeta = recommendationSummary.totalPlans
       ? recommendationSummary.totalFollowUps
-        ? `Ultimo feedback ${fmtDate(latestFollowUp?.created_at || latestFollowUp?.fecha || '')}`
+        ? `Último feedback ${fmtDate(latestFollowUp?.created_at || latestFollowUp?.fecha || '')}`
         : recommendationSummary.totalArchivedReports
           ? 'Falta respuesta del paciente para medir adherencia y dolor.'
           : 'Genera o archiva la entrega para activar trazabilidad del plan.'
       : latestAppointment?.fecha_hora
-        ? `Ultima sesion ${fmtDate(latestAppointment.fecha_hora)}`
-        : 'Programa una sesion o un plan para activar continuidad.';
+        ? `Última sesión ${fmtDate(latestAppointment.fecha_hora)}`
+        : 'Programa una sesión o un plan para activar continuidad.';
 
     let progressNextTone = painTrend.tone;
     let progressNextTitle = recommendationSummary.totalPlans
       ? 'Mantener seguimiento del plan'
-      : 'Documentar el caso con mas detalle';
+      : 'Documentar el caso con más detalle';
     let progressNextMeta = recommendationSummary.totalPlans
       ? 'El caso ya tiene continuidad domiciliaria. Mantiene trazabilidad y prepara el siguiente ajuste terapeutico.'
-      : 'Aun no hay plan domiciliario. Conviene apoyarse en notas y sesiones para decidir el siguiente paso.';
+      : 'Aún no hay plan domiciliario. Conviene apoyarse en notas y sesiones para decidir el siguiente paso.';
 
     if (unavailableModules.length) {
       progressNextTone = 'alert';
@@ -7755,7 +7780,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     } else if (recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports) {
       progressNextTone = 'warm';
       progressNextTitle = 'Archivar el documento del plan';
-      progressNextMeta = 'Ya existe un plan IA, pero aun no hay PDF o entrega archivada en el historial del paciente.';
+      progressNextMeta = 'Ya existe un plan IA, pero aún no hay PDF o entrega archivada en el historial del paciente.';
     } else if (recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps) {
       progressNextTone = 'warm';
       progressNextTitle = 'Pedir feedback domiciliario';
@@ -7763,11 +7788,11 @@ import ConfigView from '../components/views/ConfigView.astro';
     } else if (painTrend.tone === 'alert') {
       progressNextTone = 'alert';
       progressNextTitle = 'Revalorar dolor y carga terapeutica';
-      progressNextMeta = latestPainSample ? `Ultima lectura registrada: EVA ${latestPainSample.value}/10.` : 'Conviene revisar la evolucion clinica antes de mantener el plan actual.';
+      progressNextMeta = latestPainSample ? `Última lectura registrada: EVA ${latestPainSample.value}/10.` : 'Conviene revisar la evolución clínica antes de mantener el plan actual.';
     } else if (!notasUnavailable && latestAppointment && !latestNote) {
       progressNextTone = 'warm';
-      progressNextTitle = 'Registrar evolucion tras la ultima sesion';
-      progressNextMeta = 'Hay actividad asistencial, pero aun falta una nota clinica que deje criterio y respuesta terapeutica.';
+      progressNextTitle = 'Registrar evolución tras la última sesión';
+      progressNextMeta = 'Hay actividad asistencial, pero aún falta una nota clínica que deje criterio y respuesta terapeutica.';
     } else if (recommendationSummary.totalPlans) {
       progressNextTone = 'ready';
       progressNextTitle = 'Preparar siguiente ajuste del plan';
@@ -7781,22 +7806,22 @@ import ConfigView from '../components/views/ConfigView.astro';
         <article class="ficha-overview-stat">
           <span>Estado del caso</span>
           <strong>${unavailableModules.length ? 'Vista parcial' : latestNote ? 'Seguimiento activo' : citas.length ? 'Caso abierto' : 'Primera valoración'}</strong>
-          <p>${escapeHtml(unavailableModules.length ? 'Algunas secciones no están disponibles.' : latestNote ? 'Hay notas clinicas registradas.' : citas.length ? 'Sin notas de seguimiento.' : 'Sin sesiones registradas.')}</p>
+          <p>${escapeHtml(unavailableModules.length ? 'Algunas secciones no están disponibles.' : latestNote ? 'Hay notas clínicas registradas.' : citas.length ? 'Sin notas de seguimiento.' : 'Sin sesiones registradas.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Sesiones</span>
           <strong>${citasUnavailable ? 'No disponible' : citas.length}</strong>
-          <p>${escapeHtml(citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : latestAppointment?.fecha_hora ? `Ultima: ${fmtDate(latestAppointment.fecha_hora)}` : 'Sin citas registradas todavia.')}</p>
+          <p>${escapeHtml(citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : latestAppointment?.fecha_hora ? `Última: ${fmtDate(latestAppointment.fecha_hora)}` : 'Sin citas registradas todavía.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Seguimiento</span>
           <strong>${notasUnavailable ? 'No disponible' : `${notas.length} nota${notas.length === 1 ? '' : 's'}`}</strong>
-          <p>${escapeHtml(notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : latestEva != null ? `Dolor actual reportado: EVA ${latestEva}/10.` : 'Aun no hay una evolucion clinica documentada.')}</p>
+          <p>${escapeHtml(notasUnavailable ? getFichaModuleMessage('notas', 'Notas clínicas no disponibles en esta instancia.') : latestEva != null ? `Dolor actual reportado: EVA ${latestEva}/10.` : notas.length ? 'Sin escala de dolor (EVA) en las notas.' : 'Aún no hay una evolución clínica documentada.')}</p>
         </article>
         <article class="ficha-overview-stat">
           <span>Actividad económica</span>
-          <strong>${pagosUnavailable ? 'No disponible' : `${totalPayments.toFixed(2)} EUR`}</strong>
-          <p>${escapeHtml(pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay pagos asociados al caso.')}</p>
+          <strong>${pagosUnavailable ? 'No disponible' : `${fmtEuro(totalPayments)}`}</strong>
+          <p>${escapeHtml(pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'Todavía no hay pagos asociados al caso.')}</p>
         </article>`;
     }
 
@@ -7808,7 +7833,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <strong>EVA ${escapeHtml(item.value)}/10</strong>
             <p>${escapeHtml(fmtDate(item.date))}</p>
           </article>`).join('')
-        : '<p class="empty-inline">Aun no hay lecturas de dolor suficientes para mostrar evolucion.</p>';
+        : '<p class="empty-inline">Aún no hay lecturas de dolor suficientes para mostrar evolución.</p>';
 
       fichaProgressPanel.innerHTML = `
         <div class="ficha-progress-hero tone-${painTrend.tone}">
@@ -7823,12 +7848,12 @@ import ConfigView from '../components/views/ConfigView.astro';
           <article class="ficha-progress-metric">
             <span>Dolor actual</span>
             <strong>${latestPainSample ? `EVA ${escapeHtml(latestPainSample.value)}/10` : 'Sin dato'}</strong>
-            <p>${escapeHtml(latestPainSample ? fmtDate(latestPainSample.date) : 'Sin registro clinico reciente')}</p>
+            <p>${escapeHtml(latestPainSample ? fmtDate(latestPainSample.date) : 'Sin registro clínico reciente')}</p>
           </article>
           <article class="ficha-progress-metric">
             <span>Adherencia</span>
             <strong>${escapeHtml(recommendationSummary.totalPlans ? latestAdherence.label : 'Sin plan IA')}</strong>
-            <p>${escapeHtml(recommendationSummary.totalPlans ? (latestFollowUp?.created_at || latestFollowUp?.fecha ? `Ultimo feedback ${fmtDate(latestFollowUp?.created_at || latestFollowUp?.fecha)}` : 'Todavia sin respuesta del paciente') : 'Genera un plan para activar seguimiento domiciliario')}</p>
+            <p>${escapeHtml(recommendationSummary.totalPlans ? (latestFollowUp?.created_at || latestFollowUp?.fecha ? `Último feedback ${fmtDate(latestFollowUp?.created_at || latestFollowUp?.fecha)}` : 'Todavía sin respuesta del paciente') : 'Genera un plan para activar seguimiento domiciliario')}</p>
           </article>
           <article class="ficha-progress-metric">
             <span>Continuidad</span>
@@ -7838,13 +7863,13 @@ import ConfigView from '../components/views/ConfigView.astro';
         </div>
         <div class="ficha-progress-history">
           <div class="ficha-progress-history-head">
-            <span class="ficha-progress-history-label">Evolucion reciente</span>
+            <span class="ficha-progress-history-label">Evolución reciente</span>
             <strong>${escapeHtml(painTrend.deltaLabel)}</strong>
           </div>
           <div class="ficha-progress-points">${painHistoryHtml}</div>
         </div>
         <article class="ficha-progress-next tone-${progressNextTone}">
-          <span>Proximo paso clinico</span>
+          <span>Próximo paso clínico</span>
           <strong>${escapeHtml(progressNextTitle)}</strong>
           <p>${escapeHtml(progressNextMeta)}</p>
         </article>`;
@@ -7863,7 +7888,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           </article>`).join('')
         : unavailableModules.length
           ? '<p class="empty-inline">La timeline se muestra en modo parcial hasta recuperar los modulos pendientes.</p>'
-          : '<p class="empty-inline">La actividad del caso aparecera en cuanto registres una cita, una nota o un plan domiciliario.</p>';
+          : '<p class="empty-inline">La actividad del caso aparecerá en cuanto registres una cita, una nota o un plan domiciliario.</p>';
     }
 
     if (fichaPlanInsights) {
@@ -7879,7 +7904,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               ? 'Progresar o mantener'
               : 'Archivar entrega';
       const adjustmentMeta = !recommendationSummary.totalPlans
-        ? 'Aun no hay plan clínico para este caso.'
+        ? 'Aún no hay plan clínico para este caso.'
         : recommendationSummary.totalArchivedReports && !recommendationSummary.totalFollowUps
           ? 'El paciente ya recibio el plan. Falta respuesta.'
           : painTrend.tone === 'alert'
@@ -7905,7 +7930,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           done: Boolean(recommendationSummary.totalArchivedReports),
           value: recommendationSummary.totalArchivedReports ? `${recommendationSummary.totalArchivedReports} archivada${recommendationSummary.totalArchivedReports === 1 ? '' : 's'}` : 'Sin entrega',
           meta: latestArchivedReport?.archived_at || latestArchivedReport?.created_at
-            ? `Ultima ${fmtDate(latestArchivedReport?.archived_at || latestArchivedReport?.created_at)}`
+            ? `Última ${fmtDate(latestArchivedReport?.archived_at || latestArchivedReport?.created_at)}`
             : 'Archiva PDF o envio para dejar trazabilidad.',
         },
         {
@@ -7962,13 +7987,13 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const decisions = [
       unavailableModules.length ? { tone: 'alert', title: 'Revisar migraciones pendientes', body: `La ficha esta operativa en modo parcial. Falta recuperar: ${unavailableModules.map((item: any) => item?.label || item?.key || 'modulo').join(', ')}.` } : null,
-      recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports ? { tone: 'warm', title: 'Archivar la entrega del plan', body: 'Ya existe un plan clínico, pero aun no hay constancia de entrega o PDF archivado en el historial.' } : null,
+      recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports ? { tone: 'warm', title: 'Archivar la entrega del plan', body: 'Ya existe un plan clínico, pero aún no hay constancia de entrega o PDF archivado en el historial.' } : null,
       recommendationSummary.totalPlans && !recommendationSummary.totalFollowUps ? { tone: 'ready', title: 'Registrar respuesta del paciente', body: 'El plan domiciliario ya existe. Falta dejar adherencia, dolor o ajustes para continuidad real.' } : null,
-      !citasUnavailable && !citas.length ? { tone: 'urgent', title: 'Programar la primera sesion', body: 'Todavia no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
-      !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoracion y evolucion', body: 'Ya existe actividad en agenda, pero falta una nota clinica que deje criterio terapeutico y siguiente paso.' } : null,
-      !notasUnavailable && latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'EVA elevado', body: `Ultimo EVA: ${latestEva}/10.` } : null,
+      !citasUnavailable && !citas.length ? { tone: 'urgent', title: 'Programar la primera sesión', body: 'Todavía no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
+      !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoración y evolución', body: 'Ya existe actividad en agenda, pero falta una nota clínica que deje criterio terapeutico y siguiente paso.' } : null,
+      !notasUnavailable && latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'EVA elevado', body: `Último EVA: ${latestEva}/10.` } : null,
       !pagosUnavailable && !pagos.length ? { tone: 'soft', title: 'Sin pagos registrados', body: '' } : null,
-      patient?.telefono ? { tone: 'ready', title: 'Telegram disponible', body: 'Telefono registrado.' } : { tone: 'soft', title: 'Sin telefono', body: 'Registra un telefono para habilitar Telegram.' },
+      patient?.telefono ? { tone: 'ready', title: 'Telegram disponible', body: 'Teléfono registrado.' } : { tone: 'soft', title: 'Sin teléfono', body: 'Registra un teléfono para habilitar Telegram.' },
     ].filter(Boolean).slice(0, 4) as Array<{ tone: string; title: string; body: string }>;
 
     if (fichaDecisionList) {
@@ -7978,31 +8003,31 @@ import ConfigView from '../components/views/ConfigView.astro';
             <strong>${escapeHtml(item.title)}</strong>
             <p>${escapeHtml(item.body)}</p>
           </article>`).join('')
-        : '<p class="empty-inline">Cuando exista mas contexto clinico, aqui veras la siguiente mejor accion sugerida para el caso.</p>';
+        : '<p class="empty-inline">Cuando exista más contexto clínico, aquí veras la siguiente mejor acción sugerida para el caso.</p>';
     }
 
     let primaryAction: 'agenda' | 'notas' | 'agente' | 'historial' = 'agente';
     let primaryLabel = 'Informe IA';
-    let nextTitle = unavailableModules.length ? 'Recuperar integridad del CRM' : 'Cerrar continuidad clinica';
+    let nextTitle = unavailableModules.length ? 'Recuperar integridad del CRM' : 'Cerrar continuidad clínica';
     let nextMeta = unavailableModules.length
       ? 'Hay secciones sin datos actualizados. Revisa los avisos de la ficha antes de tomar decisiones clínicas.'
-      : 'El caso ya tiene contexto suficiente para preparar siguiente sesion, actualizar plan o dejar PDF listo.';
+      : 'El caso ya tiene contexto suficiente para preparar siguiente sesión, actualizar plan o dejar PDF listo.';
 
     if (!citasUnavailable && !citas.length) {
       primaryAction = 'agenda';
       primaryLabel = 'Ir a agenda';
-      nextTitle = 'Programar la primera sesion';
+      nextTitle = 'Programar la primera sesión';
       nextMeta = 'Sin citas programadas.';
     } else if (!notasUnavailable && citas.length && !notas.length) {
       primaryAction = 'notas';
       primaryLabel = 'Abrir notas';
       nextTitle = 'Cerrar criterio terapeutico';
-      nextMeta = 'Ya hay movimiento en agenda, pero falta dejar una nota clinica que convierta la sesion en seguimiento real.';
+      nextMeta = 'Ya hay movimiento en agenda, pero falta dejar una nota clínica que convierta la sesión en seguimiento real.';
     } else if (recommendationSummary.totalPlans && !recommendationSummary.totalFollowUps) {
       primaryAction = 'historial';
       primaryLabel = 'Registrar feedback';
       nextTitle = 'Capturar adherencia del plan';
-      nextMeta = 'El paciente ya tiene plan domiciliario, pero aun no hay respuesta registrada en el historial.';
+      nextMeta = 'El paciente ya tiene plan domiciliario, pero aún no hay respuesta registrada en el historial.';
     } else if (recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports) {
       primaryAction = 'historial';
       primaryLabel = 'Revisar entregas';
@@ -8029,12 +8054,12 @@ import ConfigView from '../components/views/ConfigView.astro';
         ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con feedback registrado.`
         : 'Falta respuesta del paciente para medir adherencia.'
       : 'Genera un plan para activar continuidad domiciliaria.';
-    if (fichaOpsBillingTitle) fichaOpsBillingTitle.textContent = pagosUnavailable ? 'Modulo no disponible' : `${totalPayments.toFixed(2)} EUR`;
+    if (fichaOpsBillingTitle) fichaOpsBillingTitle.textContent = pagosUnavailable ? 'Módulo no disponible' : `${fmtEuro(totalPayments)}`;
     if (fichaOpsBillingMeta) fichaOpsBillingMeta.textContent = pagosUnavailable
       ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.')
       : pagos.length
         ? `${pagos.length} cobro${pagos.length === 1 ? '' : 's'} vinculado${pagos.length === 1 ? '' : 's'} al caso.`
-        : 'Sin cobros asociados todavia.';
+        : 'Sin cobros asociados todavía.';
     fichaOpsRiskTitle?.closest('.ficha-command-card')?.setAttribute('data-tone', unavailableModules.length ? 'alert' : painTrend.tone);
     fichaOpsNextTitle?.closest('.ficha-command-card')?.setAttribute('data-tone', primaryAction === 'agenda' ? 'warm' : primaryAction === 'historial' ? 'ready' : painTrend.tone);
     fichaOpsPlanTitle?.closest('.ficha-command-card')?.setAttribute('data-tone', recommendationSummary.totalPlans ? (recommendationSummary.totalFollowUps ? 'ready' : 'warm') : 'soft');
@@ -8051,8 +8076,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (fichaRailChannels) {
       const channelItems = [
         { icon: 'mail', label: 'Email', value: patient?.email ? 'Listo' : 'Falta', tone: patient?.email ? 'ready' : 'pending' },
-        { icon: 'call', label: 'Telefono', value: patient?.telefono ? 'Listo' : 'Falta', tone: patient?.telefono ? 'ready' : 'pending' },
-        { icon: 'send', label: 'Telegram', value: patient?.telefono ? 'Preparar' : 'Completar telefono', tone: patient?.telefono ? 'ready' : 'pending' },
+        { icon: 'call', label: 'Teléfono', value: patient?.telefono ? 'Listo' : 'Falta', tone: patient?.telefono ? 'ready' : 'pending' },
+        { icon: 'send', label: 'Telegram', value: patient?.telefono ? 'Preparar' : 'Completar teléfono', tone: patient?.telefono ? 'ready' : 'pending' },
       ];
       fichaRailChannels.innerHTML = channelItems.map((item) => `
         <article class="ficha-channel-item is-${item.tone}">
@@ -8063,19 +8088,19 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (fichaRailChecklist) {
       const checks = [
-        { done: Boolean(patient?.email || patient?.telefono), title: 'Contacto localizado', body: patient?.email || patient?.telefono ? 'El caso ya tiene una via de contacto guardada.' : 'Falta email o telefono para continuidad.' },
-        { done: !citasUnavailable && Boolean(citas.length), title: 'Agenda registrada', body: citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavia no hay citas asociadas al paciente.' },
-        { done: !notasUnavailable && Boolean(notas.length), title: 'Seguimiento documentado', body: notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Sin notas de evolucion.' },
-        { done: Boolean(recommendationSummary.totalPlans), title: 'Plan domiciliario generado', body: recommendationSummary.totalPlans ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'} activo${recommendationSummary.totalPlans === 1 ? '' : 's'} en historial.` : 'Aun no hay plan domiciliario generado para este caso.' },
+        { done: Boolean(patient?.email || patient?.telefono), title: 'Contacto localizado', body: patient?.email || patient?.telefono ? 'El caso ya tiene una via de contacto guardada.' : 'Falta email o teléfono para continuidad.' },
+        { done: !citasUnavailable && Boolean(citas.length), title: 'Agenda registrada', body: citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : citas.length ? `${citas.length} cita${citas.length === 1 ? '' : 's'} asociada${citas.length === 1 ? '' : 's'} al caso.` : 'Todavía no hay citas asociadas al paciente.' },
+        { done: !notasUnavailable && Boolean(notas.length), title: 'Seguimiento documentado', body: notasUnavailable ? getFichaModuleMessage('notas', 'Notas clínicas no disponibles en esta instancia.') : notas.length ? `${notas.length} nota${notas.length === 1 ? '' : 's'} registrada${notas.length === 1 ? '' : 's'}.` : 'Sin notas de evolución.' },
+        { done: Boolean(recommendationSummary.totalPlans), title: 'Plan domiciliario generado', body: recommendationSummary.totalPlans ? `${recommendationSummary.totalPlans} plan${recommendationSummary.totalPlans === 1 ? '' : 'es'} activo${recommendationSummary.totalPlans === 1 ? '' : 's'} en historial.` : 'Aún no hay plan domiciliario generado para este caso.' },
         { done: Boolean(recommendationSummary.totalFollowUps), title: 'Feedback del plan', body: recommendationSummary.totalFollowUps ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con adherencia o dolor registrado.` : 'Falta registrar la respuesta del paciente al plan domiciliario.' },
-        { done: !pagosUnavailable && Boolean(pagos.length), title: 'Cobro vinculado', body: pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavia.' },
+        { done: !pagosUnavailable && Boolean(pagos.length), title: 'Cobro vinculado', body: pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} movimiento${pagos.length === 1 ? '' : 's'} economico${pagos.length === 1 ? '' : 's'} asociado${pagos.length === 1 ? '' : 's'} al caso.` : 'No hay pagos ni bonos vinculados todavía.' },
       ];
       const doneCount = checks.filter((item) => item.done).length;
       const pendingChecks = checks.filter((item) => !item.done);
       fichaRailChecklist.innerHTML = `
         <article class="ficha-check-summary">
           <strong>${doneCount}/${checks.length}</strong>
-          <span>${pendingChecks.length ? `${pendingChecks.length} pendiente${pendingChecks.length === 1 ? '' : 's'}` : 'Caso al dia'}</span>
+          <span>${pendingChecks.length ? `${pendingChecks.length} pendiente${pendingChecks.length === 1 ? '' : 's'}` : 'Caso al día'}</span>
         </article>
         ${pendingChecks.length
           ? pendingChecks.slice(0, 3).map((item) => `
@@ -8109,17 +8134,17 @@ import ConfigView from '../components/views/ConfigView.astro';
         ? 'Caso listo para reactivar'
         : 'Primera valoración pendiente';
     const continuityMeta = latestNote
-      ? 'Tienes contexto clinico para iterar con el agente, documentar y programar la siguiente sesion.'
+      ? 'Tienes contexto clínico para iterar con el agente, documentar y programar la siguiente sesión.'
       : citas.length
         ? 'Revisar historial y documentos del caso.'
-        : 'Buen momento para capturar antecedentes, objetivo clinico y primer plan de ejercicios.';
+        : 'Buen momento para capturar antecedentes, objetivo clínico y primer plan de ejercicios.';
 
     if (fichaHeroName) fichaHeroName.textContent = patientName;
     if (fichaHeroSummary) {
       fichaHeroSummary.textContent = fichaModuleAvailability.size ? 'Vista parcial del caso' : continuityLabel;
     }
     if (fichaHeroEmail) fichaHeroEmail.textContent = patient?.email || 'Sin email registrado';
-    if (fichaHeroPhone) fichaHeroPhone.textContent = patient?.telefono || 'Sin telefono registrado';
+    if (fichaHeroPhone) fichaHeroPhone.textContent = patient?.telefono || 'Sin teléfono registrado';
     if (fichaHeroProfile) {
       const profileBits = [ageLabel ? `Edad ${ageLabel}` : null, patient?.profesion || null].filter(Boolean);
       fichaHeroProfile.textContent = profileBits.length
@@ -8130,10 +8155,10 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
     if (fichaHeroLastSession) fichaHeroLastSession.textContent = citasUnavailable ? 'Historial no disponible' : nextAppointment?.fecha_hora ? fmtDate(nextAppointment.fecha_hora) : 'Sin próxima cita';
     if (fichaHeroLastSessionMeta) fichaHeroLastSessionMeta.textContent = citasUnavailable ? getFichaModuleMessage('citas', 'Historial de citas no disponible en esta instancia.') : nextAppointment?.motivo || 'Consulta las sesiones anteriores en el historial de citas.';
-    if (fichaHeroNotesCount) fichaHeroNotesCount.textContent = notasUnavailable ? 'Modulo no disponible' : `${notas.length} nota${notas.length === 1 ? '' : 's'}`;
-    if (fichaHeroLatestNote) fichaHeroLatestNote.textContent = notasUnavailable ? getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.') : latestNote?.nota ? trimAgentBriefText(latestNote.nota, 140) : 'La linea temporal del caso aparecera aqui cuando empieces a registrar seguimiento.';
-    if (fichaHeroPaymentsTotal) fichaHeroPaymentsTotal.textContent = pagosUnavailable ? 'Modulo no disponible' : `${totalPayments.toFixed(2)} EUR`;
-    if (fichaHeroPaymentsMeta) fichaHeroPaymentsMeta.textContent = pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} pago${pagos.length === 1 ? '' : 's'} registrado${pagos.length === 1 ? '' : 's'} en el caso.` : 'Sin pagos registrados todavia.';
+    if (fichaHeroNotesCount) fichaHeroNotesCount.textContent = notasUnavailable ? 'Módulo no disponible' : `${notas.length} nota${notas.length === 1 ? '' : 's'}`;
+    if (fichaHeroLatestNote) fichaHeroLatestNote.textContent = notasUnavailable ? getFichaModuleMessage('notas', 'Notas clínicas no disponibles en esta instancia.') : latestNote?.nota ? trimAgentBriefText(latestNote.nota, 140) : 'La línea temporal del caso aparecerá aquí cuando empieces a registrar seguimiento.';
+    if (fichaHeroPaymentsTotal) fichaHeroPaymentsTotal.textContent = pagosUnavailable ? 'Módulo no disponible' : `${fmtEuro(totalPayments)}`;
+    if (fichaHeroPaymentsMeta) fichaHeroPaymentsMeta.textContent = pagosUnavailable ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.') : pagos.length ? `${pagos.length} pago${pagos.length === 1 ? '' : 's'} registrado${pagos.length === 1 ? '' : 's'} en el caso.` : 'Sin pagos registrados todavía.';
     if (fichaHeroContinuity) fichaHeroContinuity.textContent = fichaModuleAvailability.size ? 'Vista parcial del caso' : continuityLabel;
     if (fichaHeroContinuityMeta) fichaHeroContinuityMeta.textContent = fichaModuleAvailability.size ? 'Algunas secciones no están disponibles. Revisa los avisos; la ficha muestra datos parciales.' : continuityMeta;
   };
@@ -8143,7 +8168,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       patientId: fichaPatientId,
       patientName: fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}),
       mode: 'new-plan',
-      seedText: 'Preparar informe de ejercicios domiciliarios para este caso. Revisa objetivo, tolerancia, contraindicaciones y progresion segura.',
+      seedText: 'Preparar informe de ejercicios domiciliarios para este caso. Revisa objetivo, tolerancia, contraindicaciones y progresión segura.',
     });
   });
 
@@ -8179,7 +8204,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (action === 'delete-pago') {
       const confirmed = await requestConfirm({
         title: 'Eliminar pago',
-        message: 'Este pago desaparecera del historial financiero. La accion no se puede deshacer.',
+        message: 'Este pago desaparecera del historial financiero. La acción no se puede deshacer.',
         confirmLabel: 'Eliminar',
         tone: 'error',
       });
@@ -8237,7 +8262,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       patientId: fichaPatientId,
       patientName: fichaData?.paciente?.nombre_completo || getPatientFullName(fichaData?.paciente || {}),
       mode: 'new-plan',
-      seedText: 'Preparar informe clínico de ejercicios como siguiente accion del caso.',
+      seedText: 'Preparar informe clínico de ejercicios como siguiente acción del caso.',
     });
   });
 
@@ -8425,17 +8450,17 @@ import ConfigView from '../components/views/ConfigView.astro';
         fichaField('Nombre', p.nombre),
         fichaField('Apellidos', p.apellidos),
         fichaField('Email', p.email),
-        fichaField('Telefono', p.telefono),
+        fichaField('Teléfono', p.telefono),
         fichaField('DNI/NIF', p.dni),
         fichaField('Fecha nac.', p.fecha_nacimiento ? fmtDate(p.fecha_nacimiento) : ''),
       ]),
       fichaDataGroup('Contexto', 'Entorno personal y laboral', [
-        fichaField('Direccion', p.direccion),
+        fichaField('Dirección', p.direccion),
         fichaField('Profesion', p.profesion),
-        fichaField('Medico derivador', p.medico_derivador),
+        fichaField('Médico derivador', p.medico_derivador),
         fichaField('Aseguradora', p.aseguradora),
       ]),
-      fichaDataGroup('Historia clinica', 'Alertas y antecedentes', [
+      fichaDataGroup('Historia clínica', 'Alertas y antecedentes', [
         fichaField('Alergias', p.alergias, true),
         fichaField('Antecedentes', p.antecedentes, true),
         fichaField('Observaciones', p.observaciones, true),
@@ -8518,7 +8543,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       } else {
         const nextCita = upcomingAppointments(citas)[0] || null;
         fichaCitasSummary.innerHTML = `
-          <span class="ficha-summary-chip"><strong>${citas.length}</strong> sesion${citas.length === 1 ? '' : 'es'}</span>
+          <span class="ficha-summary-chip"><strong>${citas.length}</strong> ${citas.length === 1 ? 'sesión' : 'sesiones'}</span>
           <span class="ficha-summary-chip">${escapeHtml(nextCita?.fecha_hora ? `Próxima: ${fmtDate(nextCita.fecha_hora)}` : 'Sin próxima cita')}</span>`;
       }
     }
@@ -8527,7 +8552,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
     if (!citas.length) {
-      fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p><small class="empty-state-hint">Programa la primera sesion para iniciar continuidad clinica y trazabilidad.</small></div></td></tr>';
+      fichaCitasBody.innerHTML = '<tr class="empty-row"><td colspan="3"><div class="empty-state"><span class="material-symbols-rounded">event_busy</span><p>Sin citas registradas</p><small class="empty-state-hint">Programa la primera sesión para iniciar continuidad clínica y trazabilidad.</small></div></td></tr>';
       return;
     }
     fichaCitasBody.innerHTML = citas.map((c: any) => {
@@ -8537,7 +8562,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         <td>
           <div class="ficha-table-primary">${fecha}</div>
         </td>
-        <td><span class="status-chip ${estado}">${estado}</span></td>
+        <td><span class="status-chip ${estado}">${escapeHtml(statusText(estado))}</span></td>
         <td>
           <div class="ficha-table-primary">${escapeHtml(c.motivo || 'Sin motivo')}</div>
           <div class="ficha-table-meta">${escapeHtml(c.canal_origen || c.canal || 'Canal CRM')}</div>
@@ -8558,7 +8583,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         ? `<span class="ficha-summary-chip">Modulo no disponible</span>`
         : `
         <span class="ficha-summary-chip"><strong>${pagos.length}</strong> cobro${pagos.length === 1 ? '' : 's'}</span>
-        <span class="ficha-summary-chip"><strong>${total.toFixed(2)} EUR</strong> total</span>
+        <span class="ficha-summary-chip"><strong>${fmtEuro(total)}</strong> total</span>
         <span class="ficha-summary-chip">${tarjeta} tarjeta</span>
         <span class="ficha-summary-chip">${efectivo} efectivo</span>`;
     }
@@ -8568,7 +8593,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
     if (!pagos.length) {
-      fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p><small class="empty-state-hint">Cuando registres un cobro o bono, el resumen economico del caso se actualizara aqui.</small></div></td></tr>';
+      fichaPagosBody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state"><span class="material-symbols-rounded">payments</span><p>Sin pagos registrados</p><small class="empty-state-hint">Cuando registres un cobro o bono, el resumen economico del caso se actualizara aquí.</small></div></td></tr>';
       if (fichaPagosTotal) fichaPagosTotal.textContent = '';
       return;
     }
@@ -8576,15 +8601,15 @@ import ConfigView from '../components/views/ConfigView.astro';
       const metodoClass = p.metodo_pago === 'tarjeta' ? 'pagos-stat-card' : 'pagos-stat-cash';
       return `<tr>
         <td><div class="ficha-table-primary">${fmtDate(p.fecha)}</div></td>
-        <td><strong>${Number(p.importe).toFixed(2)} EUR</strong></td>
+        <td><strong>${fmtEuro(p.importe)}</strong></td>
         <td><span class="${metodoClass} ficha-payment-method">${escapeHtml(p.metodo_pago || 'pendiente')}</span></td>
         <td>
-          <div class="ficha-table-primary">${escapeHtml(p.concepto || 'Sesion')}</div>
+          <div class="ficha-table-primary">${escapeHtml(p.concepto || 'Sesión')}</div>
           <div class="ficha-table-meta">${escapeHtml(p.notas || 'Movimiento asociado al caso')}</div>
         </td>
       </tr>`;
     }).join('');
-    if (fichaPagosTotal) fichaPagosTotal.textContent = `Total: ${total.toFixed(2)} EUR`;
+    if (fichaPagosTotal) fichaPagosTotal.textContent = `Total: ${fmtEuro(total)}`;
   };
 
   // Render notas clinicas (timeline)
@@ -8669,15 +8694,15 @@ import ConfigView from '../components/views/ConfigView.astro';
         ? `<span class="ficha-summary-chip">Modulo no disponible</span>`
         : `
         <span class="ficha-summary-chip"><strong>${notasOrdenadas.length}</strong> nota${notasOrdenadas.length === 1 ? '' : 's'}</span>
-        <span class="ficha-summary-chip">${escapeHtml(latestNote ? `Ultima: ${fmtDate(latestNote.session_datetime || latestNote.fecha)}` : 'Sin seguimiento')}</span>
+        <span class="ficha-summary-chip">${escapeHtml(latestNote ? `Última: ${fmtDate(latestNote.session_datetime || latestNote.fecha)}` : 'Sin seguimiento')}</span>
         <span class="ficha-summary-chip">${highPainCount} EVA alto</span>`;
     }
     if (notasUnavailable) {
-      fichaNotasTimeline.innerHTML = renderFichaUnavailableInline(getFichaModuleMessage('notas', 'Notas clinicas no disponibles en esta instancia.'));
+      fichaNotasTimeline.innerHTML = renderFichaUnavailableInline(getFichaModuleMessage('notas', 'Notas clínicas no disponibles en esta instancia.'));
       return;
     }
     if (!notasOrdenadas.length) {
-      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clinicas registradas. Crea la primera para dejar criterio terapeutico y evolucion.</p>';
+      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clínicas registradas. Crea la primera para dejar criterio terapeutico y evolución.</p>';
       return;
     }
     fichaNotasTimeline.innerHTML = notasOrdenadas.map((n: any) => {
@@ -9058,7 +9083,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (notaIdInput) notaIdInput.value = '';
     const fechaInput = fichaNotaForm.querySelector('[name="fecha"]') as HTMLInputElement;
     if (fechaInput) fechaInput.value = new Date().toISOString().slice(0, 10);
-    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clinica';
+    if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clínica';
     fichaNotaFormCard.hidden = false;
     fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
@@ -9099,7 +9124,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       }
       if (!isCurrentFicha(patientId, loadVersion)) return;
       if (fichaNotaFormCard && editVersion === fichaNotaEditVersion) fichaNotaFormCard.hidden = true;
-      if (await refreshFichaNotes(patientId, loadVersion)) showToast('Nota clinica guardada.', 'success');
+      if (await refreshFichaNotes(patientId, loadVersion)) showToast('Nota clínica guardada.', 'success');
     } catch (err: any) {
       if (isCurrentFicha(patientId, loadVersion) && editVersion === fichaNotaEditVersion) {
         if (err.recoveredData?.id) {
@@ -9129,7 +9154,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (action === 'delete-nota') {
       const loadVersion = fichaLoadVersion;
       const confirmed = await requestConfirm({
-        title: 'Eliminar nota clinica',
+        title: 'Eliminar nota clínica',
         message: 'La nota se eliminara del seguimiento del paciente.',
         confirmLabel: 'Eliminar',
         tone: 'error',
@@ -9137,7 +9162,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (!confirmed || !isCurrentFicha(patientId, loadVersion)) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/notas-clinicas/${notaId}`, { method: 'DELETE' });
-        if (await refreshFichaNotes(patientId, loadVersion)) showToast('Nota clinica eliminada.', 'success');
+        if (await refreshFichaNotes(patientId, loadVersion)) showToast('Nota clínica eliminada.', 'success');
       } catch (err: any) {
         if (isCurrentFicha(patientId, loadVersion)) showToast(err?.message || 'No se pudo eliminar la nota.', 'error');
       }
@@ -9158,7 +9183,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       fill('dolor_eva', nota.dolor_eva != null ? String(nota.dolor_eva) : '');
       fill('nota', nota.nota);
       fill('pruebas_realizadas', nota.pruebas_realizadas);
-      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota clinica';
+      if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Editar nota clínica';
       fichaNotaFormCard.hidden = false;
       fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -9232,9 +9257,9 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (facturasCountValue) facturasCountValue.textContent = String(totalCount);
     if (facturasCountMeta) facturasCountMeta.textContent = totalCount ? `${paidCount} ${paidCount === 1 ? 'pagada' : 'pagadas'} en este filtro.` : 'Sin facturas en el periodo.';
-    if (facturasTotalValue) facturasTotalValue.textContent = `${totalAmount.toFixed(2)} EUR`;
+    if (facturasTotalValue) facturasTotalValue.textContent = fmtEuro(totalAmount);
     if (facturasTotalMeta) facturasTotalMeta.textContent = totalCount ? 'Suma total de facturas visibles.' : 'No hay importes para mostrar.';
-    if (facturasPendingValue) facturasPendingValue.textContent = `${pendingAmount.toFixed(2)} EUR`;
+    if (facturasPendingValue) facturasPendingValue.textContent = fmtEuro(pendingAmount);
     if (facturasPendingMeta) facturasPendingMeta.textContent = pendingRows.length
       ? `${pendingRows.length} ${pendingRows.length === 1 ? 'factura pendiente' : 'facturas pendientes'} de cobro.`
       : 'Todo el listado aparece cobrado.';
@@ -9253,14 +9278,14 @@ import ConfigView from '../components/views/ConfigView.astro';
       return `
         <article class="factura-mobile-item">
           <header>
-            <strong>${escapeHtml(f.numero || 'Sin numero')}</strong>
-            <span class="status-chip ${estadoClass}">${escapeHtml(String(f.estado || 'pendiente'))}</span>
+            <strong>${escapeHtml(f.numero || 'Sin número')}</strong>
+            <span class="status-chip ${estadoClass}">${escapeHtml(statusText(f.estado || 'pendiente'))}</span>
           </header>
           <p>${escapeHtml(pName)} | ${escapeHtml(fmtDate(f.fecha))}</p>
           <div class="factura-mobile-metrics">
-            <span><small>Base</small><strong>${Number(f.importe_bruto || 0).toFixed(2)} EUR</strong></span>
-            <span><small>IVA</small><strong>${Number(f.importe_iva || 0).toFixed(2)} EUR</strong></span>
-            <span><small>Total</small><strong>${Number(f.importe_total || 0).toFixed(2)} EUR</strong></span>
+            <span><small>Base</small><strong>${fmtEuro(f.importe_bruto || 0)}</strong></span>
+            <span><small>IVA</small><strong>${fmtEuro(f.importe_iva || 0)}</strong></span>
+            <span><small>Total</small><strong>${fmtEuro(f.importe_total || 0)}</strong></span>
           </div>
           <div class="factura-mobile-actions">
             <a href="#" data-protected-url="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">Abrir PDF</a>
@@ -9303,7 +9328,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const anio = facturasAnioFilter?.value || new Date().getFullYear();
       const payload = await fetchJson(`${BACKEND_BASE}/api/facturas?anio=${anio}`);
       if (payload.unavailable) {
-        facturasUnavailableMessage = payload.error || 'Modulo facturacion no disponible';
+        facturasUnavailableMessage = payload.error || 'Modulo facturación no disponible';
         syncFacturasAvailabilityUi();
         renderFacturasSummary([]);
         renderFacturasMobile([]);
@@ -9329,10 +9354,10 @@ import ConfigView from '../components/views/ConfigView.astro';
           <td><strong>${escapeHtml(f.numero)}</strong></td>
           <td>${fmtDate(f.fecha)}</td>
           <td class="td-patient">${escapeHtml(pName)}</td>
-          <td>${Number(f.importe_bruto).toFixed(2)} EUR</td>
-          <td>${Number(f.importe_iva).toFixed(2)} EUR</td>
-          <td><strong>${Number(f.importe_total).toFixed(2)} EUR</strong></td>
-          <td><span class="status-chip ${estadoClass}">${f.estado}</span></td>
+          <td>${fmtEuro(f.importe_bruto)}</td>
+          <td>${fmtEuro(f.importe_iva)}</td>
+          <td><strong>${fmtEuro(f.importe_total)}</strong></td>
+          <td><span class="status-chip ${estadoClass}">${escapeHtml(statusText(f.estado))}</span></td>
           <td><a href="#" data-protected-url="${BACKEND_BASE}/api/facturas/${f.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a></td>
         </tr>`;
       }).join('');
@@ -9388,9 +9413,9 @@ import ConfigView from '../components/views/ConfigView.astro';
       }
       const total = pagos.reduce((s: number, p: any) => s + Number(p.importe || 0), 0);
       facturaPreview.innerHTML = `
-        <p class="factura-preview-summary">${pagos.length} pago(s) registrados - ${total.toFixed(2)} EUR pendientes de facturar</p>
+        <p class="factura-preview-summary">${pagos.length} pago(s) registrados - ${fmtEuro(total)} pendientes de facturar</p>
         <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Metodo</th><th>Importe</th></tr></thead><tbody>
-        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesion')}</td><td>${escapeHtml(p.metodo_pago || '')}</td><td>${Number(p.importe || 0).toFixed(2)} EUR</td></tr>`).join('')}
+        ${pagos.map((p: any) => `<tr><td>${fmtDate(p.fecha)}</td><td>${escapeHtml(p.concepto || 'Sesión')}</td><td>${escapeHtml(p.metodo_pago || '')}</td><td>${fmtEuro(p.importe || 0)}</td></tr>`).join('')}
         </tbody></table></div>`;
       facturaPreview.hidden = false;
     } catch {
@@ -9516,16 +9541,16 @@ import ConfigView from '../components/views/ConfigView.astro';
         <article class="bonos-mobile-item" data-bono="${escapeAttr(JSON.stringify(b))}">
           <header>
             <strong>${escapeHtml(pName)}</strong>
-            <span class="status-chip ${escapeAttr(estadoClass)}">${escapeHtml(String(b.estado || 'activo'))}</span>
+            <span class="status-chip ${escapeAttr(estadoClass)}">${escapeHtml(statusText(b.estado || 'activo'))}</span>
           </header>
           <p>${escapeHtml(b.nombre || 'Bono')}</p>
           <div class="bono-progress">
             <span>${b.sesiones_usadas}/${b.sesiones_total} <small>(${restantes} restantes)</small></span>
             <progress class="bono-progress-meter" value="${sesionesUsadas}" max="${sesionesTotal}" aria-label="Consumo del bono"></progress>
           </div>
-          <div class="bonos-mobile-meta">${Number(b.precio || 0).toFixed(2)} EUR | Inicio ${escapeHtml(b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'sin fecha')}</div>
+          <div class="bonos-mobile-meta">${fmtEuro(b.precio || 0)} | Inicio ${escapeHtml(b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'sin fecha')}</div>
           <div class="bonos-mobile-actions">
-            ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesion</button>` : ''}
+            ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesión</button>` : ''}
             <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
             <button class="btn-sm btn-outline bonos-mobile-delete" data-action="delete-bono" data-bono-id="${b.id}">Eliminar</button>
           </div>
@@ -9572,13 +9597,13 @@ import ConfigView from '../components/views/ConfigView.astro';
               <progress class="bono-progress-meter" value="${sesionesUsadas}" max="${sesionesTotal}" aria-label="Consumo del bono"></progress>
             </div>
           </td>
-          <td>${Number(b.precio).toFixed(2)} EUR</td>
+          <td>${fmtEuro(b.precio)}</td>
           <td>${b.fecha_inicio ? fmtDate(b.fecha_inicio) : 'Sin fecha'}</td>
           <td>${b.fecha_caducidad ? fmtDate(b.fecha_caducidad) : 'Sin fecha'}</td>
-          <td><span class="status-chip ${estadoClass}">${b.estado}</span></td>
+          <td><span class="status-chip ${estadoClass}">${escapeHtml(statusText(b.estado))}</span></td>
           <td>
             <div class="table-actions">
-              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesion</button>` : ''}
+              ${b.estado === 'activo' ? `<button class="btn-sm btn-outline" data-action="usar-bono" data-bono-id="${b.id}">Usar sesión</button>` : ''}
               <button class="btn-sm btn-outline" data-action="edit-bono" data-bono-id="${b.id}">Editar</button>
               <button class="btn-sm btn-outline finance-danger-action finance-icon-action" data-action="delete-bono" data-bono-id="${b.id}" aria-label="Eliminar bono"><span class="material-symbols-rounded">delete</span></button>
             </div>
@@ -9669,7 +9694,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       btn.disabled = true;
       try {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
-        showToast('Sesion descontada del bono.', 'success');
+        showToast('Sesión descontada del bono.', 'success');
         await loadBonos();
       } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
       finally { btn.disabled = false; }
@@ -9859,7 +9884,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         adherenceMeta,
         stateLabel,
         hasArchive: Boolean(latestArchivedReport),
-        sourceLabel: sanitizeText(latestArchivedReport?.source || 'historial clinico'),
+        sourceLabel: sanitizeText(latestArchivedReport?.source || 'historial clínico'),
         formatLabel: String(latestArchivedReport?.format || 'pdf').toUpperCase(),
         messagePreview: latestArchivedReport?.message_text ? trimAgentBriefText(latestArchivedReport.message_text, 160) : '',
       };
@@ -9873,8 +9898,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   if (fichaDocsSummary) {
     const latestPlanCopy = latestPlanDocument
       ? latestPlanDocument.hasArchive
-        ? `Ultima entrega ${fmtDate(latestPlanDocument.latestDeliveryAt || latestPlanDocument.createdAt || '')}`
-        : `Ultimo plan ${fmtDate(latestPlanDocument.createdAt || '')}`
+        ? `Última entrega ${fmtDate(latestPlanDocument.latestDeliveryAt || latestPlanDocument.createdAt || '')}`
+        : `Último plan ${fmtDate(latestPlanDocument.createdAt || '')}`
       : 'Sin planes generados';
     fichaDocsSummary.innerHTML = `
       <span class="ficha-summary-chip"><strong>${planDocuments.length}</strong> plan${planDocuments.length === 1 ? '' : 'es'} IA</span>
@@ -9915,8 +9940,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     : `
       <div class="ficha-doc-empty">
         <span class="material-symbols-rounded">inventory_2</span>
-        <strong>Sin planes archivados todavia</strong>
-        <p>Cuando generes un informe de ejercicios o archives una entrega al paciente, aparecera aqui para seguir el plan con contexto clinico.</p>
+        <strong>Sin planes archivados todavía</strong>
+        <p>Cuando generes un informe de ejercicios o archives una entrega al paciente, aparecerá aquí para seguir el plan con contexto clínico.</p>
       </div>`;
 
   const tipoLabel: Record<string, string> = {
@@ -9952,7 +9977,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       <div class="ficha-doc-empty ficha-doc-empty-legal">
         <span class="material-symbols-rounded">fact_check</span>
         <strong>Sin documentos legales registrados</strong>
-        <p>Genera desde aqui consentimientos, LOPD o revocaciones cuando el caso lo necesite.</p>
+        <p>Genera desde aquí consentimientos, LOPD o revocaciones cuando el caso lo necesite.</p>
       </div>`;
 
   el.innerHTML = `
@@ -9962,7 +9987,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <span class="ficha-doc-cluster-kicker">Seguimiento domiciliario</span>
           <h3 class="ficha-doc-cluster-title">Documentos del plan</h3>
         </div>
-        <p class="ficha-doc-cluster-copy">${planDocuments.length ? `Tienes ${archivedPlanCount} entrega${archivedPlanCount === 1 ? '' : 's'} archivada${archivedPlanCount === 1 ? '' : 's'} y ${draftPlanCount} plan${draftPlanCount === 1 ? '' : 'es'} pendiente${draftPlanCount === 1 ? '' : 's'} de registrar.` : 'Centraliza aqui lo que se genero para casa, lo que ya se entrego y lo que aun necesita trazabilidad.'}</p>
+        <p class="ficha-doc-cluster-copy">${planDocuments.length ? `Tienes ${archivedPlanCount} entrega${archivedPlanCount === 1 ? '' : 's'} archivada${archivedPlanCount === 1 ? '' : 's'} y ${draftPlanCount} plan${draftPlanCount === 1 ? '' : 'es'} pendiente${draftPlanCount === 1 ? '' : 's'} de registrar.` : 'Centraliza aquí lo que se genero para casa, lo que ya se entrego y lo que aún necesita trazabilidad.'}</p>
       </div>
       <div class="ficha-doc-cluster-body">${planCardsHtml}</div>
     </section>
@@ -9972,7 +9997,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <span class="ficha-doc-cluster-kicker">Marco legal</span>
           <h3 class="ficha-doc-cluster-title">Consentimientos y legales</h3>
         </div>
-        <p class="ficha-doc-cluster-copy">Separa la documentacion administrativa de la terapeutica para que la ficha sea clara y operativa.</p>
+        <p class="ficha-doc-cluster-copy">Separa la documentación administrativa de la terapeutica para que la ficha sea clara y operativa.</p>
       </div>
       <div class="ficha-doc-cluster-body">${legalCardsHtml}</div>
     </section>`;
@@ -10454,7 +10479,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       btn.disabled = true;
       try {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
-        showToast('Sesion descontada del bono.', 'success');
+        showToast('Sesión descontada del bono.', 'success');
         await loadBonos();
       } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
       finally { btn.disabled = false; }

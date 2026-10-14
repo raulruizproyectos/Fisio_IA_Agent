@@ -50,7 +50,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
 
       if (!BACKEND_BASE) {
         if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta configurada en este entorno.';
-        if (windowHintEl) windowHintEl.textContent = 'Configuracion pendiente';
+        if (windowHintEl) windowHintEl.textContent = 'Configuración pendiente';
         return;
       }
 
@@ -133,7 +133,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         if (!slotsStateEl) return;
 
         if (!dateValue) {
-          slotsStateEl.textContent = 'Selecciona un dia para ver horas disponibles.';
+          slotsStateEl.textContent = 'Selecciona un día para ver horas disponibles.';
           slotsStateEl.hidden = false;
           setSummary(null);
           selectedSlot = null;
@@ -142,7 +142,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         }
 
         if (!currentSlots.length) {
-          slotsStateEl.textContent = 'No quedan huecos en ese dia. Prueba otra fecha.';
+          slotsStateEl.textContent = 'No quedan huecos en ese día. Prueba otra fecha.';
           slotsStateEl.hidden = false;
           setSummary(null);
           selectedSlot = null;
@@ -180,7 +180,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       const loadConfig = async () => {
         const payload = await fetchJson(buildUrl('/api/profesional/public-booking/config'));
         bookingConfig = payload?.data || null;
-        if (!bookingConfig) throw new Error('No se pudo cargar la configuracion de reserva online.');
+        if (!bookingConfig) throw new Error('No se pudo cargar la configuración de reserva online.');
 
         if (clinicNameEl) clinicNameEl.textContent = bookingConfig.clinic?.name || 'Fisio Clinical';
         if (clinicLocationEl) clinicLocationEl.textContent = bookingConfig.clinic?.location || '';

@@ -37,7 +37,7 @@ assert.equal(feedback.textContent, 'No se pudo leer Calendar.'); assert.equal(me
 const drawerSlice = page.slice(page.indexOf('  const openAppointmentDetailDrawer ='), page.indexOf('  // === LOAD CITAS ==='));
 const body = { innerHTML: '' };
 const drawer = vm.createContext({ appointmentDetailDrawer: { classList: { add() {} }, setAttribute() {} }, appointmentDetailBody: body,
-  appointmentDetailTitle: {}, appointmentDetailSubtitle: {}, appointmentDetailId: null, escapeHtml: String, escapeAttr: String,
+  appointmentDetailTitle: {}, appointmentDetailSubtitle: {}, appointmentDetailId: null, escapeHtml: String, escapeAttr: String, statusText: String,
   isCalendarOnlyAppointment: () => false, getAgendaMirrorMeta: () => ({ label: 'Calendar pendiente', note: 'Cita guardada. Comprueba Calendar.' }),
   isAllDayAppointment: () => false, fmtHourOnly: () => '09:00', document: { body: { classList: { add() {} } } },
 });

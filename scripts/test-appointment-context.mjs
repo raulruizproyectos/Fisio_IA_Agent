@@ -36,5 +36,5 @@ vm.runInContext("renderAgendaSyncStatus({ui_status:'healthy',summary:{enabled:tr
 assert.equal(ui.dashboardRuntime.syncUi.chipLabel, 'Requiere comprobación');
 assert.match(ui.dashboardRuntime.syncUi.meta, /^2 cita/);
 vm.runInContext("renderAgendaSyncStatus({ui_status:'healthy',summary:{enabled:true,pending:2}}, {enabled:true,pending:0})", ui);
-assert.equal(ui.dashboardRuntime.syncUi.chipLabel, 'Al dia', 'Fresh zero overrides an old pending count');
+assert.equal(ui.dashboardRuntime.syncUi.chipLabel, 'Al día', 'Fresh zero overrides an old pending count');
 console.log('PASS: pending Calendar stays visible in appointment and agenda metadata; fresh counts override old summaries.');

@@ -862,3 +862,45 @@ astro-dev-toolbar {
     grid-template-columns: 1fr;
   }
 }
+
+/* Text fit (14-oct): long emails end in an ellipsis and «Abrir ficha» never gets clipped. */
+.patient-contact-link {
+  max-width: 100%;
+}
+
+.patient-contact-link .patient-contact-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: inherit;
+  color: inherit;
+  flex-shrink: 1;
+}
+
+.patient-table th.col-patient,
+.patient-table td.cell-patient { width: 20%; }
+.patient-table th.col-contact,
+.patient-table td.cell-contact { width: 16%; }
+.patient-table th.col-clinical,
+.patient-table td.cell-clinical { width: 20%; }
+.patient-table th.col-appt,
+.patient-table td.cell-appt { width: 12%; }
+.patient-table th.col-status,
+.patient-table td.cell-status { width: 14%; }
+.patient-table th.col-actions,
+.patient-table td.cell-actions { width: 18%; min-width: 160px; }
+
+.patient-table .patient-no-appt {
+  display: block;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.patient-table .btn-open-ficha .material-symbols-rounded {
+  display: none;
+}
+
+.btn-open-ficha span:not(.material-symbols-rounded) {
+  font-size: 0.8125rem;
+}
