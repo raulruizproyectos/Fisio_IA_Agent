@@ -639,3 +639,10 @@ test('cambiar con el día en el mismo mensaje: muestra los huecos sin volver a p
   assert.equal(db.tables.crm_citas[0].id, original.id);
   assert.equal(db.tables.crm_citas[0].inicio_en.slice(0, 10), target);
 }));
+
+test('IA híbrida: los botones y CONFIRMAR reciben el texto del backend; solo el texto libre se redacta', async () => withAi(() => withAgent(async ({ say, link, ai }) => {
+  link(patientA, 2100);
+  ai(fakeModel({ interpret: () => ({ intent: 'reservar' }), compose: (facts) => ({ text: `Entiendo tu solicitud. ${facts.mensaje_base}` }) }));
+  assert.equal((await say('Reservar cita', 2100)).reply.text, '¿Qué día te vendría bien? Puedes decirme, por ejemplo, «mañana» o «el lunes».');
+  assert.match((await say('Quiero pedir cita para la semana que viene', 2100)).reply.text, /^Entiendo tu solicitud\./);
+})));

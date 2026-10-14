@@ -6,7 +6,7 @@ import { normalizeAppointmentText, parseNaturalAppointmentSlots } from './appoin
 import { buildPublicBookingSlots, getPublicBookingBounds, PUBLIC_BOOKING_TIMEZONE, createCrmAppointment, updateCrmAppointment } from '../routes/professional.js';
 import { holidayName } from './clinic-calendar.js';
 import { CONTACT_REQUEST_ALREADY, CONTACT_REQUEST_REGISTERED, normalizeContactPhone, notifyContactRequest, registerContactRequest } from './agent-notices.js';
-import { bookingAiEnabled, composeReply, interpretMessage, recentReplies, rememberReply, URGENT_NOTICE, urgentByKeywords } from './booking-ai.js';
+import { bookingAiEnabled, composeReply, interpretMessage, recentReplies, rememberReply, shouldInterpret, URGENT_NOTICE, urgentByKeywords } from './booking-ai.js';
 
 // Channel-neutral booking assistant. Transports (Telegram now, WhatsApp later) only
 // deliver text/contact and render `{ text, options, requestContact }`.
@@ -140,6 +140,8 @@ async function requestCallback({ clinic, config, link, patient, save, intro = ''
 const madridDay = (ms) => new Intl.DateTimeFormat('en-CA', { timeZone: PUBLIC_BOOKING_TIMEZONE }).format(new Date(ms));
 export const dateLabel = (dateOnly, now = Date.now()) => new Intl.DateTimeFormat('es-ES', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long',
   ...(dateOnly.slice(0, 4) === madridDay(now).slice(0, 4) ? {} : { year: 'numeric' }) }).format(new Date(`${dateOnly}T12:00:00Z`)).replace(',', '');
+// The booking limit may fall on a weekend: "28 de noviembre", without the weekday.
+const dayMonthLabel = (dateOnly) => new Intl.DateTimeFormat('es-ES', { timeZone: 'UTC', day: 'numeric', month: 'long' }).format(new Date(`${dateOnly}T12:00:00Z`));
 export const dateTimeLabel = (iso, now = Date.now()) => `${dateLabel(madridDay(Date.parse(iso)), now)} a las ${new Intl.DateTimeFormat('es-ES',
   { timeZone: PUBLIC_BOOKING_TIMEZONE, hour: 'numeric', minute: '2-digit' }).format(new Date(iso))}`;
 const calendarPending = (row) => Boolean(row?.calendar_sync_pending || row?.calendar_sync_state === 'calendar_pending');
@@ -327,7 +329,9 @@ async function finishReply(answer, { link, text, hint }) {
   const result = { ...answer };
   delete result[NEXT_STATE];
   const urgent = Boolean(text) && (hint?.urgent === true || urgentByKeywords(text));
-  if (bookingAiEnabled() && result.text) {
+  // Buttons, hours and CONFIRMAR get the backend's own text: rewording them only added filler ("Entiendo tu solicitud").
+  const pressed = Boolean(text) && !shouldInterpret(text);
+  if (bookingAiEnabled() && result.text && !pressed) {
     const { tone, firstName } = await patientTone(link).catch(() => ({ tone: 'nuevo' }));
     const composed = await composeReply({ base: result.text, tone, firstName, worried: Boolean(hint?.worried || urgent), patientText: text, previous: recentReplies(link?.id) });
     if (composed) result.text = composed;
@@ -493,8 +497,8 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
   if (!date) {
     if (intent === 'book' || valid.awaiting === 'date') {
       await keep(flow === 'reschedule' ? { ...valid, awaiting: 'date', part_of_day: partOfDay } : { intent: 'book', awaiting: 'date', part_of_day: partOfDay });
-      const { maxDate } = getPublicBookingBounds();
-      return reply(`¿Qué día te vendría bien? Puedes decirme, por ejemplo, «mañana» o «el lunes»; tengo agenda hasta el ${dateLabel(maxDate)}.`);
+      // The booking limit is only mentioned when a date falls outside it.
+      return reply('¿Qué día te vendría bien? Puedes decirme, por ejemplo, «mañana» o «el lunes».');
     }
     // Second miss in a row: offer the call instead of looping on the menu.
     if (valid.misunderstood) {
@@ -505,7 +509,7 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
     return reply('Perdona, no te he entendido bien. ¿Quieres pedir una cita, ver las tuyas, cambiarla o anularla?', MENU);
   }
   const { today, maxDate } = getPublicBookingBounds();
-  if (date < today || date > maxDate) return reply(`Solo tengo agenda abierta entre el ${dateLabel(today)} y el ${dateLabel(maxDate)}. ¿Qué otro día te va bien?`);
+  if (date < today || date > maxDate) return reply(`Solo tengo agenda abierta entre el ${dateLabel(today)} y el ${dayMonthLabel(maxDate)}. ¿Qué otro día te va bien?`);
 
   const offer = { tipo: flow === 'reschedule' ? 'cambiar' : 'reservar', motivo: 'sin_hueco', date, hour: wanted || null,
     appointment_id: flow === 'reschedule' ? valid.appointment.id : null };
