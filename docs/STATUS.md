@@ -1,6 +1,6 @@
 # Project Status
 
-## Estado vigente — 2026-10-14: revisión de diseño del CRM (parte 1 desplegada)
+## Estado vigente — 2026-10-14: revisión de diseño del CRM CERRADA (partes 1–3 desplegadas, último commit de código `efb18b7`)
 
 - **Parte 1 — textos ajustados** (`f1ccd18`, desplegado en `fisio-frontend`, verificado en la URL pública): auditoría en demo a 1280/375 px (capturas + detector de cortes/desbordes, herramientas en `tmp/design-audit/`, ignorado por git). Tildes en ~300 textos visibles (sin tocar identificadores ni valores `data-*`; contratos DOM idénticos a HEAD). `statusText()` da etiqueta humana a los estados (`no_show` → «No asistió») y `precision-blue.css` fija una paleta semántica única de chips. Agenda: las citas en la pausa 13–15 h o fuera de horario ya no desaparecen (fila «Pausa»/«Fuera de horario»). Inicio: lista de trabajo legible, nombres sin «Dr.», métricas alineadas, importes `fmtEuro` («110,00 €»). Pacientes: email con elipsis y «Abrir ficha» sin cortar. Ajustes móvil sin palabras partidas. Check/build y pruebas de `scripts/test-*.mjs` en verde.
 - **Parte 2 — copiloto y movimiento** (`05daf42`, desplegado en `fisio-frontend`; decisión de Raúl del 14-oct):
@@ -10,7 +10,7 @@
   - Validación: check 0 diagnósticos, build, `scripts/test-*.mjs` en verde salvo los 2 de PG/pglite (entorno); contratos DOM sin eliminaciones (solo IDs/`data-*` nuevos); auditoría a 1280/375 sin hallazgos nuevos. `tmp/design-audit/probe.mjs` (ignorado) mide animaciones por CDP y admite `PRELOAD` (stub de prueba) y `SHOT`.
   - En la demo (`?demo=true`) sin backend, el gráfico muestra «No se pudieron cargar los ingresos»: es el estado honesto.
 - **Parte 3 — hallazgos pendientes resueltos** (14-oct, a petición de Raúl): «Semana clínica» de Inicio con jerarquía hora | paciente + motivo | estado y etiquetas de día discretas; tira «Sesiones mes / Motor clínico / Gráfico anual» oculta con `hidden` (IDs conservados para los controladores); Finanzas sin tarjetas duplicadas de cobro/factura (ya están en la cabecera; quedan bono y gestoría); jerga «readiness»/«Offline»/«Migraciones pendientes» sustituida por textos claros en Ajustes.
-- **Hallazgos sin tocar (para más adelante):** «Semana clínica» de Inicio es una lista plana poco jerárquica; tira inferior «Sesiones mes / Motor clínico / Gráfico anual» de poco valor; acciones duplicadas en Finanzas (cabecera + tarjetas); «No pude comprobar el readiness» en Ajustes es jerga.
+- **Punto de continuación:** la revisión de diseño no tiene tareas abiertas. Siguientes pasos posibles, todos pendientes de Raúl: (1) ver en una cita real la transición del chip al confirmar/completar (en demo los estados no se guardan); (2) probar a fondo el agente de citas de Telegram y, solo entonces, retirarlo de pausa; (3) cierres propios de la clínica para `BOOKING_EXTRA_HOLIDAYS`; (4) paso 11 a partir del 20-oct: quitar la rama heredada `patient_appointments` de `/api/telegram/incoming`; (5) piloto de WhatsApp (número dedicado); (6) regenerar en Easypanel el token de despliegue de `fisio-backend`. Herramientas de auditoría en `tmp/design-audit/` (ignorado): `audit.mjs`, `probe.mjs`, `texts.mjs`, `deploy.mjs`, `live.mjs`.
 - **Agente de citas:** EN PAUSA hasta que Raúl lo pruebe a fondo; no tocarlo.
 
 ## Estado anterior — 2026-10-13: agente de citas ACTIVADO en producción (pasos 1–9 del checklist)
