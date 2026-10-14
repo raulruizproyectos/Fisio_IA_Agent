@@ -57,7 +57,8 @@ function setup(fetchJson) {
     clearInterval(){},setInterval(){return 0;},
     navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop:()=>{context.streamStopped=true;}}]})}},
     MediaRecorder:class {static isTypeSupported(){return true;}state='inactive';start(){this.state='recording';}},
-    document:{querySelectorAll:()=>[]},alert:msg=>toasts.push([msg,'error']),
+    // The review banner of assistant-registered patients is optional: without it the ficha works as before.
+    document:{querySelectorAll:()=>[],getElementById:()=>null},alert:msg=>toasts.push([msg,'error']),
   };
   const script = [
     source.includes('  const isCurrentFicha =') ? section('  const isCurrentFicha =','  const openFichaPaciente =') : '',
