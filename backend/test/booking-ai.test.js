@@ -47,3 +47,71 @@ test('fechas relativas: «pasado mañana» son dos días y «por la mañana» no
   assert.equal(parseNaturalAppointmentSlots('mañana por la mañana', reference).parsedDay, 14);
   assert.equal(parseNaturalAppointmentSlots('quiero cita por la mañana', reference).parsedDay, undefined);
 });
+
+test('memoria corta: últimas 3 respuestas por conversación, caducan a los 30 min y sin clave no se guarda nada', async () => {
+  const { recentReplies, rememberReply } = await import('../src/lib/booking-ai.js');
+  const t0 = Date.parse('2026-10-14T10:00:00Z');
+  for (const text of ['uno', 'dos', 'tres', 'cuatro']) rememberReply('link-a', text, t0);
+  assert.deepEqual(recentReplies('link-a', t0), ['dos', 'tres', 'cuatro']);
+  assert.deepEqual(recentReplies('link-b', t0), []);
+  assert.deepEqual(recentReplies('link-a', t0 + 31 * 60_000), []);
+  rememberReply(null, 'nada', t0);
+  assert.deepEqual(recentReplies(null, t0), []);
+});
+
+test('redacción: más variedad (temperatura 0,7) con las respuestas anteriores; la interpretación es estable (0)', async () => {
+  const { composeReply, interpretMessage } = await import('../src/lib/booking-ai.js');
+  const original = globalThis.fetch;
+  const bodies = [];
+  process.env.BOOKING_AI_ENABLED = 'true';
+  process.env.OPENAI_API_KEY = 'sk-test-local';
+  globalThis.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    bodies.push(body);
+    const content = body.messages[0].content.startsWith('Clasificas') ? { intent: 'saludo' } : { text: '¡Hola de nuevo! ¿En qué te ayudo?' };
+    return Response.json({ choices: [{ message: { content: JSON.stringify(content) } }] });
+  };
+  try {
+    assert.equal(await composeReply({ base: 'Hola. ¿En qué te puedo ayudar?', tone: 'nuevo', patientText: 'hola', previous: ['a', 'b', 'c', 'd'] }), '¡Hola de nuevo! ¿En qué te ayudo?');
+    await interpretMessage('Hola, ¿qué tal estáis?', { today: '2026-10-14', maxDate: '2026-11-27' });
+  } finally {
+    globalThis.fetch = original;
+    delete process.env.BOOKING_AI_ENABLED; delete process.env.OPENAI_API_KEY;
+  }
+  assert.equal(bodies[0].temperature, 0.7);
+  assert.deepEqual(JSON.parse(bodies[0].messages[1].content).tus_respuestas_anteriores, ['b', 'c', 'd']);
+  assert.match(bodies[0].messages[0].content, /no vuelvas a saludar/);
+  assert.equal(bodies[1].temperature, 0);
+});
+
+test('fechas habladas: sin año si es el actual y «a las» para la hora', async () => {
+  Object.assign(process.env, { SUPABASE_URL: process.env.SUPABASE_URL || 'https://example.supabase.co',
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'test-anon', SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service' });
+  const { dateLabel, dateTimeLabel } = await import('../src/lib/patient-booking.js');
+  const now = Date.parse('2026-10-14T08:00:00Z');
+  assert.equal(dateLabel('2026-10-20', now), 'martes 20 de octubre');
+  assert.equal(dateLabel('2027-01-05', now), 'martes 5 de enero de 2027');
+  assert.equal(dateTimeLabel('2026-10-20T07:00:00Z', now), 'martes 20 de octubre a las 9:00');
+  assert.equal(dateTimeLabel('2026-10-20T14:30:00Z', now), 'martes 20 de octubre a las 16:30');
+});
+
+test('el nombre del paciente no se repite mientras siga en las últimas respuestas', async () => {
+  const { composeReply } = await import('../src/lib/booking-ai.js');
+  const original = globalThis.fetch;
+  const names = [];
+  process.env.BOOKING_AI_ENABLED = 'true';
+  process.env.OPENAI_API_KEY = 'sk-test-local';
+  globalThis.fetch = async (_url, options) => {
+    names.push(JSON.parse(JSON.parse(options.body).messages[1].content).nombre_paciente);
+    return Response.json({ choices: [{ message: { content: JSON.stringify({ text: 'Vale. ¿Algo más?' }) } }] });
+  };
+  try {
+    await composeReply({ base: 'Vale. ¿Algo más?', tone: 'habitual', firstName: 'Ana', previous: ['¡Hola, Ana!'] });
+    await composeReply({ base: 'Vale. ¿Algo más?', tone: 'habitual', firstName: 'Ana', previous: ['Claro.'] });
+    await composeReply({ base: 'Vale. ¿Algo más?', tone: 'nuevo', firstName: 'Ana', previous: [] });
+  } finally {
+    globalThis.fetch = original;
+    delete process.env.BOOKING_AI_ENABLED; delete process.env.OPENAI_API_KEY;
+  }
+  assert.deepEqual(names, [null, 'Ana', null]);
+});

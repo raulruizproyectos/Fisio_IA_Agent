@@ -6,7 +6,7 @@ import { normalizeAppointmentText, parseNaturalAppointmentSlots } from './appoin
 import { buildPublicBookingSlots, getPublicBookingBounds, PUBLIC_BOOKING_TIMEZONE, createCrmAppointment, updateCrmAppointment } from '../routes/professional.js';
 import { holidayName } from './clinic-calendar.js';
 import { CONTACT_REQUEST_ALREADY, CONTACT_REQUEST_REGISTERED, normalizeContactPhone, notifyContactRequest, registerContactRequest } from './agent-notices.js';
-import { bookingAiEnabled, composeReply, interpretMessage, URGENT_NOTICE, urgentByKeywords } from './booking-ai.js';
+import { bookingAiEnabled, composeReply, interpretMessage, recentReplies, rememberReply, URGENT_NOTICE, urgentByKeywords } from './booking-ai.js';
 
 // Channel-neutral booking assistant. Transports (Telegram now, WhatsApp later) only
 // deliver text/contact and render `{ text, options, requestContact }`.
@@ -136,8 +136,12 @@ async function requestCallback({ clinic, config, link, patient, save, intro = ''
   return reply(`${intro ? `${intro} ` : ''}Para que la clínica pueda llamarte, escribe tu número de teléfono.`);
 }
 
-const dateTimeLabel = (iso) => new Intl.DateTimeFormat('es-ES', { timeZone: PUBLIC_BOOKING_TIMEZONE, dateStyle: 'full', timeStyle: 'short' }).format(new Date(iso));
-const dateLabel = (dateOnly) => new Intl.DateTimeFormat('es-ES', { timeZone: 'UTC', dateStyle: 'full' }).format(new Date(`${dateOnly}T12:00:00Z`));
+// Spoken style: "martes 20 de octubre a las 9:00"; the year only when it is not the current one.
+const madridDay = (ms) => new Intl.DateTimeFormat('en-CA', { timeZone: PUBLIC_BOOKING_TIMEZONE }).format(new Date(ms));
+export const dateLabel = (dateOnly, now = Date.now()) => new Intl.DateTimeFormat('es-ES', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long',
+  ...(dateOnly.slice(0, 4) === madridDay(now).slice(0, 4) ? {} : { year: 'numeric' }) }).format(new Date(`${dateOnly}T12:00:00Z`)).replace(',', '');
+export const dateTimeLabel = (iso, now = Date.now()) => `${dateLabel(madridDay(Date.parse(iso)), now)} a las ${new Intl.DateTimeFormat('es-ES',
+  { timeZone: PUBLIC_BOOKING_TIMEZONE, hour: 'numeric', minute: '2-digit' }).format(new Date(iso))}`;
 const calendarPending = (row) => Boolean(row?.calendar_sync_pending || row?.calendar_sync_state === 'calendar_pending');
 const STATUS_LABELS = { pendiente: 'pendiente de confirmar por la clínica', confirmada: 'confirmada', reprogramada: 'cambiada' };
 const appointmentLine = (row) => `${dateTimeLabel(row.inicio_en)} (${STATUS_LABELS[row.estado] || row.estado}${calendarPending(row) ? '; calendario pendiente de comprobar' : ''})`;
@@ -177,7 +181,7 @@ async function linkWithCode(canal, chatId, code, config) {
     .eq('id', link.id).eq('codigo_hash', hash(code)).is('chat_id', null).select('*').maybeSingle();
   if (update.error?.code === '23505') return reply('Este chat ya está vinculado a otra ficha. Pide ayuda a la clínica para revisarlo.');
   if (update.error) throw update.error;
-  return update.data ? reply('Vinculación completada. ¿Qué quieres hacer?', MENU) : reply('El código ya se ha utilizado.');
+  return update.data ? reply('¡Listo! Ya puedes gestionar tus citas por aquí. ¿En qué te puedo ayudar?', MENU) : reply('El código ya se ha utilizado.');
 }
 
 const lastNine = (digits) => String(digits || '').replace(/\D/g, '').slice(-9);
@@ -203,11 +207,11 @@ async function linkVerifiedPatient({ patientId, chatId, digits }, config) {
   if (saved.error?.code === '23505') return reply('Este chat ya está vinculado a otra ficha. Pide ayuda a la clínica para revisarlo.');
   if (saved.error) throw saved.error;
   if (!saved.data) return null;
-  return reply(`Hola, ${patient.nombre}. Te he reconocido por tu teléfono: ya puedes gestionar tus citas por aquí. ¿Qué quieres hacer?`, MENU);
+  return reply(`Hola, ${patient.nombre}. Te he reconocido por tu teléfono, así que ya puedes gestionar tus citas por aquí. ¿En qué te puedo ayudar?`, MENU);
 }
 
 async function registerNewPatient({ link, chatId, fromId, text, contact, clinic }, config) {
-  const welcome = `Hola, soy el asistente automático de citas${clinic.nombre ? ` de ${clinic.nombre}` : ''}.`;
+  const welcome = `Hola, soy el asistente virtual de citas${clinic.nombre ? ` de ${clinic.nombre}` : ''}.`;
   if (contact) {
     if (!fromId || String(contact.user_id) !== String(fromId)) {
       return reply('Para verificar tu teléfono, compártelo con el botón «Compartir mi teléfono»; no sirve el contacto de otra persona.', [], { requestContact: true });
@@ -237,7 +241,7 @@ async function registerNewPatient({ link, chatId, fromId, text, contact, clinic 
       : await serviceSupabase.from('crm_mensajeria_vinculos').insert(payload).select('id').single();
     if (saved.error) throw saved.error;
     if (!saved.data) throw reportError(409, 'El alta cambió mientras se procesaba');
-    return reply('Teléfono verificado. ¿Cuál es tu nombre y apellidos?');
+    return reply('Gracias, teléfono verificado. ¿Me dices tu nombre y apellidos?');
   }
 
   if (link?.reserva?.onboarding === 'name') {
@@ -257,7 +261,7 @@ async function registerNewPatient({ link, chatId, fromId, text, contact, clinic 
     const done = await serviceSupabase.from('crm_mensajeria_vinculos').update({ paciente_id: patient.data.id, consentimiento_en: new Date().toISOString(), reserva: {}, version: link.version + 2 })
       .eq('id', link.id).eq('version', link.version + 1).select('id').maybeSingle();
     if (done.error || !done.data) return reply(`Tu ficha se ha creado, pero la clínica debe completar la vinculación de este chat.${lastResort(clinic)}`);
-    return reply(`Listo, ${nombre}. Ya puedes gestionar tus citas por aquí. ¿Qué quieres hacer?`, MENU);
+    return reply(`¡Listo, ${nombre}! Ya puedes gestionar tus citas por aquí. ¿En qué te puedo ayudar?`, MENU);
   }
   if (link?.reserva?.onboarding === 'creating') return reply(`Tu alta está pendiente de revisión por la clínica.${lastResort(clinic)}`);
 
@@ -325,12 +329,13 @@ async function finishReply(answer, { link, text, hint }) {
   const urgent = Boolean(text) && (hint?.urgent === true || urgentByKeywords(text));
   if (bookingAiEnabled() && result.text) {
     const { tone, firstName } = await patientTone(link).catch(() => ({ tone: 'nuevo' }));
-    const composed = await composeReply({ base: result.text, tone, firstName, worried: Boolean(hint?.worried || urgent), patientText: text });
+    const composed = await composeReply({ base: result.text, tone, firstName, worried: Boolean(hint?.worried || urgent), patientText: text, previous: recentReplies(link?.id) });
     if (composed) result.text = composed;
   }
   if (urgent) result.text = `${URGENT_NOTICE}
 
 ${result.text}`;
+  rememberReply(link?.id, result.text);
   return result;
 }
 
@@ -402,12 +407,12 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
     return reply('¿Qué otro día te viene bien?');
   }
   // A "vale" or "gracias" while a confirmation is pending is not consent: the guard below asks for CONFIRMAR.
-  if (intent === 'thanks' && valid.awaiting !== 'confirm') return reply('De nada. Si necesitas algo más, elige una opción.', MENU);
+  if (intent === 'thanks' && valid.awaiting !== 'confirm') return reply('¡De nada! Si necesitas algo más, aquí estoy.', MENU);
 
-  if (intent === 'menu') { await save({}); return reply(`Soy el asistente automático de citas${clinic.nombre ? ` de ${clinic.nombre}` : ''}. ¿Qué quieres hacer?`, MENU); }
+  if (intent === 'menu') { await save({}); return reply(`Hola, soy el asistente virtual de citas${clinic.nombre ? ` de ${clinic.nombre}` : ''}. ¿En qué te puedo ayudar?`, MENU); }
   if (intent === 'discard' || (intent === 'discard_or_cancel' && (valid.selection || valid.appointment || valid.slots))) {
     await save({});
-    return reply('He descartado la operación pendiente. No se ha cambiado ninguna cita. ¿Qué quieres hacer?', MENU);
+    return reply('Vale, lo dejamos aquí. No se ha cambiado ninguna cita. ¿Te ayudo con algo más?', MENU);
   }
   if (intent === 'discard_or_cancel') return reply('¿Quieres anular una cita ya registrada?', ['Anular cita', 'Mis citas']);
 
@@ -415,7 +420,7 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
     if (valid.intent === 'cancel' && valid.appointment && valid.awaiting === 'confirm') return confirmChange({ valid, patient, clinic, save, derive, config });
     if (valid.intent === 'reschedule' && valid.selection && valid.appointment) return confirmChange({ valid, patient, clinic, save, derive, config });
     if (valid.selection && valid.intent !== 'reschedule') return confirmBooking({ valid, patient, save, derive, config, link });
-    return reply('No hay ninguna operación pendiente de confirmar. ¿Qué quieres hacer?', MENU);
+    return reply('Ahora mismo no hay nada pendiente de confirmar. ¿En qué te puedo ayudar?', MENU);
   }
 
   const exactDate = normalized.match(/\b(\d{4}-\d{2}-\d{2})\b/)?.[1];
@@ -443,7 +448,7 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
   if (intent === 'list') {
     if (!await loadAppointments()) return derive('Ahora no puedo consultar tus citas. No significa que no tengas ninguna.', { tipo: 'otro', motivo: 'lectura_fallida' });
     await save({});
-    if (!appointments.length) return reply('No tienes citas próximas registradas. ¿Quieres reservar una?', MENU);
+    if (!appointments.length) return reply('No tienes ninguna cita próxima. ¿Quieres que busquemos una?', MENU);
     return reply(`Tus próximas citas:\n${appointments.map((row, index) => `${index + 1}. ${appointmentLine(row)}`).join('\n')}`, MENU);
   }
 
@@ -480,7 +485,7 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
     await keep({ ...valid, selection: picked, awaiting: 'confirm', request_id: valid.request_id || crypto.randomUUID() });
     return reply(valid.intent === 'reschedule'
       ? `Vas a cambiar tu cita del ${dateTimeLabel(valid.appointment.inicio_en)} al ${dateTimeLabel(picked.start_at)}. ¿Lo confirmas?`
-      : `Has elegido el ${dateTimeLabel(picked.start_at)}. ¿Confirmas la reserva?`, CONFIRM_OPTIONS);
+      : `Perfecto, el ${dateTimeLabel(picked.start_at)}. ¿Confirmas la reserva?`, CONFIRM_OPTIONS);
   }
 
   const date = textDate || (parsed.missingDay ? valid.date : null);
@@ -488,19 +493,19 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
   if (!date) {
     if (intent === 'book' || valid.awaiting === 'date') {
       await keep(flow === 'reschedule' ? { ...valid, awaiting: 'date', part_of_day: partOfDay } : { intent: 'book', awaiting: 'date', part_of_day: partOfDay });
-      const { today, maxDate } = getPublicBookingBounds();
-      return reply(`¿Para qué día? Por ejemplo «mañana», «el lunes» o una fecha entre ${dateLabel(today)} y ${dateLabel(maxDate)}.`);
+      const { maxDate } = getPublicBookingBounds();
+      return reply(`¿Qué día te vendría bien? Puedes decirme, por ejemplo, «mañana» o «el lunes»; tengo agenda hasta el ${dateLabel(maxDate)}.`);
     }
     // Second miss in a row: offer the call instead of looping on the menu.
     if (valid.misunderstood) {
       await keep({ ...valid, misunderstood: 2, callback_offer: { tipo: 'otro', motivo: 'no_entendido' } });
-      return reply('Sigo sin entenderte. Puedes elegir una opción o pedir que te llamemos.', [CALLBACK, ...MENU]);
+      return reply('Perdona, sigo sin entenderte. Puedes usar los botones de abajo o, si lo prefieres, pedir que te llamemos.', [CALLBACK, ...MENU]);
     }
     await keep({ ...valid, misunderstood: 1 });
-    return reply('No te he entendido. ¿Qué quieres hacer?', MENU);
+    return reply('Perdona, no te he entendido bien. ¿Quieres pedir una cita, ver las tuyas, cambiarla o anularla?', MENU);
   }
   const { today, maxDate } = getPublicBookingBounds();
-  if (date < today || date > maxDate) return reply(`Solo puedo consultar fechas entre ${dateLabel(today)} y ${dateLabel(maxDate)}. ¿Qué día prefieres?`);
+  if (date < today || date > maxDate) return reply(`Solo tengo agenda abierta entre el ${dateLabel(today)} y el ${dateLabel(maxDate)}. ¿Qué otro día te va bien?`);
 
   const offer = { tipo: flow === 'reschedule' ? 'cambiar' : 'reservar', motivo: 'sin_hueco', date, hour: wanted || null,
     appointment_id: flow === 'reschedule' ? valid.appointment.id : null };
@@ -515,7 +520,7 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
   if (!slots.length) {
     await keep({ ...base, awaiting: 'date', callback_offer: offer });
     const closed = holidayName(date) ? ' La clínica no abre ese día.' : '';
-    return reply(`No quedan huecos libres el ${dateLabel(date)}.${closed} Puedes elegir otro día o pedir que te llamemos.`, ['Otro día', CALLBACK]);
+    return reply(`El ${dateLabel(date)} no queda ningún hueco libre.${closed} ¿Miramos otro día? Si lo prefieres, puedes pedir que te llamemos.`, ['Otro día', CALLBACK]);
   }
   const selection = wanted ? slots.find(slot => slot.start_local === wanted) : null;
   // "Thursday afternoon": only that part of the day is offered, unless it is full.
@@ -524,9 +529,9 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
   const partNote = !wanted && partOfDay && !inWanted.length ? `Por la ${PARTS[partOfDay]} no quedan huecos ese día. ` : '';
   await keep({ ...base, date, slots: shown, selection: selection || null, awaiting: selection ? 'confirm' : 'slot', request_id: crypto.randomUUID(), callback_offer: offer });
   if (selection) return reply(flow === 'reschedule'
-    ? `Hay hueco el ${dateTimeLabel(selection.start_at)}. ¿Confirmas el cambio de tu cita del ${dateTimeLabel(valid.appointment.inicio_en)}?`
-    : `Hay un hueco el ${dateTimeLabel(selection.start_at)}. ¿Confirmas la reserva?`, CONFIRM_OPTIONS);
-  return reply(`${wanted ? `A las ${wanted} no hay hueco. ` : partNote}Horarios libres el ${dateLabel(date)}${inWanted.length ? ` por la ${PARTS[partOfDay]}` : ''}:\n${shown.map((slot, index) => `${index + 1}. ${slot.start_local}`).join('\n')}\nElige una hora, u otro día, o pide que te llamemos.`,
+    ? `Tengo libre el ${dateTimeLabel(selection.start_at)}. ¿Confirmas el cambio de tu cita del ${dateTimeLabel(valid.appointment.inicio_en)}?`
+    : `Tengo libre el ${dateTimeLabel(selection.start_at)}. ¿Confirmas la reserva?`, CONFIRM_OPTIONS);
+  return reply(`${wanted ? `A las ${wanted} no me queda hueco. ` : partNote}Estos son los huecos libres del ${dateLabel(date)}${inWanted.length ? ` por la ${PARTS[partOfDay]}` : ''}:\n${shown.map((slot, index) => `${index + 1}. ${slot.start_local}`).join('\n')}\n¿Cuál te va mejor? Si ninguno te encaja, dime otro día o pide que te llamemos.`,
     [...shown.map(slot => slot.start_local), CALLBACK]);
 }
 
@@ -576,7 +581,7 @@ const createdReply = (row, startAt) => row?.estado === 'pendiente'
   ? reply(`Solicitud de cita registrada para el ${dateTimeLabel(startAt)}, pendiente de confirmación por la clínica. Te confirmaremos por aquí.`, MENU)
   : calendarPending(row)
     ? reply(`Tu cita del ${dateTimeLabel(startAt)} está registrada en la clínica, pero su calendario aún no la ha confirmado. No la repitas: la clínica lo comprobará.`, MENU)
-    : reply(`Cita confirmada para el ${dateTimeLabel(startAt)}. Te enviaremos un recordatorio el día anterior.`, MENU);
+    : reply(`¡Listo! Cita confirmada para el ${dateTimeLabel(startAt)}. Te enviaremos un recordatorio el día anterior.`, MENU);
 
 // A new patient's booking waits for the clinic: it also appears among the contact requests, with its own alert.
 async function announceCreated({ row, startAt, patient, link, config }) {
@@ -633,8 +638,8 @@ async function confirmChange({ valid, patient, save, derive, config }) {
 const changedReply = (processing, row) => {
   const pending = calendarPending(row) ? ' La clínica aún debe confirmar su calendario; no hace falta repetirlo.' : '';
   return processing.op === 'cancel'
-    ? reply(`Tu cita del ${dateTimeLabel(processing.previous_start_at)} queda anulada.${pending}`, MENU)
-    : reply(`Tu cita ha cambiado al ${dateTimeLabel(processing.start_at)}.${pending}`, MENU);
+    ? reply(`Hecho: tu cita del ${dateTimeLabel(processing.previous_start_at)} queda anulada.${pending}`, MENU)
+    : reply(`Hecho: tu cita ha cambiado al ${dateTimeLabel(processing.start_at)}.${pending}`, MENU);
 };
 
 // Never repeats a mutation: the outcome of an interrupted one is read back by its reference.

@@ -11,12 +11,12 @@ export const bookingAiEnabled = () => /^(1|true|yes|si)$/i.test(String(process.e
   && Boolean(process.env.OPENAI_API_KEY?.trim());
 const timeoutMs = () => Math.min(Math.max(Number(process.env.BOOKING_AI_TIMEOUT_MS) || 4000, 500), 10000);
 
-async function chat(messages, maxTokens) {
+async function chat(messages, maxTokens, temperature) {
   const response = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY.trim()}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: process.env.BOOKING_AI_MODEL?.trim() || 'gpt-4o-mini', messages, max_tokens: maxTokens,
-      temperature: 0.3, response_format: { type: 'json_object' }, store: false }),
+      temperature, response_format: { type: 'json_object' }, store: false }),
     signal: AbortSignal.timeout(timeoutMs()),
   });
   if (!response.ok) throw new Error(`openai_${response.status}`);
@@ -62,7 +62,7 @@ export async function interpretMessage(text, { today, maxDate }) {
   let raw;
   try {
     raw = await chat([{ role: 'system', content: INTERPRET_PROMPT },
-      { role: 'user', content: `Mensaje del paciente: ${JSON.stringify(String(text).slice(0, 600))}` }], 120);
+      { role: 'user', content: `Mensaje del paciente: ${JSON.stringify(String(text).slice(0, 600))}` }], 120, 0);
   } catch (error) { warn('interpretación', error.name === 'TimeoutError' ? 'timeout' : error.message); return null; }
   if (!raw || typeof raw !== 'object' || !Object.hasOwn(INTENTS, raw.intent)) { warn('interpretación', 'formato'); return null; }
   const resolved = dayToDate(raw.day);
@@ -82,20 +82,24 @@ const URGENT = /\b(dolor (?:fuerte |intenso )?(?:en el|del) pecho|dolor toracico
 export const urgentByKeywords = (text) => URGENT.test(normalizeAppointmentText(text));
 export const URGENT_NOTICE = 'Lo que describes puede necesitar atención médica urgente. Si es así, no esperes a la cita: llama al 112 o acude a urgencias.';
 
-const COMPOSE_PROMPT = `Eres el asistente virtual de citas de la clínica de fisioterapia de Carla (única fisioterapeuta). Reescribes el MENSAJE BASE que ha generado el sistema de la clínica para que suene natural, cercano y profesional, como una recepcionista amable y resolutiva. Canal: chat (Telegram/WhatsApp).
+const COMPOSE_PROMPT = `Eres el asistente virtual de citas de la clínica de fisioterapia de Carla (única fisioterapeuta). El sistema de la clínica ya ha decidido qué responder (MENSAJE BASE); tú lo dices como lo diría una recepcionista amable, cercana y resolutiva que escribe por chat (Telegram/WhatsApp). Que no suene a máquina ni a plantilla.
 Reglas estrictas:
 - Conserva TODOS los datos del mensaje base exactamente igual: fechas, horas, números, teléfonos, emails, estados y palabras en MAYÚSCULAS o entre «». No añadas ningún dato, hora, fecha ni número nuevo.
 - No digas que una cita está reservada, confirmada, cambiada, anulada o registrada, ni que te llamarán o que la clínica está avisada, salvo que el mensaje base lo diga. No prometas nada que el mensaje base no diga.
-- Si el mensaje base hace una pregunta o pide una acción (pulsar CONFIRMAR, elegir una hora, escribir un dato), mantenla.
+- Si el mensaje base hace una pregunta o pide una acción (pulsar CONFIRMAR, elegir una hora, escribir un dato), mantenla al final.
+- Nunca diagnostiques, recomiendes tratamientos o medicación ni prometas resultados. No afirmes ser humano ni ser Carla.
+Estilo:
 - Tono "nuevo": elegante, profesional y acogedor, sin familiaridades ni emojis. Tono "habitual": cercano, simpático y espontáneo; como mucho un emoji ocasional, y ninguno si el paciente está preocupado o tiene dolor.
-- Si el paciente expresa dolor o preocupación, muestra comprensión breve y sencilla, sin dramatizar. Anular o cambiar una cita es algo normal: no lo lamentes ("lamentablemente", "lo siento") salvo que el paciente exprese un problema. Nunca diagnostiques, recomiendes tratamientos o medicación ni prometas resultados.
-- No afirmes ser humano ni ser Carla. No uses el nombre del paciente en cada mensaje. No hagas preguntas que el mensaje base no haga.
-- Breve: frases cortas, sin párrafos largos. Conserva las listas numeradas del mensaje base.
-- Reformula con tus palabras para que no suene a plantilla, adaptándote a lo que acaba de decir el paciente; no repitas siempre las mismas expresiones.
+- Responde primero a lo que acaba de decir el paciente y después da el mensaje base. Si saluda o pregunta "¿qué tal?", devuelve el saludo con naturalidad. Si se disculpa, agradece o comenta algo, reconócelo en pocas palabras. Si pregunta algo que el mensaje base no responde (precio, dirección, tratamientos, aparcamiento…), di con amabilidad que eso se lo puede aclarar la clínica, sin inventar nada, y sigue con el mensaje base.
+- Mira tus_respuestas_anteriores: no vuelvas a saludar si ya lo hiciste, no repitas las mismas aperturas ("¡Perfecto!", "¡Genial!", "Claro") ni las mismas frases. Varía.
+- Si el paciente expresa dolor o preocupación, muestra comprensión breve y sencilla, sin dramatizar. Anular o cambiar una cita es algo normal: no lo lamentes salvo que el paciente exprese un problema.
+- Usa el nombre del paciente solo si te lo dan (nombre_paciente) y como mucho una vez. No uses "hoy", "mañana" ni días de la semana que no estén en el mensaje base. No hagas preguntas que el mensaje base no haga.
+- Frases cortas y naturales, como en un chat. Evita fórmulas de formulario: "Has seleccionado", "Actualmente", "operación", "registradas", "Por favor, elija". Conserva las listas numeradas del mensaje base.
 Ejemplos (no los copies literalmente):
-- habitual, nombre Antonio, base "Soy el asistente automático de citas de X. ¿Qué quieres hacer?" -> "¡Hola, Antonio! Soy el asistente de citas de X. ¿En qué te ayudo? 🙂"
-- nuevo, paciente con dolor, base "¿Para qué día? Por ejemplo «mañana»..." -> "Vaya, entiendo. Vamos a ver cuándo puede atenderte Carla. ¿Qué día te vendría bien? Por ejemplo «mañana»..."
-- habitual, base "Cita confirmada para el jueves, 15 de octubre de 2026, 16:00. Te enviaremos un recordatorio el día anterior." -> "¡Genial! Cita confirmada para el jueves, 15 de octubre de 2026, 16:00. Te enviaremos un recordatorio el día anterior. ¡Nos vemos pronto!"
+- habitual, nombre Antonio, paciente "Hola! qué tal?", base "Hola, soy el asistente virtual de citas de X. ¿En qué te puedo ayudar?" -> "¡Hola, Antonio! Muy bien, gracias. ¿En qué te ayudo? 🙂"
+- nuevo, paciente con dolor, base "¿Qué día te vendría bien? Puedes decirme, por ejemplo, «mañana» o «el lunes»; tengo agenda hasta el viernes 27 de noviembre." -> "Vaya, siento que estés así. Vamos a buscarte un hueco con Carla. ¿Qué día te vendría bien? Puedes decirme «mañana», «el lunes»… Tengo agenda hasta el viernes 27 de noviembre."
+- habitual, paciente "perdona que no fui ayer", base "No tienes ninguna cita próxima. ¿Quieres que busquemos una?" -> "¡No te preocupes! Ahora mismo no tienes ninguna cita próxima. ¿Quieres que busquemos una?"
+- nuevo, paciente "¿cuánto cuesta la sesión?", base "Perdona, no te he entendido bien. ¿Quieres pedir una cita, ver las tuyas, cambiarla o anularla?" -> "Eso te lo puede aclarar directamente la clínica. Por aquí puedo ayudarte con tus citas: ¿quieres pedir una, ver las tuyas, cambiarla o anularla?"
 Devuelve solo JSON: {"text": "..."}`;
 
 const EMOJI = /[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu;
@@ -130,17 +134,37 @@ export function rejectComposition(base, candidate) {
   return null;
 }
 
-export async function composeReply({ base, tone, worried = false, firstName = null, patientText = '' }) {
+export async function composeReply({ base, tone, worried = false, firstName = null, patientText = '', previous = [] }) {
   if (!bookingAiEnabled() || !base) return null;
-  const facts = { tono: tone, paciente_preocupado: worried, nombre_paciente: tone === 'habitual' ? firstName : null,
-    mensaje_del_paciente: String(patientText || '').slice(0, 400), mensaje_base: base };
+  // The name once in a while: not again while it is still in the last replies.
+  const nameUsed = Boolean(firstName) && previous.some(reply => String(reply).includes(firstName));
+  const facts = { tono: tone, paciente_preocupado: worried, nombre_paciente: tone === 'habitual' && !nameUsed ? firstName : null,
+    mensaje_del_paciente: String(patientText || '').slice(0, 400), tus_respuestas_anteriores: previous.slice(-RECENT_REPLIES), mensaje_base: base };
   let raw;
   try {
-    raw = await chat([{ role: 'system', content: COMPOSE_PROMPT }, { role: 'user', content: JSON.stringify(facts) }], 400);
+    raw = await chat([{ role: 'system', content: COMPOSE_PROMPT }, { role: 'user', content: JSON.stringify(facts) }], 400, 0.7);
   } catch (error) { warn('redacción', error.name === 'TimeoutError' ? 'timeout' : error.message); return null; }
   let text = typeof raw?.text === 'string' ? raw.text.trim() : '';
   if (tone !== 'habitual' || worried) text = text.replace(EMOJI, '').replace(/[ \t]{2,}/g, ' ').trim();
   const reason = rejectComposition(base, text);
   if (reason) { warn('redacción', reason); return null; }
   return text;
+}
+
+// Last replies per conversation, so the wording can vary and a greeting is not repeated. Memory only:
+// they hold dates and hours the backend wrote, never the patient's record, and are lost on restart.
+const RECENT_REPLIES = 3;
+const RECENT_TTL_MS = 30 * 60 * 1000;
+const RECENT_MAX_CHATS = 500;
+const recent = new Map();
+export function recentReplies(key, now = Date.now()) {
+  const entry = key ? recent.get(key) : null;
+  return entry && now - entry.at < RECENT_TTL_MS ? entry.texts : [];
+}
+export function rememberReply(key, text, now = Date.now()) {
+  if (!key || !text) return;
+  const texts = [...recentReplies(key, now), String(text).slice(0, 500)].slice(-RECENT_REPLIES);
+  recent.delete(key);
+  recent.set(key, { at: now, texts });
+  if (recent.size > RECENT_MAX_CHATS) recent.delete(recent.keys().next().value);
 }

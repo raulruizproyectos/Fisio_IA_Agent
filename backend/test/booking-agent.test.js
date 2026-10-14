@@ -170,7 +170,7 @@ test('webhook: secreto obligatorio y un update repetido no se procesa dos veces'
 
 test('paciente nuevo: contacto propio verificado, alta mínima y sin crear dos fichas', async () => withAgent(async ({ db, say, post }) => {
   const first = await say('Quiero ver mis citas', 900);
-  assert.match(first.reply.text, /asistente automático de citas de Clínica Ficticia/);
+  assert.match(first.reply.text, /asistente virtual de citas de Clínica Ficticia/);
   assert.equal(first.reply.reply_markup.keyboard[0][0].request_contact, true);
   assert.doesNotMatch(first.reply.text, /no tienes|tus próximas citas/i);
   const foreign = await post({ chat: 900, from: 900, body: { contact: { phone_number: '34611000000', user_id: 901 } } });
@@ -220,7 +220,7 @@ test('código de la clínica: un solo uso, caduca y no se reutiliza desde otro c
   const invitation = await runWithRequestContext({ supabase: db }, () => createPilotLink({ auth: { profile_id: professional, clinic_id: clinic }, params: { patientId: patientA } }, 'telegram'));
   assert.match(invitation.deep_link, /^https:\/\/t\.me\/fixture_clinic_bot\?start=[\dA-F]{24}$/);
   const code = invitation.invitation.match(/VINCULAR ([\dA-F]{24})/)[1];
-  assert.match((await say(`/start ${code}`, 910)).reply.text, /Vinculación completada/);
+  assert.match((await say(`/start ${code}`, 910)).reply.text, /Ya puedes gestionar tus citas/);
   assert.match((await say(`VINCULAR ${code}`, 911)).reply.text, /no válido, caducado o ya utilizado/);
   assert.equal(db.tables.crm_mensajeria_vinculos[0].chat_id, '910');
   const second = await runWithRequestContext({ supabase: db }, () => createPilotLink({ auth: { profile_id: professional, clinic_id: clinic }, params: { patientId: patientB } }, 'telegram'));
@@ -246,9 +246,9 @@ test('consulta: solo citas propias y un fallo de lectura no se presenta como «s
 test('reserva: huecos reales, confirmación explícita y una sola cita aunque se repita CONFIRMAR', async () => withAgent(async ({ db, say, link }) => {
   link(patientA, 930);
   const date = weekday(7);
-  assert.match((await say('Reservar cita', 930)).reply.text, /¿Para qué día\?/);
+  assert.match((await say('Reservar cita', 930)).reply.text, /¿Qué día te vendría bien\?/);
   const slots = await say(date, 930);
-  assert.match(slots.reply.text, /Horarios libres/);
+  assert.match(slots.reply.text, /huecos libres/);
   assert.equal(db.tables.crm_citas.length, 0);
   const choice = await say(slots.reply.reply_markup.keyboard[0][0].text, 930);
   assert.match(choice.reply.text, /¿Confirmas la reserva\?/);
@@ -257,7 +257,7 @@ test('reserva: huecos reales, confirmación explícita y una sola cita aunque se
   assert.match(confirmed.reply.text, /Cita confirmada/);
   assert.equal(db.tables.crm_citas.length, 1);
   assert.equal(db.tables.crm_citas[0].canal_origen, 'telegram');
-  assert.match((await say('CONFIRMAR', 930)).reply.text, /No hay ninguna operación pendiente/);
+  assert.match((await say('CONFIRMAR', 930)).reply.text, /no hay nada pendiente de confirmar/);
   assert.equal(db.tables.crm_citas.length, 1);
 }));
 
@@ -276,7 +276,7 @@ test('selección caducada, fallo de lectura de huecos e intención ambigua no mu
   const date = weekday(9);
   await say(`${date} a las 10:00`, 950);
   db.tables.crm_mensajeria_vinculos[0].reserva.expires_at = new Date(Date.now() - 1000).toISOString();
-  assert.match((await say('CONFIRMAR', 950)).reply.text, /No hay ninguna operación pendiente/);
+  assert.match((await say('CONFIRMAR', 950)).reply.text, /no hay nada pendiente de confirmar/);
   assert.match((await say('cancelar', 950)).reply.text, /¿Quieres anular una cita ya registrada\?/);
   db.errors.crm_citas = { message: 'read failed' };
   const failed = await say(date, 950);
@@ -307,7 +307,7 @@ test('cambiar: nueva hora real, versión comprobada y sin cancelar antes de rese
   assert.match((await say('Cambiar cita', 970)).reply.text, /¿Para qué día la quieres\?/);
   await say(`${date} a las 16:00`, 970);
   assert.match(db.tables.crm_mensajeria_vinculos[0].reserva.selection.start_local, /16:00/);
-  assert.match((await say('CONFIRMAR', 970)).reply.text, /Tu cita ha cambiado al/);
+  assert.match((await say('CONFIRMAR', 970)).reply.text, /tu cita ha cambiado al/);
   assert.equal(row.estado, 'reprogramada');
   assert.equal(row.inicio_en.slice(0, 10), date);
   assert.equal(db.tables.crm_citas.length, 1);
@@ -399,7 +399,7 @@ test('agente: un festivo no ofrece huecos y propone otro día o la llamada', asy
   process.env.BOOKING_EXTRA_HOLIDAYS = date;
   try {
     const answer = await say(`Reservar ${date}`, 1100);
-    assert.match(answer.reply.text, /No quedan huecos libres.*La clínica no abre ese día/s);
+    assert.match(answer.reply.text, /no queda ningún hueco libre.*La clínica no abre ese día/s);
     assert.deepEqual(answer.reply.reply_markup.keyboard.flat().map(button => button.text), ['Otro día', 'Que me llamen']);
     assert.match((await say('Otro día', 1100)).reply.text, /¿Qué otro día te viene bien\?/);
   } finally { delete process.env.BOOKING_EXTRA_HOLIDAYS; }
@@ -467,11 +467,11 @@ test('teléfono compartido por varias fichas: se registra la llamada con el tel�
 }));
 
 test('sin verificar: bienvenida completa al saludar o la primera vez; después, solo el recordatorio del botón', async () => withAgent(async ({ say }) => {
-  assert.match((await say('Quiero una cita', 1600)).reply.text, /asistente automático de citas/);
+  assert.match((await say('Quiero una cita', 1600)).reply.text, /asistente virtual de citas/);
   const second = (await say('Carmen Prueba Ficticia', 1600)).reply;
   assert.match(second.text, /^Antes de nada necesito verificar tu teléfono/);
   assert.equal(second.reply_markup.keyboard[0][0].request_contact, true);
-  assert.match((await say('Hola', 1600)).reply.text, /asistente automático de citas/);
+  assert.match((await say('Hola', 1600)).reply.text, /asistente virtual de citas/);
 }));
 
 test('paciente nuevo: su cita queda pendiente de la clínica hasta revisar la ficha', async () => withAgent(async ({ db, say, post }) => {
@@ -491,7 +491,7 @@ test('paciente nuevo: su cita queda pendiente de la clínica hasta revisar la fi
   // Once the clinic reviews the record, the patient's bookings are confirmed directly.
   created.revisada_en = new Date().toISOString();
   await say(`Reservar ${date} a las 11:00`, 1600);
-  assert.match((await say('CONFIRMAR', 1600)).reply.text, /^Cita confirmada/);
+  assert.match((await say('CONFIRMAR', 1600)).reply.text, /^¡Listo! Cita confirmada/);
   assert.equal(db.tables.crm_citas[1].estado, 'confirmada');
 }));
 
@@ -550,7 +550,7 @@ test('IA híbrida: «la semana que viene por la tarde» va a los huecos de la ta
   link(patientA, 2000);
   const date = weekday(7);
   ai(fakeModel({ interpret: () => ({ intent: 'reservar', day: date, part_of_day: 'tarde', time: null, urgent: false, worried: false }),
-    compose: (facts) => ({ text: facts.mensaje_base.replace('Horarios libres', 'Claro, vamos a verlo. Estos son los huecos libres') }) }));
+    compose: (facts) => ({ text: facts.mensaje_base.replace('Estos son los huecos libres', 'Claro, vamos a verlo. Estos son los huecos libres') }) }));
   const result = await say('Quería venir la semana que viene por la tarde', 2000);
   assert.match(result.reply.text, /^Claro, vamos a verlo/);
   const hours = optionsOf(result).filter(option => /^\d\d:\d\d$/.test(option));
@@ -566,7 +566,7 @@ test('IA híbrida: una redacción que «confirma» sin cita creada o inventa una
   const date = weekday(8);
   ai(fakeModel({ compose: (facts) => ({ text: `¡Hecho! Tu cita queda confirmada. ${facts.mensaje_base}` }) }));
   const offered = await say(`${date} a las 10:00`, 2010);
-  assert.match(offered.reply.text, /^Hay un hueco/);
+  assert.match(offered.reply.text, /^Tengo libre/);
   assert.doesNotMatch(offered.reply.text, /confirmada/);
   ai(fakeModel({ interpret: () => ({ intent: 'reservar' }), compose: (facts) => ({ text: `${facts.mensaje_base} También tengo libre a las 11:30.` }) }));
   const affirmative = await say('Sí, venga, resérvamela', 2010);
@@ -591,7 +591,7 @@ test('IA híbrida: error, tiempo agotado o respuesta no válida dejan la respues
   ];
   for (const failure of failures) {
     ai(failure);
-    assert.match((await say('Me gustaría reservar cita', 2020)).reply.text, /^¿Para qué día\?/);
+    assert.match((await say('Me gustaría reservar cita', 2020)).reply.text, /^¿Qué día te vendría bien\?/);
   }
   assert.equal(db.tables.crm_citas.length, 0);
 })));
@@ -606,7 +606,7 @@ test('síntomas graves: se recomienda el 112 sin diagnosticar, con o sin IA, y s
     // Safety first: no booking flow is pushed and the model does not reword the notice.
     assert.ok(answer.startsWith(URGENT_NOTICE));
     assert.match(answer, /Cuando estés bien/);
-    assert.doesNotMatch(answer, /¿Para qué día|Vaya|😊/);
+    assert.doesNotMatch(answer, /¿Qué día te vendría bien\?|Vaya|😊/);
   });
   assert.ok((await say('me he desmayado y me duele la espalda', 2031)).reply.text.startsWith(URGENT_NOTICE));
 }));
@@ -631,10 +631,10 @@ test('cambiar con el día en el mismo mensaje: muestra los huecos sin volver a p
   const original = appointment(patientA, madridNoon(weekday(5)));
   const target = weekday(10);
   const offered = await say(`Quiero cambiar mi cita al ${target}`, 2050);
-  assert.match(offered.reply.text, /Horarios libres/);
+  assert.match(offered.reply.text, /huecos libres/);
   assert.match((await say(offered.reply.reply_markup.keyboard[0][0].text, 2050)).reply.text, /Vas a cambiar tu cita/);
   assert.match((await say('vale', 2050)).reply.text, /pulsa CONFIRMAR/);
-  assert.match((await say('CONFIRMAR', 2050)).reply.text, /Tu cita ha cambiado/);
+  assert.match((await say('CONFIRMAR', 2050)).reply.text, /tu cita ha cambiado/);
   assert.equal(db.tables.crm_citas.length, 1);
   assert.equal(db.tables.crm_citas[0].id, original.id);
   assert.equal(db.tables.crm_citas[0].inicio_en.slice(0, 10), target);
