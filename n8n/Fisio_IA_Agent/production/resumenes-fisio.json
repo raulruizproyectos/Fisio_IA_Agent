@@ -206,6 +206,49 @@
           "name": "FisioIAAgent"
         }
       }
+    },
+    {
+      "name": "Cada día 10:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        1000
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Ausencias de ayer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        1000
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://fisio-backend.b5xbaf.easypanel.host/api/cron/resumenes/no_show",
+        "options": {
+          "timeout": 60000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "R7toe2gVBNi7E4pH",
+          "name": "N8N_INTERNAL_HEADER_CREDENTIAL_ID"
+        }
+      }
     }
   ],
   "connections": {
@@ -302,6 +345,28 @@
         [
           {
             "node": "Mensaje al fisio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cada día 10:00": {
+      "main": [
+        [
+          {
+            "node": "Ausencias de ayer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ausencias de ayer": {
+      "main": [
+        [
+          {
+            "node": "Solo si hay algo que contar",
             "type": "main",
             "index": 0
           }

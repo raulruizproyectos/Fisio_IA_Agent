@@ -93,7 +93,7 @@ test('avisos del agente: webhooks con secreto, n8n solo transporta y responde si
 test('resúmenes al fisio: n8n solo programa y entrega lo que el backend decide enviar', () => {
   const flow = workflow('resumenes-fisio.json');
   const calls = flow.nodes.filter(n => n.type === 'n8n-nodes-base.httpRequest');
-  assert.deepEqual(calls.map(n => n.parameters.url.split('/').pop()).sort(), ['agenda_diaria', 'bonos_pagos', 'calendar_pendiente', 'reactivacion']);
+  assert.deepEqual(calls.map(n => n.parameters.url.split('/').pop()).sort(), ['agenda_diaria', 'bonos_pagos', 'calendar_pendiente', 'no_show', 'reactivacion']);
   for (const n of calls) {
     assert.match(n.parameters.url, /\/api\/cron\/resumenes\//);
     assert.equal(n.credentials.httpHeaderAuth.id, 'R7toe2gVBNi7E4pH');

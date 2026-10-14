@@ -1,7 +1,8 @@
 import { serviceSupabase } from './supabase.js';
 import { holidayName } from './clinic-calendar.js';
+import { buildNoShowDigest, loadNoShowFollowUps, yesterdayOf } from './no-show-followup.js';
 
-// Scheduled summaries for the physio (PROPUESTA_PRODUCTO.md §8, items 3, 4, 6 and 7).
+// Scheduled summaries for the physio (PROPUESTA_PRODUCTO.md §8, items 3, 4, 5, 6 and 7).
 // n8n only triggers them and delivers the text through the professional bot; what is included,
 // and whether anything is sent at all, is decided here. Only names and times: never clinical data.
 
@@ -11,7 +12,7 @@ const DAY = 86_400_000;
 const ACTIVE_APPOINTMENT = ['pendiente', 'confirmada', 'reprogramada'];
 const CLOSED_INVOICE = ['pagada', 'anulada'];
 
-export const DIGEST_KINDS = ['agenda_diaria', 'calendar_pendiente', 'bonos_pagos', 'reactivacion'];
+export const DIGEST_KINDS = ['agenda_diaria', 'calendar_pendiente', 'bonos_pagos', 'reactivacion', 'no_show'];
 export const CALENDAR_STALE_MINUTES = 15;
 export const REACTIVATION_AFTER_DAYS = 21;
 export const REACTIVATION_LOOKBACK_DAYS = 90;
@@ -157,6 +158,14 @@ export async function buildDigest(kind, { professionalId = process.env.MESSAGING
       .eq('crm_pacientes.clinica_id', clinicId).not('estado', 'in', `(${CLOSED_INVOICE.join(',')})`).order('fecha')));
     const count = bonos.length + invoices.length;
     return count ? reply(buildBonosPayments({ bonos, invoices }), count) : { send: false, reason: 'nada_pendiente', count: 0 };
+  }
+
+  if (kind === 'no_show') {
+    // Yesterday's absences; the physio decides one by one whether the patient gets the follow-up.
+    const day = yesterdayOf(madridDate(now));
+    const items = (await loadNoShowFollowUps({ profile, from: new Date(now - 3 * DAY).toISOString(), to: new Date(now).toISOString(), now }))
+      .filter(row => madridDate(Date.parse(row.inicio_en)) === day);
+    return items.length ? reply(buildNoShowDigest({ day, items }), items.length) : { send: false, reason: 'nada_pendiente', count: 0 };
   }
 
   // reactivacion

@@ -9,6 +9,7 @@ import { getApprovedExerciseReport, reportError, respondReportError } from '../l
 import { resolveAgentConversation } from './agent.js';
 import { publicErrorMessage } from '../lib/public-error.js';
 import { isClinicHoliday } from '../lib/clinic-calendar.js';
+import { FOLLOW_UP_BUTTON, sendNoShowFollowUp } from '../lib/no-show-followup.js';
 
 const router = Router();
 
@@ -2075,6 +2076,10 @@ router.post('/incoming', async (req, res, next) => {
     };
 
     if (agentMode === 'physio_reports') {
+      if (/^\/seguimiento_/i.test(text)) {
+        return await reply(await sendNoShowFollowUp({ chatId: chat_id, command: text,
+          send: (patientChatId, body) => sendTelegramMessage(patientChatId, body, 'patient_appointments', telegramReplyMarkup({ options: [FOLLOW_UP_BUTTON] })) }));
+      }
       if (!isCommand || text.toLowerCase() === '/start' || text.toLowerCase() === '/ayuda') {
         return await reply(getPhysioHelpMessage());
       }
