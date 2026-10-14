@@ -6231,7 +6231,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       ? 'El paciente ya tiene un chat Telegram vinculado. No genero un codigo nuevo para no romper ese enlace.'
       : normalizedStatus === 'pending'
         ? 'Comparte el comando o el enlace con el paciente para completar la vinculacion desde Telegram.'
-        : 'Genera una invitacion segura para que el paciente vincule su chat con /start.';
+        : 'El paciente se vincula solo: que abra el bot de citas y pulse «Compartir mi teléfono». Basta con que su teléfono esté bien en la ficha. La invitación con código queda solo como alternativa.';
 
     return `
       <div class="detail-block history-telegram-block" id="patientTelegramLinkBlock" tabindex="-1">

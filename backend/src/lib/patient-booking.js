@@ -182,6 +182,30 @@ async function linkWithCode(canal, chatId, code, config) {
 
 const lastNine = (digits) => String(digits || '').replace(/\D/g, '').slice(-9);
 
+// Links this chat to the record whose phone Telegram has just verified. Returns null when the clinic must handle it.
+async function linkVerifiedPatient({ patientId, chatId, digits }, config) {
+  let patient;
+  try {
+    patient = await getPilotPatient(patientId, config);
+    await requirePilotProfessional(patient, config);
+  } catch { return null; }
+  // An unfinished self-registration of this chat gives way to the existing record.
+  const cleanup = await serviceSupabase.from('crm_mensajeria_vinculos').delete()
+    .eq('clinica_id', config.clinicId).eq('canal', 'telegram').eq('chat_id', chatId).is('paciente_id', null);
+  if (cleanup.error) throw cleanup.error;
+  const existing = await serviceSupabase.from('crm_mensajeria_vinculos').select('id').eq('paciente_id', patient.id).eq('canal', 'telegram').maybeSingle();
+  if (existing.error) throw existing.error;
+  // The same verified number on a new Telegram account replaces the old chat; a pending invitation is no longer needed.
+  const fields = { chat_id: chatId, telefono: digits, consentimiento_en: new Date().toISOString(), baja_en: null, codigo_hash: null, codigo_expira_en: null, reserva: {} };
+  const saved = existing.data
+    ? await serviceSupabase.from('crm_mensajeria_vinculos').update(fields).eq('id', existing.data.id).select('id').maybeSingle()
+    : await serviceSupabase.from('crm_mensajeria_vinculos').insert({ clinica_id: config.clinicId, paciente_id: patient.id, canal: 'telegram', ...fields }).select('id').single();
+  if (saved.error?.code === '23505') return reply('Este chat ya está vinculado a otra ficha. Pide ayuda a la clínica para revisarlo.');
+  if (saved.error) throw saved.error;
+  if (!saved.data) return null;
+  return reply(`Hola, ${patient.nombre}. Te he reconocido por tu teléfono: ya puedes gestionar tus citas por aquí. ¿Qué quieres hacer?`, MENU);
+}
+
 async function registerNewPatient({ link, chatId, fromId, text, contact, clinic }, config) {
   const welcome = `Hola, soy el asistente automático de citas${clinic.nombre ? ` de ${clinic.nombre}` : ''}.`;
   if (contact) {
@@ -190,11 +214,17 @@ async function registerNewPatient({ link, chatId, fromId, text, contact, clinic 
     }
     const digits = String(contact.phone_number || '').replace(/\D/g, '');
     if (!/^[1-9]\d{7,14}$/.test(digits)) return reply('No he podido leer ese teléfono. Pide ayuda a la clínica.');
-    const patients = await supabase.from('crm_pacientes').select('id, telefono').eq('clinica_id', config.clinicId).not('telefono', 'is', null);
+    const patients = await supabase.from('crm_pacientes').select('id, telefono, activo').eq('clinica_id', config.clinicId).not('telefono', 'is', null);
     if (patients.error) throw patients.error;
-    // Knowing or even owning a number does not prove which clinical record is yours: existing records need the clinic's code.
-    if ((patients.data || []).some(row => lastNine(row.telefono).length === 9 && lastNine(row.telefono) === lastNine(digits))) {
-      // Plan B: the clinic calls this verified number and gives the personal code.
+    const matches = (patients.data || []).filter(row => lastNine(row.telefono).length === 9 && lastNine(row.telefono) === lastNine(digits));
+    // Telegram verified that this number belongs to this account: a single active record with it is linked directly.
+    if (matches.length === 1 && matches[0].activo) {
+      const linked = await linkVerifiedPatient({ patientId: matches[0].id, chatId, digits }, config);
+      if (linked) return linked;
+    }
+    // Shared, inactive or unassignable numbers stay with the clinic.
+    if (matches.length) {
+      // Plan B: the clinic calls this verified number and sorts it out.
       return storeCallback({ clinic, config, link: { canal: 'telegram', chat_id: chatId }, patient: null,
         intro: 'Este teléfono ya figura en la clínica. Para proteger tus datos, la vinculación se hace con un código personal que te dará la clínica.',
         registered: EXISTING_PHONE_REGISTERED, already: EXISTING_PHONE_WAITING, keyboard: [],
@@ -240,9 +270,9 @@ async function registerNewPatient({ link, chatId, fromId, text, contact, clinic 
   const seen = isGreeting(text) ? null : await serviceSupabase.from('crm_mensajeria_eventos').select('id').eq('clinica_id', config.clinicId)
     .eq('chat_id', String(chatId)).eq('estado', 'procesado').gte('created_at', new Date(Date.now() - 86_400_000).toISOString()).limit(1);
   if (!seen || seen.error || !seen.data?.length) {
-    return reply(`${welcome} Si ya eres paciente, envía VINCULAR y el código que te dé la clínica. Si es tu primera vez, pulsa «Compartir mi teléfono» para darte de alta: usaremos este chat solo para gestionar tus citas y enviarte recordatorios.`, [], { requestContact: true });
+    return reply(`${welcome} Para empezar, pulsa «Compartir mi teléfono»: si ya eres paciente te reconoceré por tu número y, si es tu primera vez, te daré de alta. Usaremos este chat solo para gestionar tus citas y enviarte recordatorios.`, [], { requestContact: true });
   }
-  return reply('Antes de nada necesito verificar tu teléfono: pulsa el botón «Compartir mi teléfono» de abajo (no hace falta escribirlo). Si ya eres paciente y tienes código, envía VINCULAR y el código.', [], { requestContact: true });
+  return reply('Antes de nada necesito verificar tu teléfono: pulsa el botón «Compartir mi teléfono» de abajo (no hace falta escribirlo).', [], { requestContact: true });
 }
 
 const EXISTING_PHONE_REGISTERED = 'Te llamaremos a este número para darte tu código. Cuando lo tengas, envíalo aquí así: VINCULAR y el código.';

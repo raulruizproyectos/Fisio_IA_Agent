@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-14 — Vinculación automática por teléfono verificado
+
+- Pacientes con ficha: «Compartir mi teléfono» en el bot basta si el número verificado por Telegram coincide con una sola ficha activa y asignada; ya no hace falta el código de la clínica (queda como alternativa). Número compartido, ficha inactiva o sin asignar ⇒ Plan B, sin vincular.
+- CRM: la invitación recién creada ya no desaparece al recargar la ficha (el servidor solo guarda su hash); se muestran enlace y caducidad. El texto del bloque Telegram explica que el paciente se vincula solo.
+
 ## 2026-10-13 — Capa de IA híbrida del agente de citas
 
 - `lib/booking-ai.js` (gpt-4o-mini, `BOOKING_AI_ENABLED`): interpreta el texto libre (intención, día tal como lo escribe, franja, hora, síntomas graves, preocupación) y redacta la respuesta final con la personalidad de `PROMPT_PERSONALIDAD_AGENTE_CITAS.md`. El backend sigue decidiendo huecos, reservas, 24 h, Plan B y estados.

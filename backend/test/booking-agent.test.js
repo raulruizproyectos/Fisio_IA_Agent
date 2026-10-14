@@ -189,13 +189,30 @@ test('paciente nuevo: contacto propio verificado, alta mínima y sin crear dos f
   assert.equal(db.tables.crm_pacientes.length, 3);
 }));
 
-test('teléfono de una ficha existente: no vincula ni crea ficha y pide el código de la clínica', async () => withAgent(async ({ db, post, appointment }) => {
+test('teléfono verificado de una sola ficha: se vincula solo, sin código ni ficha nueva', async () => withAgent(async ({ db, say, post, appointment }) => {
   appointment(patientA, Date.now() + 72 * HOUR);
+  // A pending clinic invitation and an unfinished self-registration of this chat give way to the verified match.
+  db.tables.crm_mensajeria_vinculos.push({ id: crypto.randomUUID(), clinica_id: clinic, paciente_id: patientA, canal: 'telegram', chat_id: null,
+    codigo_hash: 'pendiente', codigo_expira_en: new Date(Date.now() + HOUR).toISOString(), version: 0, reserva: {} });
+  await say('Hola', 901);
   const answer = await post({ chat: 901, from: 901, body: { contact: { phone_number: '34600111222', user_id: 901 } } });
-  assert.match(answer.reply.text, /código personal.*VINCULAR y el código/s);
-  assert.doesNotMatch(answer.reply.text, /Ana|cita del/);
-  assert.equal(db.tables.crm_mensajeria_vinculos.length, 0);
+  assert.match(answer.reply.text, /Hola, Ana\. Te he reconocido por tu teléfono/);
   assert.equal(db.tables.crm_pacientes.length, 2);
+  assert.equal(db.tables.crm_mensajeria_vinculos.length, 1);
+  const linked = db.tables.crm_mensajeria_vinculos[0];
+  assert.deepEqual([linked.paciente_id, linked.chat_id, linked.codigo_hash, linked.baja_en], [patientA, '901', null, null]);
+  assert.ok(linked.consentimiento_en);
+  assert.match((await say('Mis citas', 901)).reply.text, /Tus próximas citas:\n1\./);
+  assert.equal(db.tables.crm_solicitudes_contacto.length, 0);
+}));
+
+test('teléfono verificado de una ficha inactiva o sin asignar: no vincula y queda para la clínica', async () => withAgent(async ({ db, post }) => {
+  db.tables.crm_pacientes[0].activo = false;
+  await post({ chat: 902, from: 902, body: { contact: { phone_number: '34600111222', user_id: 902 } } });
+  db.tables.crm_pacientes[1].created_by_profile_id = '00000000-0000-4000-8000-000000000099';
+  await post({ chat: 903, from: 903, body: { contact: { phone_number: '34600333444', user_id: 903 } } });
+  assert.equal(db.tables.crm_mensajeria_vinculos.length, 0);
+  assert.deepEqual(db.tables.crm_solicitudes_contacto.map(row => [row.motivo, row.chat_id]), [['telefono_existente', '902'], ['telefono_existente', '903']]);
 }));
 
 test('código de la clínica: un solo uso, caduca y no se reutiliza desde otro chat', async () => withAgent(async ({ db, say }) => {
@@ -434,7 +451,8 @@ test('plan B: sin teléfono en la ficha se pide solo ese dato antes de registrar
   assert.deepEqual(db.tables.crm_solicitudes_contacto.map(row => [row.telefono, row.motivo]), [['+34611223344', 'peticion_paciente']]);
 }));
 
-test('teléfono ya registrado en otra ficha: se registra la llamada con el teléfono verificado', async () => withAgent(async ({ db, post }) => {
+test('teléfono compartido por varias fichas: se registra la llamada con el teléfono verificado', async () => withAgent(async ({ db, post }) => {
+  db.tables.crm_pacientes[1].telefono = '+34 600 111 222';
   const answer = await post({ chat: 1500, from: 1500, body: { contact: { phone_number: '34600111222', user_id: 1500 } } });
   assert.match(answer.reply.text, /código personal.*Te llamaremos a este número/s);
   assert.doesNotMatch(answer.reply.text, /confirmarte la cita/);
