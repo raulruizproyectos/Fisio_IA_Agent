@@ -68,6 +68,8 @@ import ConfigView from '../components/views/ConfigView.astro';
   import { backendBase, initializeProtectedApp, signOut } from '../lib/auth';
   import { upcomingAppointments } from '../lib/appointments';
   import { DEMO_PATIENTS, DEMO_APPOINTMENTS, DEMO_EXERCISES_CATALOG } from '../lib/demoData';
+  import { animateAppointmentChips, countUpOnce, staggerOnSectionOpen } from '../lib/motion';
+  import { renderIncomeChart } from '../lib/income-chart';
 
   const isDevMode = import.meta.env.DEV && typeof window !== 'undefined' && (
     new URLSearchParams(window.location.search).get('demo') === 'true' ||
@@ -434,6 +436,12 @@ import ConfigView from '../components/views/ConfigView.astro';
   const agendaCalendarMeta = document.getElementById('agendaCalendarMeta') as HTMLElement | null;
   const agendaMobileSummary = document.getElementById('agendaMobileSummary') as HTMLElement | null;
   const agendaMobileList = document.getElementById('agendaMobileList') as HTMLElement | null;
+  // Discreet motion (lib/motion.ts): Inicio counters once on load; Agenda and Pacientes lists stagger in.
+  countUpOnce(['metricPacientes', 'metricSesiones', 'metricInformes', 'metricIngresosMes'].map((id) => document.getElementById(id)));
+  staggerOnSectionOpen(document.getElementById('agendaCalendar'), '[data-cal-appt-id]');
+  staggerOnSectionOpen(agendaMobileList, '.agenda-mobile-item');
+  staggerOnSectionOpen(citasBody, 'tr');
+  staggerOnSectionOpen(pacientesBody, 'tbody tr, .patient-mobile-card');
   const appointmentDetailDrawer = document.getElementById('appointmentDetailDrawer') as HTMLElement | null;
   const appointmentDetailTitle = document.getElementById('appointmentDetailTitle') as HTMLElement | null;
   const appointmentDetailSubtitle = document.getElementById('appointmentDetailSubtitle') as HTMLElement | null;
@@ -979,16 +987,36 @@ import ConfigView from '../components/views/ConfigView.astro';
     assistantRail?.classList.toggle('assistant-has-patient', Boolean(selectedPatientId));
     assistantReportPriorityCard?.classList.toggle('is-linked', Boolean(selectedPatientId));
 
+    const avatar = assistantRail?.querySelector<HTMLElement>('.cp-patient-avatar');
     if (!selectedPatientId) {
       assistantPatientLabel.textContent = 'Sin paciente seleccionado';
-      assistantPatientMeta.textContent = 'Selecciona uno para vincular la conversacion, el plan y el PDF a su historial.';
+      assistantPatientMeta.textContent = 'Selecciona uno para vincular la conversación, el plan y el PDF a su historial.';
+      if (avatar) avatar.innerHTML = '<span class="material-symbols-rounded">person</span>';
       return;
     }
 
-    const selected = patientCatalog.find((patient) => patient.id === selectedPatientId);
+    const selected: any = patientCatalog.find((patient) => patient.id === selectedPatientId);
     const displayName = selected?.nombre_completo || selectedPatientName || `Paciente ${selectedPatientId}`;
     assistantPatientLabel.textContent = displayName;
-    assistantPatientMeta.textContent = 'Contexto cargado';
+    // Compact card: age · reason · EVA, only with real data.
+    const facts: string[] = [];
+    const birth = selected?.fecha_nacimiento ? new Date(selected.fecha_nacimiento) : null;
+    if (birth && !Number.isNaN(birth.getTime())) {
+      const now = new Date();
+      let age = now.getFullYear() - birth.getFullYear();
+      if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age -= 1;
+      if (age > 0) facts.push(`${age} años`);
+    }
+    const reason = String(selected?.patologia_principal || currentAssistantPatientBrief?.latestAilment || '').trim();
+    if (reason && reason !== 'Sin patología registrada') facts.push(reason);
+    const eva = selected?.eva_actual;
+    if (eva !== null && eva !== undefined && eva !== '' && !Number.isNaN(Number(eva))) facts.push(`EVA ${Number(eva)}/10`);
+    assistantPatientMeta.textContent = facts.length ? facts.join(' · ') : 'Sin datos clínicos resumidos';
+    assistantPatientMeta.title = assistantPatientMeta.textContent;
+    if (avatar) {
+      const initials = String(displayName).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+      avatar.textContent = initials || '·';
+    }
   };
 
   const trimAgentBriefText = (value: any, maxLength = 118) => {
@@ -5992,6 +6020,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
+    const previousStatus = String(findAgendaAppointmentById(appointmentId)?.estado || '');
     try {
       const res = await fetchJson(`${BACKEND_BASE}/api/profesional/appointments/${appointmentId}`, {
         method: 'PATCH',
@@ -6000,7 +6029,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       });
       if (res.error) throw new Error(res.error);
       if (res.data?.calendar_sync_pending) showToast('Cambio guardado en CRM. Calendar requiere comprobación.', 'warning');
-      loadCitas();
+      await loadCitas();
+      animateAppointmentChips(appointmentId, previousStatus, newStatus);
     } catch (err: any) {
       console.error('Error updating appointment:', err);
       showToast(err?.message || 'No se pudo modificar la cita.', 'error');
@@ -7163,6 +7193,39 @@ import ConfigView from '../components/views/ConfigView.astro';
     }).join('');
   };
 
+  // Ingresos por mes (Finanzas): real monthly totals for the selected year, or an explicit empty/error state.
+  let financeIncomeRequest = 0;
+  const loadFinanceIncomeChart = async (anio: string) => {
+    const plot = document.getElementById('financeIncomePlot');
+    if (!plot) return;
+    const yearLabel = document.getElementById('financeIncomeYear');
+    if (yearLabel) yearLabel.textContent = anio;
+    const request = ++financeIncomeRequest;
+    renderIncomeChart(plot, { kind: 'loading' });
+    try {
+      const resumen = await fetchJson(`${BACKEND_BASE}/api/pagos/resumen?anio=${encodeURIComponent(anio)}`);
+      if (request !== financeIncomeRequest) return;
+      if (resumen?.unavailable) { renderIncomeChart(plot, { kind: 'error' }); return; }
+      const totals = new Array(12).fill(0);
+      for (const row of (resumen?.resumen || [])) {
+        const idx = Number(row?.mes) - 1;
+        if (idx >= 0 && idx < 12) totals[idx] = Number(row?.total || 0);
+      }
+      const now = new Date();
+      renderIncomeChart(plot, { kind: 'data', year: Number(anio), totals, currentMonth: Number(anio) === now.getFullYear() ? now.getMonth() + 1 : null });
+    } catch {
+      if (request === financeIncomeRequest) renderIncomeChart(plot, { kind: 'error' });
+    }
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-income-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.getAttribute('data-income-mode') || 'bars';
+      document.getElementById('financeIncomePlot')?.setAttribute('data-mode', mode);
+      document.querySelectorAll('[data-income-mode]').forEach((other) => other.setAttribute('aria-pressed', String(other === button)));
+    });
+  });
+
   const loadPagos = async () => {
     if (!pagosBody) return;
     pagosUnavailableMessage = '';
@@ -7172,6 +7235,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     renderPagosMobile([]);
     setTableState(pagosBody, 5, 'sync', 'Cargando pagos...', true);
     const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
+    void loadFinanceIncomeChart(anio);
     const mes = pagosMesFilter?.value || '';
     try {
       const query = new URLSearchParams({ anio });

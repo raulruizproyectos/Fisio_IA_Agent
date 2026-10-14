@@ -432,3 +432,133 @@
     align-items: flex-start;
   }
 }
+
+/* === INGRESOS POR MES (lib/income-chart.ts) ===
+   Bars ⇄ line: bars fold down staggered (280 ms) while the line draws (360 ms) and points fade in. */
+.finance-income-card {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #dce3ed;
+  border-radius: 14px;
+}
+
+.finance-income-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.finance-income-head h2 {
+  margin: 0.125rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #142234;
+}
+
+.finance-income-switch {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid #dce3ed;
+  border-radius: 10px;
+  background: #f4f7fb;
+}
+
+.finance-income-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0 0.875rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #536375;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.finance-income-switch button .material-symbols-rounded { font-size: 18px; }
+.finance-income-switch button:hover { color: #142234; }
+.finance-income-switch button[aria-pressed="true"] {
+  background: #ffffff;
+  color: #175dd0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 0 0 1px #dce3ed;
+}
+.finance-income-switch button:focus-visible { outline: 2px solid #175dd0; outline-offset: 2px; }
+
+.finance-income-plot { min-height: 12rem; }
+.finance-income-plot .fi-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.finance-income-plot .fi-grid { stroke: #e8edf4; stroke-width: 1; }
+.finance-income-plot .fi-axis,
+.finance-income-plot .fi-month { fill: #8a97a8; font-size: 11px; font-family: inherit; }
+.finance-income-plot .fi-month.is-current { fill: #175dd0; font-weight: 700; }
+
+.finance-income-plot .fi-bar {
+  fill: #c9dafb;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 280ms ease;
+  transition-delay: calc(var(--i, 0) * 18ms);
+}
+.finance-income-plot .fi-bar.is-current { fill: #175dd0; }
+
+.finance-income-plot .fi-line {
+  fill: none;
+  stroke: #175dd0;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.finance-income-plot .fi-dot {
+  fill: #ffffff;
+  stroke: #175dd0;
+  stroke-width: 2;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.finance-income-plot .fi-dot.is-current { fill: #175dd0; }
+
+.finance-income-plot[data-mode="line"] .fi-bar { transform: scaleY(0); opacity: 0; }
+.finance-income-plot[data-mode="line"] .fi-line { stroke-dashoffset: 0; transition-delay: 120ms; }
+.finance-income-plot[data-mode="line"] .fi-dot { opacity: 1; transition-delay: calc(160ms + var(--i, 0) * 12ms); }
+.finance-income-plot[data-mode="bars"] .fi-bar { transition-delay: calc(120ms + var(--i, 0) * 18ms); }
+
+.finance-income-plot .fi-total { margin: 0.25rem 0 0; font-size: 0.8125rem; color: #536375; }
+.finance-income-plot .fi-total strong { color: #142234; }
+
+.finance-income-plot .fi-empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #536375;
+}
+.finance-income-plot .fi-empty .material-symbols-rounded { font-size: 28px; color: #8a97a8; }
+.finance-income-plot .fi-empty strong { color: #142234; font-size: 0.9375rem; }
+.finance-income-plot .fi-empty small { font-size: 0.8125rem; }
+
+@media (max-width: 600px) {
+  .finance-income-card { padding: 1rem; }
+  .finance-income-switch { width: 100%; }
+  .finance-income-switch button { flex: 1; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finance-income-plot .fi-bar,
+  .finance-income-plot .fi-line,
+  .finance-income-plot .fi-dot { transition: none !important; }
+}

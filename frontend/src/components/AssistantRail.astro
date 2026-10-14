@@ -36,12 +36,26 @@
     <main class="cp-main" aria-label="Conversación con el copiloto">
 
       <section class="cp-setup" aria-label="Paciente y modo de trabajo">
-        <div class="cp-select">
-          <span class="material-symbols-rounded cp-select-icon" aria-hidden="true">person_search</span>
-          <select id="chatPatientSelect" aria-label="Paciente del informe">
-            <option value="">Selecciona paciente para informe...</option>
-          </select>
-          <span class="material-symbols-rounded cp-select-chevron" aria-hidden="true">expand_more</span>
+        <!-- Compact patient card: label/meta filled by index.astro; the select shows when there is no patient or on «Cambiar». -->
+        <div class="cp-patient">
+          <span class="cp-patient-avatar" aria-hidden="true"><span class="material-symbols-rounded">person</span></span>
+          <div class="cp-patient-text">
+            <strong id="assistantPatientLabel">Sin paciente seleccionado</strong>
+            <span id="assistantPatientMeta">Selecciona uno para vincular la conversación.</span>
+          </div>
+          <div class="cp-select">
+            <span class="material-symbols-rounded cp-select-icon" aria-hidden="true">person_search</span>
+            <select id="chatPatientSelect" aria-label="Paciente del informe">
+              <option value="">Selecciona paciente para informe...</option>
+            </select>
+            <span class="material-symbols-rounded cp-select-chevron" aria-hidden="true">expand_more</span>
+          </div>
+          <div class="cp-patient-actions">
+            <button type="button" class="cp-link-btn cp-patient-change">Cambiar</button>
+            <button type="button" class="cp-link-btn cp-patient-context" aria-expanded="false" aria-controls="assistantContextPanel">
+              Ver contexto<span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+            </button>
+          </div>
         </div>
         <div class="cp-segmented" id="assistantModeSwitch" role="group" aria-label="Modo de trabajo del copiloto">
           <button type="button" class="is-active" data-assistant-mode="new-plan" aria-pressed="true">
@@ -56,16 +70,7 @@
         </div>
       </section>
 
-      <details class="cp-context">
-        <summary class="cp-context-summary">
-          <span class="material-symbols-rounded cp-context-icon" aria-hidden="true">badge</span>
-          <span class="cp-context-text">
-            <strong id="assistantPatientLabel">Sin paciente seleccionado</strong>
-            <span id="assistantPatientMeta">Selecciona uno para vincular la conversación.</span>
-          </span>
-          <span class="cp-context-toggle">Contexto<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></span>
-        </summary>
-
+      <div class="cp-context" id="assistantContextPanel" hidden>
         <div class="cp-context-body" aria-label="Contexto clínico del paciente">
           <div class="cp-brief" id="assistantPatientBrief" aria-live="polite"></div>
 
@@ -120,7 +125,7 @@
             <p class="cp-diagnostic-summary" id="assistantDiagnosticSummary">Rellena 2 o 3 campos para una propuesta más precisa.</p>
           </div>
         </div>
-      </details>
+      </div>
 
       <div class="assistant-dialog-surface">
         <div class="assistant-dialog-scroll">
@@ -285,8 +290,44 @@
     }
   };
 
+  // «Button → panel»: opened from the top bar button, the panel grows out of the button's shape
+  // (clip-path, 340 ms) and its content fades in. Desktop only; off with reduced motion.
+  let morphFromToggle = false;
+  let wasOpen = false;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  assistantRailToggle?.addEventListener('click', () => { morphFromToggle = true; }, { capture: true });
+
+  const morphFromButton = () => {
+    if (!assistantRail || !assistantRailToggle || reduceMotion.matches || window.innerWidth < 1024) return;
+    if (typeof assistantRail.animate !== 'function') return;
+    // Skip the slide before any layout read, so the transition never starts.
+    assistantRail.classList.add('cp-morphing');
+    const b = assistantRailToggle.getBoundingClientRect();
+    const p = assistantRail.getBoundingClientRect();
+    if (!b.width || !p.width) { assistantRail.classList.remove('cp-morphing'); return; }
+    const top = Math.max(0, b.top - p.top);
+    const left = Math.max(0, b.left - p.left);
+    const right = Math.max(0, p.right - b.right);
+    const bottom = Math.max(0, p.bottom - b.bottom);
+    const morph = assistantRail.animate(
+      [
+        { clipPath: `inset(${top}px ${right}px ${bottom}px ${left}px round 999px)` },
+        { clipPath: 'inset(0px 0px 0px 0px round 0px)' },
+      ],
+      { duration: 340, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+    );
+    assistantRail.querySelectorAll<HTMLElement>(':scope > .cp-header, :scope > .assistant-care-stepper, :scope > .cp-body').forEach((part) => {
+      part.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, delay: 140, easing: 'ease-out', fill: 'backwards' });
+    });
+    const done = () => assistantRail.classList.remove('cp-morphing');
+    morph.finished.then(done, done);
+  };
+
   assistantState.subscribe((state) => {
     updateRailStyles(state.isOpen);
+    if (state.isOpen && !wasOpen && morphFromToggle) morphFromButton();
+    morphFromToggle = false;
+    wasOpen = state.isOpen;
   });
 
   const closeAssistant = () => {
@@ -312,6 +353,29 @@
   document.addEventListener('fisio:open-assistant', openAssistant);
   document.addEventListener('fisio:close-assistant', closeAssistant);
   document.addEventListener('fisio:toggle-assistant', toggleAssistant);
+
+  // Compact patient card: «Cambiar» reveals the selector, «Ver contexto» unfolds the case context.
+  const patientCard = assistantRail?.querySelector<HTMLElement>('.cp-patient');
+  const patientSelect = document.getElementById('chatPatientSelect') as HTMLSelectElement | null;
+  const contextPanel = document.getElementById('assistantContextPanel');
+  const contextToggle = assistantRail?.querySelector<HTMLButtonElement>('.cp-patient-context');
+  const stopChanging = () => patientCard?.classList.remove('is-changing');
+
+  assistantRail?.querySelector('.cp-patient-change')?.addEventListener('click', () => {
+    patientCard?.classList.add('is-changing');
+    patientSelect?.focus();
+    try { (patientSelect as any)?.showPicker?.(); } catch { /* not supported: focus is enough */ }
+  });
+  patientSelect?.addEventListener('change', stopChanging);
+  patientSelect?.addEventListener('blur', () => window.setTimeout(stopChanging, 120));
+  patientSelect?.addEventListener('keydown', (event) => { if (event.key === 'Escape') stopChanging(); });
+
+  contextToggle?.addEventListener('click', () => {
+    if (!contextPanel) return;
+    const willOpen = contextPanel.hidden;
+    contextPanel.hidden = !willOpen;
+    contextToggle.setAttribute('aria-expanded', String(willOpen));
+  });
 
   // Resize listener to maintain styles if opened
   window.addEventListener('resize', () => {

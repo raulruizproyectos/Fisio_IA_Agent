@@ -358,6 +358,13 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 .status-chip.caducado, .status-chip.agotado {
   background: #eef2f7 !important; border-color: #dce3ed !important; color: #536375 !important;
 }
+/* State change (confirm/complete): lib/motion.ts swaps old → new class under this one. */
+.status-chip.chip-status-change {
+  transition: background-color 320ms ease, border-color 320ms ease, color 320ms ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-chip.chip-status-change { transition: none !important; }
+}
 
 /* Page headers (14-oct): Finanzas and Ajustes share the Pacientes kicker and breathing room. */
 .view-kicker {

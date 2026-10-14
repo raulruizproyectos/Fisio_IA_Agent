@@ -84,6 +84,25 @@
             </article>
           </section>
 
+          <!-- 3b. INGRESOS POR MES (lib/income-chart.ts): real totals of the selected year, bars ⇄ line -->
+          <section class="card finance-income-card" aria-labelledby="financeIncomeTitle">
+            <header class="finance-income-head">
+              <div>
+                <span class="overview-label">Ingresos por mes</span>
+                <h2 id="financeIncomeTitle">Año <span id="financeIncomeYear">—</span></h2>
+              </div>
+              <div class="finance-income-switch" role="group" aria-label="Tipo de gráfico">
+                <button type="button" data-income-mode="bars" aria-pressed="true">
+                  <span class="material-symbols-rounded" aria-hidden="true">bar_chart</span> Barras
+                </button>
+                <button type="button" data-income-mode="line" aria-pressed="false">
+                  <span class="material-symbols-rounded" aria-hidden="true">show_chart</span> Línea
+                </button>
+              </div>
+            </header>
+            <div class="finance-income-plot" id="financeIncomePlot" data-mode="bars" aria-live="polite"></div>
+          </section>
+
           <!-- 4. FILTROS Y RESUMEN COMPACTO -->
           <div class="pagos-toolbar">
             <div class="pagos-summary-row">
