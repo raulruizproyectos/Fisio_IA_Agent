@@ -354,6 +354,8 @@ const intentOf = (t) => {
   if (/\b(anular|cancelar (la |mi |una )?cita|desconvocar)\b/.test(t)) return 'cancel';
   if (/\b(cambiar|mover|reprogramar|aplazar|adelantar|retrasar)\b/.test(t)) return 'reschedule';
   if (/\b(reservar|pedir cita|nueva cita|quiero (una )?cita|reserva)\b/.test(t)) return 'book';
+  // Asking for availability is booking, not a question about one's own appointments.
+  if (/\b(teneis|tienes|tienen|hay|queda|quedan) (algo|algun hueco|hueco|huecos|sitio|disponibilidad)\b|\bdisponibilidad\b/.test(t)) return 'book';
   return null;
 };
 
@@ -364,7 +366,11 @@ export async function respondToPatientBooking(link, text, config, clinic = null,
   const patient = await getPilotPatient(link.paciente_id, config);
   const normalized = normalizeAppointmentText(text).trim();
   const keywordIntent = intentOf(normalized);
-  const intent = keywordIntent || hint?.intent || null;
+  // While a day is being asked for, a message that gives one ("ya te he dicho que el jueves por la tarde")
+  // continues that flow, whatever the model read in it; only keywords can switch to another action.
+  const askingDay = link.reserva?.awaiting === 'date' && Date.parse(link.reserva?.expires_at) > Date.now();
+  const givesDay = Boolean(hint?.date || hint?.partOfDay);
+  const intent = keywordIntent || (askingDay && givesDay ? null : hint?.intent) || null;
   let version = link.version;
   const save = async (reserva) => {
     const result = await serviceSupabase.from('crm_mensajeria_vinculos').update({ reserva, version: version + 1 })

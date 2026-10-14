@@ -115,3 +115,12 @@ test('el nombre del paciente no se repite mientras siga en las últimas respuest
   }
   assert.deepEqual(names, [null, 'Ana', null]);
 });
+
+test('limpieza de rellenos: «Entiendo tu solicitud» y «Actualmente» fuera, sin tocar los datos', async () => {
+  const { tidyComposition } = await import('../src/lib/booking-ai.js');
+  assert.equal(tidyComposition('Entiendo tu solicitud. ¿Confirmas que quieres anular tu cita del viernes 16 de octubre a las 11:00?'),
+    '¿Confirmas que quieres anular tu cita del viernes 16 de octubre a las 11:00?');
+  assert.equal(tidyComposition('Hola. Actualmente no tienes ninguna cita próxima. ¿Quieres que busquemos una?'), 'Hola. No tienes ninguna cita próxima. ¿Quieres que busquemos una?');
+  assert.equal(tidyComposition('Claro, puedo ayudarte con eso. ¿Qué día te vendría bien?'), '¿Qué día te vendría bien?');
+  assert.equal(tidyComposition('Vale, ¿qué día te va bien?'), 'Vale, ¿qué día te va bien?');
+});

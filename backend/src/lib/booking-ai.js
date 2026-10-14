@@ -37,7 +37,7 @@ export function shouldInterpret(text) {
 
 const INTERPRET_PROMPT = `Clasificas mensajes de pacientes de una clínica de fisioterapia que escriben a su asistente de citas.
 Devuelve solo JSON: {"intent": "reservar|consultar|cambiar|anular|hablar_clinica|saludo|agradecimiento|otro", "day": "texto o null", "part_of_day": "manana|tarde|null", "time": "HH:MM o null", "urgent": true|false, "worried": true|false}.
-- intent: lo que pide. "reservar" incluye pedir cita, hora o que le vean o atiendan. "consultar" = ver las citas que ya tiene. "cambiar" = mover una cita que ya tiene. "hablar_clinica" = solo si pide expresamente hablar con la clínica o con Carla o que le llamen. Si no está claro, "otro".
+- intent: lo que pide. "reservar" incluye pedir cita, hora o que le vean o atiendan, y preguntar si hay hueco o disponibilidad ("¿tenéis algo el jueves?", "¿hay sitio mañana?"). Si solo da o repite un día u hora ("el jueves por la tarde", "ya te he dicho que el lunes"), es "reservar". "consultar" = solo si pregunta por SUS citas ya reservadas. "cambiar" = mover una cita que ya tiene. "hablar_clinica" = solo si pide expresamente hablar con la clínica o con Carla o que le llamen. Si no está claro, "otro".
 - day: el día que quiere para la cita (en un cambio, el día NUEVO, no el de la cita que ya tiene), copiado tal como lo escribe, sin calcular fechas: "el lunes", "mañana", "pasado mañana", "el 22 de octubre". null si no lo dice.
 - part_of_day: "manana" o "tarde" solo si lo dice. time: solo si dice una hora concreta, en formato 24 h.
 - urgent: true si describe síntomas potencialmente graves (dolor en el pecho, dificultad para respirar, pérdida brusca de fuerza o sensibilidad, pérdida de control de esfínteres, desmayo, golpe fuerte o posible fractura, fiebre alta con dolor de espalda). No diagnostiques.
@@ -92,6 +92,7 @@ Estilo:
 - Tono "nuevo": elegante, profesional y acogedor, sin familiaridades ni emojis. Tono "habitual": cercano, simpático y espontáneo; como mucho un emoji ocasional, y ninguno si el paciente está preocupado o tiene dolor.
 - Responde primero a lo que acaba de decir el paciente y después da el mensaje base. Si saluda o pregunta "¿qué tal?", devuelve el saludo con naturalidad. Si se disculpa, agradece o comenta algo, reconócelo en pocas palabras. Si pregunta algo que el mensaje base no responde (precio, dirección, tratamientos, aparcamiento…), di con amabilidad que eso se lo puede aclarar la clínica, sin inventar nada, y sigue con el mensaje base.
 - Mira tus_respuestas_anteriores: no vuelvas a saludar si ya lo hiciste, no repitas las mismas aperturas ("¡Perfecto!", "¡Genial!", "Claro") ni las mismas frases. Varía.
+- No tranquilices ("No te preocupes", "aquí estoy para ayudarte") si el paciente no se ha disculpado ni ha mostrado preocupación.
 - Si el paciente expresa dolor o preocupación, muestra comprensión breve y sencilla, sin dramatizar. Anular o cambiar una cita es algo normal: no lo lamentes salvo que el paciente exprese un problema.
 - Usa el nombre del paciente solo si te lo dan (nombre_paciente) y como mucho una vez. No uses "hoy", "mañana" ni días de la semana que no estén en el mensaje base. No hagas preguntas que el mensaje base no haga.
 - Frases cortas y naturales, como en un chat. Sin rellenos ("Entiendo tu solicitud", "Puedo ayudarte con eso", "Claro, puedo ayudarte"). Evita fórmulas de formulario: "Has seleccionado", "Actualmente", "operación", "registradas", "Por favor, elija". Conserva las listas numeradas del mensaje base.
@@ -103,6 +104,12 @@ Ejemplos (no los copies literalmente):
 Devuelve solo JSON: {"text": "..."}`;
 
 const EMOJI = /[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu;
+// Fillers the model keeps adding despite the prompt; removing them never changes a fact.
+export const tidyComposition = (text) => String(text)
+  .replace(/(^|[.!?]\s+)(?:entiendo tu (?:solicitud|petición)|claro,? puedo ayudarte con eso)[.,]\s*/giu, '$1')
+  .replace(/\bactualmente,?\s+/giu, '')
+  .replace(/(^|[.!?]\s+)([¡¿]?)(\p{Ll})/gu, (_match, before, mark, letter) => before + mark + letter.toUpperCase())
+  .trim();
 const CLAIM = /\b(confirmad[ao]s?|reservad[ao]s?|registrad[ao]s?|anulad[ao]s?|cancelad[ao]s?|cambiad[ao]s?|modificad[ao]s?|agendad[ao]s?|apuntad[ao]s?|programad[ao]s?|guardad[ao]s?|he (?:reservado|confirmado|anulado|cancelado|cambiado|registrado|apuntado|guardado|modificado)|hemos (?:reservado|confirmado|anulado|cancelado|cambiado|registrado|apuntado|avisado)|llamaremos|llamara|llamaran|te llamamos|avisad[ao]s?|avisaremos|hemos avisado|te confirmaremos|confirmaremos)\b/g;
 const CLINICAL = /\b(diagnostic\w*|tendinitis|hernia|contractura|ciatica|lumbalgia|esguince|ibuprofeno|paracetamol|antiinflamatori\w*|analgesic\w*|nolotil|enantyum|reposo absoluto|aplica(?:te)? (?:hielo|calor)|te curar\w*|te pondras bien|seguro que no es nada)\b/;
 const HUMAN = /\b(soy (?:carla|una persona|humano|humana|la fisioterapeuta|la recepcionista))\b/;
@@ -146,6 +153,7 @@ export async function composeReply({ base, tone, worried = false, firstName = nu
   } catch (error) { warn('redacción', error.name === 'TimeoutError' ? 'timeout' : error.message); return null; }
   let text = typeof raw?.text === 'string' ? raw.text.trim() : '';
   if (tone !== 'habitual' || worried) text = text.replace(EMOJI, '').replace(/[ \t]{2,}/g, ' ').trim();
+  text = tidyComposition(text);
   const reason = rejectComposition(base, text);
   if (reason) { warn('redacción', reason); return null; }
   return text;

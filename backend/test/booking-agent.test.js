@@ -642,7 +642,21 @@ test('cambiar con el día en el mismo mensaje: muestra los huecos sin volver a p
 
 test('IA híbrida: los botones y CONFIRMAR reciben el texto del backend; solo el texto libre se redacta', async () => withAi(() => withAgent(async ({ say, link, ai }) => {
   link(patientA, 2100);
-  ai(fakeModel({ interpret: () => ({ intent: 'reservar' }), compose: (facts) => ({ text: `Entiendo tu solicitud. ${facts.mensaje_base}` }) }));
+  ai(fakeModel({ interpret: () => ({ intent: 'reservar' }), compose: (facts) => ({ text: `Claro, vamos a verlo. ${facts.mensaje_base}` }) }));
   assert.equal((await say('Reservar cita', 2100)).reply.text, '¿Qué día te vendría bien? Puedes decirme, por ejemplo, «mañana» o «el lunes».');
-  assert.match((await say('Quiero pedir cita para la semana que viene', 2100)).reply.text, /^Entiendo tu solicitud\./);
+  assert.match((await say('Quiero pedir cita para la semana que viene', 2100)).reply.text, /^Claro, vamos a verlo\./);
+})));
+
+test('conversación real: «¿tenéis algo el jueves por la tarde?» es reservar y repetir el día no cambia de tema', async () => withAi(() => withAgent(async ({ db, say, link, ai }) => {
+  link(patientA, 2200);
+  const date = weekday(7);
+  // The model misreads both messages; keywords and the flow in progress keep the booking on track.
+  ai(fakeModel({ interpret: () => ({ intent: 'consultar', day: date, part_of_day: 'tarde' }) }));
+  const first = await say('hola, ¿tenéis algo el jueves por la tarde?', 2200);
+  assert.match(first.reply.text, /huecos libres del .* por la tarde/);
+  await say('Reservar cita', 2200);
+  ai(fakeModel({ interpret: () => ({ intent: 'cambiar', day: date, part_of_day: 'tarde' }) }));
+  const repeated = await say('ya te he dicho que el jueves por la tarde', 2200);
+  assert.match(repeated.reply.text, /huecos libres del .* por la tarde/);
+  assert.equal(db.tables.crm_citas.length, 0);
 })));
