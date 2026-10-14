@@ -1,6 +1,13 @@
 # Project Status
 
-## Estado vigente — 2026-10-13: agente de citas ACTIVADO en producción (pasos 1–9 del checklist)
+## Estado vigente — 2026-10-14: revisión de diseño del CRM (parte 1 desplegada)
+
+- **Parte 1 — textos ajustados** (`f1ccd18`, desplegado en `fisio-frontend`, verificado en la URL pública): auditoría en demo a 1280/375 px (capturas + detector de cortes/desbordes, herramientas en `tmp/design-audit/`, ignorado por git). Tildes en ~300 textos visibles (sin tocar identificadores ni valores `data-*`; contratos DOM idénticos a HEAD). `statusText()` da etiqueta humana a los estados (`no_show` → «No asistió») y `precision-blue.css` fija una paleta semántica única de chips. Agenda: las citas en la pausa 13–15 h o fuera de horario ya no desaparecen (fila «Pausa»/«Fuera de horario»). Inicio: lista de trabajo legible, nombres sin «Dr.», métricas alineadas, importes `fmtEuro` («110,00 €»). Pacientes: email con elipsis y «Abrir ficha» sin cortar. Ajustes móvil sin palabras partidas. Check/build y pruebas de `scripts/test-*.mjs` en verde.
+- **Decisión de Raúl (14-oct) — siguiente microtarea:** copiloto solo con la mejora **A · ficha compacta del paciente** (un bloque con nombre, edad, motivo y EVA + «Cambiar» y «Ver contexto»; quita la fila duplicada «Contexto cargado»); B y C descartadas por ahora. Movimiento (los 4): botón «Copiloto Clínico» que se despliega en panel (efecto 01 de Charlie Hills), contadores animados en Inicio, transición del chip de estado al confirmar/completar + listas escalonadas en Agenda/Pacientes (efecto 02), gráfico de ingresos barras→línea en Finanzas. Todo 200–400 ms, sin librerías, `prefers-reduced-motion` desactiva, sin cambiar IDs/`data-*`.
+- **Hallazgos sin tocar (para más adelante):** «Semana clínica» de Inicio es una lista plana poco jerárquica; tira inferior «Sesiones mes / Motor clínico / Gráfico anual» de poco valor; acciones duplicadas en Finanzas (cabecera + tarjetas); «No pude comprobar el readiness» en Ajustes es jerga.
+- **Agente de citas:** EN PAUSA hasta que Raúl lo pruebe a fondo; no tocarlo.
+
+## Estado anterior — 2026-10-13: agente de citas ACTIVADO en producción (pasos 1–9 del checklist)
 
 - **P0 cerrado:** el workflow n8n «Fisio IA | Bot paciente» (`f1PcLN8s9YiOXj3w`, mismo ID y disparador) ahora reenvía a `/api/telegram/pilot-incoming` con la credencial «Fisio Telegram Agente Citas». Webhook de Telegram → n8n sin errores ni pendientes; `pilot-incoming` sin secreto responde 401.
 - 1 Copia lógica de `public` (35 tablas, 787 filas) en `.private-backups/supabase-2026-10-13T11-43-06-605Z/` (Supabase Free no tiene copias propias).
