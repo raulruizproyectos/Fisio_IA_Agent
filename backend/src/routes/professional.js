@@ -1442,33 +1442,53 @@ async function fetchHolidayCalendarBusyEvents(timeMin, timeMax) {
   }
 }
 
-async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax) {
-  try {
-    const res = await fetch(W5_CALENDAR_READER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(N8N_WEBHOOK_SECRET ? { 'X-Webhook-Secret': N8N_WEBHOOK_SECRET } : {}),
-      },
-      body: JSON.stringify({
-        time_min: timeMin,
-        time_max: timeMax,
-        calendar_id: GOOGLE_CALENDAR_ID,
-        calendar_ids: GOOGLE_CALENDAR_READ_IDS,
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const text = await res.text();
-    if (!text || !text.trim()) return null;
-    return JSON.parse(text);
-  } catch {
-    return null;
+async function fetchCalendarReaderPayloadViaW5(timeMin, timeMax, { retryTransient = false } = {}) {
+  const attempts = retryTransient ? 2 : 1;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let reason, retryable = false;
+    try {
+      const res = await fetch(W5_CALENDAR_READER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(N8N_WEBHOOK_SECRET ? { 'X-Webhook-Secret': N8N_WEBHOOK_SECRET } : {}),
+        },
+        body: JSON.stringify({
+          time_min: timeMin,
+          time_max: timeMax,
+          calendar_id: GOOGLE_CALENDAR_ID,
+          calendar_ids: GOOGLE_CALENDAR_READ_IDS,
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) {
+        reason = `http_${res.status}`;
+        retryable = res.status === 408 || res.status >= 500;
+        await res.body?.cancel().catch(() => {});
+      } else {
+        const text = await res.text();
+        if (!text.trim()) reason = 'empty_response';
+        else {
+          const data = JSON.parse(text);
+          if (retryTransient && !Array.isArray(data?.events)) reason = 'invalid_response';
+          else return data;
+        }
+      }
+    } catch (error) {
+      reason = ['TimeoutError', 'AbortError', 'SyntaxError'].includes(error?.name) ? error.name : 'network_error';
+      retryable = reason !== 'SyntaxError';
+    }
+    const retrying = retryable && attempt < attempts;
+    console.warn(JSON.stringify({ event: 'calendar_reader_failure', reason, attempt, retrying }));
+    if (!retrying) return null;
+    // Only the sync read retries; reservations and Calendar writes keep their existing behavior.
+    await new Promise(resolve => setTimeout(resolve, 300));
   }
+  return null;
 }
 
-async function fetchCalendarAppointmentsViaW5(timeMin, timeMax) {
-  const data = await fetchCalendarReaderPayloadViaW5(timeMin, timeMax);
+async function fetchCalendarAppointmentsViaW5(timeMin, timeMax, options) {
+  const data = await fetchCalendarReaderPayloadViaW5(timeMin, timeMax, options);
   if (!Array.isArray(data?.events)) {
     throw Object.assign(new Error('No se pudo leer Google Calendar; se conservan las citas CRM.'), { status: 503 });
   }
@@ -1484,7 +1504,7 @@ async function fetchCalendarBusyEventsViaW5(timeMin, timeMax) {
   return normalizeCalendarEventCollection(rawBusyEvents).filter(isCalendarBusyEvent);
 }
 
-async function fetchCalendarAppointments(timeMin, timeMax) {
+async function fetchCalendarAppointments(timeMin, timeMax, options) {
   if (calendarDirectEnabled()) {
     try {
       return await fetchCalendarAppointmentsDirect(timeMin, timeMax);
@@ -1493,7 +1513,7 @@ async function fetchCalendarAppointments(timeMin, timeMax) {
     }
   }
   if (calendarW5Enabled()) {
-    return fetchCalendarAppointmentsViaW5(timeMin, timeMax);
+    return fetchCalendarAppointmentsViaW5(timeMin, timeMax, options);
   }
   throw Object.assign(new Error('Lectura de Google Calendar no disponible; se conservan las citas CRM.'), { status: 503 });
 }
@@ -2236,7 +2256,7 @@ router.post('/appointments/sync-calendar', async (req, res, next) => {
         .lte('inicio_en', toAt)
         .order('inicio_en', { ascending: true })
         .limit(500),
-      fetchCalendarAppointments(fromAt, toAt),
+      fetchCalendarAppointments(fromAt, toAt, { retryTransient: true }),
     ]);
 
     if (error) {

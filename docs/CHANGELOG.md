@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-15 — Recuperación acotada del lector Calendar (local, sin publicar)
+
+- Tras la alerta de las 13:30, se verificó recuperación automática y ninguna incidencia posterior registrada en el estado backend; el detalle histórico no estaba conservado en n8n. Se prepara un reintento solo de lectura W5 para sync ante red/timeout/408/5xx, sin cambiar reservas, mutaciones Calendar, 401/403/429 o respuestas incompletas. Los errores persistentes mantienen el 503 y su notificación.
+- Diagnóstico seguro por categoría/intento, sin datos clínicos o secretos. Regresión reproduce el fallo previo; lint/171 pruebas y frontend check/build pasan. Bot pausado intacto; publicación/despliegue pendientes de autorización.
+
 ## 2026-10-14 — Anulaciones en Calendar y síntomas graves
 
 - **Bug previo corregido:** al anular una cita, el backend pedía a W6 la acción `cancel`, que el flujo n8n rechaza (solo acepta `delete`). La cita quedaba anulada en el CRM pero el evento seguía en Calendar ocupando el hueco, con «Calendar pendiente». Ahora se envía `delete`; una prueba compara las acciones enviadas con las que acepta `production/w6-calendar-writer.json`. La única cita afectada (prueba de Raúl) se borró en Calendar por W6 y se marcó sincronizada.

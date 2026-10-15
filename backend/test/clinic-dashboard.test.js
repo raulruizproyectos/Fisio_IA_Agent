@@ -114,3 +114,56 @@ test('un INSERT rechazado nunca crea ni cancela eventos de Calendar',async()=>{
     assert.deepEqual(actions,[]);
   } finally {globalThis.fetch=nativeFetch;}
 });
+
+test('la sincronización recupera una lectura Calendar transitoria sin repetir escrituras', async () => {
+  Object.assign(process.env, {GOOGLE_CALENDAR_ID:'test-calendar', W5_CALENDAR_READER_URL:'https://calendar-reader.example/test', N8N_WEBHOOK_SECRET:'fixture-secret'});
+  const {default: connectedRouter} = await import('../src/routes/professional.js?reader-recovery');
+  for (const key of ['GOOGLE_CALENDAR_ID','W5_CALENDAR_READER_URL','N8N_WEBHOOK_SECRET']) delete process.env[key];
+  const nativeFetch = globalThis.fetch, nativeWarn = console.warn;
+  const warnings = [];
+  const db = {from() {return {
+    select() {return this;}, eq() {return this;}, in() {return this;}, lt() {return this;}, gt() {return this;}, gte() {return this;}, lte() {return this;}, order() {return this;}, limit() {return this;},
+    async maybeSingle() {return {data:{id:'profile-a'}};},
+    update() {assert.fail('Las lecturas fallidas o vacías no deben escribir citas');},
+    then(resolve) {return Promise.resolve({data:[]}).then(resolve);},
+  };}};
+  console.warn = line => warnings.push(line);
+  try {
+    for (const failure of [503, 502, 504, 408, 'TimeoutError', 'TypeError']) {
+      const requests = [];
+      globalThis.fetch = async (url, options) => {
+        requests.push({url, body:options.body});
+        if (requests.length === 1) {
+          if (typeof failure === 'number') return new Response('', {status:failure});
+          throw Object.assign(new Error('Private fixture provider detail'), {name:failure});
+        }
+        return Response.json({events:[], busy_events:[]});
+      };
+      const result = await invoke('/appointments/sync-calendar', db, {}, connectedRouter);
+      assert.equal(result.sync_status.ui_status, 'healthy');
+      assert.equal(result.calendar_sync.updated, 0);
+      assert.equal(result.calendar_sync.cancelled, 0);
+      assert.equal(requests.length, 2);
+      assert.deepEqual(requests[0], requests[1], 'only the same read request is retried');
+    }
+    for (const status of [401, 403, 400, 404, 429, 503]) {
+      let calls = 0;
+      globalThis.fetch = async () => {calls++; return new Response('', {status});};
+      await assert.rejects(invoke('/appointments/sync-calendar', db, {}, connectedRouter), error => error.status === 503);
+      assert.equal(calls, status === 503 ? 2 : 1, 'permanent failures do not retry; transient failures stop at two');
+    }
+    for (const response of [() => new Response(''), () => new Response('not json'), () => Response.json({})]) {
+      let calls = 0;
+      globalThis.fetch = async () => {calls++; return response();};
+      await assert.rejects(invoke('/appointments/sync-calendar', db, {}, connectedRouter), error => error.status === 503);
+      assert.equal(calls, 1, 'an incomplete response is never treated as an empty calendar');
+    }
+    let calls = 0;
+    globalThis.fetch = async () => {calls++; return new Response('', {status:503});};
+    await assert.rejects(invoke('/appointments/check-availability', db, {}, connectedRouter, {inicio_en:'2026-10-20T09:00:00Z',fin_en:'2026-10-20T10:00:00Z'}), error => error.status === 503);
+    assert.equal(calls, 1, 'booking availability keeps its existing deadline and does not retry');
+    assert.ok(warnings.some(line => line.includes('http_503')));
+    assert.ok(warnings.some(line => line.includes('TimeoutError')));
+    assert.ok(!warnings.join('').includes('fixture-secret') && !warnings.join('').includes('Private fixture provider detail'));
+  } finally {globalThis.fetch = nativeFetch; console.warn = nativeWarn;}
+});

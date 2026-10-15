@@ -1,5 +1,13 @@
 # Project Status
 
+## 2026-10-15 — Incidencia Calendar: recuperación de lectura preparada en local
+
+Raúl comunica un correo CRITICAL de POST `/api/profesional/appointments/sync-calendar`, `2026-10-15T11:30:32.434Z` (13:30 Europe/Madrid). Lectura posterior: sync `healthy`, último éxito 16:04, último error todavía 13:30; readiness 19/19 y cero integraciones necesarias ausentes. W5 y Calendario sync activos, sin historial de errores actual retenido (`saveDataErrorExecution: none`); no se puede atribuir el corte original a una causa concreta. La ruta falla antes de reconciliar las citas cuando la lectura Calendar no es válida.
+
+Por petición de solucionarlo, se prepara corrección local en `professional.js`: un único reintento de lectura W5 en la sincronización, con pausa de 300 ms, para timeout/red/HTTP 408 o 5xx. Cada intento conserva el límite de 8 s, dentro de los 120 s del workflow. No reintenta 401/403/429, JSON inválido o respuesta incompleta; no cambia las reservas ni las escrituras Calendar. Log técnico estructurado con categoría/intento, sin cuerpos, credenciales o datos de pacientes. Si vuelve a fallar, conserva el 503 y la alerta existente. Esto mejora la recuperación, no garantiza que el proveedor nunca falle.
+
+Regresión sobre el handler real: fallaba antes, pasa después. Backend lint y 171/171 pruebas; frontend check 42 archivos sin diagnósticos y build cuatro páginas pasan. Sin commit/push/despliegue todavía; no cambiar el bot de citas en pausa. Recibo privado del diagnóstico: `.private-backups/local-validation/production/2026-10-15/calendar-incident/snapshot.json`. La revisión de diseño cerrada del bloque siguiente sigue vigente.
+
 ## Estado vigente — 2026-10-14: revisión de diseño del CRM CERRADA (partes 1–3 desplegadas, último commit de código `efb18b7`)
 
 - **Parte 1 — textos ajustados** (`f1ccd18`, desplegado en `fisio-frontend`, verificado en la URL pública): auditoría en demo a 1280/375 px (capturas + detector de cortes/desbordes, herramientas en `tmp/design-audit/`, ignorado por git). Tildes en ~300 textos visibles (sin tocar identificadores ni valores `data-*`; contratos DOM idénticos a HEAD). `statusText()` da etiqueta humana a los estados (`no_show` → «No asistió») y `precision-blue.css` fija una paleta semántica única de chips. Agenda: las citas en la pausa 13–15 h o fuera de horario ya no desaparecen (fila «Pausa»/«Fuera de horario»). Inicio: lista de trabajo legible, nombres sin «Dr.», métricas alineadas, importes `fmtEuro` («110,00 €»). Pacientes: email con elipsis y «Abrir ficha» sin cortar. Ajustes móvil sin palabras partidas. Check/build y pruebas de `scripts/test-*.mjs` en verde.
