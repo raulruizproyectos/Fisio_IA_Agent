@@ -1,9 +1,9 @@
 # Changelog
 
-## 2026-10-15 — Recuperación acotada del lector Calendar (local, sin publicar)
+## 2026-10-15 — Recuperación acotada del lector Calendar (desplegada)
 
-- Tras la alerta de las 13:30, se verificó recuperación automática y ninguna incidencia posterior registrada en el estado backend; el detalle histórico no estaba conservado en n8n. Se prepara un reintento solo de lectura W5 para sync ante red/timeout/408/5xx, sin cambiar reservas, mutaciones Calendar, 401/403/429 o respuestas incompletas. Los errores persistentes mantienen el 503 y su notificación.
-- Diagnóstico seguro por categoría/intento, sin datos clínicos o secretos. Regresión reproduce el fallo previo; lint/171 pruebas y frontend check/build pasan. Bot pausado intacto; publicación/despliegue pendientes de autorización.
+- Tras la alerta de las 13:30, se verificó recuperación automática y ninguna incidencia posterior registrada en el estado backend; el detalle histórico no estaba conservado en n8n. Se añade un reintento solo de lectura W5 para sync ante red/timeout/408/5xx, sin cambiar reservas, mutaciones Calendar, 401/403/429 o respuestas incompletas. Los errores persistentes mantienen el 503 y su notificación.
+- Diagnóstico seguro por categoría/intento, sin datos clínicos o secretos. Regresión reproduce el fallo previo; lint/171 pruebas y frontend check/build pasan. Código `094d11d` publicado/desplegado tras CI verde por autorización expresa; verificación 16:20: readiness 19/19, sync healthy y configuración idéntica. Bot pausado intacto; cierre documental posterior no requiere redeploy.
 
 ## 2026-10-14 — Anulaciones en Calendar y síntomas graves
 
