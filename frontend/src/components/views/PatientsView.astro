@@ -17,11 +17,11 @@
           <span>Nuevo paciente</span>
           <span class="material-symbols-rounded patient-action-arrow" aria-hidden="true">arrow_forward</span>
         </button>
-        <button id="patientsHeroAddBtn" type="button" class="patient-secondary-action hidden">
+        <button id="patientsHeroAddBtn" type="button" class="patient-secondary-action hidden" hidden>
           <span class="material-symbols-rounded" aria-hidden="true">bolt</span> Alta rápida
         </button>
         <button id="refreshPacientes" type="button" class="patient-sync-action">
-          <span class="material-symbols-rounded" aria-hidden="true">refresh</span> Sincronizar
+          <span class="material-symbols-rounded" aria-hidden="true">refresh</span> Actualizar
         </button>
       </div>
     </header>
@@ -33,7 +33,7 @@
         <p id="patientsTotalMeta">Cargando base clínica…</p>
       </article>
       <article class="vitals-reach">
-        <span>Contacto útil</span>
+        <span>Con datos de contacto</span>
         <strong id="patientsReachValue">0%</strong>
         <p id="patientsReachMeta">Midiendo correo y teléfono disponibles.</p>
       </article>
@@ -73,7 +73,7 @@
           <button type="button" data-patient-filter="all" aria-pressed="true">Todos</button>
           <button type="button" data-patient-filter="active">En tratamiento</button>
           <button type="button" data-patient-filter="attention">Atención clínica</button>
-          <button type="button" data-patient-filter="contactable">Contactables</button>
+          <button type="button" data-patient-filter="contactable">Con contacto</button>
           <button type="button" data-patient-filter="incomplete">Incompletos</button>
           <button type="button" data-patient-filter="recent">Recientes</button>
         </div>

@@ -1,5 +1,23 @@
 # Project Status
 
+## 2026-10-15 — Entrega frontend para la prueba de Raúl
+
+Raúl autoriza el commit y push a `main` de las mejoras de esta entrega para probarlas mediante su despliegue en EasyPanel. El commit que introduce esta entrada reúne la pasada de usabilidad, sus regresiones y la corrección de cargas antiguas de Agenda. Los bloques siguientes registran la validación local previa a publicar.
+
+Esta entrega solo requiere desplegar `fisio-frontend`, proyecto `fisio-ia-agent`, desde ese commit o uno posterior que lo contenga, después de comprobar su CI verde. Si el despliegue de Raúl arrancó antes de la publicación, repetir frontend para incorporar los cambios. Backend, DB, n8n y bot pausado no cambian. La revisión estructural completa del código sigue pendiente; publicar esta mejora no la da por terminada. El estado del CI se consulta en GitHub y el commit realmente desplegado en EasyPanel; este registro no acredita por sí mismo el despliegue.
+
+## 2026-10-15 — Pasada de usabilidad completa en móvil/escritorio (local)
+
+Revisión de todas las secciones del CRM, ficha/Copiloto, cinco formularios y acceso/recuperación/reserva pública, con el criterio de Raúl: facilidad para fisioterapeutas sin conocimientos informáticos, conservando funciones. Se simplifican duplicados en Inicio/Pacientes/Finanzas, nombres y búsqueda; Mensajes se lee como fichas en móvil; Ajustes usa perfil y estados comprobados; formularios financieros cierran con Escape; reserva pública con introducción compacta y ayuda desplegable.
+
+112 estados a 375/768/1280/1920 px sin errores JS ni hallazgos del detector, más recorridos complementarios a 375/1280. Check/build y regresiones pasan; lint/backend 171/171. [Informe, cobertura y límites](UX_REVIEW_2026-10-15.md). No commit/push/despliegue; no cambios en backend, DB, n8n o bot pausado. La aceptación por un fisioterapeuta y la comprobación en móvil físico quedan pendientes. Siguiente trabajo solicitado: estructura, eficiencia y mantenibilidad. [Primer diagnóstico y orden de continuación](CODE_STRUCTURE_REVIEW.md); carrera de cargas de Agenda corregida con regresión antes/después y nuevas regresiones añadidas a CI. La modularización general no está completada.
+
+## 2026-10-15 — Simplificación de Agenda en Inicio (local, pendiente de publicación)
+
+Raúl pide menos redundancia y establece para todo el CRM sencillez, uso intuitivo y conservación de funcionalidades. Esta entrega aplica ese criterio a Inicio: se retiran los accesos genéricos a Agenda del saludo y de la barra superior; se mantienen menú/dock y «Ver agenda» en Semana clínica. La próxima sesión se integra en ese bloque con su acceso a ficha; sin próxima cita o si falla la carga, se oculta esa tarjeta y el listado conserva su estado vacío/error y acceso a Agenda. Se conservan los IDs y atributos data-* de la vista y los controles de gestión de citas.
+
+Validación local sobre build con respuestas ficticias: 16 casos (375/768/1280/1920 px; vacío, cita vinculada, cita sin vínculo y error), navegación a ficha/agenda y apertura de nueva cita, sin errores JavaScript ni desbordamiento horizontal. Regresión `scripts/test-dashboard-next-session.mjs`, frontend check sin diagnósticos y build pasan. Backend intacto respecto al bloque Calendar ya verificado; bot sigue pausado. Capturas y recibo privados en `.private-backups/local-validation/agenda/2026-10-15/`. No commit, push ni despliegue de esta mejora; producción conserva el frontend anterior. No es una auditoría completada del resto del CRM.
+
 ## 2026-10-15 — Incidencia Calendar: recuperación de lectura publicada y desplegada
 
 Raúl comunica un correo CRITICAL de POST `/api/profesional/appointments/sync-calendar`, `2026-10-15T11:30:32.434Z` (13:30 Europe/Madrid). Lectura posterior: sync `healthy`, último éxito 16:04, último error todavía 13:30; readiness 19/19 y cero integraciones necesarias ausentes. W5 y Calendario sync activos, sin historial de errores actual retenido (`saveDataErrorExecution: none`); no se puede atribuir el corte original a una causa concreta. La ruta falla antes de reconciliar las citas cuando la lectura Calendar no es válida.

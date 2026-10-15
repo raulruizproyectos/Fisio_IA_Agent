@@ -28,16 +28,16 @@
   <div class="topbar-center search-box">
     <div class="search-input-shell">
       <span class="material-symbols-rounded search-icon" aria-hidden="true">search</span>
-      <label class="sr-only" for="searchInput">Buscar en la consulta</label>
+      <label class="sr-only" for="searchInput">Buscar paciente en el CRM</label>
       <input
         type="search"
         id="searchInput"
         name="busqueda_consulta"
-        placeholder="Buscar paciente, cita, informe clínico..."
+        placeholder="Buscar paciente…"
         autocomplete="off"
         class="search-command-input"
       />
-      <kbd class="search-command-kbd">⌘K</kbd>
+      <kbd class="search-command-kbd" aria-hidden="true">Ctrl K</kbd>
     </div>
     <div class="search-results-dropdown" id="searchResults" hidden></div>
   </div>
@@ -49,17 +49,6 @@
       <span class="material-symbols-rounded">calendar_today</span>
       <span id="topbarDateLabel">Hoy</span>
     </div>
-
-    <!-- Quick Agenda Shortcut -->
-    <button
-      class="topbar-btn-secondary"
-      type="button"
-      data-dashboard-nav="citas"
-      title="Abrir agenda de citas"
-    >
-      <span class="material-symbols-rounded">event_note</span>
-      <span class="btn-text-desktop">Agenda</span>
-    </button>
 
     <!-- Copiloto Clínico Button -->
     <button
@@ -92,6 +81,16 @@
 </header>
 
 <script>
+  const search = document.getElementById('searchInput') as HTMLInputElement | null;
+  const shortcut = document.querySelector('.search-command-kbd');
+  if (/Mac|iPhone|iPad/.test(navigator.platform) && shortcut) shortcut.textContent = '⌘K';
+  document.addEventListener('keydown', (event) => {
+    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return;
+    if (Array.from(document.querySelectorAll('[aria-modal="true"]')).some(dialog => dialog.closest('[aria-hidden]')?.getAttribute('aria-hidden') === 'false' || dialog.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }))) return;
+    event.preventDefault();
+    search?.focus();
+    search?.select();
+  });
   const assistantRailToggle = document.getElementById('assistantRailToggle');
   assistantRailToggle?.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('fisio:toggle-assistant'));

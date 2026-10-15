@@ -19,37 +19,11 @@
             <span class="material-symbols-rounded">person_add</span>
             Alta de paciente
           </button>
-          <button class="btn-ghost" type="button" id="heroAgendaShortcutBtn" data-dashboard-nav="citas">
+          <button class="btn-ghost" type="button" id="heroAgendaShortcutBtn" data-dashboard-nav="citas" hidden>
             <span class="material-symbols-rounded">calendar_today</span>
             Revisar agenda
           </button>
         </div>
-      </div>
-
-      <div class="clinic-focus-stage">
-        <div class="clinic-motion-figure" aria-hidden="true">
-          <svg viewBox="0 0 480 360" role="presentation">
-            <path class="motion-orbit motion-orbit-back" d="M55 276C112 162 177 83 284 63c64-12 116 4 147 33" />
-            <path class="motion-orbit motion-orbit-front" d="M18 318c98-55 181-61 258-26 54 25 108 29 185-5" />
-            <circle class="motion-joint motion-joint-one" cx="283" cy="83" r="20" />
-            <path class="motion-body" d="M278 112c-33 35-48 79-40 123m42-119c34 38 48 78 36 120m-78-1c-37 17-67 47-84 89m162-88c33 20 58 50 73 88m-143-157c-25 18-51 23-79 16m106-30c35 6 67-4 96-30" />
-            <circle class="motion-joint motion-joint-two" cx="238" cy="236" r="10" />
-            <circle class="motion-joint motion-joint-three" cx="316" cy="237" r="10" />
-          </svg>
-        </div>
-
-        <aside class="clinic-focus-card" aria-label="Siguiente paso recomendado">
-          <div class="clinic-card-head">
-            <span class="clinic-kicker">Ahora</span>
-            <span class="status-chip pendiente" id="dashboardNextSessionStatus">Cargando</span>
-          </div>
-          <strong id="dashboardNextSessionTitle">Leyendo próxima sesión…</strong>
-          <p id="dashboardNextSessionMeta">La agenda se actualiza en segundo plano.</p>
-          <button class="clinic-focus-action" type="button" id="dashboardNextSessionBtn">
-            <span>Ver agenda</span>
-            <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
-          </button>
-        </aside>
       </div>
     </header>
 
@@ -107,9 +81,21 @@
           </div>
           <button class="btn-ghost btn-sm" type="button" data-dashboard-nav="citas">
             <span class="material-symbols-rounded">arrow_forward</span>
-            Abrir
+            Ver agenda
           </button>
         </div>
+        <aside class="clinic-focus-card clinic-next-session" aria-label="Próxima sesión" hidden>
+          <div class="clinic-card-head">
+            <span class="clinic-kicker">Próxima sesión</span>
+            <span class="status-chip pendiente" id="dashboardNextSessionStatus">Cargando</span>
+          </div>
+          <strong id="dashboardNextSessionTitle">Leyendo próxima sesión…</strong>
+          <p id="dashboardNextSessionMeta">La agenda se actualiza en segundo plano.</p>
+          <button class="clinic-focus-action" type="button" id="dashboardNextSessionBtn">
+            <span>Ver agenda</span>
+            <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
+          </button>
+        </aside>
         <div class="clinic-list" id="dashCitasBody">
           <div class="empty-state-sm state-loading">
             <span class="material-symbols-rounded">sync</span>

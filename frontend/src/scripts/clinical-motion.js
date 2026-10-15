@@ -12,6 +12,14 @@ document.querySelectorAll('.modal-shell, .patient-modal-overlay, #assistantRail,
   sync();
   new MutationObserver(sync).observe(overlay, { attributes: true, attributeFilter: ['aria-hidden'] });
   overlay.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !event.defaultPrevented && !overlay.inert && overlay.matches('.modal-shell')) {
+      const close = overlay.querySelector('.modal-close');
+      if (close && !close.disabled) {
+        event.preventDefault();
+        close.click();
+      }
+      return;
+    }
     if (event.key !== 'Tab' || event.defaultPrevented || overlay.inert) return;
     // Desktop copilot stays alongside the workspace; mobile covers it.
     if (!overlay.matches('.modal-shell, #assistantRail.is-open-mobile')) return;

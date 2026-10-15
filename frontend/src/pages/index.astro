@@ -111,19 +111,25 @@ import ConfigView from '../components/views/ConfigView.astro';
   const PROF_ID = authContext.profileId;
   if (!PROF_ID) throw new Error('El usuario autenticado no tiene un perfil profesional activo');
 
-  const displayName = String(authContext.name || authContext.email || 'Dra. Carmen Martínez').trim();
+  const displayName = String(authContext.name || authContext.email || 'Profesional').trim();
   const initials = displayName
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() || '')
-    .join('') || 'CM';
+    .join('') || 'P';
   const sidebarUserName = document.getElementById('sidebarUserName');
   const sidebarUserRole = document.getElementById('sidebarUserRole');
   const sidebarUserInitials = document.getElementById('sidebarUserInitials');
   if (sidebarUserName) sidebarUserName.textContent = displayName;
   if (sidebarUserRole) sidebarUserRole.textContent = authContext.role === 'admin' ? 'Administración clínica' : 'Fisioterapeuta';
   if (sidebarUserInitials) sidebarUserInitials.textContent = initials;
+  const profileName = document.getElementById('cfgUserDisplayName');
+  const profileEmail = document.getElementById('cfgUserEmail');
+  const profileRole = document.getElementById('cfgUserRole');
+  if (profileName) profileName.textContent = displayName;
+  if (profileEmail) profileEmail.textContent = authContext.email || 'Sin correo disponible';
+  if (profileRole) profileRole.textContent = sidebarUserRole?.textContent || 'Perfil profesional';
   const sidebarClinicName = document.getElementById('sidebarClinicName');
   if (sidebarClinicName && authContext.clinicName) sidebarClinicName.textContent = authContext.clinicName;
   document.getElementById('logoutBtn')?.addEventListener('click', async () => {
@@ -3747,25 +3753,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!dashboardNextSessionTitle || !dashboardNextSessionMeta || !dashboardNextSessionStatus) return;
     const next = dashboardRuntime.nextAppointment;
 
-    if (dashboardRuntime.agendaState === 'error') {
-      setDashboardChip(dashboardNextSessionStatus, 'Error', 'rechazado');
-      dashboardNextSessionTitle.textContent = 'Error de conexión';
-      dashboardNextSessionMeta.textContent = 'No se pudo cargar la agenda.';
-      if (dashboardNextSessionBtn) {
-        dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Ver agenda';
-      }
-      return;
-    }
-
-    if (!next) {
-      setDashboardChip(dashboardNextSessionStatus, 'Libre', 'aprobado');
-      dashboardNextSessionTitle.textContent = 'Sin próxima sesión cargada';
-      dashboardNextSessionMeta.textContent = 'No hay próximas citas en la semana cargada.';
-      if (dashboardNextSessionBtn) {
-        dashboardNextSessionBtn.innerHTML = '<span class="material-symbols-rounded">calendar_today</span> Abrir agenda';
-      }
-      return;
-    }
+    const card = dashboardNextSessionTitle.closest<HTMLElement>('.clinic-focus-card');
+    if (card) card.hidden = dashboardRuntime.agendaState !== 'ready' || !next;
+    if (dashboardRuntime.agendaState !== 'ready' || !next) return;
 
     const sameDay = isTodayDate(next.inicio_en || '');
     const hour = fmtHourOnly(next.inicio_en || '');
@@ -5362,22 +5352,22 @@ import ConfigView from '../components/views/ConfigView.astro';
     } else if (uiStatus === 'syncing') {
       chipLabel = 'Sincronizando';
       chipClass = 'pendiente';
-      title = 'W6 sincronizando agenda';
-      meta = 'El sincronizador background esta reconciliando Google Calendar ahora mismo.';
+      title = 'Actualizando Calendar';
+      meta = 'Las citas se están contrastando con Google Calendar.';
     } else if (uiStatus === 'healthy') {
       chipLabel = 'Al día';
       chipClass = 'aprobado';
-      title = 'W6 al día';
+      title = 'Google Calendar al día';
       meta = `${fmtRelativeSyncAge(lastSuccessAt)} | ${persisted} nuevas | ${updated} actualizadas | ${cancelled} canceladas`;
     } else if (uiStatus === 'stale') {
       chipLabel = 'Con retraso';
       chipClass = 'caducado';
-      title = 'W6 con retraso';
+      title = 'Sincronización con retraso';
       meta = `${fmtRelativeSyncAge(lastSuccessAt)} | última lectura ${fetched} evento(s)`;
     } else if (uiStatus === 'error') {
       chipLabel = 'Error';
       chipClass = 'rechazado';
-      title = 'W6 con error';
+      title = 'No se pudo actualizar Calendar';
       meta = syncStatus?.error ? String(syncStatus.error) : 'El sincronizador devolvio un error.';
     } else if (summary?.enabled) {
       chipLabel = 'Solo vista';
@@ -5398,6 +5388,10 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const viewModel = { uiStatus, chipLabel, chipClass, title, meta, facts };
     dashboardRuntime.syncUi = viewModel;
+    const configChip = document.getElementById('cfgCalendarStatus');
+    const configMeta = document.getElementById('cfgCalendarMeta');
+    setDashboardChip(configChip, chipLabel, chipClass);
+    if (configMeta) configMeta.textContent = meta;
     applySyncStatusView(agendaSyncChip, agendaSyncTitle, agendaSyncMeta, agendaSyncFacts, viewModel);
     applySyncStatusView(dashboardSyncChip, dashboardSyncTitle, dashboardSyncMeta, dashboardSyncFacts, viewModel);
     syncDashboardCommandCenter();
@@ -5715,7 +5709,10 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   // === LOAD CITAS ===
+  let agendaLoadVersion = 0;
   const loadCitas = async () => {
+    const loadVersion = ++agendaLoadVersion;
+    const weekStart = new Date(agendaWeekStart);
     const cal = document.getElementById('agendaCalendar');
     if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>';
     if (citasBody) setTableState(citasBody, 8, 'sync', 'Cargando agenda...', true);
@@ -5725,13 +5722,13 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const weekLabelEl = document.getElementById('weekLabel');
     if (weekLabelEl) {
-      const weekEnd = new Date(agendaWeekStart);
-      weekEnd.setDate(agendaWeekStart.getDate() + 4);
-      weekLabelEl.textContent = `${agendaWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 4);
+      weekLabelEl.textContent = `${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
     }
 
-    const desde = new Date(agendaWeekStart).toISOString();
-    const hastaDate = new Date(agendaWeekStart);
+    const desde = new Date(weekStart).toISOString();
+    const hastaDate = new Date(weekStart);
     hastaDate.setDate(hastaDate.getDate() + 5);
     const hasta = hastaDate.toISOString();
 
@@ -5742,6 +5739,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         ),
         fetchJson(`${BACKEND_BASE}/api/profesional/appointments/sync-calendar/status`).catch(() => ({ data: null })),
       ]);
+      if (loadVersion !== agendaLoadVersion) return;
       let citas = payload.data || [];
       if (!citas.length && isDevMode) {
         citas = DEMO_APPOINTMENTS;
@@ -5756,8 +5754,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       const metricEl = document.getElementById('metricSesiones');
       if (metricEl) metricEl.textContent = String(todayCount);
 
-      renderAgendaCalendar(citas, agendaWeekStart);
-      renderAgendaMobileTimeline(operationalCitas, citas, agendaWeekStart);
+      renderAgendaCalendar(citas, weekStart);
+      renderAgendaMobileTimeline(operationalCitas, citas, weekStart);
 
       const countEl = document.getElementById('weekPatientCount');
       if (countEl) countEl.textContent = String(getVisibleAgendaPatientCount(citas));
@@ -5806,6 +5804,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         </tr>`;
       }).join('');
     } catch {
+      if (loadVersion !== agendaLoadVersion) return;
       if (isDevMode) {
         const citas = DEMO_APPOINTMENTS;
         latestAgendaAppointments = citas;
@@ -5815,8 +5814,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         const todayCount = operationalCitas.filter((c: any) => !isAllDayAppointment(c) && isTodayDate(c.inicio_en || '')).length;
         const metricEl = document.getElementById('metricSesiones');
         if (metricEl) metricEl.textContent = String(todayCount || 4);
-        renderAgendaCalendar(citas, agendaWeekStart);
-        renderAgendaMobileTimeline(operationalCitas, citas, agendaWeekStart);
+        renderAgendaCalendar(citas, weekStart);
+        renderAgendaMobileTimeline(operationalCitas, citas, weekStart);
         if (citasBody) {
           const sorted = [...operationalCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
           citasBody.innerHTML = sorted.map((cita: any) => {
@@ -6316,10 +6315,11 @@ import ConfigView from '../components/views/ConfigView.astro';
   // === LOAD HISTORIAL ===
   const loadHistorial = async () => {
     if (!historialContent) return;
+    if (historyOpenFichaBtn) historyOpenFichaBtn.innerHTML = `<span class="material-symbols-rounded" aria-hidden="true">person</span> ${selectedPatientId ? 'Abrir ficha' : 'Elegir paciente'}`;
     if (!selectedPatientId) {
       currentPatientTelegramLinkState = null;
       updateExerciseTelegramButton();
-      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">person_search</span><p>Selecciona un paciente desde Pacientes, Agenda o la busqueda superior para revisar su seguimiento longitudinal.</p></div>`;
+      historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">person_search</span><p>Selecciona un paciente para consultar sus notas, planes y conversaciones.</p></div>`;
       return;
     }
     historialContent.innerHTML = `<div class="empty-state state-loading"><span class="material-symbols-rounded">sync</span><p>Cargando historial de ${escapeHtml(selectedPatientName || 'paciente')}...</p></div>`;
@@ -7016,6 +7016,8 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   const setFinancePriority = (title: string, meta: string, primary: { label: string; icon: string; action: string }, secondary: { label: string; icon: string; action: string }) => {
+    const workbench = financePriorityTitle?.closest<HTMLElement>('.finance-workbench');
+    if (workbench) workbench.hidden = primary.action === 'pago';
     if (financePriorityTitle) financePriorityTitle.textContent = title;
     if (financePriorityMeta) financePriorityMeta.textContent = meta;
     setFinanceActionButton(financePrimaryActionBtn, primary.label, primary.icon, primary.action);
@@ -10623,24 +10625,25 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     // Connections check
     const cfgBackend = document.getElementById('cfgBackend');
-    const cfgBackendStatus = document.getElementById('cfgBackendStatus');
+    const cfgBackendStatus = document.getElementById('cfgBackendBadge');
     const cfgAgent = document.getElementById('cfgAgent');
-    const cfgAgentStatus = document.getElementById('cfgAgentStatus');
+    const cfgAgentStatus = document.getElementById('cfgAgentBadge');
     const cfgReadiness = document.getElementById('cfgReadiness');
     const cfgReadinessStatus = document.getElementById('cfgReadinessStatus');
     const cfgReadinessDetail = document.getElementById('cfgReadinessDetail');
-    if (cfgBackend) cfgBackend.textContent = BACKEND_BASE;
+    if (cfgBackend) cfgBackend.textContent = 'Conexión segura con el servicio de la clínica';
     try {
       const r = await fetch(`${BACKEND_BASE}/api/health`, {signal: AbortSignal.timeout(5000)});
       if (cfgBackendStatus) { cfgBackendStatus.textContent = r.ok ? 'OK' : 'Error'; cfgBackendStatus.className = `status-chip ${r.ok ? 'aprobado' : 'rechazado'}`; }
     } catch { if (cfgBackendStatus) { cfgBackendStatus.textContent = 'Sin conexión'; cfgBackendStatus.className = 'status-chip rechazado'; } }
-    if (cfgAgent) cfgAgent.textContent = BACKEND_BASE + '/api/agent/message';
+    if (cfgAgent) cfgAgent.textContent = 'Comprobando disponibilidad…';
     try {
       const r = await fetch(`${BACKEND_BASE}/api/agent/message`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'test',channel:'web',text:'health check'}),signal:AbortSignal.timeout(10000)});
       const data = await r.json();
       const ok = r.ok && !data.n8n_unreachable;
+      if (cfgAgent) cfgAgent.textContent = ok ? 'Servicio disponible para preparar y revisar planes' : 'No se pudo comprobar el asistente. Inténtalo de nuevo más tarde.';
       if (cfgAgentStatus) { cfgAgentStatus.textContent = ok ? (data.fallback_used ? 'Fallback' : 'OK') : 'Error'; cfgAgentStatus.className = `status-chip ${ok ? 'aprobado' : 'rechazado'}`; }
-    } catch { if (cfgAgentStatus) { cfgAgentStatus.textContent = 'Sin conexión'; cfgAgentStatus.className = 'status-chip rechazado'; } }
+    } catch { if (cfgAgent) cfgAgent.textContent = 'No se pudo comprobar el asistente. Revisa la conexión.'; if (cfgAgentStatus) { cfgAgentStatus.textContent = 'Sin conexión'; cfgAgentStatus.className = 'status-chip rechazado'; } }
     if (cfgReadiness) cfgReadiness.textContent = 'Comprobando modulos...';
     if (cfgReadinessStatus) { cfgReadinessStatus.textContent = 'Comprobando'; cfgReadinessStatus.className = 'status-chip pendiente'; }
     if (cfgReadinessDetail) {

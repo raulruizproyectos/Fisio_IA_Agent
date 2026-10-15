@@ -73,6 +73,10 @@ jobs:
           node scripts/test-public-config.mjs
           node scripts/test-runtime-connections.mjs
           node scripts/test-dashboard-greeting.mjs
+          node scripts/test-dashboard-next-session.mjs
+          node scripts/test-crm-usability.mjs
+          node scripts/test-agenda-loading.mjs
+          node scripts/test-appointment-context.mjs
           node scripts/test-clinical-motion.mjs
           node scripts/test-ficha-save-context.mjs
           node scripts/test-confirm-dialog.mjs

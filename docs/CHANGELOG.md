@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-15 — Usabilidad del CRM completo, móvil y escritorio (local)
+
+- Primera revisión del código: las cargas de Agenda capturan semana/versión y descartan respuestas o fallos antiguos. Regresión reproduce el fallo previo y pasa tras el cambio. Nuevas regresiones de esta entrega incluidas en CI; [deuda estructural y continuación](CODE_STRUCTURE_REVIEW.md).
+- Menos duplicados en Pacientes/Finanzas, nombres coherentes de secciones, búsqueda de pacientes con atajo real y protección del foco, Mensajes en fichas para móvil, Historial con elección explícita de paciente. Ajustes refleja la sesión y estados de aplicación/asistente/Calendar; se retiran datos profesionales ficticios y jerga innecesaria.
+- Escape cierra los formularios financieros mediante el control compartido. Reserva pública compacta con ayuda opcional y autocompletado. 112 estados de navegador y recorridos complementarios; check/build, regresiones y backend lint/171 pruebas pasan. [Detalle y límites](UX_REVIEW_2026-10-15.md). Pendiente de publicación.
+
+## 2026-10-15 — Menos accesos repetidos a Agenda (local)
+
+- Inicio conserva Agenda en menú/dock y Semana clínica; se retiran los atajos del saludo y la barra superior. Próxima sesión dentro del resumen semanal, con acceso a ficha y sin tarjeta vacía. La gestión de citas y los estados de error permanecen accesibles.
+- Criterio general de sencillez sin pérdida de funcionalidades recogido en DESIGN.md. Regresión del renderizado, check/build y 16 estados de navegador con datos ficticios pasan. Pendiente de autorización para publicar y desplegar.
+
 ## 2026-10-15 — Recuperación acotada del lector Calendar (desplegada)
 
 - Tras la alerta de las 13:30, se verificó recuperación automática y ninguna incidencia posterior registrada en el estado backend; el detalle histórico no estaba conservado en n8n. Se añade un reintento solo de lectura W5 para sync ante red/timeout/408/5xx, sin cambiar reservas, mutaciones Calendar, 401/403/429 o respuestas incompletas. Los errores persistentes mantienen el 503 y su notificación.

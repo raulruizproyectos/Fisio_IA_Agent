@@ -24,7 +24,10 @@ console.log('PASS: upcoming sessions exclude past/invalid/finished dates, suppor
 
 const page = await readFile(new URL('../frontend/src/pages/index.astro', import.meta.url), 'utf8');
 const slice = page.slice(page.indexOf('  const getAgendaMirrorMeta ='), page.indexOf('  const renderAgendaCalendar ='));
+const settings = { cfgCalendarStatus: {}, cfgCalendarMeta: {} };
 const ui = vm.createContext({
+  document: { getElementById: id => settings[id] },
+  setDashboardChip(chip, label, chipClass) { chip.textContent = label; chip.className = `status-chip ${chipClass}`; },
   dashboardRuntime: {}, agendaSyncChip: {}, agendaSyncTitle: {}, agendaSyncMeta: {}, agendaSyncFacts: {},
   dashboardSyncChip: {}, dashboardSyncTitle: {}, dashboardSyncMeta: {}, dashboardSyncFacts: {},
   applySyncStatusView() {}, syncDashboardCommandCenter() {}, fmtRelativeSyncAge: () => 'Fixture age',
@@ -35,6 +38,12 @@ assert.equal(vm.runInContext("getAgendaMirrorMeta({calendar_sync_pending:true,ca
 vm.runInContext("renderAgendaSyncStatus({ui_status:'healthy',summary:{enabled:true,pending:0}}, {enabled:true,pending:2})", ui);
 assert.equal(ui.dashboardRuntime.syncUi.chipLabel, 'Requiere comprobación');
 assert.match(ui.dashboardRuntime.syncUi.meta, /^2 cita/);
+assert.equal(settings.cfgCalendarStatus.textContent, 'Requiere comprobación');
+assert.match(settings.cfgCalendarMeta.textContent, /^2 cita/);
 vm.runInContext("renderAgendaSyncStatus({ui_status:'healthy',summary:{enabled:true,pending:2}}, {enabled:true,pending:0})", ui);
 assert.equal(ui.dashboardRuntime.syncUi.chipLabel, 'Al día', 'Fresh zero overrides an old pending count');
+assert.equal(settings.cfgCalendarStatus.textContent, 'Al día');
+vm.runInContext("renderAgendaSyncStatus({ui_status:'error',error:'Fallo simulado'}, {enabled:true,pending:0})", ui);
+assert.equal(settings.cfgCalendarStatus.textContent, ui.dashboardRuntime.syncUi.chipLabel);
+assert.notEqual(settings.cfgCalendarStatus.textContent, 'Al día', 'Settings must not claim a healthy sync after failure');
 console.log('PASS: pending Calendar stays visible in appointment and agenda metadata; fresh counts override old summaries.');

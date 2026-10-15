@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <span class="view-kicker">CONTROL GENERAL</span>
-      <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Ajustes y Configuración</h1>
+      <h1 class="page-title"><span class="material-symbols-rounded">settings</span> Ajustes</h1>
       <p class="page-subtitle">Gestión de la clínica, integraciones activas, reserva pública y parámetros del copiloto.</p>
     </div>
   </div>
@@ -71,12 +71,12 @@
             <span class="material-symbols-rounded">api</span>
           </div>
           <div class="integration-meta">
-            <strong>Backend API Core (Node / Express)</strong>
+            <strong>Servicio de la aplicación</strong>
             <span class="integration-sub" id="cfgBackend">Detectando servicio...</span>
           </div>
           <div class="integration-badge-wrap">
-            <span class="status-chip chip-success" id="cfgBackendBadge">
-              <span class="status-dot"></span> Conectado
+            <span class="status-chip pendiente" id="cfgBackendBadge">
+              <span class="status-dot"></span> Comprobando
             </span>
           </div>
         </div>
@@ -86,12 +86,12 @@
             <span class="material-symbols-rounded">smart_toy</span>
           </div>
           <div class="integration-meta">
-            <strong>Motor Clínico Automatizado (n8n & Flujos)</strong>
+            <strong>Asistente clínico</strong>
             <span class="integration-sub" id="cfgAgent">Detectando orquestador...</span>
           </div>
           <div class="integration-badge-wrap">
-            <span class="status-chip chip-success" id="cfgAgentBadge">
-              <span class="status-dot"></span> Activo
+            <span class="status-chip pendiente" id="cfgAgentBadge">
+              <span class="status-dot"></span> Comprobando
             </span>
           </div>
         </div>
@@ -101,7 +101,7 @@
             <span class="material-symbols-rounded">database</span>
           </div>
           <div class="integration-meta">
-            <strong>Base de Datos Clínica (Supabase / PostgreSQL)</strong>
+            <strong>Base de datos clínica</strong>
             <span class="integration-sub" id="cfgReadiness">Comprobando conexión...</span>
             <p class="config-readiness-detail" id="cfgReadinessDetail" hidden></p>
           </div>
@@ -117,12 +117,12 @@
             <span class="material-symbols-rounded">calendar_month</span>
           </div>
           <div class="integration-meta">
-            <strong>Google Calendar Sync</strong>
-            <span class="integration-sub">Sincronización bidireccional de citas activa</span>
+            <strong>Google Calendar</strong>
+            <span class="integration-sub" id="cfgCalendarMeta">Comprobando la sincronización de citas…</span>
           </div>
           <div class="integration-badge-wrap">
-            <span class="status-chip chip-success">
-              <span class="status-dot"></span> Sincronizado
+            <span class="status-chip pendiente" id="cfgCalendarStatus">
+              <span class="status-dot"></span> Comprobando
             </span>
           </div>
         </div>
@@ -132,12 +132,12 @@
             <span class="material-symbols-rounded">chat</span>
           </div>
           <div class="integration-meta">
-            <strong>Canal de Mensajería Pacientes (WhatsApp / Telegram)</strong>
-            <span class="integration-sub">Bandeja de entrada y recordatorios automatizados</span>
+            <strong>Mensajería de pacientes</strong>
+            <span class="integration-sub">Telegram y otros canales según la configuración de la clínica</span>
           </div>
           <div class="integration-badge-wrap">
             <span class="status-chip chip-warning">
-              <span class="status-dot"></span> Configurado
+              <span class="status-dot"></span> Sin comprobar
             </span>
           </div>
         </div>
@@ -184,8 +184,8 @@
       <div class="copilot-settings-grid">
         <div class="setting-toggle-row">
           <div class="setting-meta">
-            <strong>Transcripción de Consulta con Whisper</strong>
-            <span>Convierte el audio de la sesión en notas estructuradas en tiempo real.</span>
+            <strong>Notas de sesión por voz</strong>
+            <span>Graba la sesión y revisa la transcripción antes de guardarla.</span>
           </div>
           <span class="status-chip chip-success">Activado</span>
         </div>
@@ -208,10 +208,10 @@
 
         <div class="setting-toggle-row">
           <div class="setting-meta">
-            <strong>Nivel de Temperatura del Modelo</strong>
-            <span>Fijado a 0.2 para máxima fidelidad diagnóstica y consistencia médica.</span>
+            <strong>Aprobación profesional</strong>
+            <span>Revisa y aprueba cada plan antes de generar el PDF o enviarlo al paciente.</span>
           </div>
-          <span class="status-chip chip-info">0.2 (Clínico Preciso)</span>
+          <span class="status-chip chip-info">Obligatoria</span>
         </div>
       </div>
     </section>
@@ -229,9 +229,9 @@
           <span class="material-symbols-rounded">person</span>
         </div>
         <div class="user-details">
-          <strong id="cfgUserDisplayName">Dr. Fisioterapeuta Colegiado</strong>
-          <span class="user-role-label">Colegiado Nº 4821 — Fisioterapia Traumatológica y Deportiva</span>
-          <span class="user-email-label" id="cfgUserEmail">consulta@fisioclinical.es</span>
+          <strong id="cfgUserDisplayName">Profesional</strong>
+          <span class="user-role-label" id="cfgUserRole">Perfil profesional</span>
+          <span class="user-email-label" id="cfgUserEmail">Sin correo disponible</span>
         </div>
         <div class="user-actions">
           <span class="status-chip chip-success">
@@ -249,7 +249,7 @@
             <span class="material-symbols-rounded summary-icon">terminal</span>
             <div>
               <strong>6. Sistema y Diagnóstico Técnico</strong>
-              <small>Arquitectura, versiones de software y parámetros de depuración (Colapsado por defecto).</small>
+              <small>Información técnica de esta instalación.</small>
             </div>
           </div>
           <span class="material-symbols-rounded chevron-icon">expand_more</span>
@@ -262,7 +262,7 @@
           </div>
           <div class="diag-item">
             <span class="diag-label">Arquitectura Frontend</span>
-            <span class="diag-value">Astro 5 + DM Sans Editorial UI</span>
+            <span class="diag-value">Astro 7 · Precisión azul</span>
           </div>
           <div class="diag-item">
             <span class="diag-label">Backend y Servicios</span>

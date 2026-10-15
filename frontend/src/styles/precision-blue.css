@@ -119,7 +119,7 @@ button:not(:disabled):active { transform: scale(.98); }
 .app-shell :is(.card,.precision-panel,.clinic-panel,.clinic-dashboard-hero,.patients-panel,.ficha-hero-panel) { border-radius: var(--radius-card) !important; border-color: var(--color-border) !important; box-shadow: none !important; }
 .app-shell :is(.card-header,.precision-panel-header,.clinic-card-head) h2 { font-size: 17px; font-weight: 600; }
 .app-shell .clinic-dashboard-hero { background: transparent !important; border: 0 !important; padding: 0 0 24px !important; }
-.clinic-dashboard-hero { grid-template-columns: minmax(0,1fr); }
+.app-shell .clinic-dashboard-hero { grid-template-columns: minmax(0,1fr) !important; }
 .clinic-dashboard-copy,.clinic-focus-stage { min-width: 0; }
 .clinic-dashboard-copy h1 { overflow-wrap: anywhere; }
 .app-shell .clinic-focus-card { background: var(--color-surface-selected) !important; box-shadow: none !important; border: 0 !important; border-radius: var(--radius-card) !important; padding: 24px !important; }
@@ -481,3 +481,36 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 /* Finanzas: hidden duplicate action cards must not leave a gap (header already has Registrar pago / Factura). */
 .finance-action-card[hidden] { display: none !important; }
 .finance-action-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; }
+
+/* Keep the upcoming session inside the weekly overview, without an empty hero card. */
+.clinic-next-session[hidden], #heroAgendaShortcutBtn[hidden] { display: none !important; }
+.app-shell .clinic-next-session { margin-bottom: 16px; }
+
+.finance-workbench[hidden], .finance-action-grid[hidden], #financeSecondaryActionBtn[hidden] { display: none !important; }
+#patientsHeroAddBtn[hidden] { display: none !important; }
+.app-shell .finance-workbench { grid-template-columns: minmax(0, 1fr); }
+
+/* Mobile messages keep the same rows/actions, with a reading order that needs no sideways scroll. */
+@media (max-width: 767px) {
+  .intakes-table { min-width: 0 !important; width: 100% !important; }
+  .intakes-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .intakes-table tbody { display: block; }
+  .intakes-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 20px; border-bottom: 1px solid var(--color-border); }
+  .intakes-table tbody td { display: block; min-width: 0; padding: 0 !important; border: 0 !important; overflow-wrap: anywhere; }
+  .intakes-table tbody td:is(:first-child,:nth-child(4),:last-child), .intakes-table td[colspan] { grid-column: 1 / -1; }
+  .intakes-table td:first-child:not([colspan]) { font-weight: 600; }
+  .intakes-table td:nth-child(2)::before { content: 'Canal'; }
+  .intakes-table td:nth-child(3)::before { content: 'Prioridad'; }
+  .intakes-table td:nth-child(5)::before { content: 'Recibido'; }
+  .intakes-table td:nth-child(6)::before { content: 'Estado'; }
+  .intakes-table td::before { display: block; margin-bottom: 4px; font-size: 12px; color: var(--color-ink-muted); }
+  .intakes-table .intake-row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .intakes-table .intake-row-actions button { flex: 1 1 100px; min-height: 44px; }
+  .intakes-filterbar, .intakes-filter-field, .intakes-filter-field select { width: 100%; }
+}
+
+.booking-help summary { cursor: pointer; min-height: 44px; padding-block: 12px; font-weight: 600; }
+@media (max-width: 767px) {
+  .booking-shell .booking-hero { padding: 20px; gap: 16px; }
+  .booking-shell :is(.booking-hero h1,.booking-panel h2) { font-size: 30px !important; max-width: none; }
+}

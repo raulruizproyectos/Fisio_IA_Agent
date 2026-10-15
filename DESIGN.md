@@ -26,6 +26,8 @@ Rojo, ámbar y verde mantienen papeles de error, advertencia y éxito, siempre c
 
 ## Composición e interacción
 
+- **Sencillez como criterio general (Raúl, 15-oct):** conservar todas las funcionalidades con un lugar principal claro para cada tarea. Priorizar las acciones frecuentes, agrupar las secundarias y evitar accesos repetidos sin utilidad contextual. La información de detalle se muestra donde se usa; simplificar nunca debe ocultar errores, estados de sincronización o controles clínicos.
+- Inicio: Agenda permanece en la navegación principal (menú/dock) y en «Semana clínica». La próxima sesión pertenece a ese bloque, con acceso a la ficha si está vinculada; no se muestra una segunda tarjeta vacía ni accesos genéricos adicionales en el saludo o la barra superior.
 - Navegación blanca de 224 px, sección activa azul suave, marca clínica y perfil autenticado. Móvil: menú debajo de la barra de 64 px, por encima del dock, con Escape y cierre al navegar. Navegación completa disponible con scroll en pantallas bajas.
 - Barra superior blanca, búsqueda, ruta de navegación actual y acciones con etiquetas accesibles. Lienzo único; solo una pantalla activa, sin huecos de overlays cerrados.
 - Agenda clara, vínculo/estado CRM visible, acción secundaria Comprobar Calendar; navegación semanal adaptable y vista táctil por días.

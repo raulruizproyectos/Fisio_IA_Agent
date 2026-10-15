@@ -9,7 +9,7 @@ import Layout from '../layouts/Layout.astro';
     <section class="booking-hero">
       <div class="booking-hero-copy">
         <span class="booking-kicker">Reserva online</span>
-        <h1>Una reserva clara, rápida y sin friccion.</h1>
+        <h1>Reserva tu cita</h1>
         <p id="clinicLead">Selecciona un día, elige un hueco disponible y deja tus datos para confirmar la cita.</p>
       </div>
 
@@ -37,29 +37,32 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
+      <details class="booking-help">
+        <summary>Cómo reservar</summary>
       <div class="booking-rhythm">
         <article>
           <span>1</span>
           <div>
             <strong>Elige el día</strong>
-            <p>Solo veras fechas dentro de la ventana abierta para reservas.</p>
+            <p>Verás las fechas en las que puedes reservar.</p>
           </div>
         </article>
         <article>
           <span>2</span>
           <div>
             <strong>Selecciona un hueco real</strong>
-            <p>Los huecos se cruzan con la agenda activa y sus bloqueos reales.</p>
+            <p>Elige una de las horas disponibles.</p>
           </div>
         </article>
         <article>
           <span>3</span>
           <div>
             <strong>Confirma tus datos</strong>
-            <p>Registramos la cita y la dejamos reflejada en el CRM y en Calendar.</p>
+            <p>Revisa los datos y espera la confirmación de tu cita.</p>
           </div>
         </article>
       </div>
+      </details>
     </section>
 
     <section class="booking-panel">
@@ -90,19 +93,19 @@ import Layout from '../layouts/Layout.astro';
           <div class="booking-form-grid">
             <label class="booking-field">
               <span>Nombre y apellidos</span>
-              <input id="patientNameInput" type="text" placeholder="Ej. Laura Gomez" required />
+              <input id="patientNameInput" name="name" autocomplete="name" type="text" placeholder="Nombre y apellidos" required />
             </label>
             <label class="booking-field">
               <span>Teléfono</span>
-              <input id="patientPhoneInput" type="tel" placeholder="600 123 123" />
+              <input id="patientPhoneInput" name="phone" autocomplete="tel" type="tel" placeholder="600 123 123" />
             </label>
             <label class="booking-field booking-field-wide">
               <span>Email</span>
-              <input id="patientEmailInput" type="email" placeholder="tu@email.com" />
+              <input id="patientEmailInput" name="email" autocomplete="email" type="email" placeholder="tu@email.com" />
             </label>
             <label class="booking-field booking-field-wide">
               <span>Motivo de la consulta</span>
-              <textarea id="bookingReasonInput" rows="4" placeholder="Cuanto mejor expliques la dolencia o el objetivo de la cita, mejor preparado queda el caso."></textarea>
+              <textarea id="bookingReasonInput" rows="4" placeholder="Indica brevemente el motivo de la cita."></textarea>
             </label>
           </div>
 

@@ -21,7 +21,7 @@
           <nav class="finance-tabs" aria-label="Secciones de finanzas" data-finance-tabs></nav>
 
           <!-- 2. RESUMEN CONTEXTUAL & ACCIONES OPERATIVAS -->
-          <section class="finance-workbench" aria-label="Panel operativo de finanzas">
+          <section class="finance-workbench" aria-label="Panel operativo de finanzas" hidden>
             <article class="finance-priority-panel">
               <span class="finance-kicker">Prioridad de Caja</span>
               <strong id="financePriorityTitle">Cargando caja...</strong>
@@ -30,14 +30,14 @@
                 <button class="btn-primary btn-sm" id="financePrimaryActionBtn" type="button" data-finance-action="pago">
                   <span class="material-symbols-rounded">arrow_forward</span> Registrar pago
                 </button>
-                <button class="btn-ghost btn-sm" id="financeSecondaryActionBtn" type="button" data-finance-action="facturas">
+                <button class="btn-ghost btn-sm" id="financeSecondaryActionBtn" type="button" hidden data-finance-action="facturas">
                   <span class="material-symbols-rounded">receipt_long</span> Ver facturas
                 </button>
               </div>
             </article>
 
             <!-- Cobro and factura already live in the page header: their cards are hidden (IDs kept); bono and gestoría stay. -->
-            <div class="finance-action-grid">
+            <div class="finance-action-grid" hidden>
               <button class="finance-action-card" type="button" id="financeNewPaymentBtn" hidden>
                 <span class="material-symbols-rounded">add_card</span>
                 <strong>Registrar cobro</strong>
