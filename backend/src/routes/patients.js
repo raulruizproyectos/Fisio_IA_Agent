@@ -132,6 +132,11 @@ router.get('/', async (req, res, next) => {
       supabase.from('crm_pacientes').select(CRM_FIELDS).eq('activo', true).order('created_at', { ascending: false }).limit(500),
     ]);
 
+    for (const [result, table] of [[legacyResult, 'pacientes'], [crmResult, 'crm_pacientes']]) {
+      if (result.status === 'rejected') throw result.reason;
+      if (result.value.error && !isMissingTableError(result, table)) throw result.value.error;
+    }
+
     const legacyRows = legacyResult.status === 'fulfilled' && !legacyResult.value.error
       ? (legacyResult.value.data || []) : [];
 

@@ -77,8 +77,24 @@ jobs:
           node scripts/test-crm-usability.mjs
           node scripts/test-agenda-loading.mjs
           node scripts/test-appointment-context.mjs
+          node scripts/test-navigation.mjs
+          node scripts/test-text.mjs
+          node scripts/test-http.mjs
+          node scripts/test-creation-recovery.mjs
           node scripts/test-clinical-motion.mjs
           node scripts/test-ficha-save-context.mjs
+          node scripts/test-appointment-defaults.mjs
+          node scripts/test-assistant-patient-context.mjs
+          node scripts/test-ficha-read-state.mjs
+          node scripts/test-finance-read-state.mjs
+          node scripts/test-frontend-auth.mjs
+          node scripts/test-public-booking.mjs
+          node scripts/test-proet-sync.mjs
+          node scripts/test-rename-n8n-fisio.mjs
+          node scripts/test-document-signature-flow.mjs
+          node scripts/test-history-note-write.mjs
+          node scripts/test-patient-appointment-index.mjs
+          node scripts/test-clinic-timezone.mjs
           node scripts/test-confirm-dialog.mjs
           node scripts/check-client-secrets.mjs
 

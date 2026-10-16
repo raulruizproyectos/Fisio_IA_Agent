@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { generateLongitudinalSummary } from '../lib/clinical-voice.js';
 
 const router = Router();
 const GENERIC_AGENT_ROUTES = new Set(['register_intake', 'unknown', 'default']);
@@ -8,30 +9,29 @@ const COPILOT_MODEL = process.env.OPENAI_COPILOT_MODEL || 'gpt-4o-mini';
 
 async function fetchPatientClinicalContext(patientId) {
   if (!patientId) return null;
-  try {
-    const { data: patient } = await supabase
-      .from('crm_pacientes')
-      .select('id, nombre, apellidos, resumen_clinico_longitudinal, antecedentes, alergias')
-      .eq('id', patientId)
-      .maybeSingle();
+  const { data: patient, error: patientError } = await supabase
+    .from('crm_pacientes')
+    .select('id, nombre, apellidos, antecedentes, alergias')
+    .eq('id', patientId)
+    .maybeSingle();
 
-    if (!patient) return null;
+  if (patientError) throw patientError;
+  if (!patient) return null;
 
-    const { data: notes } = await supabase
-      .from('crm_notas_clinicas')
-      .select('id, fecha, session_datetime, dolor_eva, zona_corporal, nota, structured_data')
-      .eq('paciente_id', patientId)
-      .order('session_datetime', { ascending: false })
-      .limit(4);
+  const { data: notes, error: notesError } = await supabase
+    .from('crm_notas_clinicas')
+    .select('id, fecha, session_datetime, created_at, dolor_eva, zona_corporal, nota, structured_data')
+    .eq('paciente_id', patientId)
+    .order('session_datetime', { ascending: false, nullsFirst: false }).order('fecha', { ascending: false })
+    .order('created_at', { ascending: false }).order('id', { ascending: false })
+    .limit(30);
 
-    return {
-      patient,
-      notes: notes || [],
-    };
-  } catch (err) {
-    console.error('Error fetching clinical context for Copilot:', err);
-    return null;
-  }
+  if (notesError) throw notesError;
+  const summary = await generateLongitudinalSummary({ patientName: [patient.nombre, patient.apellidos].filter(Boolean).join(' '), notes: notes || [], useAi: false });
+  return {
+    patient: { ...patient, resumen_clinico_longitudinal: summary },
+    notes: (notes || []).slice(0, 4),
+  };
 }
 
 export const pickValue = (obj, ...keys) => {
@@ -220,6 +220,7 @@ ${clinicalContext.notes.map((n, i) => `  ${i + 1}. [${n.session_datetime || n.fe
 
       const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
+        signal: AbortSignal.timeout(timeoutMs),
         headers: {
           Authorization: `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
@@ -271,7 +272,7 @@ ${clinicalContext.notes.map((n, i) => `  ${i + 1}. [${n.session_datetime || n.fe
     };
   }
 
-  let response;
+  let response, responseData;
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -287,6 +288,7 @@ ${clinicalContext.notes.map((n, i) => `  ${i + 1}. [${n.session_datetime || n.fe
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
+      responseData = await parseAgentResponse(response);
     } finally {
       clearTimeout(timeout);
     }
@@ -300,7 +302,6 @@ ${clinicalContext.notes.map((n, i) => `  ${i + 1}. [${n.session_datetime || n.fe
     };
   }
 
-  const responseData = await parseAgentResponse(response);
   if (!response.ok) {
     return {
       data: buildAgentFallbackReply(payload),
@@ -362,6 +363,7 @@ router.post('/message', async (req, res, next) => {
       patientId,
       professionalId,
       text,
+      requestId: req.id,
     });
 
     res.json(result);

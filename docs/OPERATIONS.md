@@ -1,12 +1,20 @@
 # Operations
 
-## Operación vigente — 2026-10-13
+> Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
+
+## Operación local — 16-oct-2026
+
+Cambios sin commit/push/deploy sobre main 1b2a954. Backend lint/214 tests y frontend check/build pasan; Node 24 coherente con CI/contenedores, sin cambio de resoluciones. [Informe y verificación](AUDITORIA_FINAL_2026-10-16.md). Helpers de workspace exigen destino nuevo, no borran el existente; importador conserva contraindicaciones y rename n8n no reactiva pausados.
+
+Para incorporar esta tanda a la URL pública se necesitan las autorizaciones de publicación y deploy de ambos servicios y su verificación posterior. No hay migración nueva. No repetir migraciones aplicadas ni ejecutar comandos Cloud por leer entradas históricas. Bot pausado, secretos solo .env.local, recibos privados fuera de Git; no hubo envíos reales ni gasto IA.
+
+## Operación histórica — 2026-10-13
 
 EasyPanel, proyecto `fisio-ia-agent`: frontend `c062967`, backend `ee3449c`, ambos desplegados y sus CI verdes. Readiness 13/13 y Calendar sync healthy tras el reinicio; doce workflows activos/coincidentes, recordatorios horarios activos y pilotos WhatsApp/Telegram booking desactivados. Ambos deploy fueron realizados por el agente con autorización expresa; no repetirlos por un commit posterior solo documental. No actualizar el software n8n para esta tarea.
 
 Supabase `uewhbaejcouenoufuwlq` sano. Las cinco migraciones finales ya están aplicadas con las versiones Cloud recogidas en [PRODUCTION_TESTING.md](PRODUCTION_TESTING.md); no repetir por timestamps distintos. Secretos/recuperación remota con credenciales solo en `.env.local` raíz; recibos privados fuera de Git. Copia ensayada CRM/Auth, no todos los servicios gestionados.
 
-El usuario solicita ahora una segunda auditoría independiente con [este prompt](PROMPT_AUDITORIA_CLOUDCODE.txt) y completar la implementación local del agente de citas Telegram si falta, según [requisitos confirmados](PILOTO_MENSAJERIA.md). Las mejoras generales se presentan antes de implementar. Commit, push, deploy, migraciones Cloud, activaciones, mensajes y gasto requieren autorización humana específica; las autorizaciones históricas no se transfieren a CloudCode. Los estados siguientes son historia; las guías operativas se utilizan solo para acciones expresamente autorizadas y con destino comprobado. [Evidencia reciente y alerta corregida](design-exploration/reviews/2026-10-13/production.md).
+El usuario solicita ahora una segunda auditoría independiente con [este prompt](DESIGN_RESOURCES.md) y completar la implementación local del agente de citas Telegram si falta, según [requisitos confirmados](PILOTO_MENSAJERIA.md). Las mejoras generales se presentan antes de implementar. Commit, push, deploy, migraciones Cloud, activaciones, mensajes y gasto requieren autorización humana específica; las autorizaciones históricas no se transfieren a CloudCode. Los estados siguientes son historia; las guías operativas se utilizan solo para acciones expresamente autorizadas y con destino comprobado. [Evidencia reciente y alerta corregida](design-exploration/reviews/2026-10-13/production.md).
 
 ## Estado histórico — 2026-10-08: preparado para la primera prueba
 

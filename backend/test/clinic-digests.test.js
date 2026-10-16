@@ -33,6 +33,18 @@ function withTables(tables, fn) {
 
 const profile = { id: 'pro-1', clinica_id: 'cli-1', telegram_chat_id: '555' };
 
+test('los resúmenes largos caben en Telegram y avisan que la lista completa está en el CRM', async () => {
+  const invoices = Array.from({ length: 120 }, (_, id) => ({ id, numero: `FICTICIA-LARGA-2026-${id}`, importe_total: 1, crm_pacientes: ana }));
+  assert.ok(buildBonosPayments({ bonos: [], invoices: invoices.map(row => ({ ...row, patient: ana })) }).length > 4096);
+  await withTables({ crm_perfiles: [profile], crm_facturas: invoices }, async () => {
+    const result = await buildDigest('bonos_pagos', { professionalId: 'pro-1' });
+    assert.equal(result.count, 120);
+    assert.ok(result.text.length <= 4096);
+    assert.match(result.text, /Facturas sin cobrar: 120/);
+    assert.match(result.text, /Lista abreviada.*CRM/);
+  });
+});
+
 test('nombre corto: nombre e inicial, sin apellidos completos', () => {
   assert.equal(shortName(ana), 'Ana P.');
   assert.equal(shortName({}), 'Paciente');

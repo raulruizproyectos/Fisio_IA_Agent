@@ -15,10 +15,8 @@ if (-not (Test-Path $sourceFrontend)) {
 }
 
 Write-Host "Preparando copia local no sincronizada..." -ForegroundColor Cyan
-if (Test-Path $WorkDir) {
-  Remove-Item -Recurse -Force $WorkDir
-}
-New-Item -ItemType Directory -Path $WorkDir | Out-Null
+. (Join-Path $PSScriptRoot 'new-local-workspace.ps1')
+$WorkDir = New-LocalWorkspace -SourcePath $RepoRoot -TargetPath $WorkDir
 
 $null = robocopy $sourceFrontend $WorkDir /E /XD node_modules node_modules_stuck* dist .astro
 $robocopyExit = $LASTEXITCODE

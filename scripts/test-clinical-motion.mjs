@@ -14,7 +14,7 @@ let onOverlayKey;
 let modal = true;
 const controls = [0,1,2,3,4].map(index => ({ disabled:index === 0 || index === 4, tabIndex:0, checkVisibility:() => index !== 2, focus() { document.activeElement = this; } }));
 const overlay = { ariaHidden:'true', getAttribute() { return this.ariaHidden; }, contains:element => element === overlay,
-  addEventListener(_name,handler) { onOverlayKey = handler; }, matches:() => modal, querySelectorAll:() => controls };
+  addEventListener(_name,handler) { onOverlayKey = handler; }, matches:selector => modal && selector.includes('.modal-shell'), querySelectorAll:() => controls };
 const tabs = [0,1,2].map(index => ({
   active:index === 0, offsetLeft:8 + index * 120, offsetWidth:120, attributes:{},
   classList:{ contains() { return tabs[index].active; } },
@@ -91,4 +91,19 @@ for (const key of ['Enter',' ']) {
 }
 onKey({target:bodyZone,key:'Tab',preventDefault() {throw Error('Tab must keep native navigation');}});
 assert.equal(clicks.length,2);
+// The two clinical dialogs use the same keyboard boundaries as other modals.
+for (const id of ['firmaModal','voiceSessionModal']) {
+  let handler,closed=0;
+  const localOrigin={isConnected:true,focus(){focusDocument.activeElement=this;}};
+  const focusDocument={activeElement:localOrigin,querySelectorAll:()=>[dialog],querySelector:()=>null};
+  const close={disabled:false,tabIndex:0,checkVisibility:()=>true,focus(){focusDocument.activeElement=this;},click(){closed++;}};
+  const last={...close,focus(){focusDocument.activeElement=this;}};
+  const dialog={inert:false,ariaHidden:'true',getAttribute(){return this.ariaHidden;},contains:node=>node===close||node===last,
+    matches:selector=>selector.split(',').map(part=>part.trim()).includes('#'+id),querySelector:()=>close,querySelectorAll:()=>[close,last],addEventListener:(_name,fn)=>{handler=fn;}};
+  runInNewContext(script,{document:focusDocument,MutationObserver:Observer,ResizeObserver:Observer});
+  dialog.ariaHidden='false';observers.get(dialog)();assert.equal(focusDocument.activeElement,close,'Clinical dialog gets focus on open');
+  focusDocument.activeElement=last;handler({key:'Tab',preventDefault(){}});assert.equal(focusDocument.activeElement,close,'Tab stays inside '+id);
+  handler({key:'Escape',preventDefault(){}});assert.equal(closed,1,'Escape uses the existing close handler for '+id);
+  dialog.ariaHidden='true';observers.get(dialog)();assert.equal(focusDocument.activeElement,localOrigin,'Closing restores focus');
+}
 console.log('PASS: overlays/focus, tab selection, loading states and keyboard activation of body zones.');

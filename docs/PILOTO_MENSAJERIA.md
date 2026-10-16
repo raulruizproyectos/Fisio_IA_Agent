@@ -4,7 +4,7 @@
 
 Backend `ee3449c` y frontend `c062967` desplegados. Los bots Telegram paciente/profesional y los doce workflows n8n de Fisio están activos y coinciden con fuente; getMe/dry_run comprobados, sin entrega clínica real de mensajes. Recordatorios horarios ya activos para pacientes vinculados y citas entre 23 y 25 horas; vista previa cero candidatos.
 
-El piloto separado de reserva `TELEGRAM_PILOT_BOOKING_ENABLED` y OpenWA/WhatsApp siguen desactivados. La reserva pública web y el código de reserva guiada no equivalen a activar ese piloto. Telegram es la preferencia actual del usuario por facilidad/coste; la segunda auditoría debe seguir cada entrada/bot/workflow y separar implementado, activo, comprobado y pendiente. [Prompt](PROMPT_AUDITORIA_CLOUDCODE.txt). No activar canales, vincular pacientes o enviar para «comprobar» sin autorización específica.
+El piloto separado de reserva `TELEGRAM_PILOT_BOOKING_ENABLED` y OpenWA/WhatsApp siguen desactivados. La reserva pública web y el código de reserva guiada no equivalen a activar ese piloto. Telegram es la preferencia actual del usuario por facilidad/coste; la segunda auditoría debe seguir cada entrada/bot/workflow y separar implementado, activo, comprobado y pendiente. [Prompt](DESIGN_RESOURCES.md). No activar canales, vincular pacientes o enviar para «comprobar» sin autorización específica.
 
 ## Requisitos nuevos confirmados — implementación local para CloudCode
 

@@ -764,7 +764,7 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
     };
 
     const occurredAt = new Date().toISOString();
-    await logComm(supabase, {
+    const recorded = await logComm(supabase, {
       paciente_id: recommendationRow.paciente_id,
       fisioterapeuta_id: fisioterapeutaId || recommendationRow.fisioterapeuta_id || null,
       recomendacion_id: recommendationId,
@@ -777,6 +777,7 @@ router.post('/recommendations/:recommendationId/follow-up', async (req, res) => 
       status: 'processed',
       occurred_at: occurredAt,
     });
+    if (!recorded) return res.status(503).json({ ok: false, error: 'No se pudo confirmar el seguimiento. Conserva la nota y comprueba el historial antes de repetir el guardado.' });
 
     res.status(201).json({
       ok: true,
@@ -961,7 +962,7 @@ router.post('/reports/archive', async (req, res) => {
     ).trim();
     const format = String(req.body?.format || 'pdf').trim().toLowerCase();
     const source = resolveCommChannel(req.body?.source || req.body?.channel || 'crm_web');
-    const fisioterapeutaId = req.body?.fisioterapeuta_id || null;
+    const fisioterapeutaId = req.auth?.profile_id || null;
     const customNote = String(req.body?.note_text || req.body?.texto_nota || '').trim();
 
     if (!recommendationId) {
@@ -990,7 +991,7 @@ router.post('/reports/archive', async (req, res) => {
       customNote ||
       `Informe ${format.toUpperCase()} generado y archivado para recomendacion ${recommendationId}`;
 
-    await logComm(supabase, {
+    const recorded = await logComm(supabase, {
       paciente_id: recommendationRow.paciente_id,
       fisioterapeuta_id: fisioterapeutaId || recommendationRow.fisioterapeuta_id || null,
       recomendacion_id: recommendationId,
@@ -1009,6 +1010,7 @@ router.post('/reports/archive', async (req, res) => {
       status: 'processed',
       occurred_at: archivedAt,
     });
+    if (!recorded) return res.status(503).json({ ok: false, error: 'No se pudo confirmar el archivo del informe. Comprueba el historial antes de repetirlo.' });
 
     try {
       await supabase.from('notas_seguimiento_paciente').insert({
@@ -1041,20 +1043,12 @@ router.post('/reports/archive', async (req, res) => {
 
 async function logComm(sb, payload) {
   try {
-    await sb.from('crm_comunicaciones').insert(payload);
+    const { error } = await sb.from('crm_comunicaciones').insert(payload);
+    if (error) throw error;
+    return true;
   } catch (err) {
-    if (isMissingColumnError(err, 'payload') && payload && typeof payload === 'object') {
-      const fallbackPayload = { ...payload };
-      delete fallbackPayload.payload;
-      try {
-        await sb.from('crm_comunicaciones').insert(fallbackPayload);
-        return;
-      } catch (fallbackErr) {
-        console.warn('[logComm] Error fallback insert:', fallbackErr.message);
-        return;
-      }
-    }
-    console.warn('[logComm] Error:', err.message);
+    console.warn('[logComm] Error:', publicErrorMessage(err, 'communication_write_failed'));
+    return false;
   }
 }
 
@@ -1091,11 +1085,6 @@ function normalizeRecommendationFollowUp(row) {
     status: row?.status || null,
     created_at: row?.occurred_at || row?.created_at || null,
   };
-}
-
-function isMissingColumnError(error, columnName) {
-  const msg = String(error?.message || '').toLowerCase();
-  return msg.includes(`column "${String(columnName || '').toLowerCase()}"`) && msg.includes('does not exist');
 }
 
 function isMissingTableError(error, tableName) {

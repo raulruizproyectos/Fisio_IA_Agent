@@ -1,5 +1,19 @@
 # Changelog
 
+> Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
+
+## 2026-10-16 — Auditoría y correcciones locales posteriores a 1b2a954
+
+Corregidas respuestas de otro paciente, cargas antiguas, totales financieros truncados, contexto/negaciones clínicas, lecturas Calendar, fuga de identidad en reserva pública, firmas/PDF y entrega duplicada de planes. Navegación y HTTP compartidos; Agenda consistente con Madrid/DST. Importe móvil, firma y ficha ajustados al tema azul. Scripts de copia/importación/renombrado preservan datos y pausados.
+
+Lint/214 pruebas backend, check/build frontend, 28 scripts CI locales y 112 estados web/móvil pasan; verificaciones adicionales de diálogos, importes y PDFs en [informe final](AUDITORIA_FINAL_2026-10-16.md). Sin commit/push/deploy ni nueva migración SQL. El bot permanece pausado y sus hallazgos pendientes están identificados.
+
+## 2026-10-15 — Navegación y límites de datos del frontend (local)
+
+- Navegación, reparación de textos, JSON y creación con recuperación separados en cuatro módulos. Menos actualizaciones visuales y lecturas duplicadas de historial; se conserva la navegación básica de arranque y se unifica la entrada en ficha. Retirados dos mapas de estado sin consumidores.
+- Se evita alterar nombres válidos con Ñ y se maneja el timeout nativo de un guardado sin intentar modificar su mensaje de solo lectura. No reintenta escrituras; conserva la operación pendiente y la causa original.
+- 16 regresiones, 112 estados de navegador, check/build y backend lint/171 pruebas pasan. Medidas y límites en [la revisión](CODE_STRUCTURE_REVIEW.md). Nuevas pruebas añadidas a CI; pendiente de publicación y despliegue.
+
 ## 2026-10-15 — Usabilidad del CRM completo, móvil y escritorio (local)
 
 - Primera revisión del código: las cargas de Agenda capturan semana/versión y descartan respuestas o fallos antiguos. Regresión reproduce el fallo previo y pasa tras el cambio. Nuevas regresiones de esta entrega incluidas en CI; [deuda estructural y continuación](CODE_STRUCTURE_REVIEW.md).
@@ -57,7 +71,7 @@
 ## 2026-10-13 — Cierre de producción y traspaso para segunda auditoría
 
 - Frontend `c062967` y backend `ee3449c` desplegados y confirmados en EasyPanel; ambos CI verdes. HTTP/readiness 13/13 correctos y Calendar healthy tras reiniciar. La falsa alerta CRITICAL por 4xx queda corregida; la sesión sí generó un email automático de monitorización antes del fix.
-- Por petición posterior del usuario se actualizan los documentos de seguimiento y se prepara `PROMPT_AUDITORIA_CLOUDCODE.txt`, con repositorio exacto, alcance independiente, evidencia/limitaciones, agentes IA/n8n/reserva y los 25 recursos de diseño. La documentación de este traspaso queda local, sin nuevo commit/push por esta petición; los cierres previos se conservan como historia.
+- Por petición posterior del usuario se actualizan los documentos de seguimiento y se prepara `DESIGN_RESOURCES.md`, con repositorio exacto, alcance independiente, evidencia/limitaciones, agentes IA/n8n/reserva y los 25 recursos de diseño. La documentación de este traspaso queda local, sin nuevo commit/push por esta petición; los cierres previos se conservan como historia.
 - El usuario exige además completar el agente de citas Telegram en local: nuevos/existentes con verificación de contacto, reservas/consulta/cambios/cancelaciones/recordatorios y límite de 24 horas para cambios/cancelaciones (después clínica). WhatsApp futuro. Requisitos registrados en `PILOTO_MENSAJERIA.md` y contrato en `PROMPT_AGENTE_CITAS.txt`; no se activa ni se integra por escribir la documentación.
 
 ## 2026-10-13 — Publicación y corrección de alertas de autenticación

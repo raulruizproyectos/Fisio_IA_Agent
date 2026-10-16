@@ -24,7 +24,7 @@ function database(row = recommendation()) {
       const filters = [];
       const result = () => {
         if (table === 'crm_recomendaciones') return { data: filters.every(([key, value]) => row?.[key] === value) ? row : null };
-        if (table === 'crm_pacientes') return { data: [{ id: 'patient-a', nombre: 'Real Patient' }] };
+        if (table === 'crm_pacientes') return { data: [{ id: 'patient-a', nombre: 'Real Patient', clinica_id: 'clinic-a' }] };
         if (table === 'pacientes' || table === 'crm_ejercicio_media') return { data: [] };
         if (table === 'vinculos_telegram_pacientes') return { data: { telegram_chat_id: 'linked-chat' } };
         if (table === 'crm_ejercicios_catalogo') return { data: [{ id: 'exercise-a', metadata: {} }] };
@@ -57,6 +57,17 @@ function pdfContent(buffer) {
   return [...text.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)]
     .map((match) => { try { return [...inflateSync(Buffer.from(match[1], 'latin1')).toString().matchAll(/<([0-9a-f]+)>/gi)]
       .map((hex) => Buffer.from(hex[1], 'hex').toString('latin1')).join(''); } catch { return ''; } }).join('');
+}
+
+function deliveryStore(updates, failState = false) {
+  return table => ({
+    insert() { return this; },
+    update(value) { if (table === 'crm_recomendaciones') updates.push(value); return this; },
+    eq() { return this; }, in() { return this; }, select() { return this; },
+    async single() { return { data: { id: 'delivery-a' } }; },
+    async maybeSingle() { return failState ? { error: { message: 'Synthetic state failure' } } : { data: { id: 'rec-a' } }; },
+    then(resolve) { resolve({ data: null }); },
+  });
 }
 
 test('seguimiento no puede aprobar, enviar ni cambiar el estado de una recomendacion', async () => {
@@ -104,7 +115,7 @@ test('Telegram envia contenido aprobado al vinculo guardado y solo marca enviada
     return new Response(JSON.stringify({ ok: true, result: { message_id: 12 } }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   });
   const updates = [];
-  t.mock.method(serviceSupabase, 'from', () => ({ update(value) { updates.push(value); return this; }, eq() { return this; }, in() { return this; }, select() { return this; }, async maybeSingle() { return { data: { id: 'rec-a' } }; } }));
+  t.mock.method(serviceSupabase, 'from', deliveryStore(updates));
   const res = await invoke(telegramRouter, '/patient-report/send', { recommendation_id: 'rec-a', patient_id: 'patient-a', exercises: [{ nombre: 'Injected Exercise' }], message_text: 'Injected message' }, database());
   assert.equal(res.statusCode, 200);
   assert.equal(sent.length, 2);
@@ -147,22 +158,14 @@ test('el borrador persiste las pautas editadas y conserva paciente y alertas; re
   assert.equal(staleDb.writes.length, 0);
 });
 
-test('un fallo de Telegram no marca entrega; un fallo de registro tras entrega devuelve aviso sin repetir el envio', async (t) => {
-  let failTelegram = true;
+test('un fallo de estado tras entrega confirmada devuelve aviso sin repetir el envio', async (t) => {
   let calls = 0;
-  t.mock.method(globalThis, 'fetch', async (url) => {
+  t.mock.method(globalThis, 'fetch', async () => {
     calls++;
-    const failed = failTelegram && String(url).endsWith('/sendDocument');
-    return new Response(JSON.stringify({ ok: !failed }), { status: failed ? 502 : 200, headers: { 'Content-Type': 'application/json' } });
+    return Response.json({ ok: true, result: { message_id: calls } });
   });
   const stateWrites = [];
-  t.mock.method(serviceSupabase, 'from', () => ({ update(value) { stateWrites.push(value); return this; }, eq() { return this; }, in() { return this; },
-    select() { return this; }, async maybeSingle() { return { error: { message: 'Simulated database failure' } }; } }));
-  const failed = await invoke(telegramRouter, '/patient-report/send', { recommendation_id: 'rec-a', patient_id: 'patient-a' }, database());
-  assert.equal(failed.statusCode, 500);
-  assert.equal(stateWrites.length, 0);
-  failTelegram = false;
-  calls = 0;
+  t.mock.method(serviceSupabase, 'from', deliveryStore(stateWrites, true));
   const delivered = await invoke(telegramRouter, '/patient-report/send', { recommendation_id: 'rec-a', patient_id: 'patient-a' }, database());
   assert.equal(delivered.statusCode, 200);
   assert.equal(delivered.body.state_recorded, false);

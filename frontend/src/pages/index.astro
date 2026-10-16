@@ -66,7 +66,11 @@ import ConfigView from '../components/views/ConfigView.astro';
 
 <script>
   import { backendBase, initializeProtectedApp, signOut } from '../lib/auth';
-  import { upcomingAppointments } from '../lib/appointments';
+  import { upcomingAppointments, CLINIC_TIME_ZONE, clinicDayKey, clinicHour, clinicDateTimeValue, clinicDateTimeToDate, shiftClinicDays, clinicWeekStart } from '../lib/appointments';
+  import { activateSection, normalizeSection } from '../lib/navigation';
+  import { sanitizeText } from '../lib/text';
+  import { fetchJson } from '../lib/http';
+  import { createClinicRecord as saveClinicRecord } from '../lib/create-record';
   import { DEMO_PATIENTS, DEMO_APPOINTMENTS, DEMO_EXERCISES_CATALOG } from '../lib/demoData';
   import { animateAppointmentChips, countUpOnce, staggerOnSectionOpen } from '../lib/motion';
   import { renderIncomeChart } from '../lib/income-chart';
@@ -246,8 +250,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   const assistantRailClose = document.getElementById('assistantRailClose') as HTMLButtonElement | null;
   const assistantRailBackdrop = document.getElementById('assistantRailBackdrop') as HTMLElement | null;
   const assistantRailFab = document.getElementById('assistantRailFab') as HTMLButtonElement | null;
-  const mobileDock = document.getElementById('mobileDock') as HTMLElement | null;
-  const mobileDockNavButtons = document.querySelectorAll('[data-mobile-nav]') as NodeListOf<HTMLButtonElement>;
   const mobileDockActionButtons = document.querySelectorAll('[data-mobile-action]') as NodeListOf<HTMLButtonElement>;
   const toastRegion = document.getElementById('toastRegion') as HTMLElement | null;
   const assistantCareStepItems = Array.from(
@@ -531,10 +533,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     });
     
   const requestConfirm = async (options: ConfirmOptions) => Boolean(await openConfirmDialog(options, false));
-  const requestTextInput = async (options: ConfirmOptions) => {
-    const value = await openConfirmDialog(options, true);
-    return typeof value === 'string' && value.trim() ? value.trim() : null;
-  };
   const appointmentPatientSelect = document.getElementById('appointmentPatientSelect') as HTMLSelectElement | null;
   const appointmentStartInput = document.getElementById('appointmentStartInput') as HTMLInputElement | null;
   const appointmentEndInput = document.getElementById('appointmentEndInput') as HTMLInputElement | null;
@@ -632,92 +630,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   // === HELPERS ===
-  const MOJIBAKE_RE = /(?:\u00C3|\u00C2|\u00E2|\u00F0|\u00D0|\u00D1|\uFFFD|\u0153|\u0152|\u0161|\u0178|\u00EF\u00BF\u00BD)/;
-  const CP1252_UNICODE_TO_BYTE: Record<number, number> = {
-    0x20ac: 0x80,
-    0x201a: 0x82,
-    0x0192: 0x83,
-    0x201e: 0x84,
-    0x2026: 0x85,
-    0x2020: 0x86,
-    0x2021: 0x87,
-    0x02c6: 0x88,
-    0x2030: 0x89,
-    0x0160: 0x8a,
-    0x2039: 0x8b,
-    0x0152: 0x8c,
-    0x017d: 0x8e,
-    0x2018: 0x91,
-    0x2019: 0x92,
-    0x201c: 0x93,
-    0x201d: 0x94,
-    0x2022: 0x95,
-    0x2013: 0x96,
-    0x2014: 0x97,
-    0x02dc: 0x98,
-    0x2122: 0x99,
-    0x0161: 0x9a,
-    0x203a: 0x9b,
-    0x0153: 0x9c,
-    0x017e: 0x9e,
-    0x0178: 0x9f,
-  };
-  const toLegacyBytes = (text: string) => {
-    const bytes: number[] = [];
-    for (const ch of text) {
-      const code = ch.codePointAt(0) ?? 0;
-      if (code <= 0xff) {
-        bytes.push(code);
-        continue;
-      }
-      const mapped = CP1252_UNICODE_TO_BYTE[code];
-      if (typeof mapped === 'number') {
-        bytes.push(mapped);
-        continue;
-      }
-      return null;
-    }
-    return new Uint8Array(bytes);
-  };
-  const decodeUtf8Bytes = (bytes: Uint8Array) => {
-    try {
-      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    } catch {
-      try {
-        return new TextDecoder('utf-8').decode(bytes);
-      } catch {
-        return '';
-      }
-    }
-  };
-  const maybeDecodeMojibake = (value: unknown) => {
-    let current = String(value ?? '');
-    if (!MOJIBAKE_RE.test(current)) return current;
-
-    for (let pass = 0; pass < 3; pass += 1) {
-      const bytes = toLegacyBytes(current);
-      if (!bytes) break;
-      const decoded = decodeUtf8Bytes(bytes);
-      if (!decoded || decoded === current) break;
-      current = decoded;
-      if (!MOJIBAKE_RE.test(current)) break;
-    }
-
-    return current.normalize('NFC');
-  };
-  const sanitizeText = (value: unknown) => maybeDecodeMojibake(value).replace(/\u0000/g, '');
-  const sanitizePayload = (value: any): any => {
-    if (typeof value === 'string') return sanitizeText(value);
-    if (Array.isArray(value)) return value.map((item) => sanitizePayload(item));
-    if (value && typeof value === 'object') {
-      const output: Record<string, any> = {};
-      Object.entries(value).forEach(([key, item]) => {
-        output[key] = sanitizePayload(item);
-      });
-      return output;
-    }
-    return value;
-  };
   const euroFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
   const fmtEuro = (value: unknown) => euroFormatter.format(Number(value) || 0);
   // Human labels for stored states (chips keep the raw value as their CSS class).
@@ -753,101 +665,11 @@ import ConfigView from '../components/views/ConfigView.astro';
     return `hace ${days} d`;
   };
   const isTodayDate = (d: string) => {
-    try {
-      const target = new Date(d);
-      const now = new Date();
-      return target.getFullYear() === now.getFullYear() && target.getMonth() === now.getMonth() && target.getDate() === now.getDate();
-    } catch {
-      return false;
-    }
+    const day = clinicDayKey(d);
+    return Boolean(day) && day === clinicDayKey(new Date());
   };
-  const fetchJson = async (url: string, opts?: RequestInit, timeoutMs = 8000) => {
-    const r = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), ...opts });
-    if (!r.ok) {
-      let detail = '';
-      try {
-        detail = await r.text();
-      } catch {
-        detail = '';
-      }
-      let message = detail ? `HTTP ${r.status}: ${detail.slice(0, 220)}` : `HTTP ${r.status}`;
-      let code = '';
-      let recoveredData: any = null;
-      if (detail) {
-        try {
-          const errorPayload = JSON.parse(detail);
-          message = String(errorPayload?.error || errorPayload?.message || message);
-          code = String(errorPayload?.code || '');
-          if (code === 'CREATE_ALREADY_SAVED') recoveredData = errorPayload.data;
-        } catch {}
-      }
-      const error: any = new Error(message);
-      error.status = r.status;
-      error.code = code || null;
-      error.recoveredData = recoveredData;
-      throw error;
-    }
-    const payload = await r.json();
-    return sanitizePayload(payload);
-  };
-  const createClinicRecord = async (url: string, body: any, timeoutMs = 8000, editor = 'manual') => {
-    // ponytail: pending IDs survive reloads in this tab; cross-device draft recovery would need a server-side draft.
-    const storageKey = `fisio.pending-create:${authContext.profileId}:${url}:${body.paciente_id || 'patient'}:${body.audio_processed !== undefined ? 'voice' : editor}`;
-    const pending = JSON.parse(sessionStorage.getItem(storageKey) || 'null') || {
-      key: crypto.randomUUID(),
-      ...(body.audio_processed !== undefined ? { fecha: body.fecha, session_datetime: body.session_datetime } : {}),
-    };
-    sessionStorage.setItem(storageKey, JSON.stringify(pending)); // Fail before writing if durable tab storage is unavailable.
-    const fields = { ...body, ...(body.audio_processed !== undefined ? { fecha: pending.fecha, session_datetime: pending.session_datetime } : {}) };
-    try {
-      const result = await fetchJson(url, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': pending.key }, body: JSON.stringify(fields),
-      }, timeoutMs);
-      if (!result?.data?.id) throw new Error('Respuesta de guardado incompleta');
-      sessionStorage.removeItem(storageKey);
-      return result;
-    } catch (err: any) {
-      if (err.code === 'CREATE_ALREADY_SAVED' && err.recoveredData?.id) sessionStorage.removeItem(storageKey);
-      if (!err.status) err.message = 'No se ha recibido confirmación. Conserva el formulario y vuelve a guardar: se comprobará el mismo guardado sin duplicarlo.';
-      throw err;
-    }
-  };
-  const sanitizePageTextNodes = () => {
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    const updates: Array<{ node: Text; value: string }> = [];
-    let current = walker.nextNode();
-    while (current) {
-      const node = current as Text;
-      const original = node.nodeValue || '';
-      if (MOJIBAKE_RE.test(original)) {
-        const fixed = maybeDecodeMojibake(original);
-        if (fixed && fixed !== original) {
-          updates.push({ node, value: fixed });
-        }
-      }
-      current = walker.nextNode();
-    }
-    updates.forEach(({ node, value }) => {
-      node.nodeValue = value;
-    });
-  };
-  const sanitizeCommonAttributes = () => {
-    const attrs = ['title', 'aria-label', 'placeholder'];
-    const selector = '[title],[aria-label],[placeholder]';
-    const nodes = document.querySelectorAll(selector);
-    nodes.forEach((element) => {
-      attrs.forEach((attr) => {
-        const original = element.getAttribute(attr);
-        if (!original || !MOJIBAKE_RE.test(original)) return;
-        const fixed = maybeDecodeMojibake(original);
-        if (fixed && fixed !== original) {
-          element.setAttribute(attr, fixed);
-        }
-      });
-    });
-  };
-  sanitizePageTextNodes();
-  sanitizeCommonAttributes();
+  const createClinicRecord = (url: string, body: any, timeoutMs = 8000, editor = 'manual') =>
+    saveClinicRecord(authContext.profileId, url, body, timeoutMs, editor);
   queueAssistantLayoutEnforce();
   const isTimeoutError = (err: any) => {
     const msg = String(err?.message || '').toLowerCase();
@@ -882,7 +704,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     syncChatPatientSelection(patientId, patientName);
     if (appointmentPatientSelect) appointmentPatientSelect.value = patientId;
     navigateTo('historial');
-    loadHistorial();
   };
 
   // === SPA ROUTING ===
@@ -975,7 +796,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   let lastExerciseReportPayload: any = null;
   let lastExerciseRequestText = '';
   let lastExerciseVisibleText = '';
-  let pendingExerciseRecommendationJobId: string | null = null;
+  const pendingExerciseRecommendationJobs = new Map<string, string>();
   const exerciseOpsStats = {
     timeouts: 0,
     retries: 0,
@@ -1138,7 +959,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   const buildAssistantBriefPrompt = (action: 'update-plan' | 'next-session') => {
-    if (!currentAssistantPatientBrief) return '';
+    if (!currentAssistantPatientBrief || currentAssistantPatientBrief.patientId !== selectedPatientId) return '';
     const brief = currentAssistantPatientBrief;
     const contextLines = [
       `Paciente: ${brief.patientName}`,
@@ -1506,7 +1327,9 @@ import ConfigView from '../components/views/ConfigView.astro';
       return null;
     }
     const brief = buildAssistantPatientBrief(patient, notes, recommendations);
+    brief.patientId = safePatientId;
     assistantPatientBriefCache[safePatientId] = brief;
+    if (safePatientId !== selectedPatientId) return brief;
     currentAssistantPatientBrief = brief;
     renderAssistantPatientBrief(brief);
     return brief;
@@ -1514,8 +1337,8 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const loadAssistantPatientBrief = async (patientId: string | null, force = false) => {
     const safePatientId = String(patientId || '').trim();
+    const requestToken = ++assistantPatientBriefRequestToken;
     if (!safePatientId) {
-      assistantPatientBriefRequestToken += 1;
       currentAssistantPatientBrief = null;
       renderAssistantPatientBrief(null);
       return null;
@@ -1527,7 +1350,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return currentAssistantPatientBrief;
     }
 
-    const requestToken = ++assistantPatientBriefRequestToken;
+    currentAssistantPatientBrief = null;
     renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { loading: true });
 
     try {
@@ -1537,7 +1360,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${safePatientId}?limit=25`),
       ]);
 
-      if (requestToken !== assistantPatientBriefRequestToken) return null;
+      if (requestToken !== assistantPatientBriefRequestToken || safePatientId !== selectedPatientId) return null;
 
       return syncAssistantPatientBriefFromData(
         safePatientId,
@@ -1546,7 +1369,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         recommendationsResp?.data || []
       );
     } catch {
-      if (requestToken !== assistantPatientBriefRequestToken) return null;
+      if (requestToken !== assistantPatientBriefRequestToken || safePatientId !== selectedPatientId) return null;
+      delete assistantPatientBriefCache[safePatientId];
       currentAssistantPatientBrief = null;
       renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { error: true });
       return null;
@@ -1615,6 +1439,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   function syncChatPatientSelection(patientId: string | null, fallbackName = '') {
     if (!chatPatientSelect) return;
     const nextId = patientId || '';
+    assistantPatientBriefRequestToken += 1;
     chatPatientSelect.value = nextId;
     selectedPatientId = nextId || null;
     updateAssistantPatientSelectorState();
@@ -1647,8 +1472,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     updateExerciseTelegramButton();
 
     const cachedBrief = assistantPatientBriefCache[nextId];
+    currentAssistantPatientBrief = cachedBrief || null;
     if (cachedBrief) {
-      currentAssistantPatientBrief = cachedBrief;
       renderAssistantPatientBrief(cachedBrief);
     } else {
       renderAssistantPatientBrief({ patientName: selectedPatientName || 'Paciente seleccionado' }, { loading: true });
@@ -1699,19 +1524,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   let activeSection = 'dashboard';
-  const shellConfig = (window as any).__fisioShellConfig || {};
-  const configuredFinanceSections = Array.isArray(shellConfig.financeSections) && shellConfig.financeSections.length
-    ? shellConfig.financeSections
-    : ['pagos', 'facturas', 'bonos', 'gestoria'];
-  const financeSections = new Set<string>(configuredFinanceSections.map((section: any) => String(section)));
-  const sectionAliases: Record<string, string> = {
-    inicio: 'dashboard',
-    home: 'dashboard',
-    finanzas: 'pagos',
-    payments: 'pagos',
-    documentos: 'documentos',
-    ...(shellConfig.aliases || {}),
-  };
   const financeTabsMarkup = `
     <button type="button" class="finance-tab" data-dashboard-nav="pagos"><span class="material-symbols-rounded">payments</span> Pagos</button>
     <button type="button" class="finance-tab" data-dashboard-nav="facturas"><span class="material-symbols-rounded">receipt_long</span> Facturas</button>
@@ -1721,11 +1533,6 @@ import ConfigView from '../components/views/ConfigView.astro';
   document.querySelectorAll<HTMLElement>('.finance-tabs[data-finance-tabs]').forEach((nav) => {
     nav.innerHTML = financeTabsMarkup;
   });
-
-  const normalizeSection = (section: string) => {
-    const raw = String(section || 'dashboard').trim();
-    return sectionAliases[raw] || raw || 'dashboard';
-  };
 
   const runPageLoader = (section: string) => {
     const loader = pageLoaders[section];
@@ -1750,34 +1557,20 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
     const shellNavigate = (window as any).__fisioShellNavigate;
-    if (typeof shellNavigate === 'function') {
-      shellNavigate(targetSection);
-    }
+    // The store skips unchanged values; selecting the current view must still return to its start.
+    if (document.body.dataset.activePage === targetSection) document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'auto' });
+    if (typeof shellNavigate === 'function') shellNavigate(targetSection);
+    else activateSection(targetSection);
     activeSection = targetSection;
-    const sidebarSection = financeSections.has(targetSection) ? 'finanzas' : targetSection;
-    navItems.forEach(n => n.classList.toggle('active', n.getAttribute('data-section') === sidebarSection));
-    mobileDock?.setAttribute('data-active-section', targetSection);
-    mobileDockNavButtons.forEach((button) => button.classList.toggle('active', normalizeSection(button.dataset.mobileNav || '') === targetSection));
-    pages.forEach(p => {
-      const isActive = (p as HTMLElement).dataset.page === targetSection;
-      p.classList.toggle('active', isActive);
-      (p as HTMLElement).hidden = !isActive;
-      (p as HTMLElement).setAttribute('aria-hidden', isActive ? 'false' : 'true');
-    });
-    targetPage.classList.add('active');
-    targetPage.hidden = false;
-    targetPage.setAttribute('aria-hidden', 'false');
-    document.body.dataset.activePage = targetSection;
-    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'auto' });
     window.setTimeout(() => runPageLoader(targetSection), 0);
     syncAgendaAutoRefresh();
   };
   (window as any).__fisioFullRouterReady = true;
   document.addEventListener('click', (event: MouseEvent) => {
     const target = event.target as HTMLElement | null;
-    const sectionTrigger = target?.closest('.nav-item[data-section], [data-dashboard-nav]') as HTMLElement | null;
+    const sectionTrigger = target?.closest('.nav-item[data-section], [data-dashboard-nav], [data-mobile-nav]') as HTMLElement | null;
     if (!sectionTrigger) return;
-    const section = sectionTrigger.getAttribute('data-section') || sectionTrigger.getAttribute('data-dashboard-nav');
+    const section = sectionTrigger.getAttribute('data-section') || sectionTrigger.getAttribute('data-dashboard-nav') || sectionTrigger.getAttribute('data-mobile-nav');
     if (!section) return;
     event.preventDefault();
     navigateTo(section);
@@ -1819,13 +1612,6 @@ import ConfigView from '../components/views/ConfigView.astro';
       input.setSelectionRange(input.value.length, input.value.length);
     }
     mainCopilotInput.value = '';
-  });
-  mobileDockNavButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const section = button.dataset.mobileNav;
-      if (!section) return;
-      navigateTo(section);
-    });
   });
   mobileDockActionButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -1910,9 +1696,6 @@ import ConfigView from '../components/views/ConfigView.astro';
     event.preventDefault();
     closeAssistantRail();
   });
-
-  // Close sidebar on nav click (mobile)
-  navItems.forEach(n => n.addEventListener('click', () => { if (usesDrawerNavigation()) closeSidebar(); }));
 
   // Clean up on resize
   syncResponsiveViewportState();
@@ -2202,6 +1985,10 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!tbody) return;
     tbody.innerHTML = `<tr class="empty-row"><td colspan="${colspan}">${renderState(icon, text, false, loading)}</td></tr>`;
   };
+  const setSummaryReadState = (values: Array<HTMLElement | null>, details: Array<HTMLElement | null>, message: string) => {
+    values.forEach((node) => { if (node) node.textContent = '—'; });
+    details.forEach((node) => { if (node) node.textContent = message; });
+  };
   const setListState = (container: HTMLElement | null, icon: string, text: string, loading = false) => {
     if (!container) return;
     container.innerHTML = renderState(icon, text, true, loading);
@@ -2350,9 +2137,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   const toDateTimeLocalValue = (date: Date) => {
-    const offset = date.getTimezoneOffset();
-    const local = new Date(date.getTime() - offset * 60000);
-    return local.toISOString().slice(0, 16);
+    return clinicDateTimeValue(date);
   };
 
   const setAppointmentFormDefaults = (force = false) => {
@@ -2361,13 +2146,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
     if (!appointmentStartInput || !appointmentEndInput) return;
     if (!force && appointmentStartInput.value && appointmentEndInput.value) return;
-    const start = new Date();
-    start.setSeconds(0, 0);
-    const roundedMinutes = Math.ceil(start.getMinutes() / 30) * 30;
-    start.setMinutes(roundedMinutes, 0, 0);
-    if (roundedMinutes === 60) {
-      start.setHours(start.getHours() + 1, 0, 0, 0);
-    }
+    const start = new Date(Math.ceil(new Date().getTime() / (30 * 60000)) * 30 * 60000);
     const end = new Date(start.getTime() + 30 * 60000);
     appointmentStartInput.value = toDateTimeLocalValue(start);
     appointmentEndInput.value = toDateTimeLocalValue(end);
@@ -3011,7 +2790,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     );
   };
 
-  const pollExerciseRecommendationJob = async (jobId: string, maxAttempts = 90, pollIntervalMs = 1500) => {
+  const pollExerciseRecommendationJob = async (jobId: string, maxAttempts = 90, pollIntervalMs = 1500, patientId: string | null = selectedPatientId) => {
     const safeJobId = String(jobId || '').trim();
     if (!safeJobId) throw new Error('No hay job_id de polling');
 
@@ -3024,12 +2803,12 @@ import ConfigView from '../components/views/ConfigView.astro';
       const status = String(payload?.status || '').toLowerCase();
 
       if (status === 'done' && payload?.result) {
-        pendingExerciseRecommendationJobId = null;
+        if (patientId) pendingExerciseRecommendationJobs.delete(patientId);
         return payload.result;
       }
 
       if (status === 'error') {
-        pendingExerciseRecommendationJobId = null;
+        if (patientId) pendingExerciseRecommendationJobs.delete(patientId);
         const error: any = new Error(payload?.error || 'No se pudo generar el informe.');
         error.code = payload?.code || null;
         throw error;
@@ -3140,15 +2919,17 @@ import ConfigView from '../components/views/ConfigView.astro';
       let payload: any = null;
       let retriesUsed = 0;
 
-      if (pendingExerciseRecommendationJobId) {
+      const pendingJobId = pendingExerciseRecommendationJobs.get(activePatientId);
+      if (pendingJobId) {
         upsertAgentProgress('Retomando informe que sigue en segundo plano...');
-        payload = await pollExerciseRecommendationJob(pendingExerciseRecommendationJobId, 45, 1500);
+        payload = await pollExerciseRecommendationJob(pendingJobId, 45, 1500, activePatientId);
       } else {
         try {
           const job = await startExerciseRecommendationAsync(text, activePatientId);
-          pendingExerciseRecommendationJobId = String(job?.job_id || '').trim() || null;
+          const jobId = String(job?.job_id || '').trim();
+          if (jobId) pendingExerciseRecommendationJobs.set(activePatientId, jobId);
           upsertAgentProgress(job?.progress_message || 'Generando ejercicios recomendados...');
-          payload = await pollExerciseRecommendationJob(String(job?.job_id || ''), 90, 1500);
+          payload = await pollExerciseRecommendationJob(jobId, 90, 1500, activePatientId);
         } catch (asyncErr: any) {
           if (!shouldFallbackToSyncExerciseRequest(asyncErr)) {
             if (isDevMode) {
@@ -3176,6 +2957,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               throw asyncErr;
             }
           } else {
+            pendingExerciseRecommendationJobs.delete(activePatientId);
             try {
               upsertAgentProgress('Generando ejercicios por via directa...');
               const directResponse = await requestExerciseRecommendation(text, 2, activePatientId);
@@ -3212,6 +2994,11 @@ import ConfigView from '../components/views/ConfigView.astro';
       }
 
       renderExerciseOpsMetric();
+
+      if (selectedPatientId !== activePatientId) return;
+      if (payload?.ok && String(payload?.patient_id || '') !== activePatientId) {
+        throw new Error('El informe recibido no corresponde al paciente seleccionado. No se ha mostrado ni utilizado.');
+      }
 
       if (!payload.ok) {
         addMessage(`Error: ${payload.error || 'No se pudo generar recomendación'}`, 'agent');
@@ -3258,10 +3045,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (err?.code === 'async_poll_timeout') {
         addMessage('El informe sigue generandose. Pulsa `Generar Plan` en unos segundos para retomarlo sin perder trabajo.', 'agent');
       } else if (isTimeoutError(err)) {
-        pendingExerciseRecommendationJobId = null;
         addMessage('El agente de ejercicios tarda más de lo esperado. Intenta de nuevo en unos segundos.', 'agent');
       } else {
-        pendingExerciseRecommendationJobId = null;
         addMessage(`Error en el agente de ejercicios: ${err?.message || 'error no identificado'}`, 'agent');
       }
     } finally {
@@ -4304,6 +4089,12 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
+    // Sort once for the directory, retaining the earliest appointment for each patient.
+    const nextAppointments = new Map<string, any>();
+    for (const appointment of upcomingAppointments(isDevMode ? DEMO_APPOINTMENTS : latestAgendaAppointments)) {
+      if (!nextAppointments.has(appointment.paciente_id)) nextAppointments.set(appointment.paciente_id, appointment);
+    }
+
     // Generate table rows and mobile cards
     const tableRows = sorted.map((patient: any) => {
       const patientName = patient?.nombre_completo || 'Sin nombre';
@@ -4320,13 +4111,12 @@ import ConfigView from '../components/views/ConfigView.astro';
       const evaClass = evaScore === null ? '' : evaScore >= 7 ? 'eva-high' : evaScore >= 4 ? 'eva-mid' : 'eva-low';
 
       // Find appointment
-      const appointmentRows = isDevMode ? DEMO_APPOINTMENTS : latestAgendaAppointments;
-      const appt = upcomingAppointments(appointmentRows).find((a: any) => a.paciente_id === patient.id);
+      const appt = nextAppointments.get(patient.id);
       let apptHtml = '<span class="patient-no-appt">Sin próxima cita esta semana</span>';
       if (appt) {
         const apptDate = new Date(appt.inicio_en);
         const timeStr = !Number.isNaN(apptDate.getTime())
-          ? `${apptDate.toDateString() === new Date().toDateString() ? 'Hoy' : 'Próx'}, ${String(apptDate.getHours()).padStart(2, '0')}:${String(apptDate.getMinutes()).padStart(2, '0')}`
+          ? `${isTodayDate(appt.inicio_en) ? 'Hoy' : 'Próx'}, ${apptDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: CLINIC_TIME_ZONE })}`
           : 'Programada';
         apptHtml = `
           <div class="patient-cell-appt">
@@ -5159,9 +4949,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
-    const todayStr = new Date().toDateString();
-    const todayCitas = citas.filter((c: any) => c.inicio_en && new Date(c.inicio_en).toDateString() === todayStr);
-    const upcomingCitas = upcomingAppointments(activeAppointments, now).filter((c: any) => new Date(c.inicio_en).toDateString() !== todayStr).slice(0, 4);
+    const todayCitas = citas.filter((c: any) => isTodayDate(c.inicio_en || ''));
+    const upcomingCitas = upcomingAppointments(activeAppointments, now).filter((c: any) => !isTodayDate(c.inicio_en || '')).slice(0, 4);
 
     const renderItem = (cita: any, isToday: boolean) => {
       const stateClass = String(cita.estado || 'pendiente')
@@ -5194,12 +4983,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   // === AGENDA SEMANAL ===
   const getWeekMonday = (d: Date): Date => {
-    const day = d.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    const monday = new Date(d);
-    monday.setDate(d.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
-    return monday;
+    return clinicWeekStart(d);
   };
   const fmtHourOnly = (iso: string) => {
     try { return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }); } catch { return ''; }
@@ -5316,7 +5100,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (state === 'backfilled') return { label: 'Backfill', chipClass: 'pendiente', note: 'La cita se recupero desde Google Calendar y ya tiene correspondencia en CRM.' };
     if (state === 'crm_only') return { label: 'Solo CRM', chipClass: 'caducado', note: 'La cita existe en CRM pero todavía no aparece enlazada en Google Calendar.' };
     if (state === 'linked' || origin === 'calendar' || origin === 'crm') return { label: 'CRM + Calendar', chipClass: 'aprobado', note: 'La cita esta enlazada entre CRM y Google Calendar.' };
-    return { label: 'Sin traza', chipClass: 'caducado', note: 'No hay metadata suficiente para determinar el estado de espejo con Google Calendar.' };
+    return { label: 'Por comprobar', chipClass: 'caducado', note: 'No se ha podido comprobar la sincronización de esta cita con Google Calendar.' };
   };
 
   const renderAgendaSyncStatus = (syncStatus: any = null, liveSummary: any = null) => {
@@ -5402,18 +5186,14 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!cal) return;
 
     const CLINIC_HOURS = [9, 10, 11, 12, 15, 16, 17, 18];
-    const weekDays: Date[] = Array.from({ length: 5 }, (_, i) => {
-      const d = new Date(weekStart);
-      d.setDate(weekStart.getDate() + i);
-      return d;
-    });
+    const weekDays: Date[] = Array.from({ length: 5 }, (_, i) => shiftClinicDays(weekStart, i));
 
     // Map day/hour -> appointments
     const apptMap = new Map<string, any[]>();
     const allDayMap = new Map<number, any[]>();
     for (const cita of citas) {
       const start = new Date(cita.inicio_en);
-      const dayIdx = weekDays.findIndex(d => d.toDateString() === start.toDateString());
+      const dayIdx = weekDays.findIndex(d => clinicDayKey(d) === clinicDayKey(start));
       if (dayIdx < 0) continue;
       if (isAllDayAppointment(cita)) {
         if (!allDayMap.has(dayIdx)) allDayMap.set(dayIdx, []);
@@ -5421,7 +5201,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         continue;
       }
       // Appointments in the lunch pause or outside opening hours get their own row instead of vanishing.
-      const slotHour = start.getHours();
+      const slotHour = clinicHour(start);
       const key = `${dayIdx}-${slotHour}`;
       if (!apptMap.has(key)) apptMap.set(key, []);
       apptMap.get(key)!.push(cita);
@@ -5429,7 +5209,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const extraHours = [...apptMap.keys()].map((key) => Number(key.split('-')[1])).filter((h) => !CLINIC_HOURS.includes(h));
     const HOUR_SLOTS = [...new Set([...CLINIC_HOURS, ...extraHours])].sort((a, b) => a - b);
-    const todayStr = new Date().toDateString();
+    const todayStr = clinicDayKey(new Date());
 
     let html = `<div class="agenda-board-shell">
       <div class="agenda-board" role="grid" aria-label="Agenda semanal">
@@ -5437,9 +5217,9 @@ import ConfigView from '../components/views/ConfigView.astro';
           <div class="agenda-board-corner" aria-hidden="true">Hora</div>`;
 
     for (let i = 0; i < 5; i++) {
-      const isToday = weekDays[i].toDateString() === todayStr;
-      const dayNum = weekDays[i].toLocaleDateString('es-ES', { day: 'numeric' });
-      const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short' });
+      const isToday = clinicDayKey(weekDays[i]) === todayStr;
+      const dayNum = weekDays[i].toLocaleDateString('es-ES', { day: 'numeric', timeZone: CLINIC_TIME_ZONE });
+      const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short', timeZone: CLINIC_TIME_ZONE });
       const allDayClosures = allDayMap.get(i) || [];
       const allDayHtml = allDayClosures.map((cita: any) => {
         const label = cita.nombre_paciente || cita.motivo || 'Cerrado';
@@ -5472,7 +5252,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
       for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
         const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
-        const isToday = weekDays[dayIdx].toDateString() === todayStr;
+        const isToday = clinicDayKey(weekDays[dayIdx]) === todayStr;
         html += `<div class="agenda-week-cell${isToday ? ' is-today' : ''}" role="gridcell">`;
         for (const a of appts) {
           const st = a.estado || 'pendiente';
@@ -5518,11 +5298,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const calendarOnlySummary = summarizeCalendarOnlyBlocks(allCitas);
     const sorted = [...allCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
-    const weekDays = Array.from({ length: 5 }, (_, idx) => {
-      const date = new Date(weekStart);
-      date.setDate(date.getDate() + idx);
-      return date;
-    });
+    const weekDays = Array.from({ length: 5 }, (_, idx) => shiftClinicDays(weekStart, idx));
 
     if (!sorted.length) {
       agendaMobileSummary.textContent = calendarOnlySummary.total
@@ -5534,7 +5310,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const itemsByDay = new Map<string, any[]>();
     for (const cita of sorted) {
-      const key = new Date(cita.inicio_en).toDateString();
+      const key = clinicDayKey(cita.inicio_en);
       if (!itemsByDay.has(key)) itemsByDay.set(key, []);
       itemsByDay.get(key)!.push(cita);
     }
@@ -5544,10 +5320,10 @@ import ConfigView from '../components/views/ConfigView.astro';
     agendaMobileSummary.textContent = `${clinicalCount} cita(s) clínicas | ${todayItems.length} evento(s) hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
 
     agendaMobileList.innerHTML = weekDays.map((date) => {
-      const key = date.toDateString();
+      const key = clinicDayKey(date);
       const dayItems = itemsByDay.get(key) || [];
       const isToday = isTodayDate(date.toISOString());
-      const dayTitle = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
+      const dayTitle = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short', timeZone: CLINIC_TIME_ZONE });
 
       if (!dayItems.length) {
         return `
@@ -5681,7 +5457,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           <strong>${escapeHtml(canal)}</strong>
         </article>
         <article>
-          <span>Espejo</span>
+          <span>Calendario</span>
           <strong>${escapeHtml(mirror.label)}</strong>
         </article>
       </section>
@@ -5699,7 +5475,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       </section>
       <section class="drawer-clinical-note">
         <span class="material-symbols-rounded">psychology</span>
-        <p>Rumbo nuevo: la cita abre contexto, la ficha concentra el caso y el asistente clínico convierte síntomas en informe profesional con PDF y entrega trazable.</p>
+        <p>Revisa la cita, abre la ficha del paciente o prepara un plan de ejercicios desde aquí.</p>
       </section>
     `;
 
@@ -5722,14 +5498,12 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const weekLabelEl = document.getElementById('weekLabel');
     if (weekLabelEl) {
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 4);
-      weekLabelEl.textContent = `${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+      const weekEnd = shiftClinicDays(weekStart, 4);
+      weekLabelEl.textContent = `${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: CLINIC_TIME_ZONE })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: CLINIC_TIME_ZONE })}`;
     }
 
     const desde = new Date(weekStart).toISOString();
-    const hastaDate = new Date(weekStart);
-    hastaDate.setDate(hastaDate.getDate() + 5);
+    const hastaDate = shiftClinicDays(weekStart, 5);
     const hasta = hastaDate.toISOString();
 
     try {
@@ -5880,13 +5654,11 @@ import ConfigView from '../components/views/ConfigView.astro';
   pageLoaders['citas'] = loadCitas;
   document.getElementById('refreshCitas')?.addEventListener('click', loadCitas);
   document.getElementById('prevWeek')?.addEventListener('click', () => {
-    agendaWeekStart = new Date(agendaWeekStart);
-    agendaWeekStart.setDate(agendaWeekStart.getDate() - 7);
+    agendaWeekStart = shiftClinicDays(agendaWeekStart, -7);
     loadCitas();
   });
   document.getElementById('nextWeek')?.addEventListener('click', () => {
-    agendaWeekStart = new Date(agendaWeekStart);
-    agendaWeekStart.setDate(agendaWeekStart.getDate() + 7);
+    agendaWeekStart = shiftClinicDays(agendaWeekStart, 7);
     loadCitas();
   });
   document.getElementById('thisWeek')?.addEventListener('click', () => {
@@ -5942,7 +5714,10 @@ import ConfigView from '../components/views/ConfigView.astro';
       setAppointmentFormFeedback('Completa paciente, inicio y fin.', 'error');
       return;
     }
-    if (new Date(finEn) <= new Date(inicioEn)) {
+    let start: Date, end: Date;
+    try { start = clinicDateTimeToDate(inicioEn); end = clinicDateTimeToDate(finEn); }
+    catch (error: any) { setAppointmentFormFeedback(error.message, 'error'); return; }
+    if (end <= start) {
       setAppointmentFormFeedback('La hora de fin debe ser posterior al inicio.', 'error');
       return;
     }
@@ -5955,8 +5730,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         body: JSON.stringify({
           paciente_id: pacienteId,
           fisioterapeuta_id: PROF_ID,
-          inicio_en: new Date(inicioEn).toISOString(),
-          fin_en: new Date(finEn).toISOString(),
+          inicio_en: start.toISOString(),
+          fin_en: end.toISOString(),
           motivo,
           canal_origen: 'crm_web',
         }),
@@ -6313,7 +6088,11 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   // === LOAD HISTORIAL ===
+  let historyLoadVersion = 0;
   const loadHistorial = async () => {
+    const loadVersion = ++historyLoadVersion;
+    const patientId = selectedPatientId;
+    const isCurrentHistory = () => loadVersion === historyLoadVersion && patientId === selectedPatientId;
     if (!historialContent) return;
     if (historyOpenFichaBtn) historyOpenFichaBtn.innerHTML = `<span class="material-symbols-rounded" aria-hidden="true">person</span> ${selectedPatientId ? 'Abrir ficha' : 'Elegir paciente'}`;
     if (!selectedPatientId) {
@@ -6341,11 +6120,13 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     try {
       const [patientPiece, historyPiece, recommendationsPiece, telegramPiece] = await Promise.all([
-        loadPiece('datos del paciente', fetchJson(`${BACKEND_BASE}/api/pacientes/${selectedPatientId}`)),
-        loadPiece('notas clínicas', fetchJson(`${BACKEND_BASE}/api/profesional/patients/${selectedPatientId}/history`)),
-        loadPiece('planes de ejercicios', fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${selectedPatientId}?limit=25`)),
-        loadPiece('Telegram', fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${selectedPatientId}`)),
+        loadPiece('datos del paciente', fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}`)),
+        loadPiece('notas clínicas', fetchJson(`${BACKEND_BASE}/api/profesional/patients/${patientId}/history`)),
+        loadPiece('planes de ejercicios', fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`)),
+        loadPiece('Telegram', fetchJson(`${BACKEND_BASE}/api/telegram/link-code/${patientId}`)),
       ]);
+
+      if (!isCurrentHistory()) return;
 
       const patient = patientPiece.response?.data || {};
       const notes = historyPiece.response?.data?.notas_seguimiento || [];
@@ -6355,7 +6136,12 @@ import ConfigView from '../components/views/ConfigView.astro';
       currentPatientTelegramLinkState = telegramLink;
       updateExerciseTelegramButton();
       const displayName = patient?.nombre_completo || selectedPatientName || `Paciente #${selectedPatientId}`;
-      syncAssistantPatientBriefFromData(selectedPatientId, patient, notes, recommendations);
+      if (patientPiece.ok && historyPiece.ok && recommendationsPiece.ok) {
+        syncAssistantPatientBriefFromData(selectedPatientId, patient, notes, recommendations);
+      } else {
+        delete assistantPatientBriefCache[String(selectedPatientId)];
+        currentAssistantPatientBrief = null;
+      }
       selectedPatientName = displayName;
       rememberSelectedPatient(selectedPatientId, displayName);
       const unavailablePieces = [patientPiece, historyPiece, recommendationsPiece, telegramPiece]
@@ -6404,175 +6190,6 @@ import ConfigView from '../components/views/ConfigView.astro';
         latestArchivedReportAt: null as string | null,
       });
 
-      const recommendationsHtml = recommendations.length
-        ? `<div class="recommendation-history-shell">
-            <div class="recommendation-summary-grid">
-              <article class="recommendation-summary-card">
-                <span>Planes registrados</span>
-                <strong>${recommendations.length}</strong>
-                <p>Historial terapeutico acumulado para este paciente.</p>
-              </article>
-              <article class="recommendation-summary-card">
-                <span>Ejercicios prescritos</span>
-                <strong>${recommendationsSummary.totalExercises}</strong>
-                <p>Total de ejercicios repartidos entre todos los planes.</p>
-              </article>
-              <article class="recommendation-summary-card">
-                <span>Entregas archivadas</span>
-                <strong>${recommendationsSummary.totalArchivedReports}</strong>
-                <p>${recommendationsSummary.latestArchivedReportAt ? `Última entrega ${escapeHtml(fmtDate(recommendationsSummary.latestArchivedReportAt))}` : 'Sin entregas archivadas todavía.'}</p>
-              </article>
-              <article class="recommendation-summary-card">
-                <span>Seguimientos</span>
-                <strong>${recommendationsSummary.totalFollowUps}</strong>
-                <p>Registros de evolución y feedback del paciente.</p>
-              </article>
-            </div>
-            <div class="recommendation-list">${recommendations.map((rec: any) => {
-          const report = rec?.report_snapshot || {};
-          const followUps = Array.isArray(rec?.follow_ups) ? [...rec.follow_ups] : [];
-          const archivedReports = Array.isArray(rec?.archived_reports) ? [...rec.archived_reports] : [];
-          const reportExercises = Array.isArray(report?.exercises) ? report.exercises : [];
-          const itemExercises = Array.isArray(rec?.crm_recomendacion_items)
-            ? rec.crm_recomendacion_items.map((item: any) => ({
-              nombre: item?.crm_ejercicios_catalogo?.nombre || item?.ejercicio_id || 'Ejercicio',
-              why: item?.why || '',
-            }))
-            : [];
-          const exercises = reportExercises.length ? reportExercises : itemExercises;
-          const sortedFollowUps = followUps.sort((a: any, b: any) => new Date(b?.created_at || b?.fecha || 0).getTime() - new Date(a?.created_at || a?.fecha || 0).getTime());
-          const sortedArchivedReports = archivedReports.sort((a: any, b: any) => new Date(b?.archived_at || b?.created_at || 0).getTime() - new Date(a?.archived_at || a?.created_at || 0).getTime());
-          const latestFollowUp = sortedFollowUps[0] || null;
-          const latestArchivedReport = sortedArchivedReports[0] || null;
-          const latestFollowUpMeta = getRecommendationAdherenceMeta(latestFollowUp?.adherence_status || null);
-          const followUpFormHtml = renderRecommendationFollowUpForm(rec, latestFollowUp);
-          const latestTouchAt = [
-            rec?.created_at || null,
-            latestFollowUp?.created_at || null,
-            latestArchivedReport?.archived_at || null,
-          ].reduce((latest: string | null, candidate: string | null) => pickLatestIsoDate(latest, candidate), null as string | null);
-          const stateClass = rec?.estado === 'enviada'
-            ? 'aprobado'
-            : rec?.estado === 'requiere_revision'
-              ? 'rechazado'
-              : 'pendiente';
-          const redFlagsHtml = rec?.red_flags_present
-            ? '<span class="status-chip rechazado">Alertas rojas</span>'
-            : '<span class="status-chip aprobado">Sin alertas</span>';
-          const therapistNote = report?.message_to_therapist || rec?.message_to_therapist_es || '';
-          const patientMsg = report?.message_to_patient || rec?.message_to_patient_es || '';
-          const exercisesHtml = exercises.length
-            ? `<ul class="recommendation-exercises">${exercises.slice(0, 8).map((ex: any, idx: number) => `<li><strong>${idx + 1}. ${escapeHtml(ex?.nombre || ex?.name || 'Ejercicio')}</strong>${ex?.why ? ` - ${escapeHtml(ex.why)}` : ''}</li>`).join('')}</ul>`
-            : '<p class="detail-empty">Sin ejercicios detallados en esta recomendación.</p>';
-          const followUpsHtml = sortedFollowUps.length
-            ? `<ul class="detail-list">${sortedFollowUps.slice(0, 5).map((fu: any) => `<li><strong>${fmtDate(fu?.created_at || '')}</strong><br>${escapeHtml(fu?.note_text || 'Seguimiento sin nota')}${fu?.pain_scale !== null && fu?.pain_scale !== undefined ? ` - Dolor ${escapeHtml(fu.pain_scale)}/10` : ''}</li>`).join('')}</ul>`
-            : '<p class="detail-empty">Sin seguimiento registrado todavía.</p>';
-          const archivedReportsHtml = sortedArchivedReports.length
-            ? `<ul class="detail-list">${sortedArchivedReports.slice(0, 5).map((item: any) => `<li><strong>${fmtDate(item?.archived_at || '')}</strong><br>${escapeHtml((item?.format || 'pdf').toUpperCase())}${item?.source ? ` - ${escapeHtml(item.source)}` : ''}${item?.message_text ? ` - ${escapeHtml(item.message_text)}` : ''}</li>`).join('')}</ul>`
-            : '<p class="detail-empty">Sin entregas o archivados registrados todavía.</p>';
-          const activityTimeline = [
-            {
-              icon: 'assignment',
-              tone: 'plan',
-              at: rec?.created_at || null,
-              title: 'Plan generado',
-              detail: `${exercises.length} ejercicios${rec?.estado ? ` - Estado ${String(rec.estado).replace('_', ' ')}` : ''}`,
-            },
-            ...sortedArchivedReports.map((item: any) => ({
-              icon: 'description',
-              tone: 'delivery',
-              at: item?.archived_at || item?.created_at || null,
-              title: 'Entrega archivada',
-              detail: `${String(item?.format || 'pdf').toUpperCase()}${item?.source ? ` - ${item.source}` : ''}${item?.message_text ? ` - ${item.message_text}` : ''}`,
-            })),
-            ...sortedFollowUps.map((fu: any) => ({
-              icon: 'clinical_notes',
-              tone: 'followup',
-              at: fu?.created_at || fu?.fecha || null,
-              title: 'Seguimiento registrado',
-              detail: `${fu?.pain_scale !== null && fu?.pain_scale !== undefined ? `Dolor ${fu.pain_scale}/10 - ` : ''}${fu?.note_text || 'Sin nota adicional'}`,
-            })),
-          ]
-            .filter((item: any) => item.at)
-            .sort((a: any, b: any) => new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime())
-            .slice(0, 6);
-          const activityTimelineHtml = activityTimeline.length
-            ? `<div class="recommendation-timeline">${activityTimeline.map((item: any) => `
-                <article class="recommendation-timeline-item">
-                  <span class="recommendation-timeline-icon recommendation-timeline-icon-${escapeHtml(item.tone)}"><span class="material-symbols-rounded">${escapeHtml(item.icon)}</span></span>
-                  <div class="recommendation-timeline-copy">
-                    <strong>${escapeHtml(item.title)}</strong>
-                    <p>${escapeHtml(item.detail)}</p>
-                    <span>${escapeHtml(fmtDate(item.at || ''))}</span>
-                  </div>
-                </article>
-              `).join('')}</div>`
-            : '<p class="detail-empty">Sin actividad cronologica registrada todavía.</p>';
-
-          return `
-            <article class="recommendation-card">
-              <div class="recommendation-head">
-                <div>
-                  <h4>Recomendación ${escapeHtml(rec?.id || '-')}</h4>
-                  <p>${fmtDate(rec?.created_at || '')}</p>
-                </div>
-                <div class="recommendation-chips">
-                  <span class="status-chip ${stateClass}">${escapeHtml(statusText(rec?.estado || 'generada'))}</span>
-                  ${redFlagsHtml}
-                </div>
-              </div>
-              <div class="recommendation-meta-grid">
-                <div class="recommendation-meta-item">
-                  <span>Ejercicios</span>
-                  <strong>${exercises.length}</strong>
-                </div>
-                <div class="recommendation-meta-item">
-                  <span>Entregas</span>
-                  <strong>${sortedArchivedReports.length}</strong>
-                </div>
-                <div class="recommendation-meta-item">
-                  <span>Seguimientos</span>
-                  <strong>${sortedFollowUps.length}</strong>
-                </div>
-                <div class="recommendation-meta-item">
-                  <span>Última actividad</span>
-                  <strong>${latestTouchAt ? escapeHtml(fmtDate(latestTouchAt)) : 'Sin actividad'}</strong>
-                </div>
-              </div>
-              ${therapistNote ? `<p class="recommendation-note"><strong>Nota clínica:</strong> ${escapeHtml(therapistNote)}</p>` : ''}
-              ${patientMsg ? `<p class="recommendation-note"><strong>Mensaje paciente:</strong> ${escapeHtml(patientMsg)}</p>` : ''}
-              <div class="recommendation-section">
-                <h5>Línea temporal</h5>
-                ${activityTimelineHtml}
-              </div>
-              <div class="recommendation-section">
-                <h5>Ejercicios (${exercises.length})</h5>
-                ${exercisesHtml}
-              </div>
-              <div class="recommendation-section">
-                <div class="recommendation-section-head">
-                  <h5>Seguimiento (${sortedFollowUps.length})</h5>
-                  <span class="status-chip ${escapeAttr(latestFollowUpMeta.tone)}">${escapeHtml(latestFollowUpMeta.label)}</span>
-                </div>
-                ${followUpsHtml}
-              </div>
-              <div class="recommendation-section recommendation-section-followup">
-                <div class="recommendation-section-head">
-                  <h5>Registrar feedback rápido</h5>
-                  <p>Registra adherencia, dolor y observaciones sin salir del historial.</p>
-                </div>
-                ${followUpFormHtml}
-              </div>
-              <div class="recommendation-section">
-                <h5>Entregas y archivo (${sortedArchivedReports.length})</h5>
-                ${archivedReportsHtml}
-              </div>
-            </article>
-          `;
-        }).join('')}</div>
-          </div>`
-        : `<p class="detail-empty">Sin recomendaciones de ejercicios registradas.</p>`;
-      void recommendationsHtml;
 
       const latestRecommendation = recommendations
         .filter((rec: any) => rec?.created_at)
@@ -6639,6 +6256,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         pendingHistoryAnchor = null;
       }
     } catch {
+      if (!isCurrentHistory()) return;
       pendingHistoryAnchor = null;
       currentPatientTelegramLinkState = null;
       historialContent.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><p>No se pudo cargar el historial del paciente seleccionado.</p></div>`;
@@ -6818,6 +6436,10 @@ import ConfigView from '../components/views/ConfigView.astro';
     const noteInput = formEl.elements.namedItem('texto_nota') as HTMLTextAreaElement | null;
     const sourceInput = formEl.elements.namedItem('fuente') as HTMLInputElement | null;
     const submitBtn = formEl.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    if (submitBtn?.disabled) return;
+    const patientId = selectedPatientId;
+    const patientName = selectedPatientName;
+    const loadVersion = historyLoadVersion;
     const noteText = noteInput?.value.trim() || '';
     if (!noteText) {
       setHistoryNoteFeedback(formEl, 'Escribe una nota antes de guardarla.');
@@ -6833,20 +6455,33 @@ import ConfigView from '../components/views/ConfigView.astro';
     setHistoryNoteFeedback(formEl, 'Guardando nota de seguimiento...', 'success');
 
     try {
-      await fetchJson(`${BACKEND_BASE}/api/profesional/notes`, {
+      const saved = await fetchJson(`${BACKEND_BASE}/api/profesional/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          paciente_id: selectedPatientId,
+          paciente_id: patientId,
           profesional_id: PROF_ID,
           texto_nota: noteText,
           fuente: sourceInput?.value || 'crm_web',
         }),
       }, 15000);
+      if (!saved?.data?.id) throw new Error('Respuesta de guardado incompleta');
+      if (patientId !== selectedPatientId || loadVersion !== historyLoadVersion) return;
 
-      addMessage(`Nota de seguimiento guardada para ${selectedPatientName || 'el paciente seleccionado'}.`, 'agent');
-      await loadHistorial();
+      addMessage(`Nota de seguimiento guardada para ${patientName || 'el paciente seleccionado'}.`, 'agent');
+      if (noteInput?.value.trim() === noteText) await loadHistorial();
+      else {
+        setHistoryNoteFeedback(formEl, 'La nota anterior se ha guardado. Se conserva el texto que has cambiado después de enviarla.', 'success');
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = previousLabel; }
+      }
     } catch (err: any) {
+      if (patientId !== selectedPatientId || loadVersion !== historyLoadVersion) return;
+      // shortcut: legacy follow-up notes have no server idempotency; inspect history after an uncertain write.
+      if (!err.status || err.status >= 500) {
+        setHistoryNoteFeedback(formEl, 'No se ha recibido confirmación del guardado. Conservamos el texto y bloqueamos este envío. Actualiza el historial y comprueba si la nota ya está registrada antes de volver a crearla.');
+        if (submitBtn) submitBtn.innerHTML = previousLabel;
+        return;
+      }
       setHistoryNoteFeedback(formEl, `No se pudo guardar la nota: ${err?.message || 'error no identificado'}`);
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -7073,7 +6708,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (pagosTotalTarjeta) pagosTotalTarjeta.textContent = fmtMoney(tarjeta);
   };
 
-  const renderFinanceOverview = async (pagos: any[]) => {
+  let pagosLoadVersion = 0;
+  const renderFinanceOverview = async (pagos: any[], loadVersion = pagosLoadVersion) => {
     const rows = Array.isArray(pagos) ? pagos : [];
     const paidTotal = rows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
     if (financePaidValue) financePaidValue.textContent = fmtMoney(paidTotal);
@@ -7087,26 +6723,35 @@ import ConfigView from '../components/views/ConfigView.astro';
       return { year: d.getFullYear(), month: d.getMonth() + 1, name: monthNames[d.getMonth()] };
     };
     try {
-      const [facturasPayload, bonosPayload] = await Promise.all([
-        fetchJson(`${BACKEND_BASE}/api/facturas?anio=${encodeURIComponent(anio)}`).catch(() => ({ data: [] })),
-        fetchJson(`${BACKEND_BASE}/api/bonos?estado=activo`).catch(() => ({ data: [] })),
+      const readRows = async (url: string) => {
+        const payload = await fetchJson(url);
+        if (payload?.unavailable || payload?.available === false || !Array.isArray(payload?.data)) throw new Error('Lectura no disponible');
+        return payload.data;
+      };
+      const [facturasResult, bonosResult] = await Promise.allSettled([
+        readRows(`${BACKEND_BASE}/api/facturas?anio=${encodeURIComponent(anio)}`),
+        readRows(`${BACKEND_BASE}/api/bonos?estado=activo`),
       ]);
+      if (loadVersion !== pagosLoadVersion) return;
 
-      const facturas = Array.isArray(facturasPayload?.data) ? facturasPayload.data : [];
-      const pendingInvoices = facturas.filter((row: any) => String(row?.estado || '').toLowerCase() !== 'pagada');
+      const facturas = facturasResult.status === 'fulfilled' ? facturasResult.value : null;
+      const bonos = bonosResult.status === 'fulfilled' ? bonosResult.value : null;
+      const pendingInvoices = (facturas || []).filter((row: any) => !['pagada', 'anulada'].includes(String(row?.estado || '').toLowerCase()));
       const pendingAmount = pendingInvoices.reduce((sum: number, row: any) => sum + Number(row?.importe_total || 0), 0);
-      if (financePendingValue) financePendingValue.textContent = fmtMoney(pendingAmount);
-      if (financePendingMeta) financePendingMeta.textContent = pendingInvoices.length
+      if (financePendingValue) financePendingValue.textContent = facturas ? fmtMoney(pendingAmount) : '—';
+      if (financePendingMeta) financePendingMeta.textContent = !facturas ? 'No se pudo comprobar la facturación.' : pendingInvoices.length
         ? `${pendingInvoices.length} factura${pendingInvoices.length === 1 ? '' : 's'} por cobrar.`
         : 'Sin facturas pendientes.';
 
-      const bonos = Array.isArray(bonosPayload?.data) ? bonosPayload.data : [];
-      const remainingSessions = bonos.reduce((sum: number, b: any) => sum + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
-      const lowBonos = bonos.filter((b: any) => Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0) <= 2);
-      if (financeBonosValue) financeBonosValue.textContent = String(bonos.length);
-      if (financeBonosMeta) financeBonosMeta.textContent = `${remainingSessions} ${remainingSessions === 1 ? 'sesión disponible' : 'sesiones disponibles'}.`;
+      const remainingSessions = (bonos || []).reduce((sum: number, b: any) => sum + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
+      const lowBonos = (bonos || []).filter((b: any) => Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0) <= 2);
+      if (financeBonosValue) financeBonosValue.textContent = bonos ? String(bonos.length) : '—';
+      if (financeBonosMeta) financeBonosMeta.textContent = bonos ? `${remainingSessions} ${remainingSessions === 1 ? 'sesión disponible' : 'sesiones disponibles'}.` : 'No se pudieron comprobar los bonos.';
 
-      if (pendingInvoices.length) {
+      if (!facturas || !bonos) {
+        setFinancePriority('Finanzas parcialmente disponibles', 'No se pudo comprobar la facturación o los bonos. Los cobros leídos siguen disponibles.',
+          { label: 'Reintentar', icon: 'refresh', action: 'pagos' }, { label: 'Registrar pago', icon: 'add_card', action: 'pago' });
+      } else if (pendingInvoices.length) {
         setFinancePriority(
           `${pendingInvoices.length} factura${pendingInvoices.length === 1 ? '' : 's'} pendiente${pendingInvoices.length === 1 ? '' : 's'}`,
           `${fmtMoney(pendingAmount)} por revisar antes del cierre de caja.`,
@@ -7140,11 +6785,12 @@ import ConfigView from '../components/views/ConfigView.astro';
         const current = getMonthOffset(0);
         const previous = getMonthOffset(-1);
         const [currentMonthPayload, previousMonthPayload] = await Promise.all([
-          fetchJson(`${BACKEND_BASE}/api/pagos?anio=${current.year}&mes=${current.month}`).catch(() => ({ data: [] })),
-          fetchJson(`${BACKEND_BASE}/api/pagos?anio=${previous.year}&mes=${previous.month}`).catch(() => ({ data: [] })),
+          readRows(`${BACKEND_BASE}/api/pagos?anio=${current.year}&mes=${current.month}`),
+          readRows(`${BACKEND_BASE}/api/pagos?anio=${previous.year}&mes=${previous.month}`),
         ]);
-        const currentRows = Array.isArray(currentMonthPayload?.data) ? currentMonthPayload.data : [];
-        const previousRows = Array.isArray(previousMonthPayload?.data) ? previousMonthPayload.data : [];
+        if (loadVersion !== pagosLoadVersion) return;
+        const currentRows = currentMonthPayload;
+        const previousRows = previousMonthPayload;
         const currentTotal = currentRows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
         const previousTotal = previousRows.reduce((sum: number, row: any) => sum + Number(row?.importe || 0), 0);
         const delta = currentTotal - previousTotal;
@@ -7155,6 +6801,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         }
       }
     } catch {
+      if (loadVersion !== pagosLoadVersion) return;
       setFinancePriority(
         'Finanzas parcialmente disponibles',
         'La caja carga, pero no se pudo completar la lectura de facturas o bonos.',
@@ -7164,6 +6811,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (financePendingMeta) financePendingMeta.textContent = 'No se pudo actualizar facturación.';
       if (financeBonosMeta) financeBonosMeta.textContent = 'No se pudo actualizar bonos.';
       if (financeTrendMeta) financeTrendMeta.textContent = 'No se pudo calcular la tendencia mensual.';
+      if (financeTrendValue) financeTrendValue.textContent = '—';
     }
   };
 
@@ -7229,11 +6877,13 @@ import ConfigView from '../components/views/ConfigView.astro';
   });
 
   const loadPagos = async () => {
+    const loadVersion = ++pagosLoadVersion;
     if (!pagosBody) return;
     pagosUnavailableMessage = '';
     syncPagosAvailabilityUi();
     renderPagosSummary([]);
-    void renderFinanceOverview([]);
+    [financePaidValue, financePendingValue, financeBonosValue, financeTrendValue, pagosTotalImporte, pagosTotalSesiones, pagosTotalEfectivo, pagosTotalTarjeta].forEach((node) => { if (node) node.textContent = '—'; });
+    [financePaidMeta, financePendingMeta, financeBonosMeta, financeTrendMeta].forEach((node) => { if (node) node.textContent = 'Comprobando datos…'; });
     renderPagosMobile([]);
     setTableState(pagosBody, 5, 'sync', 'Cargando pagos...', true);
     const anio = pagosAnioFilter?.value || String(new Date().getFullYear());
@@ -7243,11 +6893,14 @@ import ConfigView from '../components/views/ConfigView.astro';
       const query = new URLSearchParams({ anio });
       if (mes) query.set('mes', mes);
       const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?${query.toString()}`);
+      if (loadVersion !== pagosLoadVersion) return;
       if (payload.unavailable) {
         pagosUnavailableMessage = payload.error || 'Modulo pagos no disponible';
         syncPagosAvailabilityUi();
         renderPagosSummary([]);
-        void renderFinanceOverview([]);
+        [pagosTotalImporte, pagosTotalSesiones, pagosTotalEfectivo, pagosTotalTarjeta].forEach((node) => { if (node) node.textContent = '—'; });
+        [financePaidMeta, financePendingMeta, financeBonosMeta, financeTrendMeta].forEach((node) => { if (node) node.textContent = 'No se pudieron comprobar los pagos.'; });
+        setFinancePriority('Pagos no disponibles', pagosUnavailableMessage, { label: 'Reintentar', icon: 'refresh', action: 'pagos' }, { label: 'Ver gestoría', icon: 'account_balance', action: 'gestoria' });
         renderPagosMobile([]);
         setTableState(pagosBody, 5, 'warning', pagosUnavailableMessage);
         return;
@@ -7258,7 +6911,6 @@ import ConfigView from '../components/views/ConfigView.astro';
         return bTs - aTs;
       });
       renderPagosSummary(pagos);
-      void renderFinanceOverview(pagos);
       renderPagosMobile(pagos);
       if (!pagos.length && isDevMode) {
         const demoPagos = [
@@ -7296,7 +6948,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           }
         ];
         renderPagosSummary(demoPagos);
-        void renderFinanceOverview(demoPagos);
+        void renderFinanceOverview(demoPagos, loadVersion);
         renderPagosMobile(demoPagos);
         pagosBody.innerHTML = demoPagos.map((p: any) => {
           const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
@@ -7316,6 +6968,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         }).join('');
         return;
       }
+      void renderFinanceOverview(pagos, loadVersion);
       if (!pagos.length) { setTableState(pagosBody, 5, 'credit_card_off', 'Sin pagos en este periodo'); return; }
       pagosBody.innerHTML = pagos.map((p: any) => {
         const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
@@ -7334,6 +6987,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         </tr>`;
       }).join('');
     } catch {
+      if (loadVersion !== pagosLoadVersion) return;
       if (isDevMode) {
         const demoPagos = [
           {
@@ -7370,7 +7024,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           }
         ];
         renderPagosSummary(demoPagos);
-        void renderFinanceOverview(demoPagos);
+        void renderFinanceOverview(demoPagos, loadVersion);
         renderPagosMobile(demoPagos);
         pagosBody.innerHTML = demoPagos.map((p: any) => {
           const patientName = p.crm_pacientes ? `${p.crm_pacientes.nombre || ''} ${p.crm_pacientes.apellidos || ''}`.trim() : 'Sin paciente';
@@ -7391,7 +7045,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         return;
       }
       renderPagosSummary([]);
-      void renderFinanceOverview([]);
+      [financePaidValue, financePendingValue, financeBonosValue, financeTrendValue, pagosTotalImporte, pagosTotalSesiones, pagosTotalEfectivo, pagosTotalTarjeta].forEach((node) => { if (node) node.textContent = '—'; });
+      [financePaidMeta, financePendingMeta, financeBonosMeta, financeTrendMeta].forEach((node) => { if (node) node.textContent = 'No se pudieron comprobar los pagos.'; });
+      setFinancePriority('Pagos no disponibles', 'No se pudo leer este periodo. Vuelve a intentarlo.', { label: 'Reintentar', icon: 'refresh', action: 'pagos' }, { label: 'Ver gestoría', icon: 'account_balance', action: 'gestoria' });
       renderPagosMobile([]);
       setTableState(pagosBody, 5, 'cloud_off', 'Error al cargar pagos');
     }
@@ -7607,6 +7263,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     document.querySelectorAll('.ficha-panel').forEach((panel) => {
       panel.classList.toggle('active', panel.getAttribute('data-ficha-panel') === tabName);
     });
+    if (tabName === 'documentos' && document.querySelector('[data-ficha-tab="documentos"]')) void loadFichaDocumentos();
   };
 
   const pickLatestIsoDate = (current: string | null, candidate: string | null) => {
@@ -7796,6 +7453,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const pagos = Array.isArray(payload?.pagos) ? payload.pagos : [];
     const notas = Array.isArray(payload?.notas) ? payload.notas : [];
     const recommendations = Array.isArray(payload?.recommendations) ? payload.recommendations : [];
+    const recommendationsUnavailable = isFichaModuleUnavailable('recommendations');
     const citasUnavailable = isFichaModuleUnavailable('citas');
     const pagosUnavailable = isFichaModuleUnavailable('pagos');
     const notasUnavailable = isFichaModuleUnavailable('notas');
@@ -8120,6 +7778,11 @@ import ConfigView from '../components/views/ConfigView.astro';
         ? `${recommendationSummary.totalFollowUps} seguimiento${recommendationSummary.totalFollowUps === 1 ? '' : 's'} con feedback registrado.`
         : 'Falta respuesta del paciente para medir adherencia.'
       : 'Genera un plan para activar continuidad domiciliaria.';
+    if (recommendationsUnavailable) {
+      if (fichaPlanInsights) fichaPlanInsights.innerHTML = renderFichaUnavailableInline('No se pudieron comprobar los planes domiciliarios. Recarga la ficha para reintentar.');
+      if (fichaOpsPlanTitle) fichaOpsPlanTitle.textContent = 'Planes no disponibles';
+      if (fichaOpsPlanMeta) fichaOpsPlanMeta.textContent = 'No se pudo consultar el historial de planes.';
+    }
     if (fichaOpsBillingTitle) fichaOpsBillingTitle.textContent = pagosUnavailable ? 'Módulo no disponible' : `${fmtEuro(totalPayments)}`;
     if (fichaOpsBillingMeta) fichaOpsBillingMeta.textContent = pagosUnavailable
       ? getFichaModuleMessage('pagos', 'Historial de pagos no disponible en esta instancia.')
@@ -8404,25 +8067,32 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
   });
 
+  const setFichaLoadState = (message = '') => {
+    const page = document.querySelector<HTMLElement>('[data-page="ficha-paciente"]');
+    page?.setAttribute('aria-busy', String(Boolean(message)));
+    page?.querySelectorAll<HTMLElement>('.ficha-hero-panel, .ficha-workspace-body, .ficha-tabs-nav, .ficha-followup').forEach((node) => {
+      node.inert = Boolean(message);
+      if (message) node.style.setProperty('display', 'none', 'important');
+      else node.style.removeProperty('display');
+    });
+    page?.querySelectorAll<HTMLButtonElement>('.ficha-topbar-actions button').forEach((button) => { button.disabled = Boolean(message); });
+    if (message && fichaAvailabilityNotice) {
+      fichaAvailabilityNotice.textContent = message;
+      fichaAvailabilityNotice.hidden = false;
+    }
+  };
+
   const openFichaPaciente = async (patientId: string) => {
     if (fichaReviewBanner) fichaReviewBanner.hidden = true;
     const loadVersion = ++fichaLoadVersion;
     fichaPatientId = patientId;
     fichaData = null;
     syncFichaAvailabilityUi([]);
-    // Switch to ficha page
-    (window as any).__fisioShellNavigate?.('ficha-paciente');
-    document.querySelectorAll('.page-section').forEach(s => {
-      s.classList.remove('active');
-      (s as HTMLElement).hidden = true;
-      s.setAttribute('aria-hidden', 'true');
-    });
     const fichaPage = document.querySelector('[data-page="ficha-paciente"]') as HTMLElement | null;
-    if (fichaPage) {
-      fichaPage.classList.add('active');
-      fichaPage.hidden = false;
-      fichaPage.setAttribute('aria-hidden', 'false');
-    }
+    if (fichaPage) navigateTo('ficha-paciente');
+    setFichaLoadState('Cargando el expediente seleccionado…');
+    const docsList = document.getElementById('fichaDocsList');
+    if (docsList) docsList.innerHTML = '';
     // Reset to first tab
     activateFichaTab('resumen');
     // Hide edit form, show view
@@ -8430,6 +8100,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (fichaDatosView) fichaDatosView.hidden = false;
     if (fichaNotaFormCard) fichaNotaFormCard.hidden = true;
     closeVoiceSessionModal();
+    closeFirmaModal();
+    firmaDocId = null;
     if (painMapEditor) painMapEditor.hidden = true;
     activeSelectedZone = null;
     document.querySelectorAll('.pain-zone-path').forEach(p => p.classList.remove('active-selected'));
@@ -8460,6 +8132,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         try { renderFichaCitas(payload.citas); } catch (e) { console.warn('renderFichaCitas err:', e); }
         try { renderFichaPagos(payload.pagos); } catch (e) { console.warn('renderFichaPagos err:', e); }
         try { renderFichaNotas(payload.notas); } catch (e) { console.warn('renderFichaNotas err:', e); }
+        setFichaLoadState();
         if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
       }
 
@@ -8467,12 +8140,15 @@ import ConfigView from '../components/views/ConfigView.astro';
       try {
         const [resPayload, recommendationsResp] = await Promise.all([
           fetchJson(`${BACKEND_BASE}/api/pacientes/${patientId}/ficha`, undefined, 2000),
-          fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`, undefined, 2000).catch(() => ({ data: [] })),
+          fetchJson(`${BACKEND_BASE}/api/exercises/recommendations/${patientId}?limit=25`, undefined, 2000).catch(() => ({ data: null, unavailable: true })),
         ]);
         if (loadVersion !== fichaLoadVersion || patientId !== fichaPatientId) return;
         if (resPayload && resPayload.paciente) {
           payload = resPayload;
           payload.recommendations = Array.isArray(recommendationsResp?.data) ? recommendationsResp.data : [];
+          if (!Array.isArray(recommendationsResp?.data) || recommendationsResp?.unavailable) {
+            payload.module_availability = [...(payload.module_availability || []), { key: 'recommendations', label: 'Planes domiciliarios', message: 'No se pudieron comprobar los planes domiciliarios. Recarga la ficha para reintentar.' }];
+          }
           fichaData = payload;
           selectedPatientId = patientId;
           selectedPatientName = getPatientFullName(payload.paciente);
@@ -8483,9 +8159,10 @@ import ConfigView from '../components/views/ConfigView.astro';
           renderFichaCitas(payload.citas);
           renderFichaPagos(payload.pagos);
           renderFichaNotas(payload.notas);
+          setFichaLoadState();
           if (fichaTitulo) fichaTitulo.innerHTML = `<span class="material-symbols-rounded">person</span> ${escapeHtml(payload.paciente.nombre_completo || 'Paciente')}`;
           void loadFichaReview(patientId, loadVersion);
-        }
+        } else if (!payload) throw new Error('La respuesta no contiene el expediente solicitado.');
       } catch (fetchErr: any) {
         if (!isDevMode && !patientId.startsWith('demo-')) throw fetchErr;
       }
@@ -8493,6 +8170,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (loadVersion !== fichaLoadVersion) return;
       console.error('Error loading ficha:', err);
       syncFichaAvailabilityUi([]);
+      setFichaLoadState('No se pudo cargar este expediente. Vuelve a Pacientes y abre la ficha para reintentar.');
       if (fichaDatosView) fichaDatosView.innerHTML = `<p class="empty-inline">Error al cargar ficha: ${escapeHtml(err?.message || '')}</p>`;
     }
   };
@@ -8692,6 +8370,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const notasUnavailable = isFichaModuleUnavailable('notas');
     const notasOrdenadas = (notasUnavailable ? [] : [...notas]).sort((a: any, b: any) => new Date(b.session_datetime || b.fecha || '').getTime() - new Date(a.session_datetime || a.fecha || '').getTime()
       || new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime() || String(b.id || '').localeCompare(String(a.id || '')));
+    (window as any).updatePainMapVisuals?.(notasOrdenadas);
     const latestNote = notasOrdenadas[0] || null;
     const highPainCount = notasOrdenadas.filter((n: any) => Number(n?.dolor_eva || 0) >= 7).length;
 
@@ -9026,7 +8705,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       }
       if (voiceReviewZone) voiceReviewZone.value = preview.zona_corporal || '';
       if (voiceReviewMobility) voiceReviewMobility.value = preview.movilidad || '';
-      if (voiceReviewEvolution) voiceReviewEvolution.value = preview.evolucion || 'favorable';
+      if (voiceReviewEvolution) voiceReviewEvolution.value = preview.evolucion === 'mejora' ? 'favorable' : preview.evolucion || '';
       if (voiceReviewTreatment) voiceReviewTreatment.value = Array.isArray(preview.tratamientos) ? preview.tratamientos.join(', ') : (preview.tratamientos || '');
       if (voiceReviewExercises) voiceReviewExercises.value = Array.isArray(preview.ejercicios) ? preview.ejercicios.join(', ') : (preview.ejercicios || '');
       if (voiceReviewNextStep) voiceReviewNextStep.value = preview.proximo_paso || '';
@@ -9313,11 +8992,15 @@ import ConfigView from '../components/views/ConfigView.astro';
     facturaFeedback.textContent = text;
   };
 
-  const renderFacturasSummary = (facturas: any[]) => {
+  const renderFacturasSummary = (facturas: any[] | null, message = 'No se pudo comprobar la facturación.') => {
+    if (!facturas) {
+      setSummaryReadState([facturasCountValue, facturasTotalValue, facturasPendingValue], [facturasCountMeta, facturasTotalMeta, facturasPendingMeta], message);
+      return;
+    }
     const rows = Array.isArray(facturas) ? facturas : [];
     const totalCount = rows.length;
     const totalAmount = rows.reduce((acc: number, row: any) => acc + Number(row?.importe_total || 0), 0);
-    const pendingRows = rows.filter((row: any) => String(row?.estado || '').toLowerCase() !== 'pagada');
+    const pendingRows = rows.filter((row: any) => !['pagada', 'anulada'].includes(String(row?.estado || '').toLowerCase()));
     const pendingAmount = pendingRows.reduce((acc: number, row: any) => acc + Number(row?.importe_total || 0), 0);
     const paidCount = rows.filter((row: any) => String(row?.estado || '').toLowerCase() === 'pagada').length;
 
@@ -9383,21 +9066,24 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
   };
 
+  let facturasLoadVersion = 0;
   const loadFacturas = async () => {
+    const loadVersion = ++facturasLoadVersion;
     if (!facturasBody) return;
     facturasUnavailableMessage = '';
     syncFacturasAvailabilityUi();
-    renderFacturasSummary([]);
-    renderFacturasMobile([]);
+    renderFacturasSummary(null, 'Comprobando facturas…');
+    setListState(facturasMobileList, 'sync', 'Cargando facturas…', true);
     setTableState(facturasBody, 8, 'sync', 'Cargando facturas...', true);
     try {
       const anio = facturasAnioFilter?.value || new Date().getFullYear();
       const payload = await fetchJson(`${BACKEND_BASE}/api/facturas?anio=${anio}`);
+      if (loadVersion !== facturasLoadVersion) return;
       if (payload.unavailable) {
         facturasUnavailableMessage = payload.error || 'Modulo facturación no disponible';
         syncFacturasAvailabilityUi();
-        renderFacturasSummary([]);
-        renderFacturasMobile([]);
+        renderFacturasSummary(null, facturasUnavailableMessage);
+        setListState(facturasMobileList, 'warning', facturasUnavailableMessage);
         setTableState(facturasBody, 8, 'warning', facturasUnavailableMessage);
         return;
       }
@@ -9428,8 +9114,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         </tr>`;
       }).join('');
     } catch {
-      renderFacturasSummary([]);
-      renderFacturasMobile([]);
+      if (loadVersion !== facturasLoadVersion) return;
+      renderFacturasSummary(null);
+      setListState(facturasMobileList, 'cloud_off', 'No se pudieron cargar las facturas.');
       setTableState(facturasBody, 8, 'cloud_off', 'Error al cargar facturas');
     }
   };
@@ -9465,12 +9152,18 @@ import ConfigView from '../components/views/ConfigView.astro';
   document.getElementById('facturaModalDismiss')?.addEventListener('click', closeFacturaModal);
 
   // Preview payments when patient selected
+  let facturaPreviewVersion = 0;
   facturaPacienteSelect?.addEventListener('change', async () => {
+    const requestVersion = ++facturaPreviewVersion;
     if (!facturaPreview) return;
     const pacienteId = facturaPacienteSelect.value;
     if (!pacienteId) { facturaPreview.hidden = true; return; }
+    facturaPreview.hidden = false;
+    facturaPreview.textContent = 'Comprobando pagos del paciente…';
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?paciente_id=${pacienteId}&pendientes_factura=true`);
+      if (requestVersion !== facturaPreviewVersion || pacienteId !== facturaPacienteSelect.value) return;
+      if (payload?.unavailable || !Array.isArray(payload?.data)) throw new Error('Pagos no disponibles');
       const pagos = payload.data || [];
       if (!pagos.length) {
         facturaPreview.innerHTML = '<p class="empty-inline">Este paciente no tiene pagos para facturar</p>';
@@ -9485,6 +9178,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         </tbody></table></div>`;
       facturaPreview.hidden = false;
     } catch {
+      if (requestVersion !== facturaPreviewVersion || pacienteId !== facturaPacienteSelect.value) return;
       facturaPreview.innerHTML = '<p class="empty-inline">Error al cargar pagos</p>';
       facturaPreview.hidden = false;
     }
@@ -9572,7 +9266,11 @@ import ConfigView from '../components/views/ConfigView.astro';
     bonoFeedback.hidden = false; bonoFeedback.textContent = t;
   };
 
-  const renderBonosSummary = (bonos: any[]) => {
+  const renderBonosSummary = (bonos: any[] | null, message = 'No se pudieron comprobar los bonos.') => {
+    if (!bonos) {
+      setSummaryReadState([bonosCountValue, bonosRemainingValue, bonosPendingValue], [bonosCountMeta, bonosRemainingMeta, bonosPendingMeta], message);
+      return;
+    }
     const rows = Array.isArray(bonos) ? bonos : [];
     const totalCount = rows.length;
     const remaining = rows.reduce((acc: number, b: any) => acc + Math.max(Number(b?.sesiones_total || 0) - Number(b?.sesiones_usadas || 0), 0), 0);
@@ -9625,22 +9323,25 @@ import ConfigView from '../components/views/ConfigView.astro';
     }).join('');
   };
 
+  let bonosLoadVersion = 0;
   const loadBonos = async () => {
+    const loadVersion = ++bonosLoadVersion;
     if (!bonosBody) return;
     bonosUnavailableMessage = '';
     syncBonosAvailabilityUi();
-    renderBonosSummary([]);
-    renderBonosMobile([]);
+    renderBonosSummary(null, 'Comprobando bonos…');
+    setListState(bonosMobileList, 'sync', 'Cargando bonos…', true);
     setTableState(bonosBody, 8, 'sync', 'Cargando bonos...', true);
     try {
       const estado = bonosEstadoFilter?.value || '';
       const url = `${BACKEND_BASE}/api/bonos${estado ? `?estado=${estado}` : ''}`;
       const payload = await fetchJson(url);
+      if (loadVersion !== bonosLoadVersion) return;
       if (payload.unavailable) {
         bonosUnavailableMessage = payload.error || 'Modulo bonos no disponible';
         syncBonosAvailabilityUi();
-        renderBonosSummary([]);
-        renderBonosMobile([]);
+        renderBonosSummary(null, bonosUnavailableMessage);
+        setListState(bonosMobileList, 'warning', bonosUnavailableMessage);
         setTableState(bonosBody, 8, 'warning', bonosUnavailableMessage);
         return;
       }
@@ -9677,8 +9378,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         </tr>`;
       }).join('');
     } catch {
-      renderBonosSummary([]);
-      renderBonosMobile([]);
+      if (loadVersion !== bonosLoadVersion) return;
+      renderBonosSummary(null);
+      setListState(bonosMobileList, 'cloud_off', 'No se pudieron cargar los bonos.');
       setTableState(bonosBody, 8, 'cloud_off', 'Error al cargar bonos');
     }
   };
@@ -9822,7 +9524,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const rect = firmaCanvas.getBoundingClientRect();
       const scaleX = firmaCanvas.width / rect.width;
       const scaleY = firmaCanvas.height / rect.height;
-      const src = e instanceof TouchEvent ? e.touches[0] : e;
+      const src = 'touches' in e ? e.touches[0] : e;
       return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY };
     };
 
@@ -9843,8 +9545,24 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (firmaStatus) firmaStatus.textContent = 'Sin firma';
   });
 
+  const openDocumentForSignature = (doc: any, patientId = fichaPatientId, loadVersion = fichaLoadVersion) => {
+    if (!patientId || !isCurrentFicha(patientId, loadVersion) || doc?.paciente_id !== patientId) return;
+    if (!doc?.id || !doc?.contenido || doc.estado === 'firmado') {
+      showToast('No se pudo abrir este documento pendiente. Actualiza la pestaña Documentos antes de firmar.', 'warning');
+      return;
+    }
+    setFirmaFeedback();
+    firmaDocId = doc.id;
+    if (firmaModalTitle) firmaModalTitle.textContent = doc.titulo || 'Documento';
+    if (firmaDocContenido) firmaDocContenido.textContent = doc.contenido;
+    document.dispatchEvent(new CustomEvent('fisio:open-firma-modal'));
+    initFirmaPad();
+  };
+
   const openFirmaModal = async (tipo: string) => {
-    if (!fichaPatientId) return;
+    if (!fichaPatientId || !fichaData) return;
+    const patientId = fichaPatientId;
+    const loadVersion = fichaLoadVersion;
     setFirmaFeedback();
     firmaDocId = null;
     try {
@@ -9852,13 +9570,10 @@ import ConfigView from '../components/views/ConfigView.astro';
       const payload = await fetchJson(`${BACKEND_BASE}/api/documentos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paciente_id: fichaPatientId, tipo }),
+        body: JSON.stringify({ paciente_id: patientId, tipo }),
       });
-      firmaDocId = payload.data?.id || null;
-      if (firmaModalTitle) firmaModalTitle.textContent = payload.data?.titulo || 'Documento';
-      if (firmaDocContenido) firmaDocContenido.textContent = payload.contenido || '';
-      document.dispatchEvent(new CustomEvent('fisio:open-firma-modal'));
-      initFirmaPad();
+      if (!isCurrentFicha(patientId, loadVersion)) return;
+      openDocumentForSignature({ ...payload.data, contenido: payload.contenido }, patientId, loadVersion);
     } catch (err: any) {
       showToast(err?.message || 'No se pudo crear el documento.', 'error');
     }
@@ -9886,24 +9601,25 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (!firmaDocId) return;
     if (!firmaHasSig) { setFirmaFeedback('Por favor, dibuja tu firma antes de continuar.'); return; }
     if (!firmaCanvas) return;
+    const docId = firmaDocId;
+    const patientId = fichaPatientId;
+    const loadVersion = fichaLoadVersion;
     const firmaB64 = firmaCanvas.toDataURL('image/png');
     const btn = document.getElementById('firmaGuardarBtn') as HTMLButtonElement;
     const prev = btn?.innerHTML || '';
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">sync</span> Guardando...'; }
     try {
-      await fetchJson(`${BACKEND_BASE}/api/documentos/${firmaDocId}/firmar`, {
+      await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}/firmar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firma_base64: firmaB64 }),
       });
+      if (!patientId || !isCurrentFicha(patientId, loadVersion)) return;
       closeFirmaModal();
       // Open PDF
-      await openProtectedUrl(`${BACKEND_BASE}/api/documentos/${firmaDocId}/pdf${buildClinicParams()}`);
+      await openProtectedUrl(`${BACKEND_BASE}/api/documentos/${docId}/pdf${buildClinicParams()}`);
       // Reload docs list
-      if (fichaPatientId) {
-        const docsPayload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
-        renderFichaDocumentos(docsPayload.data || [], fichaData?.recommendations || []);
-      }
+      await loadFichaDocumentos(patientId, loadVersion);
     } catch (err: any) {
       setFirmaFeedback(`Error: ${err?.message || 'no se pudo guardar'}`);
     } finally {
@@ -9913,11 +9629,14 @@ import ConfigView from '../components/views/ConfigView.astro';
 
 // Render documents list
 const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
+  const patientId = fichaPatientId;
+  const loadVersion = fichaLoadVersion;
   const el = document.getElementById('fichaDocsList');
   if (!el) return;
 
   const safeDocs = Array.isArray(docs) ? docs : [];
   const safeRecommendations = Array.isArray(recommendations) ? recommendations : [];
+  const plansUnavailable = isFichaModuleUnavailable('recommendations');
   const firmados = safeDocs.filter((doc: any) => doc?.estado === 'firmado').length;
   const pendientes = safeDocs.filter((doc: any) => doc?.estado !== 'firmado').length;
 
@@ -9975,7 +9694,10 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       <span class="ficha-summary-chip">${latestPlanCopy}</span>`;
   }
 
-  const planCardsHtml = planDocuments.length
+  if (plansUnavailable && fichaDocsSummary) fichaDocsSummary.textContent = `Planes domiciliarios no comprobados · ${safeDocs.length} documentos legales · ${firmados} firmados · ${pendientes} pendientes`;
+  const planCardsHtml = plansUnavailable
+    ? renderFichaUnavailableInline('No se pudieron comprobar los planes domiciliarios. Recarga la ficha para reintentar.')
+    : planDocuments.length
     ? planDocuments
         .map((plan: any) => `
           <article class="ficha-doc-card ficha-doc-card-plan ${plan.hasArchive ? 'ficha-doc-card-signed' : ''}">
@@ -10053,7 +9775,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <span class="ficha-doc-cluster-kicker">Seguimiento domiciliario</span>
           <h3 class="ficha-doc-cluster-title">Documentos del plan</h3>
         </div>
-        <p class="ficha-doc-cluster-copy">${planDocuments.length ? `Tienes ${archivedPlanCount} entrega${archivedPlanCount === 1 ? '' : 's'} archivada${archivedPlanCount === 1 ? '' : 's'} y ${draftPlanCount} plan${draftPlanCount === 1 ? '' : 'es'} pendiente${draftPlanCount === 1 ? '' : 's'} de registrar.` : 'Centraliza aquí lo que se genero para casa, lo que ya se entrego y lo que aún necesita trazabilidad.'}</p>
+        <p class="ficha-doc-cluster-copy">${plansUnavailable ? 'El historial de planes no está disponible.' : planDocuments.length ? `Tienes ${archivedPlanCount} entrega${archivedPlanCount === 1 ? '' : 's'} archivada${archivedPlanCount === 1 ? '' : 's'} y ${draftPlanCount} plan${draftPlanCount === 1 ? '' : 'es'} pendiente${draftPlanCount === 1 ? '' : 's'} de registrar.` : 'Centraliza aquí lo que se genero para casa, lo que ya se entrego y lo que aún necesita trazabilidad.'}</p>
       </div>
       <div class="ficha-doc-cluster-body">${planCardsHtml}</div>
     </section>
@@ -10077,30 +9799,11 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   });
 
   el.querySelectorAll('[data-doc-sign]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const docId = (btn as HTMLElement).getAttribute('data-doc-sign');
-      if (!docId || !fichaPatientId) return;
-      const signature = await requestTextInput({
-        title: 'Firmar documento',
-        message: 'Escribe el nombre que debe quedar asociado a la firma del documento.',
-        inputLabel: 'Nombre de firma',
-        inputPlaceholder: 'Nombre y apellidos',
-        confirmLabel: 'Firmar',
-        tone: 'warning',
-      });
-      if (!signature) return;
-      try {
-        await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}/firmar`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ signature }),
-        });
-        const docsPayload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
-        renderFichaDocumentos(docsPayload.data || [], fichaData?.recommendations || []);
-        showToast('Documento firmado correctamente.', 'success');
-      } catch (err: any) {
-        showToast(err?.message || 'No se pudo firmar el documento.', 'error');
-      }
+      if (!patientId || !isCurrentFicha(patientId, loadVersion)) return;
+      const doc = safeDocs.find((item: any) => item.id === docId);
+      openDocumentForSignature(doc, patientId, loadVersion);
     });
   });
 
@@ -10113,14 +9816,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         tone: 'error',
       });
       if (!confirmed) return;
+      if (!patientId || !isCurrentFicha(patientId, loadVersion)) return;
       const docId = (btn as HTMLElement).getAttribute('data-doc-id') || (btn as HTMLElement).getAttribute('data-doc-delete');
       if (!docId) return;
       try {
         await fetchJson(`${BACKEND_BASE}/api/documentos/${docId}`, { method: 'DELETE' });
-        if (fichaPatientId) {
-          const pl = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
-          renderFichaDocumentos(pl.data || [], fichaData?.recommendations || []);
-        }
+        await loadFichaDocumentos(patientId, loadVersion);
         showToast('Documento eliminado.', 'success');
       } catch (err: any) {
         showToast(err?.message || 'No se pudo eliminar el documento.', 'error');
@@ -10129,12 +9830,22 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   });
 };
 
-// Load docs when ficha opens
-  document.querySelector('[data-ficha-tab="documentos"]')?.addEventListener('click', async () => {
-    if (!fichaPatientId) return;
-    const pl = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${fichaPatientId}`);
-    renderFichaDocumentos(pl.data || [], fichaData?.recommendations || []);
-  });
+  let fichaDocumentsVersion = 0;
+  const loadFichaDocumentos = async (patientId = fichaPatientId, loadVersion = fichaLoadVersion) => {
+    if (!patientId || !fichaData || !isCurrentFicha(patientId, loadVersion)) return;
+    const requestVersion = ++fichaDocumentsVersion;
+    const container = document.getElementById('fichaDocsList');
+    if (container) setListState(container, 'sync', 'Cargando documentos del caso…', true);
+    try {
+      const payload = await fetchJson(`${BACKEND_BASE}/api/documentos?paciente_id=${patientId}`);
+      if (!isCurrentFicha(patientId, loadVersion) || requestVersion !== fichaDocumentsVersion) return;
+      if (!Array.isArray(payload?.data) || payload.unavailable) throw new Error('Documentos no disponibles');
+      renderFichaDocumentos(payload.data, fichaData?.recommendations || []);
+    } catch {
+      if (!isCurrentFicha(patientId, loadVersion) || requestVersion !== fichaDocumentsVersion) return;
+      if (container) setListState(container, 'cloud_off', 'No se pudieron cargar los documentos. Vuelve a abrir esta pestaña para reintentar.');
+    }
+  };
 
   // ===================== GESTORIA =====================
   const gestoriaBody = document.getElementById('gestoriaBody') as HTMLElement | null;
@@ -10154,14 +9865,20 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
   const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
+  let gestoriaLoadVersion = 0;
   const loadGestoria = async () => {
+    const loadVersion = ++gestoriaLoadVersion;
     if (!gestoriaBody || !gestoriaHead) return;
+    const totals = ['gestoriaGranTotal', 'gestoriaGranSesiones', 'gestoriaGranEfectivo', 'gestoriaGranTarjeta'].map((id) => document.getElementById(id));
+    setSummaryReadState(totals, [], '');
+    setListState(gestoriaMobileList, 'sync', 'Cargando datos de gestoría…', true);
     setTableState(gestoriaBody, 16, 'sync', 'Cargando datos de gestor\u00eda...', true);
 
     const anio = gestoriaAnioFilter?.value || String(new Date().getFullYear());
 
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/pagos/gestoria?anio=${anio}`, undefined, 15000);
+      if (loadVersion !== gestoriaLoadVersion) return;
       const { pacientes, totales_mes, gran_total } = payload;
 
       // Grand totals
@@ -10236,6 +9953,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
       gestoriaBody.innerHTML = html;
     } catch {
+      if (loadVersion !== gestoriaLoadVersion) return;
+      setSummaryReadState(totals, [], '');
       if (gestoriaMobileList) {
         gestoriaMobileList.innerHTML = '<div class="empty-state-sm"><span class="material-symbols-rounded">cloud_off</span><p>Error al cargar gestoría.</p></div>';
       }
@@ -10253,8 +9972,12 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   // Auto-select current month
   if (gestoriaMesFilter) gestoriaMesFilter.value = String(new Date().getMonth() + 1);
 
+  let gestoriaMesLoadVersion = 0;
   const loadGestoriaMes = async () => {
+    const loadVersion = ++gestoriaMesLoadVersion;
     if (!gestoriaMesBody) return;
+    const totals = ['gestoriaMesTotal', 'gestoriaMesEfectivo', 'gestoriaMesTarjeta', 'gestoriaMesSesiones'].map((id) => document.getElementById(id));
+    setSummaryReadState(totals, [], '');
     setTableState(gestoriaMesBody, 4, 'sync', 'Cargando...', true);
 
     const anio = gestoriaAnioFilter?.value || String(new Date().getFullYear());
@@ -10262,6 +9985,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/pagos?anio=${anio}&mes=${mes}`);
+      if (loadVersion !== gestoriaMesLoadVersion) return;
+      if (payload?.unavailable || !Array.isArray(payload?.data)) throw new Error('Pagos no disponibles');
       const pagos = payload?.data || [];
 
       // Calculate totals for the month
@@ -10294,6 +10019,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         </tr>`;
       }).join('');
     } catch {
+      if (loadVersion !== gestoriaMesLoadVersion) return;
+      setSummaryReadState(totals, [], '');
       setTableState(gestoriaMesBody, 4, 'cloud_off', 'Error al cargar datos');
     }
   };
@@ -10323,7 +10050,11 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     otro: 'Otro',
   };
 
-  const renderDocumentosSummary = (docs: any[]) => {
+  const renderDocumentosSummary = (docs: any[] | null, message = 'No se pudieron comprobar los documentos.') => {
+    if (!docs) {
+      setSummaryReadState([documentosCountValue, documentosSignedValue, documentosPendingValue], [documentosCountMeta, documentosSignedMeta, documentosPendingMeta], message);
+      return;
+    }
     const rows = Array.isArray(docs) ? docs : [];
     const signed = rows.filter((d: any) => d?.estado === 'firmado');
     const pending = rows.filter((d: any) => d?.estado !== 'firmado');
@@ -10366,15 +10097,19 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     }).join('');
   };
 
+  let documentosLoadVersion = 0;
   const loadDocumentos = async () => {
+    const loadVersion = ++documentosLoadVersion;
     if (!documentosBody) return;
-    renderDocumentosSummary([]);
-    renderDocumentosMobile([]);
+    renderDocumentosSummary(null, 'Comprobando documentos…');
+    setListState(documentosMobileList, 'sync', 'Cargando documentos…', true);
     setTableState(documentosBody, 6, 'sync', 'Cargando documentos...', true);
     try {
       const estado = documentosEstadoFilter?.value || '';
       const url = `${BACKEND_BASE}/api/documentos${estado ? `?estado=${estado}` : ''}`;
       const payload = await fetchJson(url);
+      if (loadVersion !== documentosLoadVersion) return;
+      if (payload?.unavailable || !Array.isArray(payload?.data)) throw new Error('Documentos no disponibles');
       const docs = [...(payload.data || [])].sort((a: any, b: any) => new Date((b?.fecha_firma || b?.created_at || 0)).getTime() - new Date((a?.fecha_firma || a?.created_at || 0)).getTime());
       renderDocumentosSummary(docs);
       renderDocumentosMobile(docs);
@@ -10454,6 +10189,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         </tr>`;
       }).join('');
     } catch {
+      if (loadVersion !== documentosLoadVersion) return;
       if (isDevMode) {
         const demoDocs = [
           {
@@ -10505,8 +10241,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         }).join('');
         return;
       }
-      renderDocumentosSummary([]);
-      renderDocumentosMobile([]);
+      renderDocumentosSummary(null);
+      setListState(documentosMobileList, 'cloud_off', 'No se pudieron cargar los documentos.');
       setTableState(documentosBody, 6, 'cloud_off', 'Error al cargar documentos');
     }
   };
@@ -10778,7 +10514,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
 
     // Find the latest note for each body zone to see active pain
     const latestByZone: Record<string, { eva: number | null, fecha: string, note: string }> = {};
-    const sorted = [...notas].sort((a, b) => new Date(a.fecha || '').getTime() - new Date(b.fecha || '').getTime());
+    const sorted = [...notas].sort((a, b) => new Date(a.session_datetime || a.fecha || '').getTime() - new Date(b.session_datetime || b.fecha || '').getTime()
+      || new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime() || String(a.id || '').localeCompare(String(b.id || '')));
     sorted.forEach(n => {
       if (n.zona_corporal) {
         latestByZone[n.zona_corporal] = {

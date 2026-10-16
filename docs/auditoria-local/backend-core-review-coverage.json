@@ -1,0 +1,95 @@
+{
+  "scope": "backend_core_static_source_review",
+  "date": "2026-10-16",
+  "state": "source_reading_complete_public_booking_fixed_locally",
+  "backend_source_full_read": [
+    "backend/src/index.js",
+    "backend/src/lib/appointment-calendar-check.js",
+    "backend/src/lib/approved-exercise-report.js",
+    "backend/src/lib/audit.js",
+    "backend/src/lib/browser-session.js",
+    "backend/src/lib/calendar-reader.js",
+    "backend/src/lib/clinic-creation.js",
+    "backend/src/lib/clinical-summary.js",
+    "backend/src/lib/clinical-voice.js",
+    "backend/src/lib/exercise-agent-prompt.js",
+    "backend/src/lib/exercise-report-pdf.js",
+    "backend/src/lib/finance.js",
+    "backend/src/lib/http-security.js",
+    "backend/src/lib/public-error.js",
+    "backend/src/lib/readiness.js",
+    "backend/src/lib/supabase.js",
+    "backend/src/middleware/security.js",
+    "backend/src/routes/agent.js",
+    "backend/src/routes/auth.js",
+    "backend/src/routes/bonos.js",
+    "backend/src/routes/clinical-notes.js",
+    "backend/src/routes/documents.js",
+    "backend/src/routes/exercises.js",
+    "backend/src/routes/invoices.js",
+    "backend/src/routes/patients.js",
+    "backend/src/routes/payments.js",
+    "backend/src/routes/professional.js"
+  ],
+  "backend_source_partial_read": [],
+  "other_source_coverage": "13 disjoint messaging files recorded in docs/auditoria-local/messaging-review-coverage.json; not re-read by this reviewer.",
+  "tests_run": [
+    "Before fix: actual public-booking handler regression 0/2 passed, failing private DTO and maximum date",
+    "After fix: node --test test/public-booking-security.test.js 2/2 passed",
+    "npm run lint: passed",
+    "node --check scripts/test-booking-retries.mjs: passed",
+    "node --check scripts/test-calendar-persistence.mjs: passed",
+    "node tmp/backend-core-transport-repros.mjs: confirmed stalled n8n body beyond deadline, SDK no AbortSignal, audit failure no logs",
+    "node --test test/public-booking-security.test.js test/clinic-dashboard.test.js test/security.test.js: 20/20 passed",
+    "git diff --check affected paths: passed"
+  ],
+  "evidence": [
+    "backend/test/public-booking-security.test.js",
+    "tmp/backend-core-transport-repros.mjs",
+    "tmp/backend-core-transport-repros.json",
+    "docs/auditoria-local/backend-core-review-findings.md"
+  ],
+  "mutations": "Local public-booking source/test fix, fixed-clock SQL rehearsal fixture adjustments, coverage/reproduction files only. No database/network calls, provider executions, messages, bot changes, dependency installation or paid AI.",
+  "limitations": "Static reading covers all 40 backend JS source files across two inventories. This is not proof that all runtime paths or integrations work. Root concurrent fixes are independently verified by root; no live Auth/RLS/PostgREST/Calendar/n8n/AI or PDF visual proof. SQL rehearsals syntax checked but not executed by this reviewer. Backend remote dependency audit rejected by auto-review and not retried.",
+  "inventory": {
+    "actual_source_files": 40,
+    "core_full_read": 27,
+    "messaging_full_read": 13,
+    "uncovered": [],
+    "stale_entries": []
+  },
+  "completed_ranges_since_checkpoint": {
+    "backend/src/lib/exercise-agent-prompt.js": [
+      [
+        128,
+        145
+      ]
+    ],
+    "backend/src/routes/exercises.js": [
+      [
+        236,
+        2141
+      ]
+    ],
+    "backend/src/routes/professional.js": [
+      [
+        1,
+        2642
+      ]
+    ]
+  },
+  "historical_evidence": [
+    "tmp/backend-core-review-repros.json",
+    "tmp/backend-core-readonly-repros.mjs",
+    "tmp/backend-public-booking-repro.json",
+    "tmp/backend-public-booking-repro.mjs"
+  ],
+  "edited": [
+    "backend/src/routes/professional.js",
+    "backend/test/public-booking-security.test.js",
+    "scripts/test-booking-retries.mjs",
+    "scripts/test-calendar-persistence.mjs",
+    "docs/auditoria-local/backend-core-review-coverage.json",
+    "docs/auditoria-local/backend-core-review-findings.md"
+  ]
+}

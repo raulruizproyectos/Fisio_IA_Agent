@@ -193,7 +193,6 @@ function buildCrmExercises(snapshot, nowIso) {
         descripcion: description || null,
         zona_corporal: inferBodyZone(nombreEs, fullTextForInference),
         nivel: inferLevel(`${nombreEs} ${fullTextForInference}`),
-        contraindicaciones: null,
         activo: true,
         metadata: {
           source: 'proet',
@@ -218,10 +217,13 @@ async function main() {
   const cwd = process.cwd();
   const args = parseArgs(process.argv.slice(2));
   const nowIso = new Date().toISOString();
-  const batchSize = Math.max(1, Number(args['batch-size'] || 200));
+  const batchSize = Number(args['batch-size'] || 200);
+  if (!Number.isSafeInteger(batchSize) || batchSize < 1 || batchSize > 500) {
+    throw new Error('--batch-size debe ser un entero entre 1 y 500.');
+  }
   const dryRun = args['dry-run'] === 'true';
 
-  const envPath = path.resolve(cwd, args['env-file'] || 'backend/.env');
+  const envPath = path.resolve(cwd, args['env-file'] || '.env.local');
   const envContent = await fs.readFile(envPath, 'utf8');
   const env = parseEnv(envContent);
 

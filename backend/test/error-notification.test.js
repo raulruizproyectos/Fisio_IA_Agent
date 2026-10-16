@@ -6,17 +6,24 @@ import {publicHttpErrorMessage} from '../src/lib/public-error.js';
 
 const source = await readFile(new URL('../src/index.js', import.meta.url), 'utf8');
 const errorHandler = source.slice(source.indexOf('// Error handler'), source.indexOf('// Start'));
-function invoke(error) {
+function invoke(error, path = '/api/auth/session', production = false) {
   let handler;
   const notifications = [];
   const res = {status(code) {this.statusCode = code; return this;}, json(body) {this.body = body; return this;}};
   runInNewContext(errorHandler, {
     app: {use(callback) {handler = callback;}}, ERROR_WEBHOOK_URL: 'https://notifier.example.invalid',
-    process: {env: {N8N_WEBHOOK_SECRET: 'fixture-secret'}}, console: {error() {}}, publicHttpErrorMessage,
+    process: {env: {N8N_WEBHOOK_SECRET: 'fixture-secret', NODE_ENV: production ? 'production' : 'development'}},
+    console: {error(value) { notifications.push({ log: JSON.parse(value) }); }}, publicHttpErrorMessage, AbortSignal,
     fetch(_url, options) {notifications.push(JSON.parse(options.body)); return Promise.resolve();},
   });
-  handler(error, {path: '/api/auth/session', originalUrl: '/api/auth/session?fixture=private', method: 'POST', id: 'fixture'}, res);
-  return {res, notifications};
+  const originalMode = process.env.NODE_ENV;
+  try {
+    process.env.NODE_ENV = production ? 'production' : 'development';
+    handler(error, {path, originalUrl: path + '?fixture=PRIVATE_QUERY', method: 'POST', id: 'fixture'}, res);
+  } finally {
+    if (originalMode === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = originalMode;
+  }
+  return {res, notifications: notifications.filter(value => !value.log), logs: notifications.filter(value => value.log).map(value => value.log)};
 }
 
 test('rechazos esperados 4xx conservan la respuesta sin enviar una alerta crítica', () => {
@@ -29,6 +36,15 @@ test('rechazos esperados 4xx conservan la respuesta sin enviar una alerta críti
   const overlap = invoke({code: '23P01'});
   assert.equal(overlap.res.statusCode, 409);
   assert.equal(overlap.notifications.length, 0);
+});
+
+test('production alerts and logs omit query values and private provider diagnostics', () => {
+  const result = invoke({ status: 503, message: 'PRIVATE_PROVIDER_DIAGNOSTIC' }, '/api/profesional/appointments', true);
+  assert.equal(result.notifications.length, 1);
+  const diagnostics = JSON.stringify([result.notifications, result.logs]);
+  assert.ok(!diagnostics.includes('PRIVATE_QUERY'));
+  assert.ok(!diagnostics.includes('PRIVATE_PROVIDER_DIAGNOSTIC'));
+  assert.equal(result.notifications[0].request_id, 'fixture');
 });
 
 test('fallos del servidor conservan una única alerta y ocultan diagnósticos de autenticación', () => {

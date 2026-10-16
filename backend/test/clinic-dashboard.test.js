@@ -53,6 +53,26 @@ test('sin Calendar configurado la agenda conserva las citas CRM y no intenta rec
   } finally { globalThis.fetch = nativeFetch; }
 });
 
+test('un listado Calendar vacío no acredita la cancelación de una cita CRM vinculada', async t => {
+  process.env.GOOGLE_CALENDAR_ID = 'test-calendar';
+  process.env.W5_CALENDAR_READER_URL = 'https://calendar-reader.example/test';
+  const { default: connectedRouter } = await import('../src/routes/professional.js?empty-read-review');
+  delete process.env.GOOGLE_CALENDAR_ID;
+  delete process.env.W5_CALENDAR_READER_URL;
+  t.mock.method(globalThis, 'fetch', async url => String(url).includes('calendar-reader.example')
+    ? Response.json({ events: [], busy_events: [] }) : new Response('', { status: 404 }));
+  const appointment = { id: 'appointment-a', estado: 'confirmada', google_calendar_event_id: 'linked-a',
+    inicio_en: '2026-10-07T09:00:00Z', fin_en: '2026-10-07T10:00:00Z' };
+  const db = { from(table) { return { select() { return this; }, eq() { return this; }, order() { return this; }, limit() { return this; },
+    gte() { return this; }, lte() { return this; }, update() { assert.fail('Absence in a list must not cancel a saved appointment'); },
+    async maybeSingle() { return { data: { id: 'profile-a' } }; },
+    then(resolve) { return Promise.resolve({ data: table === 'crm_citas' ? [appointment] : [] }).then(resolve); },
+  }; } };
+  const payload = await invoke('/appointments', db, { desde: '2026-10-05T00:00:00Z', hasta: '2026-10-10T00:00:00Z' }, connectedRouter);
+  assert.equal(payload.data[0].estado, 'confirmada');
+  assert.equal(payload.calendar_sync.cancelled, 0);
+});
+
 test('un error o respuesta incompleta de Calendar conserva citas y bloquea sincronizacion y nuevas reservas', async () => {
   process.env.GOOGLE_CALENDAR_ID = 'test-calendar';
   process.env.W5_CALENDAR_READER_URL = 'https://calendar-reader.example/test';

@@ -1,0 +1,769 @@
+{
+  "updated_utc": "2026-10-16T11:57:08.261478+00:00",
+  "reviewer": "frontend_review",
+  "scope": "frontend source and runtime/build configs; no providers or production touched",
+  "baseline": "1b2a954",
+  "verdict": "source_logic_review_complete_css_targeted_review",
+  "reason": "First-party logic/components/pages/config source review completed; all CSS indexed structurally with targeted human review. Larger CSS files have not been read literally line by line. This inventory does not establish 100 percent runtime or browser coverage.",
+  "files": [
+    {
+      "file": "frontend/src/components/AssistantRail.astro",
+      "status": "source_read",
+      "sha256": "96f5ca6c86d125327aa17d0c9c151c31fc063a41bd92ae0f5494117b8ae82232",
+      "lines": 386,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/ConfirmDialog.astro",
+      "status": "source_read",
+      "sha256": "ab25dc357b1153ef11b0417c12bfd35c8c61ecf0f1dfcc6aefaa5e4ca5ea3be1",
+      "lines": 149,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/GlobalFeedbackShell.astro",
+      "status": "source_read",
+      "sha256": "2e83783c34bc7ed192ad6c2c0ca2bad9e09c8e723bb624f092a094975485ac75",
+      "lines": 7,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/MobileDock.astro",
+      "status": "source_read",
+      "sha256": "86315f93742cd4ac45bda99767b1a694229344f5ea514bfa438f1ba8c4d70e1d",
+      "lines": 22,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/ShellNavigationBootstrap.astro",
+      "status": "source_read",
+      "sha256": "e4fceb69d1cd9217f7ba69e32c9f1f163f26693a28947e9e90519027b0d8902a",
+      "lines": 19,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/SidebarNav.astro",
+      "status": "source_read",
+      "sha256": "19e3e177ae78c7945bd33bba0280a40c0ff1cc7e0e73137b1de00ed40aa68e2e",
+      "lines": 70,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/Topbar.astro",
+      "status": "source_read",
+      "sha256": "c34e120036746492299fb2113f08ac48842208ea70fcbf9baac6aa12db1bb8fb",
+      "lines": 118,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/BonosView.astro",
+      "status": "source_read",
+      "sha256": "a065f6b4e45b7bf5ac1bd3720d5f99540d2b1933b52a4538628d77bdd5463298",
+      "lines": 106,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/CitasView.astro",
+      "status": "source_read",
+      "sha256": "912fd36c8385c295c17642550c1a585b2816af01842e297798cb916c57372c1f",
+      "lines": 113,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/ConfigView.astro",
+      "status": "source_read",
+      "sha256": "284b58b8049580b2f9329e0e8236e7ac12d130f4fae182d50f027a40a10a7233",
+      "lines": 285,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/DashboardView.astro",
+      "status": "source_read",
+      "sha256": "6653c2702fe5e5f333919c8d58e2471bfc08893143c35600eebdc00ddc5679c6",
+      "lines": 194,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/DocumentosView.astro",
+      "status": "source_read",
+      "sha256": "b05753316d561b64b342aa8e27f76f3ca6f58cfc5e412875ff5c495d0850f044",
+      "lines": 63,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/FacturacionView.astro",
+      "status": "source_read",
+      "sha256": "05acb71656ce2f0f767cf109af583bb02d640c22ef5670ba9c8302597709c8a7",
+      "lines": 98,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/FichaPacienteView.astro",
+      "status": "source_read",
+      "sha256": "f7529551c2fdafc4534bc24fdc0689b6e3a4b3a0de97f0cff2e6bf5792272819",
+      "lines": 635,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/GestoriaView.astro",
+      "status": "source_read",
+      "sha256": "8148b9dae90bcfcc318bbb77cada6db79f760121ce56c8803d83903ede719d20",
+      "lines": 77,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/HistorialView.astro",
+      "status": "source_read",
+      "sha256": "57b9e63351b0abddbc98e78cb73d6b7ebd176ff1ae48f57a098041b4d3eab7a5",
+      "lines": 15,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/IntakesView.astro",
+      "status": "source_read",
+      "sha256": "b34b779d6d05121ecccbd606e029de7ff628c3c7fea5b9380f568f4732420fcd",
+      "lines": 90,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/PagosView.astro",
+      "status": "source_read",
+      "sha256": "b3ae106e44e670334793e1e94f991ecda702ca73da8ce6b9fab7d1e3af020581",
+      "lines": 204,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/PatientsView.astro",
+      "status": "source_read",
+      "sha256": "662cd004b68a6a8b1954d3fa40c51dfb2fbdb7aeb8e86efadf0f3c2c3194ba6b",
+      "lines": 245,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/components/views/PlantillasView.astro",
+      "status": "source_read",
+      "sha256": "7543981b6be0c5138d235f2b45757ba7fa73e3af010e9345f9a1caf318fda8e8",
+      "lines": 73,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/layouts/Layout.astro",
+      "status": "source_read",
+      "sha256": "97b393f5af54aacfca297c78155ec55aa83f74d8b2baf50230dfd88a0ba04c56",
+      "lines": 165,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/appointments.ts",
+      "status": "source_read",
+      "sha256": "7fcd0e4b73e26f93be007b6f100676c2cfa91cc8f0851550667334799d47fb53",
+      "lines": 55,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/auth.ts",
+      "status": "source_read",
+      "sha256": "286d8061a7326d6c19d2b4d543f5c62d6a2f63346079d588137dac2da855bc66",
+      "lines": 107,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/create-record.ts",
+      "status": "source_read",
+      "sha256": "83874761139d8055c0276b89b65121ebb203d7cf92a579b555bf0c35462856dd",
+      "lines": 24,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/demoData.ts",
+      "status": "source_read",
+      "sha256": "937469927cf9dc7f2f3ba4373cf74f12a0f3d2a4d62bc7c8c42c18ca114efa3f",
+      "lines": 428,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/http.ts",
+      "status": "source_read",
+      "sha256": "a75fd4a919c61e6fce37bccf04cf73ae0750d199f188f15c054fb039ad06cd4c",
+      "lines": 27,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/income-chart.ts",
+      "status": "source_read",
+      "sha256": "a160cc4acdef917a5af6cd6b2a02eac346af5f7b710a263921ae898285c1e5c2",
+      "lines": 100,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/motion.ts",
+      "status": "source_read",
+      "sha256": "f38641250aa309e685320702b2bde366469e7c66906674079b8244769f4b3777",
+      "lines": 126,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/navigation.ts",
+      "status": "source_read",
+      "sha256": "1fe27717a8a9d4695513be9bcea136706f93ee3e8358126534ec31d06c9cf2e4",
+      "lines": 53,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/lib/text.ts",
+      "status": "source_read",
+      "sha256": "30a1d34a0bfe7c5fc595d668a738ed63b00d2fa09980289c50f694ca21df5675",
+      "lines": 73,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/pages/index.astro",
+      "status": "source_read",
+      "sha256": "1ff15da434e75f2a1d74dc2ea6227ed4eea6222a45a6597b362763886a13b31b",
+      "lines": 10667,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/pages/login.astro",
+      "status": "source_read",
+      "sha256": "e773b8afa1775d31e250d831ba22c54f80cc902f8ed12242e80381961afed139",
+      "lines": 147,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/pages/reserva.astro",
+      "status": "source_read",
+      "sha256": "c3007c3442f3850e5d6ec3295febb82fbfc5299ba110c764af06e5a030509e99",
+      "lines": 565,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/pages/reset-password.astro",
+      "status": "source_read",
+      "sha256": "551e04f22511cded03f7c9ac38647e015b35607259fc902845c0a8f03c67d922",
+      "lines": 81,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/scripts/clinical-motion.js",
+      "status": "source_read",
+      "sha256": "5426f0870baf7acc778829d8de9fc317b6745b7192f4f449385e167e34f6ea11",
+      "lines": 58,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/scripts/layout.js",
+      "status": "source_read",
+      "sha256": "81be87aba53821f2ed23b1a723a4a07e8349f898f7a0999f72391f3ffca0f9f4",
+      "lines": 101,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/scripts/public-booking.js",
+      "status": "source_read",
+      "sha256": "ea3e970337bf83cc73df45ac3cca22f468549719cf98e56af499266be362a988",
+      "lines": 388,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/store.ts",
+      "status": "source_read",
+      "sha256": "4d35da4f021b69f181844719262f060a9a232e5d398b43b5cec4118a54ba51d0",
+      "lines": 17,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/src/styles/assistant-rail.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "f794aeab393641df7c988579d3e68472160e44029501db753bffc9625f935c88",
+      "lines": 1091,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 247,
+      "css_declarations_indexed": 961,
+      "layout_import_order": 8
+    },
+    {
+      "file": "frontend/src/styles/design-tokens.css",
+      "status": "source_read",
+      "sha256": "fc745c9c4d9247e057617800ad09dfc287d1d056da82d0492c5df805e3353a59",
+      "lines": 195,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 2,
+      "css_declarations_indexed": 152,
+      "layout_import_order": 1
+    },
+    {
+      "file": "frontend/src/styles/editorial-primitives.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "1489658abee343b8b4734fd3bd7606f0e7666d789c070538224535d6abc1703c",
+      "lines": 540,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 59,
+      "css_declarations_indexed": 286,
+      "layout_import_order": 2
+    },
+    {
+      "file": "frontend/src/styles/editorial-shell.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "2664953f64f9fad17c1d58be4322a29c7df7fe0bc55981e6f7ca311a42e954fc",
+      "lines": 532,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 63,
+      "css_declarations_indexed": 315,
+      "layout_import_order": -1
+    },
+    {
+      "file": "frontend/src/styles/editorial-views.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "336af7c04c4f86c59440cae31c069097a7819251ab61b082fdf2fd61d3fe27a5",
+      "lines": 1756,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 226,
+      "css_declarations_indexed": 950,
+      "layout_import_order": 3
+    },
+    {
+      "file": "frontend/src/styles/global-shell.css",
+      "status": "source_read",
+      "sha256": "a186c989b3122e94f8d61c4b6a8342911c46391edff483a6d11bab9ef7a00675",
+      "lines": 53,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 18,
+      "css_declarations_indexed": 57,
+      "layout_import_order": 17
+    },
+    {
+      "file": "frontend/src/styles/global.css",
+      "status": "source_read",
+      "sha256": "944e6e12c0067a6767836a78ad6c4095b829f966b44f33bc95cfef1401ab3c10",
+      "lines": 1,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 0,
+      "css_declarations_indexed": 0,
+      "layout_import_order": 0
+    },
+    {
+      "file": "frontend/src/styles/precision-agenda.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "c0a9f1acc5376cda5cf06f709cd61738c6cb0723d1b1c5ee70de9f40ade26ef1",
+      "lines": 817,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 117,
+      "css_declarations_indexed": 489,
+      "layout_import_order": 7
+    },
+    {
+      "file": "frontend/src/styles/precision-blue.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "e9c714f8f1df7a43a072194372314b164d8aaeed804ae00f5a843eb725d3f67c",
+      "lines": 526,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 376,
+      "css_declarations_indexed": 1059,
+      "layout_import_order": 18
+    },
+    {
+      "file": "frontend/src/styles/precision-dashboard.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "3ee0d8fe3d45a2a37f6db4fdef0446d55d1157e8a48baf8de28a2562c20f4249",
+      "lines": 522,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 70,
+      "css_declarations_indexed": 276,
+      "layout_import_order": 9
+    },
+    {
+      "file": "frontend/src/styles/precision-documents.css",
+      "status": "source_read",
+      "sha256": "1e740e591bb1c3192f184b2721a81cef8d7d5f5a49c1cdaba01328648100220e",
+      "lines": 143,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 19,
+      "css_declarations_indexed": 77,
+      "layout_import_order": 13
+    },
+    {
+      "file": "frontend/src/styles/precision-ficha.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "f50e14927c923a567caf4a2f3b286edc57ea4d7b0b26599439578ea8fff4f233",
+      "lines": 578,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 151,
+      "css_declarations_indexed": 532,
+      "layout_import_order": 6
+    },
+    {
+      "file": "frontend/src/styles/precision-finance.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "fa4a9da582e5432e2458ac18bbd9767a5fd876ab26d35570ee5fd457d5a61015",
+      "lines": 564,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 88,
+      "css_declarations_indexed": 328,
+      "layout_import_order": 12
+    },
+    {
+      "file": "frontend/src/styles/precision-history.css",
+      "status": "source_read",
+      "sha256": "88470a5f0aa0a5ac569962b95b54d98ed7f6d92c853ee686b71e6acc7af8a830",
+      "lines": 28,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 3,
+      "css_declarations_indexed": 14,
+      "layout_import_order": 15
+    },
+    {
+      "file": "frontend/src/styles/precision-messages.css",
+      "status": "source_read",
+      "sha256": "52830afdea9921a739c94650c41134e35e18cea7a9a23e217983aec272d0b289",
+      "lines": 113,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 15,
+      "css_declarations_indexed": 62,
+      "layout_import_order": 14
+    },
+    {
+      "file": "frontend/src/styles/precision-patients.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "f41905bee1a642d594245b5e970dc437439bf78083a54d1379546e16e77e5512",
+      "lines": 906,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 124,
+      "css_declarations_indexed": 509,
+      "layout_import_order": 5
+    },
+    {
+      "file": "frontend/src/styles/precision-plantillas.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "13886b3c70ca52b344fea3111e1590c20a82836b473b1055391acf504fd40965",
+      "lines": 284,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 37,
+      "css_declarations_indexed": 153,
+      "layout_import_order": 10
+    },
+    {
+      "file": "frontend/src/styles/precision-settings.css",
+      "status": "source_read",
+      "sha256": "0937dad8757ce0dd22e3f0dcee561582b22c4252b96e4470cbe0c822ae67f42a",
+      "lines": 176,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 23,
+      "css_declarations_indexed": 98,
+      "layout_import_order": 16
+    },
+    {
+      "file": "frontend/src/styles/precision-system.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "f70cc08672c24e23132120483c7e311637c89d08bfe235247b0a111b92000deb",
+      "lines": 404,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 45,
+      "css_declarations_indexed": 246,
+      "layout_import_order": 4
+    },
+    {
+      "file": "frontend/src/styles/precision-voice.css",
+      "status": "source_read",
+      "sha256": "aaf3dded6af86f4c53d406096c1c39e8d9c8500779614bcb530f66ac7b3b08c9",
+      "lines": 389,
+      "detail": "Whole source read; runtime execution not implied.",
+      "css_rules_indexed": 49,
+      "css_declarations_indexed": 252,
+      "layout_import_order": 11
+    },
+    {
+      "file": "frontend/src/styles/premium-clinic-ui.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "43a5d1b94298c42e29d521295d3fce1559bfcd13b25d2d3bd7458461581166ec",
+      "lines": 4866,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 664,
+      "css_declarations_indexed": 2188,
+      "layout_import_order": -1
+    },
+    {
+      "file": "frontend/src/styles/production-ui.css",
+      "status": "structural_and_targeted_review",
+      "sha256": "73f197b68d13f8b8f01d407de0531cf555d3ed1b997471096848bd67d4543dc4",
+      "lines": 3363,
+      "detail": "PostCSS parsed/indexed all rules/declarations; human targeted review of imports/cascade, dimensions/media/overflow, focus, hidden states, motion and tokens. Not literal full-source reading or per-rule visual proof.",
+      "css_rules_indexed": 493,
+      "css_declarations_indexed": 1886,
+      "layout_import_order": -1
+    },
+    {
+      "file": "frontend/Dockerfile",
+      "status": "source_read",
+      "sha256": "4b3b7bbe440fe0057ea81cd8e6f9e8e2b9c1ab759d3b1f588554110a5da358ea",
+      "lines": 17,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/astro.config.mjs",
+      "status": "source_read",
+      "sha256": "2f9b896e0f76ed238f0df5ca17697059536f387cfab8306f4e77d91be0e4f1d5",
+      "lines": 73,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/docker-entrypoint.d/40-fisio-runtime-config.sh",
+      "status": "source_read",
+      "sha256": "da2057de2c7740f1e2afa4389072e2217c31371edd90f17220b226f72b2baf8d",
+      "lines": 50,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/nginx.conf",
+      "status": "source_read",
+      "sha256": "788edf079c5183ad08a046391aa0555b791393c8fca0b2721f5f9ea56cd02685",
+      "lines": 78,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/package.json",
+      "status": "source_read",
+      "sha256": "4178169d597cc5f92c0763186dc30bdee6c6c74211c3e4f86a663781a06a22dc",
+      "lines": 32,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/runtime-config.template.js",
+      "status": "source_read",
+      "sha256": "645423eee95d74c5ebe6bc1e25042db8873ed5f463ad3e38e6560d7301c07da1",
+      "lines": 4,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    },
+    {
+      "file": "frontend/tsconfig.json",
+      "status": "source_read",
+      "sha256": "794a1402e64b00c37cc17d9f4f406cab44c557675796d8530faf5753f8fc922b",
+      "lines": 9,
+      "detail": "Whole first-party source read across audit passes; domain handlers inspected against callers/contracts and focused regressions. No whole-runtime claim."
+    }
+  ],
+  "edits_owned": [
+    "frontend/src/components/views/CitasView.astro",
+    "frontend/src/components/views/FichaPacienteView.astro",
+    "frontend/src/lib/appointments.ts",
+    "frontend/src/pages/index.astro",
+    "frontend/src/scripts/clinical-motion.js",
+    "frontend/src/styles/precision-agenda.css",
+    "frontend/src/styles/precision-blue.css",
+    "frontend/src/styles/precision-ficha.css",
+    "scripts/test-agenda-loading.mjs",
+    "scripts/test-appointment-defaults.mjs",
+    "scripts/test-assistant-patient-context.mjs",
+    "scripts/test-clinic-timezone.mjs",
+    "scripts/test-clinical-motion.mjs",
+    "scripts/test-document-signature-flow.mjs",
+    "scripts/test-ficha-read-state.mjs",
+    "scripts/test-finance-read-state.mjs",
+    "scripts/test-history-note-write.mjs",
+    "scripts/test-patient-appointment-index.mjs"
+  ],
+  "fresh_checks_passed": [
+    "git diff --check (owned sources)",
+    "node scripts/test-agenda-loading.mjs",
+    "node scripts/test-appointment-defaults.mjs",
+    "node scripts/test-assistant-patient-context.mjs",
+    "node scripts/test-clinic-timezone.mjs",
+    "node scripts/test-clinical-motion.mjs",
+    "node scripts/test-crm-usability.mjs",
+    "node scripts/test-dashboard-next-session.mjs",
+    "node scripts/test-document-signature-flow.mjs",
+    "node scripts/test-ficha-read-state.mjs",
+    "node scripts/test-ficha-save-context.mjs",
+    "node scripts/test-finance-read-state.mjs",
+    "node scripts/test-history-note-write.mjs",
+    "node scripts/test-patient-appointment-index.mjs"
+  ],
+  "fixed_findings": [
+    "appointment defaults added an extra hour after minute31",
+    "late copilot brief/history could mix patient contexts",
+    "report polling job global across patients; now per patient and retains uncertain jobs",
+    "wrong-patient/late generation result now rejected",
+    "old ficha contents remained actionable on next patient loading/failure",
+    "docs tab and legal reads guarded by patient/version; programmatic tab opening also loads docs",
+    "voice synthesis missing evolution invented favorable; now unknown with labelled option",
+    "pain-map rendering was defined but never called; now follows latest note including zero",
+    "finance reads swallowed failures as empty/success, duplicate overview reads and stale filters; guarded unknown states",
+    "failed exercise-plan read marked unavailable rather than treating as no plans",
+    "cancelled invoices excluded from pending amount",
+    "Editing a voice/map-created clinical note lost body zones missing from manual select; option coverage regression added.",
+    "Pending ficha consent signature posted a name using incompatible signature field; now opens existing stored document in shared canvas and posts firma_base64 PNG.",
+    "Signature canvas relied on TouchEvent constructor existing on desktop; position handler now safely detects touch payload.",
+    "Legacy history note submission could POST twice while pending, accept incomplete acknowledgement or update another patient. Captured context, pending guard, draft preservation and explicit uncertain-write lock added. No server idempotency claimed.",
+    "Signature and voice dialogs lacked dialog naming, initial focus, Tab boundary and Escape close. Added shared existing-modal handlers and focus restoration regression.",
+    "Hidden clinical follow-up details also retain previous values; now hidden/inert with the rest of a loading/failed ficha.",
+    "Patient directory sorted appointment list separately per patient; one sorted index now retains earliest appointment per patient.",
+    "Clinic agenda mixed browser-local day/hour/week bounds with Madrid labels. Shared timezone helpers now control calendar, timeline, dashboard/directories, week GET boundaries, DST-safe day shifts and input serialization. Ambiguous/nonexistent DST input rejected before write.",
+    "Dashboard money text exceeded mobile viewport despite no root scroll overflow. Responsive min-width/grid handling and stacked metric content keep complete numbers readable.",
+    "Generated ficha overview progress, priorities, plan circuit and activity classes lacked imported styles. Added scoped existing-theme spacing and responsive hierarchy.",
+    "Consent signature retained legacy dark/green utilities and clipped controls on mobile. Added scoped white/blue theme, explicit spacing, canvas and independent long-content scrolling with accessible save action.",
+    "Appointment drawer metadata and actions lacked visual hierarchy; scoped styles and plain calendar-sync wording now match clinical theme."
+  ],
+  "remaining_findings": [
+    {
+      "severity": "P2",
+      "file": "frontend/src/pages/index.astro",
+      "area": "history-note-form /api/profesional/notes",
+      "detail": "No durable server idempotency exists for legacy history-note writes. Current view locks uncertain sends, but a reload or second process can still retry after an unknown committed response. Requires a separately validated server+schema contract; not represented as solved."
+    },
+    {
+      "severity": "debt",
+      "file": "frontend/src/pages/index.astro",
+      "area": "renderRecommendationFollowUpForm",
+      "detail": "Unused renderer retained because it contains canonical source DOM markers. Astro hint only. Extending the legacy follow-up mutation contract was deliberately not attempted."
+    },
+    {
+      "severity": "debt",
+      "file": "frontend/src/styles",
+      "detail": "Multi-layer imported cascade has many !important declarations. Three large historical stylesheets not imported by current Layout are preserved. Structural/targeted review is not exhaustive human inspection or pixel coverage."
+    },
+    {
+      "severity": "P3",
+      "file": "frontend/src/styles/editorial-primitives.css",
+      "area": "lines258/277/318 and editorial-views.css819",
+      "detail": "Undefined legacy custom properties radius-tag, color-sky-wash and color-ink-black without fallback. Later current-theme rules override affected properties; no concrete visible failure reproduced. No speculative theme change made."
+    },
+    {
+      "severity": "P3",
+      "file": "frontend/src/lib/demoData.ts",
+      "area": "DEMO_APPOINTMENTS date strings",
+      "detail": "DEV-only demo dates use day+1/day+2 interpolation and can become invalid at month-end; not live clinical data. Needs fixture-focused cleanup if demo continuity is required."
+    }
+  ],
+  "excluded": [
+    "node_modules, dist and .astro generated output",
+    "fonts/binary dependencies",
+    "package-lock exact third-party code",
+    "historical one-off frontend rewrite scripts outside src (not runtime)"
+  ],
+  "live_checks_not_done": [
+    "Production/provider requests",
+    "real database writes or sends",
+    "paid AI",
+    "physical mobile/browser matrix",
+    "whole frontend runtime 100 percent coverage"
+  ],
+  "methodology": {
+    "logic": "Source reading across initial and resumed passes, actual-handler VM regressions, isolated imports of real TS modules, patient/version races and failed/uncertain reads/writes.",
+    "css": "PostCSS structural index of 22 CSS files, 19 imported by Layout, plus human targeted inspection. An indexed declaration is not a manually observed declaration or a visually verified state.",
+    "runtime": "Parent coordinator owns integrated Astro check/build/UI; this reviewer ran only focused local tests, no production/network/provider sends."
+  },
+  "dom_contract": {
+    "baseline": "1b2a954",
+    "method": "Per-file unique double-quoted id/data-* attribute source strings; baseline markers retained in same source file. Counts are not DOM runtime uniqueness proof.",
+    "baseline_total": 540,
+    "current_total": 540,
+    "files": [
+      {
+        "file": "frontend/src/pages/index.astro",
+        "baseline_unique_markers": 102,
+        "current_unique_markers": 102,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/BonosView.astro",
+        "baseline_unique_markers": 31,
+        "current_unique_markers": 31,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/CitasView.astro",
+        "baseline_unique_markers": 34,
+        "current_unique_markers": 34,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/ConfigView.astro",
+        "baseline_unique_markers": 25,
+        "current_unique_markers": 25,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/DashboardView.astro",
+        "baseline_unique_markers": 39,
+        "current_unique_markers": 39,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/DocumentosView.astro",
+        "baseline_unique_markers": 12,
+        "current_unique_markers": 12,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/FacturacionView.astro",
+        "baseline_unique_markers": 26,
+        "current_unique_markers": 26,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/FichaPacienteView.astro",
+        "baseline_unique_markers": 152,
+        "current_unique_markers": 152,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/GestoriaView.astro",
+        "baseline_unique_markers": 18,
+        "current_unique_markers": 18,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/HistorialView.astro",
+        "baseline_unique_markers": 4,
+        "current_unique_markers": 4,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/IntakesView.astro",
+        "baseline_unique_markers": 7,
+        "current_unique_markers": 7,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/PagosView.astro",
+        "baseline_unique_markers": 49,
+        "current_unique_markers": 49,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/PatientsView.astro",
+        "baseline_unique_markers": 36,
+        "current_unique_markers": 36,
+        "missing": []
+      },
+      {
+        "file": "frontend/src/components/views/PlantillasView.astro",
+        "baseline_unique_markers": 5,
+        "current_unique_markers": 5,
+        "missing": []
+      }
+    ]
+  },
+  "css_index_summary": {
+    "files": 22,
+    "imported": 19,
+    "rules_indexed": 2889,
+    "declarations_indexed": 10890,
+    "urls_found": 0
+  },
+  "counts": {
+    "source_read": 53,
+    "structural_and_targeted_review": 14
+  },
+  "local_visual_verification": {
+    "method": "Real local built application with fixture-only HTTP routes; regression phase loads current source styles as same-origin CSS when QA_SOURCE_CSS=true. Final integrated build verification belongs to coordinator.",
+    "baseline_failure": "Text Range fragments for123456,78EUR exceeded375px viewport even though ancestor clipping hid document overflow.",
+    "passed": "Dashboard values120,00EUR/123456,78EUR/123.456.789,00EUR at375/768/1280; progress facts on separate lines; plan-circuit value fragments remain within cards. Entire ficha top/middle/end inspected375/1280.",
+    "signature_long_document": "More than2000characters at375x667 and375x800: legal text scroll viewport133/266px with scrollHeight1112px, canvas315x160px and save317x44px accessible. White panel and blue action verified; Tab/Escape pass.",
+    "private_evidence": "audit-2026-10-16/responsive-regression and signature-long-667/signature-long-800 under .private-backups/local-validation; no clinical data or external providers.",
+    "scripts": [
+      "tmp/audit-responsive-regression.mjs",
+      "tmp/audit-signature-long-document.mjs"
+    ]
+  }
+}

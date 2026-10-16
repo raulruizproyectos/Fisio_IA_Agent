@@ -179,7 +179,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la siguiente estructura (sin 
       throw new Error('Tiempo de espera agotado al sintetizar la nota clínica (timeout)');
     }
     // Si falla el parsing o la API, fallback seguro
-    return fallbackRuleBasedSynthesis(cleanText);
+    return fallbackRuleBasedSynthesis(cleanText, previousNotes);
   } finally {
     clearTimeout(timer);
   }
@@ -195,25 +195,20 @@ export function fallbackRuleBasedSynthesis(text, previousNotes = []) {
   let dolor_eva = null;
   let dolor_eva_anterior = null;
 
-  const evaChangeMatch = clean.match(/(?:de|pasado de)\s*(\d{1,2})\s*(?:a|\/)\s*(\d{1,2})/i);
-  if (evaChangeMatch) {
-    const prev = parseInt(evaChangeMatch[1], 10);
-    const curr = parseInt(evaChangeMatch[2], 10);
-    if (prev >= 0 && prev <= 10) dolor_eva_anterior = prev;
-    if (curr >= 0 && curr <= 10) dolor_eva = curr;
-  } else {
-    const singleEvaMatch = clean.match(/(?:eva|dolor|escala)\s*(?:de\s*)?(\d{1,2})(?:\s*\/\s*10)?/i);
-    if (singleEvaMatch) {
-      const val = parseInt(singleEvaMatch[1], 10);
-      if (val >= 0 && val <= 10) dolor_eva = val;
-    }
+  // Only explicitly labelled pain values count; exercise repetitions are not EVA.
+  const pain = [...clean.matchAll(/\b(?:eva|dolor|escala\s+de\s+dolor)\s*(?:(?:ha\s+pasado|pasa|pas[oó])\s+)?(?:de\s+)?(\d{1,2})(?!\d|[.,]\d)(?:\s*\/\s*10)?(?:\s+a\s+(\d{1,2})(?!\d|[.,]\d)(?:\s*\/\s*10)?)?/gi)].at(-1);
+  if (pain) {
+    const current = Number(pain[2] ?? pain[1]);
+    if (current >= 0 && current <= 10) dolor_eva = current;
+    if (pain[2] !== undefined && Number(pain[1]) <= 10) dolor_eva_anterior = Number(pain[1]);
   }
 
   // Si no se extrajo dolor_eva_anterior del texto pero hay previousNotes, usar la última
   if (dolor_eva_anterior === null && Array.isArray(previousNotes) && previousNotes.length > 0) {
     const lastNote = previousNotes[0];
     if (lastNote?.dolor_eva !== null && lastNote?.dolor_eva !== undefined) {
-      dolor_eva_anterior = Number(lastNote.dolor_eva);
+      const previous = Number(lastNote.dolor_eva);
+      if (String(lastNote.dolor_eva).trim() && Number.isInteger(previous) && previous >= 0 && previous <= 10) dolor_eva_anterior = previous;
     }
   }
 
@@ -229,14 +224,16 @@ export function fallbackRuleBasedSynthesis(text, previousNotes = []) {
 
   // Detectar evolución
   let evolucion = null;
-  if (/mejor|mejoria|menos dolor|baja el dolor|favorable/i.test(clean)) evolucion = 'favorable';
+  if (/\b(?:sin mejor[ií]a|no (?:hay |ha |refiere )?mejor(?:[ií]a|a|ado))\b/i.test(clean)) evolucion = 'estable';
+  else if (/mejor|mejoria|menos dolor|baja el dolor|favorable/i.test(clean)) evolucion = 'favorable';
   else if (/igual|estable|sin cambios|mantiene/i.test(clean)) evolucion = 'estable';
   else if (/peor|mas dolor|empeora|aumento/i.test(clean)) evolucion = 'empeora';
 
-  const movilidad = /movilidad/i.test(clean) ? 'Evaluada en sesión' : null;
-  const tratamientos = /terapia manual|punción|movilizacion/i.test(clean) ? ['Terapia manual'] : [];
-  const ejercicios = /ejercicio|glúteo|isométrico|estiramiento/i.test(clean) ? ['Ejercicios terapéuticos'] : [];
-  const respuesta = /mejoría|favorable|alivio/i.test(clean) ? 'Tolerancia favorable con alivio' : null;
+  // Keywords cannot establish what was performed or tolerated; keep the complete dictation for review.
+  const movilidad = null;
+  const tratamientos = [];
+  const ejercicios = [];
+  const respuesta = null;
 
   return {
     clinical_summary: clean,

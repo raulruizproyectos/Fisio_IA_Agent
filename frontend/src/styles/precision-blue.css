@@ -128,6 +128,16 @@ button:not(:disabled):active { transform: scale(.98); }
 .app-shell .clinic-metric-grid article { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 .app-shell .clinic-metric-grid article + article { border-left: 1px solid var(--color-border) !important; }
 .app-shell .clinic-metric-grid strong { font-size: 28px !important; font-weight: 600 !important; font-variant-numeric: tabular-nums; }
+.app-shell .clinic-metric-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.app-shell .clinic-metric-grid article, .app-shell .clinic-metric-grid article > div { min-width: 0; }
+.app-shell .clinic-metric-grid strong { overflow-wrap: anywhere; }
+@media (max-width: 900px) {
+  .app-shell .clinic-metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+}
+@media (max-width: 640px) {
+  .app-shell .clinic-metric-grid article { flex-direction: column; align-items: flex-start !important; gap: 8px !important; padding: 12px !important; }
+  .app-shell .clinic-metric-grid article > div { width: 100%; }
+}
 .app-shell .ficha-hero-panel { background: var(--color-surface-selected) !important; padding: 26px !important; }
 .app-shell .ficha-hero-name { font-size: 30px !important; font-weight: 600; }
 .app-shell :is(.btn-primary,.precision-btn-primary,.patient-primary-action,.btn-brand,.btn-canopy,#addPagoBtn,#sendBtn,#pagoSubmitBtn,#btnSaveFicha,[data-action="primary-cta"]) { background: var(--color-brand-primary) !important; color: white !important; border-radius: 8px !important; box-shadow: none !important; font-weight: 600 !important; }

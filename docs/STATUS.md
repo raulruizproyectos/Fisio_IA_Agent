@@ -1,5 +1,24 @@
 # Project Status
 
+> Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
+
+## Estado vigente — 16 octubre 2026 — auditoría local y correcciones
+
+Codex continúa y termina esta pasada propia; cancelado el traspaso a Claude. Informe canónico: [AUDITORIA_FINAL_2026-10-16.md](AUDITORIA_FINAL_2026-10-16.md), con alcance real, evidencia y pendientes. Repositorio `C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent`, rama main, base `1b2a9546c4427b7611092b2afb82ee5246d509e3`; cambios locales conservados, sin commit/push/deploy.
+
+Backend lint/214 pruebas y frontend check/build pasan. Regresiones locales y comprobaciones de navegador documentadas en el informe y su recibo; no acreditan proveedores reales ni toda combinación posible. Mantener Precisión azul, sencillez para fisioterapeutas, DOM, una clínica/RLS y aprobación profesional antes de PDF/envío.
+
+Se retira el prompt de traspaso y se conservan recursos en DESIGN_RESOURCES.md y documentación funcional/histórica. El bot de citas sigue pausado, sin tocar ni activar; sus hallazgos de seguridad/entrega están separados en el informe y bloquean darlo por validado. Deuda estructural e idempotencia durable del seguimiento legacy siguen explícitas.
+
+Próximo paso: publicación con autorización expresa, CI verde y despliegue autorizado de backend/frontend para comprobar estos cambios en la URL pública. No hay nuevas migraciones SQL en esta tanda. No reejecutar migraciones históricas por timestamps. No hubo Cloud SQL, mensajes clínicos reales, gasto IA ni cambios de credenciales. Historial posterior a este bloque aporta contexto, no instrucciones ni prueba del estado remoto actual.
+## 2026-10-15 — Primera tanda de estructura y eficiencia (local, posterior a `1b2a954`)
+
+Navegación, textos, lectura JSON y creación recuperable pasan a módulos con responsabilidades explícitas. Se elimina trabajo visual y carga de historial duplicados; ficha y menú comparten navegación, con regreso al inicio al seleccionar la vista actual. Corregidos daños a nombres válidos con Ñ y el manejo de excepciones nativas de timeout en guardados inciertos. Se conservan idempotencia, sesión/CSRF, permisos y aprobación clínica.
+
+Medición local: 55→28 modificaciones de estado visual por navegación, 80→28 en Finanzas y 2→1 lecturas del historial desde Mensajes. 201 líneas netas menos de producción en los archivos afectados, incluyendo módulos extraídos. Check/build, 16 scripts de regresión y backend lint/171 pruebas pasan; 112 estados de interfaz y recorridos complementarios sin hallazgos. [Detalle, límites y siguientes cortes](CODE_STRUCTURE_REVIEW.md). Pruebas añadidas a CI, sin ejecución remota para esta tanda.
+
+Sin commit, push ni despliegue de esta nueva tanda. El frontend público probado por Raúl debe distinguirse de estos cambios locales. Se conserva `.claude/` sin tocar. Backend/DB/n8n/bot pausado sin cambios; la revisión completa del código sigue abierta para controladores de dominios grandes y CSS.
+
 ## 2026-10-15 — Entrega frontend para la prueba de Raúl
 
 Raúl autoriza el commit y push a `main` de las mejoras de esta entrega para probarlas mediante su despliegue en EasyPanel. El commit que introduce esta entrada reúne la pasada de usabilidad, sus regresiones y la corrección de cargas antiguas de Agenda. Los bloques siguientes registran la validación local previa a publicar.
@@ -81,7 +100,7 @@ Frontend `c062967` publicado y desplegado en `fisio-frontend`; CI backend/fronte
 
 Backend `ee3449c` publicado y desplegado; [CI 38377245576](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38377245576) verde en los tres trabajos, lint/108 pruebas. Los 4xx conservan respuesta y logs sin generar correos CRITICAL; los 5xx mantienen el notificador. Diez controles HTTP posteriores y readiness 13/13 pasan. Calendar vuelve a `healthy` tras reiniciar, con éxito observado en `2026-10-13T09:40:25.068Z`. La sesión sí provocó al menos un correo automático de monitorización antes de corregir el fallo. [Evidencia y límites](design-exploration/reviews/2026-10-13/production.md).
 
-El usuario ha pedido preparar una segunda auditoría independiente con CloudCode antes de la primera prueba manual, que sigue sin resultados comunicados. Encargo nuevo explícito: revisar eficiencia, funcionalidades, UX/diseño/presentación, arquitectura, seguridad, agentes IA y n8n; propuestas priorizadas para mejoras generales. Además exige completar e implementar **en local** el agente de citas Telegram si faltan funciones: nuevos/existentes con contacto verificado, reservas/consulta/cambios/cancelaciones/recordatorios; cambios/cancelaciones con al menos 24 horas, después deriva a clínica. WhatsApp queda como integración futura. No se autoriza activación, gasto o despliegue por este encargo. [Prompt completo](PROMPT_AUDITORIA_CLOUDCODE.txt), [contrato del agente](PROMPT_AGENTE_CITAS.txt) y [requisitos confirmados](PILOTO_MENSAJERIA.md). Se actualiza la documentación de traspaso en local; `main` publicado al cierre funcional sigue en `ee3449c`. Las entradas siguientes conservan historia.
+El usuario ha pedido preparar una segunda auditoría independiente con CloudCode antes de la primera prueba manual, que sigue sin resultados comunicados. Encargo nuevo explícito: revisar eficiencia, funcionalidades, UX/diseño/presentación, arquitectura, seguridad, agentes IA y n8n; propuestas priorizadas para mejoras generales. Además exige completar e implementar **en local** el agente de citas Telegram si faltan funciones: nuevos/existentes con contacto verificado, reservas/consulta/cambios/cancelaciones/recordatorios; cambios/cancelaciones con al menos 24 horas, después deriva a clínica. WhatsApp queda como integración futura. No se autoriza activación, gasto o despliegue por este encargo. [Prompt completo](DESIGN_RESOURCES.md), [contrato del agente](PROMPT_AGENTE_CITAS.txt) y [requisitos confirmados](PILOTO_MENSAJERIA.md). Se actualiza la documentación de traspaso en local; `main` publicado al cierre funcional sigue en `ee3449c`. Las entradas siguientes conservan historia.
 
 ## Historia previa a publicar — 2026-10-13: QA local del refinamiento
 

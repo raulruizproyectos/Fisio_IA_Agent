@@ -156,10 +156,12 @@ app.use((err, req, res, _next) => {
     return res.status(409).json({available:false,code:'appointment_overlap',error:'Ese horario acaba de ser ocupado. Actualiza la agenda y elige otro hueco.',request_id:req.id});
   }
   const status = Number(err.status || 500);
-  const diagnostic = req.path.startsWith('/api/auth/') ? 'Error en solicitud de autenticación' : err.message || 'Error interno del servidor';
+  const diagnostic = req.path.startsWith('/api/auth/') ? 'Error en solicitud de autenticación'
+    : publicHttpErrorMessage(err, 500, 'Error en solicitud de API');
   if (ERROR_WEBHOOK_URL && status >= 500) {
     fetch(ERROR_WEBHOOK_URL, {
       method: 'POST',
+      signal: AbortSignal.timeout(5000),
       headers: {
         'Content-Type': 'application/json',
         ...(process.env.N8N_WEBHOOK_SECRET
@@ -169,8 +171,10 @@ app.use((err, req, res, _next) => {
       body: JSON.stringify({
         severity: 'CRITICAL',
         service: 'fisio-ia-agent-api',
-        route: req.path.startsWith('/api/auth/') ? req.path : req.originalUrl,
+        route: req.path,
         method: req.method,
+        request_id: req.id,
+        status,
         message: diagnostic,
         timestamp: new Date().toISOString(),
       }),
@@ -183,7 +187,8 @@ app.use((err, req, res, _next) => {
     level: 'error',
     request_id: req.id,
     method: req.method,
-    route: req.path.startsWith('/api/auth/') ? req.path : req.originalUrl,
+    route: req.path,
+    status,
     message: diagnostic,
   }));
   const safeMessage = publicHttpErrorMessage(err, status, status >= 500 ? 'Error interno del servidor' : 'No se pudo completar la solicitud. Revisa los datos y permisos.');

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
+import { loadFrontendModule } from './load-frontend-module.mjs';
+const dates = await loadFrontendModule('lib/appointments.ts');
 const { transpileModule } = createRequire(new URL('../frontend/package.json', import.meta.url))('typescript');
 const source = readFileSync(new URL('../frontend/src/pages/index.astro', import.meta.url), 'utf8');
 const start = source.indexOf('  const loadCitas = async () => {');
@@ -12,6 +14,7 @@ const deferred = () => { let resolve, reject; const promise = new Promise((a, b)
 for (const oldFails of [false, true]) {
   const requests = [], renders = [], errors = [], nodes = new Map();
   const ui = {
+    ...dates,
     agendaLoadVersion: 0, agendaWeekStart: new Date('2026-10-12T00:00:00Z'), latestAgendaAppointments: [],
     BACKEND_BASE: 'http://fixture.invalid', PROF_ID: 'professional', isDevMode: false,
     citasBody: null, agendaMobileList: null, agendaMobileSummary: null, agendaCalendarMeta: null, dashCitasBody: {},

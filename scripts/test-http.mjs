@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import { loadFrontendModule } from './load-frontend-module.mjs';
+const { fetchJson } = await loadFrontendModule('lib/http.ts');
+const originalFetch = globalThis.fetch;
+let calls = [];
+const respond = response => { calls = []; globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response; }; };
+try {
+  respond(Response.json({ patient: 'PEÑA', note: 'JosÃ©' }));
+  assert.deepEqual(await fetchJson('/fixture'), { patient: 'PEÑA', note: 'José' });
+  assert.ok(calls[0].options.signal instanceof AbortSignal);
+  const controller = new AbortController();
+  respond(Response.json({ data: { id: 'saved' } }));
+  await fetchJson('/fixture', { method: 'POST', body: '{}', headers: { 'Idempotency-Key': 'fixture' }, signal: controller.signal });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].options.signal, controller.signal);
+  assert.equal(calls[0].options.headers['Idempotency-Key'], 'fixture');
+  respond(Response.json({ error: 'Already saved', code: 'CREATE_ALREADY_SAVED', data: { id: 'saved' } }, { status: 409 }));
+  await assert.rejects(fetchJson('/fixture', { method: 'POST' }), error => error.status === 409 && error.code === 'CREATE_ALREADY_SAVED' && error.recoveredData.id === 'saved');
+  assert.equal(calls.length, 1, 'Never replay a mutation or conflict');
+  respond(new Response('x'.repeat(500), { status: 503 }));
+  await assert.rejects(fetchJson('/fixture'), error => error.status === 503 && error.code === null && error.message.length < 240);
+  respond({ ok: false, status: 500, text: async () => { throw Error('unreadable'); } });
+  await assert.rejects(fetchJson('/fixture'), error => error.status === 500 && error.message === 'HTTP 500');
+  respond(new Response('not JSON'));
+  await assert.rejects(fetchJson('/fixture'), SyntaxError);
+  const timeout = new DOMException('Timeout', 'TimeoutError');
+  calls = [];
+  globalThis.fetch = async () => { calls.push('attempt'); throw timeout; };
+  await assert.rejects(fetchJson('/fixture', { method: 'POST' }), error => error === timeout);
+  assert.equal(calls.length, 1, 'Timeout remains uncertain; no automatic retry');
+} finally { globalThis.fetch = originalFetch; }
+console.log('PASS: real JSON client preserves timeout/signals, error metadata, recovery data and single-attempt writes.');

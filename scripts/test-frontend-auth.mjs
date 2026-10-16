@@ -7,7 +7,7 @@ const source = await readFile(new URL('../frontend/src/lib/auth.ts', import.meta
 assert.doesNotMatch(source, /createClient|persistSession|authClient|access_token|refresh_token/);
 for (const [dev, demo] of [[false, true], [true, false], [true, true]]) {
   const redirects = [], calls = [], removed = [];
-  let authenticated = false, unavailable = false, failSafeReads = 0, writeFailure = false, logoutFailure = false;
+  let authenticated = false, unavailable = false, failSafeReads = 0, writeFailure = false, logoutFailure = false, authStalled = false;
   globalThis.window = {
     location: { hostname: 'localhost', origin: 'http://localhost:4321', search: demo ? '?demo=true' : '', replace: url => redirects.push(url) },
     localStorage: { getItem: () => demo ? 'true' : null, removeItem: key => removed.push(key) },
@@ -15,6 +15,10 @@ for (const [dev, demo] of [[false, true], [true, false], [true, true]]) {
     async fetch(input, init = {}) {
       const url = new URL(input instanceof Request ? input.url : input), method = init.method || (input instanceof Request ? input.method : 'GET');
       calls.push({ url: url.href, method, init });
+      if (authStalled) {
+        assert.ok(init.signal instanceof AbortSignal, 'Auth requests need a finite deadline');
+        return new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true }));
+      }
       if (url.pathname === '/api/auth/session') {
         if (unavailable) return Response.json({ error: 'Local injected failure' }, { status: 503 });
         if (!authenticated) return Response.json({ error: 'Auth required' }, { status: 401 });
@@ -67,6 +71,14 @@ for (const [dev, demo] of [[false, true], [true, false], [true, true]]) {
   const beforeLogoutRedirects = redirects.length;
   await assert.rejects(auth.signOut(), /Local logout failure/); assert.equal(redirects.length, beforeLogoutRedirects);
   logoutFailure = false; await auth.signOut(); assert.equal(redirects.at(-1), '/login');
+  authStalled = true;
+  const nativeTimeout = AbortSignal.timeout;
+  const keepAlive = setTimeout(() => {}, 1000);
+  try {
+    AbortSignal.timeout = milliseconds => { assert.equal(milliseconds, 15000); return nativeTimeout(1); };
+    assert.equal((await auth.requestAuth('login', { email: 'fixture@example.invalid', password: 'fixture' })).status, 503);
+    assert.ok(calls.at(-1).init.signal instanceof AbortSignal, 'A stalled Auth call must receive a timeout signal');
+  } finally { AbortSignal.timeout = nativeTimeout; clearTimeout(keepAlive); }
 }
 delete globalThis.window;
 console.log('PASS: cookie credentials, CSRF, server clinic, legacy token removal, concurrent refresh, no mutation replay, logout failure and development isolation.');

@@ -1,3 +1,5 @@
+import { readCalendarEventPages } from './calendar-reader.js';
+
 // Recovery only reads Calendar. Missing resources never authorize another mutation.
 const field = (text, name) => {
   const values = String(text || '').split(/\r?\n/)
@@ -32,23 +34,7 @@ export async function readAppointmentCalendarEvidence(client, calendarId, row, b
     if (response.data?.id !== row.google_calendar_event_id) throw new Error('Calendar no confirmó el evento solicitado.');
     return [response.data];
   }
-  const events = [], tokens = new Set();
-  const deadline = Date.now() + 20000;
-  let pageToken;
-  do {
-    if (tokens.size >= 20 || Date.now() >= deadline) throw new Error('La lectura de Calendar no se pudo completar.');
-    const response = await client.events.list({ calendarId, q: row.id, showDeleted: true,
-      singleEvents: false, maxResults: 2500, ...(pageToken ? { pageToken } : {}) }, { ...options, timeout: Math.min(8000, deadline - Date.now()) });
-    const data = response.data;
-    if (!Array.isArray(data?.items) || data.items.some(event => !event || typeof event.id !== 'string' || !event.id)) {
-      throw new Error('Calendar devolvió una lectura incompleta.');
-    }
-    events.push(...data.items);
-    pageToken = data.nextPageToken;
-    if (pageToken !== undefined && (typeof pageToken !== 'string' || !pageToken || tokens.has(pageToken))) throw new Error('La paginación de Calendar no se pudo completar.');
-    if (pageToken) tokens.add(pageToken);
-  } while (pageToken);
-  return events;
+  return readCalendarEventPages(client, { calendarId, q: row.id, showDeleted: true, singleEvents: false, maxResults: 2500 });
 }
 
 export function confirmAppointmentCalendarEvidence(row, events, expected) {

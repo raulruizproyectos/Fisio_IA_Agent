@@ -1,0 +1,794 @@
+{
+  "date": "2026-10-16",
+  "timezone": "Europe/Madrid",
+  "baseline": "1b2a9546c4427b7611092b2afb82ee5246d509e3",
+  "status": "local_audit_and_verified_corrections_complete_with_documented_residual_findings",
+  "published": false,
+  "deployed": false,
+  "live_providers_verified": false,
+  "booking_bot_paused": true,
+  "source_coverage": {
+    "backend_js_files": 41,
+    "backend_js_uncovered": [],
+    "frontend": {
+      "source_read": 53,
+      "structural_and_targeted_review": 14
+    },
+    "workflows": 24,
+    "caveat": "Static review does not establish all runtime paths. Fourteen large CSS files received structural and targeted review, not literal per-declaration visual proof."
+  },
+  "checks": {
+    "backend_lint": "pass",
+    "backend_tests": {
+      "pass": 214,
+      "fail": 0,
+      "skipped": 0
+    },
+    "frontend_check": {
+      "files": 46,
+      "errors": 0,
+      "warnings": 0,
+      "hints": 1
+    },
+    "frontend_build_pages": 4,
+    "ci_scripts": [
+      {
+        "script": "scripts/test-browser-policy.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-public-config.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-runtime-connections.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-dashboard-greeting.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-dashboard-next-session.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-crm-usability.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-agenda-loading.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-appointment-context.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-navigation.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-text.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-http.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-creation-recovery.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-clinical-motion.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-ficha-save-context.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-appointment-defaults.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-assistant-patient-context.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-ficha-read-state.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-finance-read-state.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-frontend-auth.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-public-booking.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-proet-sync.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-rename-n8n-fisio.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-document-signature-flow.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-history-note-write.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-patient-appointment-index.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-clinic-timezone.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/test-confirm-dialog.mjs",
+        "exit": 0
+      },
+      {
+        "script": "scripts/check-client-secrets.mjs",
+        "exit": 0
+      }
+    ],
+    "ui": {
+      "screens": 112,
+      "widths": [
+        375,
+        768,
+        1280,
+        1920
+      ],
+      "errors": 0,
+      "detector_issues": 0,
+      "manually_reviewed": "Screenshots and targeted geometry found/fixed mobile amount clipping, signature theme/scroll and ficha hierarchy. General detector alone was insufficient."
+    },
+    "supplemental": [
+      "unicode flows 375/1280",
+      "drawer/signature/voice 375/1280 with reduced motion and focus/Escape",
+      "signature long text 375x667 and 375x800",
+      "120/123456.78/123456789 EUR responsive geometry",
+      "invoice 100 rows/10 pages and very long concept/5 pages: text/margins and rendered inspection",
+      "PowerShell safe workspace",
+      "client secret scan: 88 files"
+    ]
+  },
+  "not_run": [
+    "live SQL/PostgREST/RLS",
+    "Docker/nginx execution",
+    "current remote backend dependency audit",
+    "paid AI",
+    "real clinical messages",
+    "production deploy or live post-deploy checks"
+  ],
+  "dom": [
+    {
+      "path": "frontend/src/pages/index.astro",
+      "baseline_markers": 102,
+      "final_markers": 102,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/PlantillasView.astro",
+      "baseline_markers": 5,
+      "final_markers": 5,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/PatientsView.astro",
+      "baseline_markers": 36,
+      "final_markers": 36,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/PagosView.astro",
+      "baseline_markers": 49,
+      "final_markers": 49,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/IntakesView.astro",
+      "baseline_markers": 7,
+      "final_markers": 7,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/HistorialView.astro",
+      "baseline_markers": 4,
+      "final_markers": 4,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/GestoriaView.astro",
+      "baseline_markers": 18,
+      "final_markers": 18,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/FichaPacienteView.astro",
+      "baseline_markers": 152,
+      "final_markers": 152,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/FacturacionView.astro",
+      "baseline_markers": 26,
+      "final_markers": 26,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/DocumentosView.astro",
+      "baseline_markers": 12,
+      "final_markers": 12,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/DashboardView.astro",
+      "baseline_markers": 39,
+      "final_markers": 39,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/ConfigView.astro",
+      "baseline_markers": 25,
+      "final_markers": 25,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/CitasView.astro",
+      "baseline_markers": 34,
+      "final_markers": 34,
+      "missing": []
+    },
+    {
+      "path": "frontend/src/components/views/BonosView.astro",
+      "baseline_markers": 31,
+      "final_markers": 31,
+      "missing": []
+    }
+  ],
+  "files": [
+    {
+      "path": "backend/src/index.js",
+      "sha256": "75e5dd657454d4e5c30be9e585fa8b7213dc9112a3076575c371b90a014160e0"
+    },
+    {
+      "path": "backend/src/lib/agent-notices.js",
+      "sha256": "8bf051f134814d18ab5765173134359111a3ea172d74270d7b19b8135a526235"
+    },
+    {
+      "path": "backend/src/lib/appointment-calendar-check.js",
+      "sha256": "b8a20c1a7814ee5b2decd069b2650decca23bcaf407723f9c79e87d55dd4ed60"
+    },
+    {
+      "path": "backend/src/lib/appointment-text.js",
+      "sha256": "4162724335a7d4fe07f937fc5e5c19b1a7a58af7e188389a9c41534cbe043a78"
+    },
+    {
+      "path": "backend/src/lib/approved-exercise-report.js",
+      "sha256": "aa4ec5041c73171cacee6e5c68f09fff5dabbe6e2296d681cdb11593871c9fde"
+    },
+    {
+      "path": "backend/src/lib/audit.js",
+      "sha256": "fbc4f2b3f32df1dfbaee1a5bb16512c86e6cfa8221e567b21c51c3bf25f63e15"
+    },
+    {
+      "path": "backend/src/lib/booking-ai.js",
+      "sha256": "12f437aa59882394f30c95b5140c2755978f2a4bf93f5a054ac4e2f74daf903c"
+    },
+    {
+      "path": "backend/src/lib/browser-session.js",
+      "sha256": "a76bae213953d4a21df7ff7d3b41049ed6ac88eeebc40c36c4b318565778d948"
+    },
+    {
+      "path": "backend/src/lib/calendar-reader.js",
+      "sha256": "4408de01165fdc69837919179b33f66aee95202331f21dfdf90d1813f3adff67"
+    },
+    {
+      "path": "backend/src/lib/clinic-calendar.js",
+      "sha256": "653eeeb254b9a0f8864bd4c78c96347ebc8a867f1150c5d44c2c140765f72be3"
+    },
+    {
+      "path": "backend/src/lib/clinic-creation.js",
+      "sha256": "e5ea4a900afe8b23cec99274c34f7b4e5683ce66bea9caaa31856261e3ff918f"
+    },
+    {
+      "path": "backend/src/lib/clinic-digests.js",
+      "sha256": "d80b2c03b5ff8a97467c996393300ecb793c2338912477d1063cdfde6148dc50"
+    },
+    {
+      "path": "backend/src/lib/clinical-summary.js",
+      "sha256": "55c56dea078dece4268ebe73ab1da0f2193b57625bdffde6cb73238c0e3f6102"
+    },
+    {
+      "path": "backend/src/lib/clinical-voice.js",
+      "sha256": "c1b2fbfbd7fdff538ee6c9881955aeac42f07c43e12783ac6bb3ca7c63e6d71e"
+    },
+    {
+      "path": "backend/src/lib/exercise-agent-prompt.js",
+      "sha256": "1766de6441f65c3554d448a5b5d91b1a63e859ae39127e537101e1b7233775d0"
+    },
+    {
+      "path": "backend/src/lib/exercise-report-pdf.js",
+      "sha256": "c6aca3336056a4ecf38e7b5ac109f107ee3942a62f73ba2f09fead8233b95831"
+    },
+    {
+      "path": "backend/src/lib/finance.js",
+      "sha256": "eefe1d37dfb6b6a7a6cac6119ac2a5d5231ab50093d5f6f38d98534e5752b3ae"
+    },
+    {
+      "path": "backend/src/lib/http-security.js",
+      "sha256": "31a122987091426f95eb290a94de122db9b77d12ab363004c257759e51cb3ded"
+    },
+    {
+      "path": "backend/src/lib/no-show-followup.js",
+      "sha256": "fd0d0f3c30726f46d0d8b1d2f2478a0de9b511d7bd2b754456880a756b7dfab4"
+    },
+    {
+      "path": "backend/src/lib/openwa.js",
+      "sha256": "4e2bd5cf0b188c6f0c50277645628cf94806fdcf1cfc71204067d9dd1da33ca2"
+    },
+    {
+      "path": "backend/src/lib/patient-booking.js",
+      "sha256": "ddb4b4b1876142cbb2f2eff6c48348be337b8d572c97c9c7ccc7c1f2c93cdd0e"
+    },
+    {
+      "path": "backend/src/lib/pdf-filename.js",
+      "sha256": "6a342e912db9dda99f2a1f7ed53d7c29d097af1916730f3beb2a3085517ca372"
+    },
+    {
+      "path": "backend/src/lib/public-error.js",
+      "sha256": "2d9c3b2cf3c9290890ab63cdc65fa8a63051a6eeb99b093edc984fe0eff43c77"
+    },
+    {
+      "path": "backend/src/lib/readiness.js",
+      "sha256": "f9d65a99d39e85d81d51aea3ea1ac6f51679fb3d360a7d12c371d6f3113f2b61"
+    },
+    {
+      "path": "backend/src/lib/supabase.js",
+      "sha256": "8d888f4c4bf1f74c1d3c851161e593a2dccb67aa36a6c6185e94f50caf06d750"
+    },
+    {
+      "path": "backend/src/middleware/security.js",
+      "sha256": "cef1c97cb4604c38cc47cf67cb65d8a8d3d819fa123197f7872d213fc10a3286"
+    },
+    {
+      "path": "backend/src/routes/agent-notices.js",
+      "sha256": "e029c603ee92919129b4ec07ff1f46eab97858c7af618f965ce81c9c1ca69e41"
+    },
+    {
+      "path": "backend/src/routes/agent.js",
+      "sha256": "b6f2557ad006f09b1500dce8eae2909a42dd6af07d6f122f9cc7c8be7a16a040"
+    },
+    {
+      "path": "backend/src/routes/auth.js",
+      "sha256": "703e8a0dbfb7920fb62ac6c6d2da00727d307b0347da4d6af4a938f955da203e"
+    },
+    {
+      "path": "backend/src/routes/bonos.js",
+      "sha256": "ee19d12ffed158e5d3af0c01f0eb47fdd8c9ba5e6ba0fec7b523ea9b5c1f8502"
+    },
+    {
+      "path": "backend/src/routes/clinic-digests.js",
+      "sha256": "a2efca98eec530fb3e898df0330c823fbe488f630d37da90461b915c281f8b25"
+    },
+    {
+      "path": "backend/src/routes/clinical-notes.js",
+      "sha256": "18854ff08e35c1cc04e67d124ad11bea0d01fc6351d16e098cd148cade946865"
+    },
+    {
+      "path": "backend/src/routes/documents.js",
+      "sha256": "f302d9386ab62d2dad731ba5314a82ee7bf6a682590ad1918336610a8db2486c"
+    },
+    {
+      "path": "backend/src/routes/exercises.js",
+      "sha256": "57fab7016d2d53c918097945c61b51315ff1e3416ca3e1476aad939c40450038"
+    },
+    {
+      "path": "backend/src/routes/invoices.js",
+      "sha256": "c7b6de1598ad75d65e446c76dd4aefc525f782118f5da32cea72df355560ef43"
+    },
+    {
+      "path": "backend/src/routes/patients.js",
+      "sha256": "c44fb84cd20123907494daf29306fc4f0833666aa942be2bb873a73aacc1912b"
+    },
+    {
+      "path": "backend/src/routes/payments.js",
+      "sha256": "fd9c2a0278d3989f3446295460fcf56f68d13dc7a8a97c0ad1cac70d16c41518"
+    },
+    {
+      "path": "backend/src/routes/professional.js",
+      "sha256": "7f6a58abb1d96743cf89fff36b32b48a967e8c19116d2413f538ac2d3fad448e"
+    },
+    {
+      "path": "backend/src/routes/reminders.js",
+      "sha256": "19e8c5d8a7ad0a6d2f5cfa69b8fea026bf83c2c01d1bcf8f842be3cca5daf6ca"
+    },
+    {
+      "path": "backend/src/routes/telegram.js",
+      "sha256": "e18b0f5f0771294252ecb64750badc4b26fe0245c798497d1138bd03d65eae61"
+    },
+    {
+      "path": "backend/src/routes/whatsapp.js",
+      "sha256": "20cdf147f110883fc8961dddd153dfedee7d621c5278486caaccb9e39ef913b9"
+    },
+    {
+      "path": "frontend/Dockerfile",
+      "sha256": "4b3b7bbe440fe0057ea81cd8e6f9e8e2b9c1ab759d3b1f588554110a5da358ea"
+    },
+    {
+      "path": "frontend/astro.config.mjs",
+      "sha256": "2f9b896e0f76ed238f0df5ca17697059536f387cfab8306f4e77d91be0e4f1d5"
+    },
+    {
+      "path": "frontend/docker-entrypoint.d/40-fisio-runtime-config.sh",
+      "sha256": "da2057de2c7740f1e2afa4389072e2217c31371edd90f17220b226f72b2baf8d"
+    },
+    {
+      "path": "frontend/nginx.conf",
+      "sha256": "788edf079c5183ad08a046391aa0555b791393c8fca0b2721f5f9ea56cd02685"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "4178169d597cc5f92c0763186dc30bdee6c6c74211c3e4f86a663781a06a22dc"
+    },
+    {
+      "path": "frontend/runtime-config.template.js",
+      "sha256": "645423eee95d74c5ebe6bc1e25042db8873ed5f463ad3e38e6560d7301c07da1"
+    },
+    {
+      "path": "frontend/src/components/AssistantRail.astro",
+      "sha256": "96f5ca6c86d125327aa17d0c9c151c31fc063a41bd92ae0f5494117b8ae82232"
+    },
+    {
+      "path": "frontend/src/components/ConfirmDialog.astro",
+      "sha256": "ab25dc357b1153ef11b0417c12bfd35c8c61ecf0f1dfcc6aefaa5e4ca5ea3be1"
+    },
+    {
+      "path": "frontend/src/components/GlobalFeedbackShell.astro",
+      "sha256": "2e83783c34bc7ed192ad6c2c0ca2bad9e09c8e723bb624f092a094975485ac75"
+    },
+    {
+      "path": "frontend/src/components/MobileDock.astro",
+      "sha256": "86315f93742cd4ac45bda99767b1a694229344f5ea514bfa438f1ba8c4d70e1d"
+    },
+    {
+      "path": "frontend/src/components/ShellNavigationBootstrap.astro",
+      "sha256": "e4fceb69d1cd9217f7ba69e32c9f1f163f26693a28947e9e90519027b0d8902a"
+    },
+    {
+      "path": "frontend/src/components/SidebarNav.astro",
+      "sha256": "19e3e177ae78c7945bd33bba0280a40c0ff1cc7e0e73137b1de00ed40aa68e2e"
+    },
+    {
+      "path": "frontend/src/components/Topbar.astro",
+      "sha256": "c34e120036746492299fb2113f08ac48842208ea70fcbf9baac6aa12db1bb8fb"
+    },
+    {
+      "path": "frontend/src/components/views/BonosView.astro",
+      "sha256": "a065f6b4e45b7bf5ac1bd3720d5f99540d2b1933b52a4538628d77bdd5463298"
+    },
+    {
+      "path": "frontend/src/components/views/CitasView.astro",
+      "sha256": "912fd36c8385c295c17642550c1a585b2816af01842e297798cb916c57372c1f"
+    },
+    {
+      "path": "frontend/src/components/views/ConfigView.astro",
+      "sha256": "284b58b8049580b2f9329e0e8236e7ac12d130f4fae182d50f027a40a10a7233"
+    },
+    {
+      "path": "frontend/src/components/views/DashboardView.astro",
+      "sha256": "6653c2702fe5e5f333919c8d58e2471bfc08893143c35600eebdc00ddc5679c6"
+    },
+    {
+      "path": "frontend/src/components/views/DocumentosView.astro",
+      "sha256": "b05753316d561b64b342aa8e27f76f3ca6f58cfc5e412875ff5c495d0850f044"
+    },
+    {
+      "path": "frontend/src/components/views/FacturacionView.astro",
+      "sha256": "05acb71656ce2f0f767cf109af583bb02d640c22ef5670ba9c8302597709c8a7"
+    },
+    {
+      "path": "frontend/src/components/views/FichaPacienteView.astro",
+      "sha256": "f7529551c2fdafc4534bc24fdc0689b6e3a4b3a0de97f0cff2e6bf5792272819"
+    },
+    {
+      "path": "frontend/src/components/views/GestoriaView.astro",
+      "sha256": "8148b9dae90bcfcc318bbb77cada6db79f760121ce56c8803d83903ede719d20"
+    },
+    {
+      "path": "frontend/src/components/views/HistorialView.astro",
+      "sha256": "57b9e63351b0abddbc98e78cb73d6b7ebd176ff1ae48f57a098041b4d3eab7a5"
+    },
+    {
+      "path": "frontend/src/components/views/IntakesView.astro",
+      "sha256": "b34b779d6d05121ecccbd606e029de7ff628c3c7fea5b9380f568f4732420fcd"
+    },
+    {
+      "path": "frontend/src/components/views/PagosView.astro",
+      "sha256": "b3ae106e44e670334793e1e94f991ecda702ca73da8ce6b9fab7d1e3af020581"
+    },
+    {
+      "path": "frontend/src/components/views/PatientsView.astro",
+      "sha256": "662cd004b68a6a8b1954d3fa40c51dfb2fbdb7aeb8e86efadf0f3c2c3194ba6b"
+    },
+    {
+      "path": "frontend/src/components/views/PlantillasView.astro",
+      "sha256": "7543981b6be0c5138d235f2b45757ba7fa73e3af010e9345f9a1caf318fda8e8"
+    },
+    {
+      "path": "frontend/src/layouts/Layout.astro",
+      "sha256": "97b393f5af54aacfca297c78155ec55aa83f74d8b2baf50230dfd88a0ba04c56"
+    },
+    {
+      "path": "frontend/src/lib/appointments.ts",
+      "sha256": "7fcd0e4b73e26f93be007b6f100676c2cfa91cc8f0851550667334799d47fb53"
+    },
+    {
+      "path": "frontend/src/lib/auth.ts",
+      "sha256": "286d8061a7326d6c19d2b4d543f5c62d6a2f63346079d588137dac2da855bc66"
+    },
+    {
+      "path": "frontend/src/lib/create-record.ts",
+      "sha256": "83874761139d8055c0276b89b65121ebb203d7cf92a579b555bf0c35462856dd"
+    },
+    {
+      "path": "frontend/src/lib/demoData.ts",
+      "sha256": "937469927cf9dc7f2f3ba4373cf74f12a0f3d2a4d62bc7c8c42c18ca114efa3f"
+    },
+    {
+      "path": "frontend/src/lib/http.ts",
+      "sha256": "a75fd4a919c61e6fce37bccf04cf73ae0750d199f188f15c054fb039ad06cd4c"
+    },
+    {
+      "path": "frontend/src/lib/income-chart.ts",
+      "sha256": "a160cc4acdef917a5af6cd6b2a02eac346af5f7b710a263921ae898285c1e5c2"
+    },
+    {
+      "path": "frontend/src/lib/motion.ts",
+      "sha256": "f38641250aa309e685320702b2bde366469e7c66906674079b8244769f4b3777"
+    },
+    {
+      "path": "frontend/src/lib/navigation.ts",
+      "sha256": "1fe27717a8a9d4695513be9bcea136706f93ee3e8358126534ec31d06c9cf2e4"
+    },
+    {
+      "path": "frontend/src/lib/text.ts",
+      "sha256": "30a1d34a0bfe7c5fc595d668a738ed63b00d2fa09980289c50f694ca21df5675"
+    },
+    {
+      "path": "frontend/src/pages/index.astro",
+      "sha256": "1ff15da434e75f2a1d74dc2ea6227ed4eea6222a45a6597b362763886a13b31b"
+    },
+    {
+      "path": "frontend/src/pages/login.astro",
+      "sha256": "e773b8afa1775d31e250d831ba22c54f80cc902f8ed12242e80381961afed139"
+    },
+    {
+      "path": "frontend/src/pages/reserva.astro",
+      "sha256": "c3007c3442f3850e5d6ec3295febb82fbfc5299ba110c764af06e5a030509e99"
+    },
+    {
+      "path": "frontend/src/pages/reset-password.astro",
+      "sha256": "551e04f22511cded03f7c9ac38647e015b35607259fc902845c0a8f03c67d922"
+    },
+    {
+      "path": "frontend/src/scripts/clinical-motion.js",
+      "sha256": "5426f0870baf7acc778829d8de9fc317b6745b7192f4f449385e167e34f6ea11"
+    },
+    {
+      "path": "frontend/src/scripts/layout.js",
+      "sha256": "81be87aba53821f2ed23b1a723a4a07e8349f898f7a0999f72391f3ffca0f9f4"
+    },
+    {
+      "path": "frontend/src/scripts/public-booking.js",
+      "sha256": "ea3e970337bf83cc73df45ac3cca22f468549719cf98e56af499266be362a988"
+    },
+    {
+      "path": "frontend/src/store.ts",
+      "sha256": "4d35da4f021b69f181844719262f060a9a232e5d398b43b5cec4118a54ba51d0"
+    },
+    {
+      "path": "frontend/src/styles/assistant-rail.css",
+      "sha256": "f794aeab393641df7c988579d3e68472160e44029501db753bffc9625f935c88"
+    },
+    {
+      "path": "frontend/src/styles/design-tokens.css",
+      "sha256": "fc745c9c4d9247e057617800ad09dfc287d1d056da82d0492c5df805e3353a59"
+    },
+    {
+      "path": "frontend/src/styles/editorial-primitives.css",
+      "sha256": "1489658abee343b8b4734fd3bd7606f0e7666d789c070538224535d6abc1703c"
+    },
+    {
+      "path": "frontend/src/styles/editorial-shell.css",
+      "sha256": "2664953f64f9fad17c1d58be4322a29c7df7fe0bc55981e6f7ca311a42e954fc"
+    },
+    {
+      "path": "frontend/src/styles/editorial-views.css",
+      "sha256": "336af7c04c4f86c59440cae31c069097a7819251ab61b082fdf2fd61d3fe27a5"
+    },
+    {
+      "path": "frontend/src/styles/global-shell.css",
+      "sha256": "a186c989b3122e94f8d61c4b6a8342911c46391edff483a6d11bab9ef7a00675"
+    },
+    {
+      "path": "frontend/src/styles/global.css",
+      "sha256": "944e6e12c0067a6767836a78ad6c4095b829f966b44f33bc95cfef1401ab3c10"
+    },
+    {
+      "path": "frontend/src/styles/precision-agenda.css",
+      "sha256": "c0a9f1acc5376cda5cf06f709cd61738c6cb0723d1b1c5ee70de9f40ade26ef1"
+    },
+    {
+      "path": "frontend/src/styles/precision-blue.css",
+      "sha256": "e9c714f8f1df7a43a072194372314b164d8aaeed804ae00f5a843eb725d3f67c"
+    },
+    {
+      "path": "frontend/src/styles/precision-dashboard.css",
+      "sha256": "3ee0d8fe3d45a2a37f6db4fdef0446d55d1157e8a48baf8de28a2562c20f4249"
+    },
+    {
+      "path": "frontend/src/styles/precision-documents.css",
+      "sha256": "1e740e591bb1c3192f184b2721a81cef8d7d5f5a49c1cdaba01328648100220e"
+    },
+    {
+      "path": "frontend/src/styles/precision-ficha.css",
+      "sha256": "f50e14927c923a567caf4a2f3b286edc57ea4d7b0b26599439578ea8fff4f233"
+    },
+    {
+      "path": "frontend/src/styles/precision-finance.css",
+      "sha256": "fa4a9da582e5432e2458ac18bbd9767a5fd876ab26d35570ee5fd457d5a61015"
+    },
+    {
+      "path": "frontend/src/styles/precision-history.css",
+      "sha256": "88470a5f0aa0a5ac569962b95b54d98ed7f6d92c853ee686b71e6acc7af8a830"
+    },
+    {
+      "path": "frontend/src/styles/precision-messages.css",
+      "sha256": "52830afdea9921a739c94650c41134e35e18cea7a9a23e217983aec272d0b289"
+    },
+    {
+      "path": "frontend/src/styles/precision-patients.css",
+      "sha256": "f41905bee1a642d594245b5e970dc437439bf78083a54d1379546e16e77e5512"
+    },
+    {
+      "path": "frontend/src/styles/precision-plantillas.css",
+      "sha256": "13886b3c70ca52b344fea3111e1590c20a82836b473b1055391acf504fd40965"
+    },
+    {
+      "path": "frontend/src/styles/precision-settings.css",
+      "sha256": "0937dad8757ce0dd22e3f0dcee561582b22c4252b96e4470cbe0c822ae67f42a"
+    },
+    {
+      "path": "frontend/src/styles/precision-system.css",
+      "sha256": "f70cc08672c24e23132120483c7e311637c89d08bfe235247b0a111b92000deb"
+    },
+    {
+      "path": "frontend/src/styles/precision-voice.css",
+      "sha256": "aaf3dded6af86f4c53d406096c1c39e8d9c8500779614bcb530f66ac7b3b08c9"
+    },
+    {
+      "path": "frontend/src/styles/premium-clinic-ui.css",
+      "sha256": "43a5d1b94298c42e29d521295d3fce1559bfcd13b25d2d3bd7458461581166ec"
+    },
+    {
+      "path": "frontend/src/styles/production-ui.css",
+      "sha256": "73f197b68d13f8b8f01d407de0531cf555d3ed1b997471096848bd67d4543dc4"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "sha256": "794a1402e64b00c37cc17d9f4f406cab44c557675796d8530faf5753f8fc922b"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/pendiente-activacion/avisos-agente-citas.json",
+      "sha256": "74b76a0bc3b4e965c021d0e3b951476fb0acabd8e4f11272d3c63e3167a75545"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/pendiente-activacion/bot-pacientes.json",
+      "sha256": "cd8a790ef329b70835bfdfb5d4f526941f4caf5813f3ab74f32ecad9070f76f9"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/bot-fisio.json",
+      "sha256": "7af8ce99841342e0dd415be3fb90e4203a0014768662a1116b627b5166be5848"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/bot-pacientes.json",
+      "sha256": "f8bc2307e45b237f91ceaa891724c19b80fa12a4433db2098900dee401f5710b"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/calendar-sync.json",
+      "sha256": "3464083d10ddb3217be8615275fb0cf2bd29fc9f487ef3d8f0186f75e904f06c"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/crm-plan.json",
+      "sha256": "6ac8b14998b9c243441b8a44bbcb2562a096e5b3bd29ab77ec5c82a74f950d28"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/ejercicios.json",
+      "sha256": "fed70d49a924012092470b341e6058fb9da11d756794979a94bdac4b70860620"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/nucleo-agente.json",
+      "sha256": "52f8ba8b2ed11ab32705ab9e8a87f1c2615bdb9d966c81fa1584f46e20602ed6"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/puente-error-backend.json",
+      "sha256": "5252caf28953e60ef822fd1adcbc62b8fcaa4a92df5f766d61521e64bd544de3"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/recordatorios.json",
+      "sha256": "0907de98f22e9232dc998756de31c1a8adb659c6d33d2d75e2d654b6d492f1f8"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/resumenes-fisio.json",
+      "sha256": "c8ac267761ce93663c22cd20383d69782d2f13b5e0042463f706662c99219332"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/subflujo-pendientes.json",
+      "sha256": "0d94fe0d1102e8ab55b35a2c7f9158edfed0092b003bea490210ebfd7bcc1aff"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/w1-agenda-citas.json",
+      "sha256": "59490691750035b6d35738e6b5975c2394fa328b15d55c266f0eb206260c1a08"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/w5-calendar-reader.json",
+      "sha256": "bc1db89ebac56ba9b1d3728cd2fd1d7243f687d864c9ca51f0015a1a7e6b9046"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/production/w6-calendar-writer.json",
+      "sha256": "e7a2dc3641c93bbe06ff93ab16551efa49008b77bddd775142ad5b01be87a677"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/build-agent-reply-triage.js",
+      "sha256": "038c56c74f0a6aa6baf6b574a691422243d4ef4a4a8aa624a4c9d965dddb117d"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/fisio-agent-core.json",
+      "sha256": "fcc7c2fa5649f5c26325b1d79d2c7daa5daac6d3aeca3aaf989d4533fa900e3a"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/sw-fisio-pending-intakes.json",
+      "sha256": "5c8dd158eff33d45e030c99e4a9a94c12a9cd49e39d90cd745356fe17a7f3692"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/telegram-chat.json",
+      "sha256": "e5cb5ab602062eb5f360b3cb32d9dbcfb446ce12a211fcaabfb04d6e7a0f959e"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/telegram-fisio-reports.json",
+      "sha256": "5f4d7723cc457279ecb3f07a2b076b24d855a3d82d27b50bdd082e3c29cc4d68"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json",
+      "sha256": "cb6ca3fab6f20e321a1d2519d454fd7263e375a0953a2e04d1558b09fb63ad95"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/w2-exercise-agent.json",
+      "sha256": "d1295773b499018d12f5670a4650bb8416ff5bf230529c2b82df7e1e3e4dafab"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/w3-crm-trigger.json",
+      "sha256": "3be1a1578a356ac38c1d32f991306405b216c60f11da1466802f26ee0bb7e5b2"
+    },
+    {
+      "path": "n8n/Fisio_IA_Agent/vnext/w6-calendar-sync.json",
+      "sha256": "15f3c1b520f1f13c1887c90c83be309af98d97f5b7d1c68a80f566b04659d975"
+    }
+  ]
+}

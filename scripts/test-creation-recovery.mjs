@@ -1,21 +1,19 @@
 // Actual shared browser helpers: lost acknowledgements survive reload without storing clinical text.
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
+import {loadFrontendModule} from './load-frontend-module.mjs';
 const require=createRequire(new URL('../frontend/package.json',import.meta.url));
 const {transpileModule}=require('typescript');
 const source=await readFile(new URL('../frontend/src/pages/index.astro',import.meta.url),'utf8');
-const helpers=source.slice(source.indexOf('  const fetchJson ='),source.indexOf('  const sanitizePageTextNodes ='));
-assert.ok(helpers.includes('const createClinicRecord ='));
+const {createClinicRecord}=await loadFrontendModule('lib/create-record.ts');
+const originalFetch=globalThis.fetch;
+const storageDescriptor=Object.getOwnPropertyDescriptor(globalThis,'sessionStorage');
 const storage=new Map(),requests=[];
 const sessionStorage={getItem:key=>storage.get(key),setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
-const load=fetch=>{
-  const context={fetch,sessionStorage,crypto:{randomUUID},authContext:{profileId:'fixture'},AbortSignal,sanitizePayload:p=>p};
-  runInNewContext(transpileModule(helpers+'\nglobalThis.save=createClinicRecord;',{}).outputText,context);
-  return context.save;
-};
+Object.defineProperty(globalThis,'sessionStorage',{value:sessionStorage,configurable:true,writable:true});
+const load=fetch=>(...args)=>{globalThis.fetch=fetch;return createClinicRecord('fixture',...args);};
 let lost=true,savedKey;
 const network=async(url,opts)=>{
   requests.push([url,opts]);
@@ -48,6 +46,24 @@ for(const [draft,editor] of [[{...body,audio_processed:true,session_datetime:'20
 assert.equal(seen[0].headers['Idempotency-Key'],seen[1].headers['Idempotency-Key']);
 assert.equal(JSON.parse(seen[1].body).session_datetime,'2026-10-07T12:00:00Z');
 assert.equal(new Set(seen.map(o=>o.headers['Idempotency-Key'])).size,3);
+// Native timeout errors expose a read-only message; recovery must not try to mutate them.
+const timeout=new DOMException('Request timed out','TimeoutError');
+await assert.rejects(load(async()=>{throw timeout;})('/notes',body),error=>error.cause===timeout && /No se ha recibido confirmación/.test(error.message));
+assert.equal(timeout.message,'Request timed out');
+assert.ok(storage.size>0,'A timeout keeps its recovery operation');
+storage.clear();
+for(const profile of ['profile-A','profile-B']) {
+  globalThis.fetch=async()=>{throw Error('offline');};
+  await assert.rejects(createClinicRecord(profile,'/notes',body));
+}
+assert.equal(storage.size,2,'Pending operations stay separate per professional');
+const originalSet=sessionStorage.setItem;
+sessionStorage.setItem=()=>{throw Error('Storage blocked');};
+let attempted=0;
+globalThis.fetch=async()=>{attempted++;throw Error('must not send');};
+await assert.rejects(createClinicRecord('profile-C','/notes',body),/Storage blocked/);
+assert.equal(attempted,0,'Unavailable durable storage must fail before writing');
+sessionStorage.setItem=originalSet;
 // The actual patient creation handler must not attach an old result to a reopened form.
 for(const failure of [false,true]) {
   let handler,resolve,reject;
@@ -67,3 +83,6 @@ for(const failure of [false,true]) {
   assert.equal(context.patientSubmitBtn.innerHTML,'Guardar paciente');
 }
 console.log('PASS: actual creation helpers preserve retry IDs across reload, retain incomplete writes, recover conflicts, separate editors and keep voice timestamps without persisting clinical text.');
+
+globalThis.fetch=originalFetch;
+if(storageDescriptor)Object.defineProperty(globalThis,'sessionStorage',storageDescriptor);else delete globalThis.sessionStorage;

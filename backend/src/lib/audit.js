@@ -71,11 +71,13 @@ export async function recordAudit(req, {
       .maybeSingle();
 
     if (error) {
+      console.warn('[audit]', { event: 'audit_write_failed', request_id: requestId });
       // No propagar fallo de inserción de auditoría para no romper el flujo del usuario si la tabla no está en el entorno local
       return { ok: false, error: error.message, payload };
     }
     return { ok: true, id: data?.id, payload };
   } catch (err) {
+    console.warn('[audit]', { event: 'audit_write_failed', request_id: requestId });
     return { ok: false, error: err.message, payload };
   }
 }

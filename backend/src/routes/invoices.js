@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
 import PDFDocument from 'pdfkit';
+import { inlinePdfFilename } from '../lib/pdf-filename.js';
 import { isMoney, respondFinanceError } from '../lib/finance.js';
 
 const router = Router();
@@ -105,11 +106,11 @@ router.get('/:id/pdf', async (req, res, next) => {
       .from(INVOICES_TABLE)
       .select('*, crm_pacientes(nombre, apellidos, dni, direccion, email, telefono)')
       .eq('id', req.params.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res, { write: true });
-      return res.status(404).json({ error: 'Factura no encontrada' });
+      throw error;
     }
     if (!factura) return res.status(404).json({ error: 'Factura no encontrada' });
 
@@ -127,7 +128,7 @@ router.get('/:id/pdf', async (req, res, next) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${factura.numero}.pdf"`);
+    res.setHeader('Content-Disposition', inlinePdfFilename(`${factura.numero}.pdf`));
     doc.pipe(res);
 
     doc.fontSize(20).font('Helvetica-Bold').text(clinic.nombre, 50, 50);
@@ -148,23 +149,31 @@ router.get('/:id/pdf', async (req, res, next) => {
     if (pac.direccion) { doc.text(pac.direccion, 50, yp); yp += 14; }
     if (pac.email) { doc.text(pac.email, 50, yp); yp += 14; }
 
-    const yTable = yp + 20;
-    doc.fontSize(10).font('Helvetica-Bold');
-    doc.text('Concepto', 50, yTable);
-    doc.text('Fecha', 320, yTable);
-    doc.text('Importe', 430, yTable, { align: 'right', width: 100 });
-    doc.moveTo(50, yTable + 15).lineTo(545, yTable + 15).stroke('#cccccc');
-
-    doc.font('Helvetica');
-    let yLine = yTable + 22;
+    const tableHeader = y => {
+      doc.fontSize(10).font('Helvetica-Bold');
+      doc.text('Concepto', 50, y);
+      doc.text('Fecha', 320, y);
+      doc.text('Importe', 430, y, { align: 'right', width: 100 });
+      doc.moveTo(50, y + 15).lineTo(545, y + 15).stroke('#cccccc');
+      doc.font('Helvetica');
+      return y + 22;
+    };
+    const bottom = doc.page.height - doc.page.margins.bottom;
+    let yLine = tableHeader(yp + 20);
     const lineas = factura.lineas || [];
     for (const linea of lineas) {
-      doc.text(linea.concepto || 'Sesion', 50, yLine, { width: 260 });
+      const concept = String(linea.concepto || 'Sesion');
+      const height = Math.max(18, doc.heightOfString(concept, { width: 260 }) + 6);
+      if (yLine + Math.min(height, bottom - 72) > bottom) {
+        doc.addPage(); yLine = tableHeader(50);
+      }
       doc.text(linea.fecha || '', 320, yLine);
       doc.text(`${Number(linea.importe).toFixed(2)} EUR`, 430, yLine, { align: 'right', width: 100 });
-      yLine += 18;
+      doc.text(concept, 50, yLine, { width: 260 });
+      yLine = doc.y + 6;
     }
 
+    if (yLine + 85 > bottom) { doc.addPage(); yLine = 50; }
     doc.moveTo(350, yLine + 5).lineTo(545, yLine + 5).stroke('#cccccc');
     yLine += 14;
     doc.font('Helvetica');
@@ -179,13 +188,11 @@ router.get('/:id/pdf', async (req, res, next) => {
     doc.text(`${Number(factura.importe_total).toFixed(2)} EUR`, 430, yLine, { align: 'right', width: 100 });
 
     if (factura.exencion_iva) {
-      yLine += 25;
-      doc.fontSize(9).font('Helvetica').text(factura.exencion_iva, 50, yLine, { width: 490 });
+      doc.fontSize(9).font('Helvetica').text(factura.exencion_iva, 50, doc.y + 20, { width: 490 });
     }
 
     if (factura.notas) {
-      yLine += 40;
-      doc.fontSize(9).font('Helvetica').text(`Notas: ${factura.notas}`, 50, yLine, { width: 490 });
+      doc.fontSize(9).font('Helvetica').text(`Notas: ${factura.notas}`, 50, doc.y + 20, { width: 490 });
     }
 
     doc.end();

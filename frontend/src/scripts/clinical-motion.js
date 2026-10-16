@@ -3,17 +3,21 @@ document.querySelectorAll('.modal-shell, .patient-modal-overlay, #assistantRail,
   let returnFocus = null;
   const sync = () => {
     const closed = overlay.getAttribute('aria-hidden') === 'true';
+    const opening = !closed && overlay.inert;
     if (!closed && overlay.inert && !overlay.contains(document.activeElement)) returnFocus = document.activeElement;
     const restoreFocus = closed && overlay.contains(document.activeElement);
     overlay.inert = closed;
+    if (opening && overlay.matches('#firmaModal, #voiceSessionModal')) {
+      overlay.querySelector('button:not(:disabled), input:not(:disabled), textarea:not(:disabled)')?.focus();
+    }
     if (restoreFocus && returnFocus?.isConnected) returnFocus.focus();
     if (closed) returnFocus = null;
   };
   sync();
   new MutationObserver(sync).observe(overlay, { attributes: true, attributeFilter: ['aria-hidden'] });
   overlay.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !event.defaultPrevented && !overlay.inert && overlay.matches('.modal-shell')) {
-      const close = overlay.querySelector('.modal-close');
+    if (event.key === 'Escape' && !event.defaultPrevented && !overlay.inert && overlay.matches('.modal-shell, #firmaModal, #voiceSessionModal')) {
+      const close = overlay.querySelector('.modal-close, #firmaModalClose, #voiceSessionModalClose');
       if (close && !close.disabled) {
         event.preventDefault();
         close.click();
@@ -22,7 +26,7 @@ document.querySelectorAll('.modal-shell, .patient-modal-overlay, #assistantRail,
     }
     if (event.key !== 'Tab' || event.defaultPrevented || overlay.inert) return;
     // Desktop copilot stays alongside the workspace; mobile covers it.
-    if (!overlay.matches('.modal-shell, #assistantRail.is-open-mobile')) return;
+    if (!overlay.matches('.modal-shell, #assistantRail.is-open-mobile, #firmaModal, #voiceSessionModal')) return;
     const controls = [...overlay.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')]
       .filter((control) => !control.disabled && control.tabIndex >= 0 && control.checkVisibility());
     const first = controls[0], last = controls.at(-1);

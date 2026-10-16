@@ -5,6 +5,7 @@ import { calendar as createCalendarClient } from 'googleapis/build/src/apis/cale
 import { supabase, serviceSupabase } from '../lib/supabase.js';
 import { enqueueAppointmentNotice, normalizeContactPhone } from '../lib/agent-notices.js';
 import { readAppointmentCalendarEvidence, confirmAppointmentCalendarEvidence } from '../lib/appointment-calendar-check.js';
+import { readCalendarEventPages } from '../lib/calendar-reader.js';
 import { publicErrorMessage } from '../lib/public-error.js';
 import { isClinicHoliday, parseBookingWindows } from '../lib/clinic-calendar.js';
 
@@ -948,18 +949,7 @@ async function findOrCreatePublicBookingPatient({ professionalId, clinicId, full
   }
 
   if (existingPatient?.id) {
-    const patch = {};
-    if (normalizedEmail && !normalizeComparableEmail(existingPatient.email)) patch.email = normalizedEmail;
-    if (normalizedPhone && !normalizeComparablePhone(existingPatient.telefono)) patch.telefono = normalizedPhone;
-    if (Object.keys(patch).length) {
-      patch.updated_at = new Date().toISOString();
-      const { error } = await supabase
-        .from('crm_pacientes')
-        .update(patch)
-        .eq('id', existingPatient.id);
-      if (error) throw error;
-    }
-
+    // Contact matching is not identity verification; a public request cannot edit a patient's chart.
     await ensureCrmPatientAssignment({ professionalId, patientId: existingPatient.id, clinicId });
     return existingPatient.id;
   }
@@ -1284,7 +1274,7 @@ async function fetchCalendarEventsDirect(timeMin, timeMax) {
 
   const calendarIds = GOOGLE_CALENDAR_READ_IDS.length ? GOOGLE_CALENDAR_READ_IDS : [GOOGLE_CALENDAR_ID].filter(Boolean);
   const responses = await Promise.all(calendarIds.map(async (calendarId) => {
-    const response = await calendarClient.events.list({
+    const events = await readCalendarEventPages(calendarClient, {
       calendarId,
       timeMin,
       timeMax,
@@ -1294,7 +1284,7 @@ async function fetchCalendarEventsDirect(timeMin, timeMax) {
       maxResults: 2500,
     });
 
-    return (response.data?.items || []).map((item) => ({
+    return events.map((item) => ({
       ...item,
       calendar_id: calendarId,
     }));
@@ -1711,7 +1701,9 @@ async function reconcileAppointmentsWithCalendar({
       calendarEvent = await fetchCalendarEventById(calendarEventId);
     }
 
-    if (!calendarEvent || calendarEvent.status === 'cancelled') {
+    // A missing event in a list or a 404 does not prove cancellation.
+    if (!calendarEvent) continue;
+    if (calendarEvent.status === 'cancelled') {
       if (!['cancelada', 'completada', 'no_show'].includes(row.estado)) {
         const { data, error } = await supabase
           .from('crm_citas')
@@ -2038,6 +2030,10 @@ function publicBookingRequestKey(req) {
   return key;
 }
 
+function publicBookingAppointment(row) {
+  return {id:row.id,inicio_en:row.inicio_en,fin_en:row.fin_en,estado:row.estado};
+}
+
 router.post('/public-booking/recovery', async (req,res,next)=>{
   res.set('Cache-Control','no-store');
   try {
@@ -2051,7 +2047,7 @@ router.post('/public-booking/recovery', async (req,res,next)=>{
     // Absence cannot prove that a concurrent writer has finished. Never authorize a new booking.
     if(!data?.public_booking_hash) return res.json({state:'unknown'});
     return res.json({state:APPOINTMENT_ACTIVE_STATUSES.includes(data.estado)?'registered':'changed',
-      data:{id:data.id,inicio_en:data.inicio_en,fin_en:data.fin_en,estado:data.estado}});
+      data:publicBookingAppointment(data)});
   } catch(err) {
     if(err.responsePayload) return res.status(err.status).json(err.responsePayload);
     next(err);
@@ -2072,7 +2068,7 @@ async function recoverPublicBooking(requestId, payloadHash, professional, startA
     throw appointmentFailure(409,{code:'BOOKING_ALREADY_CHANGED',error:'La cita ya se registró y su estado ha cambiado. Contacta con la clínica para comprobarla.'});
   }
   // A retry confirms the saved row, never creates another Calendar event.
-  return {data:normalizeAppointmentRow(data),replayed:true,
+  return {data:publicBookingAppointment(data),replayed:true,
     calendar_sync:buildCalendarSyncResult({status:'not_checked',action:'recover',event_id:data.google_calendar_event_id}),
     booking:{professional_name:professional.nombre_completo,time_zone:PUBLIC_BOOKING_TIMEZONE}};
 }
@@ -2119,6 +2115,13 @@ router.post('/public-booking/appointments', async (req, res, next) => {
     ])).digest('hex');
     const recovered=await recoverPublicBooking(requestId,payloadHash,professional,startAt,endAt);
     if(recovered) return res.status(200).json(recovered);
+
+    // Apply the published local-date window on POST too, after safely recovering an earlier request.
+    const bounds = getPublicBookingBounds();
+    const dateOnly = getDateOnlyInTimeZone(new Date(startAt), PUBLIC_BOOKING_TIMEZONE);
+    if (dateOnly < bounds.today || dateOnly > bounds.maxDate) {
+      return res.status(400).json({ error: `La fecha debe estar entre ${bounds.today} y ${bounds.maxDate}` });
+    }
 
     // The browser only offers grid slots; a direct request cannot book a holiday, a weekend or closed hours.
     if (!isOfferedPublicBookingSlot(startAt, endAt)) {
@@ -2186,6 +2189,7 @@ router.post('/public-booking/appointments', async (req, res, next) => {
     const result = await syncSavedAppointmentToCalendar(data);
     res.status(201).json({
       ...result,
+      data: publicBookingAppointment(result.data),
       booking: {
         professional_name: professional.nombre_completo,
         time_zone: PUBLIC_BOOKING_TIMEZONE,

@@ -1,12 +1,20 @@
 # Documento de Seguimiento y Operación — Fisio Clinical
 
-## Seguimiento vigente — 2026-10-13
+> Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
+
+## Seguimiento vigente — 16-oct-2026
+
+Terminada la pasada local propia de código, funcionalidad y diseño, con correcciones y verificación en [AUDITORIA_FINAL_2026-10-16.md](AUDITORIA_FINAL_2026-10-16.md). El traspaso a Claude está cancelado. Se conserva el contexto funcional del agente y los recursos aportados.
+
+La tanda sigue sin publicar/desplegar; base main 1b2a954. Próximo paso: autorizaciones específicas, CI y actualización de backend/frontend para prueba con datos ficticios. El bot de citas sigue pausado por los riesgos identificados, no está validado por esta revisión. Entradas siguientes: historia.
+
+## Seguimiento histórico — 2026-10-13
 
 Repositorio: `C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent`, GitHub `raulruizproyectos/Fisio_IA_Agent`, rama `main` publicada en `ee3449c`. Frontend desplegado `c062967`, backend `ee3449c`; CI de ambos completo verde. Readiness 13/13, seis integraciones configuradas/cero ausentes; Supabase sano, una clínica y 35 tablas públicas con RLS. Doce workflows activos/coincidentes, Calendar healthy tras reiniciar y recordatorios horarios activos para vinculados. No requiere otro despliegue manual.
 
 Backend lint/108 pruebas, frontend check 40 archivos sin diagnósticos/build cuatro páginas; SQL/handlers con fixtures y Chromium 375/768/1280 pasan. La alerta automática real del 13 surgió por notificar rechazos 4xx como críticos; corregido y desplegado. No se acredita IA con gasto, entrega clínica real ni primer tick de entrega de recordatorios. [Detalle actual](design-exploration/reviews/2026-10-13/production.md).
 
-Próximo trabajo solicitado: segunda auditoría independiente, centrada en eficiencia/funcionalidad/UX/diseño/arquitectura/seguridad y agentes IA/n8n/reserva, y completar localmente el agente de citas Telegram. Nuevos/existentes con contacto verificado, reservas/consulta/cambios/cancelaciones/recordatorios; cambios/cancelaciones con al menos 24 horas y después derivación a clínica, WhatsApp futuro. [Requisitos](PILOTO_MENSAJERIA.md), [prompt completo para CloudCode](PROMPT_AUDITORIA_CLOUDCODE.txt) y [contrato conversacional](PROMPT_AGENTE_CITAS.txt); la primera prueba manual sigue sin resultados. Documentos de este traspaso actualizados en local, no publicados por esta petición. Las siguientes secciones conservan el checkpoint histórico de septiembre; sus estados, IDs de ensayo, recuentos y guías no son órdenes ni evidencias actuales. Secretos únicamente en `.env.local` raíz, nunca en el antiguo `backend/.env` citado en la historia.
+Próximo trabajo solicitado: segunda auditoría independiente, centrada en eficiencia/funcionalidad/UX/diseño/arquitectura/seguridad y agentes IA/n8n/reserva, y completar localmente el agente de citas Telegram. Nuevos/existentes con contacto verificado, reservas/consulta/cambios/cancelaciones/recordatorios; cambios/cancelaciones con al menos 24 horas y después derivación a clínica, WhatsApp futuro. [Requisitos](PILOTO_MENSAJERIA.md), [prompt completo para CloudCode](DESIGN_RESOURCES.md) y [contrato conversacional](PROMPT_AGENTE_CITAS.txt); la primera prueba manual sigue sin resultados. Documentos de este traspaso actualizados en local, no publicados por esta petición. Las siguientes secciones conservan el checkpoint histórico de septiembre; sus estados, IDs de ensayo, recuentos y guías no son órdenes ni evidencias actuales. Secretos únicamente en `.env.local` raíz, nunca en el antiguo `backend/.env` citado en la historia.
 
 ## Historia — recuperación funcional de septiembre
 

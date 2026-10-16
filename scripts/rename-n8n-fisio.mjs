@@ -292,25 +292,14 @@ async function updateRemote({ baseUrl, apiKey, workflow }) {
 }
 
 async function activateRemote({ baseUrl, apiKey, workflowId }) {
-  let lastPayload = null;
-  let lastStatus = null;
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
-    const response = await fetch(`${baseUrl}/api/v1/workflows/${workflowId}/activate`, {
-      method: 'POST',
-      headers: {
-        'X-N8N-API-KEY': apiKey,
-        Accept: 'application/json',
-      },
-    });
-    const payload = await readResponse(response);
-    if (response.ok) return;
-    lastPayload = payload;
-    lastStatus = response.status;
-    const message = String(payload?.message || '').toLowerCase();
-    if (!message.includes('too many requests')) break;
-    await sleep(2500 * attempt);
+  const response = await fetch(`${baseUrl}/api/v1/workflows/${workflowId}/activate`, {
+    method: 'POST',
+    headers: { 'X-N8N-API-KEY': apiKey, Accept: 'application/json' },
+  });
+  const payload = await readResponse(response);
+  if (!response.ok) {
+    throw new Error(`No se pudo activar ${workflowId} (${response.status}); no se ha reintentado: ${JSON.stringify(payload).slice(0, 500)}`);
   }
-  throw new Error(`No se pudo activar ${workflowId} (${lastStatus}): ${JSON.stringify(lastPayload).slice(0, 500)}`);
 }
 
 async function listRemote({ baseUrl, apiKey }) {
@@ -390,14 +379,6 @@ if (updateRemoteRequested) {
         if (activate && wasActive) await activateRemote({ baseUrl, apiKey, workflowId: workflow.id });
         await sleep(750);
       }
-    }
-  }
-
-  if (activate && !dryRun) {
-    const afterUpdate = await listRemote({ baseUrl, apiKey });
-    for (const item of afterUpdate.filter((workflow) => !workflow.active)) {
-      await activateRemote({ baseUrl, apiKey, workflowId: item.id });
-      await sleep(750);
     }
   }
 }

@@ -9,6 +9,28 @@ const PAGOS_SELECT = 'id, paciente_id, fecha, importe, metodo_pago, concepto, no
 
 const sumMoney = (total, amount) => (Math.round(total * 100) + Math.round(Number(amount) * 100)) / 100;
 
+async function readYearPayments(year, fields) {
+  const rows = [], ids = new Set();
+  let expected;
+  const signal = AbortSignal.timeout(15000);
+  do {
+    const { data, error, count } = await supabase.from(PAYMENTS_TABLE).select(`id, ${fields}`, { count: 'exact' })
+      .gte('fecha', `${year}-01-01`).lt('fecha', `${year + 1}-01-01`)
+      .order('fecha', { ascending: true }).order('id', { ascending: true })
+      .range(rows.length, rows.length + 499).abortSignal(signal);
+    if (error) return { error };
+    // shortcut: yearly reports are bounded; use a SQL aggregate if this clinic exceeds 100000 payments/year.
+    if (!Array.isArray(data) || !Number.isInteger(count) || count > 100000 || count < 0
+      || (expected !== undefined && count !== expected) || rows.length + data.length > count
+      || (!data.length && rows.length < count) || data.some(row => ids.has(row.id))) {
+      return { error: { code: 'FINANCIAL_READ_INCOMPLETE', message: 'Lectura financiera incompleta o modificada durante la consulta' } };
+    }
+    expected = count;
+    for (const row of data) { ids.add(row.id); rows.push(row); }
+  } while (rows.length < expected);
+  return { data: rows };
+}
+
 function validatePayment(fields) {
   if (fields.importe !== undefined && !isMoney(fields.importe)) {
     return 'importe debe ser mayor que 0, inferior a 1000000 y tener como máximo dos decimales';
@@ -95,13 +117,7 @@ router.get('/resumen', async (req, res, next) => {
     const { anio } = req.query;
     const year = Number(anio) || new Date().getFullYear();
 
-    const { data, error } = await supabase
-      .from(PAYMENTS_TABLE)
-      .select('fecha, importe, metodo_pago')
-      .gte('fecha', `${year}-01-01`)
-      .lt('fecha', `${year + 1}-01-01`)
-      .order('fecha', { ascending: true })
-      .limit(5000);
+    const { data, error } = await readYearPayments(year, 'fecha, importe, metodo_pago');
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);
@@ -138,13 +154,7 @@ router.get('/gestoria', async (req, res, next) => {
     const { anio } = req.query;
     const year = Number(anio) || new Date().getFullYear();
 
-    const { data, error } = await supabase
-      .from(PAYMENTS_TABLE)
-      .select('fecha, importe, metodo_pago, paciente_id, crm_pacientes(nombre, apellidos)')
-      .gte('fecha', `${year}-01-01`)
-      .lt('fecha', `${year + 1}-01-01`)
-      .order('fecha', { ascending: true })
-      .limit(5000);
+    const { data, error } = await readYearPayments(year, 'fecha, importe, metodo_pago, paciente_id, crm_pacientes(nombre, apellidos)');
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res);

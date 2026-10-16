@@ -1,0 +1,78 @@
+{
+  "scope": "messaging_review",
+  "date": "2026-10-15",
+  "backend_source": [
+    "backend/src/routes/telegram.js",
+    "backend/src/routes/whatsapp.js",
+    "backend/src/routes/reminders.js",
+    "backend/src/routes/clinic-digests.js",
+    "backend/src/routes/agent-notices.js",
+    "backend/src/lib/patient-booking.js",
+    "backend/src/lib/booking-ai.js",
+    "backend/src/lib/appointment-text.js",
+    "backend/src/lib/agent-notices.js",
+    "backend/src/lib/clinic-digests.js",
+    "backend/src/lib/no-show-followup.js",
+    "backend/src/lib/openwa.js",
+    "backend/src/lib/clinic-calendar.js"
+  ],
+  "workflows": [
+    "n8n/Fisio_IA_Agent/pendiente-activacion/avisos-agente-citas.json",
+    "n8n/Fisio_IA_Agent/pendiente-activacion/bot-pacientes.json",
+    "n8n/Fisio_IA_Agent/production/bot-fisio.json",
+    "n8n/Fisio_IA_Agent/production/bot-pacientes.json",
+    "n8n/Fisio_IA_Agent/production/calendar-sync.json",
+    "n8n/Fisio_IA_Agent/production/crm-plan.json",
+    "n8n/Fisio_IA_Agent/production/ejercicios.json",
+    "n8n/Fisio_IA_Agent/production/nucleo-agente.json",
+    "n8n/Fisio_IA_Agent/production/puente-error-backend.json",
+    "n8n/Fisio_IA_Agent/production/recordatorios.json",
+    "n8n/Fisio_IA_Agent/production/resumenes-fisio.json",
+    "n8n/Fisio_IA_Agent/production/subflujo-pendientes.json",
+    "n8n/Fisio_IA_Agent/production/w1-agenda-citas.json",
+    "n8n/Fisio_IA_Agent/production/w5-calendar-reader.json",
+    "n8n/Fisio_IA_Agent/production/w6-calendar-writer.json",
+    "n8n/Fisio_IA_Agent/vnext/build-agent-reply-triage.js",
+    "n8n/Fisio_IA_Agent/vnext/fisio-agent-core.json",
+    "n8n/Fisio_IA_Agent/vnext/sw-fisio-pending-intakes.json",
+    "n8n/Fisio_IA_Agent/vnext/telegram-chat.json",
+    "n8n/Fisio_IA_Agent/vnext/telegram-fisio-reports.json",
+    "n8n/Fisio_IA_Agent/vnext/w1-appointment-agent.json",
+    "n8n/Fisio_IA_Agent/vnext/w2-exercise-agent.json",
+    "n8n/Fisio_IA_Agent/vnext/w3-crm-trigger.json",
+    "n8n/Fisio_IA_Agent/vnext/w6-calendar-sync.json"
+  ],
+  "tests_read": [
+    "backend/test/reminders.test.js",
+    "backend/test/clinic-digests.test.js",
+    "backend/test/no-show-followup.test.js",
+    "backend/test/booking-ai.test.js",
+    "backend/test/n8n-production.test.js",
+    "backend/test/booking-agent.test.js",
+    "backend/test/clinical_gating.test.js",
+    "backend/test/messaging-pilot.test.js",
+    "backend/test/telegram-professional-security.test.js"
+  ],
+  "supplementary": [
+    "backend/src/middleware/security.js",
+    "backend/src/lib/approved-exercise-report.js",
+    "scripts/test-booking-retries.mjs",
+    "database/migrations/20260901_production_security_hardening.sql"
+  ],
+  "edited": [
+    "backend/src/routes/telegram.js",
+    "backend/test/telegram-professional-security.test.js"
+  ],
+  "private_evidence": [
+    "tmp/messaging-readonly-review.mjs",
+    "tmp/messaging-review-findings.md"
+  ],
+  "omitted": "No assigned JS/JSON file omitted. No live configuration, real data, external execution, or generated/node_modules files reviewed.",
+  "production_status": "Source-folder classification only; no claim of live activation",
+  "tests_run": {
+    "integration_suite": "root responsibility",
+    "professional_security_and_clinical_gating": "15/15",
+    "backend_lint": "pass",
+    "focused_before_fix": "33/33"
+  }
+}

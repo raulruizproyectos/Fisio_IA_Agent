@@ -30,6 +30,7 @@ export async function requestAuth(action: string, body: Record<string, string> =
   try {
     const response = await nativeFetch(`${backendBase}/api/auth/${action}`, {
       method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Fisio-CSRF': '1' },
+      signal: AbortSignal.timeout(15000),
       body: JSON.stringify(body),
     });
     const data = await response.json();

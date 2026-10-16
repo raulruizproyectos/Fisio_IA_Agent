@@ -30,7 +30,7 @@ async function setup({storage=new Map(),blockStorageWrite=false,blockStorageRead
   };
   document.getElementById('bookingSuccess').hidden=true;
   const sessionStorage={getItem(key){if(blockStorageRead)throw new Error('Storage unavailable');return storage.get(key)||null;},setItem(key,value){if(blockStorageWrite)throw new Error('Storage unavailable');storage.set(key,value);},removeItem(key){if(blockStorageRemove)throw new Error('Storage unavailable');storage.delete(key);}};
-  runInNewContext(script,{document,fetch,crypto:{randomUUID},configuredBackendBase:'http://local.invalid',window:{sessionStorage,location:{search:'?professional_id=local-professional',hostname:'local.invalid',origin:'http://local.invalid'}},URL,URLSearchParams,Intl,Date});
+  runInNewContext(script,{document,fetch,crypto:{randomUUID},configuredBackendBase:'http://local.invalid',window:{sessionStorage,location:{search:'?professional_id=local-professional',hostname:'local.invalid',origin:'http://local.invalid'}},URL,URLSearchParams,Intl,Date,AbortSignal});
   await flush();
   const e=id=>elements.get(id),emit=(id,event)=>e(id).events[event]({preventDefault(){}});
   const answer=(request,data,status)=>request.resolve(response(data,status));
@@ -38,6 +38,18 @@ async function setup({storage=new Map(),blockStorageWrite=false,blockStorageRead
 }
 const tests=[];
 const test=(name,run)=>tests.push({name,run});
+test('Availability and booking calls have deadlines without replaying uncertain writes',async()=>{
+  const h=await setup();
+  assert.ok(h.requests[0].options.signal instanceof AbortSignal);
+  h.answer(h.requests[0],{data:{slots:[slot('2026-10-08')]}});await flush();
+  h.e('patientNameInput').value='Fixture';h.e('patientPhoneInput').value='600000000';h.e('slotsGrid').children[0].events.click();
+  const save=h.emit('bookingForm','submit');
+  assert.ok(h.requests[1].options.signal instanceof AbortSignal);
+  h.requests[1].reject(new DOMException('Fixture deadline','TimeoutError'));await save;
+  assert.match(h.e('bookingSubmitBtn').textContent,/Comprobar/);
+  assert.equal(h.requests.filter(request=>request.options.method==='POST').length,1);
+  assert.equal(h.e('patientNameInput').disabled,true);
+});
 for(const lateError of [false,true])test(`Latest date survives an older ${lateError?'error':'response'}`,async()=>{
   const h=await setup();h.e('bookingDate').value='2026-10-09';const newer=h.emit('bookingDate','change');
   h.answer(h.requests[1],{data:{slots:[slot('2026-10-09','11')]}});await newer;

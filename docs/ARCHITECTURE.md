@@ -1,10 +1,18 @@
 # Architecture
 
-## Referencia vigente — 2026-10-13
+> Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
+
+## Referencia local — 16-oct-2026
+
+Se conserva el stack y el modelo de una clínica. Navegación/texto/HTTP/altas y fechas de Madrid comparten módulos frontend; Calendar usa lector paginado común; PDF comparte construcción segura de filename. Ficha/Copiloto/finanzas aíslan respuestas por contexto y versión. No se añaden dependencias ni esquema SQL.
+
+El envío manual de planes aprobados reclama un recibo existente por clínica/plan/versión antes de Telegram y conserva estado incierto sin reenvío. El bot de citas sigue pausado. [Informe y deuda estructural](AUDITORIA_FINAL_2026-10-16.md); los controladores grandes y la cascada histórica no se presentan como una modularización total.
+
+## Referencia histórica — 2026-10-13
 
 Frontend Astro 7.3.7/JS-TS/Nanostores y Precisión azul, desplegado `c062967`; backend Express con cookies HttpOnly/CSRF y Supabase RLS, desplegado `ee3449c`. Calendar actual opera mediante los puentes OAuth n8n; el código conserva alternativa directa por cuenta de servicio. Doce workflows activos coinciden con `n8n/Fisio_IA_Agent/production`. Una clínica; pilots WhatsApp/Telegram booking desactivados. Bots Telegram activos, reserva web y piloto de reserva son recorridos distintos.
 
-La corrección de alertas globales notifica solo errores 5xx. Readiness 13/13 y sync Calendar healthy tras ambos despliegues; contenedor nginx/proxy/headers sí comprobados. [Versiones y evidencia](design-exploration/reviews/2026-10-13/production.md). [Encargo de segunda auditoría](PROMPT_AUDITORIA_CLOUDCODE.txt): cuestionar diseño/acoplamientos/eficiencia y proponer mejoras generales. El usuario sí autoriza completar localmente agente de citas Telegram/recorridos asociados: contacto verificado de nuevos/existentes, reserva/consulta/cambio/cancelación/recordatorio y límite servidor de 24 horas; WhatsApp futuro. Ver [requisitos](PILOTO_MENSAJERIA.md). No ejecutar efectos externos ni activar por esa autorización local. Los siguientes estados fechados son historia; la estructura técnica posterior describe el código salvo límites históricos señalados.
+La corrección de alertas globales notifica solo errores 5xx. Readiness 13/13 y sync Calendar healthy tras ambos despliegues; contenedor nginx/proxy/headers sí comprobados. [Versiones y evidencia](design-exploration/reviews/2026-10-13/production.md). [Encargo de segunda auditoría](DESIGN_RESOURCES.md): cuestionar diseño/acoplamientos/eficiencia y proponer mejoras generales. El usuario sí autoriza completar localmente agente de citas Telegram/recorridos asociados: contacto verificado de nuevos/existentes, reserva/consulta/cambio/cancelación/recordatorio y límite servidor de 24 horas; WhatsApp futuro. Ver [requisitos](PILOTO_MENSAJERIA.md). No ejecutar efectos externos ni activar por esa autorización local. Los siguientes estados fechados son historia; la estructura técnica posterior describe el código salvo límites históricos señalados.
 
 ## Estado histórico — 2026-10-08: preparado para la primera prueba
 

@@ -11,6 +11,8 @@ export function isDate(value) {
 }
 
 export function respondFinanceError(res, error) {
+  if (error.code === 'FINANCIAL_READ_INCOMPLETE') return res.status(503).json({ code: error.code,
+    error: 'No se pudieron leer todos los cobros o cambiaron durante la consulta. Recarga antes de consultar los totales.' });
   const status = /^PT(400|404|409)$/.exec(error.code || '')?.[1]
     || (error.code === '42501' ? 403 : error.code === 'PGRST202' ? 503 : error.code === '23514' ? 400 : 500);
   return res.status(Number(status)).json({ error: Number(status) === 503 ? 'Este módulo está pendiente de actualizar en la base de datos.'

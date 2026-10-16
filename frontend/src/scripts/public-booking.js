@@ -86,7 +86,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       };
 
       const fetchJson = async (url, options = {}) => {
-        const response = await fetch(url, options);
+        const response = await fetch(url, { ...options, signal: options.signal || AbortSignal.timeout(30000) });
         const rawText = await response.text();
         const payload = rawText ? JSON.parse(rawText) : {};
         if (!response.ok) {

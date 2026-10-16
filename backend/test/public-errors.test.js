@@ -15,7 +15,7 @@ const response = () => ({ statusCode: 200, status(code) { this.statusCode = code
 const noDiagnostic = value => assert.ok(!JSON.stringify(value).includes('PRIVATE_FIXTURE_TRACE'), 'Internal diagnostic must never enter the public response');
 const dbResult = result => ({ from(table) { const selected = typeof result === 'function' ? result(table) : result; return {
   select() { return this; }, eq() { return this; }, gte() { return this; }, lt() { return this; }, order() { return this; },
-  limit() { return this; }, maybeSingle: async () => selected, then(resolve) { return Promise.resolve(selected).then(resolve); },
+  limit() { return this; }, range() { return this; }, abortSignal() { return this; }, maybeSingle: async () => selected, then(resolve) { return Promise.resolve(selected).then(resolve); },
 }; } });
 async function invoke(router, method, path, db, req = {}, auth = { profile_id: 'fixture-profile', clinic_id: 'fixture-clinic' }) {
   const handler = router.stack.find(layer => layer.route?.path === path && layer.route.methods[method]).route.stack[0].handle;

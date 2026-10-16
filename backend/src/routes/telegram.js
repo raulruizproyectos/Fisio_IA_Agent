@@ -656,11 +656,12 @@ async function sendTelegramDocument({ chatId, filename, buffer, caption = '', ag
   const response = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
     method: 'POST',
     body: form,
+    signal: AbortSignal.timeout(10000),
   });
 
   const payload = await response.json();
-  if (!response.ok || !payload?.ok) {
-    throw new Error(`Telegram sendDocument fallo: ${JSON.stringify(payload)}`);
+  if (!response.ok || !payload?.ok || !Number.isInteger(payload.result?.message_id) || payload.result.message_id <= 0) {
+    throw new Error('Telegram no confirmó el documento');
   }
 }
 
@@ -854,36 +855,6 @@ async function resolveCrmProfessionalProfile(rawProfessionalId) {
   return null;
 }
 
-async function persistPhysioTelegramChatLink({ fisioterapeutaId, chatId, username }) {
-  if (!fisioterapeutaId || !chatId) return null;
-  const profile = await resolveCrmProfessionalProfile(fisioterapeutaId);
-  if (!profile?.id) return null;
-
-  const { data, error } = await supabase
-    .from('crm_perfiles')
-    .update({
-      telegram_chat_id: String(chatId),
-      telegram_username: username || null,
-      telegram_linked_at: new Date().toISOString(),
-    })
-    .eq('id', profile.id)
-    .select('id, telegram_chat_id, telegram_username, telegram_linked_at')
-    .single();
-
-  if (error) {
-    if (
-      isMissingColumnError(error, 'telegram_chat_id') ||
-      isMissingColumnError(error, 'telegram_username') ||
-      isMissingColumnError(error, 'telegram_linked_at')
-    ) {
-      return { skipped: true, reason: 'missing_crm_perfiles_telegram_columns' };
-    }
-    throw error;
-  }
-
-  return data;
-}
-
 async function resolvePhysioTelegramTarget({ fisioterapeutaId, chatId = null }) {
   const explicitChatId = String(chatId || '').trim();
   if (explicitChatId) {
@@ -916,18 +887,9 @@ function generateTelegramLinkCode() {
 }
 
 async function getTelegramLinkPatient(patientId) {
-  const legacyResp = await supabase
-    .from('pacientes')
-    .select('id, profesional_id, nombre_completo')
-    .eq('id', patientId)
-    .limit(1);
-
-  if (legacyResp.error) throw legacyResp.error;
-  if (Array.isArray(legacyResp.data) && legacyResp.data.length) return legacyResp.data[0];
-
   const crmResp = await supabase
     .from('crm_pacientes')
-    .select('id, nombre, apellidos')
+    .select('id, nombre, apellidos, clinica_id')
     .eq('id', patientId)
     .limit(1);
 
@@ -938,10 +900,15 @@ async function getTelegramLinkPatient(patientId) {
     if (!missingCrmTable) throw crmResp.error;
   }
   const crmPatient = Array.isArray(crmResp.data) && crmResp.data.length ? crmResp.data[0] : null;
-  if (!crmPatient) return null;
+  if (!crmPatient) {
+    const legacyResp = await supabase.from('pacientes').select('id, profesional_id, nombre_completo').eq('id', patientId).limit(1);
+    if (legacyResp.error) throw legacyResp.error;
+    return Array.isArray(legacyResp.data) ? legacyResp.data[0] || null : null;
+  }
 
   return {
     id: crmPatient.id,
+    clinica_id: crmPatient.clinica_id,
     profesional_id: null,
     nombre_completo: [crmPatient.nombre, crmPatient.apellidos].filter(Boolean).join(' ').trim() || `Paciente ${crmPatient.id}`,
     source: 'crm',
@@ -1629,6 +1596,7 @@ router.post('/physio-report/send', async (req, res) => {
 });
 
 router.post('/patient-report/send', async (req, res) => {
+  let deliveryClaim;
   try {
     const patientId = pickBodyValue(req.body, 'patient_id', 'paciente_id');
     const recommendationId = pickBodyValue(req.body, 'recommendation_id', 'recomendacion_id');
@@ -1637,15 +1605,28 @@ router.post('/patient-report/send', async (req, res) => {
     const target = await resolvePatientTelegramTarget({ patientId, chatId: pickBodyValue(req.body, 'chat_id') });
     if (!target.patient) throw reportError(404, 'Paciente no encontrado');
     if (!target.chatId) throw reportError(400, 'El paciente no tiene Telegram vinculado; comparte su invitación y completa el enlace');
+    const clinicId = target.patient.clinica_id;
+    if (!clinicId) throw reportError(503, 'No se pudo verificar la clínica del paciente');
+    if (req.auth?.clinic_id && req.auth.clinic_id !== clinicId) throw reportError(403, 'Se requiere sesión de la clínica del paciente');
     const pdfBuffer = await buildExerciseReportPdfBuffer(report);
     if (parseBooleanFlag(req.query?.dry_run) || parseBooleanFlag(req.body?.dry_run)) {
       return res.json({ ok: true, dry_run: true, delivered_via: 'telegram', target_source: target.source,
         patient_id: patientId, recommendation_id: recommendationId, pdf_bytes: pdfBuffer.length });
     }
+    try {
+      deliveryClaim = await claimMessagingEvent({ canal: 'telegram', sessionId: 'exercise_report', event: 'report.sent',
+        messageId: String(recommendationId), status: String(report.report_version), chatId: String(target.chatId) }, { clinicId });
+    } catch {
+      return res.status(503).json({ code: 'TELEGRAM_DELIVERY_CLAIM_FAILED', error: 'No se pudo registrar el envío. Comprueba su estado antes de volver a intentarlo.' });
+    }
+    if (!deliveryClaim) return res.status(409).json({ code: 'TELEGRAM_DELIVERY_ALREADY_CLAIMED',
+      error: 'Este plan ya tiene un envío registrado o pendiente de comprobar. No repitas el envío.' });
     const patientIntro = truncateTelegramMessage(String(report.message_to_patient || '').trim(), 900);
     if (patientIntro) await sendTelegramMessage(target.chatId, patientIntro, 'patient_appointments');
     await sendTelegramDocument({ chatId: target.chatId, filename: 'plan-ejercicios-' + recommendationId + '.pdf',
       buffer: pdfBuffer, caption: 'Tu plan de ejercicios - ' + report.patient_name, agentMode: 'patient_appointments' });
+    await finishMessagingEvent(deliveryClaim, 'procesado');
+    deliveryClaim = null;
 
     // Only the server marks delivery after Telegram confirms the document.
     let stateRecorded = false;
@@ -1665,6 +1646,11 @@ router.post('/patient-report/send', async (req, res) => {
     return res.json({ ok: true, delivered_via: 'telegram', patient_id: patientId, recommendation_id: recommendationId,
       state_recorded: stateRecorded, warning: stateRecorded ? null : 'Telegram confirmó el envío, pero no se pudo registrar el estado. No repitas el envío.' });
   } catch (err) {
+    if (deliveryClaim) {
+      try { await finishMessagingEvent(deliveryClaim, 'revision_manual'); } catch { /* The persisted claim blocks a duplicate send. */ }
+      return res.status(503).json({ code: 'TELEGRAM_DELIVERY_UNCERTAIN',
+        error: 'No se pudo confirmar y registrar la entrega. Comprueba Telegram con la clínica. No repitas el envío.' });
+    }
     return respondReportError(res, err, 'Error enviando el plan al paciente');
   }
 });
@@ -1795,6 +1781,16 @@ router.post('/incoming', async (req, res, next) => {
 
     const { chat_id, username } = parsedPayload;
     const agentMode = await detectTelegramAgentMode(parsedPayload, { fromTelegramWebhook });
+    const dryRun = parseBooleanFlag(pickBodyValue(req.body, 'dry_run')) || parseBooleanFlag(req.query?.dry_run);
+    let physioProfessionalId = null;
+    if (agentMode === 'physio_reports' && !dryRun) {
+      physioProfessionalId = await getDefaultProfessionalId();
+      const target = await resolvePhysioTelegramTarget({ fisioterapeutaId: physioProfessionalId });
+      // A trusted bot transport does not authenticate the person writing to that bot.
+      if (!target.chatId || String(target.chatId) !== String(chat_id)) {
+        return res.status(403).json({ error: 'Este chat no está autorizado para usar el bot profesional.' });
+      }
+    }
 
     let resolvedIncoming = null;
     try {
@@ -1820,7 +1816,6 @@ router.post('/incoming', async (req, res, next) => {
     parsedPayload.texto_mensaje = text;
     const isVoiceInput = resolvedIncoming?.inputType === 'voice';
     const isCommand = text.startsWith('/');
-    const dryRun = parseBooleanFlag(pickBodyValue(req.body, 'dry_run')) || parseBooleanFlag(req.query?.dry_run);
     const forcedPatientId = pickBodyValue(req.body, 'paciente_id', 'patient_id');
     const forcedProfessionalId = pickBodyValue(req.body, 'profesional_id', 'professional_id');
 
@@ -2091,8 +2086,7 @@ router.post('/incoming', async (req, res, next) => {
         );
       }
 
-      const professionalId = await getDefaultProfessionalId();
-      await persistPhysioTelegramChatLink({ fisioterapeutaId: professionalId, chatId: chat_id, username });
+      const professionalId = physioProfessionalId;
       const recoResult = await triggerExerciseRecommendation({
         req,
         patientId: reportCommand.patientId,

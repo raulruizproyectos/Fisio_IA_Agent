@@ -40,8 +40,8 @@ test('un pago válido conserva céntimos y editar uno inexistente responde 404',
 
 test('resumen y gestoría suman importes en céntimos sin residuos decimales', async () => {
   const db = { from() { return {
-    select() { return this; }, gte() { return this; }, lt() { return this; }, order() { return this; }, limit() { return this; },
-    then(resolve) { return Promise.resolve({ data: [0.1, 0.2].map(importe => ({ paciente_id: 'patient-a', fecha: '2026-10-07', importe, metodo_pago: 'efectivo' })) }).then(resolve); },
+    select() { return this; }, gte() { return this; }, lt() { return this; }, order() { return this; }, limit() { return this; }, range() { return this; }, abortSignal() { return this; },
+    then(resolve) { return Promise.resolve({ count: 2, data: [0.1, 0.2].map((importe, id) => ({ id, paciente_id: 'patient-a', fecha: '2026-10-07', importe, metodo_pago: 'efectivo' })) }).then(resolve); },
   }; } };
   const summary = await invoke('get', '/resumen', {}, db, { anio: '2026' });
   assert.equal(summary.body.total_anual, 0.3);
@@ -49,4 +49,35 @@ test('resumen y gestoría suman importes en céntimos sin residuos decimales', a
   const accounting = await invoke('get', '/gestoria', {}, db, { anio: '2026' });
   assert.equal(accounting.body.gran_total.total, 0.3);
   assert.equal(accounting.body.pacientes[0].total_anual, 0.3);
+});
+
+test('resumen y gestoría leen todas las páginas aunque el servidor aplique un límite menor', async () => {
+  const rows = Array.from({ length: 6000 }, (_, id) => ({ id, paciente_id: 'patient-a', fecha: '2026-01-01', importe: 0.01, metodo_pago: 'efectivo' }));
+  const db = { from() { let start = 0, end = 4999; return {
+    select() { return this; }, gte() { return this; }, lt() { return this; }, order() { return this; }, limit(n) { end = n - 1; return this; },
+    range(from, to) { start = from; end = to; return this; }, abortSignal() { return this; },
+    then(resolve) { resolve({ count: rows.length, data: rows.slice(start, Math.min(end + 1, start + 173)) }); },
+  }; } };
+  for (const path of ['/resumen', '/gestoria']) {
+    const result = await invoke('get', path, {}, db, { anio: '2026' });
+    assert.equal(result.body.total_anual ?? result.body.gran_total.total, 60);
+    assert.equal(result.body.total_sesiones ?? result.body.gran_total.sesiones, 6000);
+  }
+});
+
+test('lecturas financieras incompletas o cambiantes nunca devuelven un total parcial', async () => {
+  for (const kind of ['failed-page', 'empty-page', 'changed-count', 'duplicate-page']) {
+    let calls = 0;
+    const db = { from() { calls++; return {
+      select() { return this; }, gte() { return this; }, lt() { return this; }, order() { return this; }, range() { return this; }, abortSignal() { return this; },
+      then(resolve) { resolve(calls > 1 && kind === 'failed-page' ? { error: { code: 'XX000' } } : {
+        count: calls > 1 && kind === 'changed-count' ? 3 : 2,
+        data: calls > 1 && kind === 'empty-page' ? [] : [{ id: 'one', fecha: '2026-01-01', importe: 1, metodo_pago: 'efectivo' }],
+      }); },
+    }; } };
+    const res = await invoke('get', '/resumen', {}, db, { anio: '2026' });
+    assert.ok(res.statusCode >= 500, kind);
+    assert.equal(res.body.total_anual, undefined);
+    assert.equal(calls, 2);
+  }
 });

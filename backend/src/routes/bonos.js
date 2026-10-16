@@ -93,9 +93,10 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const { data, error } = await supabase
-      .from(BONOS_TABLE).select(BONO_SELECT).eq('id', req.params.id).single();
+      .from(BONOS_TABLE).select(BONO_SELECT).eq('id', req.params.id).maybeSingle();
     if (error && isMissingBonosTableError(error)) return respondBonosUnavailable(res);
-    if (error || !data) return res.status(404).json({ error: 'Bono no encontrado' });
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Bono no encontrado' });
     res.json({ data });
   } catch (err) { next(err); }
 });

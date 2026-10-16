@@ -19,15 +19,15 @@ if (-not (Test-Path $gitDir)) {
 if (Test-Path $TargetPath) {
   if (-not $ForceRefresh) {
     Write-Host "El workspace local ya existe en: $TargetPath" -ForegroundColor Yellow
-    Write-Host "Usa -ForceRefresh si quieres regenerarlo desde la ruta sincronizada." -ForegroundColor Yellow
+    Write-Host "Elige otro -TargetPath para preparar una copia nueva." -ForegroundColor Yellow
     return
   }
 
-  Write-Host "Eliminando workspace local anterior..." -ForegroundColor Yellow
-  Remove-Item -Recurse -Force $TargetPath
+  throw 'El destino ya existe. Elige otro -TargetPath; -ForceRefresh no borra trabajo anterior.'
 }
 
-New-Item -ItemType Directory -Force -Path $TargetPath | Out-Null
+. (Join-Path $PSScriptRoot 'new-local-workspace.ps1')
+$TargetPath = New-LocalWorkspace -SourcePath $SourceRepo -TargetPath $TargetPath
 
 Write-Host "Copiando repo a ruta local no sincronizada..." -ForegroundColor Cyan
 $null = robocopy $SourceRepo $TargetPath /MIR /XD node_modules .astro dist .next .turbo .cache .output .vercel /XF *.log

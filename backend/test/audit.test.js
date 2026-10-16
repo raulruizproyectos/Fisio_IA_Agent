@@ -6,6 +6,24 @@ process.env.SUPABASE_ANON_KEY = 'test-anon-key';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
 
 const { recordAudit, resolveActorType } = await import('../src/lib/audit.js');
+const { serviceSupabase } = await import('../src/lib/supabase.js');
+
+test('un fallo de auditoría queda visible sin registrar su payload ni diagnóstico privado', async t => {
+  for (const throws of [false, true]) {
+    const logs = [];
+    t.mock.method(console, 'warn', (...args) => logs.push(args));
+    t.mock.method(serviceSupabase, 'from', () => ({ insert() { return this; }, select() { return this; }, async maybeSingle() {
+      if (throws) throw new Error('PRIVATE_FIXTURE_DATA');
+      return { error: { message: 'PRIVATE_FIXTURE_DATA' } };
+    } }));
+    const result = await recordAudit({ id: '11111111-1111-4111-8111-111111111111' }, { entity_type: 'paciente', action: 'read', after_state: { nota: 'PRIVATE_CLINICAL_NOTE' } });
+    assert.equal(result.ok, false);
+    assert.equal(logs.length, 1);
+    assert.match(JSON.stringify(logs), /audit_write_failed/);
+    assert.doesNotMatch(JSON.stringify(logs), /PRIVATE/);
+    t.mock.restoreAll();
+  }
+});
 
 test('resolveActorType clasifica correctamente los diferentes roles y canales', () => {
   assert.equal(resolveActorType(null), 'system');

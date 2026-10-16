@@ -1,5 +1,13 @@
 # Primera prueba en producción — estado actualizado 2026-10-13
 
+> Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
+
+## 16-oct — Tanda local comprobada; producción todavía no actualizada
+
+La evidencia de esta tanda es local: lint/214 pruebas backend, check/build frontend, 28 scripts y navegador a 375/768/1280/1920 px. [Informe, casos manuales y límites](AUDITORIA_FINAL_2026-10-16.md). No acredita Supabase/PostgREST, proveedores, mensajes reales ni la versión que sirve la URL pública.
+
+Antes de probar esta tanda allí: autorización de commit/push, CI verde, autorización y deploy de backend y frontend; después contenedores/readiness/sesión/Calendar y casos ficticios. No hay migración nueva y no deben repetirse las históricas. Mantener el bot pausado. Las secciones anteriores al 16 de octubre son antecedentes, no pruebas frescas ni órdenes de ejecutar Cloud.
+
 ## Estado vigente y próximo encargo
 
 Frontend `c06296701f6f7214b788ef1f461aa62146e1de6a` y backend `ee3449c61644d7d0d978c4c1fa822835557f8c2e` ya desplegados en los servicios existentes. Main publicado `ee3449c`; documentación de este traspaso modificada en local, sin nueva publicación. CI frontend [38375833160](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38375833160) y backend [38377245576](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38377245576) completos verdes. No necesitas hacer esos deploy manualmente.
@@ -10,7 +18,7 @@ Backend lint/108 pruebas y frontend check 40 archivos/cero diagnósticos/build c
 
 Durante casos negativos Auth hubo un email automático de monitorización real mostrado por el usuario. Causa: errores 4xx enviados como CRITICAL; corregido y desplegado en `ee3449c` (solo 5xx notifican). No se han enviado documentos/mensajes clínicos a pacientes ni ejecutado IA con gasto. [Evidencia y límites](design-exploration/reviews/2026-10-13/production.md).
 
-La preparación permite empezar con datos ficticios; el usuario ha pedido primero una segunda auditoría independiente con CloudCode y completar **en local** el agente de citas Telegram si falta. Requisitos confirmados: nuevos/existentes con contacto verificado, reserva/consulta/cambio/cancelación/recordatorio, cambios/cancelaciones con al menos 24 horas, después clínica; WhatsApp futuro. [Prompt completo y recursos](PROMPT_AUDITORIA_CLOUDCODE.txt), [contrato conversacional](PROMPT_AGENTE_CITAS.txt) y [requisitos](PILOTO_MENSAJERIA.md). No hay resultados comunicados de la primera prueba manual. Este encargo no autoriza mutaciones de datos reales, migraciones Cloud, activaciones, envíos reales o gasto. Las secciones siguientes conservan el cierre y la guía del 8 de octubre; versiones y afirmaciones fechadas son históricas.
+La preparación permite empezar con datos ficticios; el usuario ha pedido primero una segunda auditoría independiente con CloudCode y completar **en local** el agente de citas Telegram si falta. Requisitos confirmados: nuevos/existentes con contacto verificado, reserva/consulta/cambio/cancelación/recordatorio, cambios/cancelaciones con al menos 24 horas, después clínica; WhatsApp futuro. [Prompt completo y recursos](DESIGN_RESOURCES.md), [contrato conversacional](PROMPT_AGENTE_CITAS.txt) y [requisitos](PILOTO_MENSAJERIA.md). No hay resultados comunicados de la primera prueba manual. Este encargo no autoriza mutaciones de datos reales, migraciones Cloud, activaciones, envíos reales o gasto. Las secciones siguientes conservan el cierre y la guía del 8 de octubre; versiones y afirmaciones fechadas son históricas.
 
 ## Historia — cierre del 8 de octubre
 

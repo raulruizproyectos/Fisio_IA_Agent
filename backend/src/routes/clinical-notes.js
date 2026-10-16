@@ -108,13 +108,14 @@ router.post('/voice/synthesize', async (req, res, next) => {
         patientName = `${patient.nombre || ''} ${patient.apellidos || ''}`.trim() || 'Paciente';
       }
 
-      const { data: prevNotes } = await supabase
+      const { data: prevNotes, error: notesError } = await supabase
         .from(CLINICAL_NOTES_TABLE)
         .select('id, fecha, session_datetime, dolor_eva, zona_corporal, nota, structured_data')
         .eq('paciente_id', paciente_id)
         .order('session_datetime', { ascending: false, nullsFirst: false }).order('fecha', { ascending: false }).order('created_at', { ascending: false }).order('id', { ascending: false })
         .limit(3);
 
+      if (notesError) throw notesError;
       if (prevNotes) previousNotes = prevNotes;
     }
 

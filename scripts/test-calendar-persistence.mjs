@@ -43,7 +43,13 @@ export async function testCalendarPersistence(db, cfg) {
   const invoke = async (path, method, body = {}, params = {}, query = {}) => {
     const handler = router.stack.find(layer => layer.route?.path === path && layer.route.methods[method]).route.stack[0].handle;
     const res = { statusCode: 200, status(code) { this.statusCode = code; return this; }, json(value) { this.body = value; return this; } };
-    await runWithRequestContext({ supabase: client }, () => handler({ body, params, query, auth: { profile_id: cfg.profile_id }, get: () => body.key }, res, error => { res.error = error; res.statusCode = error.status || 500; }));
+    const NativeDate = globalThis.Date;
+    if (path === '/public-booking/appointments') globalThis.Date = class extends NativeDate {
+      constructor(...args) { super(...(args.length ? args : ['2041-04-01T10:00:00Z'])); }
+      static now() { return NativeDate.parse('2041-04-01T10:00:00Z'); }
+    };
+    try { await runWithRequestContext({ supabase: client }, () => handler({ body, params, query, auth: { profile_id: cfg.profile_id }, get: () => body.key }, res, error => { res.error = error; res.statusCode = error.status || 500; })); }
+    finally { globalThis.Date = NativeDate; }
     return res;
   };
   const slot = { patientId, professionalId: cfg.profile_id, startAt: '2041-04-09T09:00:00Z', endAt: '2041-04-09T10:00:00Z', reason: 'Fixture session', requestId: randomUUID() };

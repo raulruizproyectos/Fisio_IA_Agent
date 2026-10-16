@@ -1,0 +1,86 @@
+[
+  {
+    "file": "frontend/src/pages/index.astro",
+    "before": 102,
+    "after": 102,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/BonosView.astro",
+    "before": 31,
+    "after": 31,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/CitasView.astro",
+    "before": 34,
+    "after": 34,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/ConfigView.astro",
+    "before": 25,
+    "after": 25,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/DashboardView.astro",
+    "before": 39,
+    "after": 39,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/DocumentosView.astro",
+    "before": 12,
+    "after": 12,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/FacturacionView.astro",
+    "before": 26,
+    "after": 26,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/FichaPacienteView.astro",
+    "before": 152,
+    "after": 152,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/GestoriaView.astro",
+    "before": 18,
+    "after": 18,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/HistorialView.astro",
+    "before": 4,
+    "after": 4,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/IntakesView.astro",
+    "before": 7,
+    "after": 7,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/PagosView.astro",
+    "before": 49,
+    "after": 49,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/PatientsView.astro",
+    "before": 36,
+    "after": 36,
+    "missing": []
+  },
+  {
+    "file": "frontend/src/components/views/PlantillasView.astro",
+    "before": 5,
+    "after": 5,
+    "missing": []
+  }
+]

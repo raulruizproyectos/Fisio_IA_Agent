@@ -34,7 +34,13 @@ export async function testBookingRetries(db,cfg) {
   const handler=router.stack.find(l=>l.route?.path==='/public-booking/appointments' && l.route.methods.post).route.stack[0].handle;
   const invoke=async(key,body)=>{
     const res={statusCode:200,status(code){this.statusCode=code;return this;},json(value){this.body=value;return this;}};
-    await runWithRequestContext({supabase:client,auth:{actor_type:'public_booking'}},()=>handler({body,get:name=>name==='Idempotency-Key'?key:null},res,error=>{res.statusCode=error.status||500;res.body={error:error.message};}));
+    const NativeDate=globalThis.Date;
+    globalThis.Date=class extends NativeDate {
+      constructor(...args){super(...(args.length?args:['2040-04-01T10:00:00Z']));}
+      static now(){return NativeDate.parse('2040-04-01T10:00:00Z');}
+    };
+    try {await runWithRequestContext({supabase:client,auth:{actor_type:'public_booking'}},()=>handler({body,get:name=>name==='Idempotency-Key'?key:null},res,error=>{res.statusCode=error.status||500;res.body={error:error.message};}));}
+    finally {globalThis.Date=NativeDate;}
     return res;
   };
   const body={professional_id:cfg.profile_id,full_name:'Public booking fixture',email:'public-qa@example.invalid',start_at:'2040-04-09T09:00:00Z',end_at:'2040-04-09T10:00:00Z'};

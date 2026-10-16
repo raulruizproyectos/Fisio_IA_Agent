@@ -117,7 +117,14 @@ export async function buildDigest(kind, { professionalId = process.env.MESSAGING
   const profile = await professional(String(professionalId || '').trim());
   if (!profile?.telegram_chat_id) return { send: false, reason: 'sin_chat_profesional', count: 0 };
   const clinicId = profile.clinica_id;
-  const reply = (text, count) => ({ send: true, chat_id: profile.telegram_chat_id, text, count });
+  const reply = (text, count) => {
+    if (text.length > 3900) {
+      const end = text.lastIndexOf('\n', 3700);
+      text = text.slice(0, end > 0 ? end : 3700).toWellFormed()
+        + '\n\nLista abreviada. Revisa la lista completa en el CRM.';
+    }
+    return { send: true, chat_id: profile.telegram_chat_id, text, count };
+  };
 
   if (kind === 'agenda_diaria') {
     const today = madridDate(now);
