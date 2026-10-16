@@ -1,5 +1,11 @@
 # Punto de continuidad — 16 de octubre de 2026
 
+## Cierre más reciente — primera prueba de Raúl
+
+Raúl autoriza commit de esta corrección y, por separado, push a main. La entrega que contiene esta entrada reúne la incidencia; verificar HEAD/origin/CI antes de repetir publicación. Despliegue frontend y actualización W5 activo todavía no autorizados. «Local/sin publicar» describe la verificación previa a esta autorización.
+
+`3d4cce7` publicado, CI verde y ambos servicios desplegados por Raúl, verificados por lectura de EasyPanel. Correcciones visuales locales verificadas en 24 estados a 375/768/1280/1920, check/build y backend lint/214 pruebas; sin nuevo commit/push/deploy. El HTTP 500 Calendar se identifica en la ejecución manual completa: acceso Google no renovable. Raúl reconecta la cuenta y W5/W6 action=list vuelven a HTTP 200; ciclo automático de las 15:02:25 correcto, `healthy`, sin error actual. Otra corrección local mueve el intervalo W5 a los parámetros correctos de Google Calendar 1.3, con regresión en CI: no aplicada en n8n remoto. Publicación/frontend y actualización W5 necesitan autorización expresa nueva. No cambiar credenciales ni activar bots por inferencia. [Detalle y evidencia](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Los cierres siguientes son antecedentes, no el estado vigente.
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## Estado vigente — 16 octubre 2026 — auditoría local y correcciones

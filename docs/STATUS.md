@@ -1,5 +1,11 @@
 # Project Status
 
+## Primera prueba — 16-oct, posterior al despliegue
+
+Publicación de esta incidencia autorizada: Raúl aprueba expresamente el commit y, por separado, el push a main. Esta entrega reúne las correcciones descritas debajo; consultar su CI antes de desplegar frontend o actualizar W5, acciones todavía no autorizadas. Las referencias a local/sin publicar registran el snapshot previo a esa autorización.
+
+Backend/frontend verificados en EasyPanel en `3d4cce7`, CI verde. Raúl detecta Calendar no disponible y fallos de distribución en Inicio/Agenda/Historial. Corregida la presentación en local y verificada en 24 estados móvil/escritorio; todavía sin nueva publicación. Ejecución manual confirma acceso Google no renovable; Raúl reconecta la cuenta y W5/W6 (solo lectura) vuelven a HTTP 200. Ciclo automático de las 15:02:25 correcto, `healthy`, sin error actual. Corregido también en fuente local el intervalo W5 para Google Calendar 1.3, con regresión; requiere autorización específica antes de actualizar n8n activo. [Incidencia, pruebas y límites](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Las referencias posteriores a «sin publicar/desplegar» describen el cierre anterior de la auditoría.
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## Estado vigente — 16 octubre 2026 — auditoría local y correcciones

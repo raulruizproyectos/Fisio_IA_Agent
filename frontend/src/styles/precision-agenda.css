@@ -102,6 +102,33 @@
 .agenda-sync-copy {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.agenda-sync-facts:not([hidden]),
+#dashboardSyncFacts:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.agenda-sync-fact {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.agenda-sync-status {
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  .agenda-sync-status {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .agenda-sync-copy strong {

@@ -58,10 +58,8 @@
           "value": "={{ $json.calendarId }}"
         },
         "returnAll": true,
-        "additionalFields": {
-          "timeMin": "={{ $json.timeMin }}",
-          "timeMax": "={{ $json.timeMax }}"
-        },
+        "timeMin": "={{ $json.timeMin }}",
+        "timeMax": "={{ $json.timeMax }}",
         "options": {}
       },
       "credentials": {

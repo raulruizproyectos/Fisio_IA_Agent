@@ -3468,7 +3468,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     factsEl.hidden = payload.facts.length === 0;
     factsEl.innerHTML = payload.facts
       .map((fact) => `<span class="agenda-sync-fact"><strong>${escapeHtml(fact.label)}:</strong> ${escapeHtml(fact.value)}</span>`)
-      .join('');
+      .join(' ');
   };
 
   let dashboardBookingFeedbackTimeout: number | null = null;
@@ -5165,9 +5165,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     }
 
     const facts: Array<{ label: string; value: string }> = [];
-    if (summary?.enabled !== undefined) facts.push({ label: 'Lectura', value: summary?.enabled ? 'Calendar activo' : 'Calendar desactivado' });
+    if (syncStatus?.enabled !== undefined || summary?.enabled !== undefined) facts.push({ label: 'Conexión', value: (syncStatus?.enabled ?? summary?.enabled) ? 'Configurada' : 'Sin configurar' });
     if (lastSuccessAt) facts.push({ label: 'Último ciclo', value: fmtRelativeSyncAge(lastSuccessAt) });
-    if (syncStatus?.next_expected_at) facts.push({ label: 'Próximo', value: fmtRelativeSyncAge(syncStatus.next_expected_at) });
+    if (syncStatus?.next_expected_at) facts.push({ label: 'Próxima comprobación', value: new Date(syncStatus.next_expected_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: CLINIC_TIME_ZONE }) });
     if (syncStatus?.error) facts.push({ label: 'Último error', value: String(syncStatus.error) });
 
     const viewModel = { uiStatus, chipLabel, chipClass, title, meta, facts };

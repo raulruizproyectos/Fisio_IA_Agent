@@ -26,3 +26,96 @@
   font-weight: 700;
   color: #142234;
 }
+
+.telegram-link-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.telegram-link-head > div {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.telegram-link-card,
+.history-note-form,
+.history-note-field {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.telegram-link-card,
+.history-note-form {
+  margin-top: 1rem;
+}
+
+.telegram-link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.telegram-link-field {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.telegram-link-field > span {
+  color: var(--color-ink-muted, #536375);
+  font-size: 0.8125rem;
+}
+
+.telegram-link-command {
+  padding: 0.75rem;
+  background: var(--color-canvas, #f4f7fb);
+  border: 1px solid var(--color-border, #dce3ed);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+
+.telegram-link-command code {
+  white-space: normal;
+}
+
+.telegram-link-actions,
+.history-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.history-note-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 132px;
+  padding: 0.75rem;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.history-note-feedback[data-state="error"] {
+  color: #b91c1c;
+}
+
+.history-note-feedback[data-state="success"] {
+  color: #166534;
+}
+
+@media (max-width: 767px) {
+  .telegram-link-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .telegram-link-actions > button,
+  .history-note-actions > button {
+    flex: 1 1 140px;
+  }
+}
