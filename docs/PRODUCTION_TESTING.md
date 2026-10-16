@@ -1,5 +1,13 @@
 # Primera prueba en producción — estado actualizado 2026-10-13
 
+## 16-oct, 18:18 — estado para continuar la auditoría
+
+Lectura nueva a las 18:18:51: frontend ea7f998 y backend 3d4cce7 habilitados; Calendar healthy, error:null, último éxito 18:18:24; W5 activo/publicado con intervalo correcto. La prueba de Raúl ya comenzó y sus incidencias anteriores se repararon. [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) separa pruebas reales, fixtures y pendientes. Este checkpoint solo actualiza seguimiento/prompt, sin otro deploy. No reensaya login, DB/RLS, todos los workflows, entrega clínica ni IA con gasto. Primera respuesta de Calcode: contexto + recomendación de modelos/razonamiento/agentes, antes de auditar.
+
+## 16-oct, 17:10 — columnas de Agenda desplegadas
+
+Deploy frontend autorizado y verificado en `ea7f998`, [CI 38911381365 verde](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38911381365). Contenedor running y `/health` 200; backend `3d4cce7`, entornos preservados, n8n sin cambios. Cinco anchuras 375–1920 sobre archivos públicos con API/Auth ficticias, bloqueos largos/simultáneos y apertura de detalle pasan; capturas inspeccionadas. [Detalle y recibos](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). No acredita login real, envío, DB ni nueva prueba Calendar. Seguimiento postdeploy solo local, sin nueva publicación documental.
+
 ## 16-oct, 15:09 — recuperación Calendar y primera incidencia visual
 
 Tras autorización de commit/push, `e3a4773` con CI [38905155872](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38905155872) verde. Con autorizaciones de producción separadas se desplegó únicamente frontend y se actualizó/publicó W5; backend permanece `3d4cce7`. Calendar requería reconexión OAuth, realizada por Raúl. W5/W6 leen HTTP 200; dos intervalos W5 reales verificados tras corregir parámetros, y ciclo automático de las 15:08:25 `healthy`/sin error actual. Frontend público: 12 estados a 375/1280 con API/Auth ficticias, además de 24 estados locales. [Detalle de acciones, evidencia y límites](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). No acredita nueva prueba de login, Cloud RLS, envíos clínicos, gasto IA ni activación del bot. Esta entrada posterior al despliegue se conserva localmente, sin nueva publicación documental.

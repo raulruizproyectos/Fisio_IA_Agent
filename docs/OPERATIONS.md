@@ -1,5 +1,11 @@
 # Operations
 
+## Operación vigente — 16-oct, 18:18 — checkpoint documental
+
+Frontend ea7f998 y backend 3d4cce7 ya desplegados; Calendar healthy y W5 publicado con fechas correctas comprobados por lectura. Raúl pide publicar el seguimiento y prompt para una segunda revisión independiente; esta entrega solo documental no cambia imagen, configuración, SQL ni n8n, y no requiere redeploy. [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) contiene los recibos y límites.
+
+El siguiente agente empieza con contexto/selección de modelos y después revisión local cuando Raúl confirme. Las autorizaciones de commit/push de este checkpoint y los deploy anteriores no autorizan acciones futuras. No usar secretos/credenciales para una auditoría que pueda hacerse con fuente/fixtures. No repetir migraciones ya aplicadas por timestamps. El bloqueo anterior del audit npm local no se reintenta: el CI posterior del producto sí completó sus auditorías de dependencias. Los registros siguientes son históricos.
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## Operación local — 16-oct-2026

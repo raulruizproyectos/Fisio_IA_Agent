@@ -1,5 +1,9 @@
 # Mensajería y automatizaciones — revisión local 15-oct-2026
 
+## Continuidad posterior — 16-oct
+
+Los fixes integrados en 3d4cce7 ya están publicados/desplegados. Los cuerpos de este archivo conservan diagnósticos históricos y límites; no son nuevos fallos del árbol actual. La revisión independiente solicitada ahora parte de [PUNTO_SITUACION_2026-10-16.md](../PUNTO_SITUACION_2026-10-16.md), debe contrastar cada pendiente con fuente y separar hallazgos nuevos/resueltos. No reactivar booking ni repetir escrituras/envíos para reproducirlo.
+
 > Cierre de integración 16-oct: M-01, M-02 para el paciente y M-07 (resumen limitado con aviso de lista abreviada) están corregidos en local. M-02 al propio profesional y M-03/M-04/M-05/M-06/M-08/M-09/M-10 siguen identificados; no se activó ni modificó el bot de citas pausado. Estado y evidencia vigentes en `../AUDITORIA_FINAL_2026-10-16.md`; el cuerpo siguiente conserva el diagnóstico histórico.
 
 > Actualización 16-oct: el hallazgo M-02 siguiente es el diagnóstico previo. Ya se corrigió para `/patient-report/send` con recibo persistido por clínica/recomendación/versión, bloqueo de concurrencia y entrega incierta, timeout y validación del acuse. Doce regresiones nuevas pasan; suite integrada backend 201/201. No se envió a Telegram real. `/physio-report/send` conserva el hallazgo de repetición. Ver `../AUDITORIA_EN_CURSO.md` para el estado vigente; las líneas históricas siguientes no son un informe del diff final.

@@ -1,5 +1,15 @@
 # Project Status
 
+## Estado vigente — 16-oct, 18:18 — segunda opinión con Calcode
+
+Encargo nuevo: continuar auditoría independiente de código/diseño/funciones para testing final. Antes de auditar, contexto y propuesta de modelo/razonamiento/agentes con menor consumo compatible con el resultado; esperar confirmación. [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) concentra estado, evidencias, cobertura y pendientes. [Prompt completo](PROMPT_AUDITORIA_CLOUDCODE.txt).
+
+Verificado por lectura remota: frontend ea7f998, backend 3d4cce7; Calendar healthy y W5 publicado con intervalo correcto. Primera prueba de Raúl en curso. La auditoría previa y los fixes están publicados/desplegados; el commit de este cierre solo actualiza documentación, sin redeploy. No equivale a validación de todos los proveedores, DB/RLS o entrega clínica. Pausa del booking y autorizaciones por acción/destino siguen vigentes. Las entradas posteriores son antecedentes.
+
+## Estado vigente — 16-oct, 17:10 Europe/Madrid — corrección Agenda en producción
+
+Frontend desplegado con autorización expresa en `ea7f998`, [CI verde](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38911381365). Contenedor running, `/health` 200 y configuración preservada; backend sigue `3d4cce7`, n8n sin cambios. Cinco tamaños sobre los archivos públicos con bloqueos largos/simultáneos ficticios pasan: columnas/tarjetas contenidas y detalle accesible, sin errores JS. No acredita nueva sesión real ni proveedores. [Evidencia y límites](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Seguimiento postdeploy conservado solo en local, sin otro commit/push.
+
 ## Nueva prueba — columnas de Agenda (solo local)
 
 Publicación autorizada después de verificar: Raúl aprueba el commit y, por separado, push a main. La entrega que contiene esta entrada reúne la corrección y seguimiento; verificar su CI. Deploy de esta versión frontend todavía pendiente de autorización específica. «Local/sin publicar» registra la verificación previa.

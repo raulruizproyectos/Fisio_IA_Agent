@@ -1,5 +1,9 @@
 # Estructura y eficiencia del código
 
+## Continuación vigente — 16-oct — segunda opinión independiente
+
+La tanda de este informe se integró en 3d4cce7 y las correcciones posteriores en e3a4773/ea7f998; ya no está pendiente de publicación/despliegue. Este documento conserva medidas e historia, no promete que todos los controladores estén modularizados. [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) fija fuente actual, pendientes, evidencia y encargo de Calcode. Primero selección de modelos/razonamiento tras contexto; después auditoría independiente local y propuestas mínimas, sin reescritura automática.
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## 16-oct — Pasada de fuente e integración terminada en local

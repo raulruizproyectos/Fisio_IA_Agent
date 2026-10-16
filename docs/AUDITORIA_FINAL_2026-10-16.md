@@ -1,5 +1,9 @@
 # Auditoría local de código, funcionalidades y diseño — 16 octubre 2026
 
+## Lectura de este informe al retomar con Calcode
+
+Este informe cierra la pasada de Codex y conserva su snapshot previo a publicar. Su fuente se publicó en 3d4cce7 y está desplegada; e3a4773/ea7f998 reparan después las incidencias reales de la primera prueba. Ver [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) y [la incidencia](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Raúl solicita ahora una segunda opinión independiente, sustituyendo la cancelación anterior. No convertir flags históricos published:false/deployed:false ni fallos ya corregidos en hallazgos actuales. El audit npm local quedó bloqueado entonces; los CI posteriores completaron auditorías de dependencias. Los límites y pendientes explícitos del informe siguen sujetos a contraste con la fuente actual.
+
 ## Dictamen y alcance
 
 Se cierra la revisión local solicitada por Raúl y se aplican las correcciones verificadas de esta tanda. El criterio de producto sigue siendo facilidad para fisioterapeutas, sin quitar funciones, con el diseño Precisión azul existente. No se promete ausencia de errores ni ejecución del 100% de combinaciones por haber leído código o pasado pruebas.

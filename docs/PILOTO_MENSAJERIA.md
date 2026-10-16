@@ -1,5 +1,9 @@
 # Piloto de Telegram y WhatsApp
 
+## Estado de lectura — 16-oct — auditoría de un ámbito pausado
+
+El encargo actual es una segunda revisión local independiente, después de propuesta/confirmación de modelos. Puede leer y contrastar el agente de citas, sus requisitos e interacciones, pero no reanudar implementación ni activar por este traspaso. [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) reúne los riesgos M-03/M-04 y restantes pendientes. Backend desplegado 3d4cce7, frontend ea7f998; no inferir validación del booking de la reserva web ni de bots/digests distintos. Los permisos de producción históricos no se transfieren al siguiente agente. [Prompt vigente](PROMPT_AUDITORIA_CLOUDCODE.txt).
+
 ## Estado vigente — 2026-10-13
 
 Backend `ee3449c` y frontend `c062967` desplegados. Los bots Telegram paciente/profesional y los doce workflows n8n de Fisio están activos y coinciden con fuente; getMe/dry_run comprobados, sin entrega clínica real de mensajes. Recordatorios horarios ya activos para pacientes vinculados y citas entre 23 y 25 horas; vista previa cero candidatos.

@@ -1,5 +1,9 @@
 # Backend core review — 16 October 2026
 
+## Continuidad posterior — 16-oct
+
+Los fixes integrados en 3d4cce7 ya están publicados/desplegados. Los cuerpos de este archivo conservan diagnósticos históricos y límites; no son nuevos fallos del árbol actual. La revisión independiente solicitada ahora parte de [PUNTO_SITUACION_2026-10-16.md](../PUNTO_SITUACION_2026-10-16.md), debe contrastar cada pendiente con fuente y separar hallazgos nuevos/resueltos. No reactivar booking ni repetir escrituras/envíos para reproducirlo.
+
 > Integración final por Codex: los cuatro fallos del checkpoint, el timeout del cuerpo de n8n y la falta de aviso de auditoría están corregidos en local. PDF de factura con filas largas también corregido y renderizado. Regresiones y suite integrada: 214/214; detalle canónico en `../AUDITORIA_FINAL_2026-10-16.md`. Las descripciones y reproducciones históricas siguientes explican el estado anterior; no ejecutar sus asserts de fallo como si fueran tests del comportamiento corregido. Límites SDK/matching y proveedores reales siguen separados.
 
 Static source reading is complete for all 27 core files, alongside the 13 messaging files recorded separately. The previously missing professional.js 1–2642, exercises.js 236–2141 and exercise-agent-prompt.js 128–145 passages have now been read. Coverage is exact in `backend-core-review-coverage.json`. This closes the source-reading inventory, not live functional certification. Concurrent fixes outside the public-booking change remain the root reviewer's responsibility.

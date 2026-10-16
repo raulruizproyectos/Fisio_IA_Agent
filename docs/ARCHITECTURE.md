@@ -1,5 +1,9 @@
 # Architecture
 
+## Referencia vigente — 16-oct — revisión independiente sin cambio arquitectónico
+
+La entrega del traspaso no modifica arquitectura ni código. Estado y límites actuales en [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md); fixes de sesión en [AUDITORIA_FINAL_2026-10-16.md](AUDITORIA_FINAL_2026-10-16.md) y [INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Frontend ea7f998, backend 3d4cce7 y W5 corregido están desplegados. Controladores grandes, cascada CSS e idempotencia legacy conservan deuda; una nueva auditoría debe contrastarla, no asumir arquitectura perfecta. No migración ni nuevo stack por esta petición.
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## Referencia local — 16-oct-2026

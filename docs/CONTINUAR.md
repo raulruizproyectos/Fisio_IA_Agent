@@ -1,5 +1,15 @@
 # Punto de continuidad — 16 de octubre de 2026
 
+## Cierre exacto — 16-oct, 18:18 Europe/Madrid — traspaso solicitado a Calcode
+
+Raúl reactiva expresamente la segunda pasada independiente y pide publicar este checkpoint/documentación en GitHub; sustituye su cancelación anterior. Primero Calcode debe leer contexto y proponer modelo, razonamiento y reparto por agentes según disponibilidad/coste; esperar confirmación antes de auditar. Después, auditoría local independiente para encontrar defectos no vistos, con cobertura y evidencia honestas, sin modificar producto todavía. Estado completo y límites: [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md); prompt listo en [PROMPT_AUDITORIA_CLOUDCODE.txt](PROMPT_AUDITORIA_CLOUDCODE.txt), idéntico a PROMPT_CONTINUAR.txt.
+
+Lectura remota nueva a las 18:18:51: frontend ea7f998, backend 3d4cce7, Calendar healthy (éxito 18:18:24, error:null), W5 activo/publicado con fechas correctas. Main de producto ea7f998, CI 38911381365 verde; esta publicación posterior es solo documental y no requiere deploy. Se integran los cuatro documentos postdeploy locales y se conserva .claude/ fuera de Git. El bot de citas sigue bajo pausa, no reactivarlo ni reanudar implementación por este traspaso. La prueba de Raúl ya empezó; incidencias reparadas en el informe enlazado. Acciones externas futuras requieren autorizaciones nuevas; publicar este checkpoint no las concede al siguiente agente. Los bloques siguientes son historia, no instrucciones actuales.
+
+## Cierre exacto — 16-oct, 17:10 Europe/Madrid — Agenda desplegada
+
+Raúl autoriza expresamente desplegar solo `fisio-frontend`, proyecto `fisio-ia-agent`. Despliegue completado y verificado en `ea7f998b41d43f35f0cda353bbed7e2b3931d887`, [CI 38911381365 verde](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38911381365). Contenedor running y `/health` HTTP 200. Backend permanece `3d4cce7`; huellas de entorno de ambos servicios idénticas antes/después. No se modifica n8n. Los archivos públicos pasan cinco anchuras 375/768/1024/1280/1920 con seis bloqueos ficticios largos/simultáneos, columnas alineadas, texto móvil contenido y detalle completo accesible; cero errores JS. Son pruebas con API/Auth ficticias, no sesión clínica real ni proveedores. Capturas/recibos privados en `agenda-columns-2026-10-16/public-assets/` y `production/2026-10-16/agenda-columns/`, bajo `.private-backups/local-validation/`. Seguimiento postdeploy solo local, sin otro commit/push. Continuar recibiendo los fallos de prueba de Raúl. Los cierres siguientes son antecedentes; no repetir el despliegue.
+
 ## Última incidencia — columnas de Agenda (local, posterior a e3a4773)
 
 Raúl autoriza commit y, por separado, push de esta corrección/seguimiento. Esta entrega reúne esos cambios: consultar HEAD/origin/CI antes de publicar otra vez. El deploy de esta nueva versión frontend aún necesita autorización específica; las referencias a local/sin publicar describen el snapshot anterior a estos permisos.

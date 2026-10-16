@@ -1,6 +1,6 @@
 # Recursos de diseño aportados por Raúl
 
-Referencias conservadas al retirar el prompt de traspaso. No constituyen dependencias instaladas ni una autorización para cambiar el diseño Precisión azul.
+Referencias de Raúl para consultar durante la segunda revisión solicitada el 16-oct. [Prompt vigente](PROMPT_AUDITORIA_CLOUDCODE.txt) y [punto de situación](PUNTO_SITUACION_2026-10-16.md). No constituyen dependencias instaladas, recomendaciones comprobadas actuales ni autorización para cambiar Precisión azul. Revisar solo las que sirvan al problema, compatibilidad Astro/CSS, licencias, accesibilidad y coste antes de proponer una integración.
 
 01. Jiro — https://jiro.build/ — prompts y referencias de diseño.
 02. Minimal Gallery — https://minimal.gallery/ — composición y sitios seleccionados.

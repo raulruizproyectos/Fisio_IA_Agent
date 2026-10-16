@@ -1,5 +1,11 @@
 # Primera prueba: Calendar e Historial — 16 octubre 2026
 
+## Cierre de columnas Agenda — 17:10 Europe/Madrid
+
+Raúl autoriza el despliegue de `fisio-frontend` desde `ea7f998b41d43f35f0cda353bbed7e2b3931d887`, con [CI 38911381365 verde](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38911381365). EasyPanel confirma el commit esperado, contenedor running y `/health` HTTP 200. Backend conserva `3d4cce7`; configuración de ambos servicios sin cambios, acreditada por huellas antes/después. Sin cambios en n8n, citas ni disponibilidad.
+
+Los archivos públicos se comprueban en Chrome a 375/768/1024/1280/1920 con API/Auth ficticias y proveedores bloqueados: seis bloqueos largos, dos simultáneos y una cita clínica; filas/cabecera alineadas, tarjetas dentro del día, texto móvil dentro de su tarjeta y apertura de detalle completo. Cero errores JS/hallazgos del detector; capturas móvil/escritorio inspeccionadas. Recibo/capturas: `.private-backups/local-validation/agenda-columns-2026-10-16/public-assets/`; estado de despliegue/configuración: `.private-backups/local-validation/production/2026-10-16/agenda-columns/`. No equivale a una sesión profesional real ni una nueva prueba Calendar. Este cierre postdeploy queda solo local, sin commit/push adicional. Los bloques siguientes conservan la cronología anterior.
+
 ## Segunda incidencia — columnas de Agenda, corrección local
 
 El snapshot descrito debajo precede a la publicación. Raúl autoriza después el commit de la corrección y el seguimiento actualizado y, por separado, su push a main. Esta entrega reúne esos cambios; comprobar su CI antes del despliegue frontend, todavía no autorizado para esta nueva versión.

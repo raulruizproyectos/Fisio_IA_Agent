@@ -33,8 +33,9 @@ Los secretos nunca se versionan en Git. En desarrollo local se cargan desde `.en
 - Detalle completo y diagrama ER en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Documentation
+- [docs/PUNTO_SITUACION_2026-10-16.md](docs/PUNTO_SITUACION_2026-10-16.md): Estado actual, evidencias, pendientes y alcance de la segunda revisión.
 - [docs/CONTINUAR.md](docs/CONTINUAR.md): Cierre vigente y encargo actual; los cierres anteriores quedan como historia.
-- [docs/PROMPT_AUDITORIA_CLOUDCODE.txt](docs/PROMPT_AUDITORIA_CLOUDCODE.txt): Prompt completo para la segunda auditoría independiente, con contexto, repositorio, límites y 25 recursos de diseño.
+- [docs/PROMPT_AUDITORIA_CLOUDCODE.txt](docs/PROMPT_AUDITORIA_CLOUDCODE.txt): Prompt vigente: contexto, recomendación inicial de modelos/razonamiento/agentes y segunda auditoría independiente, con límites y referencias de diseño.
 - [docs/PRODUCTION_TESTING.md](docs/PRODUCTION_TESTING.md): Versiones desplegadas, comprobaciones reales y límites de la primera prueba.
 - [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md): Documento integral de seguimiento, post-mortem, matriz E2E y despliegue EasyPanel.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Componentes, seguridad, modelo de datos y flujos críticos.
@@ -44,8 +45,9 @@ Los secretos nunca se versionan en Git. En desarrollo local se cargan desde `.en
 - [AGENTS.md](AGENTS.md): Reglas canónicas del proyecto.
 
 ## Current Status
-Actualizado el 13 de octubre de 2026: frontend `c062967` y backend `ee3449c` desplegados en EasyPanel, ambos CI verdes. Readiness 13/13, Supabase sano y Calendar sync healthy; doce workflows n8n activos y coincidentes con fuente. El handler backend ya evita alertas CRITICAL por rechazos esperados 4xx. Backend lint/108 pruebas y frontend check/build pasan. [Evidencia y límites](docs/design-exploration/reviews/2026-10-13/production.md).
 
-CRM público: https://fisio-frontend.b5xbaf.easypanel.host/login/ . Una clínica, aprobación profesional obligatoria antes de PDF/envío. No se acreditan generación IA con gasto ni entrega clínica real a pacientes en esta sesión; sí hubo un correo automático de monitorización antes de corregir el handler. Pilotos WhatsApp/Telegram booking desactivados, distintos del bot Telegram activo y de la reserva pública web.
+Punto de situación del 16 de octubre de 2026, lectura remota a las 18:18 Europe/Madrid: frontend ea7f998, backend 3d4cce7 y Calendar healthy; W5 publicado con intervalo correcto. [Estado, evidencia y límites](docs/PUNTO_SITUACION_2026-10-16.md). Las reparaciones están desplegadas y la primera prueba de Raúl ya comenzó. CI de producto verde; esta entrega solo documental no necesita redeploy.
 
-El usuario pide ahora una segunda opinión profunda con CloudCode antes de su primera prueba manual y completar localmente el agente de citas Telegram. Aceptará nuevos/existentes con contacto verificado, reserva/consulta/cambio/cancelación/recordatorio; cambios/cancelaciones hasta 24 horas antes, después clínica. WhatsApp queda previsto para el futuro. Son requisitos nuevos, no una afirmación de que el piloto actual ya los cumpla. Documentación de traspaso actualizada en local; [prompt de auditoría e implementación](docs/PROMPT_AUDITORIA_CLOUDCODE.txt), [contrato del agente](docs/PROMPT_AGENTE_CITAS.txt) y [requisitos](docs/PILOTO_MENSAJERIA.md). Carpeta exacta del repositorio: `C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent`. No clonar/resetear para descartar el árbol de trabajo.
+Raúl solicita ahora que Calcode/Claude Code continúe una segunda revisión independiente de código, diseño y funcionalidades para el testing final. Antes de auditar debe leer el contexto y proponer modelos, razonamiento y reparto por agentes con consumo ajustado, esperando confirmación. [Prompt listo para copiar](docs/PROMPT_AUDITORIA_CLOUDCODE.txt). La fuente es la carpeta `C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent`, rama main; no descartar el árbol ni publicar .claude/ o privados.
+
+CRM público: https://fisio-frontend.b5xbaf.easypanel.host/login/ . Una clínica, RLS y aprobación profesional antes de PDF/envío. No se acredita IA de pago ni entrega clínica real por las suites o fixtures. El booking bajo pausa no se activa ni se reimplementa por esta revisión; [requisitos y límites](docs/PILOTO_MENSAJERIA.md). Nuevas acciones externas requieren autorización explícita para acción y destino.

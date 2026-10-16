@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-16 — Punto de situación publicado para Calcode
+
+Actualizados seguimiento, estado operativo, README y contexto de auditoría; se crea [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) y se restaura un prompt nuevo para la segunda pasada independiente, solicitado ahora por Raúl. PROMPT_CONTINUAR comparte el mismo texto. El prompt empieza por contexto y recomendación de modelos/razonamiento/agentes eficientes en tokens, con confirmación antes de auditar. Incorpora las reparaciones e incidencias de esta sesión, cobertura real, pendientes y las 25 referencias de diseño mediante su documento canónico. Solo documentación: sin código, dependencias, Cloud, migración, activación, envío ni deploy. Se publica en main con la petición de Raúl de actualizar GitHub; comprobar el CI del commit que contiene esta entrada.
+
 ## 2026-10-16 — Columnas de Agenda y textos largos (local)
 
 Los bloqueos largos ya no ensanchan las filas sobre los otros días: cabecera y cuerpo comparten columnas con mínimo cero. En móvil, cadenas sin espacios se ajustan a la tarjeta y estado/metadatos se separan; hora fuera de horario sin recorte. Cinco anchuras con bloqueos simultáneos, detalle y texto largo verificadas; check/build y backend lint/214 pruebas pasan. Sin cambios de disponibilidad, backend, n8n ni dependencias. Todavía sin nueva publicación/despliegue. [Evidencia](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md).

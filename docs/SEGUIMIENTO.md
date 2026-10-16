@@ -1,5 +1,11 @@
 # Documento de Seguimiento y Operación — Fisio Clinical
 
+## Seguimiento vigente — 16-oct, 18:18 — traspaso reactivado
+
+Raúl solicita nueva segunda opinión de Calcode/Claude Code después de las correcciones de esta sesión y los primeros fallos comunicados en su prueba real. Queda sustituida la cancelación anterior. Primero: actualizar contexto, recomendar modelos/razonamiento y estrategia de agentes eficiente en tokens y esperar confirmación. Después: revisión local independiente con hallazgos nuevos diferenciados de los conocidos. Estado canónico: [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md); [prompt](PROMPT_AUDITORIA_CLOUDCODE.txt).
+
+Frontend ea7f998 y backend 3d4cce7 desplegados, CI de producto verde. Calendar healthy/W5 con intervalo correcto leídos a las 18:18. Se publica solo seguimiento con autorización de actualizar GitHub, preservando .claude/ y privados fuera de Git. No repetir diseño, auditorías ya cerradas, migraciones o deploy por leer historia; no activar booking. Los bloques siguientes mantienen las evidencias anteriores con su fecha y no amplían permisos.
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## Seguimiento vigente — 16-oct-2026
