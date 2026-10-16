@@ -1,5 +1,23 @@
 # Primera prueba: Calendar e Historial — 16 octubre 2026
 
+## Segunda incidencia — columnas de Agenda, corrección local
+
+El snapshot descrito debajo precede a la publicación. Raúl autoriza después el commit de la corrección y el seguimiento actualizado y, por separado, su push a main. Esta entrega reúne esos cambios; comprobar su CI antes del despliegue frontend, todavía no autorizado para esta nueva versión.
+
+Tras probar la entrega `e3a4773`, Raúl comunica una captura con bloqueos Calendar que invaden los otros días. Reproducción con seis bloqueos ficticios largos, dos simultáneos el lunes y una cita clínica: a 1280 px la cabecera tiene columnas de 181,6 px y las filas crecen hasta 1480,7 px por columna debido al mínimo intrínseco de `1fr`. Se usa `minmax(0,1fr)` en cabecera y filas y se permite reducir la celda. El texto resumido conserva el acceso al detalle completo. Sin cambios en citas, disponibilidad, importación de Calendar ni contratos DOM.
+
+La revisión móvil descubre además cadenas sin espacios fuera de la tarjeta: se permite ajustar palabra, se separan título/estado y metadatos. La etiqueta fuera de horario se apila bajo la hora para no recortarla. Solo cambia `precision-agenda.css`, sin dependencias ni lógica de backend/n8n.
+
+Verificado sobre el build final a 375/768/1024/1280/1920: columnas y cabecera alineadas, tarjetas dentro de su día, apilamiento de simultáneas, texto móvil dentro de tarjeta y apertura del detalle completo; sin errores JS ni hallazgos del detector. Capturas inspeccionadas. Frontend check sin errores/warnings (un hint heredado) y build cuatro páginas; backend lint/214 pruebas y regresión de carga Agenda pasan. Evidencia privada: `.private-backups/local-validation/agenda-columns-2026-10-16/`; logs `tmp/agenda-column-*`. Esta nueva corrección todavía está en local, sin otro commit/push/deploy. Se conservan las actualizaciones locales de seguimiento del cierre anterior.
+
+## Cierre operativo — 15:09 Europe/Madrid
+
+Commit/push autorizados completados: `e3a477319329520e62420233cc89db040d949384`, [CI 38905155872 verde](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38905155872). Raúl autoriza después, por separado, desplegar frontend y actualizar/publicar W5. Frontend sirve `e3a4773`; backend conserva `3d4cce7`, sin redeploy. W5 activo/publicado en versión `8dfe42f4-0f3d-48df-8e83-9f6827f77363`, con parámetros corregidos y resto de nodos/credenciales/conexiones/settings preservados. Copia de recuperación del workflow solo en `.env.local`, entrada `N8N_PREVIOUS_W5_DATE_WINDOW_20261016_BASE64`.
+
+Dos lecturas W5 reales, una del 1–2 enero 2040 y otra de la semana 12–19 octubre 2026, devuelven HTTP 200, esquema válido y todos los eventos retornados dentro del intervalo solicitado. El ciclo automático posterior a publicar, **15:08:25**, confirma `healthy` y `error:null`. Los archivos públicos del frontend pasan 12 estados adicionales a 375/1280 con API/Auth ficticias y proveedores bloqueados; no sustituye login real ni envíos. Capturas/recibo en el subdirectorio privado `public-assets/`.
+
+Cierre y continuidad actualizados localmente después de las acciones; sin otro commit/push documental. Los apartados siguientes conservan la cronología previa. El bot de citas permanece pausado; no se cambian políticas de Google Cloud ni se hacen envíos/pruebas clínicas reales.
+
 ## Estado comprobado
 
 Raúl desplegó backend y frontend. Lectura de EasyPanel a las 14:44 Europe/Madrid: ambos servicios habilitados, commit `3d4cce78192131bd8cb40efa1f9291a876730138`. CI de esa entrega verde: [38898956429](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38898956429). Esto no acredita el funcionamiento de todos los proveedores.

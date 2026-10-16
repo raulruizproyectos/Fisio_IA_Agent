@@ -1,5 +1,9 @@
 # Primera prueba en producción — estado actualizado 2026-10-13
 
+## 16-oct, 15:09 — recuperación Calendar y primera incidencia visual
+
+Tras autorización de commit/push, `e3a4773` con CI [38905155872](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38905155872) verde. Con autorizaciones de producción separadas se desplegó únicamente frontend y se actualizó/publicó W5; backend permanece `3d4cce7`. Calendar requería reconexión OAuth, realizada por Raúl. W5/W6 leen HTTP 200; dos intervalos W5 reales verificados tras corregir parámetros, y ciclo automático de las 15:08:25 `healthy`/sin error actual. Frontend público: 12 estados a 375/1280 con API/Auth ficticias, además de 24 estados locales. [Detalle de acciones, evidencia y límites](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). No acredita nueva prueba de login, Cloud RLS, envíos clínicos, gasto IA ni activación del bot. Esta entrada posterior al despliegue se conserva localmente, sin nueva publicación documental.
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## 16-oct — Tanda local comprobada; producción todavía no actualizada

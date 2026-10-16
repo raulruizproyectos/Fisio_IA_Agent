@@ -1,5 +1,15 @@
 # Project Status
 
+## Nueva prueba — columnas de Agenda (solo local)
+
+Publicación autorizada después de verificar: Raúl aprueba el commit y, por separado, push a main. La entrega que contiene esta entrada reúne la corrección y seguimiento; verificar su CI. Deploy de esta versión frontend todavía pendiente de autorización específica. «Local/sin publicar» registra la verificación previa.
+
+Raúl detecta que bloqueos Calendar con texto largo invaden otros días. Corregido el mínimo de columnas/celdas, el ajuste de cadenas largas y la separación de datos móviles, conservando disponibilidad y detalle. Prueba de cinco anchuras 375–1920, check/build, backend lint/214 pruebas y carga Agenda pasan. [Incidencia y evidencia](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Base publicada/desplegada `e3a4773`; esta corrección requiere nueva autorización de commit/push/deploy frontend. No cambia backend ni n8n.
+
+## Cierre operativo — 16-oct, 15:09 Europe/Madrid
+
+Incidencia publicada en `e3a4773`, CI [38905155872](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38905155872) verde. Con autorizaciones específicas posteriores: frontend desplegado en ese commit y W5 actualizado/publicado conservando credenciales, nodos, conexiones y activación. Backend sigue en `3d4cce7`. Lecturas Calendar HTTP 200 respetando intervalos; ciclo automático 15:08:25 `healthy`, sin error actual. Archivos públicos frontend verificados en 12 estados a 375/1280 con API ficticia, además de 24 locales. Bot pausado, sin envíos. [Cierre y límites](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Actualización de seguimiento posterior solo local; los bloques siguientes son antecedentes.
+
 ## Primera prueba — 16-oct, posterior al despliegue
 
 Publicación de esta incidencia autorizada: Raúl aprueba expresamente el commit y, por separado, el push a main. Esta entrega reúne las correcciones descritas debajo; consultar su CI antes de desplegar frontend o actualizar W5, acciones todavía no autorizadas. Las referencias a local/sin publicar registran el snapshot previo a esa autorización.

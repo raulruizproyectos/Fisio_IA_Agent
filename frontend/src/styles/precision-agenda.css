@@ -237,7 +237,7 @@
 /* Board Header */
 .agenda-board-head {
   display: grid;
-  grid-template-columns: 80px repeat(5, 1fr);
+  grid-template-columns: 80px repeat(5, minmax(0, 1fr));
   background: #f4f7fb;
   border-bottom: 1px solid #dce3ed;
 }
@@ -325,7 +325,7 @@
 
 .agenda-board-row {
   display: grid;
-  grid-template-columns: 80px repeat(5, 1fr);
+  grid-template-columns: 80px repeat(5, minmax(0, 1fr));
   border-bottom: 1px solid #f1f5f9;
   min-height: 72px;
 }
@@ -350,6 +350,7 @@
 .agenda-week-cell {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 0.375rem;
   padding: 0.375rem;
   border-right: 1px solid #f1f5f9;
@@ -673,6 +674,8 @@
 .agenda-mobile-item {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
   gap: 0.25rem;
   background: #ffffff;
   border: 1px solid #dce3ed;
@@ -690,6 +693,19 @@
 .agenda-mobile-item strong {
   font-size: 0.8125rem;
   color: #142234;
+}
+
+.agenda-mobile-item-top {
+  display: grid;
+  justify-items: start;
+  gap: 0.375rem;
+}
+
+.agenda-mobile-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 0.75rem;
+  font-size: 0.75rem;
 }
 
 .agenda-mobile-item p {
@@ -819,6 +835,10 @@
 .agenda-board-row.is-off-hours .agenda-week-cell,
 .agenda-board-row.is-off-hours .agenda-time-cell {
   background: repeating-linear-gradient(135deg, #f8fafc 0 8px, #f1f5f9 8px 16px);
+}
+
+.agenda-board-row.is-off-hours .agenda-time-cell {
+  flex-direction: column;
 }
 
 .agenda-event-card {

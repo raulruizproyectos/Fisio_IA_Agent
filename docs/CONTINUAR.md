@@ -1,5 +1,15 @@
 # Punto de continuidad — 16 de octubre de 2026
 
+## Última incidencia — columnas de Agenda (local, posterior a e3a4773)
+
+Raúl autoriza commit y, por separado, push de esta corrección/seguimiento. Esta entrega reúne esos cambios: consultar HEAD/origin/CI antes de publicar otra vez. El deploy de esta nueva versión frontend aún necesita autorización específica; las referencias a local/sin publicar describen el snapshot anterior a estos permisos.
+
+Raúl muestra bloqueos de Calendar que se desbordan a otros días. Corregido solo CSS de Agenda: columnas consistentes, celdas reducibles, textos largos móviles dentro de tarjeta, estado/metadatos separados y hora fuera de horario legible. Cinco anchuras 375/768/1024/1280/1920 con bloqueos simultáneos y largos, apertura de detalle y móvil pasan; check/build, backend lint/214 y carga Agenda pasan. Se conservan los cuatro documentos locales del cierre anterior. Sin commit/push/deploy nuevos; necesitan autorización expresa. [Detalle y límites](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). La producción y Calendar verificados en el cierre anterior no se modifican por esta corrección local.
+
+## Cierre exacto — 16-oct, 15:09 Europe/Madrid
+
+Primera prueba en curso. Fallos comunicados de Calendar/Historial corregidos. Publicado `e3a477319329520e62420233cc89db040d949384`, CI [38905155872](https://github.com/raulruizproyectos/Fisio_IA_Agent/actions/runs/38905155872) verde; frontend desplegado con autorización expresa posterior. Backend permanece `3d4cce7`. Raúl reconectó Google Calendar tras error de renovación confirmado por ejecución manual; W5 se actualizó/publicó con autorización separada, fechas correctas para nodo 1.3 y todos los demás parámetros/credenciales/conexiones preservados. Lecturas reales HTTP 200 con límites correctos y ciclo automático 15:08:25 `healthy`, `error:null`. Capturas de archivos públicos con API ficticia móvil/escritorio pasan; no se atribuyen a login real ni entrega clínica. Mantener bot pausado. [Incidencia completa, evidencia y límites](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md). Seguimiento posterior al deploy solo en local, sin commit/push adicional. Recibir los siguientes fallos concretos de Raúl, sin repetir auditorías o despliegues ya verificados. Los cierres siguientes son historia.
+
 ## Cierre más reciente — primera prueba de Raúl
 
 Raúl autoriza commit de esta corrección y, por separado, push a main. La entrega que contiene esta entrada reúne la incidencia; verificar HEAD/origin/CI antes de repetir publicación. Despliegue frontend y actualización W5 activo todavía no autorizados. «Local/sin publicar» describe la verificación previa a esta autorización.

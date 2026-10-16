@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-16 — Columnas de Agenda y textos largos (local)
+
+Los bloqueos largos ya no ensanchan las filas sobre los otros días: cabecera y cuerpo comparten columnas con mínimo cero. En móvil, cadenas sin espacios se ajustan a la tarjeta y estado/metadatos se separan; hora fuera de horario sin recorte. Cinco anchuras con bloqueos simultáneos, detalle y texto largo verificadas; check/build y backend lint/214 pruebas pasan. Sin cambios de disponibilidad, backend, n8n ni dependencias. Todavía sin nueva publicación/despliegue. [Evidencia](INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md).
+
 > Publicación autorizada el 16-oct: Raúl autoriza expresamente el commit de esta tanda y, por separado, su push a main en raulruizproyectos/Fisio_IA_Agent. La entrega que contiene esta entrada reúne las correcciones y la evidencia; comprobar el CI de su HEAD en GitHub. No autoriza despliegues ni activar el bot. Las referencias a «local/sin publicar» describen el cierre previo a esta autorización.
 
 ## 2026-10-16 — Auditoría y correcciones locales posteriores a 1b2a954
