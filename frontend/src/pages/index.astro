@@ -601,9 +601,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         <strong>¿Qué preparamos hoy?</strong>
         <p>Elige al paciente, describe el caso y genera una propuesta. Nada llega al paciente sin tu aprobación.</p>
         <div class="assistant-chat-empty-chips">
-          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Paciente con dolor lumbar mecanico de 3 semanas. Objetivo: reducir dolor y recuperar flexion sin molestias."><span class="material-symbols-rounded" aria-hidden="true">accessibility_new</span><span><b>Dolor lumbar</b><small>3 semanas, recuperar flexión</small></span></button>
-          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Tras esguince de tobillo, preparar progresion segura para volver a correr en 4 semanas."><span class="material-symbols-rounded" aria-hidden="true">directions_run</span><span><b>Vuelta a correr</b><small>Esguince de tobillo, 4 semanas</small></span></button>
-          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Preparar checklist de siguiente visita para revisar adherencia, dolor y progresion del caso actual."><span class="material-symbols-rounded" aria-hidden="true">checklist</span><span><b>Próxima visita</b><small>Adherencia, dolor y progresión</small></span></button>
+          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Paciente con dolor lumbar mecánico de 3 semanas. Objetivo: reducir dolor y recuperar flexión sin molestias."><span class="material-symbols-rounded" aria-hidden="true">accessibility_new</span><span><b>Dolor lumbar</b><small>3 semanas, recuperar flexión</small></span></button>
+          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Tras esguince de tobillo, preparar progresión segura para volver a correr en 4 semanas."><span class="material-symbols-rounded" aria-hidden="true">directions_run</span><span><b>Vuelta a correr</b><small>Esguince de tobillo, 4 semanas</small></span></button>
+          <button type="button" class="assistant-chat-empty-chip" data-assistant-quick-prompt="Preparar checklist de siguiente visita para revisar adherencia, dolor y progresión del caso actual."><span class="material-symbols-rounded" aria-hidden="true">checklist</span><span><b>Próxima visita</b><small>Adherencia, dolor y progresión</small></span></button>
         </div>
       `;
       log.appendChild(empty);
@@ -980,7 +980,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       ),
       latestExerciseType: uniqueExerciseAreas.length
         ? uniqueExerciseAreas.join(', ')
-        : (reportExercises.length || itemExercises.length ? 'Plan terapeutico' : 'Sin ejercicios'),
+        : (reportExercises.length || itemExercises.length ? 'Plan terapéutico' : 'Sin ejercicios'),
       therapistNote: trimAgentBriefText(reportSnapshot?.message_to_therapist || latestRecommendation?.message_to_therapist_es || ''),
       patientMessage: trimAgentBriefText(reportSnapshot?.message_to_patient || latestRecommendation?.message_to_patient_es || '', 110),
       redFlagsPresent: Boolean(latestRecommendation?.red_flags_present || reportSnapshot?.red_flags?.present),
@@ -2615,7 +2615,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     html += '<article class="exercise-report exercise-report-full">';
     html += '<header class="exercise-report-hero">';
     html += '<div>';
-    html += '<span class="exercise-report-kicker">Plan terapeutico generado</span>';
+    html += '<span class="exercise-report-kicker">Plan terapéutico generado</span>';
     html += `<strong>Propuesta revisable para ${escapeHtml(patientName)}</strong>`;
     html += `<p>${escapeHtml(symptomSummary || 'Caso procesado con el contexto clínico disponible.')}</p>`;
     html += '</div>';
@@ -4540,7 +4540,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       {
         label: 'Pacientes con seguimiento',
         value: summary?.visible_patients ?? new Set(recentPlans.map((item: any) => item?.patient_id).filter(Boolean)).size,
-        copy: 'Casos con prescripcion domiciliaria trazable desde el CRM.',
+        copy: 'Casos con prescripción domiciliaria trazable desde el CRM.',
       },
     ];
 
@@ -7589,7 +7589,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       ? 'Mantener seguimiento del plan'
       : 'Documentar el caso con más detalle';
     let progressNextMeta = recommendationSummary.totalPlans
-      ? 'El caso ya tiene continuidad domiciliaria. Mantiene trazabilidad y prepara el siguiente ajuste terapeutico.'
+      ? 'El caso ya tiene continuidad domiciliaria. Mantiene trazabilidad y prepara el siguiente ajuste terapéutico.'
       : 'Aún no hay plan domiciliario. Conviene apoyarse en notas y sesiones para decidir el siguiente paso.';
 
     if (unavailableModules.length) {
@@ -7617,7 +7617,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       progressNextTitle = 'Preparar siguiente ajuste del plan';
       progressNextMeta = recommendationSummary.totalFollowUps
         ? 'Ya hay feedback del paciente. Usa dolor y adherencia para decidir si progresar, mantener o simplificar.'
-        : 'Mantiene el seguimiento activo y deja claro en ficha el siguiente objetivo terapeutico.';
+        : 'Mantiene el seguimiento activo y deja claro en ficha el siguiente objetivo terapéutico.';
     }
 
     if (fichaOverviewStats) {
@@ -7809,7 +7809,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       recommendationSummary.totalPlans && !recommendationSummary.totalArchivedReports ? { tone: 'warm', title: 'Archivar la entrega del plan', body: 'Ya existe un plan clínico, pero aún no hay constancia de entrega o PDF archivado en el historial.' } : null,
       recommendationSummary.totalPlans && !recommendationSummary.totalFollowUps ? { tone: 'ready', title: 'Registrar respuesta del paciente', body: 'El plan domiciliario ya existe. Falta dejar adherencia, dolor o ajustes para continuidad real.' } : null,
       !citasUnavailable && !citas.length ? { tone: 'urgent', title: 'Programar la primera sesión', body: 'Todavía no hay una cita registrada. La agenda debe ser el primer cierre operativo del caso.' } : null,
-      !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoración y evolución', body: 'Ya existe actividad en agenda, pero falta una nota clínica que deje criterio terapeutico y siguiente paso.' } : null,
+      !citasUnavailable && !notasUnavailable && citas.length && !notas.length ? { tone: 'warm', title: 'Documentar valoración y evolución', body: 'Ya existe actividad en agenda, pero falta una nota clínica que deje criterio terapéutico y siguiente paso.' } : null,
       !notasUnavailable && latestEva != null && latestEva >= 7 ? { tone: 'alert', title: 'EVA elevado', body: `Último EVA: ${latestEva}/10.` } : null,
       !pagosUnavailable && !pagos.length ? { tone: 'soft', title: 'Sin pagos registrados', body: '' } : null,
       patient?.telefono ? { tone: 'ready', title: 'Telegram disponible', body: 'Teléfono registrado.' } : { tone: 'soft', title: 'Sin teléfono', body: 'Registra un teléfono para habilitar Telegram.' },
@@ -7840,7 +7840,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     } else if (!notasUnavailable && citas.length && !notas.length) {
       primaryAction = 'notas';
       primaryLabel = 'Abrir notas';
-      nextTitle = 'Cerrar criterio terapeutico';
+      nextTitle = 'Cerrar criterio terapéutico';
       nextMeta = 'Ya hay movimiento en agenda, pero falta dejar una nota clínica que convierta la sesión en seguimiento real.';
     } else if (recommendationSummary.totalPlans && !recommendationSummary.totalFollowUps) {
       primaryAction = 'historial';
@@ -8542,7 +8542,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
     if (!notasOrdenadas.length) {
-      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clínicas registradas. Crea la primera para dejar criterio terapeutico y evolución.</p>';
+      fichaNotasTimeline.innerHTML = '<p class="empty-inline">Sin notas clínicas registradas. Crea la primera para dejar criterio terapéutico y evolución.</p>';
       return;
     }
     fichaNotasTimeline.innerHTML = notasOrdenadas.map((n: any) => {
