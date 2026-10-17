@@ -167,3 +167,8 @@ Comprobados contra la fuente actual (inventario Haiku, puntos clave revisados po
 Dirección C elegida por Raúl. Especificación en `DESIGN.md` v7; capa final `frontend/src/styles/premium-system.css`; Inter Tight vía Fontsource. Render de 9 vistas: de 54 a 14 tamaños de letra, pesos 400/500/600, radios unificados, sin desbordamiento a 1366/390 px. Contratos ID/data-* intactos.
 
 Verificación al cierre: backend lint y **237/237**; frontend check 0 errores y build; 28 scripts CI en verde; migraciones ensayadas en PostgreSQL 18 local con roles tipo Supabase (todas las aserciones OK).
+
+## Estado remoto (17-oct-2026)
+
+- **Migraciones aplicadas en Supabase** (proyecto Fisio-IA-Agent) con autorización de Raúl: `clinic_operation_receipts`, `clinical_record_integrity`, `calendar_in_flight_since`. Verificado por metadatos: 6 funciones de recibos, tabla privada con RLS, sin ejecución para `anon`, triggers `guard_signed_document` y `guard_clinical_note_author`, columna `calendar_sync_in_flight_since`; 0 reservas de Calendar en curso. Compatibles con el backend desplegado `3d4cce7`.
+- **Pendiente:** push de `main` (bloqueado por el control de permisos del entorno de Claude; requiere que Raúl lo ejecute o lo autorice en la configuración), CI y despliegue de backend y frontend en EasyPanel.
