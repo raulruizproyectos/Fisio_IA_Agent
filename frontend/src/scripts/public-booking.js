@@ -213,7 +213,14 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         if (windowHintEl) windowHintEl.textContent = `${windowsText} · bloques de ${bookingConfig.booking?.slot_minutes || 60} min`;
       };
 
-      const loadSlots = async (clearFeedback = true) => {
+      const nextIsoDate = (value) => {
+        const [y, m, d] = String(value).split('-').map(Number);
+        return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+      };
+
+      // `advanceDays` is only used on the first load: skip empty days (weekends,
+      // full days) so the page opens on the first date that has free slots.
+      const loadSlots = async (clearFeedback = true, advanceDays = 0) => {
         if (bookingInFlight || pendingBooking || !successEl?.hidden) return;
         const requestVersion = ++slotsRequestVersion;
         const dateValue = dateInput?.value || '';
@@ -235,7 +242,13 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         try {
           const payload = await fetchJson(buildUrl('/api/profesional/public-booking/slots', { date: dateValue }));
           if (requestVersion !== slotsRequestVersion || dateInput?.value !== dateValue) return;
-          renderSlots(payload?.data?.slots || [], dateValue);
+          const slots = payload?.data?.slots || [];
+          const nextDate = nextIsoDate(dateValue);
+          if (!slots.length && advanceDays > 0 && dateInput && (!dateInput.max || nextDate <= dateInput.max)) {
+            dateInput.value = nextDate;
+            return loadSlots(clearFeedback, advanceDays - 1);
+          }
+          renderSlots(slots, dateValue);
         } catch (error) {
           if (requestVersion !== slotsRequestVersion || dateInput?.value !== dateValue) return;
           if (slotsStateEl) {
@@ -386,10 +399,10 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
           }
           await loadConfig();
           if (pendingBooking) await recoverPendingBooking();
-          else await loadSlots();
+          else await loadSlots(true, 7);
         } catch (error) {
           setFeedback(error.message || 'No se pudo cargar la reserva online.', 'error');
-          if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta disponible ahora mismo.';
+          if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no está disponible ahora mismo.';
         }
       })();
     })();
