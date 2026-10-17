@@ -16,9 +16,6 @@
 /* --------------------------------------------------------------------------
    1. INICIO — CLINICAL COMMAND CENTER (LAVENDER MIST)
    -------------------------------------------------------------------------- */
-.page-section[data-page="dashboard"] {
-  background: var(--surface-page-canvas, #f7f5f1) !important;
-}
 
 .clinic-dashboard {
   max-width: 1280px !important;
@@ -30,73 +27,23 @@
 
 /* Hero Section */
 .clinic-dashboard-hero {
-  background: #ffffff !important;
-  border-radius: var(--radius-card) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: none !important;
   color: #000000 !important;
-  padding: 2.25rem !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr) !important;
   gap: 2rem !important;
   align-items: center !important;
-}
-
-@media (max-width: 1024px) {
-  .clinic-dashboard-hero {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-.clinic-dashboard-copy .clinic-kicker {
-  color: var(--color-canopy-green) !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
-  font-size: var(--text-xs) !important;
-  display: block !important;
-  margin-bottom: 0.35rem !important;
-}
-
-.clinic-dashboard-copy h1,
-#dashboardTitle {
-  color: #000000 !important;
-  font-size: 2.35rem !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.03em !important;
-  line-height: 1.15 !important;
-  margin: 0.25rem 0 0.65rem !important;
 }
 
 .clinic-dashboard-copy p,
 #dashboardLiveSummary {
   color: var(--color-graphite) !important;
-  font-size: var(--text-base) !important;
-  line-height: 1.5 !important;
   margin-bottom: 1.5rem !important;
-}
-
-.clinic-hero-actions {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.85rem !important;
-  flex-wrap: wrap !important;
 }
 
 /* Primary CTA strictly Coral Pulse */
 #heroAgentShortcutBtn,
 .clinic-hero-actions .btn-primary {
-  background: var(--color-coral-pulse) !important;
-  color: #ffffff !important;
   border: none !important;
-  font-weight: 600 !important;
-  border-radius: var(--radius-button) !important;
   padding: 0.65rem 1.4rem !important;
-  box-shadow: 0 4px 14px rgba(255, 100, 59, 0.25) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -109,16 +56,9 @@
 /* Secondary CTA */
 #heroNewPatientShortcutBtn,
 .clinic-hero-actions .btn-secondary {
-  background: #ffffff !important;
   color: var(--color-graphite) !important;
-  border: 1.5px solid var(--color-frost-gray) !important;
-  border-radius: var(--radius-button) !important;
   padding: 0.65rem 1.25rem !important;
-  font-weight: 600 !important;
-  display: inline-flex !important;
-  align-items: center !important;
   gap: 0.5rem !important;
-  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -131,16 +71,11 @@
 /* Ghost CTA */
 #heroAgendaShortcutBtn,
 .clinic-hero-actions .btn-ghost {
-  background: transparent !important;
-  color: var(--color-graphite) !important;
   border: 1.5px solid transparent !important;
   border-radius: var(--radius-button) !important;
   padding: 0.65rem 1.25rem !important;
   font-weight: 600 !important;
-  display: inline-flex !important;
-  align-items: center !important;
   gap: 0.5rem !important;
-  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -156,37 +91,21 @@
 }
 
 .clinic-focus-card {
-  background: var(--color-mint-wash) !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(20, 34, 52, 0.12) !important;
   color: var(--color-canopy-green) !important;
-  box-shadow: none !important;
-  padding: 1.75rem !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 0.85rem !important;
-}
-
-.clinic-focus-card .clinic-kicker {
-  color: var(--color-canopy-green) !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
-  font-size: var(--text-xs) !important;
 }
 
 #dashboardNextSessionTitle {
   color: var(--color-canopy-green) !important;
   font-size: 1.3rem !important;
   font-weight: 600 !important;
-  display: block !important;
   line-height: 1.2 !important;
 }
 
 #dashboardNextSessionMeta {
-  color: var(--color-graphite) !important;
   font-size: var(--text-xs) !important;
-  margin: 0 !important;
 }
 
 .clinic-focus-action {
@@ -225,16 +144,7 @@
   gap: 1.25rem !important;
 }
 
-@media (max-width: 900px) {
-  .clinic-metric-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
 .clinic-metric-grid article {
-  background: #ffffff !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
   box-shadow: none !important;
   padding: 1.35rem 1.5rem !important;
   display: flex !important;
@@ -251,17 +161,12 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 24px !important;
   flex-shrink: 0 !important;
 }
 
 .clinic-metric-grid article strong {
   display: block !important;
   color: #000000 !important;
-  font-size: 1.85rem !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.02em !important;
-  line-height: 1.1 !important;
 }
 
 .clinic-metric-grid article p {
@@ -274,36 +179,16 @@
 /* Panels */
 .clinic-dashboard-grid .clinic-panel,
 .clinic-side-stack .clinic-panel {
-  background: #ffffff !important;
-  border-radius: var(--radius-card) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: none !important;
   color: #000000 !important;
   padding: 1.75rem !important;
 }
 
-.clinic-panel h2 {
-  color: #000000 !important;
-  font-size: 1.35rem !important;
-  font-weight: 600 !important;
-  margin: 0 !important;
-}
-
 .clinic-panel .clinic-kicker {
-  color: var(--color-canopy-green) !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
-  font-size: var(--text-xs) !important;
   display: block !important;
   margin-bottom: 0.25rem !important;
 }
 
 .clinic-panel-title {
-  color: #000000 !important;
-  font-size: 1.1rem !important;
-  font-weight: 600 !important;
-  display: block !important;
   margin-top: 0.5rem !important;
 }
 
@@ -314,9 +199,7 @@
 
 /* Secondary Panels Grid */
 .clinic-dashboard-grid-secondary {
-  display: grid !important;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) !important;
-  gap: 1.5rem !important;
 }
 
 @media (max-width: 900px) {
@@ -330,10 +213,8 @@
   background: #ffffff !important;
   border-radius: var(--radius-card) !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: none !important;
   padding: 1.75rem !important;
   color: #000000 !important;
-  display: grid !important;
   grid-template-columns: repeat(3, 1fr) minmax(0, 2fr) !important;
   gap: 1.5rem !important;
   align-items: center !important;
@@ -350,14 +231,12 @@
   font-size: 12px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
-  display: block !important;
 }
 
 .clinic-finance-strip article strong {
   color: #000000 !important;
   font-size: 1.5rem !important;
   font-weight: 600 !important;
-  display: block !important;
 }
 
 .metric-pill-icon {
@@ -390,18 +269,6 @@
 /* --------------------------------------------------------------------------
    2. AGENDA — CALENDAR & APPOINTMENTS (CREAM CANVAS)
    -------------------------------------------------------------------------- */
-.page-section[data-page="citas"] {
-  background: var(--surface-page-canvas, #f7f5f1) !important;
-}
-
-.agenda-header-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 1.5rem !important;
-  flex-wrap: wrap !important;
-  margin-bottom: 1.5rem !important;
-}
 
 .agenda-header-copy {
   display: flex !important;
@@ -434,7 +301,6 @@
 .agenda-sync-copy p {
   font-size: 11px !important;
   color: var(--color-slate, #5b6476) !important;
-  margin: 0 !important;
 }
 
 .week-nav-bar {
@@ -456,12 +322,8 @@
 }
 
 .agenda-cal-card {
-  background: #ffffff !important;
-  border-radius: var(--radius-card, 16px) !important;
-  border: 1px solid rgba(0, 0, 0, 0.07) !important;
   overflow: hidden !important;
   margin-bottom: 1.75rem !important;
-  padding: 0 !important;
 }
 
 .badge-week-count {
@@ -473,7 +335,6 @@
   background: var(--color-mint-wash, #d2f2e3) !important;
   color: var(--color-canopy-green, #0a3922) !important;
   font-size: var(--text-xs) !important;
-  font-weight: 600 !important;
   margin-left: 0.5rem !important;
 }
 
@@ -486,7 +347,6 @@
 
 .agenda-board-head {
   display: grid !important;
-  grid-template-columns: 5.5rem repeat(5, minmax(0, 1fr)) !important;
   background: var(--color-sand) !important;
   border-bottom: 1.5px solid var(--color-frost-gray) !important;
 }
@@ -513,12 +373,9 @@
   font-weight: 600 !important;
   color: var(--color-slate) !important;
   text-transform: uppercase !important;
-  display: block !important;
 }
 
 .agenda-day-number {
-  font-size: 1.35rem !important;
-  font-weight: 600 !important;
   color: #000000 !important;
   display: block !important;
   margin-top: 0.15rem !important;
@@ -530,7 +387,6 @@
 
 .agenda-board-row {
   display: grid !important;
-  grid-template-columns: 5.5rem repeat(5, minmax(0, 1fr)) !important;
   min-height: 4rem !important;
   border-bottom: 1px solid var(--color-cloud-gray) !important;
 }
@@ -559,11 +415,9 @@
 
 /* NO FAKE GREY SKELETON BLOCKS FOR EMPTY SLOTS */
 .agenda-cell-empty {
-  display: block !important;
   width: 100% !important;
   height: 100% !important;
   min-height: 3rem !important;
-  background: transparent !important;
   border: 1px dashed transparent !important;
   border-radius: 8px !important;
   transition: border-color var(--duration-micro) ease !important;
@@ -628,7 +482,6 @@
 
 .agenda-event-state {
   font-size: 10px !important;
-  font-weight: 600 !important;
   letter-spacing: 0.01em !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -715,12 +568,6 @@
 /* --------------------------------------------------------------------------
    3. FINANZAS — WORKSPACE & LEDGER (PEACH WASH)
    -------------------------------------------------------------------------- */
-.page-section[data-page="pagos"],
-.page-section[data-page="facturas"],
-.page-section[data-page="bonos"],
-.page-section[data-page="gestoria"] {
-  background: var(--surface-page-canvas, #f7f5f1) !important;
-}
 
 /* CRITICAL: HIDE DUPLICATE PAYMENTS LIST ON DESKTOP */
 @media (min-width: 768px) {
@@ -746,14 +593,12 @@
 /* Finance Tabs */
 .finance-tabs {
   display: flex !important;
-  gap: 0.5rem !important;
   margin: 1.25rem 0 1.75rem !important;
   flex-wrap: wrap !important;
 }
 
 /* Finance Workbench */
 .finance-workbench {
-  display: grid !important;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) !important;
   gap: 1.5rem !important;
   margin-bottom: 1.75rem !important;
@@ -776,19 +621,11 @@
   gap: 1rem !important;
 }
 
-.finance-kicker {
-  font-size: var(--text-xs) !important;
-  font-weight: 600 !important;
-  color: var(--color-canopy-green) !important;
-  text-transform: uppercase !important;
-}
-
 #financePriorityTitle {
   font-size: 1.5rem !important;
   font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1.15 !important;
-  display: block !important;
 }
 
 #financePriorityMeta {
@@ -797,8 +634,6 @@
 }
 
 .finance-action-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
   gap: 1rem !important;
 }
 
@@ -869,10 +704,7 @@
 }
 
 .pagos-stat-value {
-  font-size: 1.35rem !important;
-  font-weight: 600 !important;
   color: #000000 !important;
-  font-variant-numeric: tabular-nums !important;
 }
 
 .pagos-stat-cash .pagos-stat-value {
@@ -886,47 +718,15 @@
 /* --------------------------------------------------------------------------
    4. MENSAJES — TRIAGE CLÍNICO (SKY WASH)
    -------------------------------------------------------------------------- */
-.page-section[data-page="intakes"] {
-  background: var(--color-sky-wash) !important;
-}
-
-.intakes-hero h1 {
-  color: #000000 !important;
-  font-size: 2.25rem !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.03em !important;
-}
-
-.intakes-hero p {
-  color: var(--color-graphite) !important;
-  font-size: var(--text-base) !important;
-}
 
 .intakes-hero span {
   color: var(--color-deep-teal) !important;
   font-weight: 600 !important;
 }
 
-.intakes-card {
-  background: #ffffff !important;
-  border-radius: var(--radius-card) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-}
-
-.intakes-toolbar h2 {
-  color: #000000 !important;
-  font-size: var(--text-lg) !important;
-  font-weight: 600 !important;
-}
-
 /* --------------------------------------------------------------------------
    5. PACIENTES & FICHA PACIENTE (MINT WASH)
    -------------------------------------------------------------------------- */
-.page-section[data-page="pacientes"],
-.page-section[data-page="ficha-paciente"],
-.patient-workspace {
-  background: var(--color-mint-wash) !important;
-}
 
 /* Override legacy dark cards */
 .page-section[data-page="pacientes"] > section > header,
@@ -940,46 +740,14 @@
   border-radius: var(--radius-card) !important;
   background: #ffffff !important;
   box-shadow: none !important;
-  color: var(--color-charcoal) !important;
-}
-
-.patient-workspace-header h1 {
-  font-size: 2.25rem !important;
-  font-weight: 600 !important;
-  color: #000000 !important;
-  letter-spacing: -0.03em !important;
-  line-height: 1.15 !important;
-  margin: 0.25rem 0 0.5rem !important;
-}
-
-.patient-workspace-header p {
-  color: var(--color-graphite) !important;
-  font-size: var(--text-base) !important;
-  margin: 0 !important;
-}
-
-.patient-workspace-actions {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
-  flex-wrap: wrap !important;
 }
 
 /* Primary CTA strictly Coral Pulse */
 #addPatientBtn,
 .patient-primary-action {
-  background: var(--color-coral-pulse) !important;
-  color: #ffffff !important;
   border: none !important;
-  border-radius: var(--radius-button) !important;
-  font-weight: 600 !important;
   font-size: var(--text-sm) !important;
   padding: 0.65rem 1.4rem !important;
-  box-shadow: 0 4px 14px rgba(255, 100, 59, 0.25) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -995,7 +763,6 @@
   color: var(--color-graphite) !important;
   border: 1.5px solid var(--color-frost-gray) !important;
   border-radius: var(--radius-button) !important;
-  padding: 0.6rem 1.2rem !important;
   font-weight: 600 !important;
   font-size: var(--text-sm) !important;
   display: inline-flex !important;
@@ -1014,67 +781,30 @@
 /* Patient Vitals */
 .patient-vitals {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 1.25rem !important;
-}
-
-@media (max-width: 768px) {
-  .patient-vitals {
-    grid-template-columns: 1fr !important;
-  }
 }
 
 .patient-vitals article {
-  background: #ffffff !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
   border-radius: 20px !important;
   box-shadow: none !important;
   padding: 1.35rem 1.5rem !important;
-  display: flex !important;
-  flex-direction: column !important;
   gap: 0.35rem !important;
 }
 
-.patient-vitals article span {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  color: var(--color-canopy-green) !important;
-}
-
 .patient-vitals article strong {
-  font-size: 1.85rem !important;
-  font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1.1 !important;
 }
 
-.patient-vitals article p {
-  font-size: var(--text-xs) !important;
-  color: var(--color-slate) !important;
-  margin: 0 !important;
-}
-
 /* Patient Directory Toolbar */
 .patient-directory-toolbar {
-  padding: 1.25rem 1.5rem !important;
-  display: flex !important;
-  align-items: center !important;
   justify-content: space-between !important;
-  gap: 1rem !important;
   flex-wrap: wrap !important;
 }
 
 .patient-directory-search {
   display: flex !important;
   align-items: center !important;
-  gap: 0.65rem !important;
-  background: var(--color-cloud-gray) !important;
-  border: 1.5px solid var(--color-frost-gray) !important;
-  border-radius: var(--radius-button) !important;
-  padding: 0.5rem 0.95rem !important;
-  flex: 1 !important;
   min-width: 260px !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
@@ -1091,11 +821,6 @@
 }
 
 .patient-directory-search input {
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  color: #000000 !important;
-  font-size: var(--text-sm) !important;
   width: 100% !important;
 }
 
@@ -1108,28 +833,13 @@
 
 .patient-segments {
   display: inline-flex !important;
-  background: var(--color-cloud-gray) !important;
-  padding: 3px !important;
-  border-radius: var(--radius-button) !important;
-  gap: 2px !important;
 }
 
 .patient-segments button {
-  background: transparent !important;
   border: none !important;
   padding: 0.45rem 0.95rem !important;
-  font-size: var(--text-xs) !important;
-  font-weight: 600 !important;
-  color: var(--color-charcoal) !important;
-  border-radius: var(--radius-button) !important;
   cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
-}
-
-.patient-segments button[aria-pressed="true"] {
-  background: var(--color-canopy-green) !important;
-  color: #ffffff !important;
-  box-shadow: 0 1px 4px rgba(20, 34, 52, 0.2) !important;
 }
 
 .patient-sort {
@@ -1141,12 +851,8 @@
 .patient-sort select {
   appearance: none !important;
   background: var(--color-cloud-gray) !important;
-  border: 1.5px solid var(--color-frost-gray) !important;
-  border-radius: var(--radius-button) !important;
   padding: 0.5rem 2rem 0.5rem 0.95rem !important;
-  font-size: var(--text-xs) !important;
   font-weight: 600 !important;
-  color: var(--color-charcoal) !important;
   cursor: pointer !important;
 }
 
@@ -1236,30 +942,12 @@
 /* --------------------------------------------------------------------------
    6. AJUSTES / CONFIGURACIÓN (SAND CANVAS)
    -------------------------------------------------------------------------- */
-.page-section[data-page="config"] {
-  background: var(--color-sand) !important;
-}
 
 .config-editorial-shell {
   max-width: 1040px !important;
   margin: 0 auto !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 2rem !important;
-}
-
-.config-group-card {
-  background: #ffffff !important;
-  border-radius: var(--radius-card) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  padding: 2rem !important;
-}
-
-.config-group-card h2 {
-  font-size: 1.4rem !important;
-  font-weight: 600 !important;
-  color: #000000 !important;
-  margin-bottom: 0.35rem !important;
 }
 
 .config-group-card p {
@@ -1269,27 +957,13 @@
 }
 
 .config-section-kicker {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  color: var(--color-canopy-green) !important;
   display: block !important;
-  margin-bottom: 0.35rem !important;
 }
 
 /* Config Form */
 .config-form-grid {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 1.25rem !important;
-  margin-bottom: 1.75rem !important;
-}
-
-@media (max-width: 640px) {
-  .config-form-grid {
-    grid-template-columns: 1fr !important;
-  }
 }
 
 .field-span-2 {
@@ -1298,14 +972,6 @@
 
 .input-editorial {
   width: 100% !important;
-  background: var(--color-cloud-gray) !important;
-  border: 1.5px solid var(--color-frost-gray) !important;
-  border-radius: var(--radius-button) !important;
-  padding: 0.65rem 1rem !important;
-  font-size: var(--text-sm) !important;
-  color: #000000 !important;
-  outline: none !important;
-  transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
 .input-editorial:focus {
@@ -1330,8 +996,6 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 1.15rem 0 !important;
-  border-bottom: 1px solid var(--color-cloud-gray) !important;
   gap: 1rem !important;
 }
 
@@ -1340,11 +1004,6 @@
 }
 
 .integration-icon-wrap {
-  width: 42px !important;
-  height: 42px !important;
-  border-radius: 12px !important;
-  background: var(--color-mint-wash) !important;
-  color: var(--color-canopy-green) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1356,16 +1015,10 @@
 }
 
 .integration-meta strong {
-  display: block !important;
-  color: #000000 !important;
-  font-size: var(--text-base) !important;
   font-weight: 600 !important;
 }
 
 .integration-sub {
-  display: block !important;
-  color: var(--color-graphite) !important;
-  font-size: var(--text-xs) !important;
   margin-top: 2px !important;
 }
 
@@ -1405,11 +1058,7 @@
 .booking-link-input {
   width: 100% !important;
   background: var(--color-cloud-gray) !important;
-  border: 1.5px solid var(--color-frost-gray) !important;
-  border-radius: var(--radius-button) !important;
   padding: 0.65rem 1rem 0.65rem 2.5rem !important;
-  font-size: var(--text-sm) !important;
-  color: #000000 !important;
 }
 
 .booking-actions-row {
@@ -1492,10 +1141,6 @@
 }
 
 /* System Details (Collapsible) */
-.config-system-card {
-  background: var(--color-cloud-gray) !important;
-  border: 1.5px dashed var(--color-frost-gray) !important;
-}
 
 .config-system-details summary {
   list-style: none !important;
@@ -1519,7 +1164,6 @@
 }
 
 .summary-left .summary-icon {
-  font-size: 24px !important;
   color: var(--color-graphite) !important;
 }
 
@@ -1537,7 +1181,6 @@
 }
 
 .chevron-icon {
-  font-size: 24px !important;
   color: var(--color-slate) !important;
   transition: transform var(--duration-micro) ease !important;
 }
@@ -1581,18 +1224,6 @@
 /* --------------------------------------------------------------------------
    8. BIBLIOTECA CLÍNICA & PLANES TERAPÉUTICOS (WARM CANVAS)
    -------------------------------------------------------------------------- */
-.page-section[data-page="plantillas"] {
-  background: var(--surface-page-canvas, #f7f5f1) !important;
-}
-
-.template-library-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin-bottom: 1.5rem !important;
-  flex-wrap: wrap !important;
-  gap: 1rem !important;
-}
 
 .template-library-shell {
   display: flex !important;
@@ -1614,9 +1245,6 @@
 }
 
 .template-kpi-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  border-radius: var(--radius-card, 16px) !important;
   padding: 1.35rem 1.5rem !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1632,31 +1260,18 @@
 }
 
 .template-kpi-card strong {
-  font-size: 1.85rem !important;
-  font-weight: 600 !important;
   color: #000000 !important;
-  line-height: 1.1 !important;
-  font-variant-numeric: tabular-nums !important;
 }
 
 .template-kpi-card p {
   font-size: var(--text-xs) !important;
   color: var(--color-slate, #5b6476) !important;
-  margin: 0 !important;
-}
-
-.template-history-card {
-  background: #ffffff !important;
-  border-radius: var(--radius-card, 16px) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  overflow: hidden !important;
 }
 
 /* --------------------------------------------------------------------------
    9. FINANZAS OVERVIEW CARDS
    -------------------------------------------------------------------------- */
 .finance-overview-grid {
-  display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 1.25rem !important;
   margin-bottom: 1.5rem !important;
@@ -1675,9 +1290,6 @@
 }
 
 .finance-overview-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  border-radius: var(--radius-card, 16px) !important;
   padding: 1.25rem 1.5rem !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1686,31 +1298,22 @@
 
 .finance-overview-card .overview-label {
   font-size: 11px !important;
-  font-weight: 600 !important;
   letter-spacing: 0.06em !important;
-  text-transform: uppercase !important;
   color: var(--color-canopy-green, #0a3922) !important;
 }
 
 .finance-overview-card strong {
-  font-size: 1.75rem !important;
-  font-weight: 600 !important;
   color: #000000 !important;
-  font-variant-numeric: tabular-nums !important;
 }
 
 .finance-overview-card p {
   font-size: var(--text-xs) !important;
   color: var(--color-slate, #5b6476) !important;
-  margin: 0 !important;
 }
 
 /* --------------------------------------------------------------------------
    10. DOCUMENTOS & CONSENTIMIENTOS
    -------------------------------------------------------------------------- */
-.page-section[data-page="documentos"] {
-  background: var(--surface-page-canvas, #f7f5f1) !important;
-}
 
 .documentos-workbench {
   background: #ffffff !important;
@@ -1759,7 +1362,6 @@
   font-size: 1.75rem !important;
   font-weight: 600 !important;
   color: #000000 !important;
-  font-variant-numeric: tabular-nums !important;
 }
 
 .ops-signal-hint {
@@ -1778,9 +1380,6 @@
 /* --------------------------------------------------------------------------
    11. HISTORIAL & AUDITORÍA LONGITUDINAL
    -------------------------------------------------------------------------- */
-.page-section[data-page="historial"] {
-  background: var(--surface-page-canvas, #f7f5f1) !important;
-}
 
 .detail-block {
   background: #ffffff !important;
@@ -1793,21 +1392,12 @@
   gap: 0.75rem !important;
 }
 
-.detail-block h3 {
-  font-size: 1.15rem !important;
-  font-weight: 600 !important;
-  color: #000000 !important;
-  margin: 0 !important;
-}
-
 .detail-caption {
   font-size: var(--text-sm) !important;
   color: var(--color-slate, #5b6476) !important;
-  margin: 0 !important;
 }
 
 .history-case-hero {
-  display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: space-between !important;

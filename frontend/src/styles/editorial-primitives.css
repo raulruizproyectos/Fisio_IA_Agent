@@ -5,11 +5,6 @@
    ========================================================================== */
 
 /* === BUTTONS === */
-button, .btn {
-  font-family: var(--font-family-base) !important;
-  font-feature-settings: "cv11" 1, "ss01" 1 !important;
-  transition: transform var(--duration-micro) var(--ease-editorial), background-color var(--duration-micro) ease !important;
-}
 
 button:active, .btn:active {
   transform: scale(0.975) !important;
@@ -23,18 +18,13 @@ button:active, .btn:active {
 #btnSaveFicha,
 .patient-primary-action,
 [data-action="primary-cta"] {
-  background: var(--color-coral-pulse) !important;
-  color: #ffffff !important;
   border: 0 !important;
-  border-radius: var(--radius-button) !important;
-  font-weight: 600 !important;
   font-size: var(--text-sm) !important;
   padding: 0.65rem 1.4rem !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 0.5rem !important;
-  box-shadow: 0 2px 8px rgba(255, 100, 59, 0.25) !important;
   cursor: pointer !important;
 }
 
@@ -50,19 +40,12 @@ button:active, .btn:active {
 /* Secondary Button — Crisp White with subtle border */
 .btn-secondary,
 .btn-outline {
-  background: #ffffff !important;
-  color: var(--color-charcoal) !important;
-  border: 1.5px solid var(--color-frost-gray) !important;
-  border-radius: var(--radius-button) !important;
-  font-weight: 500 !important;
-  font-size: var(--text-sm) !important;
   padding: 0.6rem 1.25rem !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 0.45rem !important;
   cursor: pointer !important;
-  box-shadow: none !important;
 }
 
 .btn-secondary:hover,
@@ -74,10 +57,8 @@ button:active, .btn:active {
 
 /* Ghost Button */
 .btn-ghost {
-  background: transparent !important;
   color: var(--color-graphite) !important;
   border: 0 !important;
-  border-radius: var(--radius-button) !important;
   font-weight: 500 !important;
   font-size: var(--text-sm) !important;
   padding: 0.5rem 1rem !important;
@@ -95,7 +76,6 @@ button:active, .btn:active {
 /* Small Button modifier */
 .btn-sm {
   padding: 0.4rem 0.85rem !important;
-  font-size: var(--text-xs) !important;
   border-radius: var(--radius-button) !important;
 }
 
@@ -124,15 +104,11 @@ button:active, .btn:active {
 input,
 select,
 textarea {
-  font-family: var(--font-family-base) !important;
-  font-feature-settings: "cv11" 1, "ss01" 1 !important;
   background: #ffffff !important;
   color: #000000 !important;
   border: 1.5px solid var(--color-frost-gray) !important;
-  border-radius: 12px !important;
   padding: 0.65rem 0.95rem !important;
   font-size: var(--text-sm) !important;
-  outline: none !important;
   transition: border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease !important;
 }
 
@@ -160,7 +136,6 @@ textarea::placeholder {
   background: #ffffff !important;
   border: 1px solid rgba(0, 0, 0, 0.07) !important;
   border-radius: var(--radius-card) !important;
-  box-shadow: none !important;
   color: #000000 !important;
 }
 
@@ -169,11 +144,8 @@ textarea::placeholder {
 .ficha-tab,
 .tab-pill,
 [data-ficha-tab] {
-  background: #ffffff !important;
-  color: var(--color-graphite) !important;
   border: 1.5px solid var(--color-frost-gray) !important;
   border-radius: var(--radius-button) !important;
-  font-weight: 500 !important;
   font-size: var(--text-sm) !important;
   padding: 0.5rem 1.15rem !important;
   display: inline-flex !important;
@@ -215,28 +187,17 @@ textarea::placeholder {
 /* === TABLES (EDITORIAL CLARITY) === */
 table {
   width: 100% !important;
-  border-collapse: collapse !important;
   color: #000000 !important;
 }
 
 th {
-  background: transparent !important;
-  color: var(--color-slate) !important;
-  font-size: var(--text-xs) !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  border-bottom: 1.5px solid var(--color-frost-gray) !important;
   padding: 0.85rem 1.1rem !important;
   text-align: left !important;
 }
 
 td {
   color: var(--color-charcoal) !important;
-  border-bottom: 1px solid var(--color-cloud-gray) !important;
   padding: 0.95rem 1.1rem !important;
-  font-size: var(--text-sm) !important;
-  vertical-align: middle !important;
 }
 
 tbody tr:hover td {
@@ -250,31 +211,8 @@ td:first-child strong {
 }
 
 /* === STATUS CHIPS === */
-.status-chip {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.35rem !important;
-  padding: 0.25rem 0.65rem !important;
-  border-radius: var(--radius-tag) !important;
-  font-size: var(--text-xs) !important;
-  font-weight: 600 !important;
-  text-transform: capitalize !important;
-}
-
-.status-chip.confirmada,
-.status-chip.activo,
-.status-chip.firmado {
-  background: var(--color-mint-wash) !important;
-  color: var(--color-canopy-green) !important;
-}
-
-.status-chip.pendiente {
-  background: var(--color-peach-wash) !important;
-  color: var(--color-coral-pulse) !important;
-}
 
 .status-chip.en_consulta {
-  background: var(--color-sky-wash) !important;
   color: var(--color-deep-teal) !important;
 }
 
@@ -288,11 +226,7 @@ td:first-child strong {
 .agenda-cal-loading,
 .skeleton-loading,
 .skeleton {
-  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%) !important;
-  background-size: 200% 100% !important;
   animation: clinicalShimmer 2s infinite ease-in-out !important;
-  color: var(--color-slate) !important;
-  border-radius: var(--radius-panel) !important;
   border: none !important;
 }
 
@@ -336,7 +270,6 @@ td:first-child strong {
   color: #ffffff !important;
   font-weight: 600 !important;
   font-size: 0.875rem !important;
-  text-decoration: none !important;
   box-shadow: 0 4px 14px rgba(20, 34, 52, 0.25) !important;
   transform: translateY(-200%) !important;
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -352,26 +285,11 @@ td:first-child strong {
 .page-section {
   display: none !important;
   width: 100% !important;
-  height: auto !important;
   min-height: auto !important;
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
 .page-section.active {
   display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  min-height: auto !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-[hidden],
-.page-section[hidden],
-.page-section:not(.active),
-.page-section[aria-hidden="true"]:not(.active) {
-  display: none !important;
 }
 
 /* === MODAL & DRAWER PRIMITIVES === */
@@ -379,17 +297,13 @@ td:first-child strong {
   position: fixed !important;
   inset: 0 !important;
   z-index: 1000 !important;
-  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 1.5rem !important;
-  background: rgba(20, 34, 52, 0.38) !important;
-  backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
-  transition: opacity 200ms ease, visibility 200ms ease !important;
 }
 
 .modal-shell.open,
@@ -399,14 +313,6 @@ td:first-child strong {
   visibility: visible !important;
 }
 
-.modal-shell[aria-hidden="true"],
-.modal-shell[hidden] {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  visibility: hidden !important;
-  display: none !important;
-}
-
 .modal-panel {
   width: min(100%, 580px) !important;
   max-height: min(85vh, 720px) !important;
@@ -414,9 +320,6 @@ td:first-child strong {
   flex-direction: column !important;
   overflow: hidden !important;
   background: #ffffff !important;
-  border-radius: var(--radius-card, 16px) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 20px 40px -12px rgba(20, 34, 52, 0.18), 0 0 1px rgba(0, 0, 0, 0.15) !important;
 }
 
 .crm-drawer-shell {
@@ -429,13 +332,6 @@ td:first-child strong {
   height: 100vh !important;
   height: 100dvh !important;
   max-height: 100dvh !important;
-  border-radius: 0 !important;
-  border-top: 0 !important;
-  border-right: 0 !important;
-  border-bottom: 0 !important;
-  border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
-  transform: translateX(100%);
-  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .crm-drawer-shell.open .crm-drawer-panel,
@@ -454,8 +350,6 @@ td:first-child strong {
 
 .modal-title-group h2 {
   font-size: 1.25rem !important;
-  font-weight: 600 !important;
-  color: #000000 !important;
   margin: 0.15rem 0 0.35rem !important;
 }
 

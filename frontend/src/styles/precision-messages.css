@@ -4,21 +4,9 @@
    Palette: Slate clinical canvas, dark slate ink, precision accents (#4f46e5)
    ========================================================================== */
 
-.intakes-page {
-  background: var(--surface-page-canvas, #f3f4f8) !important;
-  min-height: 100%;
-}
-
 .intakes-shell {
   max-width: 1200px;
   margin: 0 auto;
-}
-
-.intakes-card {
-  background: #ffffff !important;
-  border: 1px solid #e5e7ef !important;
-  border-radius: 8px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
 .intakes-toolbar {
@@ -27,11 +15,6 @@
 }
 
 .intakes-filterbar select {
-  background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 6px !important;
-  color: #0b1020 !important;
-  font-size: 0.8125rem !important;
   padding: 0.45rem 2rem 0.45rem 2.25rem !important;
 }
 
@@ -41,34 +24,9 @@
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
 }
 
-.intakes-table-wrap {
-  overflow-x: auto;
-}
-
-.intakes-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
 .intakes-table thead {
   background: #f3f4f8;
   border-bottom: 1px solid #e5e7ef;
-}
-
-.intakes-table th {
-  padding: 0.75rem 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #475569;
-}
-
-.intakes-table td {
-  padding: 0.875rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
-  vertical-align: middle;
 }
 
 .intakes-table tbody tr:hover {

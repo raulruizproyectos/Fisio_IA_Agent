@@ -36,7 +36,7 @@ Medición del 17-oct sobre las 19 hojas importadas: 54 tamaños de letra, 37 rad
 - `frontend/src/styles/design-tokens.css`: valores. `frontend/src/styles/premium-system.css`: **capa final única**, importada la última en `Layout.astro`. Ahí van las decisiones compartidas; no añadir valores sueltos en hojas antiguas.
 - Reglas antiguas con selector de id o compuestos pueden ganar: anclar con `body .app-shell …` en la capa final en lugar de crear otra hoja.
 - Contratos: ningún ID ni `data-*` cambiado (comprobado contra HEAD el 17-oct). Check, build, 28 scripts de CI y 227 pruebas backend en verde tras el cambio.
-- Deuda conocida: las hojas antiguas (`editorial-*`, `precision-*`) siguen cargándose; consolidarlas en la capa final vista a vista, comparando capturas, y retirar las no importadas (`premium-clinic-ui.css`, `production-ui.css`).
+- Deuda conocida: las hojas antiguas (`editorial-*`, `precision-*`, `assistant-rail.css`) siguen cargándose; consolidarlas en la capa final vista a vista. 17-oct: retiradas las tres no importadas y podadas 1.888 declaraciones que nunca ganaban la cascada (−2.421 líneas). Método: quitar todas las candidatas y reponer una a una las que cambian algún estilo calculado, en 13 vistas y estados × 5 anchuras (1600/1366/1024/820/390) más los 9 modales abiertos; verificado con un volcado completo de estilos calculados (0 diferencias salvo ±0,016 px de redondeo en una tabla). No se tocaron reglas de `:hover`/`:focus` ni las que no se aplican en ningún estado medido.
 
 ---
 

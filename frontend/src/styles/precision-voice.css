@@ -14,7 +14,6 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  transition: opacity 0.25s ease;
 }
 
 .voice-modal-container {
@@ -29,7 +28,6 @@
   flex-direction: column;
   overflow: hidden;
   transform: scale(0.98);
-  transition: transform 0.25s ease;
 }
 
 .voice-modal-backdrop:not(.opacity-0) .voice-modal-container {
@@ -56,24 +54,17 @@
 
 .voice-modal-title {
   font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-ink, #0b1020);
-  margin: 0;
   letter-spacing: -0.01em;
 }
 
 .voice-modal-close-btn {
-  background: transparent;
   border: none;
   color: var(--color-ink-muted, #5b6476);
-  width: 36px;
-  height: 36px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-modal-close-btn:hover {
@@ -88,7 +79,6 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  color: var(--color-ink, #0b1020);
 }
 
 /* Mode Switch Tabs */
@@ -113,7 +103,6 @@
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   background: transparent;
   color: #5b6476;
 }
@@ -150,7 +139,6 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .voice-record-btn:hover {
@@ -180,7 +168,6 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1.75rem;
   font-weight: 600;
-  color: var(--color-ink, #0b1020);
   letter-spacing: 0.05em;
   line-height: 1;
 }
@@ -188,7 +175,6 @@
 .voice-status-text {
   font-size: 0.75rem;
   color: var(--color-ink-muted, #5b6476);
-  margin: 0;
 }
 
 .voice-visualizer {
@@ -198,7 +184,6 @@
   gap: 4px;
   height: 20px;
   opacity: 0.4;
-  transition: opacity 0.2s ease;
 }
 
 .voice-visualizer.is-active {
@@ -210,7 +195,6 @@
   background: var(--color-brand-secondary, #0284c7);
   border-radius: 4px;
   height: 8px;
-  transition: height 0.15s ease;
 }
 
 .voice-visualizer.is-active .voice-bar:nth-child(1) { height: 12px; animation: barWave 0.8s infinite ease-in-out; }
@@ -234,20 +218,10 @@
 .voice-textarea-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-ink, #0b1020);
 }
 
 .voice-textarea {
   width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 0.75rem 0.875rem;
-  font-size: 0.875rem;
-  font-family: inherit;
-  color: var(--color-ink, #0b1020);
-  background: #ffffff;
-  line-height: 1.5;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .voice-textarea:focus {
@@ -271,7 +245,6 @@
   gap: 0.5rem;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(79, 70, 229, 0.2);
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-synthesize-btn:hover {
@@ -292,10 +265,8 @@
 }
 
 .voice-back-to-capture-btn {
-  background: transparent;
   border: none;
   color: #4f46e5;
-  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -326,14 +297,6 @@
 .voice-input,
 .voice-select {
   width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  color: #0b1020;
-  background: #ffffff;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .voice-input:focus,
@@ -353,14 +316,12 @@
 
 .voice-btn-cancel {
   padding: 0.6rem 1.25rem;
-  background: transparent;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   color: #475569;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-btn-cancel:hover {
@@ -381,7 +342,6 @@
   gap: 0.4rem;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(79, 70, 229, 0.2);
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-btn-confirm:hover {

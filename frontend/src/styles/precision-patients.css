@@ -9,12 +9,6 @@ astro-dev-toolbar {
 }
 
 /* === MAIN WORKSPACE CONTAINER === */
-.patient-workspace {
-  background: var(--color-canvas, #f3f4f8) !important;
-  min-height: 100%;
-  width: 100%;
-  color: var(--color-ink, #0b1020);
-}
 
 .patient-workspace-inner {
   max-width: 100%;
@@ -25,62 +19,6 @@ astro-dev-toolbar {
 }
 
 /* === HEADER & ACTIONS === */
-.patient-workspace-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  padding-bottom: 0.25rem;
-}
-
-.clinic-kicker {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-brand-primary, #4f46e5);
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.patient-workspace-header h1 {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: var(--color-ink, #0b1020);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin: 0 0 0.25rem 0;
-}
-
-.patient-workspace-header p {
-  font-size: 0.875rem;
-  color: var(--color-ink-muted, #5b6476);
-  margin: 0;
-}
-
-.patient-workspace-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  flex-wrap: wrap;
-}
-
-.patient-primary-action {
-  background: var(--color-brand-primary, #4f46e5);
-  color: #ffffff;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm, 6px);
-  padding: 0.55rem 1.15rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.08));
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-}
 
 .patient-primary-action:hover {
   background: var(--color-brand-primary-hover, #4338ca);
@@ -89,27 +27,10 @@ astro-dev-toolbar {
 
 .patient-primary-action .patient-action-arrow {
   font-size: 18px;
-  transition: transform 0.15s ease;
 }
 
 .patient-primary-action:hover .patient-action-arrow {
   transform: translateX(2px);
-}
-
-.patient-secondary-action,
-.patient-sync-action {
-  background: #ffffff;
-  color: var(--color-ink-secondary, #334155);
-  border: 1px solid var(--color-border-medium, #cbd5e1);
-  border-radius: var(--radius-sm, 6px);
-  padding: 0.55rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .patient-secondary-action:hover,
@@ -124,104 +45,25 @@ astro-dev-toolbar {
 }
 
 /* === VITALS / METRICS BAR === */
-.patient-vitals {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.patient-vitals article {
-  background: #ffffff;
-  border: 1px solid var(--color-border, #e5e7ef);
-  border-radius: var(--radius-md, 10px);
-  padding: 0.85rem 1.15rem;
-  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  transition: border-color 0.15s ease;
-}
 
 .patient-vitals article:hover {
   border-color: var(--color-border-medium, #cbd5e1);
 }
 
-.patient-vitals article span {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-ink-muted, #5b6476);
-}
-
-.patient-vitals article strong {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: var(--color-ink, #0b1020);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-}
-
-.patient-vitals article p {
-  font-size: 0.78rem;
-  color: var(--color-ink-muted, #5b6476);
-  margin: 0;
-  white-space: normal;
-}
-
-.patient-vitals article.vitals-urgent strong {
-  color: var(--color-urgent-text, #991b1b);
-}
-
-.patient-vitals article.vitals-reach strong {
-  color: var(--color-brand-primary, #4f46e5);
-}
-
 /* === TOOLBAR & FILTERS (2-TIER CLEAN ARCHITECTURE) === */
-.patient-directory-toolbar {
-  background: #ffffff;
-  border: 1px solid var(--color-border, #e5e7ef);
-  border-radius: var(--radius-md, 10px);
-  padding: 0.75rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
-}
 
 .patient-directory-toolbar-top {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   width: 100%;
 }
 
 .patient-directory-search {
-  flex: 1;
   position: relative;
-  display: flex;
-  align-items: center;
 }
 
 .patient-directory-search span {
   position: absolute;
   left: 0.75rem;
-  color: var(--color-ink-muted, #5b6476);
-  font-size: 20px;
   pointer-events: none;
-}
-
-.patient-directory-search input {
-  width: 100%;
-  height: 38px;
-  padding: 0 0.85rem 0 2.35rem;
-  font-size: 0.875rem;
-  color: var(--color-ink, #0b1020);
-  background: var(--color-surface-subtle, #f3f4f8);
-  border: 1px solid var(--color-border-medium, #cbd5e1);
-  border-radius: var(--radius-sm, 6px);
-  outline: none;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .patient-directory-search input:focus {
@@ -234,33 +76,11 @@ astro-dev-toolbar {
   color: var(--color-ink-disabled, #94a3b8);
 }
 
-.patient-directory-toolbar-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
 .patient-segments {
-  display: inline-flex;
-  background: var(--color-surface-hover, #f1f5f9);
-  padding: 2px;
-  border-radius: var(--radius-sm, 6px);
-  gap: 2px;
   flex-wrap: wrap;
 }
 
 .patient-segments button {
-  border: none;
-  background: transparent;
-  color: var(--color-ink-secondary, #334155);
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 0.35rem 0.75rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
@@ -268,34 +88,8 @@ astro-dev-toolbar {
   color: var(--color-ink, #0b1020);
 }
 
-.patient-segments button[aria-pressed="true"],
-.patient-segments button.is-active {
-  background: #ffffff;
-  color: var(--color-ink, #0b1020);
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
-}
-
 .patient-sort {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
   flex-shrink: 0;
-}
-
-.patient-sort select {
-  height: 38px;
-  padding: 0 2rem 0 0.85rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--color-ink-secondary, #334155);
-  background: var(--color-surface-subtle, #f3f4f8);
-  border: 1px solid var(--color-border-medium, #cbd5e1);
-  border-radius: var(--radius-sm, 6px);
-  appearance: none;
-  cursor: pointer;
-  outline: none;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .patient-sort select:focus {
@@ -304,20 +98,8 @@ astro-dev-toolbar {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
-.patient-sort span {
-  position: absolute;
-  right: 0.6rem;
-  font-size: 18px;
-  color: var(--color-ink-muted, #5b6476);
-  pointer-events: none;
-}
-
 /* === DIRECTORY TABLE CONTAINER === */
 .patient-directory {
-  background: #ffffff;
-  border: 1px solid var(--color-border, #e5e7ef);
-  border-radius: var(--radius-md, 10px);
-  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -330,13 +112,6 @@ astro-dev-toolbar {
   padding: 0.75rem 1.15rem;
   background: var(--color-surface-subtle, #f3f4f8);
   border-bottom: 1px solid var(--color-border, #e5e7ef);
-}
-
-.patient-directory-head-bar h2 {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--color-ink, #0b1020);
-  margin: 0;
 }
 
 .patient-directory-head-bar p {
@@ -363,44 +138,16 @@ astro-dev-toolbar {
 }
 
 .patient-table {
-  width: 100%;
-  border-collapse: collapse;
   text-align: left;
   table-layout: fixed;
   min-width: 960px;
 }
 
-.patient-table thead th {
-  background: var(--color-surface-subtle, #f3f4f8);
-  color: var(--color-ink-muted, #5b6476);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.7rem 0.85rem;
-  border-bottom: 1px solid var(--color-border, #e5e7ef);
-  white-space: nowrap;
-}
-
 /* Specific column widths and alignment for robust grid geometry (Sum = 100%) */
-.patient-table th.col-patient,
-.patient-table td.cell-patient {
-  width: 22%;
-}
 
 .patient-table th.col-contact,
 .patient-table td.cell-contact {
   width: 16%;
-}
-
-.patient-table th.col-clinical,
-.patient-table td.cell-clinical {
-  width: 22%;
-}
-
-.patient-table th.col-appt,
-.patient-table td.cell-appt {
-  width: 11%;
 }
 
 .patient-table th.col-status,
@@ -410,15 +157,11 @@ astro-dev-toolbar {
 
 .patient-table th.col-actions,
 .patient-table td.cell-actions {
-  width: 15%;
-  min-width: 140px;
   text-align: right;
-  padding-right: 1.15rem;
 }
 
 .patient-table tbody tr {
   border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
-  transition: background-color 0.12s ease;
 }
 
 .patient-table tbody tr:hover {
@@ -429,13 +172,6 @@ astro-dev-toolbar {
   border-bottom: none;
 }
 
-.patient-table td {
-  padding: 0.65rem 0.85rem;
-  vertical-align: middle;
-  font-size: 0.875rem;
-  color: var(--color-ink, #0b1020);
-}
-
 /* === ROW CELL DETAILS === */
 
 /* Paciente identity */
@@ -443,16 +179,12 @@ astro-dev-toolbar {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  min-width: 0;
 }
 
 .patient-avatar {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-sm, 6px);
-  background: #e0f2fe;
-  color: #0369a1;
-  font-size: 0.8rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -480,17 +212,11 @@ astro-dev-toolbar {
 }
 
 .patient-name-btn {
-  background: none;
   border: none;
-  padding: 0;
-  margin: 0;
   text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-ink, #0b1020);
   cursor: pointer;
-  text-decoration: none;
-  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -518,7 +244,6 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  min-width: 0;
   overflow: hidden;
 }
 
@@ -528,11 +253,9 @@ astro-dev-toolbar {
   gap: 0.3rem;
   font-size: 0.8rem;
   color: var(--color-ink-secondary, #334155);
-  text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.12s ease;
 }
 
 .patient-contact-link:hover {
@@ -546,7 +269,6 @@ astro-dev-toolbar {
 }
 
 .patient-missing-contact {
-  font-size: 0.73rem;
   color: var(--color-ink-disabled, #94a3b8);
   font-style: italic;
 }
@@ -556,14 +278,11 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 0;
   overflow: hidden;
 }
 
 .patient-pathology {
-  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--color-ink, #0b1020);
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
@@ -623,13 +342,11 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  min-width: 0;
 }
 
 .patient-appt-time {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-ink, #0b1020);
   white-space: nowrap;
 }
 
@@ -640,9 +357,7 @@ astro-dev-toolbar {
 }
 
 .patient-no-appt {
-  font-size: 0.73rem;
   color: var(--color-ink-disabled, #94a3b8);
-  white-space: nowrap;
 }
 
 /* Status Cell */
@@ -650,7 +365,6 @@ astro-dev-toolbar {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.73rem;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: var(--radius-full, 9999px);
@@ -686,19 +400,12 @@ astro-dev-toolbar {
 }
 
 .btn-open-ficha {
-  background: var(--color-surface-subtle, #f3f4f8);
-  color: var(--color-ink, #0b1020);
-  border: 1px solid var(--color-border-medium, #cbd5e1);
-  border-radius: var(--radius-sm, 6px);
   padding: 0.3rem 0.65rem;
-  font-size: 0.8rem;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .btn-open-ficha:hover {
@@ -715,15 +422,10 @@ astro-dev-toolbar {
 .btn-icon-action {
   width: 28px;
   height: 28px;
-  border-radius: var(--radius-sm, 6px);
-  border: 1px solid var(--color-border, #e5e7ef);
-  background: #ffffff;
-  color: var(--color-ink-muted, #5b6476);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
 }
 
 .btn-icon-action:hover {
@@ -777,11 +479,7 @@ astro-dev-toolbar {
 }
 
 .patient-mobile-card {
-  background: #ffffff;
-  border: 1px solid var(--color-border, #e5e7ef);
-  border-radius: var(--radius-md, 10px);
   padding: 1rem;
-  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -822,16 +520,8 @@ astro-dev-toolbar {
 }
 
 /* === RESPONSIVE BREAKPOINTS === */
-@media (max-width: 1280px) {
-  .patient-vitals {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 
 @media (max-width: 860px) {
-  .patient-workspace {
-    padding-bottom: 5.5rem !important;
-  }
   .patient-table-container {
     display: none;
   }
@@ -839,12 +529,8 @@ astro-dev-toolbar {
     display: flex;
     padding-bottom: 2rem;
   }
-  .patient-vitals {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .patient-workspace-header {
     flex-direction: column;
-    align-items: stretch;
   }
   .patient-workspace-actions {
     width: 100%;
@@ -857,12 +543,6 @@ astro-dev-toolbar {
   }
 }
 
-@media (max-width: 480px) {
-  .patient-vitals {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Text fit (14-oct): long emails end in an ellipsis and «Abrir ficha» never gets clipped. */
 .patient-contact-link {
   max-width: 100%;
@@ -872,22 +552,16 @@ astro-dev-toolbar {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: inherit;
   color: inherit;
   flex-shrink: 1;
 }
 
 .patient-table th.col-patient,
 .patient-table td.cell-patient { width: 20%; }
-.patient-table th.col-contact,
-.patient-table td.cell-contact { width: 16%; }
 .patient-table th.col-clinical,
 .patient-table td.cell-clinical { width: 20%; }
 .patient-table th.col-appt,
 .patient-table td.cell-appt { width: 12%; }
-.patient-table th.col-status,
-.patient-table td.cell-status { width: 14%; }
 .patient-table th.col-actions,
 .patient-table td.cell-actions { width: 18%; min-width: 160px; }
 
