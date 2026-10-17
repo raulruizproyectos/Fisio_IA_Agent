@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
 import { publicHttpErrorMessage } from './public-error.js';
+import { getClinicDisplayName } from './clinic-brand.js';
 
 export const reportError = (status, message, code) => Object.assign(new Error(message), { status, code, expose: true });
 
@@ -12,7 +13,7 @@ export function respondReportError(res, error, fallback) {
 export async function getApprovedExerciseReport(recommendationId, patientId = null) {
   if (!recommendationId) throw reportError(400, 'recommendation_id es obligatorio');
   const { data: row, error } = await supabase.from('crm_recomendaciones')
-    .select('id, paciente_id, fisioterapeuta_id, estado, reviewed_at, reviewed_by_profile_id, report_snapshot, report_version, request_id, red_flags_present, red_flags_items, crm_pacientes(nombre, apellidos)')
+    .select('id, paciente_id, fisioterapeuta_id, estado, reviewed_at, reviewed_by_profile_id, report_snapshot, report_version, request_id, red_flags_present, red_flags_items, crm_pacientes(nombre, apellidos, clinica_id)')
     .eq('id', recommendationId).maybeSingle();
   if (error) throw error;
   if (!row || (patientId && patientId !== row.paciente_id)) throw reportError(404, 'Recomendación no encontrada para este paciente');
@@ -39,6 +40,7 @@ export async function getApprovedExerciseReport(recommendationId, patientId = nu
     patient_id: row.paciente_id,
     patient_name: [row.crm_pacientes?.nombre, row.crm_pacientes?.apellidos].filter(Boolean).join(' ') || 'Paciente',
     fisioterapeuta_id: row.fisioterapeuta_id,
+    clinic_name: await getClinicDisplayName(row.crm_pacientes?.clinica_id || null),
     request_id: row.request_id,
     report_version: row.report_version,
     red_flags: { present: row.red_flags_present, items: row.red_flags_items },

@@ -37,7 +37,7 @@ export function writeBrowserSession(res, session) {
 }
 
 export function clearBrowserSession(res) {
-  for (const name of ['access', 'refresh', 'verifier']) writeBrowserCookie(res, name, '', 0);
+  for (const name of ['access', 'refresh', 'verifier', 'recovery']) writeBrowserCookie(res, name, '', 0);
 }
 
 export function noStoreSession(res) {

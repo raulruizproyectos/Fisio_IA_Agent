@@ -6,6 +6,7 @@ import { serviceSupabase } from '../lib/supabase.js';
 import { readBrowserCookie, writeBrowserCookie, writeBrowserSession, clearBrowserSession, requireBrowserOrigin } from '../lib/browser-session.js';
 
 const router = Router();
+const RECOVERY_WINDOW_MS = 15 * 60 * 1000;
 const refreshes = new Map();
 const limit = (count, minutes) => rateLimit({
   windowMs: minutes * 60 * 1000, limit: count, standardHeaders: 'draft-8', legacyHeaders: false,
@@ -130,15 +131,45 @@ router.post('/recovery', limit(10, 15), handle(async (req, res) => {
   const session = await authRequest('token?grant_type=pkce', { auth_code: req.body.code, code_verifier: verifier });
   const profile = await publishSession(res, session);
   writeBrowserCookie(res, 'verifier', '', 0);
+  // A fresh recovery link lets this user set a new password without the old one.
+  writeBrowserCookie(res, 'recovery', profile.user_id, RECOVERY_WINDOW_MS);
   res.json(profile);
 }));
 
+// Confirms the current password without replacing the browser session; the
+// extra provider session it creates is revoked straight away.
+async function currentPasswordMatches(access, password) {
+  const { data, error } = await serviceSupabase.auth.getUser(access);
+  if (error || !data?.user?.email) throw Object.assign(new Error('Auth no disponible'), { status: 503 });
+  let check;
+  try {
+    check = await authRequest('token?grant_type=password', { email: data.user.email, password });
+  } catch (error) {
+    if (error.status === 401) return false;
+    throw error;
+  }
+  if (check?.access_token) await serviceSupabase.auth.admin.signOut(check.access_token, 'local').catch(() => {});
+  return true;
+}
+
 router.post('/password', limit(10, 15), handle(async (req, res) => {
-  if (!fields(req.body, ['password']) || req.body.password.length < 10 || Buffer.byteLength(req.body.password, 'utf8') > 72) return invalid(res);
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : null;
+  const withCurrent = body && 'current_password' in body;
+  if (!fields(body, withCurrent ? ['password', 'current_password'] : ['password'])
+    || req.body.password.length < 10 || Buffer.byteLength(req.body.password, 'utf8') > 72
+    || (withCurrent && (!req.body.current_password.length || req.body.current_password.length > 1024))) return invalid(res);
   const access = readBrowserCookie(req, 'access');
   if (!access) throw Object.assign(new Error('Autenticacion requerida'), { status: 401 });
-  await authenticateProfessional(access);
+  const { auth } = await authenticateProfessional(access);
+  const recovering = readBrowserCookie(req, 'recovery') === auth.user_id;
+  if (!recovering) {
+    if (!withCurrent) return res.status(400).json({ error: 'Escribe tu contraseña actual para cambiarla.', code: 'current_password_required' });
+    if (!await currentPasswordMatches(access, req.body.current_password)) {
+      return res.status(400).json({ error: 'La contraseña actual no es correcta.', code: 'current_password_invalid' });
+    }
+  }
   await authRequest('user', { password: req.body.password }, access);
+  writeBrowserCookie(res, 'recovery', '', 0);
   res.json({ ok: true });
 }));
 

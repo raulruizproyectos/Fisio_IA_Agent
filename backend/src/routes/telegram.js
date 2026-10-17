@@ -9,6 +9,7 @@ import { getApprovedExerciseReport, reportError, respondReportError } from '../l
 import { resolveAgentConversation } from './agent.js';
 import { publicErrorMessage } from '../lib/public-error.js';
 import { isClinicHoliday } from '../lib/clinic-calendar.js';
+import { getClinicDisplayName } from '../lib/clinic-brand.js';
 import { FOLLOW_UP_BUTTON, sendNoShowFollowUp } from '../lib/no-show-followup.js';
 
 const router = Router();
@@ -251,8 +252,9 @@ async function callCarlaAgent(userMessage, context = null, history = []) {
     year: 'numeric', month: 'long', day: 'numeric',
     hour: '2-digit', minute: '2-digit', weekday: 'long',
   }).format(new Date());
+  const clinicName = await getClinicDisplayName();
 
-  const systemPrompt = `Eres el asistente virtual de recepcion de la clinica "Fisioterapia Carla JL" en Terrassa (Barcelona). Tu mision es atender a los pacientes y pasar sus peticiones a la clinica.
+  const systemPrompt = `Eres el asistente virtual de recepcion de la clinica "${clinicName}". Tu mision es atender a los pacientes y pasar sus peticiones a la clinica.
 Personalidad: cercana, calmada y profesional. Escribes claro, amable y resolutivo, sin sonar robotico.
 Reglas generales:
 - Eres un asistente virtual: si te preguntan, dilo con naturalidad. Nunca te hagas pasar por una persona ni por la fisioterapeuta.
@@ -278,7 +280,7 @@ Ahora son las ${nowMadrid}.`;
 
   const messages = [{ role: 'system', content: systemPrompt }];
   if (context) messages.push({ role: 'system', content: `Contexto actual: ${context}` });
-  // Inject conversation history so Carla remembers the full exchange
+  // Inject conversation history so the assistant remembers the full exchange
   for (const msg of history) messages.push(msg);
   messages.push({ role: 'user', content: userMessage });
 
@@ -2227,11 +2229,12 @@ router.post('/incoming', async (req, res, next) => {
           telegram_username: username || null,
         });
 
+        const clinicName = await getClinicDisplayName();
         const carlaAskName = await callCarlaAgent(
           text,
-          'Es la primera vez que este paciente contacta. Salúdale, preséntate como el asistente virtual de Fisioterapia Carla JL en Terrassa, y pídele su nombre completo para poder darle de alta en el sistema antes de gestionar su cita.'
+          `Es la primera vez que este paciente contacta. Salúdale, preséntate como el asistente virtual de ${clinicName}, y pídele su nombre completo para poder darle de alta en el sistema antes de gestionar su cita.`
         );
-        return await reply(carlaAskName || 'Hola, soy el asistente virtual de Fisioterapia Carla JL en Terrassa. Para darte de alta en nuestro sistema, ¿me dices tu nombre completo?');
+        return await reply(carlaAskName || `Hola, soy el asistente virtual de ${clinicName}. Para darte de alta en nuestro sistema, ¿me dices tu nombre completo?`);
       }
 
       // ── Other modes: create immediately with Telegram profile name ───────────
@@ -2700,7 +2703,7 @@ router.post('/incoming', async (req, res, next) => {
         return await replyAndSaveAppointment('Lo siento, no he podido registrar tu cita en este momento. Revisaremos tu solicitud y te confirmaremos la cita cuanto antes.');
       }
 
-      // Default: use Carla for any other patient message.
+      // Default: use the reception assistant for any other patient message.
       if (agentMode === 'patient_appointments') {
         const patientNameCtx = linkedPatientName ? `El paciente se llama ${linkedPatientName}. ` : '';
         const { history: chatHistory } = patientAppointmentSession || await loadChatSession(chat_id);

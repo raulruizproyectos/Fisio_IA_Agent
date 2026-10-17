@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import { fallbackClinicName } from './clinic-brand.js';
 
 // ─── Palette ─────────────────────────────────────────────────────────────────
 const C = {
@@ -365,12 +366,13 @@ async function drawExerciseCard(doc, state, exercise, index, total) {
 export async function buildExerciseReportPdfBuffer(payload = {}) {
   return new Promise(async (resolve, reject) => {
     try {
+      const clinicName = safeText(payload?.clinic_name, '') || fallbackClinicName();
       const doc = new PDFDocument({
         size: 'A4',
         margins: { top: 44, bottom: 44, left: 44, right: 44 },
         info: {
           Title:   'Plan de ejercicios terapeuticos',
-          Author:  'Fisioterapia Carla JL',
+          Author:  clinicName,
           Subject: 'Plan personalizado de ejercicios',
         },
       });
@@ -408,7 +410,7 @@ export async function buildExerciseReportPdfBuffer(payload = {}) {
       doc.text(`Paciente: ${patientName}`, bounds.left + 16, state.y + 42, { width: bounds.width - 32, lineBreak: false });
 
       doc.font('Helvetica').fontSize(S.sm).fillColor(C.hdrSub);
-      doc.text(`Fecha: ${dateText}   |   Fisioterapia Carla JL - Terrassa`, bounds.left + 16, state.y + 60, {
+      doc.text(`Fecha: ${dateText}   |   ${clinicName}`, bounds.left + 16, state.y + 60, {
         width: bounds.width - 32,
         lineBreak: false,
       });

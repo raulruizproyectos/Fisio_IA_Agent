@@ -180,13 +180,34 @@ test('recuperación PKCE vincula el código al navegador y no expone tokens ni a
   const recovered = await request('/api/auth/recovery', { body: { code: 'fixture-recovery-code' }, cookie });
   assert.equal(recovered.status, 200); assert.equal((await recovered.json()).user_id, 'server-user');
   assert.match(cookieHeader(recovered), /fisio-access=valid-access/);
-  assert.equal((await request('/api/auth/password', { cookie: validCookie, body: { password: 'new-fixture-only', user_id: 'victim' } })).status, 400);
-  for (const password of ['short', 'ñ'.repeat(37)]) assert.equal((await request('/api/auth/password', { cookie: validCookie, body: { password } })).status, 400);
-  assert.equal((await request('/api/auth/password', { cookie: validCookie, body: { password: 'new-fixture-only' } })).status, 200);
+  const recoveryCookie = cookieHeader(recovered);
+  assert.match(recoveryCookie, /fisio-recovery=server-user/);
+  assert.equal((await request('/api/auth/password', { cookie: recoveryCookie, body: { password: 'new-fixture-only', user_id: 'victim' } })).status, 400);
+  for (const password of ['short', 'ñ'.repeat(37)]) assert.equal((await request('/api/auth/password', { cookie: recoveryCookie, body: { password } })).status, 400);
+  const changed = await request('/api/auth/password', { cookie: recoveryCookie, body: { password: 'new-fixture-only' } });
+  assert.equal(changed.status, 200);
+  assert.ok(changed.headers.getSetCookie().some(cookie => /^fisio-recovery=;/.test(cookie) && cookie.includes('Max-Age=0')));
   assert.equal(state.writes, 1);
-  const denied = await request('/api/auth/password', { cookie: validCookie, body: { password: 'provider-denied-fixture' } });
+  const denied = await request('/api/auth/password', { cookie: recoveryCookie, body: { password: 'provider-denied-fixture' } });
   assert.equal(denied.status, 400); assert.equal(denied.headers.getSetCookie().length, 0);
   assert.doesNotMatch(await denied.text(), /private password/);
+}));
+
+test('fuera de la recuperación, cambiar la contraseña exige la actual correcta', t => withServer(t, async (request, state) => {
+  const missing = await request('/api/auth/password', { cookie: validCookie, body: { password: 'new-fixture-only' } });
+  assert.equal(missing.status, 400); assert.equal((await missing.json()).code, 'current_password_required');
+  const forged = await request('/api/auth/password', { cookie: `${validCookie}; fisio-recovery=another-user`, body: { password: 'new-fixture-only' } });
+  assert.equal(forged.status, 400);
+  const wrong = await request('/api/auth/password', { cookie: validCookie, body: { password: 'new-fixture-only', current_password: 'wrong' } });
+  assert.equal(wrong.status, 400); assert.equal((await wrong.json()).code, 'current_password_invalid');
+  assert.equal(wrong.headers.getSetCookie().length, 0, 'una contraseña actual errónea no cierra la sesión');
+  assert.equal(state.writes, 0);
+  const ok = await request('/api/auth/password', { cookie: validCookie, body: { password: 'new-fixture-only', current_password: credentials.password } });
+  assert.equal(ok.status, 200);
+  assert.equal(state.writes, 1);
+  const check = state.calls.find(call => call.path === '/auth/v1/token' && call.body?.password === credentials.password);
+  assert.equal(check.body.email, 'fixture@example.invalid', 'se comprueba contra el email de Auth');
+  assert.ok(state.calls.some(call => call.path === '/auth/v1/logout'), 'la sesión de comprobación se revoca');
 }));
 
 test('logout revoca la sesión local y borra cookies; un fallo remoto conserva la sesión visible', t => withServer(t, async (request, state) => {

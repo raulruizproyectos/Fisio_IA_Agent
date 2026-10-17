@@ -193,7 +193,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         if (clinicLocationEl) clinicLocationEl.textContent = bookingConfig.clinic?.location || '';
         if (clinicLeadEl) clinicLeadEl.textContent = `Reserva online con ${bookingConfig.professional?.nombre_completo || 'tu fisioterapeuta'} y huecos reales sincronizados con la agenda activa.`;
         if (professionalNameEl) professionalNameEl.textContent = bookingConfig.professional?.nombre_completo || 'Fisioterapeuta';
-        if (professionalMetaEl) professionalMetaEl.textContent = bookingConfig.professional?.email || 'Agenda sincronizada con Google Calendar';
+        if (professionalMetaEl) professionalMetaEl.textContent = 'Agenda sincronizada con Google Calendar';
         if (timezoneEl) timezoneEl.textContent = bookingConfig.booking?.time_zone || 'Europe/Madrid';
         if (dateInput) {
           dateInput.min = bookingConfig.booking?.min_date || '';

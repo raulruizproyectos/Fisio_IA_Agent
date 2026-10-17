@@ -1976,7 +1976,8 @@ router.get('/public-booking/config', async (req, res, next) => {
           phone: professional.clinic.telefono || null,
           email: professional.clinic.email || null,
         },
-        professional,
+        // Public page: name and id only, never the professional's personal email.
+        professional: { id: professional.id, nombre_completo: professional.nombre_completo },
         booking: {
           time_zone: PUBLIC_BOOKING_TIMEZONE,
           slot_minutes: PUBLIC_BOOKING_SLOT_MINUTES,

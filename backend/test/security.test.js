@@ -252,6 +252,7 @@ test('la reserva publica exige un profesional y devuelve los datos de su clinica
   await runWithRequestContext({ supabase: db }, () => handler(req, res, (error) => { throw error; }));
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.data.clinic.name, 'Clinica A');
-  assert.equal(res.body.data.professional.clinic_id, 'clinic-a');
+  assert.deepEqual(Object.keys(res.body.data.professional).sort(), ['id', 'nombre_completo']);
+  assert.equal(res.body.data.professional.id, 'profile-a');
   assert.deepEqual(filters, [['id', 'profile-a'], ['crm_clinicas.activo', true]]);
 });

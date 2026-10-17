@@ -59,7 +59,7 @@ Sesión Auth y respuestas profesionales no se cachean. La duración efectiva/rev
 - **Diseño**: Precisión azul, DESIGN.md v6; referencias Planhat (estructura) y Ramp (acciones).
   - Tipografía: `@fontsource-variable/dm-sans` con `font-feature-settings: "ss03" 1`.
   - Tokens: `frontend/src/styles/design-tokens.css` (azul `#175dd0` para acción/foco, lienzo `#f4f7fb`, superficies blancas y estados semánticos etiquetados).
-  - Shell compartido: `precision-blue.css`; primitivas/vistas existentes y estilos `precision-*.css`. Layout no importa la capa histórica `editorial-shell.css`.
+  - Shell compartido: `precision-blue.css`; primitivas/vistas existentes y estilos `precision-*.css`. Capa final `premium-system.css`. Las hojas sin importar (`editorial-shell.css`, `premium-clinic-ui.css`, `production-ui.css`) se retiraron el 17-oct-2026.
 - **Estructura de Vistas**:
   - `frontend/src/pages/index.astro`: Punto de entrada del CRM con hidratación de eventos y orquestación de vistas (`data-page`).
   - `frontend/src/components/views/`: Vistas de dominio (`DashboardView`, `CitasView`, `PatientsView`, `FichaPacienteView`, `PagosView`, `IntakesView`, `ConfigView`, etc.).

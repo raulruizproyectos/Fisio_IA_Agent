@@ -117,3 +117,23 @@ test('una reserva pública nunca reactiva una asignación que la clínica termin
   assert.equal(assignment.options?.ignoreDuplicates, true);
   assert.equal('desasignado_en' in assignment.payload, false);
 });
+
+test('la configuración pública no expone el email personal del profesional', async () => {
+  const db = { from(table) {
+    assert.equal(table, 'crm_perfiles');
+    const query = {
+      select() { return this; }, eq() { return this; },
+      async maybeSingle() {
+        return { data: { id: 'profile-a', nombre_completo: 'Profesional ficticio', email: 'privado@example.invalid', activo: true, clinica_id: 'clinic-a',
+          crm_clinicas: { id: 'clinic-a', nombre: 'Clínica ficticia', activo: true, direccion: null, telefono: null, email: 'recepcion@example.invalid' } } };
+      },
+    };
+    return query;
+  } };
+  const res = { statusCode: 200, status(code) { this.statusCode = code; return this; }, json(value) { this.body = value; return this; } };
+  const handler = router.stack.find(layer => layer.route?.path === '/public-booking/config' && layer.route.methods.get).route.stack[0].handle;
+  await runWithRequestContext({ supabase: db }, () => handler({ query: { professional_id: 'profile-a' } }, res, error => { throw error; }));
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body.data.professional, { id: 'profile-a', nombre_completo: 'Profesional ficticio' });
+  assert.doesNotMatch(JSON.stringify(res.body), /privado@example\.invalid/);
+});
