@@ -5,6 +5,351 @@
  * Older sheets carry thousands of !important rules, so shared decisions here use it too.
  * IDs and data-* contracts are untouched; only presentation.
  */
+/* Vistas consolidadas: van antes de las decisiones compartidas para conservar
+ * el orden de cascada que tenían como hojas independientes. */
+/* ── Documentos (antes precision-documents.css) ── */
+.documentos-workbench {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.documentos-workbench-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Summary KPI Cards */
+.documentos-summary {
+  margin-bottom: 1.5rem;
+}
+
+/* Documents Table */
+.documentos-table-wrap {
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: #ffffff;
+}
+
+.documentos-table {
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.documentos-table thead {
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
+}
+
+.documentos-table tbody tr:hover {
+  background: #f3f4f8;
+}
+
+.documentos-status-signed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.documentos-status-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+/* ── Mensajes (antes precision-messages.css) ── */
+.intakes-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.intakes-toolbar {
+  padding: 1rem 1.25rem !important;
+  border-bottom: 1px solid #e5e7ef !important;
+}
+
+.intakes-filterbar select {
+  padding: 0.45rem 2rem 0.45rem 2.25rem !important;
+}
+
+.intakes-filterbar select:focus {
+  border-color: #4f46e5 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
+}
+
+.intakes-table thead {
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
+}
+
+.intakes-table tbody tr:hover {
+  background: #f3f4f8;
+}
+
+/* Priority & Channel Badges */
+.intake-priority-high {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.intake-priority-normal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.intake-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+/* ── Historial (antes precision-history.css) ── */
+.page-section[data-page="historial"] .card {
+  padding: 1.5rem;
+}
+
+.page-section[data-page="historial"] .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.telegram-link-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.telegram-link-head > div {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.telegram-link-card,
+.history-note-form,
+.history-note-field {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.telegram-link-card,
+.history-note-form {
+  margin-top: 1rem;
+}
+
+.telegram-link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.telegram-link-field {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.telegram-link-field > span {
+  color: var(--color-ink-muted, #5b6476);
+  font-size: 0.8125rem;
+}
+
+.telegram-link-command {
+  padding: 0.75rem;
+  background: var(--color-canvas, #f3f4f8);
+  border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+
+.telegram-link-command code {
+  white-space: normal;
+}
+
+.telegram-link-actions,
+.history-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.history-note-field textarea {
+  width: 100%;
+  min-height: 132px;
+}
+
+.history-note-feedback[data-state="error"] {
+  color: #b91c1c;
+}
+
+.history-note-feedback[data-state="success"] {
+  color: #166534;
+}
+
+@media (max-width: 767px) {
+  .telegram-link-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .telegram-link-actions > button,
+  .history-note-actions > button {
+    flex: 1 1 140px;
+  }
+}
+
+/* ── Ajustes (antes precision-settings.css) ── */
+.config-editorial-shell {
+  gap: 1.5rem !important;
+}
+
+.config-group-card {
+  padding: 1.75rem !important;
+}
+
+.config-card-header {
+  margin-bottom: 1.25rem !important;
+  padding-bottom: 0.75rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.config-section-kicker {
+  margin-bottom: 0.25rem !important;
+}
+
+.config-card-header h2 {
+  margin: 0 0 0.25rem 0 !important;
+}
+
+.config-card-header p {
+  color: #5b6476 !important;
+  font-size: 0.875rem !important;
+  margin: 0 !important;
+}
+
+/* Config Form Grid */
+.config-form-grid {
+  gap: 1rem !important;
+  margin-bottom: 1.25rem !important;
+}
+
+@media (max-width: 640px) {
+  .config-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.field-label {
+  margin-bottom: 0.35rem !important;
+}
+
+.input-editorial {
+  background: #ffffff !important;
+  padding: 0.55rem 0.85rem !important;
+}
+
+.input-editorial:focus {
+  border-color: #4f46e5 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
+}
+
+.config-form-actions {
+  padding-top: 0.75rem !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+/* Integrations List */
+.integrations-list {
+  gap: 0.75rem !important;
+}
+
+.integration-item {
+  padding: 1rem !important;
+  border: 1px solid #e5e7ef !important;
+  border-radius: 8px !important;
+  background: #f3f4f8 !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.integration-item:hover {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.integration-icon-wrap {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+.integration-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.15rem !important;
+}
+
+.integration-meta strong {
+  font-size: 0.9375rem !important;
+  color: #0b1020 !important;
+}
+
+.integration-sub {
+  font-size: 0.8125rem !important;
+  color: #5b6476 !important;
+}
+
+.status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+}
+
 :root {
   --pc-ink: #0b1020;
   --pc-ink-2: #374151;
