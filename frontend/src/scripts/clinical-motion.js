@@ -7,6 +7,7 @@ document.querySelectorAll('.modal-shell, .patient-modal-overlay, #assistantRail,
     if (!closed && overlay.inert && !overlay.contains(document.activeElement)) returnFocus = document.activeElement;
     const restoreFocus = closed && overlay.contains(document.activeElement);
     overlay.inert = closed;
+    if (opening) overlay.removeAttribute?.('data-dirty');
     if (opening && overlay.matches('#firmaModal, #voiceSessionModal')) {
       overlay.querySelector('button:not(:disabled), input:not(:disabled), textarea:not(:disabled)')?.focus();
     }
@@ -15,9 +16,16 @@ document.querySelectorAll('.modal-shell, .patient-modal-overlay, #assistantRail,
   };
   sync();
   new MutationObserver(sync).observe(overlay, { attributes: true, attributeFilter: ['aria-hidden'] });
+  // Typed data marks the overlay dirty: Escape or a click outside must not silently discard it.
+  overlay.addEventListener('input', () => overlay.setAttribute('data-dirty', 'true'));
   overlay.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !event.defaultPrevented && !overlay.inert && overlay.matches('.modal-shell, #firmaModal, #voiceSessionModal')) {
       const close = overlay.querySelector('.modal-close, #firmaModalClose, #voiceSessionModalClose');
+      if (overlay.getAttribute('data-dirty') === 'true') {
+        event.preventDefault();
+        close?.focus();
+        return;
+      }
       if (close && !close.disabled) {
         event.preventDefault();
         close.click();

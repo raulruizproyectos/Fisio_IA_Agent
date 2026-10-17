@@ -215,10 +215,12 @@ async function drawExerciseCard(doc, state, exercise, index, total) {
   ].filter(Boolean);
   const pauta = pautaParts.join('   |   ');
 
+  // The approved text is what the patient receives: precautions and purpose are never cut.
+  // Only the procedure shortens, and only when the card would not fit on one page.
   const rawProc   = normalizeParagraph(exercise?.procedimiento || exercise?.descripcion, '');
-  const procedure = truncate(rawProc, 500) || 'Sin descripcion detallada.';
-  const why       = truncate(normalizeParagraph(exercise?.why, ''), 200);
-  const cautions  = normalizeList(exercise?.cautions).map((c) => truncate(c, 120));
+  let procedure   = rawProc || 'Sin descripcion detallada.';
+  const why       = normalizeParagraph(exercise?.why, '');
+  const cautions  = normalizeList(exercise?.cautions);
 
   // ── Measure every element with the EXACT same params used when rendering ──
   const mCounter   = doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString(`EJERCICIO ${order} DE ${total}`, { width: textW });
@@ -227,7 +229,8 @@ async function drawExerciseCard(doc, state, exercise, index, total) {
   const mSeparator = 8;
   const mPauta     = pauta ? doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString(pauta, { width: textW }) : 0;
   const mInstrLbl  = doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString('INSTRUCCIONES', { width: textW });
-  const mProcedure = doc.font('Helvetica').fontSize(S.md).heightOfString(procedure, { width: textW, lineGap: 3 });
+  const measureProcedure = () => doc.font('Helvetica').fontSize(S.md).heightOfString(procedure, { width: textW, lineGap: 3 });
+  let mProcedure = measureProcedure();
   const mWhyLbl    = why ? doc.font('Helvetica-Bold').fontSize(S.sm).heightOfString('POR QUE ESTE EJERCICIO', { width: textW }) : 0;
   const mWhyBody   = why ? doc.font('Helvetica').fontSize(S.sm).heightOfString(why, { width: textW, lineGap: 3 }) : 0;
   // Caution text rendered with textW - 16 (8px inner padding each side)
@@ -246,7 +249,7 @@ async function drawExerciseCard(doc, state, exercise, index, total) {
   const spAfterWhyBody  = 6;
   const cautionPad      = cautions.length ? 8 + 8 : 0; // top + bottom padding of caution block
 
-  const textContentH = pad
+  const contentHeight = () => pad
     + mCounter   + spAfterCounter
     + mNombre    + spAfterNombre
     + (zonaLabel ? mZona + spAfterZona : 0)
@@ -257,6 +260,13 @@ async function drawExerciseCard(doc, state, exercise, index, total) {
     + (why ? mWhyLbl + spAfterWhyLbl + mWhyBody + spAfterWhyBody : 0)
     + (cautions.length ? cautionPad + mCautLbl + spAfterWhyLbl + mCautBody : 0)
     + pad;
+
+  const maxCardH = doc.page.height - doc.page.margins.top - doc.page.margins.bottom - 32;
+  while (contentHeight() + 6 > maxCardH && procedure.length > 160) {
+    procedure = truncate(rawProc, Math.floor(procedure.length * 0.85));
+    mProcedure = measureProcedure();
+  }
+  const textContentH = contentHeight();
 
   const cardH = Math.max(hasImg ? imgH + pad * 2 + 10 : 120, textContentH + 6);
 

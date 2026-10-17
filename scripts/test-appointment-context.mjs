@@ -27,6 +27,7 @@ const slice = page.slice(page.indexOf('  const getAgendaMirrorMeta ='), page.ind
 const settings = { cfgCalendarStatus: {}, cfgCalendarMeta: {} };
 const ui = vm.createContext({
   document: { getElementById: id => settings[id] },
+  plural: (count, one, many) => `${count} ${count === 1 ? one : many}`,
   setDashboardChip(chip, label, chipClass) { chip.textContent = label; chip.className = `status-chip ${chipClass}`; },
   dashboardRuntime: {}, agendaSyncChip: {}, agendaSyncTitle: {}, agendaSyncMeta: {}, agendaSyncFacts: {},
   dashboardSyncChip: {}, dashboardSyncTitle: {}, dashboardSyncMeta: {}, dashboardSyncFacts: {},

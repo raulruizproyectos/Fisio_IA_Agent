@@ -208,13 +208,15 @@
   document.getElementById('patientModalDismiss')?.addEventListener('click', closeHandler);
 
   patientModal?.addEventListener('click', (event: Event) => {
-    if (event.target === patientModal) {
+    if (event.target === patientModal && patientModal.dataset.dirty !== 'true') {
       closeHandler();
     }
   });
 
   document.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key === 'Escape' && modalState.get().patientForm.isOpen) {
+      // Typed patient data is only discarded with the explicit Cancel/close buttons.
+      if (patientModal?.dataset.dirty === 'true') return;
       closeHandler();
       return;
     }

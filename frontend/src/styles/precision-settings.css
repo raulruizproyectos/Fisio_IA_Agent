@@ -1,7 +1,7 @@
 /* ==========================================================================
    FISIO CLINICAL — PRECISION SETTINGS (v5.0)
    Covers: Ajustes, Datos de la Clínica, Integraciones, Copiloto
-   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#4f46e5)
    ========================================================================== */
 
 .config-editorial-shell {
@@ -15,7 +15,7 @@
 .config-group-card {
   background: #ffffff !important;
   border-radius: 8px !important;
-  border: 1px solid #dce3ed !important;
+  border: 1px solid #e5e7ef !important;
   padding: 1.75rem !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
@@ -28,23 +28,23 @@
 
 .config-section-kicker {
   font-size: 0.6875rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
-  color: #175dd0 !important;
+  color: #4f46e5 !important;
   display: block !important;
   margin-bottom: 0.25rem !important;
 }
 
 .config-card-header h2 {
   font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: #142234 !important;
+  font-weight: 600 !important;
+  color: #0b1020 !important;
   margin: 0 0 0.25rem 0 !important;
 }
 
 .config-card-header p {
-  color: #536375 !important;
+  color: #5b6476 !important;
   font-size: 0.875rem !important;
   margin: 0 !important;
 }
@@ -82,14 +82,14 @@
   border-radius: 6px !important;
   padding: 0.55rem 0.85rem !important;
   font-size: 0.875rem !important;
-  color: #142234 !important;
+  color: #0b1020 !important;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
 .input-editorial:focus {
-  border-color: #175dd0 !important;
+  border-color: #4f46e5 !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(23, 93, 208, 0.15) !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
 }
 
 .config-form-actions {
@@ -112,9 +112,9 @@
   align-items: center !important;
   gap: 1rem !important;
   padding: 1rem !important;
-  border: 1px solid #dce3ed !important;
+  border: 1px solid #e5e7ef !important;
   border-radius: 8px !important;
-  background: #f4f7fb !important;
+  background: #f3f4f8 !important;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
@@ -145,12 +145,12 @@
 .integration-meta strong {
   font-size: 0.9375rem !important;
   font-weight: 600 !important;
-  color: #142234 !important;
+  color: #0b1020 !important;
 }
 
 .integration-sub {
   font-size: 0.8125rem !important;
-  color: #536375 !important;
+  color: #5b6476 !important;
 }
 
 .status-chip {

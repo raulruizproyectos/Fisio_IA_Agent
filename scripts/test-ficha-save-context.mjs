@@ -31,7 +31,7 @@ function setup(fetchJson) {
     addEventListener:(_event,handler)=>{handlers.note=handler;}};
   const data = id => ({paciente:{id},notas:[{nota:`anterior ${id}`}],module_availability:[]});
   const context = {
-    fichaPatientId:'A', fichaLoadVersion:1, fichaNotesRefreshVersion:0, fichaData:data('A'), BACKEND_BASE:'', fetchJson,
+    fichaPatientId:'A', fichaLoadVersion:1, fichaNotesRefreshVersion:0, fichaData:data('A'), BACKEND_BASE:'', fetchJson, VOICE_REQUEST_TIMEOUT_MS:45000, clinicDayKey:value=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid'}).format(new Date(value)),
     fichaNotaEditVersion:0,fichaDatosEditVersion:0,voiceSessionVersion:1,isFichaModuleUnavailable:()=>false,
     getPatientFullName:p=>p.nombre_completo,selectedPatientName:'',fichaTitulo:{},escapeHtml:text=>text,
     fichaNotaForm:form, fichaNotaFormCard:{hidden:false},fichaNotaFormTitle:{},voiceRecoveredNoteId:null,painRecoveredNoteId:null,

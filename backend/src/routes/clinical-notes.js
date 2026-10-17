@@ -376,6 +376,18 @@ router.patch('/:id', async (req, res, next) => {
 // 7. Delete note
 router.delete('/:id', async (req, res, next) => {
   try {
+    // Clinical history: only the author or an admin deletes, and the audit keeps the full note.
+    const current = await supabase.from(CLINICAL_NOTES_TABLE).select(NOTE_SELECT).eq('id', req.params.id).maybeSingle();
+    if (current.error) {
+      if (isMissingClinicalNotesTableError(current.error)) return respondClinicalNotesUnavailable(res, { write: true });
+      throw current.error;
+    }
+    if (!current.data) return res.status(404).json({error:'Nota clínica no encontrada'});
+    const isAuthor = current.data.profesional_id && current.data.profesional_id === req.auth?.profile_id;
+    if (!isAuthor && req.auth?.role !== 'admin') {
+      return res.status(403).json({ error: 'Solo quien escribió la nota o un administrador puede eliminarla.' });
+    }
+
     const { data: existing, error } = await supabase.from(CLINICAL_NOTES_TABLE).delete().eq('id', req.params.id).select('id,paciente_id').maybeSingle();
     if (error) {
       if (isMissingClinicalNotesTableError(error)) return respondClinicalNotesUnavailable(res, { write: true });
@@ -388,6 +400,7 @@ router.delete('/:id', async (req, res, next) => {
       entity_type: 'clinical_note',
       entity_id: req.params.id,
       action: 'delete',
+      before_state: current.data,
     });
 
     res.json({ ok: true });

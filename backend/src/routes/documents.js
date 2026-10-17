@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { recordAudit } from '../lib/audit.js';
 import PDFDocument from 'pdfkit';
 import { crc32, inflateSync } from 'node:zlib';
 import { inlinePdfFilename } from '../lib/pdf-filename.js';
@@ -280,11 +281,23 @@ router.get('/:id/pdf', async (req, res, next) => {
 // DELETE /api/documentos/:id
 router.delete('/:id', async (req, res, next) => {
   try {
-    const { error } = await supabase.from(DOCUMENTS_TABLE).delete().eq('id', req.params.id);
+    // A signed consent is legal evidence: it is kept, never silently removed.
+    const current = await supabase.from(DOCUMENTS_TABLE).select('id, paciente_id, tipo, titulo, estado, fecha_firma').eq('id', req.params.id).maybeSingle();
+    if (current.error) {
+      if (isMissingDocumentsTableError(current.error)) return respondDocumentsUnavailable(res, { write: true });
+      throw current.error;
+    }
+    if (!current.data) return res.status(404).json({ error: 'Documento no encontrado' });
+    if (current.data.estado === 'firmado') {
+      return res.status(409).json({ error: 'Un documento firmado no se puede eliminar. Consérvalo como parte de la historia del paciente.' });
+    }
+    const { data: deleted, error } = await supabase.from(DOCUMENTS_TABLE).delete().eq('id', req.params.id).neq('estado', 'firmado').select('id').maybeSingle();
     if (error) {
       if (isMissingDocumentsTableError(error)) return respondDocumentsUnavailable(res, { write: true });
       throw error;
     }
+    if (!deleted) return res.status(409).json({ error: 'El documento ha cambiado. Actualiza la lista antes de eliminarlo.' });
+    await recordAudit(req, { entity_type: 'documento', entity_id: req.params.id, action: 'delete', before_state: current.data });
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

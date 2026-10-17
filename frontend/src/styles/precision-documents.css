@@ -1,12 +1,12 @@
 /* ==========================================================================
    FISIO CLINICAL — PRECISION DOCUMENTS (v5.0)
    Covers: Documentos y Consentimientos Informados
-   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#4f46e5)
    ========================================================================== */
 
 .documentos-workbench {
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
@@ -23,8 +23,8 @@
 
 .documentos-workbench-title {
   font-size: 1.125rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 /* Summary KPI Cards */
@@ -42,8 +42,8 @@
 }
 
 .documentos-summary .ops-signal {
-  background: #f4f7fb;
-  border: 1px solid #dce3ed;
+  background: #f3f4f8;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   padding: 1rem;
   display: flex;
@@ -56,13 +56,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #536375;
+  color: #5b6476;
 }
 
 .ops-signal-value {
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .documentos-value-ok {
@@ -80,7 +80,7 @@
 
 /* Documents Table */
 .documentos-table-wrap {
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   overflow-x: auto;
   background: #ffffff;
@@ -94,8 +94,8 @@
 }
 
 .documentos-table thead {
-  background: #f4f7fb;
-  border-bottom: 1px solid #dce3ed;
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
 }
 
 .documentos-table th {
@@ -115,7 +115,7 @@
 }
 
 .documentos-table tbody tr:hover {
-  background: #f4f7fb;
+  background: #f3f4f8;
 }
 
 .documentos-status-signed {

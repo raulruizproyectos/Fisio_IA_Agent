@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase.js';
 import PDFDocument from 'pdfkit';
 import { inlinePdfFilename } from '../lib/pdf-filename.js';
 import { isMoney, respondFinanceError } from '../lib/finance.js';
+import { writeOnce } from '../lib/operation-once.js';
 
 const router = Router();
 const INVOICES_TABLE = 'crm_facturas';
@@ -86,14 +87,15 @@ router.post('/', async (req, res, next) => {
       || pago_ids.some(id => typeof id!=='string' || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)) || new Set(pago_ids.map(id=>id.toLowerCase())).size!==pago_ids.length)) {
       return res.status(400).json({ error: 'Selecciona cobros válidos sin duplicados' });
     }
-    const { data: factura, error } = await supabase.rpc('issue_clinic_invoice', {
-      target_patient: paciente_id, payment_ids: pago_ids || null, tax_percent: Number(iva_pct), invoice_notes: notas || null,
-    });
+    const params = { target_patient: paciente_id, payment_ids: pago_ids || null, tax_percent: Number(iva_pct), invoice_notes: notas || null };
+    // An invoice number is fiscal: a retried request after a lost answer replays the same invoice.
+    const { data: factura, error, replayed } = await writeOnce(req, 'invoice', params,
+      () => supabase.rpc('issue_clinic_invoice', params));
     if (error) {
       if (isMissingInvoicesTableError(error)) return respondInvoicesUnavailable(res, { write: true });
       return respondFinanceError(res, error);
     }
-    res.status(201).json({ data: factura });
+    res.status(replayed ? 200 : 201).json({ data: factura, ...(replayed ? { replayed: true } : {}) });
   } catch (err) {
     next(err);
   }

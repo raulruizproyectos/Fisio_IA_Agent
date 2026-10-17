@@ -80,6 +80,48 @@ test('webhook Telegram rechaza un secreto incorrecto', async () => {
   assert.equal(res.body.error, 'Webhook no autorizado');
 });
 
+test('una sesion profesional no evita cron ni webhooks cambiando mayusculas en la ruta', async (t) => {
+  t.mock.method(serviceSupabase.auth, 'getUser', async () => ({ data: { user: { id: 'user-a' } } }));
+  const profile = {
+    id: 'profile-a', auth_user_id: 'user-a', rol: 'fisioterapeuta', activo: true,
+    clinica_id: 'clinic-a', crm_clinicas: { id: 'clinic-a', nombre: 'Clinica A', activo: true },
+  };
+  t.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify([profile]), {
+    status: 200, headers: { 'Content-Type': 'application/json' },
+  }));
+  const session = { authorization: 'Bearer test-token' };
+  for (const [path, error] of [
+    ['/api/CRON/avisos-agente', 'Proceso interno no autorizado'],
+    ['/api/Cron/resumenes/diario', 'Proceso interno no autorizado'],
+    ['/API/cron/recordatorios', 'Proceso interno no autorizado'],
+    ['/api/Telegram/incoming', 'Webhook no autorizado'],
+  ]) {
+    const res = response();
+    await authorizeRequest(request({ method: 'POST', path, headers: session }), res, () => assert.fail(`${path} no debe continuar`));
+    assert.equal(res.statusCode, 401, path);
+    assert.equal(res.body.error, error, path);
+  }
+  for (const path of ['/api/WhatsApp/incoming', '/api/telegram/Pilot-Incoming']) {
+    const res = response();
+    await authorizeRequest(request({ method: 'POST', path, headers: session }), res, () => assert.fail(`${path} no debe continuar`));
+    assert.ok([401, 503].includes(res.statusCode), path);
+  }
+});
+
+test('la clave interna solo abre las rutas que usa n8n', async () => {
+  const internal = { 'x-internal-api-key': 'internal-secret' };
+  for (const [method, path] of [['GET', '/api/documentos'], ['GET', '/api/pacientes'], ['DELETE', '/api/pagos/p1'], ['GET', '/api/cron/recordatorios']]) {
+    const res = response();
+    await authorizeRequest(request({ method, path, headers: internal }), res, () => assert.fail(`${method} ${path} no debe abrirse`));
+    assert.equal(res.statusCode, 403, `${method} ${path}`);
+  }
+  for (const [method, path] of [['POST', '/api/cron/avisos-agente'], ['GET', '/api/profesional/intakes/pending'], ['POST', '/api/profesional/appointments/sync-calendar']]) {
+    let opened = false;
+    await authorizeRequest(request({ method, path, headers: internal }), response(), () => { opened = true; });
+    assert.equal(opened, true, `${method} ${path}`);
+  }
+});
+
 test('una clave interna valida habilita el contexto privilegiado', async () => {
   let nextCalled = false;
   await authorizeRequest(

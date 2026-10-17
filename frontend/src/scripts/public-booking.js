@@ -88,9 +88,16 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       const fetchJson = async (url, options = {}) => {
         const response = await fetch(url, { ...options, signal: options.signal || AbortSignal.timeout(30000) });
         const rawText = await response.text();
-        const payload = rawText ? JSON.parse(rawText) : {};
+        let payload = {};
+        try { payload = rawText ? JSON.parse(rawText) : {}; } catch {
+          // An unreadable success must not look like a confirmed booking.
+          if (response.ok) throw new Error('No se pudo confirmar la respuesta de la clínica. Comprueba tu reserva antes de repetirla.');
+        }
         if (!response.ok) {
-          const error = new Error(payload?.error || payload?.message || `HTTP ${response.status}`);
+          // Patients see plain Spanish, never a proxy page or «HTTP 502».
+          const error = new Error(payload?.error || payload?.message || (response.status >= 500
+            ? 'La reserva online no está disponible ahora mismo. Inténtalo en unos minutos o llama a la clínica.'
+            : 'No se pudo completar la reserva. Revisa los datos e inténtalo de nuevo.'));
           error.payload = payload;
           error.status = response.status;
           throw error;

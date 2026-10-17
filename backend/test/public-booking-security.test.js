@@ -14,19 +14,19 @@ function fixture(patientOverrides = {}) {
   const writes = [], appointments = [];
   const patient = { id: 'patient-private', email: 'existing@example.invalid', telefono: null, ...patientOverrides };
   const db = { from(table) {
-    let operation = 'read', payload;
+    let operation = 'read', payload, options;
     const filters = [];
     const query = {
       select() { return this; }, eq(key, value) { filters.push([key, value]); return this; },
       in() { return this; }, lt() { return this; }, gt() { return this; }, not() { return this; }, limit() { return this; }, order() { return this; },
       insert(value) { operation = 'insert'; payload = value; return this; },
       update(value) { operation = 'update'; payload = value; return this; },
-      upsert(value) { operation = 'upsert'; payload = value; return this; },
+      upsert(value, upsertOptions) { operation = 'upsert'; payload = value; options = upsertOptions; return this; },
       async single() { return execute(); }, async maybeSingle() { return execute(); },
       then(resolve, reject) { return Promise.resolve(execute()).then(resolve, reject); },
     };
     function execute() {
-      if (operation !== 'read') writes.push({ table, operation, payload });
+      if (operation !== 'read') writes.push({ table, operation, payload, options });
       if (table === 'crm_perfiles') return { data: { id: 'profile-a', nombre_completo: 'Profesional ficticio', activo: true, clinica_id: 'clinic-a', crm_clinicas: { id: 'clinic-a', activo: true } } };
       if (table === 'crm_pacientes') {
         const emailFilter = filters.find(([key]) => key === 'email');
@@ -106,4 +106,14 @@ test('POST aplica el mismo máximo local de 45 días que GET, incluso al cruzar 
     assert.equal((await invoke(rejectedStore, slot(outsideStart), { now })).statusCode, 400, `Fuera de ventana ${outsideStart}`);
     assert.equal(rejectedStore.writes.length, 0);
   }
+});
+
+test('una reserva pública nunca reactiva una asignación que la clínica terminó', async () => {
+  const store = fixture();
+  const res = await invoke(store, body);
+  assert.equal(res.statusCode, 201);
+  const assignment = store.writes.find(write => write.table === 'crm_asignaciones_fisio_paciente');
+  assert.ok(assignment, 'first link is still created so the professional sees the appointment');
+  assert.equal(assignment.options?.ignoreDuplicates, true);
+  assert.equal('desasignado_en' in assignment.payload, false);
 });

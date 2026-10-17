@@ -330,8 +330,8 @@ router.post('/recommend', async (req, res) => {
     }
     const {
       symptom_summary = symptoms,
-      red_flags_present = false,
-      red_flags_items = [],
+      red_flags_present: engineRedFlagsPresent = false,
+      red_flags_items: engineRedFlagsItems = [],
       clinical_interpretation = '',
       main_goal = '',
       patient_cover_message = '',
@@ -341,9 +341,15 @@ router.post('/recommend', async (req, res) => {
       message_to_therapist_es = '',
       follow_up_focus = '',
       estimated_adherence_difficulty = '',
-      escalation_recommend_medical_attention = false,
-      escalation_reason = '',
+      escalation_recommend_medical_attention: engineEscalation = false,
+      escalation_reason: engineEscalationReason = '',
     } = recommendation;
+    // The model may miss a red flag; the deterministic rules always add theirs so approval demands a justification.
+    const ruleRedFlags = extractRedFlags(symptoms);
+    const red_flags_items = [...new Set([...(Array.isArray(engineRedFlagsItems) ? engineRedFlagsItems : []), ...ruleRedFlags])];
+    const red_flags_present = Boolean(engineRedFlagsPresent) || ruleRedFlags.length > 0;
+    const escalation_recommend_medical_attention = Boolean(engineEscalation) || ruleRedFlags.length > 0;
+    const escalation_reason = engineEscalationReason || (ruleRedFlags.length ? `red_flags:${ruleRedFlags.join(',')}` : '');
     const rawSelectedExercises = getRecommendationExercises(recommendation);
     const selectedExercises = improveSelectionImageCoverage({
       selectedExercises: rawSelectedExercises,
@@ -1682,14 +1688,16 @@ function buildRuleBasedRecommendation({ requestId, symptoms, catalog, fallbackRe
   };
 }
 
-function extractRedFlags(symptoms) {
-  const text = String(symptoms || '').toLowerCase();
+// Accent-insensitive with word boundaries: "Pérdida de fuerza" must flag, "40 años" must not.
+export function extractRedFlags(symptoms) {
+  const text = normalizeClinicalText(symptoms);
   const flags = [];
-  if (/(fiebre|39|40)/.test(text)) flags.push('fiebre');
-  if (/(hormigueo persistente|paralisis|perdida de fuerza|incontinencia)/.test(text)) flags.push('neurologico');
-  if (/(caida|golpe fuerte|trauma reciente)/.test(text)) flags.push('trauma_reciente');
-  if (/(dolor en pecho|falta de aire|disnea)/.test(text)) flags.push('urgencia_respiratoria');
-  return [...new Set(flags)];
+  if (/\b(fiebre|febril)\b|\b(3[89]|4[0-2])([.,]\d)?\s*(º|°|grados)/.test(text)) flags.push('fiebre');
+  if (/\b(hormigueo persistente|paralisis|perdida de (la )?fuerza|incontinencia|perdida de control de esfinteres|anestesia en silla de montar)\b/.test(text)) flags.push('neurologico');
+  if (/\b(caidas?|golpe fuerte|traumatismo|trauma reciente|accidente)\b/.test(text)) flags.push('trauma_reciente');
+  if (/\b(dolor (en el|en|de) pecho|dolor toracico|falta de aire|disnea)\b/.test(text)) flags.push('urgencia_respiratoria');
+  if (/\bperdida de peso (inexplicada|sin motivo|sin causa)\b/.test(text)) flags.push('perdida_peso_inexplicada');
+  return flags;
 }
 
 function normalizeClinicalText(value) {

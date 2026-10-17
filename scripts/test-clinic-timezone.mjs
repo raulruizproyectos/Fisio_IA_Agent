@@ -27,12 +27,12 @@ if(!process.argv.includes('--worker')){
     assert.equal((next-monday)/3600000,hours);assert.equal(dates.clinicDateTimeValue(monday).slice(11),'00:00');assert.equal(dates.clinicDateTimeValue(next).slice(11),'00:00');
   }
   const calendar={innerHTML:''},mobile={innerHTML:''};
-  const context={...dates,Date,document:{getElementById:()=>calendar},escapeHtml:String,escapeAttr:String,getDashboardFirstName:String,
-    isCalendarOnlyAppointment:()=>false,isAllDayAppointment:()=>false,statusText:String,
+  const context={...dates,Date,document:{getElementById:()=>calendar},escapeHtml:String,escapeAttr:String,getDashboardFirstName:String,getAgendaShortName:String,
+    isCalendarOnlyAppointment:()=>false,isAllDayAppointment:()=>false,statusText:String,plural:(count,one,many)=>`${count} ${count===1?one:many}`,
     fmtHourOnly:iso=>new Date(iso).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:dates.CLINIC_TIME_ZONE}),
     summarizeCalendarOnlyBlocks:()=>({total:0,blocking:0}),agendaMobileList:mobile,agendaMobileSummary:{},
     isTodayDate:()=>false,getAgendaMirrorMeta:()=>({label:'CRM'})};
-  runInNewContext(transpileModule(section('  const getWeekMonday =','  const fmtHourOnly =')+section('  const renderAgendaCalendar =','  let appointmentDetailId:')+'\nglobalThis.week=getWeekMonday;globalThis.calendar=renderAgendaCalendar;globalThis.mobile=renderAgendaMobileTimeline;',{}).outputText,context);
+  runInNewContext(transpileModule(section('  const getWeekMonday =','  const fmtHourOnly =')+section('  const agendaWeekDays =','  let appointmentDetailId:')+'\nglobalThis.week=getWeekMonday;globalThis.calendar=renderAgendaCalendar;globalThis.mobile=renderAgendaMobileTimeline;',{}).outputText,context);
   const week=context.week(new Date('2026-10-12T12:00:00Z'));
   assert.equal(week.toISOString(),'2026-10-11T22:00:00.000Z','Week must begin at clinic midnight');
   const rows=[{id:'monday-9',inicio_en:'2026-10-12T07:00:00Z',nombre_paciente:'Lunes nueve',paciente_id:'A'},

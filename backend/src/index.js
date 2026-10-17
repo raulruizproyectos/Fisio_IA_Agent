@@ -24,7 +24,7 @@ import authRouter from './routes/auth.js';
 import { buildReadinessReport, getReadinessStatusCode } from './lib/readiness.js';
 import { serviceSupabase, supabase } from './lib/supabase.js';
 import { authorizeRequest, requestIdentity } from './middleware/security.js';
-import { allowedBrowserOrigins, PAID_API_PATHS, paidApiLimiter } from './lib/http-security.js';
+import { allowedBrowserOrigins, mountPaidApiLimiter } from './lib/http-security.js';
 import { publicHttpErrorMessage } from './lib/public-error.js';
 
 // Configuracion
@@ -43,6 +43,7 @@ const allowedOrigins = allowedBrowserOrigins(process.env);
 
 // Middleware
 app.set('trust proxy', 1);
+app.set('case sensitive routing', true);
 app.disable('x-powered-by');
 app.use(requestIdentity);
 app.use(helmet({
@@ -119,7 +120,7 @@ app.get('/', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use(authorizeRequest);
-app.use(PAID_API_PATHS, paidApiLimiter(process.env));
+mountPaidApiLimiter(app, process.env);
 
 app.get('/api/me', (req, res) => {
   res.json(req.auth || {});

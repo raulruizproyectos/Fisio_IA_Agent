@@ -50,7 +50,7 @@
 
 .clinic-dashboard-copy .clinic-kicker {
   color: var(--color-canopy-green) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   font-size: var(--text-xs) !important;
@@ -62,7 +62,7 @@
 #dashboardTitle {
   color: #000000 !important;
   font-size: 2.35rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   letter-spacing: -0.03em !important;
   line-height: 1.15 !important;
   margin: 0.25rem 0 0.65rem !important;
@@ -169,7 +169,7 @@
 
 .clinic-focus-card .clinic-kicker {
   color: var(--color-canopy-green) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   font-size: var(--text-xs) !important;
@@ -178,7 +178,7 @@
 #dashboardNextSessionTitle {
   color: var(--color-canopy-green) !important;
   font-size: 1.3rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   display: block !important;
   line-height: 1.2 !important;
 }
@@ -259,7 +259,7 @@
   display: block !important;
   color: #000000 !important;
   font-size: 1.85rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   letter-spacing: -0.02em !important;
   line-height: 1.1 !important;
 }
@@ -285,13 +285,13 @@
 .clinic-panel h2 {
   color: #000000 !important;
   font-size: 1.35rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   margin: 0 !important;
 }
 
 .clinic-panel .clinic-kicker {
   color: var(--color-canopy-green) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   font-size: var(--text-xs) !important;
@@ -302,7 +302,7 @@
 .clinic-panel-title {
   color: #000000 !important;
   font-size: 1.1rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   display: block !important;
   margin-top: 0.5rem !important;
 }
@@ -356,7 +356,7 @@
 .clinic-finance-strip article strong {
   color: #000000 !important;
   font-size: 1.5rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   display: block !important;
 }
 
@@ -374,7 +374,7 @@
 
 .metric-pill-value {
   font-size: 1.6rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1 !important;
   font-variant-numeric: tabular-nums !important;
@@ -427,13 +427,13 @@
 
 .agenda-sync-copy strong {
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
 }
 
 .agenda-sync-copy p {
   font-size: 11px !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
   margin: 0 !important;
 }
 
@@ -449,7 +449,7 @@
 
 .week-label {
   font-size: var(--text-sm) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   padding: 0 0.5rem !important;
   font-variant-numeric: tabular-nums !important;
@@ -473,7 +473,7 @@
   background: var(--color-mint-wash, #d2f2e3) !important;
   color: var(--color-canopy-green, #0a3922) !important;
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   margin-left: 0.5rem !important;
 }
 
@@ -496,7 +496,7 @@
   align-items: center !important;
   justify-content: center !important;
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--color-slate) !important;
   text-transform: uppercase !important;
   border-right: 1px solid var(--color-frost-gray) !important;
@@ -510,7 +510,7 @@
 
 .agenda-day-name {
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--color-slate) !important;
   text-transform: uppercase !important;
   display: block !important;
@@ -518,7 +518,7 @@
 
 .agenda-day-number {
   font-size: 1.35rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   display: block !important;
   margin-top: 0.15rem !important;
@@ -541,7 +541,7 @@
   justify-content: center !important;
   padding-top: 0.75rem !important;
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--color-slate) !important;
   border-right: 1px solid var(--color-cloud-gray) !important;
   font-variant-numeric: tabular-nums !important;
@@ -596,14 +596,14 @@
 
 .agenda-event-time {
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--color-canopy-green) !important;
   font-variant-numeric: tabular-nums !important;
 }
 
 .agenda-event-name {
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -616,6 +616,77 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+
+/* States must survive the base card above: colour plus the visible .agenda-event-state label. */
+.agenda-event-time {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.35rem !important;
+}
+
+.agenda-event-state {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.agenda-event-card.agenda-event-pendiente {
+  background: #fffbeb !important;
+  border-left-color: #d97706 !important;
+}
+
+.agenda-event-card.agenda-event-pendiente .agenda-event-time,
+.agenda-event-card.agenda-event-pendiente .agenda-event-state {
+  color: #b45309 !important;
+}
+
+.agenda-event-card.agenda-event-cancelada,
+.agenda-event-card.agenda-event-no_show {
+  background: #fef2f2 !important;
+  border-left-color: #dc2626 !important;
+}
+
+.agenda-event-card.agenda-event-cancelada .agenda-event-time,
+.agenda-event-card.agenda-event-cancelada .agenda-event-state,
+.agenda-event-card.agenda-event-no_show .agenda-event-time,
+.agenda-event-card.agenda-event-no_show .agenda-event-state {
+  color: #b91c1c !important;
+}
+
+.agenda-event-card.agenda-event-cancelada .agenda-event-name,
+.agenda-event-card.agenda-event-no_show .agenda-event-name {
+  text-decoration: line-through !important;
+  color: #5b6476 !important;
+}
+
+.agenda-event-card.agenda-event-completada {
+  background: #f3f4f8 !important;
+  border-left-color: #94a3b8 !important;
+}
+
+.agenda-event-card.agenda-event-completada .agenda-event-time,
+.agenda-event-card.agenda-event-completada .agenda-event-state {
+  color: #5b6476 !important;
+}
+
+.agenda-event-card.is-calendar-only {
+  background: #f3f4f8 !important;
+  border-style: dashed !important;
+  border-left: 4px solid #5b6476 !important;
+}
+
+.agenda-event-card.is-calendar-only .agenda-event-time {
+  color: #5b6476 !important;
+}
+
+.agenda-board.has-weekend .agenda-board-head,
+.agenda-board.has-weekend .agenda-board-row {
+  grid-template-columns: 5.5rem repeat(7, minmax(0, 1fr)) !important;
 }
 
 .agenda-break-cell {
@@ -638,7 +709,7 @@
 
 .agenda-break-cell strong {
   color: var(--color-canopy-green) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -707,14 +778,14 @@
 
 .finance-kicker {
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--color-canopy-green) !important;
   text-transform: uppercase !important;
 }
 
 #financePriorityTitle {
   font-size: 1.5rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1.15 !important;
   display: block !important;
@@ -794,12 +865,12 @@
   font-size: var(--text-xs) !important;
   color: var(--color-slate) !important;
   text-transform: uppercase !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .pagos-stat-value {
   font-size: 1.35rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   font-variant-numeric: tabular-nums !important;
 }
@@ -822,7 +893,7 @@
 .intakes-hero h1 {
   color: #000000 !important;
   font-size: 2.25rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   letter-spacing: -0.03em !important;
 }
 
@@ -833,7 +904,7 @@
 
 .intakes-hero span {
   color: var(--color-deep-teal) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .intakes-card {
@@ -845,7 +916,7 @@
 .intakes-toolbar h2 {
   color: #000000 !important;
   font-size: var(--text-lg) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -874,7 +945,7 @@
 
 .patient-workspace-header h1 {
   font-size: 2.25rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   letter-spacing: -0.03em !important;
   line-height: 1.15 !important;
@@ -966,7 +1037,7 @@
 
 .patient-vitals article span {
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
   color: var(--color-canopy-green) !important;
@@ -974,7 +1045,7 @@
 
 .patient-vitals article strong {
   font-size: 1.85rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1.1 !important;
 }
@@ -1103,7 +1174,7 @@
   background: var(--color-cloud-gray) !important;
   color: var(--color-slate) !important;
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
   padding: 0.85rem 1.25rem !important;
@@ -1120,7 +1191,7 @@
 
 .patient-table-wrap td strong {
   color: #000000 !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .patient-table-wrap tbody tr:hover td {
@@ -1138,7 +1209,7 @@
 
 .ficha-workspace-header h1 {
   font-size: 2.25rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
 }
 
@@ -1159,7 +1230,7 @@
 .ficha-section-card h2,
 .ficha-section-card h3 {
   color: #000000 !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -1186,7 +1257,7 @@
 
 .config-group-card h2 {
   font-size: 1.4rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   margin-bottom: 0.35rem !important;
 }
@@ -1199,7 +1270,7 @@
 
 .config-section-kicker {
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
   color: var(--color-canopy-green) !important;
@@ -1405,7 +1476,7 @@
   display: block !important;
   color: #000000 !important;
   font-size: var(--text-base) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .user-role-label {
@@ -1554,7 +1625,7 @@
 
 .template-kpi-card span {
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
   color: var(--color-canopy-green, #0a3922) !important;
@@ -1562,7 +1633,7 @@
 
 .template-kpi-card strong {
   font-size: 1.85rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1.1 !important;
   font-variant-numeric: tabular-nums !important;
@@ -1570,7 +1641,7 @@
 
 .template-kpi-card p {
   font-size: var(--text-xs) !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
   margin: 0 !important;
 }
 
@@ -1615,7 +1686,7 @@
 
 .finance-overview-card .overview-label {
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
   color: var(--color-canopy-green, #0a3922) !important;
@@ -1623,14 +1694,14 @@
 
 .finance-overview-card strong {
   font-size: 1.75rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   font-variant-numeric: tabular-nums !important;
 }
 
 .finance-overview-card p {
   font-size: var(--text-xs) !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
   margin: 0 !important;
 }
 
@@ -1678,22 +1749,22 @@
 
 .ops-signal-label {
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
 }
 
 .ops-signal-value {
   font-size: 1.75rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   font-variant-numeric: tabular-nums !important;
 }
 
 .ops-signal-hint {
   font-size: var(--text-xs) !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
 }
 
 .documentos-value-ok {
@@ -1724,14 +1795,14 @@
 
 .detail-block h3 {
   font-size: 1.15rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   margin: 0 !important;
 }
 
 .detail-caption {
   font-size: var(--text-sm) !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
   margin: 0 !important;
 }
 

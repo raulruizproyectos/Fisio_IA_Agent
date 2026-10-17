@@ -24,7 +24,9 @@ import '../styles/precision-history.css';
 import '../styles/precision-settings.css';
 import '../styles/global-shell.css';
 import '../styles/precision-blue.css';
+import '../styles/premium-system.css';
 import '@fontsource-variable/dm-sans';
+import '@fontsource-variable/inter-tight';
 ---
 
 <!doctype html>
@@ -38,18 +40,18 @@ import '@fontsource-variable/dm-sans';
     <link rel="stylesheet" href="/material-symbols.css" />
     <style is:inline>
       :root {
-        --font-ui: 'DM Sans Variable', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        --font-display: 'DM Sans Variable', 'DM Sans', sans-serif;
+        --font-ui: 'Inter Tight Variable', 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --font-display: 'Inter Tight Variable', 'Inter Tight', sans-serif;
       }
       *, *::before, *::after {
         font-family: var(--font-ui);
-        font-feature-settings: "ss03" 1;
-        -webkit-font-feature-settings: "ss03" 1;
+        font-feature-settings: "cv11" 1, "ss01" 1;
+        -webkit-font-feature-settings: "cv11" 1, "ss01" 1;
       }
       h1, h2, h3, h4, .font-display, .page-title {
         font-family: var(--font-display) !important;
-        font-feature-settings: "ss03" 1;
-        -webkit-font-feature-settings: "ss03" 1;
+        font-feature-settings: "cv11" 1, "ss01" 1;
+        -webkit-font-feature-settings: "cv11" 1, "ss01" 1;
       }
       .material-symbols-rounded,
       [class*="material-symbols"] {
@@ -92,8 +94,8 @@ import '@fontsource-variable/dm-sans';
     font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Stable reading size across desktop and mobile. */
-    font-size: 15px;
+    /* Stable reading size; 16 px keeps rem values on whole pixels. */
+    font-size: 16px;
     scroll-behavior: smooth;
     width: 100%;
     max-width: 100%;

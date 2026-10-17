@@ -1,0 +1,325 @@
+/*
+ * Noche clínica (dirección C, elegida por Raúl el 17-oct-2026).
+ * Final authoritative layer, imported last: one type scale (12/13/14/16/20/28/32),
+ * weights 400/500/600, radii 8/10/16/20 and three shadows for every view.
+ * Older sheets carry thousands of !important rules, so shared decisions here use it too.
+ * IDs and data-* contracts are untouched; only presentation.
+ */
+:root {
+  --pc-ink: #0b1020;
+  --pc-ink-2: #374151;
+  --pc-muted: #5b6476;
+  --pc-line: #e5e7ef;
+  --pc-line-soft: #f0f1f6;
+  --pc-canvas: #f3f4f8;
+  --pc-surface: #ffffff;
+  --pc-accent: #4f46e5;
+  --pc-accent-hover: #4338ca;
+  --pc-accent-soft: #eef0ff;
+  --pc-accent-grad: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+  --pc-accent-shadow: 0 1px 2px rgba(79, 70, 229, 0.35), 0 8px 20px -8px rgba(79, 70, 229, 0.55);
+  --pc-shadow-1: 0 1px 2px rgba(11, 16, 32, 0.05);
+  --pc-shadow-2: 0 1px 2px rgba(11, 16, 32, 0.05), 0 14px 34px -20px rgba(11, 16, 32, 0.25);
+  --pc-r-control: 10px;
+  --pc-r-card: 16px;
+  --pc-r-panel: 20px;
+  --pc-ease: cubic-bezier(.2, 0, 0, 1);
+}
+
+body { background: var(--pc-canvas) !important; color: var(--pc-ink); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* ── Navigation: deep night rail ─────────────────────────────── */
+.sidebar {
+  background: #0b1020 !important;
+  border-right: 1px solid #1b2236 !important;
+  color: #e5e7f0 !important;
+}
+.sidebar .brand-text { color: #fff !important; font-size: 16px !important; font-weight: 600 !important; letter-spacing: -0.01em; }
+.sidebar .brand-subtitle { color: #8189a6 !important; font-size: 12px !important; }
+.sidebar .brand-icon-wrapper {
+  background: linear-gradient(145deg, #818cf8, #4f46e5) !important;
+  color: #fff !important; border-radius: 11px !important; border: 0 !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 20px -6px rgba(99, 102, 241, 0.7) !important;
+}
+.sidebar .sidebar-status {
+  background: #121a2e !important; border: 1px solid #1b2236 !important; border-radius: 12px !important; color: #e5e7f0 !important;
+}
+.sidebar .sidebar-status strong { color: #fff !important; font-size: 13px !important; font-weight: 600 !important; }
+.sidebar .sidebar-status small { color: #8189a6 !important; font-size: 12px !important; }
+.sidebar .sidebar-status-dot { background: #22c55e !important; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18) !important; }
+.sidebar .sidebar-ai-launch {
+  background: linear-gradient(140deg, #312e81, #4f46e5 55%, #7c3aed) !important;
+  border: 1px solid rgba(165, 180, 252, 0.25) !important; border-radius: 14px !important; color: #fff !important;
+  box-shadow: 0 10px 24px -14px rgba(124, 58, 237, 0.9) !important;
+  transition: transform 160ms var(--pc-ease), box-shadow 160ms var(--pc-ease) !important;
+}
+.sidebar .sidebar-ai-launch:hover { transform: translateY(-1px); box-shadow: 0 14px 28px -14px rgba(124, 58, 237, 1) !important; }
+.sidebar .sidebar-ai-launch strong { color: #fff !important; font-size: 14px !important; font-weight: 600 !important; }
+.sidebar .sidebar-ai-launch small { color: rgba(255, 255, 255, 0.78) !important; font-size: 12px !important; }
+.sidebar .sidebar-ai-launch .material-symbols-rounded { color: #c7d2fe !important; }
+.sidebar .sidebar-section-label { color: #6b7391 !important; font-size: 11px !important; font-weight: 600 !important; letter-spacing: 0.08em !important; }
+.sidebar .nav-item {
+  color: #b4bad0 !important; background: transparent !important; border-radius: 10px !important;
+  font-size: 14px !important; font-weight: 500 !important; position: relative;
+  transition: background-color 120ms var(--pc-ease), color 120ms var(--pc-ease) !important;
+}
+.sidebar .nav-item .material-symbols-rounded { color: #7c84a3 !important; }
+.sidebar .nav-item:hover { background: #151d33 !important; color: #fff !important; }
+.sidebar .nav-item:hover .material-symbols-rounded { color: #c7d2fe !important; }
+.sidebar .nav-item.active { background: #1c2440 !important; color: #fff !important; box-shadow: inset 0 0 0 1px rgba(165, 180, 252, 0.12) !important; }
+.sidebar .nav-item.active .material-symbols-rounded { color: #a5b4fc !important; font-variation-settings: 'FILL' 1, 'wght' 500 !important; }
+.sidebar .nav-item.active::before {
+  content: ''; position: absolute; left: -12px; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: #a5b4fc;
+}
+.sidebar .nav-item .badge {
+  background: #4f46e5 !important; color: #fff !important; border: 0 !important; font-size: 11px !important; font-weight: 600 !important;
+  min-width: 20px; height: 20px; border-radius: 999px !important; display: inline-grid; place-items: center; padding: 0 6px !important;
+}
+.sidebar .nav-item .badge:is(:empty, [data-count="0"]) { display: none; }
+.sidebar .sidebar-profile { border-top: 1px solid #1b2236 !important; }
+.sidebar .sidebar-profile strong { color: #fff !important; font-size: 13px !important; font-weight: 600 !important; }
+.sidebar .sidebar-profile small { color: #8189a6 !important; font-size: 12px !important; }
+.sidebar .user-avatar { background: #1c2440 !important; color: #c7d2fe !important; border: 1px solid #2a3455 !important; }
+.sidebar #logoutBtn { color: #8189a6 !important; background: transparent !important; border-color: #1b2236 !important; border-radius: 10px !important; }
+.sidebar #logoutBtn:hover { color: #fff !important; background: #151d33 !important; }
+.sidebar :focus-visible { outline: 2px solid #a5b4fc !important; outline-offset: 2px; }
+
+/* ── Top bar: quiet glass ───────────────────────────────────── */
+#topbar {
+  background: rgba(255, 255, 255, 0.86) !important;
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--pc-line) !important;
+  box-shadow: none !important;
+}
+#topbar input[type="search"], #topbar input[type="text"] {
+  border-radius: var(--pc-r-control) !important; border: 1px solid var(--pc-line) !important; background: var(--pc-surface) !important;
+  font-size: 14px !important;
+}
+
+/* ── Typography scale ───────────────────────────────────────── */
+main h1.page-title, .page-section h1.page-title {
+  font-size: 32px !important; font-weight: 600 !important; letter-spacing: -0.03em !important; line-height: 1.12 !important; color: var(--pc-ink) !important;
+}
+.page-section h2:not(.ficha-hero-name):not(.sr-only) {
+  font-size: 16px !important; font-weight: 600 !important; letter-spacing: -0.01em !important; line-height: 1.35 !important; color: var(--pc-ink) !important;
+}
+.page-section h3 { font-size: 14px !important; font-weight: 600 !important; letter-spacing: -0.005em; color: var(--pc-ink) !important; }
+.page-section :is([class*="eyebrow"], [class*="kicker"]) {
+  font-size: 11px !important; font-weight: 600 !important; letter-spacing: 0.08em !important; text-transform: uppercase; color: var(--pc-accent) !important;
+}
+.page-section :is(.page-subtitle, .card-subtitle, [class*="-subtitle"]):not(.brand-subtitle) {
+  font-size: 14px !important; color: var(--pc-muted) !important; font-weight: 400 !important; line-height: 1.5 !important;
+}
+.page-section p { line-height: 1.5; }
+:is(.tabular, [class*="value"], [class*="amount"], [class*="metric"], td) { font-variant-numeric: tabular-nums; }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+:is(.btn-primary, .precision-btn-primary, .patient-primary-action, .patient-modal-submit) {
+  background: var(--pc-accent-grad) !important; color: #fff !important; border: 1px solid transparent !important;
+  border-radius: var(--pc-r-control) !important; box-shadow: var(--pc-accent-shadow) !important;
+  font-size: 14px !important; font-weight: 600 !important; letter-spacing: -0.005em !important;
+  transition: transform 120ms var(--pc-ease), box-shadow 120ms var(--pc-ease), filter 120ms var(--pc-ease) !important;
+}
+:is(.btn-primary, .precision-btn-primary, .patient-primary-action, .patient-modal-submit):hover:not(:disabled) {
+  filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 1px 2px rgba(79, 70, 229, 0.35), 0 12px 24px -10px rgba(79, 70, 229, 0.6) !important;
+}
+:is(.btn-primary, .precision-btn-primary, .patient-primary-action, .patient-modal-submit) .material-symbols-rounded { color: inherit !important; }
+:is(.btn-secondary, .precision-btn-secondary, .btn-outline, .btn-open-ficha, .patient-sync-action, .patient-modal-cancel) {
+  background: var(--pc-surface) !important; color: var(--pc-ink) !important; border: 1px solid var(--pc-line) !important;
+  border-radius: var(--pc-r-control) !important; box-shadow: var(--pc-shadow-1) !important;
+  font-size: 14px !important; font-weight: 600 !important;
+  transition: background-color 120ms var(--pc-ease), border-color 120ms var(--pc-ease) !important;
+}
+:is(.btn-secondary, .precision-btn-secondary, .btn-outline, .btn-open-ficha, .patient-sync-action, .patient-modal-cancel):hover:not(:disabled) {
+  background: #f7f7fc !important; border-color: #d4d7e2 !important;
+}
+:is(.btn-sm, .btn-open-ficha) { font-size: 13px !important; }
+.btn-ghost { border-radius: var(--pc-r-control) !important; }
+.btn-ghost:hover:not(:disabled) { background: var(--pc-accent-soft) !important; }
+.btn-icon-action { border-radius: var(--pc-r-control) !important; border: 1px solid var(--pc-line) !important; background: var(--pc-surface) !important; color: var(--pc-ink-2) !important; }
+.btn-icon-action:hover:not(:disabled) { color: var(--pc-accent) !important; border-color: #c7d2fe !important; background: var(--pc-accent-soft) !important; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--pc-accent) !important; outline-offset: 2px !important;
+}
+
+/* ── Cards and panels ───────────────────────────────────────── */
+:is(.card, .table-card, .config-group-card, .clinic-panel, .clinic-focus-card, .finance-overview-card, .bonos-summary-card,
+    .facturas-summary-card, .template-kpi-card, .ficha-vital-card, .ficha-summary-card, .pagos-stat-card, .intakes-card,
+    .patient-vitals > *, .patient-directory-toolbar, .patient-mobile-card) {
+  background: var(--pc-surface) !important; border: 1px solid var(--pc-line) !important;
+  border-radius: var(--pc-r-card) !important; box-shadow: var(--pc-shadow-1) !important;
+}
+:is(.table-card, .patient-directory-toolbar) { border-radius: var(--pc-r-panel) !important; box-shadow: var(--pc-shadow-2) !important; }
+
+/* KPI cards: label, then a large tabular number, then context. */
+.patient-vitals > * { padding: 20px !important; }
+.patient-vitals :is(span, small, p):first-child { font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.06em !important; color: var(--pc-muted) !important; text-transform: uppercase; }
+.patient-vitals strong { font-size: 28px !important; font-weight: 600 !important; letter-spacing: -0.02em !important; color: var(--pc-ink) !important; font-variant-numeric: tabular-nums; }
+.patient-vitals :is(small, p):last-child { font-size: 13px !important; color: var(--pc-muted) !important; }
+
+/* ── Tables ─────────────────────────────────────────────────── */
+.page-section table th {
+  font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.02em !important; text-transform: none !important;
+  color: var(--pc-muted) !important; background: #fafafc !important; border-bottom: 1px solid var(--pc-line) !important;
+}
+.page-section table td { font-size: 14px !important; color: var(--pc-ink-2); border-bottom: 1px solid var(--pc-line-soft) !important; }
+.page-section table tbody tr { transition: background-color 120ms var(--pc-ease); }
+.page-section table tbody tr:hover > td { background: #f7f7fd !important; }
+.page-section table td :is(strong, b, .patient-name-btn) { color: var(--pc-ink) !important; font-weight: 600 !important; }
+
+/* ── Status chips: dot + label, never colour alone ──────────── */
+.status-chip {
+  display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 24px !important; padding: 0 10px !important;
+  border-radius: 999px !important; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important; white-space: nowrap;
+  border: 0 !important;
+}
+.status-chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.status-chip:is(.confirmada, .aprobado, .chip-success, .completada) { background: #e8f7ee !important; color: #18794e !important; }
+.status-chip:is(.pendiente, .chip-warning, .caducado) { background: #fff4e5 !important; color: #ad5700 !important; }
+.status-chip:is(.cancelada, .rechazado, .chip-danger, .no_show) { background: #fdecec !important; color: #b42318 !important; }
+.status-chip:is(.chip-info, .blocking) { background: var(--pc-accent-soft) !important; color: #3730a3 !important; }
+
+/* ── Form fields ────────────────────────────────────────────── */
+.page-section :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea),
+:is(.modal-shell, .patient-modal-overlay) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+  border-radius: var(--pc-r-control) !important; border: 1px solid var(--pc-line) !important; font-size: 14px !important; color: var(--pc-ink) !important;
+  transition: border-color 120ms var(--pc-ease), box-shadow 120ms var(--pc-ease) !important;
+}
+.page-section :is(input, select, textarea):focus, :is(.modal-shell, .patient-modal-overlay) :is(input, select, textarea):focus {
+  border-color: var(--pc-accent) !important; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.14) !important; outline: none !important;
+}
+.page-section ::placeholder { color: #9ca3af !important; }
+
+/* Segmented filters (patients, finance): one pill track. */
+.patient-segments, .finance-tabs {
+  background: var(--pc-canvas) !important; border: 1px solid var(--pc-line) !important; border-radius: 12px !important; padding: 3px !important; gap: 2px !important;
+}
+.patient-segments button, .finance-tab {
+  border-radius: 9px !important; font-size: 13px !important; font-weight: 500 !important; color: var(--pc-ink-2) !important; background: transparent !important; box-shadow: none !important;
+}
+.patient-segments button:is(.active, [aria-pressed="true"]), .finance-tab:is(.active, [aria-selected="true"]) {
+  background: var(--pc-surface) !important; color: var(--pc-ink) !important; font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(11, 16, 32, 0.08), 0 0 0 1px var(--pc-line) !important;
+}
+
+/* ── Dialogs ────────────────────────────────────────────────── */
+:is(.modal-panel, .patient-modal-dialog, .crm-drawer-panel) {
+  border-radius: var(--pc-r-panel) !important; border: 1px solid var(--pc-line) !important;
+  box-shadow: 0 24px 48px -16px rgba(11, 16, 32, 0.28), 0 2px 6px rgba(11, 16, 32, 0.06) !important;
+}
+
+/* ── Mobile dock follows the night palette ──────────────────── */
+.mobile-dock { border-color: var(--pc-line) !important; box-shadow: 0 10px 30px -12px rgba(11, 16, 32, 0.25) !important; }
+.mobile-dock-item.active, .mobile-dock-item[aria-current="page"] { color: var(--pc-accent) !important; background: var(--pc-accent-soft) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar .sidebar-ai-launch, :is(.btn-primary, .precision-btn-primary, .patient-primary-action, .patient-modal-submit) { transition: none !important; transform: none !important; }
+}
+
+/* ── Page headers: kicker · title · description · actions ────
+ * Same rhythm in every view: no card behind it, 8 px steps, actions aligned to the title baseline. */
+.page-section :is(.patient-workspace-header, [class$="-workspace-header"], .page-header, .ops-header) {
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  padding: 0 !important; min-height: 0 !important; height: auto !important;
+  display: flex !important; align-items: flex-end !important; justify-content: space-between !important; gap: 24px !important; flex-wrap: wrap;
+  margin-bottom: 24px !important;
+}
+.page-section header .clinic-kicker { display: block !important; margin: 0 0 8px !important; }
+.page-section header h1:not(.sr-only) {
+  font-size: 32px !important; font-weight: 600 !important; letter-spacing: -0.03em !important; line-height: 1.12 !important;
+  color: var(--pc-ink) !important; margin: 0 !important;
+}
+.page-section header h1 + p { margin: 8px 0 0 !important; font-size: 14px !important; line-height: 1.5 !important; color: var(--pc-muted) !important; max-width: 64ch; }
+.page-section header :is([class$="-actions"], [class*="-actions "]) { display: flex !important; gap: 12px !important; align-items: center !important; flex-wrap: wrap; }
+.page-section header :is([class$="-actions"]) button { height: 44px !important; padding: 0 18px !important; }
+.patient-action-arrow { display: none !important; }
+
+/* KPI rows sit on one 16 px grid. */
+.patient-vitals { gap: 16px !important; margin-bottom: 24px !important; }
+.patient-vitals > * { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+
+/* Patients toolbar: search + order on top, filters left-aligned below. */
+.patient-directory-toolbar { padding: 16px 20px !important; gap: 12px !important; }
+.patient-directory-toolbar-top { display: flex !important; gap: 12px !important; align-items: center !important; }
+.patient-directory-search {
+  flex: 1 1 auto !important; height: 44px !important; border-radius: var(--pc-r-control) !important;
+  background: var(--pc-canvas) !important; border: 1px solid transparent !important; padding: 0 14px !important; gap: 10px !important;
+}
+.patient-directory-search:focus-within { background: var(--pc-surface) !important; border-color: var(--pc-accent) !important; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.14) !important; }
+.patient-directory-search input { border: 0 !important; box-shadow: none !important; background: transparent !important; height: 100% !important; padding: 0 !important; }
+.patient-directory-search input:focus { box-shadow: none !important; }
+.patient-sort select { height: 44px !important; min-width: 180px; }
+.patient-directory-toolbar-bottom { display: flex !important; justify-content: flex-start !important; gap: 12px !important; align-items: center !important; flex-wrap: wrap; }
+
+/* Tables: headers on one line, quieter secondary text. */
+.page-section table th { white-space: nowrap; }
+.page-section table td :is(small, .muted, [class*="meta"]) { font-size: 13px !important; color: var(--pc-muted) !important; font-style: normal !important; }
+
+/* Night rail scrollbar. */
+.sidebar, .sidebar .sidebar-nav { scrollbar-width: thin; scrollbar-color: #2a3455 transparent; }
+.sidebar ::-webkit-scrollbar { width: 6px; }
+.sidebar ::-webkit-scrollbar-thumb { background: #2a3455; border-radius: 3px; }
+
+/* Specificity anchor: legacy sheets style these through compound selectors. */
+body .app-shell .page-section { background: transparent !important; }
+body .app-shell .page-section header:is(.patient-workspace-header, [class$="-workspace-header"], .page-header, .ops-header) {
+  background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important;
+}
+body .app-shell .patient-directory-toolbar { display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+body .app-shell .patient-directory-toolbar-bottom { width: 100% !important; margin: 0 !important; }
+
+/* Titles: one size and no decorative icon, in every view (Inicio included). */
+body .app-shell .page-section h1.page-title .material-symbols-rounded { display: none !important; }
+body .app-shell .page-section :is(.clinic-dashboard-copy, .intakes-hero) h1 {
+  font-size: 32px !important; font-weight: 600 !important; letter-spacing: -0.03em !important; line-height: 1.15 !important; color: var(--pc-ink) !important;
+}
+body .app-shell .page-section .page-header-row {
+  display: flex !important; align-items: flex-end !important; justify-content: space-between !important; gap: 16px 24px !important;
+  flex-wrap: wrap !important; margin-bottom: 24px !important; background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important;
+}
+body .app-shell .page-section .page-header-row h1 + p { margin-top: 8px !important; }
+
+/* Large figures never break a currency or a number across lines. */
+body .app-shell :is(#metricIngresosMes, .finance-overview-card strong, [class*="kpi"] strong, [class*="metric"] strong, .pagos-stat strong) {
+  white-space: nowrap !important; font-size: clamp(20px, 1.9vw, 28px) !important; font-weight: 600 !important;
+  letter-spacing: -0.02em !important; font-variant-numeric: tabular-nums; line-height: 1.1 !important;
+}
+/* Dashboard stat strip is narrower than KPI cards. */
+body .app-shell #metricIngresosMes, body .app-shell [data-page="dashboard"] [class*="metric"] strong { font-size: clamp(18px, 1.55vw, 24px) !important; }
+
+@media (max-width: 767px) {
+  body .app-shell .page-section :is(header h1:not(.sr-only), h1.page-title, .clinic-dashboard-copy h1, .intakes-hero h1) {
+    font-size: 26px !important; letter-spacing: -0.025em !important;
+  }
+}
+body .app-shell #dashboardTitle { font-size: 32px !important; font-weight: 600 !important; letter-spacing: -0.03em !important; color: var(--pc-ink) !important; margin: 8px 0 8px !important; }
+@media (max-width: 767px) { body .app-shell #dashboardTitle { font-size: 26px !important; } }
+/* Tailwind utility weights in markup follow the same 600 ceiling. */
+body .app-shell :is(.font-bold, .font-extrabold, .font-black) { font-weight: 600 !important; }
+
+/* Snap the remaining em-based sizes onto the scale. */
+body .app-shell :is(.patient-avatar, .patient-contact-text, .patient-pathology) { font-size: 13px !important; }
+body .app-shell :is(.patient-no-appt, .patient-status-badge, .patient-missing-contact) { font-size: 12px !important; }
+body .app-shell .agenda-day-number { font-size: 20px !important; font-weight: 600 !important; }
+body .app-shell .clinic-panel-title { font-size: 16px !important; font-weight: 600 !important; }
+body .app-shell .pagos-stat-value { font-size: 20px !important; font-weight: 600 !important; }
+body .app-shell :is(.finance-overview-card strong, .template-kpi-card strong, .patient-vitals strong) { font-size: 28px !important; }
+body .app-shell #metricIngresosMes, body .app-shell [data-page="dashboard"] [class*="metric"] strong, body .app-shell [data-page="dashboard"] .clinic-dashboard-metrics strong { font-size: 24px !important; }
+@media (max-width: 1439px) {
+  body .app-shell :is(.finance-overview-card strong, .template-kpi-card strong, .patient-vitals strong) { font-size: 24px !important; }
+  body .app-shell #metricIngresosMes, body .app-shell [data-page="dashboard"] [class*="metric"] strong { font-size: 20px !important; }
+}
+body .app-shell .patient-directory-search input { border: 0 !important; box-shadow: none !important; background: transparent !important; outline: none !important; }
+body .app-shell #patientsFilterInput { border: 0 !important; box-shadow: none !important; background: transparent !important; }
+@media (max-width: 767px) {
+  /* Filters stay on one swipeable line instead of stacking three rows. */
+  body .app-shell .patient-segments { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none; max-width: 100%; }
+  body .app-shell .patient-segments::-webkit-scrollbar { display: none; }
+  body .app-shell .patient-segments button { flex: none !important; white-space: nowrap !important; }
+}
+
+/* Messages inbox: header spacing and tidy action group. */
+body .app-shell .intakes-hero { margin-bottom: 24px !important; }
+body .app-shell .intake-row-actions { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; justify-content: flex-end !important; min-width: 200px; }
+body .app-shell .intake-row-actions :is(button, a) { height: 32px !important; padding: 0 10px !important; font-size: 12px !important; border-radius: 8px !important; white-space: nowrap !important; }

@@ -29,7 +29,7 @@
                   <option value="agotado">Agotados</option>
                   <option value="anulado">Anulados</option>
                 </select>
-                <button class="btn-ghost btn-sm" id="refreshBonos"><span class="material-symbols-rounded">refresh</span></button>
+                <button class="btn-ghost btn-sm" id="refreshBonos" aria-label="Actualizar bonos" title="Actualizar bonos"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
             <div class="bonos-summary-strip" id="bonosSummaryStrip">
@@ -61,13 +61,13 @@
 
           <!-- Modal nuevo bono -->
           <div class="modal-shell" id="bonoModal" aria-hidden="true">
-            <div class="modal-panel" role="dialog" aria-modal="true">
+            <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="bonoModalTitle">
               <div class="modal-header">
                 <div class="modal-title-group">
                   <p class="modal-eyebrow">BONOS</p>
                   <h2 id="bonoModalTitle">Nuevo bono</h2>
                 </div>
-                <button type="button" class="modal-close" id="bonoModalClose"><span class="material-symbols-rounded">close</span></button>
+                <button type="button" class="modal-close" id="bonoModalClose" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
               </div>
               <form id="bonoForm" class="form-grid">
                 <input type="hidden" id="bonoEditId" />

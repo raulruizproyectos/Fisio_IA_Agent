@@ -24,6 +24,11 @@ export const PAID_API_PATHS = [
   '/api/notas-clinicas/voice/transcribe', '/api/notas-clinicas/voice/synthesize',
 ];
 
+// Exact POST routes only: app.use would prefix-match and count every GET poll of /recommend/jobs/:id.
+export function mountPaidApiLimiter(app, env = process.env) {
+  app.post(PAID_API_PATHS, paidApiLimiter(env));
+}
+
 export function paidApiLimiter(env = process.env) {
   const raw = Number(env.AI_GENERATION_RATE_LIMIT || 60);
   if (!Number.isSafeInteger(raw) || raw < 1) throw new Error('AI_GENERATION_RATE_LIMIT debe ser un entero positivo.');

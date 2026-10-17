@@ -1,7 +1,7 @@
 /* ==========================================================================
    FISIO CLINICAL — PRECISION FINANCE (v5.0)
    Covers: Pagos (Ledger), Facturación, Bonos, and Gestoría
-   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#4f46e5)
    ========================================================================== */
 
 /* === TABS / SUBNAV DE FINANZAS === */
@@ -10,7 +10,7 @@
   align-items: center;
   gap: 0.5rem;
   margin: 0.75rem 0 1.25rem 0;
-  border-bottom: 1px solid #dce3ed;
+  border-bottom: 1px solid #e5e7ef;
   padding-bottom: 0.5rem;
   overflow-x: auto;
 }
@@ -23,7 +23,7 @@
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #536375;
+  color: #5b6476;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -35,13 +35,13 @@
 
 .finance-tabs a:hover,
 .finance-tabs button:hover {
-  color: #142234;
+  color: #0b1020;
   background: #f1f5f9;
 }
 
 .finance-tabs a.active,
 .finance-tabs button.active {
-  color: #175dd0;
+  color: #4f46e5;
   background: #e0f2fe;
   border-color: #bae6fd;
   font-weight: 600;
@@ -53,7 +53,7 @@
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.25rem;
@@ -62,24 +62,24 @@
 
 .finance-subview-strip span {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #175dd0;
+  color: #4f46e5;
   display: block;
   margin-bottom: 0.2rem;
 }
 
 .finance-subview-strip strong {
   font-size: 1.125rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
   display: block;
 }
 
 .finance-subview-strip p {
   font-size: 0.875rem;
-  color: #536375;
+  color: #5b6476;
   margin: 0.2rem 0 0 0;
 }
 
@@ -99,8 +99,8 @@
 
 .finance-priority-panel {
   background: #ffffff;
-  border: 1px solid #dce3ed;
-  border-left: 4px solid #175dd0;
+  border: 1px solid #e5e7ef;
+  border-left: 4px solid #4f46e5;
   border-radius: 8px;
   padding: 1.25rem;
   display: flex;
@@ -111,23 +111,23 @@
 
 .finance-kicker {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #175dd0;
+  color: #4f46e5;
   margin-bottom: 0.35rem;
 }
 
 .finance-priority-panel strong {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
   margin-bottom: 0.35rem;
 }
 
 .finance-priority-panel p {
   font-size: 0.875rem;
-  color: #536375;
+  color: #5b6476;
   margin: 0 0 1rem 0;
   line-height: 1.4;
 }
@@ -152,7 +152,7 @@
 
 .finance-action-card {
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   padding: 1rem;
   text-align: left;
@@ -164,26 +164,26 @@
 }
 
 .finance-action-card:hover {
-  border-color: #175dd0;
-  background: #f4f7fb;
+  border-color: #4f46e5;
+  background: #f3f4f8;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(23, 93, 208, 0.08);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
 }
 
 .finance-action-card span.material-symbols-rounded {
   font-size: 1.5rem;
-  color: #175dd0;
+  color: #4f46e5;
 }
 
 .finance-action-card strong {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #142234;
+  color: #0b1020;
 }
 
 .finance-action-card small {
   font-size: 0.8125rem;
-  color: #536375;
+  color: #5b6476;
 }
 
 /* === KPI OVERVIEW GRIDS === */
@@ -216,7 +216,7 @@
 .facturas-summary-card,
 .bonos-summary-card {
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   padding: 1rem 1.15rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
@@ -229,7 +229,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #536375;
+  color: #5b6476;
   display: block;
   margin-bottom: 0.35rem;
 }
@@ -238,8 +238,8 @@
 .facturas-summary-card strong,
 .bonos-summary-card strong {
   font-size: 1.35rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
   display: block;
   margin-bottom: 0.25rem;
 }
@@ -261,7 +261,7 @@
 /* === STAT SUMMARY BARS & TOOLBARS === */
 .pagos-toolbar {
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   padding: 0.875rem 1.15rem;
   margin-bottom: 1rem;
@@ -289,13 +289,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #536375;
+  color: #5b6476;
 }
 
 .pagos-stat-value {
   font-size: 1rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .pagos-stat-cash .pagos-stat-value {
@@ -319,13 +319,13 @@
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   background: #ffffff;
-  color: #142234;
+  color: #0b1020;
 }
 
 /* === TABLES IN FINANCE === */
 .table-wrap {
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   overflow-x: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
@@ -339,8 +339,8 @@
 }
 
 .table-wrap thead {
-  background: #f4f7fb;
-  border-bottom: 1px solid #dce3ed;
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
 }
 
 .table-wrap th {
@@ -364,7 +364,7 @@
 }
 
 .table-wrap tbody tr:hover {
-  background: #f4f7fb;
+  background: #f3f4f8;
 }
 
 /* Badges & Status */
@@ -393,7 +393,7 @@
 /* === GESTORÍA ESPECÍFICO === */
 .finance-annual-summary {
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.25rem;
@@ -404,17 +404,17 @@
   gap: 0.75rem;
   flex-wrap: wrap;
   padding: 0.75rem 1rem;
-  background: #f4f7fb;
-  border-bottom: 1px solid #dce3ed;
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
 }
 
 .gestoria-mes-chip {
   font-size: 0.8125rem;
-  color: #536375;
+  color: #5b6476;
 }
 
 .gestoria-mes-chip strong {
-  color: #142234;
+  color: #0b1020;
 }
 
 .gestoria-mes-cash strong {
@@ -441,7 +441,7 @@
   margin-bottom: 1.25rem;
   padding: 1.25rem;
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 14px;
 }
 
@@ -456,17 +456,17 @@
 .finance-income-head h2 {
   margin: 0.125rem 0 0;
   font-size: 1.0625rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .finance-income-switch {
   display: inline-flex;
   gap: 0.25rem;
   padding: 0.25rem;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 10px;
-  background: #f4f7fb;
+  background: #f3f4f8;
 }
 
 .finance-income-switch button {
@@ -478,7 +478,7 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #536375;
+  color: #5b6476;
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -487,20 +487,20 @@
 }
 
 .finance-income-switch button .material-symbols-rounded { font-size: 18px; }
-.finance-income-switch button:hover { color: #142234; }
+.finance-income-switch button:hover { color: #0b1020; }
 .finance-income-switch button[aria-pressed="true"] {
   background: #ffffff;
-  color: #175dd0;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 0 0 1px #dce3ed;
+  color: #4f46e5;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 0 0 1px #e5e7ef;
 }
-.finance-income-switch button:focus-visible { outline: 2px solid #175dd0; outline-offset: 2px; }
+.finance-income-switch button:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
 
 .finance-income-plot { min-height: 12rem; }
 .finance-income-plot .fi-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .finance-income-plot .fi-grid { stroke: #e8edf4; stroke-width: 1; }
 .finance-income-plot .fi-axis,
 .finance-income-plot .fi-month { fill: #8a97a8; font-size: 11px; font-family: inherit; }
-.finance-income-plot .fi-month.is-current { fill: #175dd0; font-weight: 700; }
+.finance-income-plot .fi-month.is-current { fill: #4f46e5; font-weight: 600; }
 
 .finance-income-plot .fi-bar {
   fill: #c9dafb;
@@ -509,11 +509,11 @@
   transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 280ms ease;
   transition-delay: calc(var(--i, 0) * 18ms);
 }
-.finance-income-plot .fi-bar.is-current { fill: #175dd0; }
+.finance-income-plot .fi-bar.is-current { fill: #4f46e5; }
 
 .finance-income-plot .fi-line {
   fill: none;
-  stroke: #175dd0;
+  stroke: #4f46e5;
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -524,20 +524,20 @@
 
 .finance-income-plot .fi-dot {
   fill: #ffffff;
-  stroke: #175dd0;
+  stroke: #4f46e5;
   stroke-width: 2;
   opacity: 0;
   transition: opacity 200ms ease;
 }
-.finance-income-plot .fi-dot.is-current { fill: #175dd0; }
+.finance-income-plot .fi-dot.is-current { fill: #4f46e5; }
 
 .finance-income-plot[data-mode="line"] .fi-bar { transform: scaleY(0); opacity: 0; }
 .finance-income-plot[data-mode="line"] .fi-line { stroke-dashoffset: 0; transition-delay: 120ms; }
 .finance-income-plot[data-mode="line"] .fi-dot { opacity: 1; transition-delay: calc(160ms + var(--i, 0) * 12ms); }
 .finance-income-plot[data-mode="bars"] .fi-bar { transition-delay: calc(120ms + var(--i, 0) * 18ms); }
 
-.finance-income-plot .fi-total { margin: 0.25rem 0 0; font-size: 0.8125rem; color: #536375; }
-.finance-income-plot .fi-total strong { color: #142234; }
+.finance-income-plot .fi-total { margin: 0.25rem 0 0; font-size: 0.8125rem; color: #5b6476; }
+.finance-income-plot .fi-total strong { color: #0b1020; }
 
 .finance-income-plot .fi-empty {
   display: grid;
@@ -545,10 +545,10 @@
   gap: 0.25rem;
   padding: 2.5rem 1rem;
   text-align: center;
-  color: #536375;
+  color: #5b6476;
 }
 .finance-income-plot .fi-empty .material-symbols-rounded { font-size: 28px; color: #8a97a8; }
-.finance-income-plot .fi-empty strong { color: #142234; font-size: 0.9375rem; }
+.finance-income-plot .fi-empty strong { color: #0b1020; font-size: 0.9375rem; }
 .finance-income-plot .fi-empty small { font-size: 0.8125rem; }
 
 @media (max-width: 600px) {

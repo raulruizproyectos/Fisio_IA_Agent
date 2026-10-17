@@ -48,7 +48,7 @@ assert.equal(JSON.parse(seen[1].body).session_datetime,'2026-10-07T12:00:00Z');
 assert.equal(new Set(seen.map(o=>o.headers['Idempotency-Key'])).size,3);
 // Native timeout errors expose a read-only message; recovery must not try to mutate them.
 const timeout=new DOMException('Request timed out','TimeoutError');
-await assert.rejects(load(async()=>{throw timeout;})('/notes',body),error=>error.cause===timeout && /No se ha recibido confirmación/.test(error.message));
+await assert.rejects(load(async()=>{throw timeout;})('/notes',body),error=>(error.cause===timeout||error.cause?.cause===timeout) && /No se ha recibido confirmación/.test(error.message));
 assert.equal(timeout.message,'Request timed out');
 assert.ok(storage.size>0,'A timeout keeps its recovery operation');
 storage.clear();

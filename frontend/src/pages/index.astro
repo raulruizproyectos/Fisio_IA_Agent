@@ -158,13 +158,29 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (!response.ok) throw new Error(`No se pudo abrir el documento (${response.status})`);
       const objectUrl = URL.createObjectURL(await response.blob());
       if (popup) popup.location.href = objectUrl;
-      else window.location.href = objectUrl;
+      else {
+        // Popup blocked: download instead of replacing the CRM tab and losing the work in progress.
+        const link = Object.assign(document.createElement('a'), { href: objectUrl, download: 'documento.pdf' });
+        link.click();
+      }
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
     } catch (error) {
       popup?.close();
       throw error;
     }
   };
+
+  // One key per form opening: resubmitting the same form after a lost answer replays it instead of duplicating.
+  const financeOperationKeys = new Map<string, string>();
+  const financeOperationKey = (scope: string) => {
+    if (!financeOperationKeys.has(scope)) financeOperationKeys.set(scope, crypto.randomUUID());
+    return financeOperationKeys.get(scope)!;
+  };
+
+  // No status means the server may have saved it: say so instead of inviting a duplicate.
+  const writeFailureMessage = (err: any, what: string) => (!err?.status
+    ? `No se ha recibido confirmación al guardar ${what}. Revisa la lista antes de repetirlo para no duplicarlo.`
+    : String(err?.message || `No se pudo guardar ${what}.`));
 
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement | null;
@@ -532,6 +548,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       document.dispatchEvent(customEvent);
     });
     
+  // Above the backend AI deadlines (30 s transcription, 25 s synthesis) so a long dictation is not cut in the browser.
+  const VOICE_REQUEST_TIMEOUT_MS = 45000;
   const requestConfirm = async (options: ConfirmOptions) => Boolean(await openConfirmDialog(options, false));
   const appointmentPatientSelect = document.getElementById('appointmentPatientSelect') as HTMLSelectElement | null;
   const appointmentStartInput = document.getElementById('appointmentStartInput') as HTMLInputElement | null;
@@ -641,6 +659,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     activa: 'Activa', agotado: 'Agotado', caducado: 'Caducado', pagada: 'Pagada', emitida: 'Emitida',
     anulada: 'Anulada', firmado: 'Firmado', sincronizado: 'Sincronizado',
   };
+  // «1 cita» / «3 citas» instead of «cita(s)».
+  const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
   const statusText = (value: unknown) => {
     const raw = String(value ?? '').trim();
     if (!raw) return '';
@@ -651,7 +671,16 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
   const escapeHtml = (str: unknown) => sanitizeText(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escapeAttr = (str: unknown) => escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const fmtDate = (d: string) => { try { return new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); } catch { return 'N/D'; } };
+  // Madrid time; date-only values without a fake «02:00»; year shown when it is not the current one; never «Invalid Date».
+  const fmtDate = (d: string) => {
+    if (!d) return 'Sin fecha';
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(String(d));
+    const date = dateOnly ? new Date(`${d}T12:00:00Z`) : new Date(d);
+    if (Number.isNaN(date.getTime())) return 'Sin fecha';
+    const sameYear = clinicDayKey(date).slice(0, 4) === clinicDayKey(new Date()).slice(0, 4);
+    return date.toLocaleString('es-ES', { timeZone: CLINIC_TIME_ZONE, day: '2-digit', month: 'short',
+      ...(sameYear ? {} : { year: 'numeric' }), ...(dateOnly ? {} : { hour: '2-digit', minute: '2-digit' }) });
+  };
   const fmtRelativeSyncAge = (iso: string | null | undefined) => {
     if (!iso) return 'sin ejecuciones recientes';
     const ts = new Date(iso).getTime();
@@ -748,7 +777,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       primaryIcon: 'electric_bolt',
       action: 'exercise',
       title: 'Nuevo plan guiado',
-      summary: 'Genera una propuesta inicial con plan clínico, PDF e historial listos desde un briefing corto.',
+      summary: 'Genera una propuesta inicial con plan clínico, PDF e historial listos a partir de una breve descripción del caso.',
       outputLabel: 'Salida: plan clínico + PDF',
       requirementLabel: 'Requiere: paciente + objetivo',
       tip: 'Usalo para altas nuevas o cuando el caso necesite una propuesta completa de ejercicios.',
@@ -1045,7 +1074,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (hasDraft) {
       assistantModeRequirement.textContent = modeConfig.requirementLabel;
-      assistantModeTip.textContent = `Briefing listo para ${patientLabel || 'este caso'}. Revisa el texto y lanza ${modeConfig.primaryLabel.toLowerCase()}.`;
+      assistantModeTip.textContent = `Descripción lista para ${patientLabel || 'este caso'}. Revisa el texto y lanza ${modeConfig.primaryLabel.toLowerCase()}.`;
       assistantModeCard.classList.add('is-ready');
       syncAssistantDiagnosticPanel();
       return;
@@ -1242,7 +1271,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       assistantFlowTitle.textContent = 'El caso ya esta listo para recibir un objetivo clínico';
       assistantFlowHint.textContent = 'Describe dolor, restriccion funcional o meta terapeutica para orientar el plan.';
     } else {
-      assistantFlowTitle.textContent = 'Buen briefing: ahora toca pedir la propuesta del agente';
+      assistantFlowTitle.textContent = 'Descripción lista: ahora pide la propuesta al asistente';
       assistantFlowHint.textContent = 'Genera el plan para revisar ejercicios, ajustar el mensaje al paciente y habilitar el PDF.';
     }
 
@@ -1967,7 +1996,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
   const getStateHint = (icon: string, text: string) => {
     const normalized = String(text || '').toLowerCase();
-    if (icon === 'cloud_off') return 'Reintenta en unos segundos. Si persiste, revisa backend y conectividad.';
+    if (icon === 'cloud_off') return 'Reintenta en unos segundos. Si persiste, revisa tu conexión a internet.';
     if (icon === 'search_off') return 'Prueba menos filtros o elimina la busqueda para recuperar resultados.';
     if (icon === 'person_off') return 'Crea la primera ficha para activar agenda, historial y documentos.';
     if (icon === 'event_busy') return 'Puedes crear una cita manual o revisar bloqueos externos de Calendar.';
@@ -2633,7 +2662,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     html += '</div>';
 
     if (!exercises.length) {
-      html += '<div class="exercise-empty-result"><span class="material-symbols-rounded">info</span><p>El motor no devolvio ejercicios para este caso. Revisa el briefing o regenera el plan.</p></div>';
+      html += '<div class="exercise-empty-result"><span class="material-symbols-rounded">info</span><p>No se encontraron ejercicios para este caso. Revisa la descripción del caso o vuelve a generar el plan.</p></div>';
     } else {
       html += '<div class="exercise-plan-grid">';
       exercises.forEach((exercise: any, index: number) => {
@@ -3085,12 +3114,12 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (action === 'regenerate') {
       const requestText = lastExerciseRequestText || lastExerciseVisibleText;
       if (!requestText) {
-        addMessage('No tengo un briefing anterior para regenerar. Escribe el caso clínico y vuelve a generar.', 'agent');
+        addMessage('No tengo una descripción anterior para regenerar. Escribe el caso clínico y vuelve a generar.', 'agent');
         return;
       }
       void handleExerciseRecommend(
         requestText,
-        `Regenerar plan con el mismo briefing: ${trimAgentBriefText(lastExerciseVisibleText || requestText, 110)}`,
+        `Regenerar plan con la misma descripción: ${trimAgentBriefText(lastExerciseVisibleText || requestText, 110)}`,
         { showUserMessage: true }
       );
     }
@@ -3434,6 +3463,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     const words = label.split(/\s+/).filter((word) => !/^(dr|dra|sr|sra|srta|d|dña)\.?$/i.test(word));
     return words[0] || label;
   };
+  // «María F.»: first name plus first surname initial, so two Marías in the same week stay distinguishable.
+  const getAgendaShortName = (value: unknown) => {
+    const words = String(value || '').trim().split(/\s+/).filter((word) => !/^(dr|dra|sr|sra|srta|d|dña)\.?$/i.test(word));
+    if (!words.length) return 'Paciente';
+    const surname = words.slice(1).find((word) => !/^(de|del|la|las|los|y|e)$/i.test(word));
+    return surname ? `${words[0]} ${surname.charAt(0).toUpperCase()}.` : words[0];
+  };
 
   const getDashboardActiveAppointments = (citas: any[] = []) => {
     return citas
@@ -3566,6 +3602,13 @@ import ConfigView from '../components/views/ConfigView.astro';
       return;
     }
 
+    if (dashboardRuntime.intakeState === 'loading') {
+      setDashboardChip(dashboardIntakeStatus, 'Comprobando', 'pendiente');
+      dashboardIntakeTitle.textContent = 'Comprobando mensajes';
+      dashboardIntakeMeta.textContent = 'Revisando si hay pacientes esperando respuesta.';
+      return;
+    }
+
     const count = dashboardRuntime.pendingIntakes.length;
     if (!count) {
       setDashboardChip(dashboardIntakeStatus, 'Al día', 'aprobado');
@@ -3579,7 +3622,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const patientName = getDashboardFirstName(resolvePatientName(first));
     const createdAt = fmtDate(first.creado_en || first.created_at || '');
     setDashboardChip(dashboardIntakeStatus, `${count} en cola`, 'pendiente');
-    dashboardIntakeTitle.textContent = `${count} paciente${count === 1 ? '' : 's'} esperan triage`;
+    dashboardIntakeTitle.textContent = count === 1 ? '1 paciente espera respuesta' : `${count} pacientes esperan respuesta`;
     dashboardIntakeMeta.textContent = `${patientName} vía ${source}${createdAt ? ` | ${createdAt}` : ''}`;
   };
 
@@ -3592,7 +3635,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     if (intakeCount > 0) {
       priorities.push({
-        label: 'Triage',
+        label: 'Mensajes',
         title: `${intakeCount} mensaje${intakeCount === 1 ? '' : 's'} sin responder`,
         body: `Telegram y formulario web.`,
         tone: 'warning',
@@ -3661,9 +3704,9 @@ import ConfigView from '../components/views/ConfigView.astro';
     renderDashboardLiveSummary();
   };
 
+  // Feeds the dashboard card and the badges; the compact list renders only where its container exists.
   const loadIntakes = async () => {
-    if (!intakeBody) return;
-    setListState(intakeBody, 'sync', 'Actualizando bandeja de entrada...', true);
+    if (intakeBody) setListState(intakeBody, 'sync', 'Actualizando bandeja de entrada...', true);
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/profesional/intakes/pending?profesional_id=${PROF_ID}`);
       const intakes = payload.data || payload || [];
@@ -3674,6 +3717,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (badge) badge.textContent = String(intakes.length);
       const notifBadge = document.getElementById('notifBadge');
       if (notifBadge) notifBadge.toggleAttribute('hidden', intakes.length === 0);
+      if (!intakeBody) return;
       if (!intakes.length) {
         setListState(intakeBody, 'check_circle', 'Sin mensajes pendientes');
         return;
@@ -3698,7 +3742,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       dashboardRuntime.pendingIntakes = [];
       dashboardRuntime.intakeState = 'error';
       syncDashboardCommandCenter();
-      setListState(intakeBody, 'cloud_off', 'No se pudo cargar la bandeja');
+      if (intakeBody) setListState(intakeBody, 'cloud_off', 'No se pudo cargar la bandeja');
     }
   };
   loadIntakes();
@@ -3713,14 +3757,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     selectedPatientName = patientName || '';
     syncChatPatientSelection(patientId || '', selectedPatientName);
     if (patientId) void openFichaPaciente(patientId);
+    else showToast('Este mensaje aún no tiene ficha. Da de alta al paciente para revisarlo.', 'info');
   });
 
   // === DASHBOARD KPIs + CHART ===
   const loadDashboardKPIs = async () => {
     try {
-      const now = new Date();
-      const anio = now.getFullYear();
-      const mes = now.getMonth() + 1;
+      const [anio, mes] = clinicDayKey(new Date()).split('-').map(Number);
       const resumen = await fetchJson(`${BACKEND_BASE}/api/pagos/resumen?anio=${anio}`);
       const mesData = (resumen.resumen || []).find((r: any) => r.mes === mes);
       const ingresosMes = mesData ? Number(mesData.total || 0) : 0;
@@ -3740,6 +3783,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         }
       } catch (err) {
         console.warn('No se pudieron cargar planes para metricInformes:', err);
+        const elInformes = document.getElementById('metricInformes');
+        if (elInformes) elInformes.textContent = '—';
       }
 
       // Draw chart
@@ -3815,7 +3860,11 @@ import ConfigView from '../components/views/ConfigView.astro';
       }
 
     } catch {
-      // silently fail but keep dashboard still usable
+      // An unreadable summary must not look like a real 0,00 €.
+      for (const id of ['metricIngresosMes', 'metricSesionesMes']) {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = '—'; el.title = 'No se pudo cargar. Actualiza la página para reintentarlo.'; }
+      }
     }
   };
 
@@ -4790,15 +4839,15 @@ import ConfigView from '../components/views/ConfigView.astro';
       return { label: 'Agendado', tone: 'aprobado' };
     }
     if (intakeId && intakeTriagedSet.has(intakeId)) {
-      return { label: 'En triage', tone: 'pendiente' };
+      return { label: 'En revisión', tone: 'pendiente' };
     }
     const createdAt = item?.timestamp || item?.creado_en || item?.created_at || '';
     const ts = createdAt ? new Date(createdAt).getTime() : Number.NaN;
-    if (!Number.isFinite(ts)) return { label: 'En triage', tone: 'pendiente' };
+    if (!Number.isFinite(ts)) return { label: 'En revisión', tone: 'pendiente' };
     const ageHours = (Date.now() - ts) / (1000 * 60 * 60);
     if (ageHours <= 2) return { label: 'Nuevo', tone: 'aprobado' };
     if (ageHours > 24) return { label: 'Urgente', tone: 'rechazado' };
-    return { label: 'En triage', tone: 'pendiente' };
+    return { label: 'En revisión', tone: 'pendiente' };
   };
 
   async function openAppointmentFromIntake(patientId: string | null, patientName = '', message = '') {
@@ -4855,7 +4904,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         const sla = getIntakeSla(i);
         const patientName = resolvePatientName(i);
         const patientId = i.crm_paciente_id || i.paciente_id || '';
-        const source = i.fuente || i.canal || 'Sin canal';
+        const rawSource = String(i.fuente || i.canal || '').trim();
+        const source = rawSource ? rawSource.charAt(0).toUpperCase() + rawSource.slice(1) : 'Sin canal';
         const message = i.objetivo || i.mensaje || i.texto || 'Sin mensaje';
         return `<tr>
           <td class="td-patient">${escapeHtml(patientName)}</td>
@@ -4869,7 +4919,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               <button class="btn-sm" data-open-ficha="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Ficha</button>
               <button class="btn-sm btn-outline" data-create-appointment="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" data-intake-message="${escapeAttr(message)}" data-intake-id="${escapeAttr(intakeId)}">Cita</button>
               <button class="btn-sm btn-outline" data-open-chat="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}">Historial</button>
-              <button class="btn-sm btn-outline" data-mark-triage="${escapeAttr(intakeId)}">${intakeId && intakeTriagedSet.has(intakeId) ? 'Quitar triage' : 'Marcar triage'}</button>
+              <button class="btn-sm btn-outline" data-mark-triage="${escapeAttr(intakeId)}">${intakeId && intakeTriagedSet.has(intakeId) ? 'Quitar de revisión' : 'Marcar en revisión'}</button>
             </div>
           </td>
         </tr>`;
@@ -5117,13 +5167,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     let chipLabel = 'Sin datos';
     let chipClass = 'caducado';
     let title = 'Sync Google Calendar';
-    let meta = 'Todavía no hay estado del sincronizador.';
+    let meta = 'Todavía no se ha comprobado Google Calendar.';
 
     if (pending > 0) {
       chipLabel = 'Requiere comprobación';
       chipClass = 'pendiente';
       title = 'Citas guardadas en CRM';
-      meta = `${pending} cita(s) con Calendar pendiente. Comprueba los eventos antes de repetir o modificar estas citas.`;
+      meta = `${plural(pending, 'cita', 'citas')} con Calendar pendiente. Comprueba los eventos antes de repetir o modificar estas citas.`;
     } else if (syncStatus?.enabled === false || summary?.enabled === false) {
       chipLabel = 'Sin conectar';
       title = 'Agenda de la clínica';
@@ -5147,17 +5197,17 @@ import ConfigView from '../components/views/ConfigView.astro';
       chipLabel = 'Con retraso';
       chipClass = 'caducado';
       title = 'Sincronización con retraso';
-      meta = `${fmtRelativeSyncAge(lastSuccessAt)} | última lectura ${fetched} evento(s)`;
+      meta = `${fmtRelativeSyncAge(lastSuccessAt)} | última lectura ${plural(fetched, 'evento', 'eventos')}`;
     } else if (uiStatus === 'error') {
       chipLabel = 'Error';
       chipClass = 'rechazado';
       title = 'No se pudo actualizar Calendar';
-      meta = syncStatus?.error ? String(syncStatus.error) : 'El sincronizador devolvio un error.';
+      meta = 'No se pudo comprobar Google Calendar. Las citas del CRM siguen guardadas; vuelve a intentarlo en unos minutos.';
     } else if (summary?.enabled) {
-      chipLabel = 'Solo vista';
+      chipLabel = 'Revisado';
       chipClass = 'pendiente';
-      title = 'Sin heartbeat de W6';
-      meta = `La agenda se reconcilio al abrir esta vista | ${persisted} nuevas | ${updated} actualizadas | ${cancelled} canceladas`;
+      title = 'Google Calendar revisado al abrir la agenda';
+      meta = `Cambios revisados ahora | ${persisted} nuevas | ${updated} actualizadas | ${cancelled} canceladas`;
     }
 
     if (trigger && ['healthy', 'stale', 'error'].includes(uiStatus)) {
@@ -5168,7 +5218,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (syncStatus?.enabled !== undefined || summary?.enabled !== undefined) facts.push({ label: 'Conexión', value: (syncStatus?.enabled ?? summary?.enabled) ? 'Configurada' : 'Sin configurar' });
     if (lastSuccessAt) facts.push({ label: 'Último ciclo', value: fmtRelativeSyncAge(lastSuccessAt) });
     if (syncStatus?.next_expected_at) facts.push({ label: 'Próxima comprobación', value: new Date(syncStatus.next_expected_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: CLINIC_TIME_ZONE }) });
-    if (syncStatus?.error) facts.push({ label: 'Último error', value: String(syncStatus.error) });
+    if (syncStatus?.error) facts.push({ label: 'Detalle para soporte', value: String(syncStatus.error) });
 
     const viewModel = { uiStatus, chipLabel, chipClass, title, meta, facts };
     dashboardRuntime.syncUi = viewModel;
@@ -5181,12 +5231,19 @@ import ConfigView from '../components/views/ConfigView.astro';
     syncDashboardCommandCenter();
   };
 
+  // Monday-Friday, plus the weekend only when something is booked then: a Saturday appointment must never vanish.
+  const agendaWeekDays = (weekStart: Date, citas: any[]): Date[] => {
+    const week = Array.from({ length: 7 }, (_, i) => shiftClinicDays(weekStart, i));
+    const weekendKeys = week.slice(5).map((day) => clinicDayKey(day));
+    return citas.some((cita: any) => weekendKeys.includes(clinicDayKey(cita.inicio_en))) ? week : week.slice(0, 5);
+  };
+
   const renderAgendaCalendar = (citas: any[], weekStart: Date) => {
     const cal = document.getElementById('agendaCalendar');
     if (!cal) return;
 
     const CLINIC_HOURS = [9, 10, 11, 12, 15, 16, 17, 18];
-    const weekDays: Date[] = Array.from({ length: 5 }, (_, i) => shiftClinicDays(weekStart, i));
+    const weekDays: Date[] = agendaWeekDays(weekStart, citas);
 
     // Map day/hour -> appointments
     const apptMap = new Map<string, any[]>();
@@ -5212,11 +5269,11 @@ import ConfigView from '../components/views/ConfigView.astro';
     const todayStr = clinicDayKey(new Date());
 
     let html = `<div class="agenda-board-shell">
-      <div class="agenda-board" role="grid" aria-label="Agenda semanal">
+      <div class="agenda-board${weekDays.length === 7 ? ' has-weekend' : ''}" role="grid" aria-label="Agenda semanal">
         <div class="agenda-board-head" role="row">
           <div class="agenda-board-corner" aria-hidden="true">Hora</div>`;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < weekDays.length; i++) {
       const isToday = clinicDayKey(weekDays[i]) === todayStr;
       const dayNum = weekDays[i].toLocaleDateString('es-ES', { day: 'numeric', timeZone: CLINIC_TIME_ZONE });
       const dayName = weekDays[i].toLocaleDateString('es-ES', { weekday: 'short', timeZone: CLINIC_TIME_ZONE });
@@ -5250,7 +5307,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       html += `<div class="agenda-board-row${offHours ? ' is-off-hours' : ''}" role="row">
         <div class="agenda-time-cell" role="rowheader">${timeLabel}${offHours ? `<small>${offLabel}</small>` : ''}</div>`;
 
-      for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
+      for (let dayIdx = 0; dayIdx < weekDays.length; dayIdx++) {
         const appts = apptMap.get(`${dayIdx}-${hour}`) || [];
         const isToday = clinicDayKey(weekDays[dayIdx]) === todayStr;
         html += `<div class="agenda-week-cell${isToday ? ' is-today' : ''}" role="gridcell">`;
@@ -5263,8 +5320,10 @@ import ConfigView from '../components/views/ConfigView.astro';
             : `agenda-event-${String(st || 'pendiente').replace(/[^a-z0-9_-]/gi, '_')}`;
           const firstName = calendarOnly
             ? (blockMeta?.shortLabel || 'Bloqueo')
-            : getDashboardFirstName(a.nombre_paciente);
+            : getAgendaShortName(a.nombre_paciente);
           const timeStr = fmtHourOnly(a.inicio_en);
+          // Confirmed is the default look; any other state carries a visible label, not only a colour.
+          const stateLabel = !calendarOnly && st !== 'confirmada' ? statusText(st) : '';
           const motivo = calendarOnly
             ? String(a.motivo || a.nombre_paciente || blockMeta?.label || 'Google Calendar')
             : String(a.motivo || '');
@@ -5276,7 +5335,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           const calPatId = escapeAttr(a.paciente_id || '');
           const calPatName = escapeAttr(a.nombre_paciente || 'Paciente');
           html += `<button type="button" class="agenda-event-card ${eventClass}${calendarOnly ? ' is-calendar-only' : ''}" data-cal-appt-id="${apptId}" data-cal-appt-patient="${calPatId}" data-cal-appt-name="${calPatName}" title="${tip}">
-            <div class="agenda-event-time">${timeStr}</div>
+            <div class="agenda-event-time">${timeStr}${stateLabel ? `<span class="agenda-event-state">${escapeHtml(stateLabel)}</span>` : ''}</div>
             <div class="agenda-event-name">${escapeHtml(firstName)}</div>
             ${motivo ? `<div class="agenda-event-reason">${escapeHtml(motivo)}</div>` : ''}
           </button>`;
@@ -5298,13 +5357,13 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const calendarOnlySummary = summarizeCalendarOnlyBlocks(allCitas);
     const sorted = [...allCitas].sort((a: any, b: any) => new Date(a.inicio_en).getTime() - new Date(b.inicio_en).getTime());
-    const weekDays = Array.from({ length: 5 }, (_, idx) => shiftClinicDays(weekStart, idx));
+    const weekDays = agendaWeekDays(weekStart, allCitas);
 
     if (!sorted.length) {
       agendaMobileSummary.textContent = calendarOnlySummary.total
-        ? `Sin citas clínicas en esta semana. Google Calendar aporta ${calendarOnlySummary.total} bloqueo(s) de contexto.`
+        ? `Sin citas clínicas en esta semana. Google Calendar tiene ${plural(calendarOnlySummary.total, 'bloqueo', 'bloqueos')} esta semana.`
         : 'Sin citas clínicas en esta semana.';
-      setListState(agendaMobileList, 'event_busy', 'No hay citas ni bloqueos para mostrar en timeline movil.');
+      setListState(agendaMobileList, 'event_busy', 'No hay citas ni bloqueos esta semana.');
       return;
     }
 
@@ -5317,7 +5376,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     const todayItems = sorted.filter((cita: any) => isTodayDate(cita.inicio_en || ''));
     const clinicalCount = operationalCitas.length;
-    agendaMobileSummary.textContent = `${clinicalCount} cita(s) clínicas | ${todayItems.length} evento(s) hoy | ${calendarOnlySummary.blocking} bloqueo(s) externo(s).`;
+    agendaMobileSummary.textContent = `${plural(clinicalCount, 'cita', 'citas')} esta semana · ${todayItems.length} hoy · ${plural(calendarOnlySummary.blocking, 'bloqueo', 'bloqueos')} de Calendar`;
 
     agendaMobileList.innerHTML = weekDays.map((date) => {
       const key = clinicDayKey(date);
@@ -5341,7 +5400,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         <article class="agenda-mobile-day ${isToday ? 'is-today' : ''}">
           <header>
             <strong>${escapeHtml(dayTitle)}</strong>
-            <span>${dayItems.length} cita(s)</span>
+            <span>${plural(dayItems.length, 'cita', 'citas')}</span>
           </header>
           <div class="agenda-mobile-items">
             ${dayItems.map((cita: any) => {
@@ -5375,10 +5434,10 @@ import ConfigView from '../components/views/ConfigView.astro';
                     </div>
                   </div>
                   <div class="agenda-mobile-item-actions">
-                    <button type="button" class="btn-sm btn-outline" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle de la cita"><span class="material-symbols-rounded">right_panel_open</span> Detalle</button>
+                    <button type="button" class="btn-sm btn-outline" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle de la cita" aria-label="Ver detalle de la cita"><span class="material-symbols-rounded">right_panel_open</span> Detalle</button>
                     ${cita.calendar_sync_pending ? `<button type="button" class="btn-sm btn-outline" data-appt-action="check-calendar" data-appt-id="${apptId}"><span class="material-symbols-rounded">sync</span> Comprobar Calendar</button>` : ''}
-                    ${canConfirm ? `<button type="button" class="btn-sm" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar cita"><span class="material-symbols-rounded">check</span> Confirmar</button>` : ''}
-                    ${calendarOnly ? '' : `<button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>`}
+                    ${canConfirm ? `<button type="button" class="btn-sm" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar cita" aria-label="Confirmar cita"><span class="material-symbols-rounded">check</span> Confirmar</button>` : ''}
+                    ${calendarOnly ? '' : `<button type="button" class="btn-sm btn-outline" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${escapeAttr(patientId)}" data-patient-name="${escapeAttr(patientName)}" ${patientId ? '' : 'disabled'} title="Abrir ficha del paciente" aria-label="Abrir ficha del paciente"><span class="material-symbols-rounded">person</span> Ficha</button>`}
                   </div>
                 </article>
               `;
@@ -5492,13 +5551,13 @@ import ConfigView from '../components/views/ConfigView.astro';
     const cal = document.getElementById('agendaCalendar');
     if (cal) cal.innerHTML = '<div class="agenda-cal-loading"><span class="material-symbols-rounded">sync</span> Cargando...</div>';
     if (citasBody) setTableState(citasBody, 8, 'sync', 'Cargando agenda...', true);
-    if (agendaMobileList) setListState(agendaMobileList, 'sync', 'Cargando timeline movil...', true);
+    if (agendaMobileList) setListState(agendaMobileList, 'sync', 'Cargando agenda...', true);
     if (agendaMobileSummary) agendaMobileSummary.textContent = 'Sincronizando agenda semanal...';
     setListState(dashCitasBody, 'sync', 'Actualizando agenda...', true);
 
     const weekLabelEl = document.getElementById('weekLabel');
     if (weekLabelEl) {
-      const weekEnd = shiftClinicDays(weekStart, 4);
+      const weekEnd = shiftClinicDays(weekStart, 6);
       weekLabelEl.textContent = `${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: CLINIC_TIME_ZONE })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: CLINIC_TIME_ZONE })}`;
     }
 
@@ -5560,12 +5619,12 @@ import ConfigView from '../components/views/ConfigView.astro';
         const patName = escapeAttr(patientLabel);
         const actions: string[] = [];
         if (cita.calendar_sync_pending) actions.push(`<button class="btn-secondary" type="button" data-appt-action="check-calendar" data-appt-id="${apptId}">Comprobar Calendar</button>`);
-        if (!cita.calendar_sync_pending && estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar">&#x2713;</button>`);
-        if (!cita.calendar_sync_pending && (estado === 'confirmada' || estado === 'pendiente')) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar"><span class="material-symbols-rounded agenda-action-icon">check_circle</span></button>`);
-        if (!cita.calendar_sync_pending && estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar"><span class="material-symbols-rounded agenda-action-icon">close</span></button>`);
-        if (!cita.calendar_sync_pending && estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No show"><span class="material-symbols-rounded agenda-action-icon">person_off</span></button>`);
-        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle"><span class="material-symbols-rounded agenda-action-icon">right_panel_open</span></button>`);
-        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>`);
+        if (!cita.calendar_sync_pending && estado === 'pendiente') actions.push(`<button class="btn-ghost btn-xs" data-appt-action="confirmada" data-appt-id="${apptId}" title="Confirmar" aria-label="Confirmar">&#x2713;</button>`);
+        if (!cita.calendar_sync_pending && (estado === 'confirmada' || estado === 'pendiente')) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="completada" data-appt-id="${apptId}" title="Completar" aria-label="Completar"><span class="material-symbols-rounded agenda-action-icon">check_circle</span></button>`);
+        if (!cita.calendar_sync_pending && estado !== 'cancelada' && estado !== 'completada') actions.push(`<button class="btn-ghost btn-xs btn-danger-ghost" data-appt-action="cancelada" data-appt-id="${apptId}" title="Cancelar" aria-label="Cancelar"><span class="material-symbols-rounded agenda-action-icon">close</span></button>`);
+        if (!cita.calendar_sync_pending && estado === 'confirmada' && !isTodayDate(cita.inicio_en)) actions.push(`<button class="btn-ghost btn-xs" data-appt-action="no_show" data-appt-id="${apptId}" title="No se presentó" aria-label="No se presentó"><span class="material-symbols-rounded agenda-action-icon">person_off</span></button>`);
+        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="detalle" data-appt-id="${apptId}" title="Ver detalle" aria-label="Ver detalle"><span class="material-symbols-rounded agenda-action-icon">right_panel_open</span></button>`);
+        actions.push(`<button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${patName}" title="Ver ficha" aria-label="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>`);
         return `<tr>
           <td class="td-patient">${escapeHtml(patientLabel)}</td>
           <td>${escapeHtml(dayStr)}</td>
@@ -5608,7 +5667,7 @@ import ConfigView from '../components/views/ConfigView.astro';
               <td><span class="status-chip sync-ok">Sincronizado</span></td>
               <td><span class="status-chip ${cita.estado}">${escapeHtml(statusText(cita.estado))}</span></td>
               <td class="td-actions">
-                <button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${escapeAttr(patientLabel)}" title="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>
+                <button class="btn-ghost btn-xs" data-appt-action="ficha" data-appt-id="${apptId}" data-patient-id="${patId}" data-patient-name="${escapeAttr(patientLabel)}" title="Ver ficha" aria-label="Ver ficha"><span class="material-symbols-rounded agenda-action-icon">person</span></button>
               </td>
             </tr>`;
           }).join('');
@@ -5621,8 +5680,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         agendaCalendarMeta.hidden = true;
         agendaCalendarMeta.textContent = '';
       }
-      if (agendaMobileSummary) agendaMobileSummary.textContent = 'No se pudo cargar la agenda movil esta vez.';
-      if (agendaMobileList) setListState(agendaMobileList, 'cloud_off', 'No se pudo cargar el timeline movil.');
+      if (agendaMobileSummary) agendaMobileSummary.textContent = 'No se pudo cargar la agenda.';
+      if (agendaMobileList) setListState(agendaMobileList, 'cloud_off', 'No se pudo cargar la agenda. Inténtalo de nuevo.');
       if (cal) cal.innerHTML = '<div class="agenda-cal-loading">Error al cargar la agenda</div>';
       setTableState(citasBody, 8, 'cloud_off', 'Error al cargar citas');
       renderDashboardCitas([], 'error');
@@ -5690,7 +5749,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   document.getElementById('openNewAppointmentBtn')?.addEventListener('click', openAppointmentModal);
   document.getElementById('closeAppointmentModalBtn')?.addEventListener('click', closeAppointmentModal);
   document.getElementById('appointmentModalDismiss')?.addEventListener('click', closeAppointmentModal);
-  appointmentModal?.addEventListener('click', (e) => { if (e.target === appointmentModal) closeAppointmentModal(); });
+  appointmentModal?.addEventListener('click', (e) => { if (e.target === appointmentModal && appointmentModal.dataset.dirty !== 'true') closeAppointmentModal(); });
   document.getElementById('closeAppointmentDetailDrawerBtn')?.addEventListener('click', closeAppointmentDetailDrawer);
   appointmentDetailDrawer?.addEventListener('click', (e) => { if (e.target === appointmentDetailDrawer) closeAppointmentDetailDrawer(); });
   document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -5846,6 +5905,19 @@ import ConfigView from '../components/views/ConfigView.astro';
             objective: cita?.motivo || '',
           });
         }
+      } else if (action === 'cancelada' || action === 'no_show') {
+        // Cancelling also updates Google Calendar and may notify the patient: never on a single stray click.
+        const cita = findAgendaAppointmentById(apptId);
+        const who = cita?.nombre_paciente ? ` de ${cita.nombre_paciente}` : '';
+        const when = cita?.inicio_en ? ` (${fmtDate(cita.inicio_en)})` : '';
+        void requestConfirm(action === 'cancelada'
+          ? { title: 'Cancelar cita', message: `Se cancelará la cita${who}${when} y se liberará el hueco en la agenda.`, confirmLabel: 'Cancelar cita', cancelLabel: 'Volver', tone: 'error' }
+          : { title: 'Marcar como no presentado', message: `La cita${who}${when} quedará registrada como no presentada.`, confirmLabel: 'Marcar', cancelLabel: 'Volver', tone: 'warning' })
+          .then((confirmed) => {
+            if (!confirmed) return;
+            closeAppointmentDetailDrawer();
+            void updateAppointmentStatus(apptId, action);
+          });
       } else {
         updateAppointmentStatus(apptId, action);
         closeAppointmentDetailDrawer();
@@ -6037,7 +6109,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const actions: string[] = [];
 
     if (normalizedStatus === 'not_linked') {
-      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-create">Preparar invitacion</button>');
+      actions.push('<button type="button" class="btn-sm btn-outline" data-action="telegram-link-create">Preparar invitación</button>');
     }
 
     if (normalizedStatus === 'pending') {
@@ -6089,7 +6161,21 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   // === LOAD HISTORIAL ===
   let historyLoadVersion = 0;
+  // A refresh (new plan, Telegram link, reload) re-renders the view: keep the note being typed for the same patient.
+  let historyDraftPatientId: string | null = null;
   const loadHistorial = async () => {
+    const patientId = selectedPatientId;
+    const draftSelector = 'form[data-role="history-note-form"] textarea[name="texto_nota"]';
+    const draft = patientId && patientId === historyDraftPatientId
+      ? (historialContent?.querySelector?.(draftSelector) as HTMLTextAreaElement | null)?.value || ''
+      : '';
+    historyDraftPatientId = patientId;
+    await renderHistorial();
+    const field = historialContent?.querySelector?.(draftSelector) as HTMLTextAreaElement | null;
+    if (draft && field && !field.value && selectedPatientId === patientId) field.value = draft;
+  };
+
+  const renderHistorial = async () => {
     const loadVersion = ++historyLoadVersion;
     const patientId = selectedPatientId;
     const isCurrentHistory = () => loadVersion === historyLoadVersion && patientId === selectedPatientId;
@@ -6225,8 +6311,8 @@ import ConfigView from '../components/views/ConfigView.astro';
             <span class="detail-kicker">Paciente seleccionado</span>
             <h3>${escapeHtml(displayName)}</h3>
             <p class="history-patient-meta">
-              <span>Email: ${escapeHtml(patient.email || '-')}</span>
-              <span>Nacimiento: ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : '-'}</span>
+              <span>Email: ${escapeHtml(patient.email || 'sin registrar')}</span>
+              <span>Nacimiento: ${patient.fecha_nacimiento ? fmtDate(patient.fecha_nacimiento) : 'sin registrar'}</span>
             </p>
           </div>
           <div class="history-case-actions">
@@ -6310,7 +6396,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (action === 'telegram-copy-command' || action === 'telegram-copy-link') {
       const copyValue = btn.getAttribute('data-copy-value') || '';
       if (!copyValue) {
-        addMessage('No hay un valor de invitacion disponible para copiar.', 'agent');
+        addMessage('No hay un valor de invitación disponible para copiar.', 'agent');
         return;
       }
 
@@ -6361,7 +6447,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         'agent'
       );
     } catch (err: any) {
-      addMessage(`No se pudo preparar la invitacion Telegram: ${err?.message || 'error no identificado'}`, 'agent');
+      addMessage(`No se pudo preparar la invitación de Telegram: ${err?.message || 'error no identificado'}`, 'agent');
       btn.disabled = false;
       btn.innerHTML = previousLabel;
     }
@@ -6608,18 +6694,26 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const openPagoModal = async (editData?: any) => {
     if (pagosUnavailableMessage) { setPagoFeedback(pagosUnavailableMessage); return; }
+    financeOperationKeys.delete('pago');
     pagoModal?.classList.add('open');
     pagoModal?.setAttribute('aria-hidden', 'false');
     document.body.classList.add('has-modal-open');
     pagoForm?.reset();
     setPagoFeedback();
     if (pagoEditId) pagoEditId.value = '';
-    if (pagoFechaInput) pagoFechaInput.value = new Date().toISOString().slice(0, 10);
-    await populatePagoPacienteSelect();
+    if (pagoFechaInput) pagoFechaInput.value = clinicDayKey(new Date());
+    if (pagoModalTitle) pagoModalTitle.textContent = editData ? 'Editar pago' : 'Registrar pago';
+    if (pagoEditId) pagoEditId.value = editData?.id || '';
+    if (pagoSubmitBtn) pagoSubmitBtn.disabled = false;
+    try {
+      await populatePagoPacienteSelect();
+    } catch {
+      setPagoFeedback('No se pudo cargar la lista de pacientes. Cierra el formulario y vuelve a abrirlo.');
+      if (pagoSubmitBtn) pagoSubmitBtn.disabled = true;
+      return;
+    }
 
     if (editData) {
-      if (pagoModalTitle) pagoModalTitle.textContent = 'Editar pago';
-      if (pagoEditId) pagoEditId.value = editData.id;
       if (pagoPacienteSelect) pagoPacienteSelect.value = editData.paciente_id || '';
       if (pagoFechaInput) pagoFechaInput.value = editData.fecha || '';
       if (pagoImporteInput) pagoImporteInput.value = String(editData.importe);
@@ -7121,10 +7215,10 @@ import ConfigView from '../components/views/ConfigView.astro';
         editId ? `${BACKEND_BASE}/api/pagos/${editId}` : `${BACKEND_BASE}/api/pagos`,
         {
           method: editId ? 'PATCH' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(editId ? {} : { 'Idempotency-Key': financeOperationKey('pago') }) },
           body: JSON.stringify({
             paciente_id: pacienteId,
-            fecha: pagoFechaInput?.value || new Date().toISOString().slice(0, 10),
+            fecha: pagoFechaInput?.value || clinicDayKey(new Date()),
             importe,
             metodo_pago: getSelectedMetodo(),
             notas: pagoNotasInput?.value || null,
@@ -7133,7 +7227,8 @@ import ConfigView from '../components/views/ConfigView.astro';
       closePagoModal();
       await loadPagos();
     } catch (err: any) {
-      setPagoFeedback(`Error: ${err?.message || 'no se pudo guardar'}`);
+      setPagoFeedback(writeFailureMessage(err, 'el cobro'));
+      if (!err?.status) void loadPagos();
     } finally {
       if (pagoSubmitBtn) { pagoSubmitBtn.disabled = false; pagoSubmitBtn.innerHTML = prev; }
     }
@@ -7611,7 +7706,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             </div>
           </article>`).join('')
         : unavailableModules.length
-          ? '<p class="empty-inline">La timeline se muestra en modo parcial hasta recuperar los modulos pendientes.</p>'
+          ? '<p class="empty-inline">El historial se muestra incompleto hasta recuperar los modulos pendientes.</p>'
           : '<p class="empty-inline">La actividad del caso aparecerá en cuanto registres una cita, una nota o un plan domiciliario.</p>';
     }
 
@@ -8607,7 +8702,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           stream.getTracks().forEach((track) => track.stop());
           if (sessionVersion !== voiceSessionVersion) return;
           clearInterval(recordTimerInterval);
-          if (voiceRecordStatus) voiceRecordStatus.textContent = 'Procesando audio con Whisper...';
+          if (voiceRecordStatus) voiceRecordStatus.textContent = 'Transcribiendo el audio...';
           const blob = new Blob(audioChunks, { type: mimeType });
           const reader = new FileReader();
           reader.onloadend = async () => {
@@ -8619,7 +8714,7 @@ import ConfigView from '../components/views/ConfigView.astro';
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ audio_base64: base64, mime_type: mimeType }),
-              });
+              }, VOICE_REQUEST_TIMEOUT_MS);
               if (sessionVersion !== voiceSessionVersion) return;
               if (res?.transcript && voiceTranscriptInput) {
                 voiceTranscriptInput.value = res.transcript;
@@ -8692,7 +8787,7 @@ import ConfigView from '../components/views/ConfigView.astro';
           text,
           paciente_id: patientId,
         }),
-      });
+      }, VOICE_REQUEST_TIMEOUT_MS);
 
       if (!isCurrentFicha(patientId, loadVersion) || sessionVersion !== voiceSessionVersion) return;
       const preview = synthRes?.note_preview || {};
@@ -8781,7 +8876,7 @@ import ConfigView from '../components/views/ConfigView.astro';
 
       const savePayload = {
         paciente_id: patientId,
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: clinicDayKey(new Date()),
         session_datetime: new Date().toISOString(),
         zona_corporal: voiceReviewZone?.value || null,
         dolor_eva: voiceReviewEva?.value !== '' ? Number(voiceReviewEva?.value) : null,
@@ -8827,7 +8922,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const notaIdInput = fichaNotaForm.querySelector('[name="nota_id"]') as HTMLInputElement;
     if (notaIdInput) notaIdInput.value = '';
     const fechaInput = fichaNotaForm.querySelector('[name="fecha"]') as HTMLInputElement;
-    if (fechaInput) fechaInput.value = new Date().toISOString().slice(0, 10);
+    if (fechaInput) fechaInput.value = clinicDayKey(new Date());
     if (fichaNotaFormTitle) fichaNotaFormTitle.textContent = 'Nueva nota clínica';
     fichaNotaFormCard.hidden = false;
     fichaNotaFormCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -8853,7 +8948,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     const notaId = fd.get('nota_id') as string;
     const body: any = {
       paciente_id: patientId,
-      fecha: fd.get('fecha') || new Date().toISOString().slice(0, 10),
+      fecha: fd.get('fecha') || clinicDayKey(new Date()),
       zona_corporal: fd.get('zona_corporal') || null,
       dolor_eva: fd.get('dolor_eva') ? Number(fd.get('dolor_eva')) : null,
       nota: fd.get('nota') as string,
@@ -9127,6 +9222,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   // Modal
   const openFacturaModal = async () => {
     if (facturasUnavailableMessage) { setFacturaFeedback(facturasUnavailableMessage); return; }
+    financeOperationKeys.delete('factura');
     facturaModal?.classList.add('open');
     facturaModal?.setAttribute('aria-hidden', 'false');
     document.body.classList.add('has-modal-open');
@@ -9134,8 +9230,15 @@ import ConfigView from '../components/views/ConfigView.astro';
     setFacturaFeedback();
     if (facturaPreview) facturaPreview.hidden = true;
     // Populate patient select (CRM only)
+    if (facturaSubmitBtn) facturaSubmitBtn.disabled = false;
     if (facturaPacienteSelect) {
-      if (!patientCatalog.length) await fetchPatientCatalog();
+      try {
+        if (!patientCatalog.length) await fetchPatientCatalog();
+      } catch {
+        setFacturaFeedback('No se pudo cargar la lista de pacientes. Cierra el formulario y vuelve a abrirlo.');
+        if (facturaSubmitBtn) facturaSubmitBtn.disabled = true;
+        return;
+      }
       const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
       facturaPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
         crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'Sin nombre')}</option>`).join('');
@@ -9195,7 +9298,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     try {
       const payload = await fetchJson(`${BACKEND_BASE}/api/facturas`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': financeOperationKey('factura') },
         body: JSON.stringify({
           paciente_id: pacienteId,
           iva_pct: Number(facturaIvaPct?.value || 0),
@@ -9209,7 +9312,8 @@ import ConfigView from '../components/views/ConfigView.astro';
         await openProtectedUrl(`${BACKEND_BASE}/api/facturas/${payload.data.id}/pdf${buildClinicParams()}`);
       }
     } catch (err: any) {
-      setFacturaFeedback(`Error: ${err?.message || 'no se pudo generar'}`);
+      setFacturaFeedback(writeFailureMessage(err, 'la factura'));
+      if (!err?.status) void loadFacturas();
     } finally {
       if (facturaSubmitBtn) { facturaSubmitBtn.disabled = false; facturaSubmitBtn.innerHTML = prev; }
     }
@@ -9390,20 +9494,28 @@ import ConfigView from '../components/views/ConfigView.astro';
 
   const openBonoModal = async (editData?: any) => {
     if (bonosUnavailableMessage) { setBonoFeedback(bonosUnavailableMessage); return; }
+    financeOperationKeys.delete('bono');
     bonoModal?.classList.add('open');
     bonoModal?.setAttribute('aria-hidden', 'false');
     document.body.classList.add('has-modal-open');
     bonoForm?.reset();
     setBonoFeedback();
     if (bonoEditId) bonoEditId.value = '';
-    if (!patientCatalog.length) await fetchPatientCatalog();
+    if (bonoSubmitBtn) bonoSubmitBtn.disabled = false;
+    try {
+      if (!patientCatalog.length) await fetchPatientCatalog();
+    } catch {
+      setBonoFeedback('No se pudo cargar la lista de pacientes. Cierra el formulario y vuelve a abrirlo.');
+      if (bonoSubmitBtn) bonoSubmitBtn.disabled = true;
+      return;
+    }
     const crmPts = patientCatalog.filter((p: any) => p._source !== 'legacy');
     if (bonoPacienteSelect) {
       bonoPacienteSelect.innerHTML = '<option value="">-- Selecciona paciente --</option>' +
         crmPts.map((p: any) => `<option value="${p.id}">${escapeHtml(p.nombre_completo || 'Sin nombre')}</option>`).join('');
     }
     const fechaInicio = document.getElementById('bonoFechaInicio') as HTMLInputElement;
-    if (fechaInicio && !editData) fechaInicio.value = new Date().toISOString().slice(0, 10);
+    if (fechaInicio && !editData) fechaInicio.value = clinicDayKey(new Date());
     if (editData) {
       if (bonoModalTitle) bonoModalTitle.textContent = 'Editar bono';
       if (bonoEditId) bonoEditId.value = editData.id;
@@ -9442,10 +9554,13 @@ import ConfigView from '../components/views/ConfigView.astro';
       if (id) {
         await fetchJson(`${BACKEND_BASE}/api/bonos/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       } else {
-        await fetchJson(`${BACKEND_BASE}/api/bonos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        await fetchJson(`${BACKEND_BASE}/api/bonos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': financeOperationKey('bono') }, body: JSON.stringify(body) });
       }
       closeBonoModal(); await loadBonos();
-    } catch (err: any) { setBonoFeedback(`Error: ${err?.message || 'no se pudo guardar'}`); }
+    } catch (err: any) {
+      setBonoFeedback(writeFailureMessage(err, 'el bono'));
+      if (!err?.status) void loadBonos();
+    }
     finally { if (bonoSubmitBtn) { bonoSubmitBtn.disabled = false; bonoSubmitBtn.innerHTML = prev; } }
   });
 
@@ -9461,10 +9576,14 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (action === 'usar-bono') {
       btn.disabled = true;
       try {
-        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
+        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST', headers: { 'Idempotency-Key': financeOperationKey(`bono-uso:${bonoId}`) } });
+        financeOperationKeys.delete(`bono-uso:${bonoId}`);
         showToast('Sesión descontada del bono.', 'success');
         await loadBonos();
-      } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
+      } catch (err: any) {
+        showToast(writeFailureMessage(err, 'el uso del bono'), 'error');
+        if (!err?.status) void loadBonos();
+      }
       finally { btn.disabled = false; }
     }
     if (action === 'edit-bono') {
@@ -10078,7 +10197,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Sin tipo';
       const signed = d.estado === 'firmado';
       const fechaFirma = d.fecha_firma
-        ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+        ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { timeZone: CLINIC_TIME_ZONE, day: '2-digit', month: 'short', year: 'numeric' })
         : 'Pendiente';
       return `
         <article class="documentos-mobile-item">
@@ -10090,7 +10209,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <small>${escapeHtml(fechaFirma)}</small>
           <div class="documentos-mobile-actions">
             ${signed ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : ''}
-            <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}">Eliminar</button>
+            ${d.estado === 'firmado' ? '' : `<button class="btn-sm btn-ghost doc-delete-btn" aria-label="Eliminar documento" data-doc-id="${d.id}">Eliminar</button>`}
           </div>
         </article>
       `;
@@ -10148,7 +10267,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Sin tipo';
           const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
           const fechaFirma = d.fecha_firma
-            ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+            ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { timeZone: CLINIC_TIME_ZONE, day: '2-digit', month: 'short', year: 'numeric' })
             : 'Pendiente';
           return `<tr>
             <td class="td-patient">${escapeHtml(pacNombre)}</td>
@@ -10158,7 +10277,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
             <td>${fechaFirma}</td>
             <td class="documentos-actions-cell">
               ${d.estado === 'firmado' ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
-              <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
+              ${d.estado === 'firmado' ? '' : `<button class="btn-sm btn-ghost doc-delete-btn" aria-label="Eliminar documento" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>`}
             </td>
           </tr>`;
         }).join('');
@@ -10174,7 +10293,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
         const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Sin tipo';
         const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
         const fechaFirma = d.fecha_firma
-          ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+          ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { timeZone: CLINIC_TIME_ZONE, day: '2-digit', month: 'short', year: 'numeric' })
           : 'Pendiente';
         return `<tr>
           <td class="td-patient">${escapeHtml(pacNombre)}</td>
@@ -10184,7 +10303,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           <td>${fechaFirma}</td>
           <td class="documentos-actions-cell">
             ${d.estado === 'firmado' ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
-            <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
+            ${d.estado === 'firmado' ? '' : `<button class="btn-sm btn-ghost doc-delete-btn" aria-label="Eliminar documento" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>`}
           </td>
         </tr>`;
       }).join('');
@@ -10225,7 +10344,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           const tipoLabel = TIPO_LABELS[d.tipo] || d.tipo || 'Sin tipo';
           const estadoClass = d.estado === 'firmado' ? 'confirmada' : 'pendiente';
           const fechaFirma = d.fecha_firma
-            ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+            ? new Date(d.fecha_firma).toLocaleDateString('es-ES', { timeZone: CLINIC_TIME_ZONE, day: '2-digit', month: 'short', year: 'numeric' })
             : 'Pendiente';
           return `<tr>
             <td class="td-patient">${escapeHtml(pacNombre)}</td>
@@ -10235,7 +10354,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
             <td>${fechaFirma}</td>
             <td class="documentos-actions-cell">
               ${d.estado === 'firmado' ? `<a href="#" data-protected-url="${BACKEND_BASE}/api/documentos/${d.id}/pdf${buildClinicParams()}" class="btn-sm btn-outline">PDF</a>` : '<span class="documentos-actions-empty">Sin firma</span>'}
-              <button class="btn-sm btn-ghost doc-delete-btn" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>
+              ${d.estado === 'firmado' ? '' : `<button class="btn-sm btn-ghost doc-delete-btn" aria-label="Eliminar documento" data-doc-id="${d.id}" title="Eliminar">&#x2715;</button>`}
             </td>
           </tr>`;
         }).join('');
@@ -10280,10 +10399,14 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     if (action === 'usar-bono') {
       btn.disabled = true;
       try {
-        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST' });
+        await fetchJson(`${BACKEND_BASE}/api/bonos/${bonoId}/usar`, { method: 'POST', headers: { 'Idempotency-Key': financeOperationKey(`bono-uso:${bonoId}`) } });
+        financeOperationKeys.delete(`bono-uso:${bonoId}`);
         showToast('Sesión descontada del bono.', 'success');
         await loadBonos();
-      } catch (err: any) { showToast(err?.message || 'No se pudo usar el bono.', 'error'); }
+      } catch (err: any) {
+        showToast(writeFailureMessage(err, 'el uso del bono'), 'error');
+        if (!err?.status) void loadBonos();
+      }
       finally { btn.disabled = false; }
       return;
     }
@@ -10378,9 +10501,9 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       const data = await r.json();
       const ok = r.ok && !data.n8n_unreachable;
       if (cfgAgent) cfgAgent.textContent = ok ? 'Servicio disponible para preparar y revisar planes' : 'No se pudo comprobar el asistente. Inténtalo de nuevo más tarde.';
-      if (cfgAgentStatus) { cfgAgentStatus.textContent = ok ? (data.fallback_used ? 'Fallback' : 'OK') : 'Error'; cfgAgentStatus.className = `status-chip ${ok ? 'aprobado' : 'rechazado'}`; }
+      if (cfgAgentStatus) { cfgAgentStatus.textContent = ok ? (data.fallback_used ? 'Modo básico' : 'Disponible') : 'Error'; cfgAgentStatus.className = `status-chip ${ok ? 'aprobado' : 'rechazado'}`; }
     } catch { if (cfgAgent) cfgAgent.textContent = 'No se pudo comprobar el asistente. Revisa la conexión.'; if (cfgAgentStatus) { cfgAgentStatus.textContent = 'Sin conexión'; cfgAgentStatus.className = 'status-chip rechazado'; } }
-    if (cfgReadiness) cfgReadiness.textContent = 'Comprobando modulos...';
+    if (cfgReadiness) cfgReadiness.textContent = 'Comprobando servicios...';
     if (cfgReadinessStatus) { cfgReadinessStatus.textContent = 'Comprobando'; cfgReadinessStatus.className = 'status-chip pendiente'; }
     if (cfgReadinessDetail) {
       cfgReadinessDetail.hidden = true;
@@ -10444,7 +10567,8 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       email: get('cfgClinicEmail'),
       web: get('cfgClinicWeb'),
     });
-    let message = 'Datos guardados correctamente';
+    // Only phone and email live on the clinic record; name, NIF and address stay on this device for invoices.
+    let message = 'Guardado. El teléfono y el email de la clínica se han actualizado; nombre, NIF y dirección se guardan en este equipo para tus facturas.';
     if (!isDevMode) {
       try {
         await fetchJson(`${BACKEND_BASE}/api/profesional/clinic-settings`, {
@@ -10453,8 +10577,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
           body: JSON.stringify({ telefono: get('cfgClinicTelefono'), email: get('cfgClinicEmail') }),
         });
       } catch (err: any) {
-        const detail = String(err?.message || '').match(/"error":"([^"]+)"/)?.[1];
-        message = `Guardado en este navegador, pero no en la clínica: ${detail || 'inténtalo de nuevo'}`;
+        message = `Guardado solo en este equipo. No se pudo actualizar la clínica: ${err?.message || 'inténtalo de nuevo'}`;
       }
     }
     const fb = document.getElementById('clinicConfigFeedback');
@@ -10614,7 +10737,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
       
       const body = {
         paciente_id: patientId,
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: clinicDayKey(new Date()),
         zona_corporal: activeSelectedZone,
         dolor_eva: eva,
         nota: notes || `Dolor en zona ${zonaLabels[activeSelectedZone] || activeSelectedZone} registrado desde el mapa anatómico.`,

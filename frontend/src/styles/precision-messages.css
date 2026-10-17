@@ -1,11 +1,11 @@
 /* ==========================================================================
    FISIO CLINICAL — PRECISION MESSAGES / INTAKES (v5.0)
    Covers: Triage Clínico, Bandeja de Entrada, Mensajes
-   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#4f46e5)
    ========================================================================== */
 
 .intakes-page {
-  background: var(--surface-page-canvas, #f4f7fb) !important;
+  background: var(--surface-page-canvas, #f3f4f8) !important;
   min-height: 100%;
 }
 
@@ -16,29 +16,29 @@
 
 .intakes-card {
   background: #ffffff !important;
-  border: 1px solid #dce3ed !important;
+  border: 1px solid #e5e7ef !important;
   border-radius: 8px !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
 .intakes-toolbar {
   padding: 1rem 1.25rem !important;
-  border-bottom: 1px solid #dce3ed !important;
+  border-bottom: 1px solid #e5e7ef !important;
 }
 
 .intakes-filterbar select {
   background-color: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   border-radius: 6px !important;
-  color: #142234 !important;
+  color: #0b1020 !important;
   font-size: 0.8125rem !important;
   padding: 0.45rem 2rem 0.45rem 2.25rem !important;
 }
 
 .intakes-filterbar select:focus {
-  border-color: #175dd0 !important;
+  border-color: #4f46e5 !important;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(23, 93, 208, 0.15) !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
 }
 
 .intakes-table-wrap {
@@ -51,8 +51,8 @@
 }
 
 .intakes-table thead {
-  background: #f4f7fb;
-  border-bottom: 1px solid #dce3ed;
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
 }
 
 .intakes-table th {
@@ -72,7 +72,7 @@
 }
 
 .intakes-table tbody tr:hover {
-  background: #f4f7fb;
+  background: #f3f4f8;
 }
 
 /* Priority & Channel Badges */

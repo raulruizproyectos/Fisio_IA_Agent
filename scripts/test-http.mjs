@@ -18,15 +18,15 @@ try {
   await assert.rejects(fetchJson('/fixture', { method: 'POST' }), error => error.status === 409 && error.code === 'CREATE_ALREADY_SAVED' && error.recoveredData.id === 'saved');
   assert.equal(calls.length, 1, 'Never replay a mutation or conflict');
   respond(new Response('x'.repeat(500), { status: 503 }));
-  await assert.rejects(fetchJson('/fixture'), error => error.status === 503 && error.code === null && error.message.length < 240);
+  await assert.rejects(fetchJson('/fixture'), error => error.status === 503 && error.code === null && !error.message.includes('xxx') && !/HTTP/.test(error.message));
   respond({ ok: false, status: 500, text: async () => { throw Error('unreadable'); } });
-  await assert.rejects(fetchJson('/fixture'), error => error.status === 500 && error.message === 'HTTP 500');
+  await assert.rejects(fetchJson('/fixture'), error => error.status === 500 && /servidor no ha podido/.test(error.message) && !/HTTP/.test(error.message));
   respond(new Response('not JSON'));
   await assert.rejects(fetchJson('/fixture'), SyntaxError);
   const timeout = new DOMException('Timeout', 'TimeoutError');
   calls = [];
   globalThis.fetch = async () => { calls.push('attempt'); throw timeout; };
-  await assert.rejects(fetchJson('/fixture', { method: 'POST' }), error => error === timeout);
+  await assert.rejects(fetchJson('/fixture', { method: 'POST' }), error => error.name === 'TimeoutError' && error.cause === timeout && !error.status && /tardando/.test(error.message));
   assert.equal(calls.length, 1, 'Timeout remains uncertain; no automatic retry');
 } finally { globalThis.fetch = originalFetch; }
 console.log('PASS: real JSON client preserves timeout/signals, error metadata, recovery data and single-attempt writes.');

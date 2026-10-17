@@ -1,6 +1,6 @@
 /* Precisión azul: objetivo elegido por el usuario, docs/design-exploration.
    Layout común; las vistas conservan sus grids y contratos de interacción. */
-html { font-size: 15px; }
+html { font-size: 16px; } /* rem values land on whole pixels of the 12/13/14/16 scale */
 body { background: var(--color-canvas); color: var(--color-ink); }
 h1, h2, h3, h4 { font-weight: 600; line-height: 1.25; letter-spacing: -.025em; }
 h1, h2 { text-wrap: balance; }
@@ -34,7 +34,7 @@ button:not(:disabled):active { transform: scale(.98); }
 .brand-icon-wrapper { display: grid; place-items: center; flex: 0 0 34px; height: 34px; color: white; background: var(--color-brand-primary); border-radius: 10px; }
 .brand-icon-wrapper .material-symbols-rounded { font-size: 21px; }
 .brand-copy { min-width: 0; }
-.brand-text { font-size: 17px; color: var(--color-ink); font-weight: 700; letter-spacing: -.03em; }
+.brand-text { font-size: 17px; color: var(--color-ink); font-weight: 600; letter-spacing: -.03em; }
 .brand-subtitle { display: block; font-size: 11px; color: var(--color-ink-muted); margin-top: 3px; }
 .sidebar-status { display: flex; gap: 10px; padding: 13px 12px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 10px; align-items: center; }
 .sidebar-status > div { min-width: 0; }
@@ -355,7 +355,7 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 .status-chip.confirmada, .status-chip.en_consulta, .status-chip.en_curso, .status-chip.reprogramada,
 .status-chip.generada, .status-chip.enviada, .status-chip.emitida, .status-chip.chip-info {
-  background: #eaf1fe !important; border-color: #c9dafb !important; color: #175dd0 !important;
+  background: #eef0ff !important; border-color: #c9dafb !important; color: #4f46e5 !important;
 }
 .status-chip.pendiente, .status-chip.pendiente_revision, .status-chip.requiere_revision, .status-chip.chip-warning,
 .status-chip.is-warning, .status-chip.checking {
@@ -366,7 +366,7 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   background: #fdecec !important; border-color: #f5c2c2 !important; color: #b42318 !important;
 }
 .status-chip.caducado, .status-chip.agotado {
-  background: #eef2f7 !important; border-color: #dce3ed !important; color: #536375 !important;
+  background: #eef2f7 !important; border-color: #e5e7ef !important; color: #5b6476 !important;
 }
 /* State change (confirm/complete): lib/motion.ts swaps old → new class under this one. */
 .status-chip.chip-status-change {
@@ -381,14 +381,14 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   display: block;
   margin-bottom: 5px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-brand-primary, #175dd0);
+  color: var(--color-brand-primary, #4f46e5);
 }
 .page-header-row .page-subtitle {
   margin-top: 6px;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
 }
 .page-header-row .page-tools {
   margin-top: 16px;
@@ -429,13 +429,13 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   margin: 0 !important;
   padding: 0.25rem 0 0.5rem !important;
   font-size: 0.6875rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
-  color: #175dd0 !important;
+  color: #4f46e5 !important;
 }
-#dashCitasBody .dash-section-label.dash-section-label-muted { color: #536375 !important; }
-#dashCitasBody .dash-section-label.dash-section-label-spaced { margin-top: 0.75rem !important; padding-top: 1rem !important; border-top: 1px solid #e8edf4 !important; color: #536375 !important; }
+#dashCitasBody .dash-section-label.dash-section-label-muted { color: #5b6476 !important; }
+#dashCitasBody .dash-section-label.dash-section-label-spaced { margin-top: 0.75rem !important; padding-top: 1rem !important; border-top: 1px solid #e8edf4 !important; color: #5b6476 !important; }
 #dashCitasBody .clean-list-item {
   display: grid !important;
   grid-template-columns: 4.25rem minmax(0, 1fr) auto !important;
@@ -451,25 +451,25 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   cursor: pointer !important;
   transition: background-color 120ms ease !important;
 }
-#dashCitasBody .clean-list-item:hover { background: #f4f7fb !important; }
+#dashCitasBody .clean-list-item:hover { background: #f3f4f8 !important; }
 #dashCitasBody .clean-list-item + .clean-list-item { border-top: 1px solid #eef2f7 !important; border-radius: 0 !important; }
 #dashCitasBody .dash-cita-hora { display: block !important; }
 #dashCitasBody .cita-hora-badge {
   display: inline-block !important;
   font-size: 0.9375rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   font-variant-numeric: tabular-nums !important;
-  color: #142234 !important;
+  color: #0b1020 !important;
   background: transparent !important;
   padding: 0 !important;
 }
-#dashCitasBody .cita-hora-badge.cita-badge-upcoming { font-size: 0.8125rem !important; color: #536375 !important; }
+#dashCitasBody .cita-hora-badge.cita-badge-upcoming { font-size: 0.8125rem !important; color: #5b6476 !important; }
 #dashCitasBody .clean-list-main { min-width: 0 !important; display: grid !important; gap: 0.125rem !important; }
 #dashCitasBody .clean-list-title {
   margin: 0 !important;
   font-size: 0.9375rem !important;
   font-weight: 600 !important;
-  color: #142234 !important;
+  color: #0b1020 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -477,7 +477,7 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 #dashCitasBody .clean-list-meta {
   margin: 0 !important;
   font-size: 0.8125rem !important;
-  color: #536375 !important;
+  color: #5b6476 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;

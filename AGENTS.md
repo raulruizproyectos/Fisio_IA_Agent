@@ -35,11 +35,11 @@ cd ../frontend && npm run check && npm run build
 - Ante *red flags* clínicas, se exige una justificación profesional documentada de al menos 12 caracteres.
 - Al sustituir un ejercicio por apoyo visual, el nuevo ejercicio debe adoptar sus propias precauciones y dosificación (nunca heredar contraindicaciones de otro).
 
-## 6. Frontend y Sistema de Diseño (v6.0 Precisión azul)
+## 6. Frontend y Sistema de Diseño (v7 Noche clínica)
 - **Contratos DOM**: NUNCA modificar ni eliminar IDs ni atributos `data-*` en `frontend/src/pages/index.astro` ni en los componentes de `views/*`, ya que son requeridos para la hidratación reactiva.
-- **Dirección elegida por el usuario**: Precisión azul, DESIGN.md v6. Navegación y tarjetas blancas, lienzo #f4f7fb, texto #142234 y azul #175dd0. No reintroducir las reglas verde/coral anteriores.
-- **Acciones y estados**: azul para acción/orientación; rojo/ámbar/verde solo para estados semánticos con etiquetas. Movimiento discreto, reducido cuando lo solicita el sistema; controles de 44 px y foco visible.
-- **Tipografía**: DM Sans con `font-feature-settings: "ss03" 1` en toda la interfaz.
+- **Dirección elegida por el usuario**: Noche clínica, DESIGN.md v7 (17-oct-2026). Navegación oscura #0b1020, lienzo #f3f4f8, texto #0b1020, acento índigo #4f46e5, Inter Tight. Capa final única `premium-system.css`. No reintroducir Precisión azul ni verde/coral.
+- **Acciones y estados**: índigo para acción/orientación; rojo/ámbar/verde solo para estados semánticos con etiquetas. Movimiento discreto, reducido cuando lo solicita el sistema; controles de 44 px y foco visible.
+- **Tipografía**: Inter Tight (cv11, ss01), escala 12/13/14/16/20/28/32, pesos 400/500/600.
 - **Responsive**: Compatibilidad obligatoria en escritorio (1280px+) y móvil (375px+).
 
 ## 7. Automatizaciones en n8n

@@ -1,13 +1,13 @@
 /* ==========================================================================
    FISIO CLINICAL — SHARED PRIMITIVES (v6.0)
-   Primary blue (#175dd0) for the main action
+   Primary blue (#4f46e5) for the main action
    Semantic colors remain separate from brand and selection
    ========================================================================== */
 
 /* === BUTTONS === */
 button, .btn {
   font-family: var(--font-family-base) !important;
-  font-feature-settings: "ss03" 1 !important;
+  font-feature-settings: "cv11" 1, "ss01" 1 !important;
   transition: transform var(--duration-micro) var(--ease-editorial), background-color var(--duration-micro) ease !important;
 }
 
@@ -43,7 +43,7 @@ button:active, .btn:active {
 #sendBtn:hover,
 #pagoSubmitBtn:hover,
 #btnSaveFicha:hover {
-  background: #104ab0 !important;
+  background: #4338ca !important;
   color: #ffffff !important;
 }
 
@@ -117,7 +117,7 @@ button:active, .btn:active {
 
 .btn-brand:hover,
 .btn-canopy:hover {
-  background: #104ab0 !important;
+  background: #4338ca !important;
 }
 
 /* === FORM CONTROLS === */
@@ -125,7 +125,7 @@ input,
 select,
 textarea {
   font-family: var(--font-family-base) !important;
-  font-feature-settings: "ss03" 1 !important;
+  font-feature-settings: "cv11" 1, "ss01" 1 !important;
   background: #ffffff !important;
   color: #000000 !important;
   border: 1.5px solid var(--color-frost-gray) !important;
@@ -223,7 +223,7 @@ th {
   background: transparent !important;
   color: var(--color-slate) !important;
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   border-bottom: 1.5px solid var(--color-frost-gray) !important;
@@ -316,7 +316,7 @@ td:first-child strong {
 .empty-state-sm h4,
 .empty-state strong {
   color: var(--color-ink-black) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .empty-state p,
@@ -334,7 +334,7 @@ td:first-child strong {
   border-radius: var(--radius-sm, 10px) !important;
   background: var(--color-canopy-green, #0a3922) !important;
   color: #ffffff !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
   box-shadow: 0 4px 14px rgba(20, 34, 52, 0.25) !important;
@@ -454,14 +454,14 @@ td:first-child strong {
 
 .modal-title-group h2 {
   font-size: 1.25rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   margin: 0.15rem 0 0.35rem !important;
 }
 
 .modal-eyebrow {
   font-size: 0.72rem !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   color: var(--color-canopy-green, #0a3922) !important;
@@ -470,7 +470,7 @@ td:first-child strong {
 
 .drawer-subtitle {
   font-size: 0.85rem !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
   margin: 0 !important;
 }
 
@@ -480,7 +480,7 @@ td:first-child strong {
   border-radius: 8px !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
   background: var(--color-sand, #f7f5f1) !important;
-  color: var(--color-slate, #536375) !important;
+  color: var(--color-slate, #5b6476) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -528,7 +528,7 @@ td:first-child strong {
 .field > span,
 .field > label {
   font-size: var(--text-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--color-charcoal) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.04em !important;

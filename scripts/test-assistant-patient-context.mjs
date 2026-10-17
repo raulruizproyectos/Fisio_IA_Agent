@@ -89,7 +89,7 @@ function setup(fetchJson) {
     syncAssistantPatientBriefFromData:(id,patient)=>renders.push([id,patient.nombre_completo]),rememberSelectedPatient(){},
     historyNoteComposerHtml:'',renderPatientTelegramLinkBlock:()=>'',focusHistoryAnchor(){},
   };
-  const loader=section('  const loadHistorial =',"  pageLoaders['historial']");
+  const loader=section('  let historyDraftPatientId',"  pageLoaders['historial']");
   runInNewContext(transpileModule(loader+'\nglobalThis.load=loadHistorial;',{}).outputText,context);
   const loadingA=context.load();context.selectedPatientId='B';context.selectedPatientName='B';await context.load();
   const renderedB=context.historialContent.innerHTML;

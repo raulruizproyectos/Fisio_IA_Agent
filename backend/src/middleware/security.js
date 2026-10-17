@@ -16,6 +16,17 @@ const PUBLIC_BOOKING_ROUTES = new Set([
 
 const PUBLIC_HEALTH_ROUTES = new Set(['GET /', 'GET /health', 'GET /api/health']);
 
+// The internal key grants service role, so it only opens the routes n8n actually calls (plus /api/cron/*).
+const INTERNAL_KEY_ROUTES = new Set([
+  'GET /api/profesional/intakes/pending', 'GET /api/professional/intakes/pending',
+  'POST /api/profesional/appointments', 'POST /api/professional/appointments',
+  'POST /api/profesional/appointments/sync-calendar', 'POST /api/professional/appointments/sync-calendar',
+  'POST /api/exercises/recommend', 'POST /api/ejercicios/recommend',
+  'POST /api/exercises/recommend/async', 'POST /api/ejercicios/recommend/async',
+  'POST /api/telegram/incoming',
+]);
+const internalKeyAllowed = (key) => INTERNAL_KEY_ROUTES.has(key) || key.startsWith('POST /api/cron/');
+
 export function secureEqual(actual, expected) {
   const actualBuffer = Buffer.from(String(actual || ''));
   const expectedBuffer = Buffer.from(String(expected || ''));
@@ -29,8 +40,9 @@ export function bearerToken(req) {
   return match?.[1]?.trim() || null;
 }
 
+// Lowercase because Express matches routes case-insensitively: /api/CRON must not dodge the cron/webhook checks.
 export function routeKey(req) {
-  return `${req.method.toUpperCase()} ${req.path}`;
+  return `${req.method.toUpperCase()} ${req.path.toLowerCase()}`;
 }
 
 function runPrivileged(req, next, actorType) {
@@ -71,6 +83,7 @@ export async function authorizeRequest(req, res, next) {
 
   const suppliedInternalKey = req.get('x-internal-api-key');
   if (suppliedInternalKey && secureEqual(suppliedInternalKey, process.env.INTERNAL_API_KEY)) {
+    if (!internalKeyAllowed(key)) return res.status(403).json({ error: 'Ruta no disponible para procesos internos', request_id: req.id });
     return runPrivileged(req, next, 'internal');
   }
 
@@ -86,7 +99,7 @@ export async function authorizeRequest(req, res, next) {
     return runPrivileged(req, next, 'telegram');
   }
 
-  if (req.path.startsWith('/api/cron/')) {
+  if (req.path.toLowerCase().startsWith('/api/cron/')) {
     const expected = process.env.INTERNAL_API_KEY;
     const supplied = req.get('x-internal-api-key') || bearerToken(req);
     if (!secureEqual(supplied, expected)) {

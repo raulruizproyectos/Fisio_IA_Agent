@@ -1,48 +1,48 @@
 /* ==========================================================================
    FISIO CLINICAL — PRECISIÓN AZUL DESIGN TOKENS (v6.0)
    Direction: Precisión azul, selected 2026-10-08
-   Primary: Blue (#175DD0), Canvas (#F4F7FB), White surfaces
-   Text: Ink (#142234), Muted (#536375), Border (#DCE3ED)
+   Primary: Blue (#4f46e5), Canvas (#f3f4f8), White surfaces
+   Text: Ink (#0b1020), Muted (#5b6476), Border (#e5e7ef)
    ========================================================================== */
 
 :root {
   /* === CORE BRAND & CLINICAL IDENTITY === */
-  --color-brand-primary: #175dd0;
-  --color-brand-primary-hover: #104ab0;
-  --color-brand-accent: #175dd0;
-  --color-brand-accent-hover: #104ab0;
-  --color-canvas: #f4f7fb;
+  --color-brand-primary: #4f46e5;
+  --color-brand-primary-hover: #4338ca;
+  --color-brand-accent: #4f46e5;
+  --color-brand-accent-hover: #4338ca;
+  --color-canvas: #f3f4f8;
   --color-canvas-rgb: 244, 247, 251;
   --color-surface: #ffffff;
-  --color-surface-hover: #f1f5f9;
-  --color-surface-subtle: #f4f7fb;
-  --color-surface-selected: #eaf1fe;
+  --color-surface-hover: #f6f7fb;
+  --color-surface-subtle: #f3f4f8;
+  --color-surface-selected: #eef0ff;
 
   /* === INK & CONTRAST === */
-  --color-ink: #142234;
-  --color-ink-secondary: #334155;
-  --color-ink-muted: #536375;
-  --color-ink-disabled: #94a3b8;
+  --color-ink: #0b1020;
+  --color-ink-secondary: #374151;
+  --color-ink-muted: #5b6476;
+  --color-ink-disabled: #9ca3af;
   --color-ink-on-brand: #ffffff;
 
   /* === BORDERS & ELEVATION === */
-  --color-border: #dce3ed;
-  --color-border-subtle: #f1f5f9;
-  --color-border-medium: #cbd5e1;
+  --color-border: #e5e7ef;
+  --color-border-subtle: #f0f1f6;
+  --color-border-medium: #d4d7e2;
   --color-border-strong: #94a3b8;
-  --color-border-focus: #175dd0;
+  --color-border-focus: #4f46e5;
 
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  --shadow-ambient: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  --shadow-raised: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-flyout: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-xs: 0 1px 2px rgba(11, 16, 32, 0.05);
+  --shadow-sm: 0 1px 2px rgba(11, 16, 32, 0.05), 0 0 0 1px rgba(11, 16, 32, 0.02);
+  --shadow-ambient: 0 1px 2px rgba(11, 16, 32, 0.05);
+  --shadow-raised: 0 1px 2px rgba(11, 16, 32, 0.05), 0 14px 34px -20px rgba(11, 16, 32, 0.25);
+  --shadow-flyout: 0 24px 48px -16px rgba(11, 16, 32, 0.28), 0 2px 6px rgba(11, 16, 32, 0.06);
 
   /* === RADII === */
   --radius-xs: 4px;
   --radius-sm: 8px;     /* buttons, inputs, controls */
-  --radius-md: 14px;    /* cards, standard containers */
-  --radius-lg: 16px;    /* modal dialogs, major panels */
+  --radius-md: 16px;    /* cards, standard containers */
+  --radius-lg: 20px;    /* modal dialogs, major panels */
   --radius-full: 9999px; /* status pills, badges */
 
   /* === SPACING RHYTHM === */
@@ -54,8 +54,8 @@
   --space-2xl: 48px;
 
   /* === TYPOGRAPHY SCALES === */
-  --font-family-base: 'DM Sans Variable', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'DM Sans Variable', 'DM Sans', sans-serif;
+  --font-family-base: 'Inter Tight Variable', 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display: 'Inter Tight Variable', 'Inter Tight', sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* === CLINICAL STATUS & SEVERITY === */
@@ -71,60 +71,60 @@
   --color-warning-bg: #ffedd5;
   --color-warning-border: #fdba74;
 
-  --color-info-text: #1e40af;
-  --color-info-bg: #dbeafe;
-  --color-info-border: #93c5fd;
+  --color-info-text: #3730a3;
+  --color-info-bg: #e0e7ff;
+  --color-info-border: #a5b4fc;
 
   --color-neutral-text: #475569;
   --color-neutral-bg: #f1f5f9;
   --color-neutral-border: #cbd5e1;
 
   /* === NAVIGATION / SIDEBAR TOKENS (HIGH CONTRAST) === */
-  --sidebar-bg: #ffffff;
-  --sidebar-bg2: #f4f7fb;
-  --sidebar-border: #dce3ed;
-  --sidebar-text: #536375;
-  --sidebar-text-hover: #142234;
-  --sidebar-active-bg: #eaf1fe;
-  --sidebar-active-border: #175dd0;
-  --sidebar-active-color: #175dd0;
-  --sidebar-width: 224px;
+  --sidebar-bg: #0b1020;
+  --sidebar-bg2: #121a2e;
+  --sidebar-border: #1b2236;
+  --sidebar-text: #a3aac2;
+  --sidebar-text-hover: #ffffff;
+  --sidebar-active-bg: #1c2440;
+  --sidebar-active-border: #a5b4fc;
+  --sidebar-active-color: #ffffff;
+  --sidebar-width: 248px;
   --sidebar-collapsed: 68px;
 
   /* === SURFACES === */
   --surface-page-canvas: var(--color-canvas);
   --surface-card-surface: var(--color-surface);
-  --surface-pastel-card: #f4f7fb;
+  --surface-pastel-card: #f3f4f8;
   --surface-dark-brand-surface: var(--sidebar-bg);
 
   /* === BACKWARD COMPATIBILITY / BRIDGING ALIASES === */
-  --color-canopy: #175dd0;
-  --color-canopy-rgb: 15, 91, 120;
-  --color-canopy-green: #175dd0;
-  --color-coral: #175dd0;
-  --color-coral-pulse: #175dd0;
-  --color-coral-hover: #104ab0;
-  --color-coral-rgb: 15, 91, 120;
+  --color-canopy: #4f46e5;
+  --color-canopy-rgb: 79, 70, 229;
+  --color-canopy-green: #4f46e5;
+  --color-coral: #4f46e5;
+  --color-coral-pulse: #4f46e5;
+  --color-coral-hover: #4338ca;
+  --color-coral-rgb: 79, 70, 229;
   --color-mint: #e0f2fe;
   --color-mint-text: #0369a1;
   --color-mint-wash: #f0f9ff;
-  --color-cream: #f4f7fb;
+  --color-cream: #f3f4f8;
   --color-cream-text: #334155;
-  --color-cream-wash: #f4f7fb;
+  --color-cream-wash: #f3f4f8;
   --color-lavender: #f1f5f9;
   --color-lavender-text: #334155;
-  --color-lavender-mist: #f4f7fb;
+  --color-lavender-mist: #f3f4f8;
   --color-peach: #ffedd5;
   --color-peach-text: #9a3412;
   --color-peach-wash: #fff7ed;
-  --color-sand: #f4f7fb;
+  --color-sand: #f3f4f8;
   --color-graphite: #334155;
-  --color-slate: #536375;
-  --color-frost-gray: #dce3ed;
+  --color-slate: #5b6476;
+  --color-frost-gray: #e5e7ef;
   --color-cloud-gray: #f1f5f9;
   --color-ash: #94a3b8;
   --color-leaf-bright: #166534;
-  --color-deep-teal: #175dd0;
+  --color-deep-teal: #4f46e5;
 
   --bg-base: var(--color-canvas);
   --bg-card: var(--color-surface);
@@ -134,10 +134,10 @@
 
   --accent: var(--color-brand-primary);
   --accent-hover: var(--color-brand-primary-hover);
-  --accent-soft: rgba(23, 93, 208, 0.08);
-  --accent-glow: rgba(23, 93, 208, 0.16);
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  --accent-glow: rgba(79, 70, 229, 0.16);
   --premium: var(--color-brand-primary);
-  --premium-soft: rgba(23, 93, 208, 0.08);
+  --premium-soft: rgba(79, 70, 229, 0.08);
 
   --text-primary: var(--color-ink);
   --text-secondary: var(--color-ink-secondary);
@@ -158,8 +158,8 @@
 
   --radius-card: var(--radius-md);
   --radius-button: var(--radius-sm);
-  --radius-icon: 8px;
-  --radius-panel: 16px;
+  --radius-icon: 10px;
+  --radius-panel: 20px;
   --color-charcoal: var(--color-ink);
   --topbar-height: 76px;
   --duration-fast: 120ms;
@@ -181,11 +181,11 @@
   --teal-deep: var(--color-brand-primary);
   --duration-micro: 0.15s;
   --text-xs: 12px;
-  --text-sm: 13.5px;
-  --text-base: 14.5px;
-  --text-lg: 18px;
-  --text-xl: 22px;
-  --text-2xl: 26px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 28px;
 }
 
 /* Page Section Foundation */

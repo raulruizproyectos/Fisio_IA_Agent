@@ -1,4 +1,47 @@
-# Fisio Clinical · Precisión azul (v6)
+# Fisio Clinical · Noche clínica (v7)
+
+**Vigente desde el 17 de octubre de 2026.** Raúl eligió la dirección C («Noche clínica») entre tres maquetas de Pacientes (A Precisión azul refinada, B Clínica cálida editorial, C Noche clínica) porque la v6 le parecía «sosa, un CRM más» y con desajustes. Sustituye a Precisión azul (v6), que se conserva debajo como historia. No reintroducir el azul `#175dd0` ni DM Sans.
+
+## Por qué hubo que cambiar el sistema, no solo los colores
+
+Medición del 17-oct sobre las 19 hojas importadas: 54 tamaños de letra, 37 radios, 46 sombras, 97 colores y 2.609 `!important`. Cada vista traía sus propios valores. La v7 fija una sola escala y una capa final que manda sobre las anteriores; tras aplicarla, el render de las nueve vistas usa 14 tamaños (casi todos de la escala), pesos 400/500/600 y 11 radios, sin desbordamiento horizontal a 1366 ni a 375 px.
+
+## Tokens
+
+| Papel | Valor |
+| --- | --- |
+| Acento (acción, selección, foco) | Índigo `#4f46e5`, hover `#4338ca`, suave `#eef0ff`; botón primario en degradado `#6366f1 → #4f46e5` con sombra índigo |
+| Navegación | Noche `#0b1020`, tarjetas `#121a2e`, borde `#1b2236`, activo `#1c2440` con raíl `#a5b4fc`, texto `#b4bad0` |
+| Lienzo / superficie | `#f3f4f8` / blanco |
+| Texto | Principal `#0b1020`, secundario `#374151`, apagado `#5b6476` |
+| Bordes | `#e5e7ef`, suave `#f0f1f6` |
+| Tipografía | **Inter Tight** (Fontsource, OFL, alojada en el build), `cv11` + `ss01`, cifras tabulares en datos |
+| Escala | 11 (etiquetas en mayúsculas) · 12 · 13 · 14 (base) · 16 · 20 · 24/28 (cifras) · 32 títulos (26 en móvil). Raíz 16 px para que los `rem` caigan en píxeles enteros |
+| Pesos | 400 texto · 500 navegación/controles · 600 títulos, botones y cifras. Nada por encima de 600 |
+| Radios | Controles 10 px · tarjetas 16 px · paneles, tablas y diálogos 20 px · etiquetas 999 px |
+| Sombras | 1: `0 1px 2px` · 2: paneles con sombra difusa · 3: diálogos |
+| Estados | Verde/ámbar/rojo/índigo suave **siempre con punto + texto** (`.status-chip`); en la Agenda, color + etiqueta |
+
+## Composición
+
+- Cabecera de cada vista: etiqueta en mayúsculas (índigo) → título 32 px → descripción 14 px gris, con 8 px entre ellos y acciones alineadas a la derecha, sin tarjeta detrás. Los títulos no llevan icono.
+- Indicadores: tarjeta blanca de 16 px de radio, etiqueta, cifra grande en una sola línea y contexto.
+- Tablas: cabecera de 12 px sin mayúsculas, filas de 14 px con hover suave; encabezados nunca partidos.
+- Filtros: buscador + orden arriba; segmentos alineados a la izquierda en una pista gris.
+- Asistente IA: tarjeta en degradado índigo-violeta en la navegación; es el único elemento con degradado de color aparte del botón primario.
+- Mantener todo lo de la v6 sobre sencillez, accesibilidad (44 px, foco visible, Escape), movimiento discreto y `prefers-reduced-motion`, que sigue vigente.
+
+## Implementación
+
+- `frontend/src/styles/design-tokens.css`: valores. `frontend/src/styles/premium-system.css`: **capa final única**, importada la última en `Layout.astro`. Ahí van las decisiones compartidas; no añadir valores sueltos en hojas antiguas.
+- Reglas antiguas con selector de id o compuestos pueden ganar: anclar con `body .app-shell …` en la capa final en lugar de crear otra hoja.
+- Contratos: ningún ID ni `data-*` cambiado (comprobado contra HEAD el 17-oct). Check, build, 28 scripts de CI y 227 pruebas backend en verde tras el cambio.
+- Deuda conocida: las hojas antiguas (`editorial-*`, `precision-*`) siguen cargándose; consolidarlas en la capa final vista a vista, comparando capturas, y retirar las no importadas (`premium-clinic-ui.css`, `production-ui.css`).
+
+---
+
+# Historia: Precisión azul (v6)
+
 
 El usuario eligió **Precisión azul** el 8 de octubre de 2026 y autorizó rediseñar toda la interfaz, con acabado moderno y premium y movimiento discreto. Esta es la especificación vigente; sustituye las reglas verde/coral y pastel anteriores. Su historial y evaluaciones se conservan en [DESIGN-history.md](docs/design-exploration/DESIGN-history.md).
 

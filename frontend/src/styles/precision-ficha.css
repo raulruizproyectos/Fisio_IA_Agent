@@ -4,10 +4,10 @@
    ========================================================================== */
 
 .ficha-workspace {
-  background: var(--color-canvas, #f4f7fb);
+  background: var(--color-canvas, #f3f4f8);
   min-height: 100%;
   width: 100%;
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 /* === TOPBAR & NAV === */
@@ -17,7 +17,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-border, #dce3ed);
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
   flex-wrap: wrap;
 }
 
@@ -38,7 +38,7 @@
 
 .ficha-back-btn:hover {
   background: var(--color-surface-hover, #f1f5f9);
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 .ficha-topbar-actions {
@@ -50,7 +50,7 @@
 /* === CLINICAL CONTEXT HERO === */
 .ficha-hero-panel {
   background: #ffffff;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-md, 10px);
   padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
@@ -73,16 +73,16 @@
 
 .ficha-hero-kicker {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-brand-primary, #175dd0);
+  color: var(--color-brand-primary, #4f46e5);
 }
 
 .ficha-hero-name {
   font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--color-ink, #142234);
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
   letter-spacing: -0.02em;
   margin: 0;
   line-height: 1.2;
@@ -101,7 +101,7 @@
   gap: 1rem;
   flex-wrap: wrap;
   font-size: 0.8125rem;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
 }
 
 .ficha-hero-contact-item {
@@ -112,7 +112,7 @@
 
 .ficha-hero-contact-item span.material-symbols-rounded {
   font-size: 18px;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
 }
 
 .ficha-hero-quick-actions {
@@ -131,8 +131,8 @@
 }
 
 .ficha-vital-card {
-  background: var(--color-surface-subtle, #f4f7fb);
-  border: 1px solid var(--color-border, #dce3ed);
+  background: var(--color-surface-subtle, #f3f4f8);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-sm, 6px);
   padding: 0.75rem 1rem;
   display: flex;
@@ -142,22 +142,22 @@
 
 .ficha-vital-kicker {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
 }
 
 .ficha-vital-value {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-ink, #142234);
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
   letter-spacing: -0.01em;
 }
 
 .ficha-vital-meta {
   font-size: 0.75rem;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   margin: 0;
   white-space: normal;
 }
@@ -168,9 +168,9 @@
   align-items: center;
   gap: 0.25rem;
   background: #ffffff;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-md, 10px) var(--radius-md, 10px) 0 0;
-  border-bottom: 1px solid var(--color-border, #dce3ed);
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
   padding: 0 0.5rem;
   overflow-x: auto;
 }
@@ -189,20 +189,20 @@
 }
 
 .ficha-tab:hover {
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 .ficha-tab.active,
 .ficha-tab[aria-selected="true"] {
-  color: var(--color-brand-primary, #175dd0);
+  color: var(--color-brand-primary, #4f46e5);
   font-weight: 600;
-  border-bottom-color: var(--color-brand-primary, #175dd0);
+  border-bottom-color: var(--color-brand-primary, #4f46e5);
 }
 
 /* === WORKSPACE MAIN CONTENT === */
 .ficha-workspace-body {
   background: #ffffff;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-top: none;
   border-radius: 0 0 var(--radius-md, 10px) var(--radius-md, 10px);
   padding: 1.5rem;
@@ -220,7 +220,7 @@
 /* === CLINICAL NOTE CARD === */
 .ficha-nota-card {
   background: #ffffff;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-md, 10px);
   padding: 1.15rem;
   display: grid;
@@ -246,8 +246,8 @@
 
 .ficha-nota-date {
   font-size: 13px;
-  font-weight: 700;
-  color: var(--color-ink, #142234);
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
 }
 
 .ficha-nota-chips {
@@ -269,8 +269,8 @@
 
 .ficha-nota-pruebas {
   grid-column: 1 / -1;
-  background: var(--color-surface-subtle, #f4f7fb);
-  border: 1px solid var(--color-border, #dce3ed);
+  background: var(--color-surface-subtle, #f3f4f8);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-sm, 6px);
   padding: 0.65rem 0.85rem;
   font-size: 15px;
@@ -338,7 +338,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
 }
 
@@ -355,7 +355,7 @@
 .ficha-nota-zona,
 .ficha-nota-eva { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.5rem; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.4; background: var(--color-neutral-bg, #f1f5f9); color: var(--color-ink-secondary); }
 .ficha-nota-zona .material-symbols-rounded { font-size: 16px; }
-.ficha-nota-eva { font-weight: 700; }
+.ficha-nota-eva { font-weight: 600; }
 #fichaPainTrendBadge { font-size: 13px; }
 .ficha-nota-eva.eva-low { color: #166534; background: #dcfce7; }
 .ficha-nota-eva.eva-mid { color: #9a3412; background: #ffedd5; }
@@ -373,7 +373,7 @@
 .ficha-note-form-actions button { min-height: 44px; font-size: 14px; }
 #fichaNotaForm button[type="submit"] { background: #ff643b; color: var(--color-ink); border-color: #ff643b; }
 #fichaNotaForm button[type="submit"]:hover { background: #f0542f; border-color: #f0542f; }
-.ficha-panel[data-ficha-panel="notas"] :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--color-border-focus, #175dd0); outline-offset: 3px; }
+.ficha-panel[data-ficha-panel="notas"] :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--color-border-focus, #4f46e5); outline-offset: 3px; }
 
 @media (max-width: 767px) {
   .ficha-workspace-body { padding: 1rem; }
@@ -385,18 +385,18 @@
 
 .ficha-note-action-icon {
   font-size: 16px;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   cursor: pointer;
 }
 
 .ficha-note-action-icon:hover {
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 /* === PAIN MAP STYLING === */
 .pain-map-card {
   background: #ffffff !important;
-  border: 1px solid var(--color-border, #dce3ed) !important;
+  border: 1px solid var(--color-border, #e5e7ef) !important;
   border-radius: var(--radius-md, 10px) !important;
   padding: 1.25rem !important;
 }
@@ -409,8 +409,8 @@
 
 .pain-map-visual {
   flex: 0 0 160px;
-  background: var(--color-surface-subtle, #f4f7fb);
-  border: 1px solid var(--color-border, #dce3ed);
+  background: var(--color-surface-subtle, #f3f4f8);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-md, 10px);
   padding: 0.75rem;
   display: flex;
@@ -436,7 +436,7 @@
 }
 
 .pain-zone-path.is-selected {
-  fill: #175dd0;
+  fill: #4f46e5;
 }
 
 .pain-zone-path.is-pain-high {
@@ -455,7 +455,7 @@
 .ficha-table-wrap {
   width: 100%;
   overflow-x: auto;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-md, 10px);
 }
 
@@ -466,26 +466,26 @@
 }
 
 .ficha-table th {
-  background: var(--color-surface-subtle, #f4f7fb);
-  color: var(--color-ink-muted, #536375);
+  background: var(--color-surface-subtle, #f3f4f8);
+  color: var(--color-ink-muted, #5b6476);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 0.7rem 1rem;
-  border-bottom: 1px solid var(--color-border, #dce3ed);
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
 }
 
 .ficha-table td {
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
   border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
   vertical-align: middle;
 }
 
 .ficha-table tr:hover td {
-  background: var(--color-surface-subtle, #f4f7fb);
+  background: var(--color-surface-subtle, #f3f4f8);
 }
 
 /* Record created by the booking assistant, pending review by the clinic */
@@ -498,7 +498,7 @@
   border: 1px solid #f0c36d;
   border-radius: 12px;
   background: #fff8e8;
-  color: #142234;
+  color: #0b1020;
 }
 
 .ficha-review-banner[hidden] {

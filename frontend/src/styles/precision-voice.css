@@ -19,7 +19,7 @@
 
 .voice-modal-container {
   background: #ffffff;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-lg, 16px);
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
   width: 100%;
@@ -38,8 +38,8 @@
 
 .voice-modal-header {
   padding: 1rem 1.5rem;
-  background: var(--color-surface-subtle, #f4f7fb);
-  border-bottom: 1px solid var(--color-border, #dce3ed);
+  background: var(--color-surface-subtle, #f3f4f8);
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -47,17 +47,17 @@
 
 .voice-modal-kicker {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-brand-primary, #175dd0);
+  color: var(--color-brand-primary, #4f46e5);
   margin-bottom: 2px;
 }
 
 .voice-modal-title {
   font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--color-ink, #142234);
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
   margin: 0;
   letter-spacing: -0.01em;
 }
@@ -65,7 +65,7 @@
 .voice-modal-close-btn {
   background: transparent;
   border: none;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -77,8 +77,8 @@
 }
 
 .voice-modal-close-btn:hover {
-  background: var(--color-surface-hover, #dce3ed);
-  color: var(--color-ink, #142234);
+  background: var(--color-surface-hover, #e5e7ef);
+  color: var(--color-ink, #0b1020);
 }
 
 .voice-modal-body {
@@ -88,7 +88,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 /* Mode Switch Tabs */
@@ -98,7 +98,7 @@
   padding: 3px;
   background: #f1f5f9;
   border-radius: 8px;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
 }
 
 .voice-mode-tab {
@@ -115,19 +115,19 @@
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   background: transparent;
-  color: #536375;
+  color: #5b6476;
 }
 
 .voice-mode-tab.is-active {
-  background: var(--color-brand-primary, #175dd0);
+  background: var(--color-brand-primary, #4f46e5);
   color: #ffffff;
-  box-shadow: 0 1px 3px rgba(23, 93, 208, 0.2);
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.2);
 }
 
 /* Audio Recording Section */
 .voice-record-card {
-  background: #f4f7fb;
-  border: 1px solid #dce3ed;
+  background: #f3f4f8;
+  border: 1px solid #e5e7ef;
   border-radius: 10px;
   padding: 1.25rem 1rem;
   display: flex;
@@ -142,14 +142,14 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--color-brand-primary, #175dd0);
+  background: var(--color-brand-primary, #4f46e5);
   color: #ffffff;
   border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(23, 93, 208, 0.25);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -179,15 +179,15 @@
 .voice-timer {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--color-ink, #142234);
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
   letter-spacing: 0.05em;
   line-height: 1;
 }
 
 .voice-status-text {
   font-size: 0.75rem;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   margin: 0;
 }
 
@@ -234,7 +234,7 @@
 .voice-textarea-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 .voice-textarea {
@@ -244,7 +244,7 @@
   padding: 0.75rem 0.875rem;
   font-size: 0.875rem;
   font-family: inherit;
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
   background: #ffffff;
   line-height: 1.5;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -252,14 +252,14 @@
 
 .voice-textarea:focus {
   outline: none;
-  border-color: var(--color-brand-primary, #175dd0);
-  box-shadow: 0 0 0 3px rgba(23, 93, 208, 0.15);
+  border-color: var(--color-brand-primary, #4f46e5);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 .voice-synthesize-btn {
   width: 100%;
   padding: 0.75rem 1.25rem;
-  background: var(--color-brand-primary, #175dd0);
+  background: var(--color-brand-primary, #4f46e5);
   color: #ffffff;
   font-size: 0.875rem;
   font-weight: 600;
@@ -270,7 +270,7 @@
   justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(23, 93, 208, 0.2);
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.2);
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
@@ -280,21 +280,21 @@
 
 /* Step 2: Human Review & Confirmation */
 .voice-review-alert {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
   border-radius: 8px;
   padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.8125rem;
-  color: #1e40af;
+  color: #3730a3;
 }
 
 .voice-back-to-capture-btn {
   background: transparent;
   border: none;
-  color: #2563eb;
+  color: #4f46e5;
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
@@ -316,7 +316,7 @@
 .voice-field-label {
   display: block;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #475569;
@@ -330,7 +330,7 @@
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: #142234;
+  color: #0b1020;
   background: #ffffff;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -338,8 +338,8 @@
 
 .voice-input:focus,
 .voice-select:focus {
-  border-color: var(--color-brand-primary, #175dd0);
-  box-shadow: 0 0 0 3px rgba(23, 93, 208, 0.15);
+  border-color: var(--color-brand-primary, #4f46e5);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 .voice-modal-footer {
@@ -348,7 +348,7 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-border, #dce3ed);
+  border-top: 1px solid var(--color-border, #e5e7ef);
 }
 
 .voice-btn-cancel {
@@ -365,12 +365,12 @@
 
 .voice-btn-cancel:hover {
   background: #f1f5f9;
-  color: #142234;
+  color: #0b1020;
 }
 
 .voice-btn-confirm {
   padding: 0.6rem 1.5rem;
-  background: var(--color-brand-primary, #175dd0);
+  background: var(--color-brand-primary, #4f46e5);
   border: none;
   border-radius: 6px;
   color: #ffffff;
@@ -380,7 +380,7 @@
   align-items: center;
   gap: 0.4rem;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(23, 93, 208, 0.2);
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.2);
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 

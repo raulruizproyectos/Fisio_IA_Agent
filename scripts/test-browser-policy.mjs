@@ -8,7 +8,8 @@ const locations = [...nginx.matchAll(/location[^\{]+\{([^}]+)\}/g)];
 assert.equal(locations.length, 4);
 assert.ok(nginx.includes('include /etc/fisio/connect-sources.conf;'));
 for (const [, config] of locations) {
-  assert.ok(config.includes('add_header Content-Security-Policy "frame-ancestors \'self\'; connect-src \'self\' $fisio_connect_sources" always;'), 'Every location must retain frame and connection protection');
+  assert.ok(config.includes('add_header Content-Security-Policy "frame-ancestors \'self\'; connect-src \'self\' $fisio_connect_sources; object-src \'none\'; base-uri \'self\'" always;'), 'Every location must retain frame and connection protection');
+  assert.ok(config.includes('add_header Strict-Transport-Security "max-age=31536000" always;'), 'Every location must keep HTTPS-only');
   assert.ok(config.includes('add_header Permissions-Policy "camera=(), geolocation=(), payment=(), microphone=(self)" always;'), 'Every location must retain permissions and allow clinical audio');
 }
 

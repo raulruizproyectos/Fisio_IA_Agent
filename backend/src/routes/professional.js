@@ -7,6 +7,7 @@ import { enqueueAppointmentNotice, normalizeContactPhone } from '../lib/agent-no
 import { readAppointmentCalendarEvidence, confirmAppointmentCalendarEvidence } from '../lib/appointment-calendar-check.js';
 import { readCalendarEventPages } from '../lib/calendar-reader.js';
 import { publicErrorMessage } from '../lib/public-error.js';
+import { recordAudit } from '../lib/audit.js';
 import { isClinicHoliday, parseBookingWindows } from '../lib/clinic-calendar.js';
 
 const router = Router();
@@ -59,6 +60,7 @@ const APPOINTMENT_SELECT = `
   google_calendar_event_id,
   calendar_sync_pending,
   calendar_sync_in_flight,
+  calendar_sync_in_flight_since,
   calendar_sync_operation_id,
   calendar_sync_calendar_id,
   request_id,
@@ -90,6 +92,9 @@ const N8N_WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET?.trim() || '';
 const CALENDAR_BACKGROUND_SYNC_STALE_MS = 6 * 60 * 1000;
 const CALENDAR_BACKGROUND_SYNC_INTERVAL_MS = 2 * 60 * 1000;
 export const PUBLIC_BOOKING_TIMEZONE = GOOGLE_CALENDAR_TIMEZONE;
+// Longer than any Calendar request (8 s timeouts plus retries); older claims belong to a dead process.
+export const CALENDAR_CLAIM_STALE_MS = 5 * 60 * 1000;
+
 const PUBLIC_BOOKING_SLOT_MINUTES = Math.min(180, Math.max(15, Number.parseInt(String(process.env.PUBLIC_BOOKING_SLOT_MINUTES || '60'), 10) || 60));
 const PUBLIC_BOOKING_MAX_DAYS_AHEAD = Math.min(120, Math.max(7, Number.parseInt(String(process.env.PUBLIC_BOOKING_MAX_DAYS_AHEAD || '45'), 10) || 45));
 const PUBLIC_BOOKING_WINDOWS = parsePublicBookingWindows(process.env.PUBLIC_BOOKING_WINDOWS);
@@ -115,6 +120,11 @@ function rejectVideoFeatureIfDisabled(res) {
     status: 'disabled',
   });
   return true;
+}
+
+function sameInstant(left, right) {
+  if (!left || !right) return !left && !right;
+  return Date.parse(left) === Date.parse(right);
 }
 
 function parseIsoTimestamp(rawValue) {
@@ -618,7 +628,7 @@ async function syncSavedAppointmentToCalendar(row) {
     calendar_sync: buildCalendarSyncResult({ event_id: row.google_calendar_event_id }) };
   // Persist the claim before any remote request, so another process cannot check it mid-write.
   const claim = await supabase.from('crm_citas')
-    .update({ calendar_sync_in_flight: true, calendar_sync_operation_id: randomUUID(), calendar_sync_calendar_id: GOOGLE_CALENDAR_ID })
+    .update({ calendar_sync_in_flight: true, calendar_sync_in_flight_since: new Date().toISOString(), calendar_sync_operation_id: randomUUID(), calendar_sync_calendar_id: GOOGLE_CALENDAR_ID })
     .eq('id', row.id).eq('calendar_sync_pending', true).eq('calendar_sync_in_flight', false).eq('updated_at', row.updated_at)
     .select(APPOINTMENT_SELECT).maybeSingle();
   if (claim.error || !claim.data) return { data: normalizeAppointmentRow(row),
@@ -638,7 +648,7 @@ async function syncSavedAppointmentToCalendar(row) {
       : await syncAppointmentToGoogleCalendar({ action, eventId, payload });
     if (calendarSync.status === 'synced') {
       const { data, error } = await supabase.from('crm_citas')
-        .update({ google_calendar_event_id: cancelling ? null : calendarSync.event_id, calendar_sync_pending: false, calendar_sync_in_flight: false })
+        .update({ google_calendar_event_id: cancelling ? null : calendarSync.event_id, calendar_sync_pending: false, calendar_sync_in_flight: false, calendar_sync_in_flight_since: null })
         .eq('id', row.id).eq('calendar_sync_pending', true).eq('calendar_sync_in_flight', true)
         .eq('calendar_sync_operation_id', row.calendar_sync_operation_id).eq('updated_at', row.updated_at)
         .select(APPOINTMENT_SELECT).maybeSingle();
@@ -651,7 +661,7 @@ async function syncSavedAppointmentToCalendar(row) {
       error: 'La cita está guardada en CRM; Calendar requiere comprobación antes de repetir la operación.' });
   }
   // Local request has settled; this says nothing about success/absence on Google's side.
-  const settled = await supabase.from('crm_citas').update({ calendar_sync_in_flight: false })
+  const settled = await supabase.from('crm_citas').update({ calendar_sync_in_flight: false, calendar_sync_in_flight_since: null })
     .eq('id', row.id).eq('calendar_sync_pending', true).eq('calendar_sync_in_flight', true)
     .eq('calendar_sync_operation_id', row.calendar_sync_operation_id).eq('updated_at', row.updated_at)
     .select(APPOINTMENT_SELECT).maybeSingle();
@@ -891,6 +901,8 @@ async function resolvePublicBookingProfessionalProfile(rawProfessionalId = null)
   };
 }
 
+// Insert-only: an anonymous booking may create the first link so the professional sees the appointment,
+// but it must never reactivate an assignment the clinic deliberately ended.
 async function ensureCrmPatientAssignment({ professionalId, patientId, clinicId }) {
   try {
     const payload = {
@@ -898,13 +910,12 @@ async function ensureCrmPatientAssignment({ professionalId, patientId, clinicId 
       paciente_id: patientId,
       clinica_id: clinicId,
       estado: 'activa',
-      desasignado_en: null,
       updated_at: new Date().toISOString(),
     };
 
     const { error } = await supabase
       .from('crm_asignaciones_fisio_paciente')
-      .upsert(payload, { onConflict: 'fisioterapeuta_id,paciente_id' });
+      .upsert(payload, { onConflict: 'fisioterapeuta_id,paciente_id', ignoreDuplicates: true });
 
     if (error && !isMissingTableError(error, 'crm_asignaciones_fisio_paciente')) {
       throw error;
@@ -1663,7 +1674,7 @@ function isAppointmentInsideWindow(appointment, fromAt, toAt) {
   return true;
 }
 
-async function reconcileAppointmentsWithCalendar({
+export async function reconcileAppointmentsWithCalendar({
   professionalId,
   rows,
   calendarEvents,
@@ -1729,8 +1740,9 @@ async function reconcileAppointmentsWithCalendar({
 
     const desired = {};
     const normalizedCalendarReason = normalizeAppointmentReason(calendarEvent.description);
-    if (row.inicio_en !== calendarEvent.inicio_en) desired.inicio_en = calendarEvent.inicio_en;
-    if ((row.fin_en || null) !== (calendarEvent.fin_en || null)) desired.fin_en = calendarEvent.fin_en;
+    // Compare instants: PostgREST returns "+00:00" while Calendar events are normalised to "Z".
+    if (!sameInstant(row.inicio_en, calendarEvent.inicio_en)) desired.inicio_en = calendarEvent.inicio_en;
+    if (!sameInstant(row.fin_en, calendarEvent.fin_en)) desired.fin_en = calendarEvent.fin_en;
     if ((row.motivo || null) !== normalizedCalendarReason) desired.motivo = normalizedCalendarReason;
     if (row.estado === 'cancelada') desired.estado = 'confirmada';
 
@@ -1740,6 +1752,12 @@ async function reconcileAppointmentsWithCalendar({
         .update(desired)
         .eq('id', row.id).eq('calendar_sync_pending', false).eq('updated_at', row.updated_at)
         .select(APPOINTMENT_SELECT).maybeSingle();
+      // An event moved in Google onto another CRM appointment: keep the CRM row and the rest of the agenda.
+      if (error?.code === '23P01') {
+        summary.conflicts = (summary.conflicts || 0) + 1;
+        console.warn('[calendar] evento movido sobre otra cita; se conserva la cita del CRM', { appointment_id: row.id });
+        continue;
+      }
       if (error) throw error;
       if (!data) {
         const fresh = await supabase.from('crm_citas').select(APPOINTMENT_SELECT).eq('id', row.id).maybeSingle();
@@ -2538,14 +2556,26 @@ router.post('/appointments/:appointmentId/check-calendar', async (req, res, next
     if (!req.auth?.profile_id || !req.auth?.clinic_id) return res.status(403).json({ error: 'Se requiere una sesión profesional de la clínica.' });
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.appointmentId || '')
       || typeof req.body?.updated_at !== 'string' || req.body.updated_at.length > 50) return res.status(400).json({ error: 'Identificador o versión de cita inválidos' });
-    const { data: row, error } = await supabase.from('crm_citas').select(APPOINTMENT_SELECT)
+    const { data: found, error } = await supabase.from('crm_citas').select(APPOINTMENT_SELECT)
       .eq('id', req.params.appointmentId).eq('fisioterapeuta_id', req.auth.profile_id).maybeSingle();
     if (error) throw error;
-    if (!row) return res.status(404).json({ error: 'Cita no encontrada' });
+    if (!found) return res.status(404).json({ error: 'Cita no encontrada' });
+    let row = found;
     if (req.body?.updated_at !== row.updated_at) return res.status(409).json({ code: 'APPOINTMENT_CHANGED', error: 'La cita ha cambiado. Actualiza la agenda antes de comprobarla.' });
     const result = (status, message, data = row) => res.json({ data: normalizeAppointmentRow(data), calendar_check: { status, message } });
     if (!row.calendar_sync_pending) return result('already_confirmed', 'El vínculo CRM ya estaba confirmado.');
-    if (row.calendar_sync_in_flight) return result('in_progress', 'La petición de Calendar sigue en curso o no confirmó su finalización. La cita continúa bloqueada.');
+    if (row.calendar_sync_in_flight) {
+      // A claim older than the timeout means its process died mid-request. Release it and only *read*
+      // Calendar below: nothing is written again, and an unproven result keeps the appointment blocked.
+      const since = Date.parse(row.calendar_sync_in_flight_since || '');
+      const inProgress = () => result('in_progress', 'La petición de Calendar sigue en curso o no confirmó su finalización. La cita continúa bloqueada.');
+      if (!Number.isFinite(since) || Date.now() - since < CALENDAR_CLAIM_STALE_MS) return inProgress();
+      const released = await supabase.from('crm_citas').update({ calendar_sync_in_flight: false, calendar_sync_in_flight_since: null })
+        .eq('id', row.id).eq('fisioterapeuta_id', req.auth.profile_id).eq('calendar_sync_in_flight', true).eq('updated_at', row.updated_at)
+        .select(APPOINTMENT_SELECT).maybeSingle();
+      if (released.error || !released.data) return inProgress();
+      row = released.data;
+    }
     let confirmation;
     try {
       const events = await readAppointmentCalendarEvidence(getGoogleCalendarClient(), GOOGLE_CALENDAR_ID, row,
@@ -2692,6 +2722,7 @@ router.get('/clinic-settings', async (req, res, next) => {
 // Contact data the booking assistant gives as a last resort; editable from Configuración.
 router.patch('/clinic-settings', async (req, res, next) => {
   try {
+    // These are the contact details the assistant gives to patients: every change is audited.
     const rawPhone = String(pickValue(req.body, 'telefono', 'phone') ?? '').trim();
     const rawEmail = String(pickValue(req.body, 'email') ?? '').trim();
     if (rawPhone && (!normalizeContactPhone(rawPhone) || rawPhone.length > 24)) return res.status(400).json({ error: 'Teléfono no válido. Ejemplo: 623 98 37 31 o +34 623 98 37 31' });
@@ -2701,6 +2732,7 @@ router.patch('/clinic-settings', async (req, res, next) => {
       .eq('id', req.auth.clinic_id).select('nombre, telefono, email').maybeSingle();
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Clínica no encontrada' });
+    await recordAudit(req, { entity_type: 'clinica', entity_id: req.auth.clinic_id, action: 'update_contact', after_state: data });
     res.json({ data });
   } catch (err) {
     next(err);

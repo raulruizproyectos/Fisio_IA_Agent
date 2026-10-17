@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
-import { isMoney, isDate, respondFinanceError } from '../lib/finance.js';
+import { isMoney, isDate, respondFinanceError, clinicToday } from '../lib/finance.js';
+import { writeOnce } from '../lib/operation-once.js';
 
 const router = Router();
 const PAYMENTS_TABLE = 'crm_pagos';
@@ -218,25 +219,23 @@ router.post('/', async (req, res, next) => {
     const validationError = validatePayment(req.body);
     if (validationError) return res.status(400).json({ error: validationError });
 
-    const { data, error } = await supabase
-      .from(PAYMENTS_TABLE)
-      .insert({
-        paciente_id,
-        fecha: fecha || new Date().toISOString().slice(0, 10),
-        importe: Number(importe),
-        metodo_pago,
-        concepto: concepto || 'Sesion de fisioterapia',
-        notas: notas || null,
-      })
-      .select(PAGOS_SELECT)
-      .single();
+    const row = {
+      paciente_id,
+      fecha: fecha || clinicToday(),
+      importe: Number(importe),
+      metodo_pago,
+      concepto: concepto || 'Sesion de fisioterapia',
+      notas: notas || null,
+    };
+    const { data, error, replayed } = await writeOnce(req, 'payment', row,
+      () => supabase.from(PAYMENTS_TABLE).insert(row).select(PAGOS_SELECT).single());
 
     if (error) {
       if (isMissingPaymentsTableError(error)) return respondPaymentsUnavailable(res, { write: true });
       return respondFinanceError(res, error);
     }
 
-    res.status(201).json({ data });
+    res.status(replayed ? 200 : 201).json({ data, ...(replayed ? { replayed: true } : {}) });
   } catch (err) {
     next(err);
   }

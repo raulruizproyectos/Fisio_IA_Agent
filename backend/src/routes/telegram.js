@@ -15,6 +15,12 @@ const router = Router();
 
 
 const INTENT_CONFIDENCE_THRESHOLD = 0.6;
+const LEGACY_LINK_CODE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const isLegacyLinkCodeExpired = (link) => {
+  const issuedAt = Date.parse(link?.actualizado_en || link?.creado_en || '');
+  return Number.isFinite(issuedAt) && Date.now() - issuedAt > LEGACY_LINK_CODE_TTL_MS;
+};
+const LEGACY_APPOINTMENT_HANDOFF = 'He pasado tu mensaje a la clínica. Por este chat no se reservan, cambian ni cancelan citas: la clínica se pondrá en contacto contigo para confirmarlo.';
 const TELEGRAM_EDGE_ROUTER_ENABLED = String(process.env.TELEGRAM_EDGE_ROUTER_ENABLED || 'false').toLowerCase() === 'true';
 const APPOINTMENT_WEBHOOK_URL = process.env.N8N_APPOINTMENT_WEBHOOK_URL?.trim() || null;
 const TELEGRAM_PATIENT_BOT_USERNAME = String(process.env.TELEGRAM_PATIENT_BOT_USERNAME || 'fisioterapia_CarlaJL')
@@ -246,10 +252,10 @@ async function callCarlaAgent(userMessage, context = null, history = []) {
     hour: '2-digit', minute: '2-digit', weekday: 'long',
   }).format(new Date());
 
-  const systemPrompt = `Eres Carla, asistente de recepcion de la clinica "Fisioterapia Carla JL" en Terrassa (Barcelona). Tu mision es ayudar a reservar citas de fisioterapia.
-Personalidad: humana, cercana, calmada y profesional. Hablas como una recepcionista real por WhatsApp: clara, amable y resolutiva, sin sonar robotica.
+  const systemPrompt = `Eres el asistente virtual de recepcion de la clinica "Fisioterapia Carla JL" en Terrassa (Barcelona). Tu mision es atender a los pacientes y pasar sus peticiones a la clinica.
+Personalidad: cercana, calmada y profesional. Escribes claro, amable y resolutivo, sin sonar robotico.
 Reglas generales:
-- NUNCA menciones que eres IA, asistente virtual o bot.
+- Eres un asistente virtual: si te preguntan, dilo con naturalidad. Nunca te hagas pasar por una persona ni por la fisioterapeuta.
 - Responde siempre en espanol de Espana, con un tono natural, profesional y cercano.
 - Maximo 90 palabras por respuesta. Solo texto plano, sin emojis ni markdown.
 - Evita frases vacias o cierres genericos del tipo "si necesitas algo mas".
@@ -1516,6 +1522,9 @@ function getHelpMessage() {
 }
 
 function getPatientAppointmentHelpMessage() {
+  if (process.env.TELEGRAM_LEGACY_BOOKING_ENABLED !== 'true') {
+    return 'Escríbeme lo que necesites y se lo paso a la clínica. Para pedir, cambiar o cancelar una cita, la clínica se pondrá en contacto contigo.';
+  }
   return [
     'Comandos disponibles (citas):',
     'Tambien puedes escribir para pedir, cambiar o cancelar una cita.',
@@ -1687,7 +1696,7 @@ router.get('/link-code/:patientId', async (req, res, next) => {
     } catch (error) {
       if (isMissingTableError(error)) {
         return res.status(400).json({
-          error: 'Falta configurar la base de datos: tabla vinculos_telegram_pacientes no existe. Ejecuta la migracion SQL y vuelve a intentarlo.',
+          error: 'La vinculación con Telegram no está disponible todavía en esta clínica. Contacta con soporte.',
         });
       }
       throw error;
@@ -1723,7 +1732,7 @@ router.post('/link-code/:patientId', async (req, res, next) => {
     } catch (error) {
       if (isMissingTableError(error)) {
         return res.status(400).json({
-          error: 'Falta configurar la base de datos: tabla vinculos_telegram_pacientes no existe. Ejecuta la migracion SQL y vuelve a intentarlo.',
+          error: 'La vinculación con Telegram no está disponible todavía en esta clínica. Contacta con soporte.',
         });
       }
       throw error;
@@ -1737,7 +1746,8 @@ router.post('/link-code/:patientId', async (req, res, next) => {
       });
     }
 
-    if (existingLink?.codigo_vinculacion && !regenerate && !resetLinked) {
+    // An expired code is replaced instead of being shown again to the patient.
+    if (existingLink?.codigo_vinculacion && !regenerate && !resetLinked && !isLegacyLinkCodeExpired(existingLink)) {
       return res.json(buildPatientTelegramLinkResponse({ patient, link: existingLink }));
     }
 
@@ -1753,6 +1763,7 @@ router.post('/link-code/:patientId', async (req, res, next) => {
           telegram_chat_id: null,
           telegram_username: null,
           vinculado_en: null,
+          actualizado_en: new Date().toISOString(),
         },
         { onConflict: 'paciente_id' }
       )
@@ -2121,32 +2132,44 @@ router.post('/incoming', async (req, res, next) => {
 
       const { data: link, error: linkError } = await supabase
         .from('vinculos_telegram_pacientes')
-        .select('id, paciente_id, pacientes(nombre_completo)')
+        .select('id, paciente_id, telegram_chat_id, creado_en, actualizado_en, pacientes(nombre_completo)')
         .eq('codigo_vinculacion', code)
         .single();
 
-      if (linkError || !link) {
-        return await reply('Codigo invalido o expirado. Pide uno nuevo a tu fisio.');
+      // Single use and short-lived: a leaked or old code must not move a patient's chat (and reminders) elsewhere.
+      const expired = isLegacyLinkCodeExpired(link);
+      const usedByOtherChat = Boolean(link?.telegram_chat_id) && String(link.telegram_chat_id) !== String(chat_id);
+      if (linkError || !link || expired || usedByOtherChat) {
+        return await reply('Código no válido o caducado. Pide uno nuevo en la clínica.');
       }
 
-      const { error: updateError } = await supabase
-        .from('vinculos_telegram_pacientes')
-        .update({
-          telegram_chat_id: String(chat_id),
-          telegram_username: username || null,
-          vinculado_en: new Date().toISOString(),
-        })
-        .eq('id', link.id);
+      if (!link.telegram_chat_id) {
+        const { data: claimed, error: updateError } = await supabase
+          .from('vinculos_telegram_pacientes')
+          .update({
+            telegram_chat_id: String(chat_id),
+            telegram_username: username || null,
+            vinculado_en: new Date().toISOString(),
+          })
+          .eq('id', link.id)
+          .is('telegram_chat_id', null)
+          .select('id')
+          .maybeSingle();
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
+        if (!claimed) return await reply('Código no válido o caducado. Pide uno nuevo en la clínica.');
+      }
 
       const patientName = link.pacientes?.nombre_completo || 'paciente';
+      if (agentMode === 'patient_appointments' && process.env.TELEGRAM_LEGACY_BOOKING_ENABLED !== 'true') {
+        return await reply(`Hola ${patientName}, ya estás vinculado/a con la clínica. Por aquí recibirás tus recordatorios y planes de ejercicios. Para pedir, cambiar o cancelar una cita, escríbenos y la clínica se pondrá en contacto contigo.`);
+      }
       if (agentMode === 'patient_appointments') {
         const carlaWelcome = await callCarlaAgent(
           '/start',
           `El paciente se llama ${patientName} y acaba de vincularse al sistema. Es un paciente ya registrado en la clínica. Salúdale por su nombre, y pregúntale cuál es el motivo de su consulta (qué dolor o molestia tiene) y para cuándo necesita cita.`
         );
-        return await reply(carlaWelcome || `Hola ${patientName}, soy Carla. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
+        return await reply(carlaWelcome || `Hola ${patientName}, soy el asistente virtual de la clínica. ¿Cuál es el motivo de tu consulta y para cuándo necesitas la cita?`);
       }
       // Only reached for non-patient_appointments modes (that branch returns above)
       return await reply(`Vinculacion completada para ${patientName}.\n\n${getHelpMessage()}`);
@@ -2161,7 +2184,7 @@ router.post('/incoming', async (req, res, next) => {
 
     if (isMissingTableError(linkError)) {
       return await reply(
-        'Falta configurar la base de datos: tabla vinculos_telegram_pacientes no existe. Ejecuta la migracion SQL y vuelve a intentarlo.'
+        'Ahora mismo no podemos atenderte por este chat. Contacta con la clínica por teléfono, por favor.'
       );
     }
 
@@ -2206,9 +2229,9 @@ router.post('/incoming', async (req, res, next) => {
 
         const carlaAskName = await callCarlaAgent(
           text,
-          'Es la primera vez que este paciente contacta. Salúdale, preséntate como Carla de Fisioterapia Carla JL en Terrassa, y pídele su nombre completo para poder darle de alta en el sistema antes de gestionar su cita.'
+          'Es la primera vez que este paciente contacta. Salúdale, preséntate como el asistente virtual de Fisioterapia Carla JL en Terrassa, y pídele su nombre completo para poder darle de alta en el sistema antes de gestionar su cita.'
         );
-        return await reply(carlaAskName || 'Hola, soy Carla de Fisioterapia Carla JL en Terrassa. Para darte de alta en nuestro sistema, ¿me dices tu nombre completo?');
+        return await reply(carlaAskName || 'Hola, soy el asistente virtual de Fisioterapia Carla JL en Terrassa. Para darte de alta en nuestro sistema, ¿me dices tu nombre completo?');
       }
 
       // ── Other modes: create immediately with Telegram profile name ───────────
@@ -2326,7 +2349,7 @@ router.post('/incoming', async (req, res, next) => {
       });
 
       if (redFlagResult.tiene_alertas_rojas) {
-        return await reply('âš ï¸ He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
+        return await reply('⚠️ He detectado señales de alerta. Contacta con tu fisioterapeuta hoy mismo o con urgencias si empeoras.');
       }
 
       // W2: If intent is exercise with decent confidence, auto-recommend
@@ -2374,6 +2397,12 @@ router.post('/incoming', async (req, res, next) => {
           await saveChatSession(chat_id, nextHistory, newPendingSlot);
           return await reply(replyText);
         };
+
+        // This legacy flow books without explicit confirmation and ignores the 24 h rule; the clinic
+        // handles the request from the intake created above until the validated booking agent replaces it.
+        if (process.env.TELEGRAM_LEGACY_BOOKING_ENABLED !== 'true') {
+          return await replyAndSaveAppointment(LEGACY_APPOINTMENT_HANDOFF, null);
+        }
 
         const formatSlotLabel = (isoValue) => new Intl.DateTimeFormat('es-ES', {
           timeZone: 'Europe/Madrid',
@@ -2589,7 +2618,7 @@ router.post('/incoming', async (req, res, next) => {
 
           const greetingOnly = /^(hola|hola\?|buenas|buenos dias|buenas tardes|buenas noches|hey)\b/.test(normalizedBookingText);
           const introReply = greetingOnly
-            ? 'Hola, soy Carla, la asistente de citas de la clínica. Dime qué día te viene bien, a qué hora y el motivo de la consulta.'
+            ? 'Hola, soy el asistente virtual de citas de la clínica. Dime qué día te viene bien, a qué hora y el motivo de la consulta.'
             : 'Para revisarlo bien, dime por favor el día, la hora y el motivo de la consulta.';
           return await replyAndSaveAppointment(introReply);
         }
@@ -2766,6 +2795,11 @@ router.post('/incoming', async (req, res, next) => {
     const appointmentCommand = parseAppointmentCommand(text);
     if (appointmentCommand) {
       const professionalId = await getDefaultProfessionalId();
+      if (process.env.TELEGRAM_LEGACY_BOOKING_ENABLED !== 'true') {
+        await createIntakeMessage({ patientId: link.paciente_id, professionalId, messageText: text,
+          historySnapshot: await getPatientHistorySnapshot(link.paciente_id), redFlagResult: detectRedFlags(text) });
+        return await reply(LEGACY_APPOINTMENT_HANDOFF);
+      }
       const startDate = new Date(appointmentCommand.startAt || '');
       const endDate = new Date(appointmentCommand.endAt || '');
 

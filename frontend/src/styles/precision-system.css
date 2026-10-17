@@ -37,7 +37,7 @@
 
 /* === BUTTONS === */
 .precision-btn-primary {
-  background: var(--color-brand-primary, #175dd0);
+  background: var(--color-brand-primary, #4f46e5);
   color: #ffffff;
   border: 1px solid transparent;
   border-radius: var(--radius-sm, 6px);
@@ -55,7 +55,7 @@
 }
 
 .precision-btn-primary:hover {
-  background: var(--color-brand-primary-hover, #104ab0);
+  background: var(--color-brand-primary-hover, #4338ca);
   box-shadow: var(--shadow-raised, 0 4px 6px -1px rgba(15, 23, 42, 0.1));
 }
 
@@ -84,8 +84,8 @@
 
 .precision-btn-secondary:hover {
   background: var(--color-surface-hover, #f1f5f9);
-  color: var(--color-ink, #142234);
-  border-color: var(--color-ink-muted, #536375);
+  color: var(--color-ink, #0b1020);
+  border-color: var(--color-ink-muted, #5b6476);
 }
 
 .precision-btn-ghost {
@@ -105,16 +105,16 @@
 
 .precision-btn-ghost:hover {
   background: var(--color-surface-hover, #f1f5f9);
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 .precision-btn-icon {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-sm, 6px);
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   background: #ffffff;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -124,7 +124,7 @@
 
 .precision-btn-icon:hover {
   background: var(--color-surface-hover, #f1f5f9);
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
   border-color: var(--color-border-medium, #cbd5e1);
 }
 
@@ -159,9 +159,9 @@
 }
 
 .badge-info {
-  background: var(--color-info-bg, #dbeafe);
-  color: var(--color-info-text, #1e40af);
-  border: 1px solid var(--color-info-border, #93c5fd);
+  background: var(--color-info-bg, #e0e7ff);
+  color: var(--color-info-text, #3730a3);
+  border: 1px solid var(--color-info-border, #a5b4fc);
 }
 
 .badge-neutral {
@@ -175,21 +175,21 @@
   background: #fee2e2;
   color: #991b1b;
   border: 1px solid #fca5a5;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .badge-eva-mid {
   background: #fef3c7;
   color: #92400e;
   border: 1px solid #fde68a;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .badge-eva-low {
   background: #dcfce7;
   color: #166534;
   border: 1px solid #86efac;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* === FORM CONTROLS === */
@@ -210,7 +210,7 @@
   height: 38px;
   padding: 0 0.85rem;
   font-size: 0.875rem;
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
   background: #ffffff;
   border: 1px solid var(--color-border-medium, #cbd5e1);
   border-radius: var(--radius-sm, 6px);
@@ -220,8 +220,8 @@
 
 .precision-input:focus,
 .precision-select:focus {
-  border-color: var(--color-brand-primary, #175dd0);
-  box-shadow: 0 0 0 3px rgba(23, 93, 208, 0.12);
+  border-color: var(--color-brand-primary, #4f46e5);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
 .precision-input::placeholder {
@@ -239,7 +239,7 @@
 .precision-search-wrap span {
   position: absolute;
   left: 0.75rem;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   font-size: 20px;
   pointer-events: none;
 }
@@ -249,8 +249,8 @@
   height: 38px;
   padding: 0 0.85rem 0 2.35rem;
   font-size: 0.875rem;
-  color: var(--color-ink, #142234);
-  background: var(--color-surface-subtle, #f4f7fb);
+  color: var(--color-ink, #0b1020);
+  background: var(--color-surface-subtle, #f3f4f8);
   border: 1px solid var(--color-border-medium, #cbd5e1);
   border-radius: var(--radius-sm, 6px);
   outline: none;
@@ -259,14 +259,14 @@
 
 .precision-search-wrap input:focus {
   background: #ffffff;
-  border-color: var(--color-brand-primary, #175dd0);
-  box-shadow: 0 0 0 3px rgba(23, 93, 208, 0.12);
+  border-color: var(--color-brand-primary, #4f46e5);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
 /* === PANELS & CARDS === */
 .precision-panel {
   background: #ffffff;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-md, 10px);
   box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
   overflow: hidden;
@@ -277,15 +277,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.15rem;
-  background: var(--color-surface-subtle, #f4f7fb);
-  border-bottom: 1px solid var(--color-border, #dce3ed);
+  background: var(--color-surface-subtle, #f3f4f8);
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
 }
 
 .precision-panel-header h2,
 .precision-panel-header h3 {
   font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--color-ink, #142234);
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
   margin: 0;
 }
 
@@ -298,7 +298,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  border-bottom: 1px solid var(--color-border, #dce3ed);
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
   background: #ffffff;
   padding: 0 1rem;
 }
@@ -307,7 +307,7 @@
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   border: none;
   background: transparent;
   border-bottom: 2px solid transparent;
@@ -317,14 +317,14 @@
 }
 
 .precision-tab:hover {
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 .precision-tab[aria-selected="true"],
 .precision-tab.is-active {
-  color: var(--color-brand-primary, #175dd0);
+  color: var(--color-brand-primary, #4f46e5);
   font-weight: 600;
-  border-bottom-color: var(--color-brand-primary, #175dd0);
+  border-bottom-color: var(--color-brand-primary, #4f46e5);
 }
 
 /* === SEGMENTED CONTROLS === */
@@ -350,13 +350,13 @@
 }
 
 .precision-segments button:hover {
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
 }
 
 .precision-segments button[aria-pressed="true"],
 .precision-segments button.is-active {
   background: #ffffff;
-  color: var(--color-ink, #142234);
+  color: var(--color-ink, #0b1020);
   font-weight: 600;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
@@ -376,7 +376,7 @@
 
 .precision-modal-dialog {
   background: #ffffff;
-  border: 1px solid var(--color-border, #dce3ed);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-lg, 14px);
   box-shadow: var(--shadow-flyout, 0 10px 25px -5px rgba(15, 23, 42, 0.2));
   width: 100%;
@@ -395,7 +395,7 @@
   width: 100%;
   max-width: 480px;
   background: #ffffff;
-  border-left: 1px solid var(--color-border, #dce3ed);
+  border-left: 1px solid var(--color-border, #e5e7ef);
   box-shadow: -4px 0 20px rgba(15, 23, 42, 0.1);
   z-index: 1000;
   display: flex;

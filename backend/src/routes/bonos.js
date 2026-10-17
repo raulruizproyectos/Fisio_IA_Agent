@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabase.js';
-import { isMoney, isDate, respondFinanceError } from '../lib/finance.js';
+import { isMoney, isDate, respondFinanceError, clinicToday } from '../lib/finance.js';
+import { writeOnce } from '../lib/operation-once.js';
 
 const router = Router();
 const BONOS_TABLE = 'crm_bonos';
@@ -65,27 +66,25 @@ router.post('/', async (req, res, next) => {
     if (!paciente_id || !sesiones_total || precio == null) {
       return res.status(400).json({ error: 'paciente_id, sesiones_total y precio son requeridos' });
     }
-    const startDate = fecha_inicio === undefined ? new Date().toISOString().slice(0, 10) : fecha_inicio;
+    const startDate = fecha_inicio === undefined ? clinicToday() : fecha_inicio;
     const validationError = validateBono({ ...req.body, fecha_inicio: startDate });
     if (validationError) return res.status(400).json({ error: validationError });
-    const { data, error } = await supabase
-      .from(BONOS_TABLE)
-      .insert({
-        paciente_id,
-        nombre: nombre || 'Bono de sesiones',
-        sesiones_total: Number(sesiones_total),
-        precio: Number(precio),
-        fecha_inicio: startDate,
-        fecha_caducidad: fecha_caducidad || null,
-        notas: notas || null,
-      })
-      .select(BONO_SELECT)
-      .single();
+    const row = {
+      paciente_id,
+      nombre: nombre || 'Bono de sesiones',
+      sesiones_total: Number(sesiones_total),
+      precio: Number(precio),
+      fecha_inicio: startDate,
+      fecha_caducidad: fecha_caducidad || null,
+      notas: notas || null,
+    };
+    const { data, error, replayed } = await writeOnce(req, 'bono', row,
+      () => supabase.from(BONOS_TABLE).insert(row).select(BONO_SELECT).single());
     if (error) {
       if (isMissingBonosTableError(error)) return respondBonosUnavailable(res, { write: true });
       return respondFinanceError(res, error);
     }
-    res.status(201).json({ data });
+    res.status(replayed ? 200 : 201).json({ data, ...(replayed ? { replayed: true } : {}) });
   } catch (err) { next(err); }
 });
 
@@ -104,13 +103,15 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/bonos/:id/usar - use one session from bono
 router.post('/:id/usar', async (req, res, next) => {
   try {
-    const { data, error } = await supabase.rpc('consume_clinic_bono', { target_id: req.params.id });
+    // One session per click: a retried request after a lost answer must not consume a second one.
+    const { data, error, replayed } = await writeOnce(req, 'bono_use', { bono_id: req.params.id },
+      () => supabase.rpc('consume_clinic_bono', { target_id: req.params.id }));
 
     if (error) {
       if (isMissingBonosTableError(error)) return respondBonosUnavailable(res, { write: true });
       return respondFinanceError(res, error);
     }
-    res.json({ data });
+    res.json({ data, ...(replayed ? { replayed: true } : {}) });
   } catch (err) { next(err); }
 });
 

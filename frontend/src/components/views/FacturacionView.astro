@@ -25,7 +25,7 @@
               <h2>Facturas emitidas</h2>
               <div class="pagos-filters-row">
                 <select id="facturasAnioFilter" title="A&ntilde;o"></select>
-                <button class="btn-ghost btn-sm" id="refreshFacturas"><span class="material-symbols-rounded">refresh</span></button>
+                <button class="btn-ghost btn-sm" id="refreshFacturas" aria-label="Actualizar facturas" title="Actualizar facturas"><span class="material-symbols-rounded">refresh</span></button>
               </div>
             </header>
             <div class="facturas-summary-strip" id="facturasSummaryStrip">
@@ -57,11 +57,11 @@
 
           <!-- Modal nueva factura -->
           <div class="modal-shell crm-drawer-shell finance-drawer-shell" id="facturaModal" aria-hidden="true">
-            <div class="modal-panel crm-drawer-panel" role="dialog" aria-modal="true">
+            <div class="modal-panel crm-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="facturaModalHeading">
               <div class="modal-header">
                 <div class="modal-title-group">
                   <p class="modal-eyebrow">FACTURACI&Oacute;N</p>
-                  <h2>Generar factura</h2>
+                  <h2 id="facturaModalHeading">Generar factura</h2>
                   <p>Selecciona un paciente para facturar sus pagos pendientes.</p>
                 </div>
                 <button type="button" class="modal-close" id="facturaModalClose" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>

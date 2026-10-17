@@ -1,12 +1,12 @@
 /* ==========================================================================
    FISIO CLINICAL — PRECISION HISTORY (v5.0)
    Covers: Historial y Auditoría Longitudinal
-   Palette: Slate clinical canvas, dark slate ink, precision accents (#175dd0)
+   Palette: Slate clinical canvas, dark slate ink, precision accents (#4f46e5)
    ========================================================================== */
 
 .page-section[data-page="historial"] .card {
   background: #ffffff;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e5e7ef;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   padding: 1.5rem;
@@ -23,8 +23,8 @@
 
 .page-section[data-page="historial"] .card-header h2 {
   font-size: 1.125rem;
-  font-weight: 700;
-  color: #142234;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .telegram-link-head {
@@ -68,14 +68,14 @@
 }
 
 .telegram-link-field > span {
-  color: var(--color-ink-muted, #536375);
+  color: var(--color-ink-muted, #5b6476);
   font-size: 0.8125rem;
 }
 
 .telegram-link-command {
   padding: 0.75rem;
-  background: var(--color-canvas, #f4f7fb);
-  border: 1px solid var(--color-border, #dce3ed);
+  background: var(--color-canvas, #f3f4f8);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: 6px;
   overflow-wrap: anywhere;
 }

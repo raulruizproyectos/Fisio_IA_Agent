@@ -18,3 +18,6 @@ export function respondFinanceError(res, error) {
   return res.status(Number(status)).json({ error: Number(status) === 503 ? 'Este módulo está pendiente de actualizar en la base de datos.'
     : publicHttpErrorMessage(error, Number(status), 'No se pudo completar la operación financiera.'), code: error.code });
 }
+
+// Clinic calendar day (Europe/Madrid): between 00:00 and 02:00 the UTC date is still «yesterday».
+export const clinicToday = (now = new Date()) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid' }).format(now);
