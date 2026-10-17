@@ -1,5 +1,14 @@
 # Project Status
 
+## Estado vigente — 17-oct, 23:00 Europe/Madrid — preparación de la demo al cliente (18-oct)
+
+Producción: backend `3ed3c17`, frontend `eb0867d`, CI verde en cada paso. Detalle de seguridad y marca en [AUDITORIA_SEGUNDA_PASADA.md](AUDITORIA_SEGUNDA_PASADA.md).
+
+- Marca de clínica desde `crm_clinicas` (`lib/clinic-brand.js`); cambio de contraseña exige la actual salvo tras enlace de recuperación; `/public-booking/config` sin email del profesional.
+- CSS: 1.888 declaraciones que nunca ganaban retiradas y todas las hojas antiguas dentro de `premium-system.css` en su orden original. `Layout.astro` importa solo `global.css`, `design-tokens.css` y `premium-system.css`. Verificado con volcado de estilos calculados (13 vistas × 5 anchuras + modales): sin diferencias.
+- Pulido de demo: Finanzas («Tarjeta» sin recuadro), Planes (celdas a 16 px), Historial (avisos como etiquetas), cabeceras con etiqueta en Agenda/Planes/Documentos/Historial, cabeceras móviles alineadas a la izquierda, ficha móvil, barra de Mensajes, tildes en textos y avisos del copiloto. La reserva pública abre en el primer día con huecos (comprobado en producción: abre el lunes 19 con 6 huecos).
+- No verificado por Claude: sesión real del CRM en producción (requiere tu inicio de sesión), cobro, factura, bot de Telegram.
+
 ## Estado vigente — 16-oct, 18:18 — segunda opinión con Calcode
 
 Encargo nuevo: continuar auditoría independiente de código/diseño/funciones para testing final. Antes de auditar, contexto y propuesta de modelo/razonamiento/agentes con menor consumo compatible con el resultado; esperar confirmación. [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) concentra estado, evidencias, cobertura y pendientes. [Prompt completo](PROMPT_AUDITORIA_CLOUDCODE.txt).
