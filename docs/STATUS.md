@@ -1,11 +1,20 @@
 # Project Status
 
+## Estado vigente — 18-oct, 08:15 Europe/Madrid — demo al cliente lista
+
+Producción: backend `fb20a11`, frontend `b1eb7bd`, CI verde.
+
+- **Demo en local** (decisión de Raúl): `npm --prefix frontend run dev -- --port 4321 --host 127.0.0.1` y abrir `http://127.0.0.1:4321/?demo=true`. `lib/demo-api.ts` responde con datos ficticios (cobros, facturas, bonos, bandeja, historial, Calendar, planes) solo en desarrollo; no llega al build de producción. Citas ficticias en horario local repartidas por la semana.
+- **Poda de CSS revertida** (`232c407`): había retirado las reglas de la rejilla de 5 días porque todas las mediciones se hicieron con citas en fin de semana. `premium-system.css` conserva la consolidación con el contenido original de cada hoja. Comprobado en producción: semana sin fin de semana con 5 columnas.
+- Producción contiene solo pacientes de prueba (QA, @debug, Raul…): no usar para la demo; limpiar antes de uso real.
+- Otros: formato de euros con separador de miles en todas las vistas; fecha correcta en la bandeja de Inicio; textos del motor de respaldo de planes en castellano clínico.
+
 ## Estado vigente — 17-oct, 23:00 Europe/Madrid — preparación de la demo al cliente (18-oct)
 
 Producción: backend `3ed3c17`, frontend `eb0867d`, CI verde en cada paso. Detalle de seguridad y marca en [AUDITORIA_SEGUNDA_PASADA.md](AUDITORIA_SEGUNDA_PASADA.md).
 
 - Marca de clínica desde `crm_clinicas` (`lib/clinic-brand.js`); cambio de contraseña exige la actual salvo tras enlace de recuperación; `/public-booking/config` sin email del profesional.
-- CSS: 1.888 declaraciones que nunca ganaban retiradas y todas las hojas antiguas dentro de `premium-system.css` en su orden original. `Layout.astro` importa solo `global.css`, `design-tokens.css` y `premium-system.css`. Verificado con volcado de estilos calculados (13 vistas × 5 anchuras + modales): sin diferencias.
+- CSS: todas las hojas antiguas dentro de `premium-system.css` en su orden original (la poda de 1.888 declaraciones se revirtió el 18-oct, ver arriba). `Layout.astro` importa solo `global.css`, `design-tokens.css` y `premium-system.css`. Verificado con volcado de estilos calculados (13 vistas × 5 anchuras + modales): sin diferencias.
 - Pulido de demo: Finanzas («Tarjeta» sin recuadro), Planes (celdas a 16 px), Historial (avisos como etiquetas), cabeceras con etiqueta en Agenda/Planes/Documentos/Historial, cabeceras móviles alineadas a la izquierda, ficha móvil, barra de Mensajes, tildes en textos y avisos del copiloto. La reserva pública abre en el primer día con huecos (comprobado en producción: abre el lunes 19 con 6 huecos).
 - No verificado por Claude: sesión real del CRM en producción (requiere tu inicio de sesión), cobro, factura, bot de Telegram.
 
