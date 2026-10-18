@@ -1675,14 +1675,14 @@ function buildRuleBasedRecommendation({ requestId, symptoms, catalog, fallbackRe
     red_flags_items: redFlags,
     selected_exercises: ranked,
     selection_rationale: noExercises
-      ? `Fallback activo (${reason}): sin ejercicios claramente compatibles`
-      : `Fallback activo (${reason}): seleccion heuristica por sintomas y zona corporal`,
+      ? `Selección automática sin ejercicios claramente compatibles; requiere revisión manual (motor: ${reason})`
+      : `Selección automática por síntomas y zona corporal (motor: ${reason})`,
     message_to_patient_es: noExercises
-      ? 'He registrado tus sintomas. Necesito revision manual del fisioterapeuta para pautar ejercicios seguros.'
-      : 'He preparado una propuesta inicial de ejercicios. Realizalos sin dolor y para si notas empeoramiento.',
+      ? 'He registrado tus síntomas. El fisioterapeuta los revisará para pautarte ejercicios seguros.'
+      : 'He preparado una propuesta inicial de ejercicios. Realízalos sin dolor y detente si notas empeoramiento.',
     message_to_therapist_es: noExercises
-      ? 'Sin candidatos claros en catalogo para estos sintomas. Revisar manualmente.'
-      : 'Recomendacion generada en modo fallback por indisponibilidad del motor IA.',
+      ? 'Sin candidatos claros en el catálogo para estos síntomas. Revisar manualmente.'
+      : 'Recomendación generada por selección automática porque el motor de IA no estaba disponible.',
     escalation_recommend_medical_attention: redFlags.length > 0,
     escalation_reason: redFlags.length > 0 ? `red_flags:${redFlags.join(',')}` : '',
   };

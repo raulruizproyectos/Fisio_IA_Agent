@@ -88,7 +88,7 @@ export async function initializeProtectedApp() {
     installAuthenticatedFetch(true);
     return { profileId: '6dae4ef6-b6b3-4cb0-91d9-0320d10db255', clinicId: '', clinicName: '', role: 'fisioterapeuta', name: 'Dra. Carmen Martínez', email: 'carmen.martinez@clinica.es' };
   }
-  if (!backendBase) throw new Error('El backend no esta configurado en el frontend');
+  if (!backendBase) throw new Error('El backend no está configurado en el frontend');
   const session = await checkSession();
   if (session.error) {
     if (session.status === 401) window.location.replace('/login');

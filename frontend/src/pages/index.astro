@@ -4575,7 +4575,9 @@ import ConfigView from '../components/views/ConfigView.astro';
         : ['generada', 'enviada', 'aprobada', 'completada'].includes(plan?.status)
           ? 'aprobado'
           : 'pendiente';
-      const note = plan?.selection_rationale || plan?.symptom_summary || 'Plan de ejercicios disponible para consulta.';
+      // Older plans stored the engine's technical fallback note; show the clinical summary instead.
+      const rationale = /^(Fallback activo|Selección automática)/.test(String(plan?.selection_rationale || '')) ? '' : plan?.selection_rationale;
+      const note = rationale || plan?.symptom_summary || 'Plan de ejercicios disponible para consulta.';
       const archivedCount = Number(plan?.archived_reports_count || 0);
       const deliveryCopy = archivedCount
         ? `${archivedCount} archivada${archivedCount === 1 ? '' : 's'}${plan?.latest_report_format ? ` - ${String(plan.latest_report_format).toUpperCase()}` : ''}${plan?.latest_report_source ? ` - ${plan.latest_report_source}` : ''}`
@@ -5135,7 +5137,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     if (summary.blocking) chunks.push(`${summary.blocking} bloqueo${summary.blocking === 1 ? '' : 's'} real${summary.blocking === 1 ? '' : 'es'}`);
     if (summary.managed) chunks.push(`${summary.managed} cita${summary.managed === 1 ? '' : 's'} solo Calendar`);
     if (summary.holidays) chunks.push(`${summary.holidays} festivo${summary.holidays === 1 ? '' : 's'} de referencia (no bloquean reservas)`);
-    agendaCalendarMeta.textContent = `Google Calendar esta aportando ${chunks.join(' | ')} en esta semana.`;
+    agendaCalendarMeta.textContent = `Google Calendar está aportando ${chunks.join(' | ')} en esta semana.`;
     agendaCalendarMeta.hidden = false;
   };
 

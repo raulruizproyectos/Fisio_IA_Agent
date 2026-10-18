@@ -49,7 +49,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
       const defaultSubmitText = submitBtn?.textContent || 'Confirmar reserva';
 
       if (!BACKEND_BASE) {
-        if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no esta configurada en este entorno.';
+        if (slotsStateEl) slotsStateEl.textContent = 'La reserva online no está configurada en este entorno.';
         if (windowHintEl) windowHintEl.textContent = 'Configuración pendiente';
         return;
       }
