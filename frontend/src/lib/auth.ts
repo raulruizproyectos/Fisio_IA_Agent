@@ -53,6 +53,9 @@ function installAuthenticatedFetch(demo = false) {
     const method = String(init.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
     const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
     if (demo) {
+      // Local presentations: the page may register a fictitious API (see lib/demo-api.ts).
+      const mocked = (window as any).__fisioDemoApi?.(method, target) as Response | null | undefined;
+      if (mocked) return mocked;
       headers.set('Authorization', 'Bearer dev-token');
       return nativeFetch(input, { ...init, headers, credentials: 'omit' });
     }

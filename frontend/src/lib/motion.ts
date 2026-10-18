@@ -15,7 +15,7 @@ export const prefersReducedMotion = () =>
 export const countUpOnce = (elements: Array<HTMLElement | null>, duration = 400) => {
   if (prefersReducedMotion()) return;
   const integer = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 });
-  const euro = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  const euro = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', useGrouping: 'always' });
 
   elements.forEach((el) => {
     if (!el) return;

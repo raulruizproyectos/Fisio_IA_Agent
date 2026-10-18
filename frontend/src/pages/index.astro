@@ -93,6 +93,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     }, 500);
   }
   const appBoot = document.getElementById('appBoot');
+  if (isDevMode) (window as any).__fisioDemoApi = (await import('../lib/demo-api')).demoApiResponse;
   const authContext = await initializeProtectedApp().catch((error) => {
     if (appBoot) {
       appBoot.classList.add('is-error');
@@ -648,7 +649,7 @@ import ConfigView from '../components/views/ConfigView.astro';
   };
 
   // === HELPERS ===
-  const euroFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  const euroFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', useGrouping: 'always' });
   const fmtEuro = (value: unknown) => euroFormatter.format(Number(value) || 0);
   // Human labels for stored states (chips keep the raw value as their CSS class).
   const STATUS_TEXT: Record<string, string> = {
@@ -3620,7 +3621,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     const first = dashboardRuntime.pendingIntakes[0] || {};
     const source = String(first.fuente || first.canal || '').toLowerCase().includes('telegram') ? 'Telegram' : 'Web';
     const patientName = getDashboardFirstName(resolvePatientName(first));
-    const createdAt = fmtDate(first.creado_en || first.created_at || '');
+    const createdRaw = first.timestamp || first.creado_en || first.created_at || '';
+    const createdAt = createdRaw ? fmtDate(createdRaw) : '';
     setDashboardChip(dashboardIntakeStatus, `${count} en cola`, 'pendiente');
     dashboardIntakeTitle.textContent = count === 1 ? '1 paciente espera respuesta' : `${count} pacientes esperan respuesta`;
     dashboardIntakeMeta.textContent = `${patientName} vía ${source}${createdAt ? ` | ${createdAt}` : ''}`;
@@ -10456,8 +10458,10 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
   });
 
   const loadConfig = async () => {
-    // Populate clinic form from localStorage
-    const cfg = getClinicConfig();
+    // Populate clinic form from localStorage (the local demo starts with a fictitious clinic).
+    const storedCfg = getClinicConfig();
+    const demoClinic = { nombre: 'FisioSalud Centro Clínico', nif: 'B12345678', telefono: '+34 937 000 000', direccion: 'Rambla Nova 120, 08221 Terrassa', email: 'hola@fisiosalud.example', web: 'https://fisiosalud.example' };
+    const cfg = isDevMode && !storedCfg.nombre ? { ...storedCfg, ...demoClinic } : storedCfg;
     const fields: Record<string, string> = {
       cfgClinicNombre: cfg.nombre || '',
       cfgClinicNif: cfg.nif || '',

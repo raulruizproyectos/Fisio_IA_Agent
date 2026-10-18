@@ -15,6 +15,11 @@
    ========================================================================== */
 
 /* === BUTTONS === */
+button, .btn {
+  font-family: var(--font-family-base) !important;
+  font-feature-settings: "cv11" 1, "ss01" 1 !important;
+  transition: transform var(--duration-micro) var(--ease-editorial), background-color var(--duration-micro) ease !important;
+}
 
 button:active, .btn:active {
   transform: scale(0.975) !important;
@@ -28,13 +33,18 @@ button:active, .btn:active {
 #btnSaveFicha,
 .patient-primary-action,
 [data-action="primary-cta"] {
+  background: var(--color-coral-pulse) !important;
+  color: #ffffff !important;
   border: 0 !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 600 !important;
   font-size: var(--text-sm) !important;
   padding: 0.65rem 1.4rem !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 0.5rem !important;
+  box-shadow: 0 2px 8px rgba(255, 100, 59, 0.25) !important;
   cursor: pointer !important;
 }
 
@@ -50,12 +60,19 @@ button:active, .btn:active {
 /* Secondary Button — Crisp White with subtle border */
 .btn-secondary,
 .btn-outline {
+  background: #ffffff !important;
+  color: var(--color-charcoal) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
   padding: 0.6rem 1.25rem !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 0.45rem !important;
   cursor: pointer !important;
+  box-shadow: none !important;
 }
 
 .btn-secondary:hover,
@@ -67,8 +84,10 @@ button:active, .btn:active {
 
 /* Ghost Button */
 .btn-ghost {
+  background: transparent !important;
   color: var(--color-graphite) !important;
   border: 0 !important;
+  border-radius: var(--radius-button) !important;
   font-weight: 500 !important;
   font-size: var(--text-sm) !important;
   padding: 0.5rem 1rem !important;
@@ -86,6 +105,7 @@ button:active, .btn:active {
 /* Small Button modifier */
 .btn-sm {
   padding: 0.4rem 0.85rem !important;
+  font-size: var(--text-xs) !important;
   border-radius: var(--radius-button) !important;
 }
 
@@ -114,11 +134,15 @@ button:active, .btn:active {
 input,
 select,
 textarea {
+  font-family: var(--font-family-base) !important;
+  font-feature-settings: "cv11" 1, "ss01" 1 !important;
   background: #ffffff !important;
   color: #000000 !important;
   border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: 12px !important;
   padding: 0.65rem 0.95rem !important;
   font-size: var(--text-sm) !important;
+  outline: none !important;
   transition: border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease !important;
 }
 
@@ -146,6 +170,7 @@ textarea::placeholder {
   background: #ffffff !important;
   border: 1px solid rgba(0, 0, 0, 0.07) !important;
   border-radius: var(--radius-card) !important;
+  box-shadow: none !important;
   color: #000000 !important;
 }
 
@@ -154,8 +179,11 @@ textarea::placeholder {
 .ficha-tab,
 .tab-pill,
 [data-ficha-tab] {
+  background: #ffffff !important;
+  color: var(--color-graphite) !important;
   border: 1.5px solid var(--color-frost-gray) !important;
   border-radius: var(--radius-button) !important;
+  font-weight: 500 !important;
   font-size: var(--text-sm) !important;
   padding: 0.5rem 1.15rem !important;
   display: inline-flex !important;
@@ -197,17 +225,28 @@ textarea::placeholder {
 /* === TABLES (EDITORIAL CLARITY) === */
 table {
   width: 100% !important;
+  border-collapse: collapse !important;
   color: #000000 !important;
 }
 
 th {
+  background: transparent !important;
+  color: var(--color-slate) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1.5px solid var(--color-frost-gray) !important;
   padding: 0.85rem 1.1rem !important;
   text-align: left !important;
 }
 
 td {
   color: var(--color-charcoal) !important;
+  border-bottom: 1px solid var(--color-cloud-gray) !important;
   padding: 0.95rem 1.1rem !important;
+  font-size: var(--text-sm) !important;
+  vertical-align: middle !important;
 }
 
 tbody tr:hover td {
@@ -221,8 +260,31 @@ td:first-child strong {
 }
 
 /* === STATUS CHIPS === */
+.status-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.25rem 0.65rem !important;
+  border-radius: var(--radius-tag) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  text-transform: capitalize !important;
+}
+
+.status-chip.confirmada,
+.status-chip.activo,
+.status-chip.firmado {
+  background: var(--color-mint-wash) !important;
+  color: var(--color-canopy-green) !important;
+}
+
+.status-chip.pendiente {
+  background: var(--color-peach-wash) !important;
+  color: var(--color-coral-pulse) !important;
+}
 
 .status-chip.en_consulta {
+  background: var(--color-sky-wash) !important;
   color: var(--color-deep-teal) !important;
 }
 
@@ -236,7 +298,11 @@ td:first-child strong {
 .agenda-cal-loading,
 .skeleton-loading,
 .skeleton {
+  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%) !important;
+  background-size: 200% 100% !important;
   animation: clinicalShimmer 2s infinite ease-in-out !important;
+  color: var(--color-slate) !important;
+  border-radius: var(--radius-panel) !important;
   border: none !important;
 }
 
@@ -280,6 +346,7 @@ td:first-child strong {
   color: #ffffff !important;
   font-weight: 600 !important;
   font-size: 0.875rem !important;
+  text-decoration: none !important;
   box-shadow: 0 4px 14px rgba(20, 34, 52, 0.25) !important;
   transform: translateY(-200%) !important;
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -295,11 +362,26 @@ td:first-child strong {
 .page-section {
   display: none !important;
   width: 100% !important;
+  height: auto !important;
   min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .page-section.active {
   display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+[hidden],
+.page-section[hidden],
+.page-section:not(.active),
+.page-section[aria-hidden="true"]:not(.active) {
+  display: none !important;
 }
 
 /* === MODAL & DRAWER PRIMITIVES === */
@@ -307,13 +389,17 @@ td:first-child strong {
   position: fixed !important;
   inset: 0 !important;
   z-index: 1000 !important;
+  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 1.5rem !important;
+  background: rgba(20, 34, 52, 0.38) !important;
+  backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
+  transition: opacity 200ms ease, visibility 200ms ease !important;
 }
 
 .modal-shell.open,
@@ -323,6 +409,14 @@ td:first-child strong {
   visibility: visible !important;
 }
 
+.modal-shell[aria-hidden="true"],
+.modal-shell[hidden] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  display: none !important;
+}
+
 .modal-panel {
   width: min(100%, 580px) !important;
   max-height: min(85vh, 720px) !important;
@@ -330,6 +424,9 @@ td:first-child strong {
   flex-direction: column !important;
   overflow: hidden !important;
   background: #ffffff !important;
+  border-radius: var(--radius-card, 16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 20px 40px -12px rgba(20, 34, 52, 0.18), 0 0 1px rgba(0, 0, 0, 0.15) !important;
 }
 
 .crm-drawer-shell {
@@ -342,6 +439,13 @@ td:first-child strong {
   height: 100vh !important;
   height: 100dvh !important;
   max-height: 100dvh !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+  transform: translateX(100%);
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .crm-drawer-shell.open .crm-drawer-panel,
@@ -360,6 +464,8 @@ td:first-child strong {
 
 .modal-title-group h2 {
   font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
   margin: 0.15rem 0 0.35rem !important;
 }
 
@@ -461,6 +567,9 @@ td:first-child strong {
 /* --------------------------------------------------------------------------
    1. INICIO — CLINICAL COMMAND CENTER (LAVENDER MIST)
    -------------------------------------------------------------------------- */
+.page-section[data-page="dashboard"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
 
 .clinic-dashboard {
   max-width: 1280px !important;
@@ -472,23 +581,73 @@ td:first-child strong {
 
 /* Hero Section */
 .clinic-dashboard-hero {
+  background: #ffffff !important;
+  border-radius: var(--radius-card) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: none !important;
   color: #000000 !important;
+  padding: 2.25rem !important;
   display: grid !important;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr) !important;
   gap: 2rem !important;
   align-items: center !important;
+}
+
+@media (max-width: 1024px) {
+  .clinic-dashboard-hero {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.clinic-dashboard-copy .clinic-kicker {
+  color: var(--color-canopy-green) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: var(--text-xs) !important;
+  display: block !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.clinic-dashboard-copy h1,
+#dashboardTitle {
+  color: #000000 !important;
+  font-size: 2.35rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
+  margin: 0.25rem 0 0.65rem !important;
 }
 
 .clinic-dashboard-copy p,
 #dashboardLiveSummary {
   color: var(--color-graphite) !important;
+  font-size: var(--text-base) !important;
+  line-height: 1.5 !important;
   margin-bottom: 1.5rem !important;
+}
+
+.clinic-hero-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  flex-wrap: wrap !important;
 }
 
 /* Primary CTA strictly Coral Pulse */
 #heroAgentShortcutBtn,
 .clinic-hero-actions .btn-primary {
+  background: var(--color-coral-pulse) !important;
+  color: #ffffff !important;
   border: none !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-button) !important;
   padding: 0.65rem 1.4rem !important;
+  box-shadow: 0 4px 14px rgba(255, 100, 59, 0.25) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -501,9 +660,16 @@ td:first-child strong {
 /* Secondary CTA */
 #heroNewPatientShortcutBtn,
 .clinic-hero-actions .btn-secondary {
+  background: #ffffff !important;
   color: var(--color-graphite) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
   padding: 0.65rem 1.25rem !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
   gap: 0.5rem !important;
+  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -516,11 +682,16 @@ td:first-child strong {
 /* Ghost CTA */
 #heroAgendaShortcutBtn,
 .clinic-hero-actions .btn-ghost {
+  background: transparent !important;
+  color: var(--color-graphite) !important;
   border: 1.5px solid transparent !important;
   border-radius: var(--radius-button) !important;
   padding: 0.65rem 1.25rem !important;
   font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
   gap: 0.5rem !important;
+  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -536,21 +707,37 @@ td:first-child strong {
 }
 
 .clinic-focus-card {
+  background: var(--color-mint-wash) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(20, 34, 52, 0.12) !important;
   color: var(--color-canopy-green) !important;
+  box-shadow: none !important;
+  padding: 1.75rem !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 0.85rem !important;
+}
+
+.clinic-focus-card .clinic-kicker {
+  color: var(--color-canopy-green) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: var(--text-xs) !important;
 }
 
 #dashboardNextSessionTitle {
   color: var(--color-canopy-green) !important;
   font-size: 1.3rem !important;
   font-weight: 600 !important;
+  display: block !important;
   line-height: 1.2 !important;
 }
 
 #dashboardNextSessionMeta {
+  color: var(--color-graphite) !important;
   font-size: var(--text-xs) !important;
+  margin: 0 !important;
 }
 
 .clinic-focus-action {
@@ -589,7 +776,16 @@ td:first-child strong {
   gap: 1.25rem !important;
 }
 
+@media (max-width: 900px) {
+  .clinic-metric-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
 .clinic-metric-grid article {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
   box-shadow: none !important;
   padding: 1.35rem 1.5rem !important;
   display: flex !important;
@@ -606,12 +802,17 @@ td:first-child strong {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  font-size: 24px !important;
   flex-shrink: 0 !important;
 }
 
 .clinic-metric-grid article strong {
   display: block !important;
   color: #000000 !important;
+  font-size: 1.85rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.1 !important;
 }
 
 .clinic-metric-grid article p {
@@ -624,16 +825,36 @@ td:first-child strong {
 /* Panels */
 .clinic-dashboard-grid .clinic-panel,
 .clinic-side-stack .clinic-panel {
+  background: #ffffff !important;
+  border-radius: var(--radius-card) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: none !important;
   color: #000000 !important;
   padding: 1.75rem !important;
 }
 
+.clinic-panel h2 {
+  color: #000000 !important;
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
 .clinic-panel .clinic-kicker {
+  color: var(--color-canopy-green) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: var(--text-xs) !important;
   display: block !important;
   margin-bottom: 0.25rem !important;
 }
 
 .clinic-panel-title {
+  color: #000000 !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  display: block !important;
   margin-top: 0.5rem !important;
 }
 
@@ -644,7 +865,9 @@ td:first-child strong {
 
 /* Secondary Panels Grid */
 .clinic-dashboard-grid-secondary {
+  display: grid !important;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) !important;
+  gap: 1.5rem !important;
 }
 
 @media (max-width: 900px) {
@@ -658,8 +881,10 @@ td:first-child strong {
   background: #ffffff !important;
   border-radius: var(--radius-card) !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: none !important;
   padding: 1.75rem !important;
   color: #000000 !important;
+  display: grid !important;
   grid-template-columns: repeat(3, 1fr) minmax(0, 2fr) !important;
   gap: 1.5rem !important;
   align-items: center !important;
@@ -676,12 +901,14 @@ td:first-child strong {
   font-size: 12px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
+  display: block !important;
 }
 
 .clinic-finance-strip article strong {
   color: #000000 !important;
   font-size: 1.5rem !important;
   font-weight: 600 !important;
+  display: block !important;
 }
 
 .metric-pill-icon {
@@ -714,6 +941,18 @@ td:first-child strong {
 /* --------------------------------------------------------------------------
    2. AGENDA — CALENDAR & APPOINTMENTS (CREAM CANVAS)
    -------------------------------------------------------------------------- */
+.page-section[data-page="citas"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
+
+.agenda-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.5rem !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 1.5rem !important;
+}
 
 .agenda-header-copy {
   display: flex !important;
@@ -746,6 +985,7 @@ td:first-child strong {
 .agenda-sync-copy p {
   font-size: 11px !important;
   color: var(--color-slate, #5b6476) !important;
+  margin: 0 !important;
 }
 
 .week-nav-bar {
@@ -767,8 +1007,12 @@ td:first-child strong {
 }
 
 .agenda-cal-card {
+  background: #ffffff !important;
+  border-radius: var(--radius-card, 16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.07) !important;
   overflow: hidden !important;
   margin-bottom: 1.75rem !important;
+  padding: 0 !important;
 }
 
 .badge-week-count {
@@ -780,6 +1024,7 @@ td:first-child strong {
   background: var(--color-mint-wash, #d2f2e3) !important;
   color: var(--color-canopy-green, #0a3922) !important;
   font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
   margin-left: 0.5rem !important;
 }
 
@@ -792,6 +1037,7 @@ td:first-child strong {
 
 .agenda-board-head {
   display: grid !important;
+  grid-template-columns: 5.5rem repeat(5, minmax(0, 1fr)) !important;
   background: var(--color-sand) !important;
   border-bottom: 1.5px solid var(--color-frost-gray) !important;
 }
@@ -818,9 +1064,12 @@ td:first-child strong {
   font-weight: 600 !important;
   color: var(--color-slate) !important;
   text-transform: uppercase !important;
+  display: block !important;
 }
 
 .agenda-day-number {
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   display: block !important;
   margin-top: 0.15rem !important;
@@ -832,6 +1081,7 @@ td:first-child strong {
 
 .agenda-board-row {
   display: grid !important;
+  grid-template-columns: 5.5rem repeat(5, minmax(0, 1fr)) !important;
   min-height: 4rem !important;
   border-bottom: 1px solid var(--color-cloud-gray) !important;
 }
@@ -860,9 +1110,11 @@ td:first-child strong {
 
 /* NO FAKE GREY SKELETON BLOCKS FOR EMPTY SLOTS */
 .agenda-cell-empty {
+  display: block !important;
   width: 100% !important;
   height: 100% !important;
   min-height: 3rem !important;
+  background: transparent !important;
   border: 1px dashed transparent !important;
   border-radius: 8px !important;
   transition: border-color var(--duration-micro) ease !important;
@@ -927,6 +1179,7 @@ td:first-child strong {
 
 .agenda-event-state {
   font-size: 10px !important;
+  font-weight: 600 !important;
   letter-spacing: 0.01em !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -1013,6 +1266,12 @@ td:first-child strong {
 /* --------------------------------------------------------------------------
    3. FINANZAS — WORKSPACE & LEDGER (PEACH WASH)
    -------------------------------------------------------------------------- */
+.page-section[data-page="pagos"],
+.page-section[data-page="facturas"],
+.page-section[data-page="bonos"],
+.page-section[data-page="gestoria"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
 
 /* CRITICAL: HIDE DUPLICATE PAYMENTS LIST ON DESKTOP */
 @media (min-width: 768px) {
@@ -1038,12 +1297,14 @@ td:first-child strong {
 /* Finance Tabs */
 .finance-tabs {
   display: flex !important;
+  gap: 0.5rem !important;
   margin: 1.25rem 0 1.75rem !important;
   flex-wrap: wrap !important;
 }
 
 /* Finance Workbench */
 .finance-workbench {
+  display: grid !important;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) !important;
   gap: 1.5rem !important;
   margin-bottom: 1.75rem !important;
@@ -1066,11 +1327,19 @@ td:first-child strong {
   gap: 1rem !important;
 }
 
+.finance-kicker {
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  color: var(--color-canopy-green) !important;
+  text-transform: uppercase !important;
+}
+
 #financePriorityTitle {
   font-size: 1.5rem !important;
   font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1.15 !important;
+  display: block !important;
 }
 
 #financePriorityMeta {
@@ -1079,6 +1348,8 @@ td:first-child strong {
 }
 
 .finance-action-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 1rem !important;
 }
 
@@ -1149,7 +1420,10 @@ td:first-child strong {
 }
 
 .pagos-stat-value {
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
   color: #000000 !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .pagos-stat-cash .pagos-stat-value {
@@ -1163,15 +1437,47 @@ td:first-child strong {
 /* --------------------------------------------------------------------------
    4. MENSAJES — TRIAGE CLÍNICO (SKY WASH)
    -------------------------------------------------------------------------- */
+.page-section[data-page="intakes"] {
+  background: var(--color-sky-wash) !important;
+}
+
+.intakes-hero h1 {
+  color: #000000 !important;
+  font-size: 2.25rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.intakes-hero p {
+  color: var(--color-graphite) !important;
+  font-size: var(--text-base) !important;
+}
 
 .intakes-hero span {
   color: var(--color-deep-teal) !important;
   font-weight: 600 !important;
 }
 
+.intakes-card {
+  background: #ffffff !important;
+  border-radius: var(--radius-card) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.intakes-toolbar h2 {
+  color: #000000 !important;
+  font-size: var(--text-lg) !important;
+  font-weight: 600 !important;
+}
+
 /* --------------------------------------------------------------------------
    5. PACIENTES & FICHA PACIENTE (MINT WASH)
    -------------------------------------------------------------------------- */
+.page-section[data-page="pacientes"],
+.page-section[data-page="ficha-paciente"],
+.patient-workspace {
+  background: var(--color-mint-wash) !important;
+}
 
 /* Override legacy dark cards */
 .page-section[data-page="pacientes"] > section > header,
@@ -1185,14 +1491,46 @@ td:first-child strong {
   border-radius: var(--radius-card) !important;
   background: #ffffff !important;
   box-shadow: none !important;
+  color: var(--color-charcoal) !important;
+}
+
+.patient-workspace-header h1 {
+  font-size: 2.25rem !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
+  margin: 0.25rem 0 0.5rem !important;
+}
+
+.patient-workspace-header p {
+  color: var(--color-graphite) !important;
+  font-size: var(--text-base) !important;
+  margin: 0 !important;
+}
+
+.patient-workspace-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  flex-wrap: wrap !important;
 }
 
 /* Primary CTA strictly Coral Pulse */
 #addPatientBtn,
 .patient-primary-action {
+  background: var(--color-coral-pulse) !important;
+  color: #ffffff !important;
   border: none !important;
+  border-radius: var(--radius-button) !important;
+  font-weight: 600 !important;
   font-size: var(--text-sm) !important;
   padding: 0.65rem 1.4rem !important;
+  box-shadow: 0 4px 14px rgba(255, 100, 59, 0.25) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
@@ -1208,6 +1546,7 @@ td:first-child strong {
   color: var(--color-graphite) !important;
   border: 1.5px solid var(--color-frost-gray) !important;
   border-radius: var(--radius-button) !important;
+  padding: 0.6rem 1.2rem !important;
   font-weight: 600 !important;
   font-size: var(--text-sm) !important;
   display: inline-flex !important;
@@ -1226,30 +1565,67 @@ td:first-child strong {
 /* Patient Vitals */
 .patient-vitals {
   display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.25rem !important;
+}
+
+@media (max-width: 768px) {
+  .patient-vitals {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .patient-vitals article {
+  background: #ffffff !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
   border-radius: 20px !important;
   box-shadow: none !important;
   padding: 1.35rem 1.5rem !important;
+  display: flex !important;
+  flex-direction: column !important;
   gap: 0.35rem !important;
 }
 
+.patient-vitals article span {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--color-canopy-green) !important;
+}
+
 .patient-vitals article strong {
+  font-size: 1.85rem !important;
+  font-weight: 600 !important;
   color: #000000 !important;
   line-height: 1.1 !important;
 }
 
+.patient-vitals article p {
+  font-size: var(--text-xs) !important;
+  color: var(--color-slate) !important;
+  margin: 0 !important;
+}
+
 /* Patient Directory Toolbar */
 .patient-directory-toolbar {
+  padding: 1.25rem 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
   justify-content: space-between !important;
+  gap: 1rem !important;
   flex-wrap: wrap !important;
 }
 
 .patient-directory-search {
   display: flex !important;
   align-items: center !important;
+  gap: 0.65rem !important;
+  background: var(--color-cloud-gray) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
+  padding: 0.5rem 0.95rem !important;
+  flex: 1 !important;
   min-width: 260px !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
@@ -1266,6 +1642,11 @@ td:first-child strong {
 }
 
 .patient-directory-search input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #000000 !important;
+  font-size: var(--text-sm) !important;
   width: 100% !important;
 }
 
@@ -1278,13 +1659,28 @@ td:first-child strong {
 
 .patient-segments {
   display: inline-flex !important;
+  background: var(--color-cloud-gray) !important;
+  padding: 3px !important;
+  border-radius: var(--radius-button) !important;
+  gap: 2px !important;
 }
 
 .patient-segments button {
+  background: transparent !important;
   border: none !important;
   padding: 0.45rem 0.95rem !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  color: var(--color-charcoal) !important;
+  border-radius: var(--radius-button) !important;
   cursor: pointer !important;
   transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
+}
+
+.patient-segments button[aria-pressed="true"] {
+  background: var(--color-canopy-green) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(20, 34, 52, 0.2) !important;
 }
 
 .patient-sort {
@@ -1296,8 +1692,12 @@ td:first-child strong {
 .patient-sort select {
   appearance: none !important;
   background: var(--color-cloud-gray) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
   padding: 0.5rem 2rem 0.5rem 0.95rem !important;
+  font-size: var(--text-xs) !important;
   font-weight: 600 !important;
+  color: var(--color-charcoal) !important;
   cursor: pointer !important;
 }
 
@@ -1387,12 +1787,30 @@ td:first-child strong {
 /* --------------------------------------------------------------------------
    6. AJUSTES / CONFIGURACIÓN (SAND CANVAS)
    -------------------------------------------------------------------------- */
+.page-section[data-page="config"] {
+  background: var(--color-sand) !important;
+}
 
 .config-editorial-shell {
   max-width: 1040px !important;
   margin: 0 auto !important;
   display: flex !important;
   flex-direction: column !important;
+  gap: 2rem !important;
+}
+
+.config-group-card {
+  background: #ffffff !important;
+  border-radius: var(--radius-card) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  padding: 2rem !important;
+}
+
+.config-group-card h2 {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  margin-bottom: 0.35rem !important;
 }
 
 .config-group-card p {
@@ -1402,13 +1820,27 @@ td:first-child strong {
 }
 
 .config-section-kicker {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--color-canopy-green) !important;
   display: block !important;
+  margin-bottom: 0.35rem !important;
 }
 
 /* Config Form */
 .config-form-grid {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
+  gap: 1.25rem !important;
+  margin-bottom: 1.75rem !important;
+}
+
+@media (max-width: 640px) {
+  .config-form-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .field-span-2 {
@@ -1417,6 +1849,14 @@ td:first-child strong {
 
 .input-editorial {
   width: 100% !important;
+  background: var(--color-cloud-gray) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
+  padding: 0.65rem 1rem !important;
+  font-size: var(--text-sm) !important;
+  color: #000000 !important;
+  outline: none !important;
+  transition: background-color var(--duration-micro) ease, color var(--duration-micro) ease, border-color var(--duration-micro) ease, box-shadow var(--duration-micro) ease, transform var(--duration-micro) ease !important;
 }
 
 .input-editorial:focus {
@@ -1441,6 +1881,8 @@ td:first-child strong {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
+  padding: 1.15rem 0 !important;
+  border-bottom: 1px solid var(--color-cloud-gray) !important;
   gap: 1rem !important;
 }
 
@@ -1449,6 +1891,11 @@ td:first-child strong {
 }
 
 .integration-icon-wrap {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 12px !important;
+  background: var(--color-mint-wash) !important;
+  color: var(--color-canopy-green) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1460,10 +1907,16 @@ td:first-child strong {
 }
 
 .integration-meta strong {
+  display: block !important;
+  color: #000000 !important;
+  font-size: var(--text-base) !important;
   font-weight: 600 !important;
 }
 
 .integration-sub {
+  display: block !important;
+  color: var(--color-graphite) !important;
+  font-size: var(--text-xs) !important;
   margin-top: 2px !important;
 }
 
@@ -1503,7 +1956,11 @@ td:first-child strong {
 .booking-link-input {
   width: 100% !important;
   background: var(--color-cloud-gray) !important;
+  border: 1.5px solid var(--color-frost-gray) !important;
+  border-radius: var(--radius-button) !important;
   padding: 0.65rem 1rem 0.65rem 2.5rem !important;
+  font-size: var(--text-sm) !important;
+  color: #000000 !important;
 }
 
 .booking-actions-row {
@@ -1586,6 +2043,10 @@ td:first-child strong {
 }
 
 /* System Details (Collapsible) */
+.config-system-card {
+  background: var(--color-cloud-gray) !important;
+  border: 1.5px dashed var(--color-frost-gray) !important;
+}
 
 .config-system-details summary {
   list-style: none !important;
@@ -1609,6 +2070,7 @@ td:first-child strong {
 }
 
 .summary-left .summary-icon {
+  font-size: 24px !important;
   color: var(--color-graphite) !important;
 }
 
@@ -1626,6 +2088,7 @@ td:first-child strong {
 }
 
 .chevron-icon {
+  font-size: 24px !important;
   color: var(--color-slate) !important;
   transition: transform var(--duration-micro) ease !important;
 }
@@ -1669,6 +2132,18 @@ td:first-child strong {
 /* --------------------------------------------------------------------------
    8. BIBLIOTECA CLÍNICA & PLANES TERAPÉUTICOS (WARM CANVAS)
    -------------------------------------------------------------------------- */
+.page-section[data-page="plantillas"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
+
+.template-library-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 1.5rem !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+}
 
 .template-library-shell {
   display: flex !important;
@@ -1690,6 +2165,9 @@ td:first-child strong {
 }
 
 .template-kpi-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--radius-card, 16px) !important;
   padding: 1.35rem 1.5rem !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1705,18 +2183,31 @@ td:first-child strong {
 }
 
 .template-kpi-card strong {
+  font-size: 1.85rem !important;
+  font-weight: 600 !important;
   color: #000000 !important;
+  line-height: 1.1 !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .template-kpi-card p {
   font-size: var(--text-xs) !important;
   color: var(--color-slate, #5b6476) !important;
+  margin: 0 !important;
+}
+
+.template-history-card {
+  background: #ffffff !important;
+  border-radius: var(--radius-card, 16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
 }
 
 /* --------------------------------------------------------------------------
    9. FINANZAS OVERVIEW CARDS
    -------------------------------------------------------------------------- */
 .finance-overview-grid {
+  display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 1.25rem !important;
   margin-bottom: 1.5rem !important;
@@ -1735,6 +2226,9 @@ td:first-child strong {
 }
 
 .finance-overview-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: var(--radius-card, 16px) !important;
   padding: 1.25rem 1.5rem !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1743,22 +2237,31 @@ td:first-child strong {
 
 .finance-overview-card .overview-label {
   font-size: 11px !important;
+  font-weight: 600 !important;
   letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
   color: var(--color-canopy-green, #0a3922) !important;
 }
 
 .finance-overview-card strong {
+  font-size: 1.75rem !important;
+  font-weight: 600 !important;
   color: #000000 !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .finance-overview-card p {
   font-size: var(--text-xs) !important;
   color: var(--color-slate, #5b6476) !important;
+  margin: 0 !important;
 }
 
 /* --------------------------------------------------------------------------
    10. DOCUMENTOS & CONSENTIMIENTOS
    -------------------------------------------------------------------------- */
+.page-section[data-page="documentos"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
 
 .documentos-workbench {
   background: #ffffff !important;
@@ -1807,6 +2310,7 @@ td:first-child strong {
   font-size: 1.75rem !important;
   font-weight: 600 !important;
   color: #000000 !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .ops-signal-hint {
@@ -1825,6 +2329,9 @@ td:first-child strong {
 /* --------------------------------------------------------------------------
    11. HISTORIAL & AUDITORÍA LONGITUDINAL
    -------------------------------------------------------------------------- */
+.page-section[data-page="historial"] {
+  background: var(--surface-page-canvas, #f7f5f1) !important;
+}
 
 .detail-block {
   background: #ffffff !important;
@@ -1837,12 +2344,21 @@ td:first-child strong {
   gap: 0.75rem !important;
 }
 
+.detail-block h3 {
+  font-size: 1.15rem !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  margin: 0 !important;
+}
+
 .detail-caption {
   font-size: var(--text-sm) !important;
   color: var(--color-slate, #5b6476) !important;
+  margin: 0 !important;
 }
 
 .history-case-hero {
+  display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: space-between !important;
@@ -1871,14 +2387,26 @@ td:first-child strong {
 .page-section[hidden],
 [data-page]:not(.active),
 [data-page][hidden] {
+  display: none !important;
   margin: 0 !important;
+  padding: 0 !important;
   height: 0 !important;
+  min-height: 0 !important;
   max-height: 0 !important;
   border: 0 !important;
   overflow: hidden !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+.page-section.active {
+  display: block !important;
+  height: auto !important;
+  min-height: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .page-section.active.ficha-workspace,
@@ -1888,12 +2416,21 @@ td:first-child strong {
 
 /* === BUTTONS === */
 .precision-btn-primary {
+  background: var(--color-brand-primary, #4f46e5);
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 6px);
   padding: 0.55rem 1.15rem;
+  font-size: 0.875rem;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.08));
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
 }
 
 .precision-btn-primary:hover {
@@ -1908,12 +2445,20 @@ td:first-child strong {
 }
 
 .precision-btn-secondary {
+  background: #ffffff;
+  color: var(--color-ink-secondary, #334155);
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
   padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
 }
 
 .precision-btn-secondary:hover {
@@ -2042,6 +2587,14 @@ td:first-child strong {
 .precision-input,
 .precision-select {
   height: 38px;
+  padding: 0 0.85rem;
+  font-size: 0.875rem;
+  color: var(--color-ink, #0b1020);
+  background: #ffffff;
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .precision-input:focus,
@@ -2093,6 +2646,8 @@ td:first-child strong {
 .precision-panel {
   background: #ffffff;
   border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
   overflow: hidden;
 }
 
@@ -2103,6 +2658,14 @@ td:first-child strong {
   padding: 0.75rem 1.15rem;
   background: var(--color-surface-subtle, #f3f4f8);
   border-bottom: 1px solid var(--color-border, #e5e7ef);
+}
+
+.precision-panel-header h2,
+.precision-panel-header h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
+  margin: 0;
 }
 
 .precision-panel-body {
@@ -2231,6 +2794,12 @@ astro-dev-toolbar {
 }
 
 /* === MAIN WORKSPACE CONTAINER === */
+.patient-workspace {
+  background: var(--color-canvas, #f3f4f8) !important;
+  min-height: 100%;
+  width: 100%;
+  color: var(--color-ink, #0b1020);
+}
 
 .patient-workspace-inner {
   max-width: 100%;
@@ -2241,6 +2810,62 @@ astro-dev-toolbar {
 }
 
 /* === HEADER & ACTIONS === */
+.patient-workspace-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.25rem;
+}
+
+.clinic-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-brand-primary, #4f46e5);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.patient-workspace-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 0.25rem 0;
+}
+
+.patient-workspace-header p {
+  font-size: 0.875rem;
+  color: var(--color-ink-muted, #5b6476);
+  margin: 0;
+}
+
+.patient-workspace-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.patient-primary-action {
+  background: var(--color-brand-primary, #4f46e5);
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.55rem 1.15rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.08));
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
 
 .patient-primary-action:hover {
   background: var(--color-brand-primary-hover, #4338ca);
@@ -2249,10 +2874,27 @@ astro-dev-toolbar {
 
 .patient-primary-action .patient-action-arrow {
   font-size: 18px;
+  transition: transform 0.15s ease;
 }
 
 .patient-primary-action:hover .patient-action-arrow {
   transform: translateX(2px);
+}
+
+.patient-secondary-action,
+.patient-sync-action {
+  background: #ffffff;
+  color: var(--color-ink-secondary, #334155);
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .patient-secondary-action:hover,
@@ -2267,25 +2909,104 @@ astro-dev-toolbar {
 }
 
 /* === VITALS / METRICS BAR === */
+.patient-vitals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.patient-vitals article {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-md, 10px);
+  padding: 0.85rem 1.15rem;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: border-color 0.15s ease;
+}
 
 .patient-vitals article:hover {
   border-color: var(--color-border-medium, #cbd5e1);
 }
 
+.patient-vitals article span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted, #5b6476);
+}
+
+.patient-vitals article strong {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.patient-vitals article p {
+  font-size: 0.78rem;
+  color: var(--color-ink-muted, #5b6476);
+  margin: 0;
+  white-space: normal;
+}
+
+.patient-vitals article.vitals-urgent strong {
+  color: var(--color-urgent-text, #991b1b);
+}
+
+.patient-vitals article.vitals-reach strong {
+  color: var(--color-brand-primary, #4f46e5);
+}
+
 /* === TOOLBAR & FILTERS (2-TIER CLEAN ARCHITECTURE) === */
+.patient-directory-toolbar {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-md, 10px);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
+}
 
 .patient-directory-toolbar-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
 }
 
 .patient-directory-search {
+  flex: 1;
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .patient-directory-search span {
   position: absolute;
   left: 0.75rem;
+  color: var(--color-ink-muted, #5b6476);
+  font-size: 20px;
   pointer-events: none;
+}
+
+.patient-directory-search input {
+  width: 100%;
+  height: 38px;
+  padding: 0 0.85rem 0 2.35rem;
+  font-size: 0.875rem;
+  color: var(--color-ink, #0b1020);
+  background: var(--color-surface-subtle, #f3f4f8);
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .patient-directory-search input:focus {
@@ -2298,11 +3019,33 @@ astro-dev-toolbar {
   color: var(--color-ink-disabled, #94a3b8);
 }
 
+.patient-directory-toolbar-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .patient-segments {
+  display: inline-flex;
+  background: var(--color-surface-hover, #f1f5f9);
+  padding: 2px;
+  border-radius: var(--radius-sm, 6px);
+  gap: 2px;
   flex-wrap: wrap;
 }
 
 .patient-segments button {
+  border: none;
+  background: transparent;
+  color: var(--color-ink-secondary, #334155);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
@@ -2310,8 +3053,34 @@ astro-dev-toolbar {
   color: var(--color-ink, #0b1020);
 }
 
+.patient-segments button[aria-pressed="true"],
+.patient-segments button.is-active {
+  background: #ffffff;
+  color: var(--color-ink, #0b1020);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
 .patient-sort {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
+}
+
+.patient-sort select {
+  height: 38px;
+  padding: 0 2rem 0 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-ink-secondary, #334155);
+  background: var(--color-surface-subtle, #f3f4f8);
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .patient-sort select:focus {
@@ -2320,8 +3089,20 @@ astro-dev-toolbar {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
+.patient-sort span {
+  position: absolute;
+  right: 0.6rem;
+  font-size: 18px;
+  color: var(--color-ink-muted, #5b6476);
+  pointer-events: none;
+}
+
 /* === DIRECTORY TABLE CONTAINER === */
 .patient-directory {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -2334,6 +3115,13 @@ astro-dev-toolbar {
   padding: 0.75rem 1.15rem;
   background: var(--color-surface-subtle, #f3f4f8);
   border-bottom: 1px solid var(--color-border, #e5e7ef);
+}
+
+.patient-directory-head-bar h2 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
+  margin: 0;
 }
 
 .patient-directory-head-bar p {
@@ -2360,16 +3148,44 @@ astro-dev-toolbar {
 }
 
 .patient-table {
+  width: 100%;
+  border-collapse: collapse;
   text-align: left;
   table-layout: fixed;
   min-width: 960px;
 }
 
+.patient-table thead th {
+  background: var(--color-surface-subtle, #f3f4f8);
+  color: var(--color-ink-muted, #5b6476);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
+  white-space: nowrap;
+}
+
 /* Specific column widths and alignment for robust grid geometry (Sum = 100%) */
+.patient-table th.col-patient,
+.patient-table td.cell-patient {
+  width: 22%;
+}
 
 .patient-table th.col-contact,
 .patient-table td.cell-contact {
   width: 16%;
+}
+
+.patient-table th.col-clinical,
+.patient-table td.cell-clinical {
+  width: 22%;
+}
+
+.patient-table th.col-appt,
+.patient-table td.cell-appt {
+  width: 11%;
 }
 
 .patient-table th.col-status,
@@ -2379,11 +3195,15 @@ astro-dev-toolbar {
 
 .patient-table th.col-actions,
 .patient-table td.cell-actions {
+  width: 15%;
+  min-width: 140px;
   text-align: right;
+  padding-right: 1.15rem;
 }
 
 .patient-table tbody tr {
   border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  transition: background-color 0.12s ease;
 }
 
 .patient-table tbody tr:hover {
@@ -2394,6 +3214,13 @@ astro-dev-toolbar {
   border-bottom: none;
 }
 
+.patient-table td {
+  padding: 0.65rem 0.85rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+  color: var(--color-ink, #0b1020);
+}
+
 /* === ROW CELL DETAILS === */
 
 /* Paciente identity */
@@ -2401,12 +3228,16 @@ astro-dev-toolbar {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  min-width: 0;
 }
 
 .patient-avatar {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-sm, 6px);
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.8rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -2434,11 +3265,17 @@ astro-dev-toolbar {
 }
 
 .patient-name-btn {
+  background: none;
   border: none;
+  padding: 0;
+  margin: 0;
   text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
+  color: var(--color-ink, #0b1020);
   cursor: pointer;
+  text-decoration: none;
+  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2466,6 +3303,7 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -2475,9 +3313,11 @@ astro-dev-toolbar {
   gap: 0.3rem;
   font-size: 0.8rem;
   color: var(--color-ink-secondary, #334155);
+  text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.12s ease;
 }
 
 .patient-contact-link:hover {
@@ -2491,6 +3331,7 @@ astro-dev-toolbar {
 }
 
 .patient-missing-contact {
+  font-size: 0.73rem;
   color: var(--color-ink-disabled, #94a3b8);
   font-style: italic;
 }
@@ -2500,11 +3341,14 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0;
   overflow: hidden;
 }
 
 .patient-pathology {
+  font-size: 0.8rem;
   font-weight: 500;
+  color: var(--color-ink, #0b1020);
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
@@ -2564,11 +3408,13 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
+  min-width: 0;
 }
 
 .patient-appt-time {
   font-size: 0.8rem;
   font-weight: 600;
+  color: var(--color-ink, #0b1020);
   white-space: nowrap;
 }
 
@@ -2579,7 +3425,9 @@ astro-dev-toolbar {
 }
 
 .patient-no-appt {
+  font-size: 0.73rem;
   color: var(--color-ink-disabled, #94a3b8);
+  white-space: nowrap;
 }
 
 /* Status Cell */
@@ -2587,6 +3435,7 @@ astro-dev-toolbar {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  font-size: 0.73rem;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: var(--radius-full, 9999px);
@@ -2622,12 +3471,19 @@ astro-dev-toolbar {
 }
 
 .btn-open-ficha {
+  background: var(--color-surface-subtle, #f3f4f8);
+  color: var(--color-ink, #0b1020);
+  border: 1px solid var(--color-border-medium, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
   padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   cursor: pointer;
   white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .btn-open-ficha:hover {
@@ -2644,10 +3500,15 @@ astro-dev-toolbar {
 .btn-icon-action {
   width: 28px;
   height: 28px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--color-border, #e5e7ef);
+  background: #ffffff;
+  color: var(--color-ink-muted, #5b6476);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
 }
 
 .btn-icon-action:hover {
@@ -2701,7 +3562,11 @@ astro-dev-toolbar {
 }
 
 .patient-mobile-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-md, 10px);
   padding: 1rem;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -2742,8 +3607,16 @@ astro-dev-toolbar {
 }
 
 /* === RESPONSIVE BREAKPOINTS === */
+@media (max-width: 1280px) {
+  .patient-vitals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 @media (max-width: 860px) {
+  .patient-workspace {
+    padding-bottom: 5.5rem !important;
+  }
   .patient-table-container {
     display: none;
   }
@@ -2751,8 +3624,12 @@ astro-dev-toolbar {
     display: flex;
     padding-bottom: 2rem;
   }
+  .patient-vitals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .patient-workspace-header {
     flex-direction: column;
+    align-items: stretch;
   }
   .patient-workspace-actions {
     width: 100%;
@@ -2765,6 +3642,12 @@ astro-dev-toolbar {
   }
 }
 
+@media (max-width: 480px) {
+  .patient-vitals {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Text fit (14-oct): long emails end in an ellipsis and «Abrir ficha» never gets clipped. */
 .patient-contact-link {
   max-width: 100%;
@@ -2774,16 +3657,22 @@ astro-dev-toolbar {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: inherit;
   color: inherit;
   flex-shrink: 1;
 }
 
 .patient-table th.col-patient,
 .patient-table td.cell-patient { width: 20%; }
+.patient-table th.col-contact,
+.patient-table td.cell-contact { width: 16%; }
 .patient-table th.col-clinical,
 .patient-table td.cell-clinical { width: 20%; }
 .patient-table th.col-appt,
 .patient-table td.cell-appt { width: 12%; }
+.patient-table th.col-status,
+.patient-table td.cell-status { width: 14%; }
 .patient-table th.col-actions,
 .patient-table td.cell-actions { width: 18%; min-width: 160px; }
 
@@ -2807,6 +3696,13 @@ astro-dev-toolbar {
    Patient Workspace, Clinical Timeline, Vitals & Anatomical Pain Map
    ========================================================================== */
 
+.ficha-workspace {
+  background: var(--color-canvas, #f3f4f8);
+  min-height: 100%;
+  width: 100%;
+  color: var(--color-ink, #0b1020);
+}
+
 /* === TOPBAR & NAV === */
 .ficha-topbar {
   display: flex;
@@ -2825,10 +3721,12 @@ astro-dev-toolbar {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-ink-secondary, #334155);
+  background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-sm, 6px);
   padding: 0.4rem 0.75rem;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .ficha-back-btn:hover {
@@ -2836,9 +3734,20 @@ astro-dev-toolbar {
   color: var(--color-ink, #0b1020);
 }
 
+.ficha-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
 /* === CLINICAL CONTEXT HERO === */
 .ficha-hero-panel {
+  background: #ffffff;
   border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-md, 10px);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
+  display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 1.5rem;
 }
@@ -2852,16 +3761,31 @@ astro-dev-toolbar {
 .ficha-hero-info {
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ficha-hero-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-brand-primary, #4f46e5);
 }
 
 .ficha-hero-name {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
   letter-spacing: -0.02em;
+  margin: 0;
   line-height: 1.2;
 }
 
 .ficha-hero-summary {
   font-size: 0.9375rem;
   color: var(--color-ink-secondary, #334155);
+  margin: 0;
+  font-weight: 500;
 }
 
 .ficha-hero-contact-row {
@@ -2881,6 +3805,7 @@ astro-dev-toolbar {
 
 .ficha-hero-contact-item span.material-symbols-rounded {
   font-size: 18px;
+  color: var(--color-ink-muted, #5b6476);
 }
 
 .ficha-hero-quick-actions {
@@ -2894,43 +3819,77 @@ astro-dev-toolbar {
 /* === QUICK FACTS / VITALS GRID === */
 .ficha-vitals-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
 .ficha-vital-card {
+  background: var(--color-surface-subtle, #f3f4f8);
+  border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-sm, 6px);
   padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
 }
 
+.ficha-vital-kicker {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted, #5b6476);
+}
+
 .ficha-vital-value {
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--color-ink, #0b1020);
   letter-spacing: -0.01em;
 }
 
 .ficha-vital-meta {
   font-size: 0.75rem;
   color: var(--color-ink-muted, #5b6476);
+  margin: 0;
+  white-space: normal;
 }
 
 /* === TABS NAVIGATION === */
 .ficha-tabs-nav {
   display: flex;
   align-items: center;
+  gap: 0.25rem;
   background: #ffffff;
   border: 1px solid var(--color-border, #e5e7ef);
+  border-radius: var(--radius-md, 10px) var(--radius-md, 10px) 0 0;
   border-bottom: 1px solid var(--color-border, #e5e7ef);
+  padding: 0 0.5rem;
   overflow-x: auto;
 }
 
 .ficha-tab {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-secondary, #334155);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
   white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .ficha-tab:hover {
   color: var(--color-ink, #0b1020);
+}
+
+.ficha-tab.active,
+.ficha-tab[aria-selected="true"] {
+  color: var(--color-brand-primary, #4f46e5);
+  font-weight: 600;
+  border-bottom-color: var(--color-brand-primary, #4f46e5);
 }
 
 /* === WORKSPACE MAIN CONTENT === */
@@ -2961,6 +3920,7 @@ astro-dev-toolbar {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.85rem;
   position: relative;
+  transition: border-color 0.15s ease;
 }
 
 .ficha-nota-card:hover {
@@ -2980,6 +3940,7 @@ astro-dev-toolbar {
 .ficha-nota-date {
   font-size: 13px;
   font-weight: 600;
+  color: var(--color-ink, #0b1020);
 }
 
 .ficha-nota-chips {
@@ -2992,6 +3953,7 @@ astro-dev-toolbar {
 .ficha-nota-text {
   grid-column: 1 / -1;
   max-width: 70ch;
+  font-size: 16px;
   line-height: 1.65;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -3040,9 +4002,11 @@ astro-dev-toolbar {
   flex-wrap: wrap;
   gap: 0.75rem;
 }
+
+.ficha-notes-heading h2 { font-size: 18px; line-height: 1.4; }
 .ficha-notes-heading p,
 .ficha-clinical-caption,
-.ficha-clinical-updated { font-size: 13px; color: var(--color-ink-muted); }
+.ficha-clinical-updated { font-size: 13px; line-height: 1.5; color: var(--color-ink-muted); }
 .ficha-notes-heading p { margin-top: 0.35rem; }
 .ficha-panel[data-ficha-panel="notas"] > * + * { margin-top: 1.5rem; }
 
@@ -3054,6 +4018,7 @@ astro-dev-toolbar {
 
 .ficha-summary-card,
 .ficha-note-editor {
+  min-width: 0;
   padding: 1.25rem;
   background: var(--color-surface, #fff);
   border: 1px solid var(--color-border);
@@ -3065,12 +4030,14 @@ astro-dev-toolbar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.4;
 }
 
 .ficha-clinical-card-heading .material-symbols-rounded { font-size: 20px; color: var(--color-brand-primary); }
 .ficha-clinical-caption { margin-top: 0.5rem; }
-#fichaLongitudinalSummaryText { margin-top: 0.85rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 70ch; }
+#fichaLongitudinalSummaryText { margin-top: 0.85rem; font-size: 16px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 70ch; }
 #fichaPainTrendTimeline { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
 .ficha-eva-point { display: grid; gap: 0.5rem; min-width: 7rem; padding: 0.85rem; background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
 .ficha-eva-date, .ficha-eva-zone { font-size: 13px; color: var(--color-ink-secondary); }
@@ -3091,10 +4058,13 @@ astro-dev-toolbar {
 .ficha-note-field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 #fichaNotaForm .precision-field > span { font-size: 14px; line-height: 1.5; color: var(--color-ink-secondary); }
 #fichaNotaForm .precision-input,
-#fichaNotaForm .precision-select { width: 100%; }
-#fichaNotaForm textarea.precision-input { height: auto; min-height: 5.5rem; }
+#fichaNotaForm .precision-select { width: 100%; min-width: 0; min-height: 44px; font-size: 16px; }
+#fichaNotaForm textarea.precision-input { height: auto; min-height: 5.5rem; padding: 0.75rem; line-height: 1.6; resize: vertical; }
 #fichaNotaForm textarea[name="nota"] { min-height: 144px; }
 .ficha-note-form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.75rem; padding-top: 0.25rem; }
+.ficha-notes-heading button,
+.ficha-note-form-actions button { min-height: 44px; font-size: 14px; }
+#fichaNotaForm button[type="submit"] { background: #ff643b; color: var(--color-ink); border-color: #ff643b; }
 #fichaNotaForm button[type="submit"]:hover { background: #f0542f; border-color: #f0542f; }
 .ficha-panel[data-ficha-panel="notas"] :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--color-border-focus, #4f46e5); outline-offset: 3px; }
 
@@ -3109,6 +4079,7 @@ astro-dev-toolbar {
 .ficha-note-action-icon {
   font-size: 16px;
   color: var(--color-ink-muted, #5b6476);
+  cursor: pointer;
 }
 
 .ficha-note-action-icon:hover {
@@ -3117,6 +4088,9 @@ astro-dev-toolbar {
 
 /* === PAIN MAP STYLING === */
 .pain-map-card {
+  background: #ffffff !important;
+  border: 1px solid var(--color-border, #e5e7ef) !important;
+  border-radius: var(--radius-md, 10px) !important;
   padding: 1.25rem !important;
 }
 
@@ -3127,19 +4101,27 @@ astro-dev-toolbar {
 }
 
 .pain-map-visual {
+  flex: 0 0 160px;
+  background: var(--color-surface-subtle, #f3f4f8);
+  border: 1px solid var(--color-border, #e5e7ef);
   border-radius: var(--radius-md, 10px);
+  padding: 0.75rem;
   display: flex;
   justify-content: center;
 }
 
 .pain-map-svg {
   width: 100%;
+  max-width: 120px;
+  height: auto;
 }
 
 .pain-zone-path {
   fill: #cbd5e1;
   stroke: #ffffff;
+  stroke-width: 1.5;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .pain-zone-path:hover {
@@ -3171,7 +4153,28 @@ astro-dev-toolbar {
 }
 
 .ficha-table {
+  width: 100%;
+  border-collapse: collapse;
   text-align: left;
+}
+
+.ficha-table th {
+  background: var(--color-surface-subtle, #f3f4f8);
+  color: var(--color-ink-muted, #5b6476);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-border, #e5e7ef);
+}
+
+.ficha-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-ink, #0b1020);
+  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  vertical-align: middle;
 }
 
 .ficha-table tr:hover td {
@@ -3180,6 +4183,7 @@ astro-dev-toolbar {
 
 /* Record created by the booking assistant, pending review by the clinic */
 .ficha-review-banner {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1rem;
@@ -3187,6 +4191,11 @@ astro-dev-toolbar {
   border: 1px solid #f0c36d;
   border-radius: 12px;
   background: #fff8e8;
+  color: #0b1020;
+}
+
+.ficha-review-banner[hidden] {
+  display: none;
 }
 
 .ficha-review-banner > .material-symbols-rounded {
@@ -3195,7 +4204,12 @@ astro-dev-toolbar {
 
 .ficha-review-banner p {
   flex: 1 1 18rem;
+  margin: 0;
   font-size: 0.9rem;
+}
+
+.ficha-review-banner button {
+  min-height: 44px;
 }
 
 /* The overview is generated by the ficha controller, with the same spacing as its neighbours. */
@@ -3203,7 +4217,7 @@ astro-dev-toolbar {
 .ficha-progress-hero { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
 .ficha-progress-copy { flex: 1 1 200px; min-width: 0; }
 .ficha-progress-copy strong, .ficha-progress-metric strong, .ficha-progress-point strong, .ficha-progress-next strong { display: block; color: var(--color-ink); margin-top: 4px; font-weight: 600; }
-.ficha-progress-copy p, .ficha-progress-metric p, .ficha-progress-point p, .ficha-progress-next p { margin: 6px 0 0; }
+.ficha-progress-copy p, .ficha-progress-metric p, .ficha-progress-point p, .ficha-progress-next p { margin: 6px 0 0; line-height: 1.5; }
 .ficha-progress-eyebrow, .ficha-progress-history-label { display: block; color: var(--color-ink-muted); font-size: 12px; }
 .ficha-progress-pill { padding: 5px 9px; border-radius: var(--radius-full); background: var(--color-surface-selected); color: var(--color-brand-primary); font-size: 12px; }
 .ficha-progress-metrics, .ficha-progress-points { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,150px),1fr)); gap: 12px; }
@@ -3215,7 +4229,7 @@ astro-dev-toolbar {
 #fichaDecisionList, #fichaOverviewStream { display: grid; gap: 16px; }
 .ficha-decision-card + .ficha-decision-card, .ficha-stream-item + .ficha-stream-item { padding-top: 16px; border-top: 1px solid var(--color-border); }
 .ficha-decision-card strong, .ficha-stream-copy strong { display: block; color: var(--color-ink); font-weight: 600; }
-.ficha-decision-card p, .ficha-stream-copy p { margin: 6px 0 0; }
+.ficha-decision-card p, .ficha-stream-copy p { margin: 6px 0 0; line-height: 1.5; }
 .ficha-stream-item { display: flex; align-items: flex-start; gap: 12px; }
 .ficha-stream-icon { flex: 0 0 32px; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--color-surface-selected); color: var(--color-brand-primary); }
 .ficha-stream-copy { min-width: 0; overflow-wrap: anywhere; }
@@ -3225,34 +4239,35 @@ astro-dev-toolbar {
 .ficha-ia-step { display: grid; grid-template-columns: 28px minmax(0,1fr); align-content: start; align-items: start; gap: 10px; padding: 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
 .ficha-ia-step-index { display: grid; place-items: center; min-height: 28px; border-radius: var(--radius-full); background: var(--color-surface-selected); color: var(--color-brand-primary); font-size: 12px; font-weight: 600; }
 .ficha-ia-step strong { display: block; margin-top: 4px; color: var(--color-ink); font-weight: 600; overflow-wrap: anywhere; }
-.ficha-ia-step p { margin: 8px 0 0; overflow-wrap: anywhere; }
+.ficha-ia-step p { margin: 8px 0 0; line-height: 1.5; overflow-wrap: anywhere; }
 .ficha-ia-step-action { display: inline-flex; align-items: center; margin-top: 8px; color: var(--color-brand-primary); text-align: left; }
 
 /* Consent signature uses the clinical theme rather than legacy utility colours. */
 #firmaModal { padding: 16px; z-index: 10000; background: rgba(20,34,52,.4) !important; }
-#firmaModal > [role="dialog"] { max-height: calc(100dvh - 32px); background: var(--color-surface) !important; border: 1px solid var(--color-border); border-radius: var(--radius-panel); box-shadow: var(--shadow-flyout); }
+#firmaModal > [role="dialog"] { width: min(100%,680px); max-height: calc(100dvh - 32px); margin: 0; display: flex; flex-direction: column; background: var(--color-surface) !important; color: var(--color-ink); border: 1px solid var(--color-border); border-radius: var(--radius-panel); box-shadow: var(--shadow-flyout); }
 #firmaModal > [role="dialog"] > div:first-child { padding: 16px 20px; background: var(--color-surface-subtle) !important; border-bottom: 1px solid var(--color-border); gap: 12px; }
-#firmaModal > [role="dialog"] > div:first-child p { color: var(--color-brand-primary); }
-#firmaModalTitle { color: var(--color-ink) !important; line-height: 1.3; overflow-wrap: anywhere; }
+#firmaModal > [role="dialog"] > div:first-child p { color: var(--color-brand-primary); font-size: 12px; }
+#firmaModalTitle { color: var(--color-ink) !important; font-size: 20px; line-height: 1.3; overflow-wrap: anywhere; }
 #firmaModal > [role="dialog"] { overflow-y: auto; }
 #firmaModal > [role="dialog"] > div:first-child, #firmaDocContenido + div, #firmaModal > [role="dialog"] > div:last-child { flex-shrink: 0; }
-#firmaDocContenido { flex: 1 1 auto; min-height: 80px; max-height: min(35dvh,280px); padding: 20px; color: var(--color-ink-secondary) !important; white-space: pre-wrap; overflow-wrap: anywhere; }
+#firmaDocContenido { flex: 1 1 auto; min-height: 80px; max-height: min(35dvh,280px); overflow-y: auto; padding: 20px; color: var(--color-ink-secondary) !important; white-space: pre-wrap; overflow-wrap: anywhere; }
 #firmaDocContenido + div { padding: 16px 20px; background: var(--color-surface-subtle) !important; border-top: 1px solid var(--color-border); }
 #firmaDocContenido + div > div:first-child { flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
 #firmaDocContenido + div p { color: var(--color-ink-secondary); }
-#firmaCanvas { border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
-#firmaStatus { margin-top: 8px; color: var(--color-ink-muted); background: transparent; border: 0; }
+#firmaCanvas { display: block; width: 100%; height: 160px; touch-action: none; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
+#firmaStatus { display: inline-block; margin-top: 8px; color: var(--color-ink-muted); background: transparent; border: 0; }
 #firmaFeedback { color: var(--color-urgent-text) !important; }
-#firmaModal button { padding: 10px 14px; border-radius: var(--radius-button); color: var(--color-ink-secondary); }
-#firmaModalClose { flex-shrink: 0; padding: 0 !important; }
-#firmaModal > [role="dialog"] > div:last-child { flex-wrap: wrap; padding: 16px 20px; border-top: 1px solid var(--color-border); background: var(--color-surface) !important; }
-#firmaGuardarBtn { background: var(--color-brand-primary) !important; color: white !important; justify-content: center; }
+#firmaModal button { min-height: 44px; padding: 10px 14px; border-radius: var(--radius-button); color: var(--color-ink-secondary); }
+#firmaModalClose { flex-shrink: 0; width: 44px; padding: 0 !important; }
+#firmaModal > [role="dialog"] > div:last-child { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--color-border); background: var(--color-surface) !important; }
+#firmaGuardarBtn { background: var(--color-brand-primary) !important; color: white !important; justify-content: center; white-space: normal; }
 #firmaGuardarBtn:hover:not(:disabled) { background: var(--color-brand-primary-hover) !important; }
 @media (max-width: 480px) {
   #firmaModal { padding: 12px; }
   #firmaModal > [role="dialog"] { max-height: calc(100dvh - 24px); }
   #firmaModal > [role="dialog"] > div:first-child, #firmaDocContenido, #firmaDocContenido + div, #firmaModal > [role="dialog"] > div:last-child { padding: 16px; }
   #firmaModal > [role="dialog"] > div:last-child { flex-direction: column-reverse; }
+  #firmaModal > [role="dialog"] > div:last-child button { width: 100%; }
 }
 
 /* ════ precision-agenda.css (consolidada el 17-oct-2026; orden de cascada original) ════ */
@@ -3263,9 +4278,12 @@ astro-dev-toolbar {
 
 /* Page container */
 .page-section[data-page="citas"] {
+  display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding: 1.5rem;
+  background-color: var(--pw-bg-canvas, #f3f4f8);
+  min-height: 100%;
 }
 
 @media (min-width: 1024px) {
@@ -3277,26 +4295,64 @@ astro-dev-toolbar {
 
 /* Agenda Header Row */
 .agenda-header-row {
+  display: flex;
   flex-direction: column;
+  gap: 1rem;
 }
 
 @media (min-width: 1024px) {
   .agenda-header-row {
     flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
+}
+
+.agenda-header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .agenda-header-copy .page-title {
   display: flex;
   align-items: center;
   gap: 0.625rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.agenda-header-copy .page-title .material-symbols-rounded {
+  color: #4f46e5;
+  font-size: 1.75rem;
 }
 
 /* Google Calendar Sync Status */
 .agenda-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
   font-size: 0.8125rem;
   width: fit-content;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.agenda-sync-status .status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .agenda-sync-status .status-chip.pendiente,
@@ -3317,6 +4373,8 @@ astro-dev-toolbar {
 }
 
 .agenda-sync-copy {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
@@ -3341,18 +4399,49 @@ astro-dev-toolbar {
 
 @media (max-width: 767px) {
   .agenda-sync-status {
+    align-items: flex-start;
     flex-direction: column;
   }
 }
 
+.agenda-sync-copy strong {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.agenda-sync-copy p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #5b6476;
+}
+
 /* Week Navigation Bar */
 .week-nav-bar {
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
+  gap: 0.5rem;
+  background: #ffffff;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid #e5e7ef;
+  border-radius: 10px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .week-nav-bar .btn-ghost {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .week-nav-bar .btn-ghost:hover {
@@ -3360,11 +4449,32 @@ astro-dev-toolbar {
   color: #0b1020;
 }
 
+.week-nav-bar .btn-ghost.btn-icon {
+  padding: 0.5rem;
+}
+
 .week-nav-bar .week-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0b1020;
+  padding: 0 0.5rem;
   letter-spacing: -0.01em;
 }
 
 .week-nav-bar .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #4f46e5;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   margin-left: auto;
 }
 
@@ -3374,6 +4484,13 @@ astro-dev-toolbar {
 }
 
 /* Agenda Calendar Card */
+.agenda-cal-card {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
 
 .agenda-calendar {
   width: 100%;
@@ -3391,9 +4508,23 @@ astro-dev-toolbar {
 }
 
 /* Board Header */
+.agenda-board-head {
+  display: grid;
+  grid-template-columns: 80px repeat(5, minmax(0, 1fr));
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
+}
 
 .agenda-board-corner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: #94a3b8;
+  border-right: 1px solid #e5e7ef;
   padding: 0.75rem 0.5rem;
 }
 
@@ -3401,21 +4532,44 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-right: 1px solid #e5e7ef;
   gap: 0.25rem;
+  transition: background 0.15s ease;
+}
+
+.agenda-day-head:last-child {
+  border-right: none;
 }
 
 .agenda-day-head .agenda-day-name {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: #5b6476;
+}
+
+.agenda-day-head .agenda-day-number {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .agenda-day-head.is-today {
   background: rgba(2, 132, 199, 0.06);
 }
 
+.agenda-day-head.is-today .agenda-day-name {
+  color: #0284c7;
+}
+
 .agenda-day-head.is-today .agenda-day-number {
+  color: #0369a1;
   background: #e0f2fe;
   width: 28px;
   height: 28px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
@@ -3442,8 +4596,27 @@ astro-dev-toolbar {
   flex-direction: column;
 }
 
+.agenda-board-row {
+  display: grid;
+  grid-template-columns: 80px repeat(5, minmax(0, 1fr));
+  border-bottom: 1px solid #f1f5f9;
+  min-height: 72px;
+}
+
+.agenda-board-row:last-child {
+  border-bottom: none;
+}
+
 .agenda-time-cell {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
   padding: 0.5rem 0.75rem 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #94a3b8;
+  border-right: 1px solid #e5e7ef;
   background: #fafafa;
 }
 
@@ -3452,8 +4625,20 @@ astro-dev-toolbar {
   flex-direction: column;
   min-width: 0;
   gap: 0.375rem;
+  padding: 0.375rem;
+  border-right: 1px solid #f1f5f9;
   min-height: 72px;
   background: #ffffff;
+  position: relative;
+  transition: background 0.1s ease;
+}
+
+.agenda-week-cell:last-child {
+  border-right: none;
+}
+
+.agenda-week-cell.is-today {
+  background: rgba(248, 250, 252, 0.7);
 }
 
 .agenda-week-cell:hover {
@@ -3493,7 +4678,18 @@ astro-dev-toolbar {
 
 /* Appointment Event Card */
 .agenda-event-card {
+  display: flex;
+  flex-direction: column;
   align-items: flex-start;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .agenda-event-card:hover {
@@ -3502,36 +4698,74 @@ astro-dev-toolbar {
 }
 
 .agenda-event-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
   margin-bottom: 0.125rem;
 }
 
 .agenda-event-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   max-width: 100%;
 }
 
 .agenda-event-reason {
+  font-size: 0.6875rem;
   margin-top: 0.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   max-width: 100%;
   opacity: 0.85;
 }
 
 /* Event Status Themes */
 .agenda-event-en_consulta {
+  background-color: #e0f2fe;
+  border-left-color: #0284c7;
   color: #0369a1;
+}
+
+.agenda-event-en_consulta .agenda-event-time {
+  color: #0284c7;
 }
 
 .agenda-event-confirmada,
 .agenda-event-programada {
+  background-color: #f0fdf4;
+  border-left-color: #16a34a;
   color: #15803d;
 }
 
+.agenda-event-confirmada .agenda-event-time,
+.agenda-event-programada .agenda-event-time {
+  color: #16a34a;
+}
+
 .agenda-event-pendiente {
+  background-color: #fffbeb;
+  border-left-color: #d97706;
   color: #b45309;
 }
 
+.agenda-event-pendiente .agenda-event-time {
+  color: #d97706;
+}
+
 .agenda-event-completada {
+  background-color: #f3f4f8;
+  border: 1px solid #e5e7ef;
+  border-left: 4px solid #94a3b8;
   color: #475569;
+}
+
+.agenda-event-completada .agenda-event-time {
+  color: #5b6476;
 }
 
 .agenda-event-cancelada {
@@ -3549,7 +4783,11 @@ astro-dev-toolbar {
 
 /* Table Card: Pacientes esta semana */
 .table-card {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 .table-card .card-header {
@@ -3562,9 +4800,25 @@ astro-dev-toolbar {
 }
 
 .table-card .card-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.badge-week-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.5rem;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
 }
 
 .table-wrap {
@@ -3573,7 +4827,28 @@ astro-dev-toolbar {
 }
 
 .table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
   text-align: left;
+}
+
+.table-wrap th {
+  padding: 0.75rem 1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b6476;
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
+}
+
+.table-wrap td {
+  padding: 0.875rem 1rem;
+  font-size: 0.8125rem;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
 }
 
 .table-wrap tr:hover td {
@@ -3583,7 +4858,11 @@ astro-dev-toolbar {
 /* Mobile Timeline Card */
 .agenda-mobile-card {
   display: none;
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 12px;
   padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 @media (max-width: 768px) {
@@ -3604,9 +4883,25 @@ astro-dev-toolbar {
   border-bottom: 1px solid #e5e7ef;
 }
 
+.agenda-mobile-kicker {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4f46e5;
+}
+
+.agenda-mobile-head h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
+}
+
 #agendaMobileSummary {
   font-size: 0.75rem;
   color: #5b6476;
+  margin: 0;
 }
 
 .agenda-mobile-list {
@@ -3687,11 +4982,24 @@ astro-dev-toolbar {
 }
 
 .agenda-mobile-item p {
+  margin: 0;
   font-size: 0.75rem;
   color: #5b6476;
 }
 
 /* Modals & Drawers */
+.crm-drawer-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
 
 .crm-drawer-shell.open,
 .crm-drawer-shell.is-open {
@@ -3700,7 +5008,16 @@ astro-dev-toolbar {
 }
 
 .crm-drawer-panel {
+  width: 100%;
   max-width: 480px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
   padding: 1.5rem;
 }
 
@@ -3710,11 +5027,47 @@ astro-dev-toolbar {
 }
 
 .crm-drawer-panel .modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7ef;
+}
+
+.crm-drawer-panel .modal-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4f46e5;
+  margin-bottom: 0.25rem;
+}
+
+.crm-drawer-panel h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
+}
+
+.crm-drawer-panel .drawer-subtitle {
+  font-size: 0.8125rem;
+  color: #5b6476;
+  margin: 0.25rem 0 0 0;
 }
 
 .crm-drawer-panel .modal-close {
+  background: transparent;
+  border: none;
+  color: #5b6476;
+  cursor: pointer;
   padding: 0.25rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .crm-drawer-panel .modal-close:hover {
@@ -3731,18 +5084,24 @@ astro-dev-toolbar {
 .agenda-time-cell,
 .agenda-event-time {
   font-family: inherit;
+  font-variant-numeric: tabular-nums;
 }
 
 .agenda-time-cell {
+  display: block;
   text-align: right;
+  color: #5b6476;
 }
 
 .agenda-time-cell small {
+  display: block;
   margin-top: 2px;
   font-size: 0.625rem;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #8a5300;
+  text-align: right;
   line-height: 1.2;
 }
 
@@ -3757,6 +5116,11 @@ astro-dev-toolbar {
 
 .agenda-event-card {
   min-width: 0;
+  text-align: left;
+}
+
+.badge-week-count:empty {
+  display: none;
 }
 
 #appointmentDetailBody { display: grid; gap: 20px; align-content: start; }
@@ -3810,15 +5174,22 @@ astro-dev-toolbar {
   z-index: 100 !important;
   display: flex !important;
   flex-direction: column !important;
+  width: 100vw !important;
   max-width: 100vw !important;
   height: 100vh !important;
+  height: 100dvh !important;
   overflow: hidden !important;
   background: #ffffff !important;
+  color: var(--cp-ink) !important;
   border: 0 !important;
   border-left: 1px solid var(--cp-line) !important;
   box-shadow: -12px 0 40px rgba(15, 23, 42, 0.12) !important;
   opacity: 0 !important;
   pointer-events: none !important;
+  transform: translate3d(100%, 0, 0) !important;
+  transition: opacity 200ms ease, transform 260ms var(--cp-ease) !important;
+  font-family: inherit !important;
+  font-feature-settings: "cv11" 1, "ss01" 1 !important;
 }
 
 #assistantRail.open {
@@ -3827,6 +5198,8 @@ astro-dev-toolbar {
   transform: translate3d(0, 0, 0) !important;
 }
 
+#assistantRail * { box-sizing: border-box !important; }
+
 @media (min-width: 640px) {
   #assistantRail { width: min(480px, 100vw) !important; }
 }
@@ -3834,15 +5207,19 @@ astro-dev-toolbar {
 @media (min-width: 1024px) {
   #assistantRail { width: var(--cp-width) !important; }
 
+  #assistantRailBackdrop { display: none !important; }
+
   body.copilot-open .content,
   html[data-assistant-state="open-desktop"] .content {
     margin-right: var(--cp-width) !important;
+    transition: margin-right 260ms var(--cp-ease) !important;
   }
 }
 
 @media (max-width: 1023px) {
   #assistantRailBackdrop.visible,
   html[data-assistant-state="open-mobile"] #assistantRailBackdrop {
+    display: block !important;
     opacity: 1 !important;
     pointer-events: auto !important;
     background: rgba(15, 23, 42, 0.45) !important;
@@ -3852,13 +5229,25 @@ astro-dev-toolbar {
 /* While growing out of the top bar button the slide is skipped: the clip-path does the motion. */
 #assistantRail.cp-morphing { transition: none !important; }
 
+@media (prefers-reduced-motion: reduce) {
+  #assistantRail { transition: opacity 120ms linear !important; }
+}
+
 #assistantRail .material-symbols-rounded {
+  font-family: "Material Symbols Rounded" !important;
+  font-weight: normal !important;
+  font-style: normal !important;
   font-size: 20px !important;
+  line-height: 1 !important;
+  display: inline-block !important;
   flex-shrink: 0 !important;
+  font-feature-settings: "liga" 1 !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 
 /* Shared control reset inside the rail */
 #assistantRail button {
+  font-family: inherit !important;
   cursor: pointer;
 }
 
@@ -3918,6 +5307,7 @@ astro-dev-toolbar {
   color: var(--cp-green) !important;
   letter-spacing: 0.02em !important;
   text-transform: none !important;
+  font-weight: 600 !important;
 }
 
 #assistantRail .cp-status-dot {
@@ -3931,7 +5321,10 @@ astro-dev-toolbar {
 
 #assistantRail .cp-header h2 {
   margin: 0.15rem 0 0 !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
   letter-spacing: -0.01em !important;
+  color: var(--cp-ink) !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -3940,6 +5333,8 @@ astro-dev-toolbar {
 #assistantRail .cp-icon-btn {
   display: grid !important;
   place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
   border-radius: 10px !important;
   border: 1px solid var(--cp-line) !important;
   background: #ffffff !important;
@@ -3954,7 +5349,9 @@ astro-dev-toolbar {
 #assistantRail .assistant-care-stepper {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  margin: 0 !important;
   padding: 0.625rem 1.25rem !important;
+  list-style: none !important;
   background: #ffffff !important;
   border-bottom: 1px solid var(--cp-line) !important;
   flex-shrink: 0 !important;
@@ -4039,6 +5436,7 @@ astro-dev-toolbar {
 #assistantRail .cp-select-chevron {
   position: absolute !important;
   top: 50% !important;
+  transform: translateY(-50%) !important;
   color: var(--cp-faint) !important;
   pointer-events: none !important;
 }
@@ -4048,9 +5446,11 @@ astro-dev-toolbar {
 
 #assistantRail #chatPatientSelect {
   width: 100% !important;
+  min-height: 44px !important;
   appearance: none !important;
   -webkit-appearance: none !important;
   padding: 0.5rem 2.5rem 0.5rem 2.75rem !important;
+  border: 1px solid var(--cp-line) !important;
   border-radius: 10px !important;
   background: var(--cp-canvas) !important;
   color: var(--cp-ink) !important;
@@ -4081,6 +5481,7 @@ astro-dev-toolbar {
   padding: 0 0.5rem !important;
   border: 0 !important;
   border-radius: 8px !important;
+  background: transparent !important;
   color: var(--cp-muted) !important;
   font-size: 0.8125rem !important;
   font-weight: 600 !important;
@@ -4128,7 +5529,7 @@ astro-dev-toolbar {
   line-height: 1.3 !important;
 }
 
-#assistantRail .cp-patient .cp-select { flex: 1 1 12rem !important; display: none !important; }
+#assistantRail .cp-patient .cp-select { flex: 1 1 12rem !important; min-width: 0 !important; display: none !important; }
 #assistantRail .cp-patient-actions { display: flex !important; gap: 0.375rem !important; flex: 0 0 auto !important; margin-left: auto !important; }
 #assistantRail .cp-patient-actions .cp-link-btn { min-height: 44px !important; display: inline-flex !important; align-items: center !important; gap: 0.125rem !important; }
 #assistantRail .cp-patient-context .material-symbols-rounded { font-size: 18px !important; transition: transform 200ms var(--cp-ease) !important; }
@@ -4148,11 +5549,14 @@ astro-dev-toolbar {
   animation: cp-context-in 220ms var(--cp-ease) !important;
 }
 
+#assistantRail .cp-context[hidden] { display: none !important; }
+
 @keyframes cp-context-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 #assistantRail #assistantPatientLabel {
   font-size: 0.9375rem !important;
   font-weight: 600 !important;
+  color: var(--cp-ink) !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -4246,7 +5650,7 @@ astro-dev-toolbar {
   overflow-wrap: anywhere !important;
 }
 
-#assistantRail .assistant-patient-brief-empty strong { display: block !important; font-size: 0.8125rem !important; }
+#assistantRail .assistant-patient-brief-empty strong { display: block !important; font-size: 0.8125rem !important; color: var(--cp-ink) !important; }
 
 /* Structured context fields */
 #assistantRail .cp-diagnostic {
@@ -4259,7 +5663,7 @@ astro-dev-toolbar {
 }
 
 #assistantRail .cp-diagnostic-head { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 0.75rem !important; }
-#assistantRail .cp-diagnostic-head strong { display: block !important; font-size: 0.8125rem !important; }
+#assistantRail .cp-diagnostic-head strong { display: block !important; font-size: 0.8125rem !important; color: var(--cp-ink) !important; }
 
 #assistantRail .cp-link-btn {
   min-height: 36px !important;
@@ -4283,8 +5687,8 @@ astro-dev-toolbar {
   gap: 0.625rem !important;
 }
 
-#assistantRail .cp-diagnostic-grid label { display: grid !important; gap: 0.25rem !important; }
-#assistantRail .cp-diagnostic-grid label > span { font-size: 0.75rem !important; font-weight: 600 !important; }
+#assistantRail .cp-diagnostic-grid label { display: grid !important; gap: 0.25rem !important; min-width: 0 !important; }
+#assistantRail .cp-diagnostic-grid label > span { font-size: 0.75rem !important; font-weight: 600 !important; color: var(--cp-ink) !important; }
 #assistantRail .cp-diagnostic-grid .cp-span-2 { grid-column: 1 / -1 !important; }
 
 #assistantRail .cp-diagnostic-grid select,
@@ -4293,18 +5697,20 @@ astro-dev-toolbar {
   width: 100% !important;
   min-height: 40px !important;
   padding: 0.5rem 0.625rem !important;
+  border: 1px solid var(--cp-line) !important;
+  border-radius: 8px !important;
   background: var(--cp-canvas) !important;
   color: var(--cp-ink) !important;
   font-size: 0.8125rem !important;
 }
 
-#assistantRail .cp-diagnostic-grid textarea { min-height: 64px !important; }
+#assistantRail .cp-diagnostic-grid textarea { resize: vertical !important; min-height: 64px !important; }
 
 #assistantRail .cp-diagnostic-grid select:focus,
 #assistantRail .cp-diagnostic-grid input:focus,
 #assistantRail .cp-diagnostic-grid textarea:focus { border-color: var(--cp-blue) !important; background: #ffffff !important; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.14) !important; }
 
-#assistantRail .cp-diagnostic-summary { font-size: 0.75rem !important; line-height: 1.45 !important; color: var(--cp-muted) !important; }
+#assistantRail .cp-diagnostic-summary { margin: 0 !important; font-size: 0.75rem !important; line-height: 1.45 !important; color: var(--cp-muted) !important; }
 #assistantRail .cp-diagnostic.is-has-data .cp-diagnostic-summary { color: var(--cp-green) !important; }
 
 /* --------------------------------------------------------------------------
@@ -4352,8 +5758,8 @@ astro-dev-toolbar {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
 }
 
-#assistantRail .assistant-chat-empty > strong { margin-top: 0.25rem !important; font-size: 1.0625rem !important; font-weight: 600 !important; }
-#assistantRail .assistant-chat-empty > p { max-width: 340px !important; font-size: 0.8125rem !important; color: var(--cp-muted) !important; }
+#assistantRail .assistant-chat-empty > strong { margin-top: 0.25rem !important; font-size: 1.0625rem !important; font-weight: 600 !important; color: var(--cp-ink) !important; }
+#assistantRail .assistant-chat-empty > p { max-width: 340px !important; margin: 0 !important; font-size: 0.8125rem !important; line-height: 1.5 !important; color: var(--cp-muted) !important; }
 
 #assistantRail .assistant-chat-empty-chips {
   display: grid !important;
@@ -4367,11 +5773,13 @@ astro-dev-toolbar {
   display: flex !important;
   align-items: center !important;
   gap: 0.75rem !important;
+  width: 100% !important;
   min-height: 56px !important;
   padding: 0.625rem 0.875rem !important;
   border: 1px solid var(--cp-line) !important;
   border-radius: var(--cp-radius) !important;
   background: #ffffff !important;
+  color: var(--cp-ink) !important;
   text-align: left !important;
 }
 
@@ -4570,6 +5978,7 @@ astro-dev-toolbar {
   border: 1px solid var(--cp-line) !important;
   border-radius: 999px !important;
   background: #ffffff !important;
+  color: var(--cp-ink) !important;
   font-size: 0.75rem !important;
   font-weight: 600 !important;
   white-space: nowrap !important;
@@ -4611,10 +6020,12 @@ astro-dev-toolbar {
   border: 0 !important;
   border-radius: 10px !important;
   background: transparent !important;
+  box-shadow: none !important;
   color: var(--cp-ink) !important;
   font-size: 0.875rem !important;
   line-height: 1.45 !important;
   resize: none !important;
+  outline: none !important;
 }
 
 #assistantRail #agentInput::placeholder { color: var(--cp-faint) !important; }
@@ -4623,6 +6034,11 @@ astro-dev-toolbar {
   display: grid !important;
   place-items: center !important;
   width: 44px !important;
+  height: 44px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: var(--cp-blue) !important;
+  color: #ffffff !important;
   flex-shrink: 0 !important;
 }
 
@@ -4650,6 +6066,7 @@ astro-dev-toolbar {
   font-size: 0.75rem !important;
   line-height: 1.15 !important;
   white-space: normal !important;
+  text-align: center !important;
 }
 
 #assistantRail .cp-delivery .cp-btn .material-symbols-rounded { font-size: 16px !important; }
@@ -4659,6 +6076,7 @@ astro-dev-toolbar {
   align-items: center !important;
   justify-content: center !important;
   gap: 0.375rem !important;
+  min-height: 44px !important;
   padding: 0 0.875rem !important;
   border-radius: 10px !important;
   font-size: 0.8125rem !important;
@@ -4672,10 +6090,10 @@ astro-dev-toolbar {
 #assistantRail .cp-btn-primary:hover:not(:disabled) { background: var(--cp-blue-dark) !important; }
 #assistantRail .cp-btn-primary.is-loading { opacity: 0.75 !important; }
 
-#assistantRail .cp-btn-approve { border: 1px solid #bbf7d0 !important; }
+#assistantRail .cp-btn-approve { border: 1px solid #bbf7d0 !important; background: var(--cp-green-soft) !important; color: var(--cp-green) !important; }
 #assistantRail .cp-btn-approve:hover:not(:disabled) { border-color: #86efac !important; }
 
-#assistantRail .cp-btn-secondary { border: 1px solid var(--cp-line) !important; background: #ffffff !important; }
+#assistantRail .cp-btn-secondary { border: 1px solid var(--cp-line) !important; background: #ffffff !important; color: var(--cp-ink) !important; }
 #assistantRail .cp-btn-secondary:hover:not(:disabled) { border-color: var(--cp-blue) !important; color: var(--cp-blue) !important; }
 #assistantRail .cp-btn-secondary.is-available { border-color: rgba(79, 70, 229, 0.35) !important; color: var(--cp-blue) !important; }
 
@@ -4683,12 +6101,14 @@ astro-dev-toolbar {
   border-color: var(--cp-line-soft) !important;
   background: var(--cp-canvas) !important;
   color: var(--cp-faint) !important;
+  box-shadow: none !important;
 }
 
 #assistantRail .cp-guard {
   display: flex !important;
   align-items: center !important;
   gap: 0.375rem !important;
+  margin: 0 !important;
   font-size: 0.6875rem !important;
   color: var(--cp-faint) !important;
 }
@@ -4697,7 +6117,8 @@ astro-dev-toolbar {
 
 /* Narrow rail: delivery buttons share the row under the primary action */
 @media (max-width: 520px) {
-  #assistantRail .cp-delivery .cp-btn { gap: 0.25rem !important; }
+  #assistantRail .cp-delivery .cp-btn { font-size: 0.75rem !important; gap: 0.25rem !important; }
+  #assistantRail .cp-delivery .cp-btn .material-symbols-rounded { font-size: 16px !important; }
   #assistantRail .assistant-care-stepper li strong { font-size: 0.6875rem !important; }
   #assistantRail .assistant-care-stepper li:not(:last-child)::after { margin: 0 0.25rem !important; }
   #assistantRail .cp-segmented button .material-symbols-rounded { display: none !important; }
@@ -4733,12 +6154,12 @@ astro-dev-toolbar {
 }
 
 #assistantRail .exercise-editor-header span { font-size: 0.6875rem !important; font-weight: 600 !important; letter-spacing: 0.05em !important; text-transform: uppercase !important; color: var(--cp-blue) !important; }
-#assistantRail .exercise-editor-header h2 { margin: 0.15rem 0 !important; font-size: 1.0625rem !important; }
-#assistantRail .exercise-editor-header p { font-size: 0.8125rem !important; color: var(--cp-muted) !important; }
+#assistantRail .exercise-editor-header h2 { margin: 0.15rem 0 !important; font-size: 1.0625rem !important; font-weight: 600 !important; color: var(--cp-ink) !important; }
+#assistantRail .exercise-editor-header p { margin: 0 !important; font-size: 0.8125rem !important; color: var(--cp-muted) !important; }
 
 #assistantRail #exerciseEditorClose { display: grid !important; place-items: center !important; width: 44px !important; height: 44px !important; border-radius: 10px !important; border: 1px solid var(--cp-line) !important; background: #ffffff !important; color: var(--cp-muted) !important; flex-shrink: 0 !important; }
 
-#assistantRail .exercise-editor-form { flex: 1 !important; display: flex !important; flex-direction: column !important; }
+#assistantRail .exercise-editor-form { flex: 1 !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; }
 #assistantRail .exercise-editor-intro,
 #assistantRail .exercise-editor-section-heading,
 #assistantRail .exercise-editor-list,
@@ -4747,12 +6168,14 @@ astro-dev-toolbar {
 #assistantRail .exercise-editor-form { overflow-y: auto !important; }
 
 #assistantRail .exercise-editor-form label { display: grid !important; gap: 0.25rem !important; }
-#assistantRail .exercise-editor-form label > span { font-size: 0.75rem !important; font-weight: 600 !important; }
+#assistantRail .exercise-editor-form label > span { font-size: 0.75rem !important; font-weight: 600 !important; color: var(--cp-ink) !important; }
 
 #assistantRail .exercise-editor-form textarea,
 #assistantRail .exercise-editor-form input {
   width: 100% !important;
   padding: 0.5rem 0.625rem !important;
+  border: 1px solid var(--cp-line) !important;
+  border-radius: 8px !important;
   background: var(--cp-canvas) !important;
   color: var(--cp-ink) !important;
   font-size: 0.8125rem !important;
@@ -4763,7 +6186,7 @@ astro-dev-toolbar {
 
 #assistantRail .exercise-editor-section-heading { display: flex !important; align-items: flex-end !important; justify-content: space-between !important; gap: 0.75rem !important; padding: 1.25rem 0 0.5rem !important; }
 #assistantRail .exercise-editor-section-heading span { display: block !important; font-size: 0.6875rem !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; color: var(--cp-muted) !important; }
-#assistantRail .exercise-editor-section-heading strong { font-size: 0.875rem !important; }
+#assistantRail .exercise-editor-section-heading strong { font-size: 0.875rem !important; color: var(--cp-ink) !important; }
 #assistantRail .exercise-editor-section-heading small { font-size: 0.75rem !important; color: var(--cp-faint) !important; }
 
 #assistantRail .exercise-editor-list { display: grid !important; gap: 0.625rem !important; padding-bottom: 1rem !important; }
@@ -4787,8 +6210,8 @@ astro-dev-toolbar {
 }
 
 #assistantRail .exercise-editor-cancel,
-#assistantRail .exercise-editor-save { display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0 1rem !important; border-radius: 10px !important; font-size: 0.8125rem !important; font-weight: 600 !important; }
-#assistantRail .exercise-editor-cancel { border: 1px solid var(--cp-line) !important; background: #ffffff !important; }
+#assistantRail .exercise-editor-save { display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; min-height: 44px !important; padding: 0 1rem !important; border-radius: 10px !important; font-size: 0.8125rem !important; font-weight: 600 !important; }
+#assistantRail .exercise-editor-cancel { border: 1px solid var(--cp-line) !important; background: #ffffff !important; color: var(--cp-ink) !important; }
 #assistantRail .exercise-editor-save { border: 1px solid var(--cp-blue) !important; background: var(--cp-blue) !important; color: #ffffff !important; }
 
 @media (max-width: 520px) {
@@ -4800,6 +6223,8 @@ astro-dev-toolbar {
    -------------------------------------------------------------------------- */
 #assistantRailFab {
   background: var(--cp-blue) !important;
+  color: #ffffff !important;
+  min-height: 44px !important;
 }
 
 #assistantRailFab:hover { background: var(--cp-blue-dark) !important; }
@@ -4811,19 +6236,49 @@ astro-dev-toolbar {
    ===================================================================== */
 
 .page-section[data-page="dashboard"] {
+  display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: var(--pw-bg-canvas, #f3f4f8);
+  min-height: 100%;
 }
 
 @media (min-width: 1024px) {
   .page-section[data-page="dashboard"] {
+    padding: 2rem 2.5rem;
     gap: 1.75rem;
   }
+}
+
+.clinic-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 /* --------------------------------------------------------------------------
    HERO: CLINICAL COMMAND CENTER BRIEFING
    -------------------------------------------------------------------------- */
+.clinic-dashboard-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+@media (min-width: 1024px) {
+  .clinic-dashboard-hero {
+    grid-template-columns: 1.25fr 1fr;
+    align-items: center;
+    padding: 2rem;
+    gap: 2rem;
+  }
+}
 
 .clinic-dashboard-copy {
   display: flex;
@@ -4831,14 +6286,97 @@ astro-dev-toolbar {
   gap: 0.5rem;
 }
 
+.clinic-kicker {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4f46e5;
+}
+
+.clinic-dashboard-copy h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+@media (min-width: 1024px) {
+  .clinic-dashboard-copy h1 {
+    font-size: 1.75rem;
+  }
+}
+
+#dashboardLiveSummary {
+  font-size: 0.875rem;
+  color: #5b6476;
+  margin: 0.25rem 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+.clinic-hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.clinic-hero-actions .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  background-color: #4f46e5;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
 .clinic-hero-actions .btn-primary:hover {
   background-color: #4338ca;
   box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);
 }
 
+.clinic-hero-actions .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  background-color: #ffffff;
+  color: #1e293b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
 .clinic-hero-actions .btn-secondary:hover {
   background-color: #f3f4f8;
   border-color: #94a3b8;
+}
+
+.clinic-hero-actions .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.875rem;
+  background: transparent;
+  color: #5b6476;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .clinic-hero-actions .btn-ghost:hover {
@@ -4856,8 +6394,52 @@ astro-dev-toolbar {
   width: 100%;
 }
 
+.clinic-focus-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #f3f4f8;
+  border: 1px solid #e5e7ef;
+  border-left: 4px solid #0284c7;
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.clinic-focus-card .clinic-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clinic-focus-card strong {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #0b1020;
+  line-height: 1.3;
+}
+
+.clinic-focus-card p {
+  font-size: 0.8125rem;
+  color: #5b6476;
+  margin: 0;
+  line-height: 1.4;
+}
+
 .clinic-focus-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  background-color: #4f46e5;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: fit-content;
   margin-top: 0.5rem;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .clinic-focus-action:hover {
@@ -4867,9 +6449,55 @@ astro-dev-toolbar {
 /* --------------------------------------------------------------------------
    METRIC GRID
    -------------------------------------------------------------------------- */
+.clinic-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .clinic-metric-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
 
 .clinic-metric-grid article {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 10px;
+  padding: 1.125rem 1.25rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.clinic-metric-grid article .material-symbols-rounded {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 8px;
+  background: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.clinic-metric-grid article strong {
+  display: block;
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #0b1020;
+  line-height: 1.2;
+}
+
+.clinic-metric-grid article p {
+  font-size: 0.75rem;
+  color: #5b6476;
+  margin: 0.125rem 0 0 0;
+  font-weight: 500;
 }
 
 /* --------------------------------------------------------------------------
@@ -4888,7 +6516,11 @@ astro-dev-toolbar {
 }
 
 .clinic-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 12px;
   padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -4900,6 +6532,13 @@ astro-dev-toolbar {
   justify-content: space-between;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.clinic-panel .clinic-card-head h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
 }
 
 .clinic-side-stack {
@@ -4956,6 +6595,15 @@ astro-dev-toolbar {
 }
 
 /* Secondary Grid & Worklist */
+.clinic-dashboard-grid-secondary {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .clinic-dashboard-grid-secondary {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
 
 .clinic-priority-list {
   display: flex;
@@ -4985,11 +6633,39 @@ astro-dev-toolbar {
 }
 
 /* Finance Strip (Secondary, bottom) */
+.clinic-finance-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 12px;
+  padding: 1.25rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .clinic-finance-strip {
+    grid-template-columns: repeat(3, 1fr) 2fr;
+  }
+}
 
 .clinic-finance-strip article {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.clinic-finance-strip article span {
+  font-size: 0.75rem;
+  color: #5b6476;
+  font-weight: 500;
+}
+
+.clinic-finance-strip article strong {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .clinic-finance-strip canvas {
@@ -4999,7 +6675,14 @@ astro-dev-toolbar {
 
 /* Booking agent: contact requests waiting for a call */
 .contact-requests-panel {
+  display: grid;
   gap: 0.5rem;
+}
+
+.contact-requests-help {
+  margin: 0;
+  color: #5b6476;
+  font-size: 0.875rem;
 }
 
 .contact-request-item .priority-copy p {
@@ -5018,6 +6701,10 @@ astro-dev-toolbar {
   min-height: 44px;
 }
 
+.contact-requests-panel[hidden] {
+  display: none !important;
+}
+
 /* Priority items rendered by index.astro: eyebrow, title and body on their own lines. */
 .clinic-priority-list .priority-item {
   display: flex;
@@ -5025,6 +6712,7 @@ astro-dev-toolbar {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7ef;
 }
 
 .clinic-priority-list .priority-item:last-child {
@@ -5057,9 +6745,13 @@ astro-dev-toolbar {
 
 .clinic-priority-list .priority-item > button {
   flex-shrink: 0;
+  min-height: 44px;
 }
 
 /* Metrics (14-oct): numbers share one baseline even when a label wraps to two lines. */
+.clinic-metric-grid article {
+  align-items: flex-start;
+}
 
 /* ════ precision-plantillas.css (consolidada el 17-oct-2026; orden de cascada original) ════ */
 /* =====================================================================
@@ -5068,23 +6760,32 @@ astro-dev-toolbar {
    ===================================================================== */
 
 .page-section[data-page="plantillas"] {
+  display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: var(--pw-bg-canvas, #f3f4f8);
+  min-height: 100%;
 }
 
 @media (min-width: 1024px) {
   .page-section[data-page="plantillas"] {
+    padding: 2rem 2.5rem;
     gap: 1.75rem;
   }
 }
 
 .template-library-header {
+  display: flex;
   flex-direction: column;
+  gap: 0.75rem;
 }
 
 @media (min-width: 768px) {
   .template-library-header {
     flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 
@@ -5092,26 +6793,138 @@ astro-dev-toolbar {
   display: flex;
   align-items: center;
   gap: 0.625rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.template-library-header .page-title .material-symbols-rounded {
+  color: #4f46e5;
+  font-size: 1.75rem;
+}
+
+.template-library-header .page-subtitle {
+  font-size: 0.875rem;
+  color: #5b6476;
+  margin: 0.25rem 0 0 0;
+}
+
+.template-library-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 /* --------------------------------------------------------------------------
    KPI SUMMARY GRID
    -------------------------------------------------------------------------- */
+.template-kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .template-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.template-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.template-kpi-card span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b6476;
+}
+
+.template-kpi-card strong {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b1020;
+  line-height: 1.2;
+}
+
+.template-kpi-card p {
+  font-size: 0.8125rem;
+  color: #5b6476;
+  margin: 0;
+}
 
 /* --------------------------------------------------------------------------
    PLANS DIRECTORY TABLE
    -------------------------------------------------------------------------- */
+.template-history-card {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
 
 .template-history-card .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7ef;
+  background: #ffffff;
+}
+
+.template-history-card .card-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0b1020;
+  margin: 0;
 }
 
 .template-history-card .card-subtitle {
+  font-size: 0.8125rem;
+  color: #5b6476;
   margin: 0.25rem 0 0 0;
 }
 
+.template-history-card .table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .template-history-card table {
+  width: 100%;
   min-width: 900px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.template-history-card th {
+  padding: 0.875rem 1.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b6476;
+  background: #f3f4f8;
+  border-bottom: 1px solid #e5e7ef;
+}
+
+.template-history-card td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 0.8125rem;
 }
 
 .template-history-card tr:hover td {
@@ -5123,6 +6936,12 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.template-patient-cell strong {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .template-subtle {
@@ -5139,12 +6958,17 @@ astro-dev-toolbar {
 }
 
 .template-plan-cell strong {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0b1020;
   line-height: 1.25;
 }
 
 .template-plan-cell p {
   font-size: 0.75rem;
   color: #5b6476;
+  margin: 0;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -5153,6 +6977,14 @@ astro-dev-toolbar {
 }
 
 .template-plan-cell .status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   width: fit-content;
 }
 
@@ -5166,6 +6998,11 @@ astro-dev-toolbar {
   color: #991b1b;
 }
 
+.template-plan-cell .status-chip.pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 /* Metric Cells */
 .template-metric-cell {
   display: flex;
@@ -5173,8 +7010,26 @@ astro-dev-toolbar {
   gap: 0.25rem;
 }
 
+.template-metric-cell strong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0b1020;
+}
+
 /* Row Action */
 .template-history-card .btn-sm.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.875rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
@@ -5201,6 +7056,7 @@ astro-dev-toolbar {
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  transition: opacity 0.25s ease;
 }
 
 .voice-modal-container {
@@ -5215,6 +7071,7 @@ astro-dev-toolbar {
   flex-direction: column;
   overflow: hidden;
   transform: scale(0.98);
+  transition: transform 0.25s ease;
 }
 
 .voice-modal-backdrop:not(.opacity-0) .voice-modal-container {
@@ -5241,17 +7098,24 @@ astro-dev-toolbar {
 
 .voice-modal-title {
   font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink, #0b1020);
+  margin: 0;
   letter-spacing: -0.01em;
 }
 
 .voice-modal-close-btn {
+  background: transparent;
   border: none;
   color: var(--color-ink-muted, #5b6476);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-modal-close-btn:hover {
@@ -5266,6 +7130,7 @@ astro-dev-toolbar {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  color: var(--color-ink, #0b1020);
 }
 
 /* Mode Switch Tabs */
@@ -5290,6 +7155,7 @@ astro-dev-toolbar {
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   background: transparent;
   color: #5b6476;
 }
@@ -5326,6 +7192,7 @@ astro-dev-toolbar {
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .voice-record-btn:hover {
@@ -5355,6 +7222,7 @@ astro-dev-toolbar {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1.75rem;
   font-weight: 600;
+  color: var(--color-ink, #0b1020);
   letter-spacing: 0.05em;
   line-height: 1;
 }
@@ -5362,6 +7230,7 @@ astro-dev-toolbar {
 .voice-status-text {
   font-size: 0.75rem;
   color: var(--color-ink-muted, #5b6476);
+  margin: 0;
 }
 
 .voice-visualizer {
@@ -5371,6 +7240,7 @@ astro-dev-toolbar {
   gap: 4px;
   height: 20px;
   opacity: 0.4;
+  transition: opacity 0.2s ease;
 }
 
 .voice-visualizer.is-active {
@@ -5382,6 +7252,7 @@ astro-dev-toolbar {
   background: var(--color-brand-secondary, #0284c7);
   border-radius: 4px;
   height: 8px;
+  transition: height 0.15s ease;
 }
 
 .voice-visualizer.is-active .voice-bar:nth-child(1) { height: 12px; animation: barWave 0.8s infinite ease-in-out; }
@@ -5405,10 +7276,20 @@ astro-dev-toolbar {
 .voice-textarea-label {
   font-size: 0.75rem;
   font-weight: 600;
+  color: var(--color-ink, #0b1020);
 }
 
 .voice-textarea {
   width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--color-ink, #0b1020);
+  background: #ffffff;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .voice-textarea:focus {
@@ -5432,6 +7313,7 @@ astro-dev-toolbar {
   gap: 0.5rem;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(79, 70, 229, 0.2);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-synthesize-btn:hover {
@@ -5452,8 +7334,10 @@ astro-dev-toolbar {
 }
 
 .voice-back-to-capture-btn {
+  background: transparent;
   border: none;
   color: #4f46e5;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -5484,6 +7368,14 @@ astro-dev-toolbar {
 .voice-input,
 .voice-select {
   width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #0b1020;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .voice-input:focus,
@@ -5503,12 +7395,14 @@ astro-dev-toolbar {
 
 .voice-btn-cancel {
   padding: 0.6rem 1.25rem;
+  background: transparent;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   color: #475569;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-btn-cancel:hover {
@@ -5529,6 +7423,7 @@ astro-dev-toolbar {
   gap: 0.4rem;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(79, 70, 229, 0.2);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .voice-btn-confirm:hover {
@@ -5544,12 +7439,30 @@ astro-dev-toolbar {
 
 /* === TABS / SUBNAV DE FINANZAS === */
 .finance-tabs {
+  display: flex;
   align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1.25rem 0;
+  border-bottom: 1px solid #e5e7ef;
+  padding-bottom: 0.5rem;
   overflow-x: auto;
 }
 
 .finance-tabs a,
 .finance-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #5b6476;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
@@ -5593,6 +7506,7 @@ astro-dev-toolbar {
 .finance-subview-strip strong {
   font-size: 1.125rem;
   font-weight: 600;
+  color: #0b1020;
   display: block;
 }
 
@@ -5603,27 +7517,83 @@ astro-dev-toolbar {
 }
 
 /* === WORKBENCH / PRIORITY & ACTIONS === */
+.finance-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .finance-workbench {
+    grid-template-columns: 1fr;
+  }
+}
 
 .finance-priority-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-left: 4px solid #4f46e5;
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .finance-kicker {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4f46e5;
   margin-bottom: 0.35rem;
 }
 
 .finance-priority-panel strong {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0b1020;
   margin-bottom: 0.35rem;
 }
 
 .finance-priority-panel p {
+  font-size: 0.875rem;
+  color: #5b6476;
   margin: 0 0 1rem 0;
+  line-height: 1.4;
 }
 
 .finance-priority-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.finance-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .finance-action-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.finance-action-card {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .finance-action-card:hover {
@@ -5633,8 +7603,20 @@ astro-dev-toolbar {
   box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
 }
 
+.finance-action-card span.material-symbols-rounded {
+  font-size: 1.5rem;
+  color: #4f46e5;
+}
+
 .finance-action-card strong {
+  font-size: 0.9375rem;
   font-weight: 600;
+  color: #0b1020;
+}
+
+.finance-action-card small {
+  font-size: 0.8125rem;
+  color: #5b6476;
 }
 
 /* === KPI OVERVIEW GRIDS === */
@@ -5666,7 +7648,11 @@ astro-dev-toolbar {
 .finance-overview-card,
 .facturas-summary-card,
 .bonos-summary-card {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
   padding: 1rem 1.15rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .overview-label,
@@ -5696,6 +7682,7 @@ astro-dev-toolbar {
 .bonos-summary-card p {
   font-size: 0.8125rem;
   color: #94a3b8;
+  margin: 0;
 }
 
 .finance-overview-card-warn strong,
@@ -5705,9 +7692,51 @@ astro-dev-toolbar {
 }
 
 /* === STAT SUMMARY BARS & TOOLBARS === */
+.pagos-toolbar {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
+  padding: 0.875rem 1.15rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagos-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pagos-stat {
+  display: flex;
+  flex-direction: column;
+}
 
 .pagos-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: #5b6476;
+}
+
+.pagos-stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0b1020;
+}
+
+.pagos-stat-cash .pagos-stat-value {
+  color: #047857;
+}
+
+.pagos-stat-card .pagos-stat-value {
+  color: #0369a1;
 }
 
 .pagos-filters-row {
@@ -5717,21 +7746,54 @@ astro-dev-toolbar {
   flex-wrap: wrap;
 }
 
+.pagos-filters-row select {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0b1020;
+}
+
 /* === TABLES IN FINANCE === */
 .table-wrap {
   background: #ffffff;
   border: 1px solid #e5e7ef;
   border-radius: 8px;
+  overflow-x: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
   font-size: 0.875rem;
 }
 
 .table-wrap thead {
   background: #f3f4f8;
   border-bottom: 1px solid #e5e7ef;
+}
+
+.table-wrap th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.table-wrap td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.table-wrap tr:last-child td {
+  border-bottom: none;
 }
 
 .table-wrap tbody tr:hover {
@@ -5800,6 +7862,7 @@ astro-dev-toolbar {
 @media (max-width: 768px) {
   .pagos-toolbar {
     flex-direction: column;
+    align-items: flex-start;
   }
 }
 
@@ -5810,6 +7873,9 @@ astro-dev-toolbar {
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 14px;
 }
 
 .finance-income-head {
@@ -5822,6 +7888,9 @@ astro-dev-toolbar {
 
 .finance-income-head h2 {
   margin: 0.125rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .finance-income-switch {
@@ -5837,14 +7906,17 @@ astro-dev-toolbar {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
+  min-height: 44px;
   padding: 0 0.875rem;
   border: 0;
   border-radius: 8px;
+  background: transparent;
   color: #5b6476;
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .finance-income-switch button .material-symbols-rounded { font-size: 18px; }
@@ -5981,75 +8053,86 @@ astro-dev-toolbar {
 
 /* ════ precision-blue.css (consolidada el 17-oct-2026; orden de cascada original) ════ */
 /* Precisión azul: objetivo elegido por el usuario, docs/design-exploration.
-   Layout común; las vistas conservan sus grids y contratos de interacción. */ /* rem values land on whole pixels of the 12/13/14/16 scale */
+   Layout común; las vistas conservan sus grids y contratos de interacción. */
+html { font-size: 16px; } /* rem values land on whole pixels of the 12/13/14/16 scale */
+body { background: var(--color-canvas); color: var(--color-ink); }
+h1, h2, h3, h4 { font-weight: 600; line-height: 1.25; letter-spacing: -.025em; }
 h1, h2 { text-wrap: balance; }
 button, [role="button"], input:not([type="checkbox"]):not([type="radio"]), select {
   min-height: 44px;
 }
+button:disabled { cursor: not-allowed; }
 button, [role="button"] { min-width: 44px; }
 :focus-visible { outline: 2px solid var(--color-border-focus) !important; outline-offset: 3px !important; }
 button, .btn, a.nav-item {
   transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), transform 100ms var(--ease-out) !important;
 }
 button:not(:disabled):active { transform: scale(.98); }
-.app-shell { display: flex; height: 100dvh; overflow: hidden; background: var(--color-canvas); }
-.main-area { display: flex; flex: 1; flex-direction: column; min-width: 0; overflow: hidden; }
+.app-shell { display: flex; width: 100%; height: 100dvh; overflow: hidden; background: var(--color-canvas); }
+.main-area { display: flex; flex: 1; flex-direction: column; min-width: 0; height: 100dvh; overflow: hidden; }
 .workspace-shell { display: flex; flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .content { flex: 1; min-width: 0; min-height: 0; overflow: auto; padding: 32px !important; }
 .page-section { max-width: 1440px; margin: 0 auto; padding: 0 !important; }
-.page-title, .page-section h1, .clinic-dashboard-copy h1, .patients-page-title { font-size: 30px !important; line-height: 1.2 !important; letter-spacing: -.035em !important; }
+.page-section.active { animation: precision-page-enter var(--duration-default) var(--ease-out); }
+.page-title, .page-section h1, .clinic-dashboard-copy h1, .patients-page-title { font-size: 30px !important; line-height: 1.2 !important; font-weight: 600 !important; letter-spacing: -.035em !important; color: var(--color-ink) !important; }
+.page-header-row { margin-bottom: 24px; gap: 20px; }
 .page-header-row .page-title > .material-symbols-rounded { color: var(--color-brand-primary); font-size: 25px; }
 .sidebar, aside.sidebar {
   position: relative; z-index: 90; display: flex; flex: 0 0 var(--sidebar-width);
-  --tw-translate-x: 0 !important;
-  flex-direction: column; width: var(--sidebar-width); min-width: var(--sidebar-width); padding: 25px 16px; gap: 18px; overflow: hidden; translate: none !important;
+  --tw-translate-x: 0 !important; --tw-translate-y: 0 !important;
+  flex-direction: column; width: var(--sidebar-width); min-width: var(--sidebar-width);
+  height: 100dvh; padding: 25px 16px; gap: 18px; overflow: hidden;
+  color: var(--color-ink-secondary); background: var(--color-surface); border-right: 1px solid var(--color-border); translate: none !important; transform: none !important;
 }
 .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
-.brand-icon-wrapper { display: grid; place-items: center; flex: 0 0 34px; height: 34px; }
+.brand-icon-wrapper { display: grid; place-items: center; flex: 0 0 34px; height: 34px; color: white; background: var(--color-brand-primary); border-radius: 10px; }
 .brand-icon-wrapper .material-symbols-rounded { font-size: 21px; }
 .brand-copy { min-width: 0; }
-.brand-subtitle { display: block; margin-top: 3px; }
-.sidebar-status { display: flex; gap: 10px; padding: 13px 12px; align-items: center; }
+.brand-text { font-size: 17px; color: var(--color-ink); font-weight: 600; letter-spacing: -.03em; }
+.brand-subtitle { display: block; font-size: 11px; color: var(--color-ink-muted); margin-top: 3px; }
+.sidebar-status { display: flex; gap: 10px; padding: 13px 12px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 10px; align-items: center; }
 .sidebar-status > div { min-width: 0; }
-.sidebar-status strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sidebar-status small { display: block; margin-top: 3px; }
-.sidebar-status-dot { flex: 0 0 6px; height: 6px; border-radius: 50%; }
-.sidebar-ai-launch { display: flex; align-items: center; gap: 9px; text-align: left; padding: 12px; }
-.sidebar-ai-launch strong { display: block; }
-.sidebar-ai-launch small { display: block; margin-top: 2px; }
+.sidebar-status strong { display: block; font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-status small { display: block; color: var(--color-ink-muted); font-size: 11px; margin-top: 3px; }
+.sidebar-status-dot { flex: 0 0 6px; height: 6px; border-radius: 50%; background: var(--color-brand-primary); }
+.sidebar-ai-launch { display: flex; width: 100%; align-items: center; gap: 9px; text-align: left; padding: 12px; color: var(--color-brand-primary); background: var(--color-surface-selected); border: 1px solid transparent; border-radius: 9px; }
+.sidebar-ai-launch strong { display: block; font-size: 12px; font-weight: 600; }
+.sidebar-ai-launch small { display: block; font-size: 11px; margin-top: 2px; }
 .sidebar-nav { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 .sidebar-nav nav { display: grid; gap: 4px; }
-.sidebar-section-label { text-transform: uppercase; margin: 0 12px 7px; }
-.nav-item { display: flex; align-items: center; gap: 11px; min-height: 44px; padding: 10px 12px; border: 1px solid transparent; }
+.sidebar-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: .13em; font-weight: 600; color: var(--color-ink-muted); margin: 0 12px 7px; }
+.nav-item { display: flex; align-items: center; gap: 11px; min-height: 44px; padding: 10px 12px; color: var(--color-ink-muted); background: transparent; border: 1px solid transparent; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; }
 .nav-item:hover { color: var(--color-ink); background: var(--color-surface-hover); }
+.nav-item.active { color: var(--color-brand-primary); background: var(--color-surface-selected); font-weight: 600; }
 .nav-item .material-symbols-rounded { font-size: 20px; flex-shrink: 0; }
 .nav-item .badge { margin-left: auto; }
-.sidebar-profile { display: flex; align-items: center; gap: 10px; padding-top: 18px; }
+.sidebar-profile { display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--color-border); padding-top: 18px; }
 .sidebar-profile > div { min-width: 0; flex: 1; }
-.sidebar-profile strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sidebar-profile small { display: block; }
-.user-avatar, .avatar { display: grid; place-items: center; flex: 0 0 34px; height: 34px; border-radius: 50%; font-size: 12px; font-weight: 600; }
-.sidebar-profile button { border: 0; }
+.sidebar-profile strong { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-profile small { display: block; font-size: 11px; color: var(--color-ink-muted); }
+.user-avatar, .avatar { display: grid; place-items: center; flex: 0 0 34px; height: 34px; background: var(--color-surface-selected); color: var(--color-brand-primary); border-radius: 50%; font-size: 12px; font-weight: 600; }
+.sidebar-profile button { background: transparent; color: var(--color-ink-muted); border: 0; min-width: 44px; border-radius: 8px; }
 .sidebar-profile button:hover { background: var(--color-surface-hover); color: var(--color-urgent-text); }
 .sidebar.collapsed { flex-basis: var(--sidebar-collapsed); width: var(--sidebar-collapsed); min-width: var(--sidebar-collapsed); padding-inline: 10px; }
 .sidebar.collapsed :is(.brand-copy,.sidebar-status,.sidebar-ai-launch,.sidebar-section-label,.nav-label,.badge,.sidebar-profile) { display: none; }
 .sidebar.collapsed .nav-item { justify-content: center; padding-inline: 0; }
-.topbar-command-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex: 0 0 76px; padding: 0 32px; position: relative; z-index: 30; }
+.topbar-command-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 76px; flex: 0 0 76px; padding: 0 32px; background: var(--color-surface); border-bottom: 1px solid var(--color-border); position: relative; z-index: 30; }
 .topbar-left,.topbar-right { display: flex; align-items: center; gap: 12px; }
-.topbar-mobile-toggle { display: none; color: var(--color-ink-muted); border: 0; border-radius: 8px; }
+.topbar-mobile-toggle { display: none; color: var(--color-ink-muted); background: transparent; border: 0; border-radius: 8px; min-width: 44px; }
 .topbar-breadcrumb { display: flex; gap: 7px; white-space: nowrap; font-size: 12px; }
 .breadcrumb-root,.breadcrumb-separator { color: var(--color-ink-muted); }
-.breadcrumb-current { font-weight: 500; }
+.breadcrumb-current { color: var(--color-ink); font-weight: 500; }
 .topbar-center { position: relative; flex: 1; max-width: 380px; min-width: 0; }
-.search-input-shell { position: relative; display: flex; align-items: center; }
+.search-input-shell { position: relative; width: 100%; display: flex; align-items: center; }
 .search-input-shell .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--color-ink-muted); pointer-events: none; }
-.search-command-input { width: 100%; padding: 10px 48px 10px 40px !important; }
+.search-command-input { width: 100%; padding: 10px 48px 10px 40px !important; background: var(--color-canvas) !important; border: 1px solid var(--color-border) !important; border-radius: 8px !important; font-size: 13px !important; color: var(--color-ink); }
 .search-command-kbd { position: absolute; right: 10px; padding: 2px 5px; border: 1px solid var(--color-border); border-radius: 4px; color: var(--color-ink-muted); font-size: 10px; pointer-events: none; }
 .search-results-dropdown { position: absolute; top: calc(100% + 8px); left: 0; right: 0; max-height: min(420px,60dvh); overflow: auto; padding: 8px; background: white; border: 1px solid var(--color-border); border-radius: 12px; box-shadow: var(--shadow-flyout); z-index: 70; }
+.search-results-dropdown[hidden] { display: none; }
 .topbar-date-pill { display: flex; gap: 6px; color: var(--color-ink-muted); font-size: 12px; white-space: nowrap; }
 .topbar-date-pill .material-symbols-rounded { font-size: 17px; }
 .topbar-btn-secondary,.topbar-btn-icon,.topbar-action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 12px; background: white; color: var(--color-ink-secondary); border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; font-weight: 500; }
-.topbar-btn-icon { position: relative; padding: 0; border-color: transparent; }
+.topbar-btn-icon { min-width: 44px; position: relative; padding: 0; border-color: transparent; }
 .topbar-btn-secondary .material-symbols-rounded,.topbar-btn-icon .material-symbols-rounded { font-size: 20px; }
 .topbar-btn-secondary:hover,.topbar-btn-icon:hover { background: var(--color-surface-hover); }
 .topbar-notif-dot { position: absolute; right: 8px; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--color-brand-primary); border: 1px solid white; }
@@ -6058,9 +8141,9 @@ button:not(:disabled):active { transform: scale(.98); }
 .app-boot[hidden],.app-boot.is-hidden { display: none !important; }
 .finance-tabs a { min-height: 44px; }
 .patient-modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(20,34,52,.3); backdrop-filter: blur(4px); }
-.patient-modal-overlay[aria-hidden="true"] { visibility: hidden; }
+.patient-modal-overlay[aria-hidden="true"] { visibility: hidden; opacity: 0; pointer-events: none; }
 .patient-modal-overlay[aria-hidden="false"] { visibility: visible; opacity: 1; pointer-events: auto; }
-.patient-modal-dialog { width: min(740px,100%); max-height: calc(100dvh - 48px); overflow-y: auto; display: grid; grid-template-columns: 200px minmax(0,1fr); background: white; }
+.patient-modal-dialog { width: min(740px,100%); max-height: calc(100dvh - 48px); overflow-y: auto; display: grid; grid-template-columns: 200px minmax(0,1fr); background: white; border: 1px solid var(--color-border); border-radius: 16px; box-shadow: var(--shadow-flyout); }
 .patient-modal-overlay[aria-hidden="false"] .patient-modal-dialog { animation: precision-dialog-enter var(--duration-slow) var(--ease-out); }
 .patient-modal-intro { padding: 26px; background: var(--color-surface-selected); font-size: 13px; line-height: 1.6; }
 .patient-modal-mark { display: block; margin-bottom: 28px; color: var(--color-brand-primary); }
@@ -6070,18 +8153,19 @@ button:not(:disabled):active { transform: scale(.98); }
 .patient-modal-header { display: flex; align-items: start; gap: 12px; margin-bottom: 24px; }
 .patient-modal-header h2 { margin: 6px 0; font-size: 24px; }
 .patient-modal-header p:last-child { font-size: 13px; color: var(--color-ink-muted); }
-.patient-modal-close { flex-shrink: 0; border: 0; color: var(--color-ink-muted); border-radius: 8px; }
+.patient-modal-close { flex-shrink: 0; min-width: 44px; background: transparent; border: 0; color: var(--color-ink-muted); border-radius: 8px; }
 .patient-modal-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
 .patient-field { display: grid; gap: 6px; min-width: 0; font-size: 13px; font-weight: 500; }
 .patient-field-wide { grid-column: 1 / -1; }
-.patient-field input { font-weight: 400; }
+.patient-field input { width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); background: white; font-size: 15px; font-weight: 400; }
 .patient-modal-actions { display: grid; gap: 16px; margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
 .patient-modal-actions > span { font-size: 12px; color: var(--color-ink-muted); }
 .patient-modal-actions > div { display: flex; justify-content: flex-end; gap: 10px; }
 .patient-modal-cancel,.patient-modal-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); background: white; font-size: 13px; font-weight: 600; }
-.skip-link { border: 1px solid var(--color-border); }
+.patient-modal-submit { background: var(--color-brand-primary); color: white; border-color: transparent; }
+.skip-link { position: fixed; top: 12px; left: 12px; z-index: 1100; padding: 12px; background: white; border: 1px solid var(--color-border); border-radius: 8px; transform: translateY(-200%); }
 .skip-link:focus { transform: none; }
-.app-boot { position: fixed; inset: 0; z-index: 1100; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: var(--color-canvas); padding: 24px; text-align: center; }
+.app-boot { position: fixed; inset: 0; z-index: 1100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: var(--color-canvas); padding: 24px; text-align: center; }
 .app-boot span { color: var(--color-ink-muted); }
 .app-boot-mark { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 14px; background: var(--color-surface-selected); }
 
@@ -6092,11 +8176,13 @@ button:not(:disabled):active { transform: scale(.98); }
 .app-shell .clinic-dashboard-hero { grid-template-columns: minmax(0,1fr) !important; }
 .clinic-dashboard-copy,.clinic-focus-stage { min-width: 0; }
 .clinic-dashboard-copy h1 { overflow-wrap: anywhere; }
-.app-shell .clinic-focus-card { background: var(--color-surface-selected) !important; box-shadow: none !important; border: 0 !important; padding: 24px !important; }
+.app-shell .clinic-focus-card { background: var(--color-surface-selected) !important; box-shadow: none !important; border: 0 !important; border-radius: var(--radius-card) !important; padding: 24px !important; }
 .clinic-motion-figure { display: none !important; }
 .app-shell .clinic-metric-grid { border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding-block: 20px; }
-.app-shell .clinic-metric-grid article { background: transparent !important; border: 0 !important; border-radius: 0 !important; }
+.app-shell .clinic-metric-grid article { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 .app-shell .clinic-metric-grid article + article { border-left: 1px solid var(--color-border) !important; }
+.app-shell .clinic-metric-grid strong { font-size: 28px !important; font-weight: 600 !important; font-variant-numeric: tabular-nums; }
+.app-shell .clinic-metric-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
 .app-shell .clinic-metric-grid article, .app-shell .clinic-metric-grid article > div { min-width: 0; }
 .app-shell .clinic-metric-grid strong { overflow-wrap: anywhere; }
 @media (max-width: 900px) {
@@ -6106,8 +8192,8 @@ button:not(:disabled):active { transform: scale(.98); }
   .app-shell .clinic-metric-grid article { flex-direction: column; align-items: flex-start !important; gap: 8px !important; padding: 12px !important; }
   .app-shell .clinic-metric-grid article > div { width: 100%; }
 }
-.app-shell .ficha-hero-panel { background: var(--color-surface-selected) !important; }
-.app-shell .ficha-hero-name { font-size: 30px !important; }
+.app-shell .ficha-hero-panel { background: var(--color-surface-selected) !important; padding: 26px !important; }
+.app-shell .ficha-hero-name { font-size: 30px !important; font-weight: 600; }
 .app-shell :is(.btn-primary,.precision-btn-primary,.patient-primary-action,.btn-brand,.btn-canopy,#addPagoBtn,#sendBtn,#pagoSubmitBtn,#btnSaveFicha,[data-action="primary-cta"]) { background: var(--color-brand-primary) !important; color: white !important; border-radius: 8px !important; box-shadow: none !important; font-weight: 600 !important; }
 .app-shell :is(.btn-primary,.precision-btn-primary,.patient-primary-action,.btn-brand,.btn-canopy,#addPagoBtn,#sendBtn,#pagoSubmitBtn,#btnSaveFicha):hover:not(:disabled) { background: var(--color-brand-primary-hover) !important; box-shadow: none !important; }
 .app-shell :is(.btn-secondary,.btn-outline,.precision-btn-secondary) { color: var(--color-ink-secondary) !important; border-color: var(--color-border) !important; border-radius: 8px !important; }
@@ -6119,18 +8205,19 @@ button:not(:disabled):active { transform: scale(.98); }
 .app-shell table { font-variant-numeric: tabular-nums; }
 .app-shell .patient-directory-search input { padding-left: 2.35rem !important; }
 .app-shell :is(.facturas-mobile-list,.bonos-mobile-list,.documentos-mobile-list,.gestoria-mobile-list) { display: none; }
-.patient-table thead th { overflow-wrap: anywhere; }
+.patient-table thead th { white-space: normal; overflow-wrap: anywhere; }
 .patient-vitals { grid-template-columns: repeat(4,minmax(0,1fr)) !important; }
 .app-shell .modal-shell { background: rgba(20,34,52,.3) !important; backdrop-filter: blur(4px) !important; }
 .modal-shell.open .modal-panel:not(.crm-drawer-panel) { animation: precision-dialog-enter var(--duration-slow) var(--ease-out); }
 .crm-drawer-shell.open .crm-drawer-panel { animation: precision-drawer-enter var(--duration-slow) var(--ease-out); }
+.app-shell .modal-panel { border-color: var(--color-border) !important; border-radius: var(--radius-panel) !important; box-shadow: var(--shadow-flyout) !important; }
 .app-shell .crm-drawer-panel { border-radius: 0 !important; }
-.app-shell .modal-title-group h2 { color: var(--color-ink) !important; }
+.app-shell .modal-title-group h2 { color: var(--color-ink) !important; font-weight: 600 !important; }
 
 /* Continuity without delaying focus restoration or an operation's result. */
 .app-shell .modal-shell:not([hidden]) { display: flex !important; transition: opacity var(--duration-exit) var(--ease-out), visibility 0s var(--duration-exit) !important; }
 .app-shell .modal-shell[aria-hidden="false"] { transition-duration: var(--duration-slow), 0s !important; transition-delay: 0s !important; }
-.app-shell .modal-shell .modal-panel { opacity: 0; transform: translateY(8px) scale(.98); transition: opacity var(--duration-exit) var(--ease-out), transform var(--duration-exit) var(--ease-out) !important; }
+.app-shell .modal-shell .modal-panel { opacity: 0; transform: translateY(8px) scale(.98); transition: opacity var(--duration-exit) var(--ease-out), transform var(--duration-exit) var(--ease-out) !important; animation: none !important; }
 .app-shell .modal-shell .crm-drawer-panel { transform: translateX(24px); }
 .app-shell .modal-shell[aria-hidden="false"] .modal-panel { opacity: 1; transform: none; transition-duration: var(--duration-slow) !important; }
 .patient-modal-overlay { transition: opacity var(--duration-exit) var(--ease-out), visibility 0s var(--duration-exit) !important; }
@@ -6140,7 +8227,7 @@ button:not(:disabled):active { transform: scale(.98); }
 #assistantRail.open { visibility: visible; transition-duration: var(--duration-slow), var(--duration-slow), 0s !important; transition-delay: 0s !important; }
 #assistantRail:not(.open) { transform: translate3d(24px,0,0) !important; }
 html[data-assistant-state] .content { transition: margin-right var(--duration-slow) var(--ease-out) !important; }
-#confirmDialog, #confirmDialog > div { transition-timing-function: var(--ease-out) !important; }
+#confirmDialog, #confirmDialog > div { transition-duration: var(--duration-slow) !important; transition-timing-function: var(--ease-out) !important; }
 .toast-card { animation: precision-feedback-enter var(--duration-exit) var(--ease-out); }
 @keyframes precision-feedback-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
@@ -6152,23 +8239,25 @@ html[data-assistant-state] .content { transition: margin-right var(--duration-sl
 .ficha-followup { padding: 16px 20px; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
 .ficha-followup summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; color: var(--color-ink-secondary); font-size: 14px; font-weight: 500; cursor: pointer; list-style: none; }
 .ficha-followup summary::-webkit-details-marker { display: none; }
+.ficha-followup summary .material-symbols-rounded { transition: transform var(--duration-default) var(--ease-out); }
 .ficha-followup[open] summary .material-symbols-rounded { transform: rotate(180deg); }
 .ficha-followup .ficha-vitals-grid { grid-template-columns: repeat(4,minmax(0,1fr)); padding-top: 16px; }
 .ficha-tabs-nav { position: relative; isolation: isolate; padding: 5px 8px; gap: 4px; border-radius: var(--radius-card) var(--radius-card) 0 0; scroll-padding-inline: 8px; }
-.ficha-tabs-nav .ficha-tab { flex-shrink: 0; position: relative; border: 0 !important; background: transparent !important; color: var(--color-ink-muted) !important; font-weight: 500 !important; }
+.ficha-tabs-nav .ficha-tab { flex-shrink: 0; position: relative; border: 0 !important; background: transparent !important; padding: 12px 14px; color: var(--color-ink-muted) !important; border-radius: 8px !important; font-weight: 500 !important; }
 .ficha-tabs-nav .ficha-tab.active { color: var(--color-brand-primary) !important; }
-.ficha-tab-indicator { position: absolute; left: 0; top: 5px; bottom: 5px; z-index: -1; width: var(--ficha-tab-width,0px); transform: translateX(var(--ficha-tab-x,0px)); border-radius: 8px; background: var(--color-surface-selected); pointer-events: none; }
+.ficha-tab-indicator { position: absolute; left: 0; top: 5px; bottom: 5px; z-index: -1; width: var(--ficha-tab-width,0px); transform: translateX(var(--ficha-tab-x,0px)); border-radius: 8px; background: var(--color-surface-selected); pointer-events: none; transition: transform var(--duration-default) var(--ease-out), width var(--duration-default) var(--ease-out); }
+.ficha-panel.active { animation: precision-feedback-enter var(--duration-default) var(--ease-out); }
 #fichaOverviewStats { display: grid; }
 .ficha-overview-stat { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.4fr); gap: 5px 14px; padding: 14px 0; }
 .ficha-overview-stat + .ficha-overview-stat { border-top: 1px solid var(--color-border); }
 .ficha-overview-stat > span { color: var(--color-ink-muted); font-size: 13px; }
 .ficha-overview-stat > strong { text-align: right; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.ficha-overview-stat > p { grid-column: 1 / -1; color: var(--color-ink-muted); font-size: 13px; }
+.ficha-overview-stat > p { grid-column: 1 / -1; margin: 0; color: var(--color-ink-muted); font-size: 13px; line-height: 1.55; }
 .pain-map-container { justify-content: center; flex-wrap: wrap; }
-.pain-map-visual { flex: 0 1 180px; flex-direction: column; align-items: center; gap: 14px; padding: 0; border: 0; background: transparent; }
+.pain-map-visual { flex: 0 1 180px; flex-direction: column; align-items: center; gap: 14px; padding: 0; margin: 0; border: 0; background: transparent; }
 .pain-map-svg { max-width: 140px; }
 .pain-map-visual figcaption { color: var(--color-ink-muted); font-size: 13px; text-align: center; }
-.pain-zone-path { stroke-width: .75; }
+.pain-zone-path { stroke-width: .75; transition: fill var(--duration-fast) var(--ease-out), stroke var(--duration-fast) var(--ease-out); }
 .pain-zone-path.active-selected { fill: var(--color-surface-selected); stroke: var(--color-brand-primary); stroke-width: 1.25; }
 #painMapEditor { min-width: min(100%,190px); }
 .ficha-note-form-actions button[type="submit"] { min-width: 166px; }
@@ -6221,21 +8310,22 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 @keyframes precision-drawer-enter { from { transform: translateX(32px); } to { transform: translateX(0); } }
 @media (max-width: 1279px) { .topbar-date-pill { display: none; } .topbar-command-bar { gap: 12px; padding-inline: 24px; } .content { padding: 24px !important; } }
 @media (max-width: 1023px) {
-  .topbar-command-bar { flex-basis: 64px; padding-inline: 16px; gap: 8px; }
+  .topbar-command-bar { height: 64px; flex-basis: 64px; padding-inline: 16px; gap: 8px; }
   .topbar-mobile-toggle { display: inline-grid; place-items: center; }
   .topbar-breadcrumb,.topbar-date-pill,.search-command-kbd,.btn-text-desktop,.copilot-label { display: none; }
   .topbar-left,.topbar-right { gap: 6px; }
   .topbar-center { max-width: none; }
-  .search-command-input { padding-right: 10px !important; }
+  .search-command-input { font-size: 16px !important; padding-right: 10px !important; }
   .topbar-btn-secondary { min-width: 44px; padding: 0; }
   .sidebar,aside.sidebar { position: fixed; inset: 64px auto 0 0; height: calc(100dvh - 64px); transform: translateX(-100%) !important; transition: transform var(--duration-slow) var(--ease-out); }
   aside.sidebar.open,aside.sidebar.translate-x-0 { transform: translateX(0) !important; }
   .sidebar-backdrop { top: 64px; }
   .content { padding: 24px 20px calc(104px + env(safe-area-inset-bottom)) !important; scroll-padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
   .page-title,.page-section h1,.clinic-dashboard-copy h1,.patients-page-title { font-size: 26px !important; }
-  .app-shell table .empty-state { width: min(100%,calc(100vw - 80px)); }
-  .mobile-dock { display: grid; position: fixed; left: 12px; right: 12px; bottom: max(12px,env(safe-area-inset-bottom)); z-index: 60; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 2px; padding: 6px; background: white; border: 1px solid var(--color-border); border-radius: 14px; }
-  .mobile-dock-item { border: 0; color: var(--color-ink-muted); border-radius: 8px; min-height: 50px; min-width: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; font-size: 10px; padding: 5px 2px; }
+  .app-shell table .empty-state { width: min(100%,calc(100vw - 80px)); margin-inline: 0; }
+  .mobile-dock { display: grid; position: fixed; left: 12px; right: 12px; bottom: max(12px,env(safe-area-inset-bottom)); z-index: 60; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 2px; padding: 6px; background: white; border: 1px solid var(--color-border); border-radius: 14px; box-shadow: 0 6px 24px rgba(20,34,52,.1); }
+  .mobile-dock-item { border: 0; background: transparent; color: var(--color-ink-muted); border-radius: 8px; min-height: 50px; min-width: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; font-size: 10px; padding: 5px 2px; }
+  .mobile-dock-item.active { background: var(--color-surface-selected); color: var(--color-brand-primary); }
   .mobile-dock-item-accent { color: var(--color-brand-primary); }
   .mobile-dock-item .material-symbols-rounded { font-size: 21px; }
   .app-shell .clinic-metric-grid article + article { border-left: 0 !important; }
@@ -6255,8 +8345,9 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   .app-shell .documentos-table-wrap .empty-state { width: min(100%,calc(100vw - 140px)); }
   .patient-vitals { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
   .ficha-followup .ficha-vitals-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .patient-directory-search { min-width: 0; flex-basis: 100%; }
   .patient-sort { min-width: 0; max-width: 100%; width: 100%; }
-  .patient-sort select { width: 100%; }
+  .patient-sort select { min-width: 0; width: 100%; }
   .patient-card-top { flex-wrap: wrap; }
   .patient-mobile-card-header { flex-wrap: wrap; }
   .patient-mobile-card-identity { min-width: 0; }
@@ -6267,12 +8358,13 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   .integration-badge-wrap .status-chip { white-space: normal !important; overflow-wrap: anywhere; }
 }
 @media (max-width: 480px) {
-  .patient-workspace-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .patient-workspace-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
   .patient-primary-action { grid-column: 1 / -1; }
   .patient-workspace-actions button { white-space: nowrap; }
   .patient-workspace-actions .material-symbols-rounded { flex-shrink: 0; }
   .topbar-right .topbar-btn-secondary { display: none; }
   .clinic-dashboard-hero { gap: 20px !important; }
+  .app-shell .clinic-metric-grid strong { font-size: 24px !important; }
   .booking-shell { padding: 20px; }
   .patient-modal-overlay { padding: 12px; }
   .patient-modal-dialog { grid-template-columns: 1fr; max-height: calc(100dvh - 24px); }
@@ -6280,10 +8372,12 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   .patient-modal-main { padding: 22px; }
   .patient-modal-fields { grid-template-columns: 1fr; }
   .modal-panel .form-grid { grid-template-columns: minmax(0,1fr) !important; }
+  .patient-vitals { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 12px !important; }
   .patient-vitals article { padding: 16px !important; border-radius: 14px !important; }
+  .patient-vitals article p { white-space: normal !important; }
   .ficha-topbar { gap: 12px; }
   .ficha-topbar-actions { width: 100%; }
-  .ficha-topbar-actions > button { flex: 1; }
+  .ficha-topbar-actions > button { flex: 1; padding-inline: 10px; }
   .app-shell .ficha-hero-panel { padding: 20px !important; }
   .ficha-hero-contact-row { gap: 8px 14px; }
   .ficha-hero-quick-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
@@ -6303,24 +8397,30 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
    Labels come from statusText(), so no Title Case transform. */
 .status-chip {
   text-transform: none !important;
+  white-space: nowrap;
+  border: 1px solid transparent !important;
   background: #eef2f7 !important;
   color: #3d4c5e !important;
 }
 .status-chip.completada, .status-chip.aprobado, .status-chip.aprobada, .status-chip.activo, .status-chip.activa,
 .status-chip.firmado, .status-chip.pagada, .status-chip.sincronizado, .status-chip.chip-success, .status-chip.al_dia,
-.status-chip.ok, .status-chip.active { border-color: #b7ebcd !important;
+.status-chip.ok, .status-chip.active {
+  background: #ecfdf3 !important; border-color: #b7ebcd !important; color: #146c43 !important;
 }
 .status-chip.confirmada, .status-chip.en_consulta, .status-chip.en_curso, .status-chip.reprogramada,
 .status-chip.generada, .status-chip.enviada, .status-chip.emitida, .status-chip.chip-info {
-  background: #eef0ff !important; border-color: #c9dafb !important;
+  background: #eef0ff !important; border-color: #c9dafb !important; color: #4f46e5 !important;
 }
 .status-chip.pendiente, .status-chip.pendiente_revision, .status-chip.requiere_revision, .status-chip.chip-warning,
-.status-chip.is-warning, .status-chip.checking { border-color: #f6d9a1 !important;
+.status-chip.is-warning, .status-chip.checking {
+  background: #fff7e6 !important; border-color: #f6d9a1 !important; color: #8a5300 !important;
 }
 .status-chip.cancelada, .status-chip.rechazado, .status-chip.rechazada, .status-chip.no_show, .status-chip.anulada,
-.status-chip.error, .status-chip.fallido { border-color: #f5c2c2 !important;
+.status-chip.error, .status-chip.fallido {
+  background: #fdecec !important; border-color: #f5c2c2 !important; color: #b42318 !important;
 }
-.status-chip.caducado, .status-chip.agotado { border-color: #e5e7ef !important;
+.status-chip.caducado, .status-chip.agotado {
+  background: #eef2f7 !important; border-color: #e5e7ef !important; color: #5b6476 !important;
 }
 /* State change (confirm/complete): lib/motion.ts swaps old → new class under this one. */
 .status-chip.chip-status-change {
@@ -6334,6 +8434,15 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 .view-kicker {
   display: block;
   margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-brand-primary, #4f46e5);
+}
+.page-header-row .page-subtitle {
+  margin-top: 6px;
+  color: var(--color-ink-muted, #5b6476);
 }
 .page-header-row .page-tools {
   margin-top: 16px;
@@ -6344,13 +8453,15 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   .integration-item {
     display: grid !important;
     grid-template-columns: 44px minmax(0, 1fr);
+    align-items: start;
+    gap: 6px 12px;
   }
-  .integration-meta { overflow-wrap: break-word; }
+  .integration-meta { overflow-wrap: break-word; word-break: normal; }
   .integration-badge-wrap { grid-column: 2; justify-self: start; }
   .integration-badge-wrap .status-chip { white-space: nowrap !important; overflow-wrap: normal; }
 }
 @media (max-width: 480px) {
-  .clinic-hero-actions { grid-template-columns: minmax(0, 1fr); }
+  .clinic-hero-actions { display: grid !important; grid-template-columns: minmax(0, 1fr); }
   .clinic-hero-actions > button,
   .clinic-hero-actions > a { width: 100%; justify-content: center; }
 }
@@ -6362,12 +8473,14 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 .status-chip .status-dot { background: currentColor !important; }
 
 /* Inicio (14-oct): the low-value finance strip stays in the DOM for its controllers but is not shown. */
+.clinic-finance-strip[hidden] { display: none !important; }
 
 /* Inicio · «Semana clínica»: hour | patient + reason | state, grouped under quiet day labels. */
 #dashCitasBody .dash-section-label {
   display: flex !important;
   align-items: center !important;
   gap: 0.5rem !important;
+  margin: 0 !important;
   padding: 0.25rem 0 0.5rem !important;
   font-size: 0.6875rem !important;
   font-weight: 600 !important;
@@ -6387,21 +8500,27 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   margin: 0 -0.5rem !important;
   border: 0 !important;
   border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
   cursor: pointer !important;
   transition: background-color 120ms ease !important;
 }
 #dashCitasBody .clean-list-item:hover { background: #f3f4f8 !important; }
 #dashCitasBody .clean-list-item + .clean-list-item { border-top: 1px solid #eef2f7 !important; border-radius: 0 !important; }
+#dashCitasBody .dash-cita-hora { display: block !important; }
 #dashCitasBody .cita-hora-badge {
   display: inline-block !important;
   font-size: 0.9375rem !important;
   font-weight: 600 !important;
   font-variant-numeric: tabular-nums !important;
   color: #0b1020 !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 #dashCitasBody .cita-hora-badge.cita-badge-upcoming { font-size: 0.8125rem !important; color: #5b6476 !important; }
 #dashCitasBody .clean-list-main { min-width: 0 !important; display: grid !important; gap: 0.125rem !important; }
 #dashCitasBody .clean-list-title {
+  margin: 0 !important;
   font-size: 0.9375rem !important;
   font-weight: 600 !important;
   color: #0b1020 !important;
@@ -6410,6 +8529,8 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   text-overflow: ellipsis !important;
 }
 #dashCitasBody .clean-list-meta {
+  margin: 0 !important;
+  font-size: 0.8125rem !important;
   color: #5b6476 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -6422,18 +8543,24 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 
 /* Finanzas: hidden duplicate action cards must not leave a gap (header already has Registrar pago / Factura). */
+.finance-action-card[hidden] { display: none !important; }
 .finance-action-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; }
 
 /* Keep the upcoming session inside the weekly overview, without an empty hero card. */
+.clinic-next-session[hidden], #heroAgendaShortcutBtn[hidden] { display: none !important; }
 .app-shell .clinic-next-session { margin-bottom: 16px; }
+
+.finance-workbench[hidden], .finance-action-grid[hidden], #financeSecondaryActionBtn[hidden] { display: none !important; }
+#patientsHeroAddBtn[hidden] { display: none !important; }
+.app-shell .finance-workbench { grid-template-columns: minmax(0, 1fr); }
 
 /* Mobile messages keep the same rows/actions, with a reading order that needs no sideways scroll. */
 @media (max-width: 767px) {
-  .intakes-table { min-width: 0 !important; }
+  .intakes-table { min-width: 0 !important; width: 100% !important; }
   .intakes-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .intakes-table tbody { display: block; }
   .intakes-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 20px; border-bottom: 1px solid var(--color-border); }
-  .intakes-table tbody td { min-width: 0; padding: 0 !important; border: 0 !important; overflow-wrap: anywhere; }
+  .intakes-table tbody td { display: block; min-width: 0; padding: 0 !important; border: 0 !important; overflow-wrap: anywhere; }
   .intakes-table tbody td:is(:first-child,:nth-child(4),:last-child), .intakes-table td[colspan] { grid-column: 1 / -1; }
   .intakes-table td:first-child:not([colspan]) { font-weight: 600; }
   .intakes-table td:nth-child(2)::before { content: 'Canal'; }
@@ -6456,6 +8583,10 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
  * el orden de cascada que tenían como hojas independientes. */
 /* ── Documentos (antes precision-documents.css) ── */
 .documentos-workbench {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
+  padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
@@ -6468,9 +8599,61 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   border-bottom: 1px solid #f1f5f9;
 }
 
+.documentos-workbench-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0b1020;
+}
+
 /* Summary KPI Cards */
 .documentos-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .documentos-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+.documentos-summary .ops-signal {
+  background: #f3f4f8;
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ops-signal-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b6476;
+}
+
+.ops-signal-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b1020;
+}
+
+.documentos-value-ok {
+  color: #047857;
+}
+
+.documentos-value-warn {
+  color: #b45309;
+}
+
+.ops-signal-hint {
+  font-size: 0.8125rem;
+  color: #94a3b8;
 }
 
 /* Documents Table */
@@ -6482,6 +8665,8 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 
 .documentos-table {
+  width: 100%;
+  border-collapse: collapse;
   text-align: left;
   font-size: 0.875rem;
 }
@@ -6489,6 +8674,22 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 .documentos-table thead {
   background: #f3f4f8;
   border-bottom: 1px solid #e5e7ef;
+}
+
+.documentos-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.documentos-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
 }
 
 .documentos-table tbody tr:hover {
@@ -6520,9 +8721,21 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 
 /* ── Mensajes (antes precision-messages.css) ── */
+.intakes-page {
+  background: var(--surface-page-canvas, #f3f4f8) !important;
+  min-height: 100%;
+}
+
 .intakes-shell {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.intakes-card {
+  background: #ffffff !important;
+  border: 1px solid #e5e7ef !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
 .intakes-toolbar {
@@ -6531,6 +8744,11 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 
 .intakes-filterbar select {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  color: #0b1020 !important;
+  font-size: 0.8125rem !important;
   padding: 0.45rem 2rem 0.45rem 2.25rem !important;
 }
 
@@ -6540,9 +8758,34 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
 }
 
+.intakes-table-wrap {
+  overflow-x: auto;
+}
+
+.intakes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .intakes-table thead {
   background: #f3f4f8;
   border-bottom: 1px solid #e5e7ef;
+}
+
+.intakes-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.intakes-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
 }
 
 .intakes-table tbody tr:hover {
@@ -6588,6 +8831,10 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 
 /* ── Historial (antes precision-history.css) ── */
 .page-section[data-page="historial"] .card {
+  background: #ffffff;
+  border: 1px solid #e5e7ef;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   padding: 1.5rem;
 }
 
@@ -6598,6 +8845,12 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   margin-bottom: 1.25rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.page-section[data-page="historial"] .card-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0b1020;
 }
 
 .telegram-link-head {
@@ -6665,8 +8918,13 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 
 .history-note-field textarea {
+  box-sizing: border-box;
   width: 100%;
   min-height: 132px;
+  padding: 0.75rem;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.5;
 }
 
 .history-note-feedback[data-state="error"] {
@@ -6690,11 +8948,19 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 
 /* ── Ajustes (antes precision-settings.css) ── */
 .config-editorial-shell {
+  max-width: 1040px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
   gap: 1.5rem !important;
 }
 
 .config-group-card {
+  background: #ffffff !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7ef !important;
   padding: 1.75rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
 .config-card-header {
@@ -6704,10 +8970,19 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 
 .config-section-kicker {
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #4f46e5 !important;
+  display: block !important;
   margin-bottom: 0.25rem !important;
 }
 
 .config-card-header h2 {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #0b1020 !important;
   margin: 0 0 0.25rem 0 !important;
 }
 
@@ -6719,6 +8994,8 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 
 /* Config Form Grid */
 .config-form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 1rem !important;
   margin-bottom: 1.25rem !important;
 }
@@ -6729,13 +9006,27 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   }
 }
 
+.field-span-2 {
+  grid-column: 1 / -1 !important;
+}
+
 .field-label {
+  display: block !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
   margin-bottom: 0.35rem !important;
 }
 
 .input-editorial {
+  width: 100% !important;
   background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
   padding: 0.55rem 0.85rem !important;
+  font-size: 0.875rem !important;
+  color: #0b1020 !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
 .input-editorial:focus {
@@ -6745,16 +9036,24 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 }
 
 .config-form-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
   padding-top: 0.75rem !important;
   border-top: 1px solid #f1f5f9 !important;
 }
 
 /* Integrations List */
 .integrations-list {
+  display: flex !important;
+  flex-direction: column !important;
   gap: 0.75rem !important;
 }
 
 .integration-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
   padding: 1rem !important;
   border: 1px solid #e5e7ef !important;
   border-radius: 8px !important;
@@ -6773,9 +9072,14 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   border-radius: 8px !important;
   background: #e0f2fe !important;
   color: #0369a1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
 }
 
 .integration-meta {
+  flex: 1 !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 0.15rem !important;
@@ -6783,6 +9087,7 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
 
 .integration-meta strong {
   font-size: 0.9375rem !important;
+  font-weight: 600 !important;
   color: #0b1020 !important;
 }
 
@@ -6791,10 +9096,26 @@ button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 16px; hei
   color: #5b6476 !important;
 }
 
+.status-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.25rem 0.6rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  border-radius: 9999px !important;
+}
+
+.chip-success {
+  background: #ecfdf5 !important;
+  color: #065f46 !important;
+}
+
 .status-dot {
   width: 6px !important;
   height: 6px !important;
   border-radius: 50% !important;
+  background: #10b981 !important;
 }
 
 :root {
@@ -7142,3 +9463,8 @@ body .app-shell .intakes-filter-field .material-symbols-rounded { font-size: 18p
 body .app-shell .intakes-filter-field select { font-size: 14px !important; padding-left: 38px !important; padding-right: 34px !important; }
 body .app-shell #refreshIntakesFull { font-size: 14px !important; font-weight: 500 !important; color: var(--pc-ink-2) !important; }
 body .app-shell #refreshIntakesFull .material-symbols-rounded { font-size: 18px !important; }
+/* Messages: the first row action (open file) is the primary one, not bare text. */
+body .app-shell .intake-row-actions .btn-sm:not(.btn-outline) { background: var(--pc-accent) !important; border: 1px solid var(--pc-accent) !important; color: #fff !important; }
+body .app-shell .intake-row-actions .btn-sm:not(.btn-outline):hover { background: var(--pc-accent-hover) !important; }
+/* Finance: with no secondary actions the cash-priority panel takes the full row. */
+body .app-shell .finance-workbench:has(> .finance-action-grid[hidden]) { grid-template-columns: minmax(0, 1fr) !important; }
