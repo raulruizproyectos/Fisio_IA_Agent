@@ -89,7 +89,7 @@ export async function initializeProtectedApp() {
     && (new URLSearchParams(window.location.search).get('demo') === 'true' || window.localStorage.getItem('fisio_dev_mode') === 'true');
   if (isDevBypass) {
     installAuthenticatedFetch(true);
-    return { profileId: '6dae4ef6-b6b3-4cb0-91d9-0320d10db255', clinicId: '', clinicName: '', role: 'fisioterapeuta', name: 'Dra. Carmen Martínez', email: 'carmen.martinez@clinica.es' };
+    return { profileId: '6dae4ef6-b6b3-4cb0-91d9-0320d10db255', clinicId: '', clinicName: '', role: 'fisioterapeuta', name: 'Carla Jiménez Lores', email: 'carla.jimenez@demo.local' };
   }
   if (!backendBase) throw new Error('El backend no está configurado en el frontend');
   const session = await checkSession();

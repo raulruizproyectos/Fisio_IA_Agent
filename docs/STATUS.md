@@ -1,5 +1,11 @@
 # Project Status
 
+## Estado vigente — 18-oct, 17:00 Europe/Madrid — logo de Fisioteràpia CarlaJL (fase segura)
+- Logo original en `frontend/public/brand/carlajl-logo-original.png`; recortes circulares `carlajl-mark-{96,192,512}.webp`.
+- Medallón redondo blanco en el menú lateral (40 px, también plegado y en móvil) y en la pantalla de acceso (112 px; 80 px en móvil). Colores sin cambiar; estilos al final de `premium-system.css`.
+- Demo local: la fisioterapeuta es Carla Jiménez Lores (`lib/auth.ts`, `lib/demoData.ts`, respuesta simulada en `index.astro`).
+- Verificado a 1280, 1366 y 390 (imagen cargada, sin scroll horizontal). Pendiente tras la demo: paleta derivada del logo (fase 3).
+
 ## Estado vigente — 18-oct, 16:40 Europe/Madrid — pulido tras revisión de Raúl
 
 Frontend `69e6582` (backend `fb20a11`). Raúl revisa la demo en su portátil (escalado de Windows → ~1280 px CSS): verificar siempre a 1280 además de 1366/390.

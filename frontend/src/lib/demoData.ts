@@ -407,7 +407,7 @@ export const DEMO_INTAKES = [
     nombre: 'Elena Ramos Gil',
     telefono: '+34 622 334 455',
     canal: 'telegram',
-    mensaje: 'Hola Dra. Carmen, he hecho los ejercicios de talón excéntrico. Molestia 2/10, noto el gemelo más suelto.',
+    mensaje: 'Hola Carla, he hecho los ejercicios de talón excéntrico. Molestia 2/10, noto el gemelo más suelto.',
     fecha: 'Hoy, 10:15',
     leido: false,
   },
