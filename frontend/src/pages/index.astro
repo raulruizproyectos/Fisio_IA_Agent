@@ -2599,8 +2599,8 @@ import ConfigView from '../components/views/ConfigView.astro';
     const therapistNote = trimAgentBriefText(payload?.message_to_therapist || payload?.selection_rationale || '', 420);
     const patientMessage = trimAgentBriefText(payload?.message_to_patient || '', 420);
     const imageLabel = coverage?.total !== undefined
-      ? `${Number(coverage.with_image || 0)}/${Number(coverage.total || exercises.length)} imagenes`
-      : `${exercises.filter((exercise: any) => exercise?.imagen_url).length}/${exercises.length} imagenes`;
+      ? `${Number(coverage.with_image || 0)}/${Number(coverage.total || exercises.length)} imágenes`
+      : `${exercises.filter((exercise: any) => exercise?.imagen_url).length}/${exercises.length} imágenes`;
     const redFlagItems = toReportTextList(payload?.red_flags?.items || [], 5);
     const reportDate = fmtDate(new Date().toISOString());
 
