@@ -1,5 +1,10 @@
 # Project Status
 
+## Estado vigente — 18-oct, 18:30 Europe/Madrid — paleta aguamarina + tinta (DESIGN.md v8)
+- Paleta derivada del logo: acento `#136f74`, navegación en tinta `#0c1314`, lienzo `#f2f6f6`; tabla completa de equivalencias v7→v8 en `DESIGN.md`. Barrido de 803 literales (índigo, violeta, azul noche, grises lavanda, pizarra y celeste) en `premium-system.css`, `design-tokens.css`, `reserva.astro`, `index.astro`, `Layout.astro` y vistas; clases Tailwind sky/blue pasadas a teal.
+- Marca visible: «Fisioteràpia CarlaJL» en menú, acceso, títulos de pestaña y reserva pública (valor por defecto).
+- Verificado con `tmp/css-prune/palette-audit.mjs`: 0 colores índigo/azul calculados en 13 vistas + copiloto + 4 modales + acceso + reserva a 1280/1366/390, avisos de maquetación idénticos a los de antes, 0 errores JS. Capturas antes/después en `tmp/css-prune/pal-before`, `pal-after2`, `pal-modals`, hojas en `pal-sheets/`.
+
 ## Estado vigente — 18-oct, 17:00 Europe/Madrid — logo de Fisioteràpia CarlaJL (fase segura)
 - Logo original en `frontend/public/brand/carlajl-logo-original.png`; recortes circulares `carlajl-mark-{96,192,512}.webp`.
 - Medallón redondo blanco en el menú lateral (40 px, también plegado y en móvil) y en la pantalla de acceso (112 px; 80 px en móvil). Colores sin cambiar; estilos al final de `premium-system.css`.

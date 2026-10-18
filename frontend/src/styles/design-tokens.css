@@ -1,42 +1,42 @@
 /* ==========================================================================
    FISIO CLINICAL — PRECISIÓN AZUL DESIGN TOKENS (v6.0)
    Direction: Precisión azul, selected 2026-10-08
-   Primary: Blue (#4f46e5), Canvas (#f3f4f8), White surfaces
-   Text: Ink (#0b1020), Muted (#5b6476), Border (#e5e7ef)
+   Primary: Blue (#136f74), Canvas (#f2f6f6), White surfaces
+   Text: Ink (#0c1314), Muted (#56676a), Border (#e3e9e9)
    ========================================================================== */
 
 :root {
   /* === CORE BRAND & CLINICAL IDENTITY === */
-  --color-brand-primary: #4f46e5;
-  --color-brand-primary-hover: #4338ca;
-  --color-brand-accent: #4f46e5;
-  --color-brand-accent-hover: #4338ca;
-  --color-canvas: #f3f4f8;
+  --color-brand-primary: #136f74;
+  --color-brand-primary-hover: #0f5f63;
+  --color-brand-accent: #136f74;
+  --color-brand-accent-hover: #0f5f63;
+  --color-canvas: #f2f6f6;
   --color-canvas-rgb: 244, 247, 251;
   --color-surface: #ffffff;
-  --color-surface-hover: #f6f7fb;
-  --color-surface-subtle: #f3f4f8;
-  --color-surface-selected: #eef0ff;
+  --color-surface-hover: #f5f8f8;
+  --color-surface-subtle: #f2f6f6;
+  --color-surface-selected: #e3f2f2;
 
   /* === INK & CONTRAST === */
-  --color-ink: #0b1020;
+  --color-ink: #0c1314;
   --color-ink-secondary: #374151;
-  --color-ink-muted: #5b6476;
+  --color-ink-muted: #56676a;
   --color-ink-disabled: #9ca3af;
   --color-ink-on-brand: #ffffff;
 
   /* === BORDERS & ELEVATION === */
-  --color-border: #e5e7ef;
-  --color-border-subtle: #f0f1f6;
-  --color-border-medium: #d4d7e2;
-  --color-border-strong: #94a3b8;
-  --color-border-focus: #4f46e5;
+  --color-border: #e3e9e9;
+  --color-border-subtle: #eef3f3;
+  --color-border-medium: #d2dcdc;
+  --color-border-strong: #91a4a5;
+  --color-border-focus: #136f74;
 
-  --shadow-xs: 0 1px 2px rgba(11, 16, 32, 0.05);
-  --shadow-sm: 0 1px 2px rgba(11, 16, 32, 0.05), 0 0 0 1px rgba(11, 16, 32, 0.02);
-  --shadow-ambient: 0 1px 2px rgba(11, 16, 32, 0.05);
-  --shadow-raised: 0 1px 2px rgba(11, 16, 32, 0.05), 0 14px 34px -20px rgba(11, 16, 32, 0.25);
-  --shadow-flyout: 0 24px 48px -16px rgba(11, 16, 32, 0.28), 0 2px 6px rgba(11, 16, 32, 0.06);
+  --shadow-xs: 0 1px 2px rgba(12, 19, 20, 0.05);
+  --shadow-sm: 0 1px 2px rgba(12, 19, 20, 0.05), 0 0 0 1px rgba(12, 19, 20, 0.02);
+  --shadow-ambient: 0 1px 2px rgba(12, 19, 20, 0.05);
+  --shadow-raised: 0 1px 2px rgba(12, 19, 20, 0.05), 0 14px 34px -20px rgba(12, 19, 20, 0.25);
+  --shadow-flyout: 0 24px 48px -16px rgba(12, 19, 20, 0.28), 0 2px 6px rgba(12, 19, 20, 0.06);
 
   /* === RADII === */
   --radius-xs: 4px;
@@ -71,22 +71,22 @@
   --color-warning-bg: #ffedd5;
   --color-warning-border: #fdba74;
 
-  --color-info-text: #3730a3;
-  --color-info-bg: #e0e7ff;
-  --color-info-border: #a5b4fc;
+  --color-info-text: #0e5a5e;
+  --color-info-bg: #d6eeee;
+  --color-info-border: #8ccbce;
 
-  --color-neutral-text: #475569;
-  --color-neutral-bg: #f1f5f9;
-  --color-neutral-border: #cbd5e1;
+  --color-neutral-text: #4a5c5e;
+  --color-neutral-bg: #f0f5f5;
+  --color-neutral-border: #c8d5d6;
 
   /* === NAVIGATION / SIDEBAR TOKENS (HIGH CONTRAST) === */
-  --sidebar-bg: #0b1020;
-  --sidebar-bg2: #121a2e;
-  --sidebar-border: #1b2236;
-  --sidebar-text: #a3aac2;
+  --sidebar-bg: #0c1314;
+  --sidebar-bg2: #142022;
+  --sidebar-border: #1d2c2e;
+  --sidebar-text: #9fb0b1;
   --sidebar-text-hover: #ffffff;
-  --sidebar-active-bg: #1c2440;
-  --sidebar-active-border: #a5b4fc;
+  --sidebar-active-bg: #1a2b2d;
+  --sidebar-active-border: #8ccbce;
   --sidebar-active-color: #ffffff;
   --sidebar-width: 248px;
   --sidebar-collapsed: 68px;
@@ -94,37 +94,37 @@
   /* === SURFACES === */
   --surface-page-canvas: var(--color-canvas);
   --surface-card-surface: var(--color-surface);
-  --surface-pastel-card: #f3f4f8;
+  --surface-pastel-card: #f2f6f6;
   --surface-dark-brand-surface: var(--sidebar-bg);
 
   /* === BACKWARD COMPATIBILITY / BRIDGING ALIASES === */
-  --color-canopy: #4f46e5;
+  --color-canopy: #136f74;
   --color-canopy-rgb: 79, 70, 229;
-  --color-canopy-green: #4f46e5;
-  --color-coral: #4f46e5;
-  --color-coral-pulse: #4f46e5;
-  --color-coral-hover: #4338ca;
+  --color-canopy-green: #136f74;
+  --color-coral: #136f74;
+  --color-coral-pulse: #136f74;
+  --color-coral-hover: #0f5f63;
   --color-coral-rgb: 79, 70, 229;
-  --color-mint: #e0f2fe;
-  --color-mint-text: #0369a1;
-  --color-mint-wash: #f0f9ff;
-  --color-cream: #f3f4f8;
-  --color-cream-text: #334155;
-  --color-cream-wash: #f3f4f8;
-  --color-lavender: #f1f5f9;
-  --color-lavender-text: #334155;
-  --color-lavender-mist: #f3f4f8;
+  --color-mint: #e3f2f2;
+  --color-mint-text: #0e5a5e;
+  --color-mint-wash: #f1f8f8;
+  --color-cream: #f2f6f6;
+  --color-cream-text: #34484a;
+  --color-cream-wash: #f2f6f6;
+  --color-lavender: #f0f5f5;
+  --color-lavender-text: #34484a;
+  --color-lavender-mist: #f2f6f6;
   --color-peach: #ffedd5;
   --color-peach-text: #9a3412;
   --color-peach-wash: #fff7ed;
-  --color-sand: #f3f4f8;
-  --color-graphite: #334155;
-  --color-slate: #5b6476;
-  --color-frost-gray: #e5e7ef;
-  --color-cloud-gray: #f1f5f9;
-  --color-ash: #94a3b8;
+  --color-sand: #f2f6f6;
+  --color-graphite: #34484a;
+  --color-slate: #56676a;
+  --color-frost-gray: #e3e9e9;
+  --color-cloud-gray: #f0f5f5;
+  --color-ash: #91a4a5;
   --color-leaf-bright: #166534;
-  --color-deep-teal: #4f46e5;
+  --color-deep-teal: #136f74;
 
   --bg-base: var(--color-canvas);
   --bg-card: var(--color-surface);
@@ -134,10 +134,10 @@
 
   --accent: var(--color-brand-primary);
   --accent-hover: var(--color-brand-primary-hover);
-  --accent-soft: rgba(79, 70, 229, 0.08);
-  --accent-glow: rgba(79, 70, 229, 0.16);
+  --accent-soft: rgba(19, 111, 116, 0.08);
+  --accent-glow: rgba(19, 111, 116, 0.16);
   --premium: var(--color-brand-primary);
-  --premium-soft: rgba(79, 70, 229, 0.08);
+  --premium-soft: rgba(19, 111, 116, 0.08);
 
   --text-primary: var(--color-ink);
   --text-secondary: var(--color-ink-secondary);

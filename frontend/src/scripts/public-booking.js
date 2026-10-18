@@ -189,7 +189,7 @@ const configuredBackendBase = String(import.meta.env.PUBLIC_BACKEND_URL || '').t
         bookingConfig = payload?.data || null;
         if (!bookingConfig) throw new Error('No se pudo cargar la configuración de reserva online.');
 
-        if (clinicNameEl) clinicNameEl.textContent = bookingConfig.clinic?.name || 'Fisio Clinical';
+        if (clinicNameEl) clinicNameEl.textContent = bookingConfig.clinic?.name || 'Fisioteràpia CarlaJL';
         if (clinicLocationEl) clinicLocationEl.textContent = bookingConfig.clinic?.location || '';
         if (clinicLeadEl) clinicLeadEl.textContent = `Reserva online con ${bookingConfig.professional?.nombre_completo || 'tu fisioterapeuta'} y huecos reales sincronizados con la agenda activa.`;
         if (professionalNameEl) professionalNameEl.textContent = bookingConfig.professional?.nombre_completo || 'Fisioterapeuta';

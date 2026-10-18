@@ -22,7 +22,7 @@ import DocumentosView from '../components/views/DocumentosView.astro';
 import ConfigView from '../components/views/ConfigView.astro';
 ---
 
-<Layout title="Fisio Clinical - CRM y Gestion Clínica">
+<Layout title="Fisioteràpia CarlaJL · Gestión clínica">
   <a class="skip-link" href="#mainContent">Saltar al contenido principal</a>
   <div class="app-boot" id="appBoot" role="status" aria-live="polite">
     <div class="app-boot-mark"><span class="material-symbols-rounded">medical_services</span></div>
@@ -3836,20 +3836,20 @@ import ConfigView from '../components/views/ConfigView.astro';
         const tarH = (tarjetaData[i] / maxVal) * chartH;
 
         // Tarjeta (bottom)
-        ctx.fillStyle = '#3b82f6';
+        ctx.fillStyle = '#1d7a7f';
         ctx.fillRect(x, pad.top + chartH - totalH, innerBar, tarH);
         // Efectivo (top)
         ctx.fillStyle = '#22c55e';
         ctx.fillRect(x, pad.top + chartH - totalH + tarH, innerBar, efH);
 
         // Month label
-        ctx.fillStyle = i === mes - 1 ? '#10b981' : '#64748b';
+        ctx.fillStyle = i === mes - 1 ? '#10b981' : '#617476';
         ctx.font = i === mes - 1 ? 'bold 11px system-ui' : '11px system-ui';
         ctx.fillText(meses[i], pad.left + i * barW + barW / 2, H - 8);
       }
 
       // Y axis labels
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#617476';
       ctx.font = '10px system-ui';
       ctx.textAlign = 'right';
       for (let v = 0; v <= maxVal; v += Math.ceil(maxVal / 4)) {
@@ -5087,7 +5087,7 @@ import ConfigView from '../components/views/ConfigView.astro';
         label: 'Festivo de referencia',
         shortLabel: 'Festivo',
         note: 'Evento de calendario de referencia. Visible en agenda, pero no bloquea reservas.',
-        colors: { bg: '#f8fafc', color: '#475569', border: '#94a3b8' },
+        colors: { bg: '#f7fafa', color: '#4a5c5e', border: '#91a4a5' },
       };
     }
     if (kind === 'managed_appointment') {
@@ -9640,7 +9640,7 @@ import ConfigView from '../components/views/ConfigView.astro';
     ctx.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
     firmaHasSig = false;
     if (firmaStatus) firmaStatus.textContent = 'Sin firma';
-    ctx.strokeStyle = '#1e293b';
+    ctx.strokeStyle = '#1c2a2c';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';

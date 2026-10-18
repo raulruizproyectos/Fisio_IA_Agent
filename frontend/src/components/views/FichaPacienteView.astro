@@ -13,7 +13,7 @@
         <span>Volver a Pacientes</span>
       </button>
       <h1 class="sr-only" id="fichaTitulo">
-        <span class="material-symbols-rounded text-sky-700">person</span> Ficha clínica
+        <span class="material-symbols-rounded text-teal-700">person</span> Ficha clínica
       </h1>
     </div>
     <div class="ficha-topbar-actions">
@@ -114,7 +114,7 @@
           <section class="precision-panel">
             <header class="precision-panel-header">
               <h3>Todo el caso en un vistazo</h3>
-              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Lectura rápida</span>
+              <span class="text-xs font-semibold text-teal-800 uppercase tracking-wider">Lectura rápida</span>
             </header>
             <div class="precision-panel-body" id="fichaOverviewStats">
               El resumen ejecutivo del caso aparecerá aquí.
@@ -125,7 +125,7 @@
           <section class="precision-panel pain-map-card">
             <header class="precision-panel-header">
               <h3>Mapa corporal de dolor</h3>
-              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Lectura evolutiva</span>
+              <span class="text-xs font-semibold text-teal-800 uppercase tracking-wider">Lectura evolutiva</span>
             </header>
             <div class="precision-panel-body">
               <div class="pain-map-container">
@@ -149,9 +149,9 @@
                   <div class="space-y-1">
                     <label for="painEvaSlider" class="text-xs font-semibold text-slate-700 flex justify-between">
                       <span>Intensidad de dolor</span>
-                      <span class="text-sky-800 font-bold">EVA: <span id="painEvaValue">5</span>/10</span>
+                      <span class="text-teal-800 font-bold">EVA: <span id="painEvaValue">5</span>/10</span>
                     </label>
-                    <input type="range" id="painEvaSlider" min="0" max="10" value="5" step="1" class="w-full accent-sky-800" />
+                    <input type="range" id="painEvaSlider" min="0" max="10" value="5" step="1" class="w-full accent-teal-700" />
                   </div>
                   <label for="painZoneNotes" class="block space-y-1">
                     <span class="text-xs font-semibold text-slate-700">Notas clínicas de dolor</span>
@@ -169,7 +169,7 @@
           <section class="precision-panel">
             <header class="precision-panel-header">
               <h3>Progreso del paciente</h3>
-              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Pulso terapéutico</span>
+              <span class="text-xs font-semibold text-teal-800 uppercase tracking-wider">Pulso terapéutico</span>
             </header>
             <div class="precision-panel-body text-sm text-slate-600" id="fichaProgressPanel">
               Cuando haya dolor, adherencia o entregas registradas, verás aquí la lectura rápida del progreso clínico.
@@ -179,7 +179,7 @@
           <section class="precision-panel">
             <header class="precision-panel-header">
               <h3>Clínica, agenda y decisiones</h3>
-              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Movimiento reciente</span>
+              <span class="text-xs font-semibold text-teal-800 uppercase tracking-wider">Movimiento reciente</span>
             </header>
             <div class="precision-panel-body text-sm text-slate-600" id="fichaOverviewStream">
               La actividad reciente del caso aparecerá aquí.
@@ -189,7 +189,7 @@
           <section class="precision-panel">
             <header class="precision-panel-header">
               <h3>Prioridades del caso</h3>
-              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Siguiente mejor acción</span>
+              <span class="text-xs font-semibold text-teal-800 uppercase tracking-wider">Siguiente mejor acción</span>
             </header>
             <div class="precision-panel-body text-sm text-slate-600" id="fichaDecisionList">
               Todavía no hay decisiones sugeridas para este caso.
@@ -199,7 +199,7 @@
           <section class="precision-panel lg:col-span-2">
             <header class="precision-panel-header">
               <h3>Seguimiento de planes prescritos</h3>
-              <span class="text-xs font-semibold text-sky-800 uppercase tracking-wider">Protocolo clínico</span>
+              <span class="text-xs font-semibold text-teal-800 uppercase tracking-wider">Protocolo clínico</span>
             </header>
             <div class="precision-panel-body text-sm text-slate-600" id="fichaPlanInsights">
               Cuando exista un plan de recuperación, verás aquí el circuito: plan, entrega, feedback y ajuste recomendado.
@@ -417,7 +417,7 @@
 
 <!-- Modal Firma -->
 <div class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="firmaModal" aria-hidden="true">
-  <div class="bg-[#0d1522] border border-white/[0.1] rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" role="dialog" aria-modal="true" aria-labelledby="firmaModalTitle">
+  <div class="bg-[#0e1718] border border-white/[0.1] rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" role="dialog" aria-modal="true" aria-labelledby="firmaModalTitle">
     <div class="px-6 py-4 border-b border-white/[0.08] flex items-center justify-between bg-[#111a26]">
       <div>
         <p class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">FIRMA DIGITAL</p>
@@ -439,7 +439,7 @@
         <p class="text-sm text-red-400" id="firmaFeedback" hidden></p>
       </div>
     </div>
-    <div class="px-6 py-4 bg-[#0d1522] border-t border-white/[0.08] flex justify-end gap-3">
+    <div class="px-6 py-4 bg-[#0e1718] border-t border-white/[0.08] flex justify-end gap-3">
       <button type="button" class="px-5 py-2.5 rounded-full text-slate-400 hover:bg-white/5 font-medium transition-colors" id="firmaModalDismiss">Cancelar</button>
       <button type="button" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors shadow-sm" id="firmaGuardarBtn">
         <span class="material-symbols-rounded text-[20px]">draw</span> Guardar y generar PDF

@@ -1,4 +1,27 @@
-# Fisio Clinical · Noche clínica (v7)
+# Fisioteràpia CarlaJL · Noche clínica aguamarina (v8)
+
+**Vigente desde el 18 de octubre de 2026.** Raúl pidió derivar la paleta del logo de la clínica (acuarela aguamarina, línea fina en tinta). Se conserva la estructura de la v7 (escala, radios, pesos, navegación oscura, capa final única); solo cambian los colores: el índigo pasa a aguamarina profunda y el azul noche a tinta. No reintroducir el índigo `#4f46e5` ni el violeta `#7c3aed`.
+
+Muestras del logo: lavado `#d1ebec` (tono 183°), tinta `#0c1314`. Contrastes AA medidos: blanco sobre acento 5,9:1; acento sobre blanco 5,9:1 y sobre suave 5,1:1; apagado sobre lienzo 5,4:1; texto de navegación 8,3:1.
+
+| Papel | Valor (v8) | Sustituye a (v7) |
+| --- | --- | --- |
+| Acento (acción, selección, foco) | `#136f74`, hover `#0f5f63`, profundo `#0e5a5e`, suave `#e3f2f2`; degradado del primario `#1d7a7f → #136f74` | `#4f46e5`, `#4338ca`, `#3730a3`, `#eef0ff`, `#6366f1` |
+| Aguamarina clara (fondos, bordes de selección) | `#e9f5f5`, `#d6eeee`, `#b7dfe0`, `#8ccbce` (raíl activo en la navegación), `#4fa3a7` | `#eef2ff`, `#e0e7ff`, `#c7d2fe`, `#a5b4fc`, `#818cf8` |
+| Navegación (tinta) | `#0c1314`, tarjetas `#142022`, borde `#1d2c2e`, activo `#1a2b2d`, texto `#9fb0b1`, apagado `#7f9394` | `#0b1020`, `#121a2e`, `#1b2236`, `#1c2440`, `#a3aac2`, `#8189a6` |
+| Asistente IA (tarjeta del menú) | `#0b4649 → #136f74 → #1d7a7f` | `#312e81 → #4f46e5 → #7c3aed` |
+| Lienzo / superficie | `#f2f6f6` / blanco | `#f3f4f8` |
+| Texto | principal `#0c1314`, secundario `#374151`, apagado `#56676a` | `#0b1020`, `#5b6476` |
+| Bordes | `#e3e9e9`, suave `#eef3f3`, medio `#d2dcdc` | `#e5e7ef`, `#f0f1f6`, `#d4d7e2` |
+| Grises antiguos (pizarra/celeste) | `#f0f5f5`, `#c8d5d6`, `#91a4a5`, `#4a5c5e`, `#34484a`… | `#f1f5f9`, `#cbd5e1`, `#94a3b8`, `#475569`, `#334155`… |
+
+Estados semánticos sin cambios (verde/ámbar/rojo con punto + texto); «info» usa la aguamarina. Logo: medallón redondo blanco en el menú (40 px) y en el acceso (112 px; 80 px en móvil), archivos en `frontend/public/brand/`.
+
+Verificación del 18-oct: escaneo de colores calculados (tono 195–295°, saturación > 30 %) en 13 vistas + copiloto + 4 modales + acceso + reserva, a 1280, 1366 y 390 px: de 153–357 coincidencias por vista a **0**; avisos de maquetación idénticos a los de antes. Herramienta: `tmp/css-prune/palette-audit.mjs`.
+
+---
+
+# Historia: Noche clínica índigo (v7)
 
 **Vigente desde el 17 de octubre de 2026.** Raúl eligió la dirección C («Noche clínica») entre tres maquetas de Pacientes (A Precisión azul refinada, B Clínica cálida editorial, C Noche clínica) porque la v6 le parecía «sosa, un CRM más» y con desajustes. Sustituye a Precisión azul (v6), que se conserva debajo como historia. No reintroducir el azul `#175dd0` ni DM Sans.
 

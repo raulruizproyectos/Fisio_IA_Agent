@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 ---
 
-<Layout title="Reserva online | Fisio Clinical" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
+<Layout title="Reserva online | Fisioteràpia CarlaJL" description="Reserva online de fisioterapia con seleccion de hueco y confirmacion inmediata.">
   <main class="booking-shell">
     <section class="booking-hero">
       <div class="booking-hero-copy">
@@ -17,7 +17,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="booking-clinic-line">
           <span class="material-symbols-rounded">calendar_today</span>
           <div>
-            <strong id="clinicName">Fisio Clinical</strong>
+            <strong id="clinicName">Fisioteràpia CarlaJL</strong>
             <p id="clinicLocation">Terrassa, Barcelona</p>
           </div>
         </div>
@@ -135,14 +135,14 @@ import Layout from '../layouts/Layout.astro';
 
   <style>
     :root {
-      --booking-bg: #f3f4f8;
+      --booking-bg: #f2f6f6;
       --booking-surface: #ffffff;
-      --booking-border: #e5e7ef;
-      --booking-ink: #0b1020;
-      --booking-muted: #5b6476;
-      --booking-accent: #4f46e5;
-      --booking-accent-soft: #eef0ff;
-      --booking-highlight: #eef0ff;
+      --booking-border: #e3e9e9;
+      --booking-ink: #0c1314;
+      --booking-muted: #56676a;
+      --booking-accent: #136f74;
+      --booking-accent-soft: #e3f2f2;
+      --booking-highlight: #e3f2f2;
       --booking-danger: #b42318;
       --booking-shadow: none;
     }
@@ -184,8 +184,8 @@ import Layout from '../layouts/Layout.astro';
       gap: 1.5rem;
       align-content: start;
       background:
-        radial-gradient(circle at top right, rgba(79, 70, 229, 0.18), transparent 34%),
-        radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.24), transparent 28%),
+        radial-gradient(circle at top right, rgba(19, 111, 116, 0.18), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(19, 111, 116, 0.24), transparent 28%),
         rgba(255, 252, 246, 0.9);
     }
 
@@ -234,7 +234,7 @@ import Layout from '../layouts/Layout.astro';
       padding: 1.15rem;
       border-radius: 24px;
       background: rgba(255, 255, 255, 0.62);
-      border: 1px solid rgba(79, 70, 229, 0.1);
+      border: 1px solid rgba(19, 111, 116, 0.1);
     }
 
     .booking-clinic-line {
@@ -274,7 +274,7 @@ import Layout from '../layouts/Layout.astro';
       gap: 0.9rem;
       align-items: start;
       padding: 0.7rem 0;
-      border-top: 1px solid rgba(20, 34, 52, 0.08);
+      border-top: 1px solid rgba(12, 19, 20, 0.08);
     }
 
     .booking-rhythm article:first-child {
@@ -344,7 +344,7 @@ import Layout from '../layouts/Layout.astro';
     .booking-field input,
     .booking-field textarea {
       width: 100%;
-      border: 1px solid rgba(20, 34, 52, 0.12);
+      border: 1px solid rgba(12, 19, 20, 0.12);
       border-radius: 18px;
       background: rgba(255, 255, 255, 0.78);
       padding: 0.9rem 1rem;
@@ -357,8 +357,8 @@ import Layout from '../layouts/Layout.astro';
 
     .booking-field input:focus,
     .booking-field textarea:focus {
-      border-color: rgba(79, 70, 229, 0.5);
-      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+      border-color: rgba(19, 111, 116, 0.5);
+      box-shadow: 0 0 0 4px rgba(19, 111, 116, 0.1);
       transform: translateY(-1px);
     }
 
@@ -377,8 +377,8 @@ import Layout from '../layouts/Layout.astro';
     .booking-inline-note {
       padding: 0.9rem 1rem;
       border-radius: 16px;
-      background: rgba(20, 34, 52, 0.04);
-      border: 1px dashed rgba(20, 34, 52, 0.14);
+      background: rgba(12, 19, 20, 0.04);
+      border: 1px dashed rgba(12, 19, 20, 0.14);
       font-size: 0.96rem;
     }
 
@@ -389,7 +389,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     :global(#slotsGrid .slot-pill) {
-      border: 1px solid rgba(20, 34, 52, 0.12);
+      border: 1px solid rgba(12, 19, 20, 0.12);
       border-radius: 20px;
       background: rgba(255, 255, 255, 0.84);
       color: var(--booking-ink);
@@ -409,14 +409,14 @@ import Layout from '../layouts/Layout.astro';
     :global(#slotsGrid .slot-pill:hover),
     :global(#slotsGrid .slot-pill:focus-visible) {
       transform: translateY(-2px);
-      border-color: rgba(79, 70, 229, 0.3);
-      box-shadow: 0 16px 32px rgba(20, 34, 52, 0.08);
+      border-color: rgba(19, 111, 116, 0.3);
+      box-shadow: 0 16px 32px rgba(12, 19, 20, 0.08);
       outline: none;
     }
 
     :global(#slotsGrid .slot-pill.is-selected) {
       background: var(--booking-accent-soft);
-      border-color: rgba(79, 70, 229, 0.45);
+      border-color: rgba(19, 111, 116, 0.45);
     }
 
     .booking-form {
@@ -438,7 +438,7 @@ import Layout from '../layouts/Layout.astro';
       padding: 1rem 1.05rem;
       border-radius: 20px;
       background: var(--booking-accent-soft);
-      border: 1px solid rgba(79, 70, 229, 0.12);
+      border: 1px solid rgba(19, 111, 116, 0.12);
     }
 
     .booking-feedback {
@@ -455,9 +455,9 @@ import Layout from '../layouts/Layout.astro';
     }
 
     .booking-feedback[data-state='success'] {
-      background: rgba(79, 70, 229, 0.08);
+      background: rgba(19, 111, 116, 0.08);
       color: var(--booking-accent);
-      border-color: rgba(79, 70, 229, 0.14);
+      border-color: rgba(19, 111, 116, 0.14);
     }
 
     .booking-actions {
@@ -495,7 +495,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     .booking-reset {
-      background: rgba(20, 34, 52, 0.08);
+      background: rgba(12, 19, 20, 0.08);
       color: var(--booking-ink);
     }
 
@@ -504,8 +504,8 @@ import Layout from '../layouts/Layout.astro';
       align-content: center;
       gap: 1rem;
       background:
-        radial-gradient(circle at top left, rgba(79, 70, 229, 0.14), transparent 26%),
-        radial-gradient(circle at bottom right, rgba(79, 70, 229, 0.18), transparent 28%),
+        radial-gradient(circle at top left, rgba(19, 111, 116, 0.14), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(19, 111, 116, 0.18), transparent 28%),
         rgba(255, 252, 246, 0.9);
     }
 
