@@ -1,5 +1,13 @@
 # Project Status
 
+## Estado vigente — 18-oct, 16:40 Europe/Madrid — pulido tras revisión de Raúl
+
+Frontend `69e6582` (backend `fb20a11`). Raúl revisa la demo en su portátil (escalado de Windows → ~1280 px CSS): verificar siempre a 1280 además de 1366/390.
+
+- Diálogo de confirmación con medidas explícitas. Causa raíz pendiente: `Layout.astro` (`<style is:global>`) tiene `*, *::before, *::after { margin: 0; padding: 0 }` sin capa, que anula las utilidades de Tailwind v4 (en `@layer`). Quitarlo exige revisar todas las vistas que usan clases Tailwind.
+- Ficha: tarjetas de progreso a 20 px; Pacientes estrecho con consulta de contenedor; Inicio con copiloto abierto (KPIs 2×2); método de pago segmentado; IVA a ancho completo; ilustraciones SVG de ejercicios en la demo (`frontend/public/demo/exercises`).
+- Próximo: rediseño con el logo de Fisioterapia CarlaJL (acuarela aguamarina, trazo fino de línea, manos). Falta el archivo original del logo (PNG grande o SVG).
+
 ## Estado vigente — 18-oct, 08:15 Europe/Madrid — demo al cliente lista
 
 Producción: backend `fb20a11`, frontend `b1eb7bd`, CI verde.
