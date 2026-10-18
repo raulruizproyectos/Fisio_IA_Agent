@@ -9001,7 +9001,7 @@ import ConfigView from '../components/views/ConfigView.astro';
       const loadVersion = fichaLoadVersion;
       const confirmed = await requestConfirm({
         title: 'Eliminar nota clínica',
-        message: 'La nota se eliminara del seguimiento del paciente.',
+        message: 'La nota se eliminará del seguimiento del paciente.',
         confirmLabel: 'Eliminar',
         tone: 'error',
       });
@@ -9936,7 +9936,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     btn.addEventListener('click', async () => {
       const confirmed = await requestConfirm({
         title: 'Eliminar documento',
-        message: 'El documento se eliminara de la ficha del paciente.',
+        message: 'El documento se eliminará de la ficha del paciente.',
         confirmLabel: 'Eliminar',
         tone: 'error',
       });
@@ -10382,7 +10382,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     if (!docId) return;
     const confirmed = await requestConfirm({
       title: 'Eliminar documento',
-      message: 'El documento se eliminara del listado global.',
+      message: 'El documento se eliminará del listado global.',
       confirmLabel: 'Eliminar',
       tone: 'error',
     });
@@ -10447,7 +10447,7 @@ const renderFichaDocumentos = (docs: any[], recommendations: any[] = []) => {
     if (!docId) return;
     const confirmed = await requestConfirm({
       title: 'Eliminar documento',
-      message: 'El documento se eliminara del listado global.',
+      message: 'El documento se eliminará del listado global.',
       confirmLabel: 'Eliminar',
       tone: 'error',
     });
