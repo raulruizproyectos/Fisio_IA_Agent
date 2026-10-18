@@ -1,5 +1,7 @@
 # Documento de Seguimiento y Operación — Fisio Clinical
 
+> **18-oct-2026:** este documento queda como historia hasta el 16-oct. El estado vigente, los pendientes y el siguiente paso están en [STATUS.md](STATUS.md) («Punto de situación — 18-oct-2026»); el prompt para retomar, en [PROMPT_CONTINUAR.txt](PROMPT_CONTINUAR.txt).
+
 ## Seguimiento vigente — 16-oct, 18:18 — traspaso reactivado
 
 Raúl solicita nueva segunda opinión de Calcode/Claude Code después de las correcciones de esta sesión y los primeros fallos comunicados en su prueba real. Queda sustituida la cancelación anterior. Primero: actualizar contexto, recomendar modelos/razonamiento y estrategia de agentes eficiente en tokens y esperar confirmación. Después: revisión local independiente con hallazgos nuevos diferenciados de los conocidos. Estado canónico: [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md); [prompt](PROMPT_AUDITORIA_CLOUDCODE.txt).

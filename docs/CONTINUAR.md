@@ -1,5 +1,7 @@
 # Punto de continuidad — 16 de octubre de 2026
 
+> **18-oct-2026:** este documento queda como historia hasta el 16-oct. El estado vigente, los pendientes y el siguiente paso están en [STATUS.md](STATUS.md) («Punto de situación — 18-oct-2026»); el prompt para retomar, en [PROMPT_CONTINUAR.txt](PROMPT_CONTINUAR.txt).
+
 ## Cierre exacto — 16-oct, 18:18 Europe/Madrid — traspaso solicitado a Calcode
 
 Raúl reactiva expresamente la segunda pasada independiente y pide publicar este checkpoint/documentación en GitHub; sustituye su cancelación anterior. Primero Calcode debe leer contexto y proponer modelo, razonamiento y reparto por agentes según disponibilidad/coste; esperar confirmación antes de auditar. Después, auditoría local independiente para encontrar defectos no vistos, con cobertura y evidencia honestas, sin modificar producto todavía. Estado completo y límites: [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md); prompt listo en [PROMPT_AUDITORIA_CLOUDCODE.txt](PROMPT_AUDITORIA_CLOUDCODE.txt), idéntico a PROMPT_CONTINUAR.txt.

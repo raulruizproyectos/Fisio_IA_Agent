@@ -1,5 +1,28 @@
 # Project Status
 
+## Punto de situación — 18-oct-2026, cierre del día
+
+**Producción** (EasyPanel, proyecto `fisio-ia-agent`): frontend `cf4e236`, backend `fb20a11`; CI verde. Rama `main` en GitHub al día; solo `.claude/` queda fuera de Git (no versionar).
+
+**Hecho hoy (18-oct)**
+- Demo al cliente preparada en local (`?demo=true`, datos ficticios de `lib/demo-api.ts`); la fisioterapeuta de la demo es **Carla Jiménez Lores**.
+- Logo de Fisioteràpia CarlaJL como medallón en menú lateral y acceso (`frontend/public/brand/`).
+- Nombre visible «Fisioteràpia CarlaJL» en menú, acceso, pestañas y reserva pública (valor por defecto).
+- Paleta v8 «Noche clínica aguamarina» derivada del logo (DESIGN.md v8): índigo y azul noche sustituidos por aguamarina `#136f74` y tinta `#0c1314` en todas las secciones antiguas; 0 colores índigo/azul calculados a 1280/1366/390.
+
+**Pendiente, por prioridad**
+1. Prueba real de Raúl en el CRM de producción (Claude solo verificó la demo local).
+2. Nombre oficial de la clínica en producción (Ajustes → `crm_clinicas`): poner «Fisioteràpia CarlaJL» para que facturas, consentimientos e informes lo usen. Es dato de producción: pedir confirmación.
+3. Seguridad (lo hace Raúl): regenerar en EasyPanel el token de despliegue de `fisio-backend` (expuesto en un log el 13-oct).
+4. CRM: pantalla para cambiar la contraseña dentro de la app (hoy solo `/reset-password`) y restringir a admin la edición del contacto de la clínica.
+5. Deuda CSS: regla global sin capa en `Layout.astro` (`*, *::before, *::after { margin: 0; padding: 0 }`) que anula los espaciados de Tailwind v4; corregir midiendo todas las vistas y estados (lunes, vacíos, modales) con `tmp/css-prune/`.
+6. Desde el 20-oct: paso 11, quitar la rama heredada `patient_appointments` de `/api/telegram/incoming` si la semana pasa sin incidencias.
+7. Cierres propios de la clínica en `BOOKING_EXTRA_HOLIDAYS` (confirmar fechas en el DOGC).
+8. En pausa hasta que Raúl lo pruebe: agente de citas (naturalidad) y piloto de reservas (M-03..M-10). Después: piloto de WhatsApp con OpenWA.
+9. Antes del uso real: limpiar los pacientes de prueba de producción (QA, @debug, Raúl…).
+
+**Cómo verificar cambios visuales**: servidor local en `127.0.0.1:4321` (`?demo=true`); `tmp/css-prune/palette-audit.mjs <carpeta>` (13 vistas + copiloto + 4 modales + acceso + reserva a 1280/1366/390, avisos de maquetación y escaneo de color) y `audit-monday.mjs` para la semana sin fin de semana. Un solo Chrome a la vez.
+
 ## Estado vigente — 18-oct, 18:30 Europe/Madrid — paleta aguamarina + tinta (DESIGN.md v8)
 - Paleta derivada del logo: acento `#136f74`, navegación en tinta `#0c1314`, lienzo `#f2f6f6`; tabla completa de equivalencias v7→v8 en `DESIGN.md`. Barrido de 803 literales (índigo, violeta, azul noche, grises lavanda, pizarra y celeste) en `premium-system.css`, `design-tokens.css`, `reserva.astro`, `index.astro`, `Layout.astro` y vistas; clases Tailwind sky/blue pasadas a teal.
 - Marca visible: «Fisioteràpia CarlaJL» en menú, acceso, títulos de pestaña y reserva pública (valor por defecto).
@@ -9,7 +32,7 @@
 - Logo original en `frontend/public/brand/carlajl-logo-original.png`; recortes circulares `carlajl-mark-{96,192,512}.webp`.
 - Medallón redondo blanco en el menú lateral (40 px, también plegado y en móvil) y en la pantalla de acceso (112 px; 80 px en móvil). Colores sin cambiar; estilos al final de `premium-system.css`.
 - Demo local: la fisioterapeuta es Carla Jiménez Lores (`lib/auth.ts`, `lib/demoData.ts`, respuesta simulada en `index.astro`).
-- Verificado a 1280, 1366 y 390 (imagen cargada, sin scroll horizontal). Pendiente tras la demo: paleta derivada del logo (fase 3).
+- Verificado a 1280, 1366 y 390 (imagen cargada, sin scroll horizontal). La paleta derivada del logo se hizo después (v8, ver arriba).
 
 ## Estado vigente — 18-oct, 16:40 Europe/Madrid — pulido tras revisión de Raúl
 
@@ -17,7 +40,7 @@ Frontend `69e6582` (backend `fb20a11`). Raúl revisa la demo en su portátil (es
 
 - Diálogo de confirmación con medidas explícitas. Causa raíz pendiente: `Layout.astro` (`<style is:global>`) tiene `*, *::before, *::after { margin: 0; padding: 0 }` sin capa, que anula las utilidades de Tailwind v4 (en `@layer`). Quitarlo exige revisar todas las vistas que usan clases Tailwind.
 - Ficha: tarjetas de progreso a 20 px; Pacientes estrecho con consulta de contenedor; Inicio con copiloto abierto (KPIs 2×2); método de pago segmentado; IVA a ancho completo; ilustraciones SVG de ejercicios en la demo (`frontend/public/demo/exercises`).
-- Próximo: rediseño con el logo de Fisioterapia CarlaJL (acuarela aguamarina, trazo fino de línea, manos). Falta el archivo original del logo (PNG grande o SVG).
+- Rediseño con el logo de Fisioteràpia CarlaJL: hecho el 18-oct (logo b0e66dc, paleta v8 cf4e236).
 
 ## Estado vigente — 18-oct, 08:15 Europe/Madrid — demo al cliente lista
 

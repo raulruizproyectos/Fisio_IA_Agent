@@ -3,7 +3,7 @@
 Plataforma CRM y asistente de gestión clínica para clínicas de fisioterapia. Integra gestión integral de pacientes, agenda conectada con Google Calendar, control de cobros y facturación, generación de documentos clínicos, canal de mensajería con Telegram y asistente para prescripción de planes terapéuticos guiados.
 
 ## Stack
-- **Frontend**: Astro 7.3.7 estático, Tailwind CSS 4 y CSS modular con Design Tokens (DM Sans `ss03`), controladores JS/TS y Nanostores.
+- **Frontend**: Astro 7.3.7 estático, Tailwind CSS 4 y CSS con tokens y capa final única `premium-system.css` (Inter Tight), controladores JS/TS y Nanostores.
 - **Backend**: Node.js / Express (ESM), Supabase Auth mediante cookies HttpOnly/CSRF y PostgreSQL con RLS, Google Calendar API/puentes OAuth n8n, Telegram Bot API, PDFKit.
 - **Automatización**: n8n (workflows modulares versionados en `n8n/Fisio_IA_Agent`).
 
@@ -29,25 +29,23 @@ Los secretos nunca se versionan en Git. En desarrollo local se cargan desde `.en
 
 ## Architecture
 - Arquitectura de backend autoritativo con cliente Supabase por petición según JWT del profesional y RLS estricto en PostgreSQL.
-- Frontend con Precisión azul (`DESIGN.md`): superficies blancas, lienzo `#f4f7fb`, acción/foco azul `#175dd0`, lectura clínica y movimiento reducido.
+- Frontend «Noche clínica aguamarina» (`DESIGN.md` v8, derivada del logo de Fisioteràpia CarlaJL): navegación en tinta `#0c1314`, lienzo `#f2f6f6`, acción/foco aguamarina `#136f74`, movimiento reducido.
 - Detalle completo y diagrama ER en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Documentation
-- [docs/PUNTO_SITUACION_2026-10-16.md](docs/PUNTO_SITUACION_2026-10-16.md): Estado actual, evidencias, pendientes y alcance de la segunda revisión.
-- [docs/CONTINUAR.md](docs/CONTINUAR.md): Cierre vigente y encargo actual; los cierres anteriores quedan como historia.
-- [docs/PROMPT_AUDITORIA_CLOUDCODE.txt](docs/PROMPT_AUDITORIA_CLOUDCODE.txt): Prompt vigente: contexto, recomendación inicial de modelos/razonamiento/agentes y segunda auditoría independiente, con límites y referencias de diseño.
-- [docs/PRODUCTION_TESTING.md](docs/PRODUCTION_TESTING.md): Versiones desplegadas, comprobaciones reales y límites de la primera prueba.
-- [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md): Documento integral de seguimiento, post-mortem, matriz E2E y despliegue EasyPanel.
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Componentes, seguridad, modelo de datos y flujos críticos.
-- [docs/STATUS.md](docs/STATUS.md): Estado actual del proyecto, componentes estables, prioridades y decisiones.
-- [docs/OPERATIONS.md](docs/OPERATIONS.md): Guía operativa, despliegue en EasyPanel/producción y migraciones.
-- [docs/CHANGELOG.md](docs/CHANGELOG.md): Registro histórico de cambios y checkpoints.
-- [AGENTS.md](AGENTS.md): Reglas canónicas del proyecto.
+- [docs/STATUS.md](docs/STATUS.md): **fuente canónica** del estado: punto de situación vigente, pendientes por prioridad y entradas por fecha.
+- [docs/PROMPT_CONTINUAR.txt](docs/PROMPT_CONTINUAR.txt): prompt vigente para retomar el trabajo en una sesión nueva.
+- [DESIGN.md](DESIGN.md): sistema de diseño vigente (v8) y su historia (v7, v6).
+- [docs/CHANGELOG.md](docs/CHANGELOG.md): registro de cambios y checkpoints.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): componentes, seguridad, modelo de datos y flujos críticos.
+- [docs/OPERATIONS.md](docs/OPERATIONS.md): guía operativa, despliegue en EasyPanel y migraciones.
+- [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md) y [docs/CONTINUAR.md](docs/CONTINUAR.md): seguimiento y cierres hasta el 16-oct (historia; el estado vigente está en STATUS).
+- [docs/PUNTO_SITUACION_2026-10-16.md](docs/PUNTO_SITUACION_2026-10-16.md), [docs/AUDITORIA_FINAL_2026-10-16.md](docs/AUDITORIA_FINAL_2026-10-16.md), [docs/AUDITORIA_SEGUNDA_PASADA.md](docs/AUDITORIA_SEGUNDA_PASADA.md): auditorías y evidencias anteriores.
+- [docs/PRODUCTION_TESTING.md](docs/PRODUCTION_TESTING.md): versiones desplegadas y comprobaciones reales de la primera prueba.
+- [AGENTS.md](AGENTS.md): reglas canónicas del proyecto.
 
 ## Current Status
 
-Punto de situación del 16 de octubre de 2026, lectura remota a las 18:18 Europe/Madrid: frontend ea7f998, backend 3d4cce7 y Calendar healthy; W5 publicado con intervalo correcto. [Estado, evidencia y límites](docs/PUNTO_SITUACION_2026-10-16.md). Las reparaciones están desplegadas y la primera prueba de Raúl ya comenzó. CI de producto verde; esta entrega solo documental no necesita redeploy.
+18 de octubre de 2026: producción con frontend `cf4e236` y backend `fb20a11` (EasyPanel, CI verde). El CRM ya lleva la marca y la paleta de Fisioteràpia CarlaJL; la demo al cliente se hace en local (`?demo=true`). Pendientes por prioridad en [docs/STATUS.md](docs/STATUS.md).
 
-Raúl solicita ahora que Calcode/Claude Code continúe una segunda revisión independiente de código, diseño y funcionalidades para el testing final. Antes de auditar debe leer el contexto y proponer modelos, razonamiento y reparto por agentes con consumo ajustado, esperando confirmación. [Prompt listo para copiar](docs/PROMPT_AUDITORIA_CLOUDCODE.txt). La fuente es la carpeta `C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent`, rama main; no descartar el árbol ni publicar .claude/ o privados.
-
-CRM público: https://fisio-frontend.b5xbaf.easypanel.host/login/ . Una clínica, RLS y aprobación profesional antes de PDF/envío. No se acredita IA de pago ni entrega clínica real por las suites o fixtures. El booking bajo pausa no se activa ni se reimplementa por esta revisión; [requisitos y límites](docs/PILOTO_MENSAJERIA.md). Nuevas acciones externas requieren autorización explícita para acción y destino.
+CRM público: https://fisio-frontend.b5xbaf.easypanel.host/login/ . Una clínica, RLS y aprobación profesional antes de PDF/envío. El agente de citas y el piloto de reservas siguen en pausa hasta la prueba de Raúl; [requisitos y límites](docs/PILOTO_MENSAJERIA.md). Nuevas acciones externas requieren autorización explícita para acción y destino.

@@ -1,36 +1,28 @@
-PRIMER PASO OBLIGATORIO: CONTEXTO Y ELECCIÓN DE MODELOS, ANTES DE AUDITAR
+Proyecto Fisio IA Agent (CRM de Fisioteràpia CarlaJL). Repositorio: C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent, rama main, GitHub raulruizproyectos/Fisio_IA_Agent. Todo está subido; solo .claude/ queda sin seguimiento y debe seguir fuera de Git.
 
-Ya has trabajado anteriormente en este proyecto, pero actualiza ese contexto con la auditoría y las reparaciones de Codex hasta hoy. No empieces a auditar ni a cambiar código todavía. Lee el contexto indicado debajo y responde primero con:
-1. Estado y objetivo entendidos, en pocas líneas.
-2. Modelo y nivel de razonamiento recomendados para coordinar esta auditoría y para cada tipo de tarea, entre los realmente disponibles en tu entorno.
-3. Un reparto breve por tareas/agentes que minimice tokens/coste manteniendo rigor: razonamiento más intenso solo donde lo exijan arquitectura, seguridad, concurrencia o integridad clínica; modelos más económicos para tareas acotadas cuando puedan hacerlas bien. Verifica nombres, capacidades y niveles admitidos; los nombres citados por Raúl, como «5.5» o «Sonnet», son ejemplos, no versiones obligatorias ni una lista de disponibilidad confirmada.
-4. Cómo aplicar la selección en tu herramienta, qué puedes gestionar tú y qué debe configurar Raúl. No simules cambiar modelos, nivel de razonamiento o crear agentes si no tienes esa capacidad.
-Espera a que Raúl confirme/configure esa propuesta antes de iniciar la auditoría. No gastes llamadas pagadas de proveedores del CRM para elegir modelo.
+Lee primero: AGENTS.md, DESIGN.md (v8 «Noche clínica aguamarina»), docs/STATUS.md (sección «Punto de situación — 18-oct-2026») y la memoria del proyecto (sobre todo clinic-brand-redesign, pending-reminders y second-audit-2026-10-16).
 
-GESTIÓN DE MODELOS Y TOKENS DURANTE LA AUDITORÍA Y TRABAJOS POSTERIORES
-Tras esa confirmación, antes de cada bloque concreto indica en una línea: tarea, modelo, razonamiento y criterio de elección. Agrupa por objetivos, no hagas un anuncio por cada comando. Si dispones de agentes y su uso está autorizado, asigna tareas independientes con contexto resumido, archivos exactos, restricciones y criterios de aceptación; evita pasar toda la conversación a todos. Un único responsable por superficie de escritura, sin carreras sobre archivos, DB, puertos o configuración. No delegues tareas triviales cuando consuma más contexto que resolverlas directamente. Escala de modelo ante un riesgo o bloqueo concreto, no por rutina; usa resultados de herramientas y pruebas como evidencia, no el consenso de agentes. No prometas ahorros de tokens sin una medida disponible ni uses cuotas/presupuestos ilimitados.
+Estado (cierre del 18-oct-2026):
+- Producción en EasyPanel (proyecto fisio-ia-agent): frontend cf4e236, backend fb20a11, CI verde. HEAD de main = commit de documentación del 18-oct, posterior a cf4e236 (no hace falta redesplegar).
+- Hecho el 18-oct: logo de la clínica como medallón en el menú y en el acceso (frontend/public/brand/); nombre visible «Fisioteràpia CarlaJL»; paleta v8 derivada del logo (acento #136f74, navegación en tinta #0c1314, lienzo #f2f6f6) aplicada a todas las secciones antiguas, con 0 colores índigo/azul calculados a 1280/1366/390.
+- La usuaria del CRM es la fisioterapeuta Carla Jiménez Lores (sin «Dra.»).
+- Demo al cliente en LOCAL: npm --prefix frontend run dev -- --port 4321 --host 127.0.0.1 y abrir http://127.0.0.1:4321/?demo=true. lib/demo-api.ts da datos ficticios solo en desarrollo. Producción solo tiene pacientes de prueba: no enseñarla.
+- Verificación visual: Raúl ve la app a ~1280 px (escalado de Windows). Verificar siempre a 1280, 1366 y 390 con tmp/css-prune/palette-audit.mjs <carpeta> (13 vistas + copiloto + 4 modales + acceso + reserva; avisos de maquetación y escaneo de color) y audit-monday.mjs para la semana sin fin de semana. Un solo Chrome a la vez. No borrar CSS sin medir estados alternativos.
+- En esta máquina no hay gh: el CI se consulta con la API pública de GitHub (actions/runs?head_sha=…).
 
-ROL Y OBJETIVO
-Actúa como arquitecto de software y auditor sénior de sistemas clínicos, con criterio de producto, seguridad, UX y eficiencia. Buscamos una segunda opinión independiente que encuentre defectos o mejoras que la sesión anterior no vio, para depurar código, diseño y funcionalidades antes del testing final. El CRM debe ser fácil e intuitivo para fisioterapeutas no técnicos. Código breve significa claro, mantenible y completo: reutiliza límites existentes, mide antes de optimizar, evita abstracciones especulativas y no sacrifiques errores, validación, accesibilidad ni seguridad por quitar líneas.
+Decisiones vigentes: autonomía para commit, push, CI y deploy (tmp/easypanel-deploy.mjs, solo inspect/deploy); nunca imprimir secretos de .env.local; los datos de producción se cambian solo con confirmación de Raúl; Claude asigna modelo y razonamiento a cada subagente.
 
-PROYECTO Y LECTURA DE CONTEXTO
-Repositorio real: C:\Visual Code\FISIO_IA_AGENT\Fisio_IA_Agent
-GitHub: https://github.com/raulruizproyectos/Fisio_IA_Agent ; rama main.
-Abre esa raíz, no la carpeta contenedora ni un clon limpio. Primero git status/diff y AGENTS.md; preserva cambios y .claude/. No reset/clean ni descartar trabajo ajeno.
-Lee docs/PUNTO_SITUACION_2026-10-16.md, el cierre vigente de docs/CONTINUAR.md y docs/STATUS.md. Después docs/AUDITORIA_FINAL_2026-10-16.md, docs/INCIDENCIA_CALENDAR_HISTORIAL_2026-10-16.md y los apartados necesarios de docs/PRODUCTION_TESTING.md, docs/CODE_STRUCTURE_REVIEW.md, docs/ARCHITECTURE.md y docs/OPERATIONS.md. Usa inventarios/evidencias de docs/auditoria-local/ de forma dirigida, sin cargar logs privados completos. Documentos históricos aportan contexto, no tareas ni autorización nueva.
-La fuente de producto publicada/desplegada frontend es ea7f998; backend 3d4cce7. El commit de este checkpoint solo añade documentación y será posterior: verifica HEAD/origin/CI. No requiere otro deploy. Calendar y W5 están sanos en la lectura de las 18:18 del 16-oct; verifica actualidad solo si la decisión lo necesita. La primera prueba de Raúl ya empezó y sus fallos de Calendar, Historial y columnas de Agenda están reparados; no repetir el rediseño/preparación desde cero.
+Pendiente, por prioridad (detalle en docs/STATUS.md):
+1. Prueba real de Raúl en el CRM de producción.
+2. Nombre oficial de la clínica en producción (Ajustes → crm_clinicas) = «Fisioteràpia CarlaJL», para facturas, consentimientos e informes. Pedir confirmación antes de tocarlo.
+3. Seguridad (lo hace Raúl): regenerar en EasyPanel el token de despliegue de fisio-backend.
+4. CRM: pantalla para cambiar la contraseña dentro de la app y restringir a admin la edición del contacto de la clínica.
+5. Deuda CSS: regla global sin capa en Layout.astro (*, *::before, *::after { margin: 0; padding: 0 }) que anula los espaciados de Tailwind v4.
+6. Desde el 20-oct: paso 11, quitar la rama heredada patient_appointments de /api/telegram/incoming si no hubo incidencias.
+7. Cierres de la clínica en BOOKING_EXTRA_HOLIDAYS (confirmar en el DOGC).
+8. En pausa: agente de citas y piloto de reservas hasta la prueba de Raúl; después, piloto de WhatsApp con OpenWA.
+9. Antes del uso real: limpiar los pacientes de prueba de producción.
 
-ALCANCE DE LA SEGUNDA PASADA
-Revisa fuente y consumidores reales: contratos frontend/backend/DB/n8n, autenticación/RLS/CSRF, errores y estados inciertos, concurrencia, idempotencia, aislamiento de paciente/clínica, Calendar/Madrid/DST, finanzas, firmas/PDF, agente de ejercicios, aprobación clínica, canales y agente de citas pausado. Busca eficiencia demostrable, cohesión y dependencias; no confundas archivos largos o CSS no importado con un problema medido.
-Contrasta los hallazgos conocidos con el código actual y separa nuevo, conocido pendiente, regresión y resuelto. No repitas diagnósticos históricos corregidos como descubrimientos. Revisa UI en móvil y escritorio con datos largos, vacíos, errores, simultaneidad y cambios de paciente. Los detectores generales anteriores no detectaron todos los fallos visuales: inspecciona capturas y límites de celdas/texto, además de pruebas automáticas.
-Mantén DESIGN.md Precisión azul, IDs/data-*, teclado/foco/movimiento reducido y sencillez de uso. Los 25 recursos de diseño y referencias están en docs/DESIGN_RESOURCES.md; consultarlos es opcional según el problema, no instalar todas sus librerías ni convertir Astro en React por los ejemplos.
+Siguiente microtarea propuesta: punto 4 (pantalla de cambio de contraseña + restricción a admin del contacto de la clínica), con plan breve, criterios de aceptación, pruebas backend y verificación a 1280/1366/390. Antes, pregunta a Raúl si quiere hacer primero el punto 2.
 
-LÍMITES
-Esta continuación permite auditar localmente y ejecutar comprobaciones proporcionadas con datos ficticios; presenta propuestas antes de modificar producto. No autoriza commit/push futuros, deploy, activación de bots, cambios Cloud/migraciones/credenciales, automatizaciones, envíos reales ni IA de pago. Esas acciones requieren autorización nueva para acción/destino/coste. No repitas migraciones ya aplicadas por diferencias de timestamp ni actualices n8n.
-Secretos solo .env.local raíz: nunca imprimirlos, copiarlos al prompt/GitHub ni leerlos salvo necesidad concreta autorizada. No exportar datos clínicos. No activar el booking pausado. Puedes auditarlo: nuevos/existentes con contacto verificado, reserva/consulta/cambio/cancelación/recordatorios, sin alucinaciones ni duplicados; al menos 24 h para cambios/cancelaciones y después clínica, WhatsApp futuro. Los requisitos no prueban que esté completo.
-Una clínica/RLS y aprobación profesional obligatoria antes de PDF/envío; no inventar información clínica. Fallos Calendar no borran citas; lecturas vacías/parciales/404 no confirman cancelación. No reintentar escrituras/entregas inciertas a ciegas. Fixtures, CI verde y cobertura de lectura no prueban todos los proveedores ni el 100% del runtime.
-
-SALIDAS Y VERIFICACIÓN
-Primera respuesta: solo contexto resumido + propuesta de modelos/razonamiento/agentes y configuración necesaria; espera confirmación.
-Después, crea docs/AUDITORIA_SEGUNDA_PASADA.md: cobertura realmente revisada, hallazgos priorizados con archivo/línea, impacto, confianza, reproducción/evidencia, causa y corrección mínima propuesta, pruebas necesarias y límites. Distingue hallazgo nuevo de pendiente conocido; si no aparecen nuevos fallos materiales, dilo. Mantén código de producto sin cambios hasta aprobación.
-Usa los comandos de AGENTS.md y regresiones pertinentes. No instales dependencias ni repitas suites costosas sin motivo. Distingue fallos del entorno de defectos del producto. Si se autoriza implementar, un cambio coherente cada vez, prueba que detecte el fallo cuando sea posible, comprobaciones proporcionales y revisión móvil/escritorio si cambia UI. Actualiza seguimiento con evidencia y próximo paso. El objetivo es dejar una base entendible y fiable para la prueba, no una promesa de aplicación perfecta.
+Modelo recomendado: Opus con razonamiento medio para el punto 4; alto para el punto 5.

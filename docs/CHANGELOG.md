@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-18 — Marca Fisioteràpia CarlaJL y paleta v8 (desplegado)
+
+- `b0e66dc`: logo de la clínica como medallón redondo en menú lateral y acceso (`frontend/public/brand/`); demo con la fisioterapeuta Carla Jiménez Lores.
+- `cf4e236`: paleta «Noche clínica aguamarina» (DESIGN.md v8) derivada del logo: acento `#136f74`, navegación `#0c1314`, lienzo `#f2f6f6`; barrido de 803 literales índigo/violeta/azul noche/lavanda/pizarra/celeste y clases Tailwind sky/blue. Nombre visible «Fisioteràpia CarlaJL».
+- Verificación: 0 colores índigo/azul calculados en 13 vistas + copiloto + 4 modales + acceso + reserva a 1280/1366/390; avisos de maquetación idénticos; check/build y 28 scripts de CI en verde.
+
+## 2026-10-18 — Demo al cliente en local y pulido
+
+- Demo en local con `lib/demo-api.ts` (datos ficticios solo en desarrollo). Poda de CSS revertida (`232c407`) porque eliminó la rejilla de 5 días de la Agenda.
+- Pulido tras la revisión de Raúl a ~1280 px (`69e6582`): diálogo de confirmación, tarjetas de la ficha, tabla de Pacientes estrecha, KPIs con copiloto abierto, método de pago segmentado, IVA a ancho completo, euros con separador de miles.
+
+## 2026-10-17 — Noche clínica v7 y segunda pasada de seguridad
+
+- Sistema de diseño v7 (Inter Tight, escala única, capa final `premium-system.css` con todas las hojas antiguas en su orden). Marca de clínica desde `crm_clinicas`; cambio de contraseña exige la actual salvo tras recuperación; reserva pública sin email del profesional. Detalle en [AUDITORIA_SEGUNDA_PASADA.md](AUDITORIA_SEGUNDA_PASADA.md).
+
 ## 2026-10-16 — Punto de situación publicado para Calcode
 
 Actualizados seguimiento, estado operativo, README y contexto de auditoría; se crea [PUNTO_SITUACION_2026-10-16.md](PUNTO_SITUACION_2026-10-16.md) y se restaura un prompt nuevo para la segunda pasada independiente, solicitado ahora por Raúl. PROMPT_CONTINUAR comparte el mismo texto. El prompt empieza por contexto y recomendación de modelos/razonamiento/agentes eficientes en tokens, con confirmación antes de auditar. Incorpora las reparaciones e incidencias de esta sesión, cobertura real, pendientes y las 25 referencias de diseño mediante su documento canónico. Solo documentación: sin código, dependencias, Cloud, migración, activación, envío ni deploy. Se publica en main con la petición de Raúl de actualizar GitHub; comprobar el CI del commit que contiene esta entrada.
