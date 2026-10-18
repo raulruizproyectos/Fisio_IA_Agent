@@ -425,6 +425,7 @@ export const DEMO_INTAKES = [
 export const DEMO_EXERCISES_CATALOG = [
   {
     id: 'ex-01',
+    imagen_url: '/demo/exercises/ex-01.svg',
     nombre: 'Elevación de talón excéntrica en escalón',
     zona_cuerpo: 'Tobillo y pie',
     nivel_dificultad: 'intermedio',
@@ -436,6 +437,7 @@ export const DEMO_EXERCISES_CATALOG = [
   },
   {
     id: 'ex-02',
+    imagen_url: '/demo/exercises/ex-02.svg',
     nombre: 'Puente de glúteos unilateral',
     zona_cuerpo: 'Cadera y pelvis',
     nivel_dificultad: 'intermedio',
@@ -447,6 +449,7 @@ export const DEMO_EXERCISES_CATALOG = [
   },
   {
     id: 'ex-03',
+    imagen_url: '/demo/exercises/ex-03.svg',
     nombre: 'Bird-Dog con control lumbopélvico',
     zona_cuerpo: 'Columna lumbar',
     nivel_dificultad: 'básico',
@@ -458,6 +461,7 @@ export const DEMO_EXERCISES_CATALOG = [
   },
   {
     id: 'ex-04',
+    imagen_url: '/demo/exercises/ex-04.svg',
     nombre: 'Retracción cervical (Chin Tuck) contra pared',
     zona_cuerpo: 'Columna cervical',
     nivel_dificultad: 'básico',

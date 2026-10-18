@@ -2980,6 +2980,7 @@ import ConfigView from '../components/views/ConfigView.astro';
                   repeticiones: ex.repeticiones_defecto,
                   cautions: ex.cautions,
                   procedimiento: ex.procedimiento,
+                  imagen_url: ex.imagen_url,
                   orden: idx + 1
                 }))
               };
@@ -3012,6 +3013,7 @@ import ConfigView from '../components/views/ConfigView.astro';
                     repeticiones: ex.repeticiones_defecto,
                     cautions: ex.cautions,
                     procedimiento: ex.procedimiento,
+                    imagen_url: ex.imagen_url,
                     orden: idx + 1
                   }))
                 };
@@ -4570,8 +4572,8 @@ import ConfigView from '../components/views/ConfigView.astro';
 
     templateHistoryBody.innerHTML = recentPlans.map((plan: any) => {
       const patientName = plan?.patient_name || `Paciente ${plan?.patient_id || '-'}`;
-      const patientMeta = plan?.patient_email || (plan?.patient_id ? `ID ${plan.patient_id}` : 'Paciente sin identificador visible');
-      const statusRaw = String(plan?.status || 'generada').replace(/_/g, ' ');
+      const patientMeta = plan?.patient_email || 'Sin contacto registrado';
+      const statusKey = String(plan?.status || 'generada');
       const statusClass = plan?.status === 'requiere_revision'
         ? 'rechazado'
         : ['generada', 'enviada', 'aprobada', 'completada'].includes(plan?.status)
@@ -4597,7 +4599,7 @@ import ConfigView from '../components/views/ConfigView.astro';
             <div class="template-plan-cell">
               <strong>${escapeHtml(plan?.title || 'Plan de ejercicios IA')}</strong>
               <p>${escapeHtml(note)}</p>
-              <span class="status-chip ${escapeHtml(statusClass)}">${escapeHtml(statusText(statusRaw))}</span>
+              <span class="status-chip ${escapeHtml(statusClass)}">${escapeHtml(statusText(statusKey))}</span>
             </div>
           </td>
           <td>

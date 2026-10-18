@@ -9468,3 +9468,22 @@ body .app-shell .intake-row-actions .btn-sm:not(.btn-outline) { background: var(
 body .app-shell .intake-row-actions .btn-sm:not(.btn-outline):hover { background: var(--pc-accent-hover) !important; }
 /* Finance: with no secondary actions the cash-priority panel takes the full row. */
 body .app-shell .finance-workbench:has(> .finance-action-grid[hidden]) { grid-template-columns: minmax(0, 1fr) !important; }
+/* Dashboard KPIs follow the space actually left (the copilot rail narrows it), not the viewport. */
+body .app-shell .clinic-dashboard { container-type: inline-size; container-name: dashboard; }
+@container dashboard (max-width: 840px) {
+  body .app-shell .clinic-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; row-gap: 16px !important; }
+}
+/* Patients table: room for a normal email in Contact and for both row actions; names wrap to two lines. */
+body .app-shell .patient-table :is(th.col-patient, td.cell-patient) { width: 21% !important; }
+body .app-shell .patient-table :is(th.col-contact, td.cell-contact) { width: 20% !important; }
+body .app-shell .patient-table :is(th.col-clinical, td.cell-clinical) { width: 19% !important; }
+body .app-shell .patient-table :is(th.col-appt, td.cell-appt) { width: 11% !important; }
+body .app-shell .patient-table :is(th.col-status, td.cell-status) { width: 13% !important; }
+body .app-shell .patient-table :is(th.col-actions, td.cell-actions) { width: 16% !important; }
+body .app-shell .patient-table .patient-name-btn { white-space: normal !important; overflow: hidden !important; text-overflow: clip !important;
+  display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3 !important; text-align: left !important; }
+/* Finance tabs on phones: a balanced 2 x 2 grid instead of 3 + 1. */
+@media (max-width: 767px) {
+  body .app-shell .finance-tabs { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 6px !important; }
+  body .app-shell .finance-tabs > * { width: 100% !important; justify-content: center !important; }
+}
